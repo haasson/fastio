@@ -1,0 +1,23 @@
+{
+  "name": "fastfood-saas",
+  "private": true,
+  "scripts": {
+    "dev:storefront": "turbo run dev --filter=storefront",
+    "dev:admin": "turbo run dev --filter=admin",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  }
+}
