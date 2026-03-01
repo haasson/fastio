@@ -3,7 +3,7 @@ export default defineNuxtConfig({
 
   ssr: false,
 
-  modules: ['@pinia/nuxt', '@nuxt/eslint'],
+  modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt'],
 
   css: ['~/assets/css/reset.css'],
 
