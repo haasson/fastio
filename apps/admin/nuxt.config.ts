@@ -5,6 +5,8 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@nuxt/eslint'],
 
+  css: ['~/assets/css/reset.css'],
+
   runtimeConfig: {
     public: {
       firebaseApiKey: '',
