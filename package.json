@@ -6,7 +6,10 @@
     "dev:admin": "turbo run dev --filter=admin",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "create-tenant": "node scripts/create-tenant.mjs",
+    "firebase:deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes,storage",
+    "firebase:deploy:functions": "firebase deploy --only functions"
   },
   "workspaces": [
     "apps/*",
