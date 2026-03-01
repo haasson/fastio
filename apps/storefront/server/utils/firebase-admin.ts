@@ -6,14 +6,10 @@ export function getAdminApp() {
 
   const config = useRuntimeConfig()
 
-  const raw = config.firebaseAdminCredentials
-  if (!raw) throw new Error('NUXT_FIREBASE_ADMIN_CREDENTIALS is not set')
+  const b64 = config.firebaseAdminCredentialsB64 as string
+  if (!b64) throw new Error('NUXT_FIREBASE_ADMIN_CREDENTIALS_B64 is not set')
 
-  // Nuxt auto-parses JSON env vars, so raw can be either a string or already an object
-  const credentials = typeof raw === 'string' ? JSON.parse(raw) : raw as Record<string, string>
-  if (credentials.private_key) {
-    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n')
-  }
+  const credentials = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'))
 
   return initializeApp({ credential: cert(credentials) })
 }

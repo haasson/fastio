@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/reset.css'],
 
   runtimeConfig: {
-    firebaseAdminCredentials: '',
+    firebaseAdminCredentialsB64: '',
     public: {
       firebaseApiKey: '',
       firebaseAuthDomain: '',
