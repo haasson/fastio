@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { collection, query, where, limit, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, limit, onSnapshot, updateDoc, doc } from 'firebase/firestore'
 import type { Tenant } from '@fastfood-saas/shared'
 import { useAuthStore } from './auth'
 
@@ -33,11 +33,17 @@ export const useTenantStore = defineStore('tenant', () => {
     })
   }
 
+  async function update(data: Partial<Omit<Tenant, 'id'>>) {
+    if (!tenant.value) return
+    const { $db } = useNuxtApp()
+    await updateDoc(doc($db, 'tenants', tenant.value.id), data)
+  }
+
   function dispose() {
     unsubscribe?.()
     unsubscribe = null
     tenant.value = null
   }
 
-  return { tenant, loading, init, dispose }
+  return { tenant, loading, init, update, dispose }
 })
