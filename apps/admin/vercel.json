@@ -1,9 +1,6 @@
 {
   "framework": "nuxtjs",
   "buildCommand": "pnpm run build",
-  "outputDirectory": ".output/public",
-  "installCommand": "cd ../.. && pnpm install",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "outputDirectory": ".output",
+  "installCommand": "cd ../.. && pnpm install"
 }
