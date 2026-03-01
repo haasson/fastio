@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions'
+import * as functions from 'firebase-functions/v1'
 import * as admin from 'firebase-admin'
 
 /**
@@ -43,7 +43,7 @@ export const addCustomDomain = functions.https.onCall(async (data, context) => {
 
   if (!response.ok) {
     const err = await response.json()
-    throw new functions.https.HttpsError('internal', err.error?.message ?? 'Vercel error')
+    throw new functions.https.HttpsError('internal', (err as { error?: { message?: string } }).error?.message ?? 'Vercel error')
   }
 
   await admin.firestore().collection('tenants').doc(tenantId).update({

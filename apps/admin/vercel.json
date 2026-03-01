@@ -1,6 +1,6 @@
 {
   "framework": "nuxtjs",
-  "buildCommand": "pnpm run build",
+  "buildCommand": "pnpm --filter=admin run build",
   "outputDirectory": ".output",
   "installCommand": "cd ../.. && pnpm install"
 }
