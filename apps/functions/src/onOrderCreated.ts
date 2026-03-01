@@ -17,7 +17,7 @@ export const onOrderCreated = functions.firestore
 
     if (!tenant?.notifications?.email) return
 
-    sgMail.setApiKey(functions.config().sendgrid.key)
+    sgMail.setApiKey(process.env.SENDGRID_KEY ?? '')
 
     const itemsList = order.items
       .map((item: { dishName: string; quantity: number; price: number }) =>

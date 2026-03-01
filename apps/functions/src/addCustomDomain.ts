@@ -26,8 +26,8 @@ export const addCustomDomain = functions.https.onCall(async (data, context) => {
   }
 
   const tenantId = tenantSnap.docs[0].id
-  const vercelToken = functions.config().vercel.token
-  const vercelProjectId = functions.config().vercel.project_id
+  const vercelToken = process.env.VERCEL_TOKEN ?? ''
+  const vercelProjectId = process.env.VERCEL_PROJECT_ID ?? ''
 
   const response = await fetch(
     `https://api.vercel.com/v10/projects/${vercelProjectId}/domains`,

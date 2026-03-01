@@ -10,7 +10,7 @@
   "main": "dist/index.js",
   "dependencies": {
     "firebase-admin": "^13.0.2",
-    "firebase-functions": "^6.1.2",
+    "firebase-functions": "^7.0.6",
     "@sendgrid/mail": "^8.1.4"
   },
   "devDependencies": {
