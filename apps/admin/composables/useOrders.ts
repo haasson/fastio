@@ -38,7 +38,7 @@ export const statusConfig: Record<OrderStatus, { label: string; color: string }>
 
 const activeStatuses: OrderStatus[] = ['new', 'accepted', 'cooking', 'ready', 'delivering']
 
-export function useOrders(tenantId: string, filter: Ref<OrderFilter>) {
+export function useOrders(tenantId: Ref<string>, filter: Ref<OrderFilter>) {
   const { $db } = useNuxtApp()
   const orders = ref<Order[]>([])
   const loading = ref(true)
@@ -46,9 +46,13 @@ export function useOrders(tenantId: string, filter: Ref<OrderFilter>) {
   let unsubscribe: (() => void) | null = null
 
   watch(
-    filter,
-    (f) => {
+    [tenantId, filter],
+    ([tid, f]) => {
       unsubscribe?.()
+      orders.value = []
+
+      if (!tid) return
+
       loading.value = true
 
       const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')]
@@ -62,7 +66,7 @@ export function useOrders(tenantId: string, filter: Ref<OrderFilter>) {
       }
 
       const q = query(
-        collection($db, 'tenants', tenantId, 'orders'),
+        collection($db, 'tenants', tid, 'orders'),
         ...constraints,
       )
 
@@ -77,7 +81,7 @@ export function useOrders(tenantId: string, filter: Ref<OrderFilter>) {
   onUnmounted(() => unsubscribe?.())
 
   async function updateStatus(orderId: string, status: OrderStatus) {
-    await updateDoc(doc($db, 'tenants', tenantId, 'orders', orderId), { status })
+    await updateDoc(doc($db, 'tenants', tenantId.value, 'orders', orderId), { status })
   }
 
   async function cancel(orderId: string) {

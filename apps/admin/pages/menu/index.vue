@@ -132,7 +132,7 @@ onMounted(() => tenantStore.init())
 // ─── Категории ───
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory } =
-  useCategories(tenantId.value)
+  useCategories(tenantId)
 
 const selectedCategoryId = ref<string | null>(null)
 
@@ -142,7 +142,7 @@ const selectedCategory = computed(() =>
 
 // ─── Блюда ───
 const { dishes, loading: dishesLoading, add: addDish, update: updateDish, remove: removeDish, toggleActive } =
-  useDishes(tenantId.value, selectedCategoryId)
+  useDishes(tenantId, selectedCategoryId)
 
 const dishCountByCategory = computed(() => {
   // Для счётчика грузим все блюда — пока простой подход, TODO оптимизировать

@@ -50,7 +50,7 @@ onMounted(() => tenantStore.init())
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
 const filter = ref<OrderFilter>('active')
-const { orders, loading, updateStatus, cancel } = useOrders(tenantId.value, filter)
+const { orders, loading, updateStatus, cancel } = useOrders(tenantId, filter)
 
 const newCount = computed(() => orders.value.filter((o) => o.status === 'new').length)
 

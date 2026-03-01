@@ -10,31 +10,45 @@ import {
 } from 'firebase/firestore'
 import type { Category } from '@fastfood-saas/shared'
 
-export function useCategories(tenantId: string) {
+export function useCategories(tenantId: Ref<string>) {
   const { $db } = useNuxtApp()
   const categories = ref<Category[]>([])
   const loading = ref(true)
 
-  const col = collection($db, 'tenants', tenantId, 'categories')
+  let unsubscribe: (() => void) | null = null
 
-  const unsubscribe = onSnapshot(query(col, orderBy('order')), (snap) => {
-    categories.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Category)
-    loading.value = false
-  })
+  watch(
+    tenantId,
+    (id) => {
+      unsubscribe?.()
+      if (!id) return
 
-  onUnmounted(unsubscribe)
+      const col = collection($db, 'tenants', id, 'categories')
+      loading.value = true
+      unsubscribe = onSnapshot(query(col, orderBy('order')), (snap) => {
+        categories.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Category)
+        loading.value = false
+      })
+    },
+    { immediate: true },
+  )
+
+  onUnmounted(() => unsubscribe?.())
 
   async function add(name: string) {
+    const id = tenantId.value
+    if (!id) return
+    const col = collection($db, 'tenants', id, 'categories')
     const order = categories.value.length
-    await addDoc(col, { tenantId, name, order, active: true })
+    await addDoc(col, { tenantId: id, name, order, active: true })
   }
 
   async function update(id: string, data: Partial<Pick<Category, 'name' | 'active' | 'order'>>) {
-    await updateDoc(doc($db, 'tenants', tenantId, 'categories', id), data)
+    await updateDoc(doc($db, 'tenants', tenantId.value, 'categories', id), data)
   }
 
   async function remove(id: string) {
-    await deleteDoc(doc($db, 'tenants', tenantId, 'categories', id))
+    await deleteDoc(doc($db, 'tenants', tenantId.value, 'categories', id))
   }
 
   return { categories, loading, add, update, remove }
