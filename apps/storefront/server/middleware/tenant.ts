@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
 
   const host = getRequestHost(event)
   const domain = host.split(':')[0]
+  const slug = domain.split('.')[0]
 
   const db = getAdminDb()
 
@@ -23,7 +24,6 @@ export default defineEventHandler(async (event) => {
   }
 
   // Fallback: поддомен вида slug.platform.com
-  const slug = domain.split('.')[0]
   const bySlug = await db
     .collection('tenants')
     .where('slug', '==', slug)
