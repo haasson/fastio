@@ -1,6 +1,6 @@
 {
   "framework": "nuxtjs",
-  "buildCommand": "pnpm --filter=admin run build",
-  "outputDirectory": ".output",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": ".vercel/output",
   "installCommand": "cd ../.. && pnpm install"
 }
