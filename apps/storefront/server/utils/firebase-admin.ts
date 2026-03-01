@@ -6,16 +6,15 @@ export function getAdminApp() {
 
   const config = useRuntimeConfig()
 
-  try {
-    const credentials = JSON.parse(config.firebaseAdminCredentials || '{}')
-    if (credentials.project_id) {
-      return initializeApp({ credential: cert(credentials) })
-    }
-  } catch {
-    // credentials not set — dev mode
+  const raw = config.firebaseAdminCredentials || ''
+  if (!raw) throw new Error('NUXT_FIREBASE_ADMIN_CREDENTIALS is not set')
+
+  const credentials = JSON.parse(raw)
+  if (credentials.private_key) {
+    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n')
   }
 
-  return initializeApp()
+  return initializeApp({ credential: cert(credentials) })
 }
 
 export function getAdminDb() {
