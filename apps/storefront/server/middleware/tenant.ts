@@ -1,18 +1,15 @@
-import { initializeApp, cert, getApps } from 'firebase-admin/app'
-import { getFirestore } from 'firebase-admin/firestore'
+import { getAdminDb } from '../utils/firebase-admin'
 
 export default defineEventHandler(async (event) => {
+  // Пропускаем служебные запросы Nuxt
+  const url = getRequestURL(event)
+  if (url.pathname.startsWith('/_nuxt') || url.pathname.startsWith('/__nuxt')) return
+
   const host = getRequestHost(event)
   const domain = host.split(':')[0]
 
-  // TODO: инициализация Firebase Admin через runtimeConfig
-  if (!getApps().length) {
-    initializeApp()
-  }
+  const db = getAdminDb()
 
-  const db = getFirestore()
-
-  // Ищем тенанта по кастомному домену или slug
   const byDomain = await db
     .collection('tenants')
     .where('customDomain', '==', domain)
@@ -21,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
   if (!byDomain.empty) {
     event.context.tenantId = byDomain.docs[0].id
-    event.context.tenant = byDomain.docs[0].data()
+    event.context.tenant = { id: byDomain.docs[0].id, ...byDomain.docs[0].data() }
     return
   }
 
@@ -35,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   if (!bySlug.empty) {
     event.context.tenantId = bySlug.docs[0].id
-    event.context.tenant = bySlug.docs[0].data()
+    event.context.tenant = { id: bySlug.docs[0].id, ...bySlug.docs[0].data() }
     return
   }
 

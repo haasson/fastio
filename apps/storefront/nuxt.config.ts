@@ -3,7 +3,9 @@ export default defineNuxtConfig({
 
   ssr: true,
 
-  modules: ['@pinia/nuxt', '@nuxt/eslint'],
+  modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt'],
+
+  css: ['~/assets/css/reset.css'],
 
   runtimeConfig: {
     firebaseAdminCredentials: '',
