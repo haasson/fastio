@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, skipHydrate } from 'pinia'
 import type { OrderItem } from '@fastfood-saas/shared'
 
 export type CartItem = OrderItem & { photo: string | null }
@@ -64,5 +64,5 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  return { items, count, subtotal, add, increment, decrement, remove, clear, restore }
+  return { items, count: skipHydrate(count), subtotal: skipHydrate(subtotal), add, increment, decrement, remove, clear, restore }
 })
