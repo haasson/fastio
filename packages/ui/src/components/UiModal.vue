@@ -58,6 +58,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { NModal } from 'naive-ui'
 import UiIcon from './UiIcon.vue'
 import UiButton from './UiButton.vue'
+import ClientOnly from './internal/ClientOnly.vue'
 import { modalManager } from '../composables/useModals'
 import { layerManager } from '../utils/layers'
 

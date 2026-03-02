@@ -37,6 +37,7 @@
 <script setup lang="ts">
 import { ref, computed, type CSSProperties } from 'vue'
 import { NPopover } from 'naive-ui'
+import ClientOnly from './internal/ClientOnly.vue'
 import UiBottomSheet from './UiBottomSheet.vue'
 import useBreakpoints from '../composables/useBreakpoints'
 import type { Breakpoint } from '../types/responsive'
