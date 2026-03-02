@@ -110,14 +110,27 @@ function openDish(dish: Dish) { selectedDish.value = dish }
 useHead({ title: 'Меню' })
 </script>
 
-<style scoped>
-.page-root { min-height: 100vh; background: #f7f7f8; }
+<style scoped lang="scss">
+@use '../../../packages/ui/src/styles/mixins/media-queries' as *;
 
-.main { padding: 24px 0 100px; }
+.page-root {
+  min-height: 100vh;
+  background: #f7f7f8;
+}
 
-.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.main {
+  padding: 24px 0 100px;
+}
 
-.category-section { margin-bottom: 40px; }
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.category-section {
+  margin-bottom: 40px;
+}
 
 .category-title {
   font-size: 20px;
@@ -139,7 +152,6 @@ useHead({ title: 'Меню' })
   font-size: 16px;
 }
 
-/* FAB корзины */
 .cart-fab {
   position: fixed;
   bottom: 20px;
@@ -158,6 +170,10 @@ useHead({ title: 'Меню' })
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 150;
   white-space: nowrap;
+
+  @include mq-m {
+    display: none;
+  }
 }
 
 .fab-count {
@@ -173,10 +189,14 @@ useHead({ title: 'Меню' })
   justify-content: center;
 }
 
-.fab-enter-active, .fab-leave-active { transition: opacity 0.2s, transform 0.2s; }
-.fab-enter-from, .fab-leave-to { opacity: 0; transform: translateX(-50%) translateY(10px); }
+.fab-enter-active,
+.fab-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
 
-@media (min-width: 768px) {
-  .cart-fab { display: none; }
+.fab-enter-from,
+.fab-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
 }
 </style>

@@ -129,7 +129,9 @@ function addToCart() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '../../../../packages/ui/src/styles/mixins/media-queries' as *;
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -139,10 +141,11 @@ function addToCart() {
   justify-content: center;
   z-index: 200;
   padding: 0;
-}
 
-@media (min-width: 600px) {
-  .overlay { align-items: center; padding: 20px; }
+  @include mq-m {
+    align-items: center;
+    padding: 20px;
+  }
 }
 
 .modal {
@@ -154,13 +157,12 @@ function addToCart() {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+
+  @include mq-m {
+    border-radius: 20px;
+  }
 }
 
-@media (min-width: 600px) {
-  .modal { border-radius: 20px; }
-}
-
-/* Фото */
 .photo {
   position: relative;
   aspect-ratio: 16/9;
@@ -169,10 +171,17 @@ function addToCart() {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
-.photo img { width: 100%; height: 100%; object-fit: cover; }
-.photo-placeholder { font-size: 60px; }
+.photo-placeholder {
+  font-size: 60px;
+}
 
 .close-btn {
   position: absolute;
@@ -192,7 +201,6 @@ function addToCart() {
   backdrop-filter: blur(4px);
 }
 
-/* Контент */
 .content {
   padding: 20px;
   display: flex;
@@ -201,11 +209,24 @@ function addToCart() {
   overflow-y: auto;
 }
 
-.header { display: flex; flex-direction: column; gap: 6px; }
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-.name { font-size: 20px; font-weight: 800; color: #111; }
+.name {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+}
 
-.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
 .tag {
   font-size: 11px;
   font-weight: 600;
@@ -215,9 +236,12 @@ function addToCart() {
   border-radius: 6px;
 }
 
-.description { font-size: 14px; color: #666; line-height: 1.5; }
+.description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
 
-/* КБЖУ */
 .nutrition-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -227,14 +251,41 @@ function addToCart() {
   gap: 8px;
 }
 
-.nutr-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.nutr-val { font-size: 14px; font-weight: 700; color: #111; }
-.nutr-label { font-size: 10px; color: #aaa; }
+.nutr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
 
-/* Ингредиенты */
-.ingredients-section { display: flex; flex-direction: column; gap: 8px; }
-.ingredients-title { font-size: 13px; font-weight: 600; color: #555; }
-.ingredients-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.nutr-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.nutr-label {
+  font-size: 10px;
+  color: #aaa;
+}
+
+.ingredients-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ingredients-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.ingredients-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
 .ingredient {
   display: flex;
@@ -247,13 +298,21 @@ function addToCart() {
   font-size: 13px;
   color: #444;
   transition: background 0.12s;
+
+  &:has(.ingredient-check:checked) {
+    background: #ffeaea;
+  }
 }
 
-.ingredient:has(.ingredient-check:checked) { background: #ffeaea; }
-.ingredient-check { display: none; }
-.removed { text-decoration: line-through; color: #bbb; }
+.ingredient-check {
+  display: none;
+}
 
-/* Добавить */
+.removed {
+  text-decoration: line-through;
+  color: #bbb;
+}
+
 .add-row {
   display: flex;
   align-items: center;
@@ -283,10 +342,19 @@ function addToCart() {
   justify-content: center;
   border-radius: 8px;
   transition: background 0.12s;
+
+  &:hover {
+    background: #e8e8e8;
+  }
 }
 
-.qty-btn:hover { background: #e8e8e8; }
-.qty { font-size: 16px; font-weight: 700; color: #111; min-width: 20px; text-align: center; }
+.qty {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  min-width: 20px;
+  text-align: center;
+}
 
 .add-btn {
   flex: 1;
@@ -299,13 +367,29 @@ function addToCart() {
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s;
+
+  &:hover {
+    background: var(--primary-dark, #e55a25);
+  }
 }
 
-.add-btn:hover { background: var(--primary-dark, #e55a25); }
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s;
+}
 
-/* Transitions */
-.modal-enter-active, .modal-leave-active { transition: opacity 0.2s; }
-.modal-enter-active .modal, .modal-leave-active .modal { transition: transform 0.25s ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-from .modal, .modal-leave-to .modal { transform: translateY(40px); }
+.modal-enter-active .modal,
+.modal-leave-active .modal {
+  transition: transform 0.25s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .modal,
+.modal-leave-to .modal {
+  transform: translateY(40px);
+}
 </style>

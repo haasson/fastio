@@ -10,7 +10,7 @@
         <aside class="categories-panel">
           <div class="panel-header">
             <span class="panel-title">Категории</span>
-            <button class="btn-add" @click="openCategoryModal(null)">+ Добавить</button>
+            <UiButton size="small" type="tertiary" @click="openCategoryModal(null)">+ Добавить</UiButton>
           </div>
 
           <div v-if="categoriesLoading" class="loading">Загрузка…</div>
@@ -26,8 +26,8 @@
               <span class="cat-name">{{ cat.name }}</span>
               <span class="cat-count">{{ dishCountByCategory[cat.id] ?? 0 }}</span>
               <div class="cat-actions" @click.stop>
-                <button class="icon-btn" title="Редактировать" @click="openCategoryModal(cat)">✏️</button>
-                <button class="icon-btn danger" title="Удалить" @click="confirmDeleteCategory(cat.id)">🗑</button>
+                <UiButton size="tiny" type="text" title="Редактировать" @click="openCategoryModal(cat)">✏️</UiButton>
+                <UiButton size="tiny" type="text" title="Удалить" @click="confirmDeleteCategory(cat.id)">🗑</UiButton>
               </div>
             </li>
 
@@ -49,7 +49,7 @@
                 {{ selectedCategory?.name }}
                 <span class="dish-count">({{ dishes.length }})</span>
               </span>
-              <button class="btn-add" @click="openDishModal(null)">+ Добавить блюдо</button>
+              <UiButton size="small" type="tertiary" @click="openDishModal(null)">+ Добавить блюдо</UiButton>
             </div>
 
             <div v-if="dishesLoading" class="loading">Загрузка…</div>
@@ -77,8 +77,8 @@
                     :model-value="dish.active"
                     @update:model-value="toggleActive(dish.id, $event)"
                   />
-                  <button class="icon-btn" title="Редактировать" @click="openDishModal(dish)">✏️</button>
-                  <button class="icon-btn danger" title="Удалить" @click="confirmDeleteDish(dish.id)">🗑</button>
+                  <UiButton size="tiny" type="text" title="Редактировать" @click="openDishModal(dish)">✏️</UiButton>
+                  <UiButton size="tiny" type="text" title="Удалить" @click="confirmDeleteDish(dish.id)">🗑</UiButton>
                 </div>
               </li>
 
@@ -211,14 +211,23 @@ async function confirmDeleteDish(id: string) {
 }
 </script>
 
-<style scoped>
-.menu-root { height: 100%; }
+<style scoped lang="scss">
+@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+
+.menu-root {
+  height: 100%;
+}
 
 .layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
-  height: calc(100vh - 60px - 48px);
+  height: auto;
+
+  @include mq-m {
+    grid-template-columns: 260px 1fr;
+    height: calc(100vh - 60px - 48px);
+  }
 }
 
 .categories-panel,
@@ -239,22 +248,17 @@ async function confirmDeleteDish(id: string) {
   flex-shrink: 0;
 }
 
-.panel-title { font-size: 15px; font-weight: 700; color: #111; }
-.dish-count { font-weight: 400; color: #999; font-size: 13px; }
-
-.btn-add {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ff6b35;
-  background: #fff4f0;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: background 0.15s;
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
 }
 
-.btn-add:hover { background: #ffe8df; }
+.dish-count {
+  font-weight: 400;
+  color: #999;
+  font-size: 13px;
+}
 
 .category-list {
   list-style: none;
@@ -271,11 +275,24 @@ async function confirmDeleteDish(id: string) {
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.12s;
-}
 
-.category-item:hover { background: #f7f7f7; }
-.category-item.selected { background: #fff4f0; }
-.category-item.inactive .cat-name { opacity: 0.45; text-decoration: line-through; }
+  &:hover {
+    background: #f7f7f7;
+
+    .cat-actions {
+      opacity: 1;
+    }
+  }
+
+  &.selected {
+    background: #fff4f0;
+  }
+
+  &.inactive .cat-name {
+    opacity: 0.45;
+    text-decoration: line-through;
+  }
+}
 
 .cat-name {
   flex: 1;
@@ -302,8 +319,6 @@ async function confirmDeleteDish(id: string) {
   transition: opacity 0.15s;
 }
 
-.category-item:hover .cat-actions { opacity: 1; }
-
 .category-empty,
 .dish-empty {
   padding: 24px;
@@ -312,7 +327,9 @@ async function confirmDeleteDish(id: string) {
   font-size: 13px;
 }
 
-.dishes-panel { overflow: hidden; }
+.dishes-panel {
+  overflow: hidden;
+}
 
 .no-category {
   flex: 1;
@@ -340,9 +357,11 @@ async function confirmDeleteDish(id: string) {
   padding: 10px 8px;
   border-radius: 10px;
   transition: background 0.12s;
-}
 
-.dish-item:hover { background: #f7f7f7; }
+  &:hover {
+    background: #f7f7f7;
+  }
+}
 
 .dish-photo {
   width: 48px;
@@ -354,10 +373,17 @@ async function confirmDeleteDish(id: string) {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
-.dish-photo img { width: 100%; height: 100%; object-fit: cover; }
-.photo-placeholder { font-size: 20px; }
+.photo-placeholder {
+  font-size: 20px;
+}
 
 .dish-info {
   flex: 1;
@@ -374,13 +400,30 @@ async function confirmDeleteDish(id: string) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &.inactive {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
 }
 
-.dish-name.inactive { opacity: 0.4; text-decoration: line-through; }
+.dish-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-.dish-meta { display: flex; align-items: center; gap: 8px; }
-.dish-price { font-size: 13px; font-weight: 600; color: #ff6b35; }
-.dish-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.dish-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff6b35;
+}
+
+.dish-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
 
 .tag {
   font-size: 11px;
@@ -390,24 +433,12 @@ async function confirmDeleteDish(id: string) {
   color: #666;
 }
 
-.dish-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-
-.icon-btn {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: transparent;
-  border-radius: 7px;
-  cursor: pointer;
-  font-size: 14px;
+.dish-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: background 0.12s;
+  gap: 6px;
+  flex-shrink: 0;
 }
-
-.icon-btn:hover { background: #f0f0f0; }
-.icon-btn.danger:hover { background: #ffeaea; }
 
 .form {
   display: flex;
@@ -427,9 +458,5 @@ async function confirmDeleteDish(id: string) {
   padding: 40px;
   text-align: center;
   color: #aaa;
-}
-
-@media (max-width: 768px) {
-  .layout { grid-template-columns: 1fr; height: auto; }
 }
 </style>

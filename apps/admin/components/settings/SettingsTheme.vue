@@ -93,8 +93,14 @@ async function handleSave() {
 }
 </script>
 
-<style scoped>
-.form { display: flex; flex-direction: column; gap: 20px; }
+<style scoped lang="scss">
+@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
 .section-title {
   font-size: 13px;
@@ -106,8 +112,12 @@ async function handleSave() {
 
 .presets {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+
+  @include mq-m {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .preset {
@@ -122,10 +132,15 @@ async function handleSave() {
   cursor: pointer;
   transition: border-color 0.15s;
   position: relative;
-}
 
-.preset:hover { border-color: #ddd; }
-.preset.selected { border-color: var(--preset-color); }
+  &:hover {
+    border-color: #ddd;
+  }
+
+  &.selected {
+    border-color: var(--preset-color);
+  }
+}
 
 .preset-swatch {
   width: 36px;
@@ -134,7 +149,11 @@ async function handleSave() {
   background: var(--preset-color);
 }
 
-.preset-name { font-size: 11px; font-weight: 600; color: #555; }
+.preset-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+}
 
 .preset-check {
   position: absolute;
@@ -145,10 +164,23 @@ async function handleSave() {
   font-weight: 800;
 }
 
-.field { display: flex; flex-direction: column; gap: 6px; }
-.label { font-size: 13px; font-weight: 600; color: #555; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-.color-row { display: flex; align-items: center; gap: 10px; }
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 .color-picker {
   width: 42px;
@@ -177,11 +209,26 @@ async function handleSave() {
   border-radius: 10px;
 }
 
-.logo-preview { height: 48px; object-fit: contain; border-radius: 6px; }
-.logo-placeholder { font-size: 13px; color: #bbb; }
+.logo-preview {
+  height: 48px;
+  object-fit: contain;
+  border-radius: 6px;
+}
 
-.footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.saved-msg { font-size: 13px; color: #10b981; }
+.logo-placeholder {
+  font-size: 13px;
+  color: #bbb;
+}
 
-@media (max-width: 480px) { .presets { grid-template-columns: repeat(2, 1fr); } }
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.saved-msg {
+  font-size: 13px;
+  color: #10b981;
+}
 </style>

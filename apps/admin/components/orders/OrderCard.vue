@@ -19,7 +19,7 @@
     <!-- Клиент -->
     <div class="customer">
       <span class="customer-name">{{ order.customer.name }}</span>
-      <a class="customer-phone" :href="`tel:${order.customer.phone}`">{{ order.customer.phone }}</a>
+      <UiLink size="small" :href="`tel:${order.customer.phone}`">{{ order.customer.phone }}</UiLink>
     </div>
 
     <!-- Адрес -->
@@ -56,23 +56,25 @@
 
       <!-- Кнопки действий -->
       <div v-if="order.status !== 'completed' && order.status !== 'cancelled'" class="actions">
-        <button
+        <UiButton
           v-if="next"
-          class="btn-next"
+          type="primary"
+          size="small"
           :disabled="updating"
           @click="advance"
         >
           {{ next.label }}
-        </button>
-        <button class="btn-cancel" :disabled="updating" @click="$emit('cancel', order.id)">
+        </UiButton>
+        <UiButton type="tertiary" size="small" :disabled="updating" @click="$emit('cancel', order.id)">
           Отменить
-        </button>
+        </UiButton>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiLink } from '@fastfood-saas/ui'
 import type { Order } from '@fastfood-saas/shared'
 import { nextStatus, nextStatusPickup, statusConfig } from '~/composables/useOrders'
 
@@ -118,7 +120,7 @@ function advance() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .card-root {
   background: #fff;
   border-radius: 14px;
@@ -128,19 +130,23 @@ function advance() {
   gap: 10px;
   border: 2px solid transparent;
   transition: border-color 0.2s;
-}
 
-.card-root.new {
-  border-color: #3b82f6;
-  animation: pulse-border 2s ease-in-out infinite;
+  &.new {
+    border-color: #3b82f6;
+    animation: pulse-border 2s ease-in-out infinite;
+  }
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-color: #3b82f6; }
-  50% { border-color: #93c5fd; }
+  0%, 100% {
+    border-color: #3b82f6;
+  }
+
+  50% {
+    border-color: #93c5fd;
+  }
 }
 
-/* Шапка */
 .header {
   display: flex;
   align-items: center;
@@ -168,16 +174,16 @@ function advance() {
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
-}
 
-.delivery-badge.delivery {
-  background: #eff6ff;
-  color: #3b82f6;
-}
+  &.delivery {
+    background: #eff6ff;
+    color: #3b82f6;
+  }
 
-.delivery-badge.pickup {
-  background: #f0fdf4;
-  color: #16a34a;
+  &.pickup {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
 }
 
 .time {
@@ -193,7 +199,6 @@ function advance() {
   border-radius: 6px;
 }
 
-/* Клиент */
 .customer {
   display: flex;
   align-items: center;
@@ -206,23 +211,11 @@ function advance() {
   color: #111;
 }
 
-.customer-phone {
-  font-size: 13px;
-  color: #ff6b35;
-  text-decoration: none;
-}
-
-.customer-phone:hover {
-  text-decoration: underline;
-}
-
-/* Адрес */
 .address {
   font-size: 13px;
   color: #555;
 }
 
-/* Состав */
 .items {
   list-style: none;
   display: flex;
@@ -258,14 +251,12 @@ function advance() {
   text-align: right;
 }
 
-/* Скидка / комментарий */
 .discount,
 .comment {
   font-size: 12px;
   color: #666;
 }
 
-/* Подвал */
 .footer {
   display: flex;
   align-items: center;
@@ -297,46 +288,8 @@ function advance() {
   color: #aaa;
 }
 
-/* Действия */
 .actions {
   display: flex;
   gap: 6px;
-}
-
-.btn-next,
-.btn-cancel {
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 8px;
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
-}
-
-.btn-next {
-  background: #ff6b35;
-  color: #fff;
-}
-
-.btn-next:hover:not(:disabled) {
-  background: #e55a25;
-}
-
-.btn-cancel {
-  background: #f5f5f5;
-  color: #999;
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background: #ffeaea;
-  color: #e53935;
-}
-
-.btn-next:disabled,
-.btn-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

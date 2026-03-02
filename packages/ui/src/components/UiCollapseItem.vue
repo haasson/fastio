@@ -13,16 +13,14 @@
           v-show="!isExpanded"
           :name="isChevronIcon ? 'chevronRound' : 'plusRound'"
           :size="iconSize"
-          :bg="iconBg"
-          :fg="iconFg"
+          :color="iconBg"
         />
         <ui-icon
           v-show="isExpanded"
           :name="isChevronIcon ? 'chevronRound' : 'minusRound'"
           :size="iconSize"
           :flip-y="isChevronIcon"
-          :bg="iconBg"
-          :fg="iconFg"
+          :color="iconBg"
         />
       </div>
       <slot name="header-extra" />

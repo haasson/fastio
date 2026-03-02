@@ -1,18 +1,7 @@
 <template>
   <div class="orders-root">
     <!-- Фильтр-табы -->
-    <div class="tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab.value"
-        class="tab"
-        :class="{ active: filter === tab.value }"
-        @click="filter = tab.value"
-      >
-        {{ tab.label }}
-        <span v-if="tab.value === 'active' && newCount > 0" class="new-badge">{{ newCount }}</span>
-      </button>
-    </div>
+    <UiSegmentedControl v-model="filter" :items="segmentedTabs" />
 
     <!-- Загрузка -->
     <div v-if="loading" class="state-msg">Загрузка…</div>
@@ -38,6 +27,8 @@
 </template>
 
 <script setup lang="ts">
+import { UiSegmentedControl } from '@fastfood-saas/ui'
+import type { SegmentedControlItem } from '@fastfood-saas/ui'
 import type { OrderStatus } from '@fastfood-saas/shared'
 import type { OrderFilter } from '~/composables/useOrders'
 import { useTenantStore } from '~/stores/tenant'
@@ -60,6 +51,14 @@ const tabs: { label: string; value: OrderFilter }[] = [
   { label: 'Отменённые', value: 'cancelled' },
   { label: 'Все', value: 'all' },
 ]
+
+const segmentedTabs = computed<SegmentedControlItem[]>(() =>
+  tabs.map((tab) => ({
+    label: tab.label,
+    value: tab.value,
+    tag: tab.value === 'active' && newCount.value > 0 ? String(newCount.value) : undefined,
+  })),
+)
 
 const emptyText = computed(() => {
   if (filter.value === 'active') return 'Активных заказов нет'
@@ -98,67 +97,15 @@ async function handleCancel(id: string) {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+
 .orders-root {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* ─── Табы ─── */
-.tabs {
-  display: flex;
-  gap: 4px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 6px;
-  width: fit-content;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.tab {
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
-  color: #888;
-  background: transparent;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tab:hover {
-  background: #f5f5f5;
-  color: #333;
-}
-
-.tab.active {
-  background: #ff6b35;
-  color: #fff;
-}
-
-.new-badge {
-  background: #fff;
-  color: #ff6b35;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 10px;
-  padding: 0 6px;
-  min-width: 18px;
-  text-align: center;
-  line-height: 18px;
-}
-
-.tab.active .new-badge {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-/* ─── Пустые состояния ─── */
 .state-msg {
   display: flex;
   flex-direction: column;
@@ -173,22 +120,14 @@ async function handleCancel(id: string) {
   font-size: 40px;
 }
 
-/* ─── Сетка карточек ─── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
   align-items: start;
-}
 
-@media (max-width: 600px) {
-  .tabs {
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
+  @include mq-m {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 }
 </style>

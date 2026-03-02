@@ -30,8 +30,7 @@
               name="chevronRound"
               :size="iconSize"
               :rotate="isOpen ? 180 : 0"
-              bg="blue-100"
-              fg="blue-500"
+              color="blue-500"
               class="select-arrow"
             />
           </slot>

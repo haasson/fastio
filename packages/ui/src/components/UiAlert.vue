@@ -4,8 +4,7 @@
       <ui-icon
         :name="icon"
         :size="computedIconSize"
-        :bg="iconBg || 'currentColor'"
-        :fg="iconFg"
+        :color="iconBg || 'currentColor'"
       />
     </template>
     <slot />

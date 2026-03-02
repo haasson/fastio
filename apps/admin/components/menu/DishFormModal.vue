@@ -11,11 +11,7 @@
 
       <div class="row">
         <UiInput v-model="form.name" label="Название *" placeholder="Маргарита" />
-        <div class="field field-sm">
-          <label class="label">Цена, ₽ *</label>
-          <!-- TODO: заменить на UiInputNumber когда добавят в @fastfood-saas/ui -->
-          <input v-model.number="form.price" class="input" type="number" min="0" placeholder="350" required />
-        </div>
+        <UiInputNumber v-model="form.price" label="Цена, ₽ *" :min="0" placeholder="350" />
       </div>
 
       <UiInput v-model="form.description" label="Описание" type="textarea" :rows="2" placeholder="Томатный соус, моцарелла, базилик" />
@@ -39,7 +35,7 @@
         <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
           <UiInput v-model="ing.name" placeholder="Ингредиент" :clearable="false" />
           <UiCheckbox v-model="ing.removable">Убрать</UiCheckbox>
-          <button type="button" class="remove-btn" @click="removeIngredient(i)">✕</button>
+          <UiButton size="tiny" type="text" @click="removeIngredient(i)">✕</UiButton>
         </div>
         <UiButton type="tertiary" @click="addIngredient">+ Добавить ингредиент</UiButton>
       </div>
@@ -48,28 +44,12 @@
       <div class="section-title">
         Пищевая ценность <span class="optional">(необязательно)</span>
       </div>
-      <!-- TODO: заменить на UiInputNumber когда добавят в @fastfood-saas/ui -->
       <div class="nutrition-grid">
-        <div class="field">
-          <label class="label">Вес, г</label>
-          <input v-model.number="nutrition.weight" class="input" type="number" min="0" placeholder="350" />
-        </div>
-        <div class="field">
-          <label class="label">Ккал</label>
-          <input v-model.number="nutrition.calories" class="input" type="number" min="0" placeholder="850" />
-        </div>
-        <div class="field">
-          <label class="label">Белки, г</label>
-          <input v-model.number="nutrition.protein" class="input" type="number" min="0" placeholder="38" />
-        </div>
-        <div class="field">
-          <label class="label">Жиры, г</label>
-          <input v-model.number="nutrition.fat" class="input" type="number" min="0" placeholder="32" />
-        </div>
-        <div class="field">
-          <label class="label">Углеводы, г</label>
-          <input v-model.number="nutrition.carbs" class="input" type="number" min="0" placeholder="86" />
-        </div>
+        <UiInputNumber v-model="nutrition.weight" label="Вес, г" :min="0" placeholder="350" />
+        <UiInputNumber v-model="nutrition.calories" label="Ккал" :min="0" placeholder="850" />
+        <UiInputNumber v-model="nutrition.protein" label="Белки, г" :min="0" placeholder="38" />
+        <UiInputNumber v-model="nutrition.fat" label="Жиры, г" :min="0" placeholder="32" />
+        <UiInputNumber v-model="nutrition.carbs" label="Углеводы, г" :min="0" placeholder="86" />
       </div>
 
       <!-- Активность -->
@@ -88,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiDialog, UiInput, UiButton, UiCheckbox } from '@fastfood-saas/ui'
+import { UiDialog, UiInput, UiInputNumber, UiButton, UiCheckbox } from '@fastfood-saas/ui'
 import type { Dish, DishTag, DishIngredient } from '@fastfood-saas/shared'
 import type { DishFormData } from '~/composables/useDishes'
 
@@ -116,13 +96,13 @@ const tagOptions: Record<DishTag, string> = {
   hit: '🔥 Хит продаж',
 }
 
-const defaultForm = (): Omit<DishFormData, 'nutrition'> => ({
+const defaultForm = () => ({
   categoryId: props.categoryId,
   name: '',
   description: '',
-  price: 0,
-  ingredients: [],
-  tags: [],
+  price: null as number | null,
+  ingredients: [] as DishIngredient[],
+  tags: [] as DishTag[],
   active: true,
   order: 0,
 })
@@ -194,6 +174,7 @@ async function handleSubmit() {
   try {
     const data: DishFormData = {
       ...form,
+      price: form.price ?? 0,
       categoryId: props.categoryId,
       nutrition: buildNutrition(),
     }
@@ -210,7 +191,9 @@ async function handleSubmit() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+
 .form {
   display: flex;
   flex-direction: column;
@@ -226,30 +209,21 @@ async function handleSubmit() {
   padding-top: 4px;
 }
 
-.optional { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.optional {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
 
 .row {
   display: grid;
-  grid-template-columns: 1fr 120px;
+  grid-template-columns: 1fr;
   gap: 10px;
+
+  @include mq-m {
+    grid-template-columns: 1fr 120px;
+  }
 }
-
-.field { display: flex; flex-direction: column; gap: 5px; }
-.label { font-size: 13px; font-weight: 600; color: #555; }
-
-.input {
-  height: 40px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 0 12px;
-  font-size: 14px;
-  font-family: inherit;
-  color: #111;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input:focus { border-color: #ff6b35; }
 
 .tags-grid {
   display: flex;
@@ -269,28 +243,14 @@ async function handleSubmit() {
   gap: 8px;
 }
 
-.remove-btn {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #bbb;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.12s, color 0.12s;
-}
-
-.remove-btn:hover { background: #ffeaea; color: #e53935; }
-
 .nutrition-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+
+  @include mq-m {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .active-row {
@@ -307,10 +267,5 @@ async function handleSubmit() {
   gap: 8px;
   padding-top: 4px;
   border-top: 1px solid #f0f0f0;
-}
-
-@media (max-width: 480px) {
-  .nutrition-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .row { grid-template-columns: 1fr; }
 }
 </style>

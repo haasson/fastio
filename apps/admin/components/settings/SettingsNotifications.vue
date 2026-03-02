@@ -21,7 +21,7 @@
         />
         <span class="hint">
           Как получить:
-          <a class="link" href="https://t.me/userinfobot" target="_blank" rel="noopener">@userinfobot</a>
+          <UiLink size="small" href="https://t.me/userinfobot" target="_blank" rel="noopener">@userinfobot</UiLink>
           (для личных сообщений) или добавьте бота в группу и используйте ID группы
         </span>
       </div>
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiButton } from '@fastfood-saas/ui'
+import { UiInput, UiButton, UiLink } from '@fastfood-saas/ui'
 import type { Tenant } from '@fastfood-saas/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
@@ -81,8 +81,12 @@ async function handleSave() {
 }
 </script>
 
-<style scoped>
-.form { display: flex; flex-direction: column; gap: 18px; }
+<style scoped lang="scss">
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 
 .section-title {
   font-size: 13px;
@@ -92,11 +96,17 @@ async function handleSave() {
   color: #aaa;
 }
 
-.field { display: flex; flex-direction: column; gap: 5px; }
-.hint { font-size: 12px; color: #aaa; line-height: 1.5; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
-.link { color: #ff6b35; text-decoration: none; }
-.link:hover { text-decoration: underline; }
+.hint {
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.5;
+}
 
 .tg-status {
   display: flex;
@@ -107,9 +117,21 @@ async function handleSave() {
   border-radius: 12px;
 }
 
-.tg-icon { font-size: 28px; }
-.tg-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 2px; }
-.tg-desc { font-size: 12px; color: #aaa; }
+.tg-icon {
+  font-size: 28px;
+}
+
+.tg-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.tg-desc {
+  font-size: 12px;
+  color: #aaa;
+}
 
 .tg-badge {
   margin-left: auto;
@@ -121,6 +143,15 @@ async function handleSave() {
   border-radius: 20px;
 }
 
-.footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.saved-msg { font-size: 13px; color: #10b981; }
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.saved-msg {
+  font-size: 13px;
+  color: #10b981;
+}
 </style>

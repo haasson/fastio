@@ -16,15 +16,14 @@
           active-class="active"
           @click="sidebarOpen = false"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
-          <span class="nav-label">{{ item.label }}</span>
+          <UiIcon :name="item.icon" :size="18" />
+          <span>{{ item.label }}</span>
         </NuxtLink>
       </nav>
 
-      <button class="logout" @click="handleLogout">
-        <span class="nav-icon">↩</span>
-        <span class="nav-label">Выйти</span>
-      </button>
+      <UiButton class="logout" type="text" dark-side full-width icon="logOut" @click="handleLogout">
+        Выйти
+      </UiButton>
     </aside>
 
     <!-- Overlay для мобилки -->
@@ -33,11 +32,9 @@
     <!-- Main -->
     <div class="main">
       <header class="topbar">
-        <button class="burger" @click="sidebarOpen = !sidebarOpen">
-          <span />
-          <span />
-          <span />
-        </button>
+        <div class="burger-wrap">
+          <UiAppBurger :open="sidebarOpen" @click="sidebarOpen = !sidebarOpen" />
+        </div>
         <span class="page-title">{{ currentPageTitle }}</span>
       </header>
 
@@ -50,17 +47,19 @@
 
 <script setup lang="ts">
 import { signOut } from 'firebase/auth'
+import { UiButton, UiIcon } from '@fastfood-saas/ui'
+import type { IconName } from '@fastfood-saas/ui'
 
 const { $auth } = useNuxtApp()
 const route = useRoute()
 const sidebarOpen = ref(false)
 
-const navItems = [
-  { to: '/', icon: '📊', label: 'Дашборд' },
-  { to: '/menu', icon: '🍔', label: 'Меню' },
-  { to: '/orders', icon: '📋', label: 'Заказы' },
-  { to: '/promotions', icon: '🎁', label: 'Акции' },
-  { to: '/settings', icon: '⚙️', label: 'Настройки' },
+const navItems: { to: string; icon: IconName; label: string }[] = [
+  { to: '/', icon: 'dashboard', label: 'Дашборд' },
+  { to: '/menu', icon: 'dishes', label: 'Меню' },
+  { to: '/orders', icon: 'orders', label: 'Заказы' },
+  { to: '/promotions', icon: 'promotions', label: 'Акции' },
+  { to: '/settings', icon: 'settings', label: 'Настройки' },
 ]
 
 const currentPageTitle = computed(() => {
@@ -73,14 +72,15 @@ async function handleLogout() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+
 .layout-root {
   display: flex;
   min-height: 100vh;
   background: #f7f7f8;
 }
 
-/* ─── Sidebar ─── */
 .sidebar {
   width: 240px;
   flex-shrink: 0;
@@ -94,6 +94,15 @@ async function handleLogout() {
   height: 100vh;
   z-index: 100;
   transition: transform 0.25s ease;
+  transform: translateX(-100%);
+
+  &.open {
+    transform: translateX(0);
+  }
+
+  @include mq-m {
+    transform: none;
+  }
 }
 
 .sidebar-header {
@@ -123,8 +132,7 @@ async function handleLogout() {
   padding: 0 10px;
 }
 
-.nav-item,
-.logout {
+.nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -136,40 +144,42 @@ async function handleLogout() {
   text-decoration: none;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
-  border: none;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-}
 
-.nav-item:hover,
-.logout:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
 
-.nav-item.active {
-  background: #ff6b35;
-  color: #fff;
-}
-
-.nav-icon {
-  font-size: 18px;
-  width: 22px;
-  text-align: center;
+  &.active {
+    background: #ff6b35;
+    color: #fff;
+  }
 }
 
 .logout {
   margin: 0 10px;
+  justify-content: flex-start;
 }
 
-/* ─── Main ─── */
+.burger-wrap {
+  display: flex;
+  align-items: center;
+
+  @include mq-m {
+    display: none;
+  }
+}
+
 .main {
   flex: 1;
-  margin-left: 240px;
+  margin-left: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+
+  @include mq-m {
+    margin-left: 240px;
+  }
 }
 
 .topbar {
@@ -196,53 +206,14 @@ async function handleLogout() {
   padding: 24px;
 }
 
-/* ─── Burger (мобилка) ─── */
-.burger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.burger span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: #333;
-  border-radius: 2px;
-}
-
 .overlay {
-  display: none;
-}
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 99;
 
-/* ─── Адаптив ─── */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .main {
-    margin-left: 0;
-  }
-
-  .burger {
-    display: flex;
-  }
-
-  .overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 99;
+  @include mq-m {
+    display: none;
   }
 }
 </style>

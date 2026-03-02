@@ -14,7 +14,7 @@ defineProps<{ modelValue: boolean }>()
 defineEmits<{ 'update:modelValue': [value: boolean] }>()
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .toggle-root {
   width: 40px;
   height: 22px;
@@ -25,26 +25,26 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
   position: relative;
   flex-shrink: 0;
   transition: background 0.2s;
-}
 
-.toggle-root::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
-}
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+  }
 
-.toggle-root.on {
-  background: #ff6b35;
-}
+  &.on {
+    background: #ff6b35;
 
-.toggle-root.on::after {
-  transform: translateX(18px);
+    &::after {
+      transform: translateX(18px);
+    }
+  }
 }
 </style>

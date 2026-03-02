@@ -70,7 +70,7 @@ async function handleSubmit() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .login-root {
   min-height: 100vh;
   display: flex;
@@ -96,7 +96,9 @@ async function handleSubmit() {
   margin-bottom: 32px;
 }
 
-.logo-icon { font-size: 28px; }
+.logo-icon {
+  font-size: 28px;
+}
 
 .logo-text {
   font-size: 18px;

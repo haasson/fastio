@@ -125,13 +125,32 @@ const statusConfig: Record<OrderStatus, { label: string; desc: string; icon: str
 const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
 </script>
 
-<style scoped>
-.page-root { min-height: 100vh; background: #f7f7f8; }
-.main { padding: 32px 0 60px; }
-.container { max-width: 560px; margin: 0 auto; padding: 0 20px; }
+<style scoped lang="scss">
+.page-root {
+  min-height: 100vh;
+  background: #f7f7f8;
+}
 
-.state-msg { text-align: center; padding: 60px 0; color: #bbb; font-size: 16px; }
-.state-msg.error { color: #e53935; }
+.main {
+  padding: 32px 0 60px;
+}
+
+.container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.state-msg {
+  text-align: center;
+  padding: 60px 0;
+  color: #bbb;
+  font-size: 16px;
+
+  &.error {
+    color: #e53935;
+  }
+}
 
 .order-card {
   background: #fff;
@@ -142,7 +161,6 @@ const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
   gap: 0;
 }
 
-/* Статус */
 .status-block {
   padding: 24px 24px 20px;
   background: color-mix(in srgb, var(--status-color) 8%, white);
@@ -151,11 +169,22 @@ const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
   gap: 16px;
 }
 
-.status-icon { font-size: 36px; }
-.status-label { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 2px; }
-.status-desc { font-size: 13px; color: #888; }
+.status-icon {
+  font-size: 36px;
+}
 
-/* Прогресс */
+.status-label {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 2px;
+}
+
+.status-desc {
+  font-size: 13px;
+  color: #888;
+}
+
 .progress {
   padding: 20px 24px;
   display: flex;
@@ -182,6 +211,23 @@ const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
   gap: 6px;
   position: relative;
   z-index: 1;
+
+  &.done .step-dot {
+    background: var(--primary);
+  }
+
+  &.active .step-dot {
+    background: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, white);
+  }
+
+  &.cancelled .step-dot {
+    background: #ef4444;
+  }
+
+  &.done .step-label {
+    color: var(--primary);
+  }
 }
 
 .step-dot {
@@ -193,14 +239,14 @@ const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
   transition: background 0.3s;
 }
 
-.step.done .step-dot { background: var(--primary); }
-.step.active .step-dot { background: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, white); }
-.step.cancelled .step-dot { background: #ef4444; }
+.step-label {
+  font-size: 10px;
+  color: #bbb;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
 
-.step-label { font-size: 10px; color: #bbb; font-weight: 600; text-align: center; white-space: nowrap; }
-.step.done .step-label { color: var(--primary); }
-
-/* Детали */
 .details {
   padding: 16px 24px;
   display: flex;
@@ -209,11 +255,24 @@ const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
   border-bottom: 1px solid #f5f5f5;
 }
 
-.detail-row { display: flex; justify-content: space-between; gap: 12px; }
-.detail-key { font-size: 13px; color: #999; }
-.detail-val { font-size: 13px; font-weight: 600; color: #111; text-align: right; }
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
 
-/* Состав */
+.detail-key {
+  font-size: 13px;
+  color: #999;
+}
+
+.detail-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+  text-align: right;
+}
+
 .items {
   list-style: none;
   padding: 16px 24px;
@@ -223,10 +282,30 @@ const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
   border-bottom: 1px solid #f5f5f5;
 }
 
-.item { display: flex; align-items: center; gap: 8px; }
-.item-name { flex: 1; font-size: 14px; color: #333; }
-.item-qty { font-size: 13px; color: #aaa; }
-.item-price { font-size: 14px; font-weight: 600; color: #111; min-width: 60px; text-align: right; }
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.item-qty {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.item-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  min-width: 60px;
+  text-align: right;
+}
 
 .total-row {
   padding: 16px 24px;
@@ -235,15 +314,25 @@ const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
   border-bottom: 1px solid #f5f5f5;
 }
 
-.total-label { font-size: 14px; color: #999; }
-.total { font-size: 20px; font-weight: 800; color: #111; }
+.total-label {
+  font-size: 14px;
+  color: #999;
+}
+
+.total {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+}
 
 .btn-back {
   margin: 16px 24px 24px;
   font-size: 14px;
   color: var(--primary);
   align-self: flex-start;
-}
 
-.btn-back:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
+}
 </style>

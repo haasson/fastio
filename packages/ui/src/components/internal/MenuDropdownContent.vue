@@ -32,7 +32,7 @@
               v-else
               :name="item.icon"
               :size="24"
-              bg="color-primary"
+              color="color-primary"
             />
           </template>
           <span class="item-label">{{ item.label }}</span>

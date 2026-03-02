@@ -28,22 +28,10 @@
       </template>
 
       <template #prev-month>
-        <ui-icon
-          name="chevronRound"
-          :rotate="90"
-          :size="chevronIconSize"
-          bg="blue-100"
-          fg="blue-500"
-        />
+        <ui-icon name="chevronRound" :rotate="90" :size="chevronIconSize" color="blue-500" />
       </template>
       <template #next-month>
-        <ui-icon
-          name="chevronRound"
-          :rotate="270"
-          :size="chevronIconSize"
-          bg="blue-100"
-          fg="blue-500"
-        />
+        <ui-icon name="chevronRound" :rotate="270" :size="chevronIconSize" color="blue-500" />
       </template>
     </n-date-picker>
   </form-item>

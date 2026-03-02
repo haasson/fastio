@@ -11,8 +11,7 @@
         v-if="$attrs.icon"
         :name="$attrs.icon as string"
         :size="computedIconSize"
-        :bg="iconBg || 'currentColor'"
-        :fg="iconFg"
+        :color="iconBg || 'currentColor'"
       />
     </template>
     <slot />

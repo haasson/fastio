@@ -12,7 +12,7 @@
     >
       <div class="modal-wrapper">
         <div v-if="closable" class="close-icon" @click="close">
-          <ui-icon name="close" :size="{ s: 16, l: 24 }" bg="currentColor" />
+          <ui-icon name="close" :size="{ s: 16, l: 24 }" color="currentColor" />
         </div>
 
         <div class="header">

@@ -78,8 +78,12 @@ async function handleSave() {
 }
 </script>
 
-<style scoped>
-.form { display: flex; flex-direction: column; gap: 20px; }
+<style scoped lang="scss">
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
 .section-title {
   font-size: 13px;
@@ -89,7 +93,11 @@ async function handleSave() {
   color: #aaa;
 }
 
-.days { display: flex; flex-direction: column; gap: 10px; }
+.days {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .day-row {
   display: flex;
@@ -115,13 +123,21 @@ async function handleSave() {
   outline: none;
   transition: border-color 0.15s;
   width: 100px;
+
+  &:focus {
+    border-color: #ff6b35;
+  }
 }
 
-.time-input:focus { border-color: #ff6b35; }
+.dash {
+  color: #ccc;
+  font-size: 14px;
+}
 
-.dash { color: #ccc; font-size: 14px; }
-
-.closed-label { font-size: 13px; color: #bbb; }
+.closed-label {
+  font-size: 13px;
+  color: #bbb;
+}
 
 .footer {
   display: flex;
@@ -130,5 +146,8 @@ async function handleSave() {
   gap: 12px;
 }
 
-.saved-msg { font-size: 13px; color: #10b981; }
+.saved-msg {
+  font-size: 13px;
+  color: #10b981;
+}
 </style>

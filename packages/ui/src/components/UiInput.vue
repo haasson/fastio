@@ -35,7 +35,7 @@
           <ui-icon
             :name="passwordVisible ? 'eye' : 'eyeClose'"
             :size="iconSize"
-            bg="grey-500"
+            color="grey-500"
           />
         </span>
         <span
@@ -48,14 +48,13 @@
             class="status-icon"
             :name="statusIconName"
             :size="24"
-            :bg="statusColor"
+            :color="statusColor"
           />
           <ui-icon
             class="clear-icon"
             name="crossRound"
             :size="24"
-            bg="grey-100"
-            fg="grey-500"
+            color="grey-400"
           />
         </span>
       </template>
@@ -63,8 +62,7 @@
         <ui-icon
           name="crossRound"
           :size="iconSize"
-          bg="grey-100"
-          fg="grey-500"
+          color="grey-400"
         />
       </template>
     </n-input>
@@ -76,6 +74,7 @@ import { computed, ref, useAttrs } from 'vue'
 import { NInput } from 'naive-ui'
 import { vMaska } from 'maska/vue'
 import UiIcon from './UiIcon.vue'
+import type { IconName } from '../icons'
 import FormItem from './internal/FormItem.vue'
 import useResponsiveSize from '../composables/useResponsiveSize'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
@@ -166,7 +165,7 @@ const inputClasses = computed(() => {
   }
 })
 
-const statusIconName = computed(() => {
+const statusIconName = computed<'checkRound' | 'warningRound' | undefined>(() => {
   if (props.status === 'success') return 'checkRound'
   if (props.status === 'warning') return 'warningRound'
 

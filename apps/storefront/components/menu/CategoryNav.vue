@@ -25,7 +25,7 @@ defineProps<{
 defineEmits<{ select: [id: string] }>()
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .nav-root {
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
@@ -42,9 +42,11 @@ defineEmits<{ select: [id: string] }>()
   gap: 4px;
   overflow-x: auto;
   scrollbar-width: none;
-}
 
-.inner::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
 
 .cat-btn {
   flex-shrink: 0;
@@ -59,12 +61,14 @@ defineEmits<{ select: [id: string] }>()
   border-bottom: 2px solid transparent;
   transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
-}
 
-.cat-btn:hover { color: #333; }
+  &:hover {
+    color: #333;
+  }
 
-.cat-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+  &.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
 }
 </style>

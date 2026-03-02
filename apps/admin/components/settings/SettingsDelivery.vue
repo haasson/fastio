@@ -5,15 +5,11 @@
 
       <div class="row">
         <div class="field">
-          <label class="label">Минимальная сумма заказа, ₽</label>
-          <!-- TODO: заменить на UiInputNumber когда добавят в @fastfood-saas/ui -->
-          <input v-model.number="form.deliveryMinOrder" class="input" type="number" min="0" placeholder="500" />
+          <UiInputNumber v-model="form.deliveryMinOrder" label="Минимальная сумма заказа, ₽" :min="0" placeholder="500" />
           <span class="hint">При сумме ниже — заказ не принимается</span>
         </div>
         <div class="field">
-          <label class="label">Стоимость доставки, ₽</label>
-          <!-- TODO: заменить на UiInputNumber когда добавят в @fastfood-saas/ui -->
-          <input v-model.number="form.deliveryFee" class="input" type="number" min="0" placeholder="150" />
+          <UiInputNumber v-model="form.deliveryFee" label="Стоимость доставки, ₽" :min="0" placeholder="150" />
           <span class="hint">0 — бесплатная доставка</span>
         </div>
       </div>
@@ -27,20 +23,20 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton } from '@fastfood-saas/ui'
+import { UiButton, UiInputNumber } from '@fastfood-saas/ui'
 import type { Tenant } from '@fastfood-saas/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
 const form = reactive({
-  deliveryMinOrder: props.tenant.deliveryMinOrder ?? 0,
-  deliveryFee: props.tenant.deliveryFee ?? 0,
+  deliveryMinOrder: (props.tenant.deliveryMinOrder ?? null) as number | null,
+  deliveryFee: (props.tenant.deliveryFee ?? null) as number | null,
 })
 
 watch(() => props.tenant, (t) => {
-  form.deliveryMinOrder = t.deliveryMinOrder ?? 0
-  form.deliveryFee = t.deliveryFee ?? 0
+  form.deliveryMinOrder = t.deliveryMinOrder ?? null
+  form.deliveryFee = t.deliveryFee ?? null
 })
 
 const saving = ref(false)
@@ -50,7 +46,7 @@ async function handleSave() {
   saving.value = true
   saved.value = false
   try {
-    await emit('save', { deliveryMinOrder: form.deliveryMinOrder, deliveryFee: form.deliveryFee })
+    await emit('save', { deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0 })
     saved.value = true
     setTimeout(() => { saved.value = false }, 3000)
   } finally {
@@ -59,8 +55,14 @@ async function handleSave() {
 }
 </script>
 
-<style scoped>
-.form { display: flex; flex-direction: column; gap: 20px; }
+<style scoped lang="scss">
+@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
 .section-title {
   font-size: 13px;
@@ -70,26 +72,36 @@ async function handleSave() {
   color: #aaa;
 }
 
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 5px; }
-.label { font-size: 13px; font-weight: 600; color: #555; }
-.hint { font-size: 12px; color: #aaa; }
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
 
-.input {
-  height: 42px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 0 12px;
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s;
+  @include mq-m {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-.input:focus { border-color: #ff6b35; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
-.footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.saved-msg { font-size: 13px; color: #10b981; }
+.hint {
+  font-size: 12px;
+  color: #aaa;
+}
 
-@media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.saved-msg {
+  font-size: 13px;
+  color: #10b981;
+}
 </style>

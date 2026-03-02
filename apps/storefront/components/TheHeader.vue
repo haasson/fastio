@@ -44,7 +44,9 @@ const todayHours = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '../../../packages/ui/src/styles/mixins/media-queries' as *;
+
 .header-root {
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
@@ -93,12 +95,19 @@ const todayHours = computed(() => {
 }
 
 .phone {
+  display: none;
   font-size: 14px;
   font-weight: 600;
   color: var(--primary);
-}
 
-.phone:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
+
+  @include mq-m {
+    display: block;
+  }
+}
 
 .cart-btn {
   position: relative;
@@ -111,9 +120,11 @@ const todayHours = computed(() => {
   justify-content: center;
   font-size: 20px;
   transition: background 0.15s;
-}
 
-.cart-btn:hover { background: color-mix(in srgb, var(--primary) 20%, white); }
+  &:hover {
+    background: color-mix(in srgb, var(--primary) 20%, white);
+  }
+}
 
 .cart-count {
   position: absolute;
@@ -141,9 +152,8 @@ const todayHours = computed(() => {
   border-top: 1px solid #f8f8f8;
 }
 
-.hours { font-weight: 600; color: #666; }
-
-@media (max-width: 600px) {
-  .phone { display: none; }
+.hours {
+  font-weight: 600;
+  color: #666;
 }
 </style>

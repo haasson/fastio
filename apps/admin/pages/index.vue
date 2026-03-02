@@ -9,7 +9,7 @@
 definePageMeta({ middleware: 'auth' })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .heading {
   font-size: 24px;
   font-weight: 700;

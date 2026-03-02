@@ -32,7 +32,7 @@ const themeStyle = computed(() => {
 })
 </script>
 
-<style>
+<style lang="scss">
 :root {
   --primary: #ff6b35;
   --primary-light: color-mix(in srgb, var(--primary) 12%, white);

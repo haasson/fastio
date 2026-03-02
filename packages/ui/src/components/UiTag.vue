@@ -9,8 +9,7 @@
         <ui-icon
           :name="icon!"
           :size="iconSize"
-          :bg="iconBg || 'currentColor'"
-          :fg="iconFg"
+          :color="iconBg || 'currentColor'"
         />
       </slot>
     </template>

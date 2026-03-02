@@ -10,6 +10,8 @@ export { default as UiDivider } from './components/UiDivider.vue'
 // Form components
 export { default as UiForm } from './components/UiForm.vue'
 export { default as UiInput } from './components/UiInput.vue'
+export { default as UiInputNumber } from './components/UiInputNumber.vue'
+export type { IconName } from './icons'
 export { default as UiSelect } from './components/UiSelect.vue'
 export { default as UiCheckbox } from './components/UiCheckbox.vue'
 export { default as UiRadioGroup } from './components/UiRadioGroup.vue'

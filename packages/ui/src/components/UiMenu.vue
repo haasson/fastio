@@ -71,7 +71,7 @@ function convertOptions(options: UiMenuOption[]): MenuOption[] {
       if (option.icon) {
         const iconName = option.icon
 
-        menuOption.icon = () => h(UiIcon, { name: iconName, size: 16, bg: 'color-primary' })
+        menuOption.icon = () => h(UiIcon, { name: iconName, size: 16, color: 'color-primary' })
       }
     }
 
@@ -92,7 +92,7 @@ function handleValueUpdate(key: UiMenuKey) {
 }
 
 function renderExpandIcon() {
-  return h(UiIcon, { name: 'chevronRound', size: 24, bg: 'blue-100', fg: 'blue-500' })
+  return h(UiIcon, { name: 'chevronRound', size: 24, color: 'blue-500' })
 }
 </script>
 

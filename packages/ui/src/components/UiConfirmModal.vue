@@ -43,7 +43,7 @@ const actions = computed<ModalAction[]>(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .confirm-message {
   margin: 0;
   font-size: 16px;

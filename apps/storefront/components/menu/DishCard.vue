@@ -55,7 +55,7 @@ function quickAdd() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .card-root {
   background: #fff;
   border-radius: 14px;
@@ -64,14 +64,17 @@ function quickAdd() {
   flex-direction: column;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+    .photo img {
+      transform: scale(1.04);
+    }
+  }
 }
 
-.card-root:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-}
-
-/* Фото */
 .photo {
   position: relative;
   aspect-ratio: 4/3;
@@ -80,18 +83,18 @@ function quickAdd() {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
 }
 
-.photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s;
+.photo-placeholder {
+  font-size: 40px;
 }
-
-.card-root:hover .photo img { transform: scale(1.04); }
-
-.photo-placeholder { font-size: 40px; }
 
 .tags {
   position: absolute;
@@ -112,7 +115,6 @@ function quickAdd() {
   backdrop-filter: blur(4px);
 }
 
-/* Тело */
 .body {
   padding: 12px 12px 8px;
   flex: 1;
@@ -144,7 +146,6 @@ function quickAdd() {
   margin-top: 2px;
 }
 
-/* Футер */
 .footer {
   padding: 8px 12px 12px;
   display: flex;
@@ -173,8 +174,13 @@ function quickAdd() {
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
   line-height: 1;
-}
 
-.add-btn:hover { background: var(--primary-dark, #e55a25); }
-.add-btn:active { transform: scale(0.92); }
+  &:hover {
+    background: var(--primary-dark, #e55a25);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
 </style>

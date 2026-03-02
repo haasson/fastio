@@ -1,0 +1,149 @@
+<template>
+  <form-item
+    :label="label"
+    :size="computedSize"
+    :name="name"
+    :rules="rules"
+    :model-value="modelValue"
+    :status="status"
+    :feedback="feedback"
+    v-slot="{ hasError }"
+  >
+    <n-input-number
+      v-model:value="modelValue"
+      :size="computedSize"
+      :class="inputClasses"
+      :min="min"
+      :max="max"
+      :step="step"
+      :precision="precision"
+      :placeholder="placeholder"
+      :clearable="clearable"
+      :show-button="showButton"
+      :status="hasError ? 'error' : (status || undefined)"
+      v-bind="$attrs"
+    >
+      <template v-if="$slots.prefix" #prefix>
+        <slot name="prefix" />
+      </template>
+      <template v-if="$slots.suffix" #suffix>
+        <slot name="suffix" />
+      </template>
+      <template #clear-icon>
+        <ui-icon name="crossRound" :size="iconSize" color="grey-400" />
+      </template>
+    </n-input-number>
+  </form-item>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { NInputNumber } from 'naive-ui'
+import UiIcon from './UiIcon.vue'
+import FormItem from './internal/FormItem.vue'
+import useResponsiveSize from '../composables/useResponsiveSize'
+import type { Size, ResponsiveSizeMap } from '../types/responsive'
+import type { ValidationRule } from '../types/form'
+
+type Props = {
+  label?: string
+  min?: number
+  max?: number
+  step?: number
+  precision?: number
+  placeholder?: string
+  clearable?: boolean
+  showButton?: boolean
+  size?: Size
+  responsive?: ResponsiveSizeMap
+  name?: string
+  rules?: ValidationRule[]
+  status?: 'success' | 'warning' | 'error'
+  feedback?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  clearable: true,
+  showButton: false,
+  size: 'medium',
+})
+
+const modelValue = defineModel<number | null>({ default: null })
+
+const computedSize = useResponsiveSize({
+  size: props.size,
+  responsive: props.responsive,
+})
+
+const inputClasses = computed(() => ({
+  'input': true,
+  [`input--${computedSize.value}`]: true,
+}))
+
+const iconSize = computed(() => {
+  switch (computedSize.value) {
+    case 'tiny': return 12
+    case 'small': return 14
+    case 'medium': return 16
+    case 'large': return 24
+    default: return 16
+  }
+})
+
+defineOptions({
+  inheritAttrs: false,
+})
+</script>
+
+<style scoped lang="scss">
+.input {
+  width: 100%;
+
+  &:deep(.n-input-number-input) {
+    text-align: left;
+  }
+
+  &:deep(.n-base-clear__clear) {
+    width: unset;
+    height: unset;
+  }
+
+  &:deep(.n-input__border) {
+    transition: opacity .3s ease;
+  }
+
+  &:hover:not(.n-input-number--disabled),
+  &.n-input--focus,
+  &.n-input--error-status,
+  &.n-input--warning-status,
+  &.n-input--success-status {
+    &:deep(.n-input__border) {
+      opacity: 0;
+    }
+  }
+
+  &:where(.input--tiny) {
+    &:deep(.n-input-wrapper) {
+      border-radius: 6px;
+    }
+  }
+
+  &:where(.input--small) {
+    &:deep(.n-input-wrapper) {
+      border-radius: 8px;
+    }
+  }
+
+  &:where(.input--medium) {
+    &:deep(.n-input-wrapper) {
+      border-radius: 12px;
+    }
+  }
+
+  &:where(.input--large) {
+    &:deep(.n-input-wrapper) {
+      border-radius: 12px;
+    }
+  }
+}
+</style>

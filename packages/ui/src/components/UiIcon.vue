@@ -2,17 +2,20 @@
   <component
     :is="iconComponent"
     v-if="iconComponent"
-    :width="iconSize"
-    :height="iconSize"
-    :style="combinedStyles"
+    :size="currentSize"
+    :color="resolvedColor"
+    :stroke-width="strokeWidth"
+    :style="styleTransform"
     class="icon-root"
     v-bind="$attrs"
   />
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, type Component } from 'vue'
+import { computed } from 'vue'
 import useBreakpoints from '../composables/useBreakpoints'
+import { iconRegistry } from '../icons'
+import type { IconName } from '../icons'
 
 type ResponsiveSizes = {
   s?: number
@@ -21,17 +24,13 @@ type ResponsiveSizes = {
   xl?: number
 }
 
-// Явный glob — Vite статически резолвит все иконки на этапе сборки (без 404 в проде)
-const iconModules = import.meta.glob<Component>('../static/icons/*.vue')
-
-// Кэш для async-компонентов иконок — предотвращает пересоздание обёрток при повторных маунтах
-const iconCache = new Map<string, Component>()
-
-interface Props {
-  name: string
+type Props = {
+  name: IconName
   size?: number | ResponsiveSizes
+  color?: string
+  /** @deprecated используй color */
   bg?: string
-  fg?: string
+  strokeWidth?: number
   flipX?: boolean
   flipY?: boolean
   rotate?: number
@@ -39,28 +38,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   size: 24,
+  strokeWidth: 1.5,
 })
-
-const toColor = (value?: string) => {
-  if (!value) return undefined
-
-  if (
-    value.startsWith('#')
-    || value.startsWith('rgb')
-    || value.startsWith('hsl')
-    || value.startsWith('var(')
-    || ['currentColor', 'transparent', 'inherit', 'white', 'black'].includes(value)
-  ) {
-    return value
-  }
-
-  return `var(--${value})`
-}
-
-const colorStyles = computed(() => ({
-  '--icon-bg': toColor(props.bg),
-  '--icon-fg': toColor(props.fg),
-}))
 
 const { xl, l, m } = useBreakpoints()
 
@@ -79,18 +58,23 @@ const currentSize = computed(() => {
   return 24
 })
 
-const iconSize = computed(() => {
-  return isResponsive.value ? currentSize.value : props.size
-})
+const toColor = (value?: string) => {
+  if (!value) return undefined
 
-const responsiveStyles = computed(() => {
-  if (!isResponsive.value) return
-
-  return {
-    width: `${currentSize.value}px`,
-    height: `${currentSize.value}px`,
+  if (
+    value.startsWith('#')
+    || value.startsWith('rgb')
+    || value.startsWith('hsl')
+    || value.startsWith('var(')
+    || ['currentColor', 'transparent', 'inherit', 'white', 'black'].includes(value)
+  ) {
+    return value
   }
-})
+
+  return `var(--${value})`
+}
+
+const resolvedColor = computed(() => toColor(props.color ?? props.bg))
 
 const styleTransform = computed(() => {
   const params: string[] = []
@@ -102,33 +86,7 @@ const styleTransform = computed(() => {
   return params.length === 0 ? {} : { transform: params.join(' ') }
 })
 
-const combinedStyles = computed(() => ({
-  ...responsiveStyles.value,
-  ...styleTransform.value,
-  ...colorStyles.value,
-}))
-
-const iconComponent = computed(() => {
-  if (!props.name) return null
-
-  const iconName = props.name.charAt(0).toUpperCase() + props.name.slice(1) + 'Icon'
-
-  const cached = iconCache.get(iconName)
-  if (cached) return cached
-
-  const path = `../static/icons/${iconName}.vue`
-  const loader = iconModules[path]
-
-  if (!loader) {
-    console.warn(`Icon ${iconName} not found`)
-    return null
-  }
-
-  const component = defineAsyncComponent(loader as () => Promise<Component>)
-  iconCache.set(iconName, component)
-
-  return component
-})
+const iconComponent = computed(() => iconRegistry[props.name] ?? null)
 
 defineOptions({ inheritAttrs: false })
 </script>

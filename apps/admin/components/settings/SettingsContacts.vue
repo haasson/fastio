@@ -83,8 +83,14 @@ async function handleSave() {
 }
 </script>
 
-<style scoped>
-.form { display: flex; flex-direction: column; gap: 14px; }
+<style scoped lang="scss">
+@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
 .section-title {
   font-size: 13px;
@@ -94,7 +100,15 @@ async function handleSave() {
   color: #aaa;
 }
 
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+
+  @include mq-m {
+    grid-template-columns: 1fr 1fr;
+  }
+}
 
 .footer {
   display: flex;
@@ -104,7 +118,8 @@ async function handleSave() {
   margin-top: 8px;
 }
 
-.saved-msg { font-size: 13px; color: #10b981; }
-
-@media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+.saved-msg {
+  font-size: 13px;
+  color: #10b981;
+}
 </style>

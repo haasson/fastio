@@ -60,7 +60,7 @@ const settingsTabs = [
 ]
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .settings-root {
   display: flex;
   flex-direction: column;
