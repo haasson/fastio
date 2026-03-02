@@ -21,7 +21,9 @@
       :clearable="clearable"
       :show-button="showButton"
       :status="hasError ? 'error' : (status || undefined)"
+      :keyboard="{ ArrowUp: false, ArrowDown: false }"
       v-bind="$attrs"
+      @keydown="filterKey"
     >
       <template v-if="$slots.prefix" #prefix>
         <slot name="prefix" />
@@ -89,6 +91,16 @@ const iconSize = computed(() => {
     default: return 16
   }
 })
+
+function filterKey(e: KeyboardEvent) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return
+  const allowed = ['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End']
+  if (allowed.includes(e.key)) return
+  if (/^\d$/.test(e.key)) return
+  if (e.key === '.' || e.key === ',') return
+  if (e.key === '-') return
+  e.preventDefault()
+}
 
 defineOptions({
   inheritAttrs: false,

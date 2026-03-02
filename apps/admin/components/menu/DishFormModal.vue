@@ -1,8 +1,8 @@
 <template>
-  <UiDialog
+  <UiModal
     :model-value="modelValue"
     :title="dish ? 'Редактировать блюдо' : 'Новое блюдо'"
-    width="560px"
+    :width="560"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <form class="form" @submit.prevent="handleSubmit">
@@ -64,11 +64,11 @@
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
       </div>
     </form>
-  </UiDialog>
+  </UiModal>
 </template>
 
 <script setup lang="ts">
-import { UiDialog, UiInput, UiInputNumber, UiButton, UiCheckbox } from '@fastfood-saas/ui'
+import { UiModal, UiInput, UiInputNumber, UiButton, UiCheckbox } from '@fastfood-saas/ui'
 import type { Dish, DishTag, DishIngredient } from '@fastfood-saas/shared'
 import type { DishFormData } from '~/composables/useDishes'
 

@@ -29,6 +29,8 @@
     <!-- Overlay для мобилки -->
     <div v-if="sidebarOpen" class="overlay" @click="sidebarOpen = false" />
 
+    <UiConfirmModal />
+
     <!-- Main -->
     <div class="main">
       <header class="topbar">
@@ -47,12 +49,13 @@
 
 <script setup lang="ts">
 import { signOut } from 'firebase/auth'
-import { UiButton, UiIcon } from '@fastfood-saas/ui'
+import { UiButton, UiIcon, UiConfirmModal } from '@fastfood-saas/ui'
 import type { IconName } from '@fastfood-saas/ui'
 
 const { $auth } = useNuxtApp()
 const route = useRoute()
 const sidebarOpen = ref(false)
+const tenantStore = useTenantStore()
 
 const navItems: { to: string; icon: IconName; label: string }[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
@@ -67,6 +70,7 @@ const currentPageTitle = computed(() => {
 })
 
 async function handleLogout() {
+  tenantStore.dispose()
   await signOut($auth)
   await navigateTo('/login')
 }

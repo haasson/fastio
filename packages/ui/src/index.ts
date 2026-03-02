@@ -22,7 +22,6 @@ export type { UiSelectProps } from './components/UiSelect.vue'
 
 // Container / overlay components
 export { default as UiCard } from './components/UiCard.vue'
-export { default as UiDialog } from './components/UiDialog.vue'
 export { default as UiModal } from './components/UiModal.vue'
 export { default as UiConfirmModal } from './components/UiConfirmModal.vue'
 export { default as UiBottomSheet } from './components/UiBottomSheet.vue'

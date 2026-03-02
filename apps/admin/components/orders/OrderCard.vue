@@ -5,7 +5,8 @@
       <div class="header-left">
         <span class="number">#{{ shortId }}</span>
         <span class="delivery-badge" :class="order.deliveryType">
-          {{ order.deliveryType === 'delivery' ? '🚴 Доставка' : '🏃 Самовывоз' }}
+          <template v-if="order.deliveryType === 'delivery'"><UiIcon name="bike" :size="12" /> Доставка</template>
+          <template v-else>Самовывоз</template>
         </span>
       </div>
       <div class="header-right">
@@ -24,7 +25,7 @@
 
     <!-- Адрес -->
     <div v-if="order.deliveryType === 'delivery' && order.address" class="address">
-      📍 {{ order.address }}
+      <UiIcon name="mapPin" :size="14" /> {{ order.address }}
     </div>
 
     <!-- Состав -->
@@ -38,12 +39,12 @@
 
     <!-- Промокод / скидка -->
     <div v-if="order.discountAmount > 0" class="discount">
-      🎁 Скидка по промокоду <strong>{{ order.promoCode }}</strong>: −{{ order.discountAmount }} ₽
+      <UiIcon name="promotions" :size="14" /> Скидка по промокоду <strong>{{ order.promoCode }}</strong>: −{{ order.discountAmount }} ₽
     </div>
 
     <!-- Комментарий -->
     <div v-if="order.comment" class="comment">
-      💬 {{ order.comment }}
+      <UiIcon name="messageCircle" :size="14" /> {{ order.comment }}
     </div>
 
     <!-- Итого + оплата -->
@@ -51,7 +52,10 @@
       <div class="total-row">
         <span class="total-label">Итого</span>
         <span class="total">{{ order.total }} ₽</span>
-        <span class="payment-type">{{ paymentLabel }}</span>
+        <span class="payment-type">
+          <UiIcon :name="paymentIcon" :size="13" />
+          {{ paymentLabel[order.paymentMethod] }}
+        </span>
       </div>
 
       <!-- Кнопки действий -->
@@ -74,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton, UiLink } from '@fastfood-saas/ui'
+import { UiButton, UiLink, UiIcon } from '@fastfood-saas/ui'
 import type { Order } from '@fastfood-saas/shared'
 import { nextStatus, nextStatusPickup, statusConfig } from '~/composables/useOrders'
 
@@ -97,11 +101,21 @@ const next = computed(() => {
   return map[props.order.status] ?? null
 })
 
-const paymentLabel: Record<string, string> = {
-  cash: '💵 Наличные',
-  card: '💳 Карта при получении',
-  online: '📱 Онлайн',
+const paymentIconMap: Record<string, 'banknote' | 'creditCard' | 'smartphone'> = {
+  cash: 'banknote',
+  card: 'creditCard',
+  online: 'smartphone',
 }
+
+const paymentLabel: Record<string, string> = {
+  cash: 'Наличные',
+  card: 'Карта при получении',
+  online: 'Онлайн',
+}
+
+const paymentIcon = computed(
+  () => paymentIconMap[props.order.paymentMethod] ?? 'banknote',
+)
 
 // Относительное время
 const now = useNow({ interval: 30_000 })
@@ -174,6 +188,9 @@ function advance() {
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 
   &.delivery {
     background: #eff6ff;
@@ -214,6 +231,9 @@ function advance() {
 .address {
   font-size: 13px;
   color: #555;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .items {
@@ -255,6 +275,9 @@ function advance() {
 .comment {
   font-size: 12px;
   color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .footer {
@@ -286,6 +309,9 @@ function advance() {
 .payment-type {
   font-size: 11px;
   color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .actions {

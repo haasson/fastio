@@ -2,7 +2,7 @@
   <client-only>
     <n-modal
       ref="nModalRef"
-      :show="modalController.isShown.value"
+      :show="isShown"
       :auto-focus="false"
       :trap-focus="false"
       :z-index="zIndex"
@@ -72,7 +72,8 @@ export type ModalAction = {
 }
 
 export type UiModalProps = {
-  name: string
+  name?: string
+  modelValue?: boolean
   title?: string
   width?: number
   actions?: ModalAction[]
@@ -95,20 +96,27 @@ const props = withDefaults(defineProps<UiModalProps>(), {
 })
 
 const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
   open: []
   close: []
 }>()
+
+const isVModel = computed(() => props.modelValue !== undefined)
 
 const modalController = modalManager.createController()
 const nModalRef = ref<InstanceType<typeof NModal> | null>(null)
 const zIndex = ref<number | undefined>(undefined)
 
+const isShown = computed(() =>
+  isVModel.value ? (props.modelValue ?? false) : modalController.isShown.value,
+)
+
 function getModalContainer(): HTMLElement | null {
   return nModalRef.value?.containerRef as HTMLElement | null
 }
 
-watch(modalController.isShown, (isShown) => {
-  if (isShown) {
+watch(isShown, (shown) => {
+  if (shown) {
     zIndex.value = layerManager.push()
     requestAnimationFrame(() => {
       const modalContainer = getModalContainer()
@@ -139,38 +147,42 @@ function stopPropagation(e: Event) {
 }
 
 onMounted(() => {
-  modalManager.register(props.name, modalController)
+  if (props.name) modalManager.register(props.name, modalController)
 })
 
 onUnmounted(() => {
-  modalManager.unregister(props.name)
+  if (props.name) modalManager.unregister(props.name)
 })
 
 const effectiveTitle = computed(() => {
+  if (!props.name) return props.title
   const config = modalManager.getModalConfig(props.name)
-
   return (config?.title as string | undefined) ?? props.title
 })
 
 const close = () => {
-  modalController.decline()
+  if (isVModel.value) {
+    emit('update:modelValue', false)
+  } else {
+    modalController.decline()
+  }
 }
 
 const handleActionClick = async (action: ModalAction) => {
   if (action.actionType === 'confirm') {
     if (props.onConfirm) {
       const result = await props.onConfirm()
-
       if (result === false) return
     }
-    modalController.confirm()
-  } else if (action.actionType === 'decline') {
+    if (isVModel.value) emit('update:modelValue', false)
+    else modalController.confirm()
+  } else {
     if (props.onDecline) {
       const result = await props.onDecline()
-
       if (result === false) return
     }
-    modalController.decline()
+    if (isVModel.value) emit('update:modelValue', false)
+    else modalController.decline()
   }
 }
 </script>
@@ -226,6 +238,8 @@ const handleActionClick = async (action: ModalAction) => {
 .content {
   margin-top: 16px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 
   @include mq-l {
     margin-top: 24px;

@@ -16,6 +16,16 @@ import {
   ClipboardList,
   Gift,
   Settings,
+  Pencil,
+  Trash2,
+  Plus,
+  Check,
+  MapPin,
+  Bike,
+  CreditCard,
+  Banknote,
+  Smartphone,
+  MessageCircle,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -38,6 +48,16 @@ export const iconRegistry = {
   orders: ClipboardList,
   promotions: Gift,
   settings: Settings,
+  pencil: Pencil,
+  trash: Trash2,
+  plus: Plus,
+  check: Check,
+  mapPin: MapPin,
+  bike: Bike,
+  creditCard: CreditCard,
+  banknote: Banknote,
+  smartphone: Smartphone,
+  messageCircle: MessageCircle,
 } as const
 
 export type IconName = keyof typeof iconRegistry
