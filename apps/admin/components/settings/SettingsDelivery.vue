@@ -1,30 +1,33 @@
 <template>
-  <form class="form" @submit.prevent="handleSave">
-    <h3 class="section-title">Настройки доставки</h3>
+  <form @submit.prevent="handleSave">
+    <div class="form">
+      <p class="section-title">Настройки доставки</p>
 
-    <div class="row">
-      <div class="field">
-        <label class="label">Минимальная сумма заказа, ₽</label>
-        <input v-model.number="form.deliveryMinOrder" class="input" type="number" min="0" placeholder="500" />
-        <span class="hint">При сумме ниже — заказ не принимается</span>
+      <div class="row">
+        <div class="field">
+          <label class="label">Минимальная сумма заказа, ₽</label>
+          <!-- TODO: заменить на UiInputNumber когда добавят в @fastfood-saas/ui -->
+          <input v-model.number="form.deliveryMinOrder" class="input" type="number" min="0" placeholder="500" />
+          <span class="hint">При сумме ниже — заказ не принимается</span>
+        </div>
+        <div class="field">
+          <label class="label">Стоимость доставки, ₽</label>
+          <!-- TODO: заменить на UiInputNumber когда добавят в @fastfood-saas/ui -->
+          <input v-model.number="form.deliveryFee" class="input" type="number" min="0" placeholder="150" />
+          <span class="hint">0 — бесплатная доставка</span>
+        </div>
       </div>
-      <div class="field">
-        <label class="label">Стоимость доставки, ₽</label>
-        <input v-model.number="form.deliveryFee" class="input" type="number" min="0" placeholder="150" />
-        <span class="hint">0 — бесплатная доставка</span>
-      </div>
-    </div>
 
-    <div class="footer">
-      <span v-if="saved" class="saved-msg">✅ Сохранено</span>
-      <button type="submit" class="btn-primary" :disabled="saving">
-        {{ saving ? 'Сохранение…' : 'Сохранить' }}
-      </button>
+      <div class="footer">
+        <span v-if="saved" class="saved-msg">✅ Сохранено</span>
+        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
+      </div>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
+import { UiButton } from '@fastfood-saas/ui'
 import type { Tenant } from '@fastfood-saas/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
@@ -78,6 +81,7 @@ async function handleSave() {
   border-radius: 10px;
   padding: 0 12px;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
   transition: border-color 0.15s;
 }
@@ -86,22 +90,6 @@ async function handleSave() {
 
 .footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 .saved-msg { font-size: 13px; color: #10b981; }
-
-.btn-primary {
-  height: 40px;
-  padding: 0 20px;
-  background: #ff6b35;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
-}
-
-.btn-primary:hover:not(:disabled) { background: #e55a25; }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 @media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
 </style>

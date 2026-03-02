@@ -9,44 +9,33 @@
       <h1 class="title">Вход в панель управления</h1>
 
       <form class="form" @submit.prevent="handleSubmit">
-        <div class="field">
-          <label class="label" for="email">Email</label>
-          <input
-            id="email"
-            v-model="email"
-            class="input"
-            type="email"
-            placeholder="you@example.com"
-            autocomplete="email"
-            required
-          />
-        </div>
+        <UiInput
+          v-model="email"
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          :clearable="false"
+        />
 
-        <div class="field">
-          <label class="label" for="password">Пароль</label>
-          <input
-            id="password"
-            v-model="password"
-            class="input"
-            type="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-          />
-        </div>
+        <UiInput
+          v-model="password"
+          label="Пароль"
+          type="password"
+          :clearable="false"
+        />
 
-        <p v-if="error" class="error">{{ error }}</p>
+        <UiAlert v-if="error" type="error">{{ error }}</UiAlert>
 
-        <button class="submit" type="submit" :disabled="loading">
-          <span v-if="loading" class="spinner" />
-          <span v-else>Войти</span>
-        </button>
+        <UiButton submit type="primary" block :loading="loading">
+          Войти
+        </UiButton>
       </form>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { UiInput, UiButton, UiAlert } from '@fastfood-saas/ui'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 
 definePageMeta({ layout: false })
@@ -107,9 +96,7 @@ async function handleSubmit() {
   margin-bottom: 32px;
 }
 
-.logo-icon {
-  font-size: 28px;
-}
+.logo-icon { font-size: 28px; }
 
 .logo-text {
   font-size: 18px;
@@ -127,80 +114,6 @@ async function handleSubmit() {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
-}
-
-.input {
-  height: 44px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 0 14px;
-  font-size: 15px;
-  color: #111;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input:focus {
-  border-color: #ff6b35;
-}
-
-.error {
-  font-size: 13px;
-  color: #e53935;
-  margin: 0;
-  padding: 10px 12px;
-  background: #ffeaea;
-  border-radius: 8px;
-}
-
-.submit {
-  height: 48px;
-  background: #ff6b35;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, opacity 0.15s;
-  margin-top: 4px;
-}
-
-.submit:hover:not(:disabled) {
-  background: #e55a25;
-}
-
-.submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2.5px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  gap: 16px;
 }
 </style>

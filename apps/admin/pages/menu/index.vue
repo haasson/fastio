@@ -1,6 +1,5 @@
 <template>
   <div class="menu-root">
-    <!-- Нет тенанта -->
     <div v-if="!tenantStore.tenant && !tenantStore.loading" class="empty-state">
       <p>Заведение не найдено. Обратитесь в поддержку.</p>
     </div>
@@ -73,7 +72,8 @@
                 </div>
 
                 <div class="dish-actions">
-                  <AppToggle
+                  <!-- TODO: заменить на UiSwitch когда добавят в @fastfood-saas/ui -->
+                  <UiAppToggle
                     :model-value="dish.active"
                     @update:model-value="toggleActive(dish.id, $event)"
                   />
@@ -92,24 +92,23 @@
     </template>
 
     <!-- ─── Модалка: категория ─── -->
-    <AppModal v-model="categoryModalOpen" :title="editingCategory ? 'Редактировать категорию' : 'Новая категория'" width="400px">
+    <UiDialog
+      v-model="categoryModalOpen"
+      :title="editingCategory ? 'Редактировать категорию' : 'Новая категория'"
+      width="400px"
+    >
       <form class="form" @submit.prevent="saveCategory">
-        <div class="field">
-          <label class="label">Название</label>
-          <input v-model="categoryForm.name" class="input" type="text" placeholder="Например: Пицца" required autofocus />
-        </div>
+        <UiInput v-model="categoryForm.name" label="Название" placeholder="Например: Пицца" autofocus />
         <div class="form-footer">
-          <button type="button" class="btn-secondary" @click="categoryModalOpen = false">Отмена</button>
-          <button type="submit" class="btn-primary" :disabled="saving">
-            {{ saving ? 'Сохранение…' : 'Сохранить' }}
-          </button>
+          <UiButton type="tertiary" @click="categoryModalOpen = false">Отмена</UiButton>
+          <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
         </div>
       </form>
-    </AppModal>
+    </UiDialog>
 
     <!-- ─── Модалка: блюдо ─── -->
-    <DishFormModal
-      v-if="tenantStore.tenant"
+    <MenuDishFormModal
+      v-if="tenantStore.tenant && selectedCategoryId"
       v-model="dishModalOpen"
       :tenant-id="tenantStore.tenant.id"
       :category-id="selectedCategoryId!"
@@ -120,6 +119,7 @@
 </template>
 
 <script setup lang="ts">
+import { UiDialog, UiInput, UiButton } from '@fastfood-saas/ui'
 import type { Category, Dish } from '@fastfood-saas/shared'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -140,16 +140,17 @@ const selectedCategory = computed(() =>
   categories.value.find((c) => c.id === selectedCategoryId.value),
 )
 
+watch(categories, (cats) => {
+  if (!selectedCategoryId.value && cats.length > 0) {
+    selectedCategoryId.value = cats[0].id
+  }
+})
+
 // ─── Блюда ───
 const { dishes, loading: dishesLoading, add: addDish, update: updateDish, remove: removeDish, toggleActive } =
   useDishes(tenantId, selectedCategoryId)
 
-const dishCountByCategory = computed(() => {
-  // Для счётчика грузим все блюда — пока простой подход, TODO оптимизировать
-  const counts: Record<string, number> = {}
-  categories.value.forEach((c) => { counts[c.id] = 0 })
-  return counts
-})
+const { counts: dishCountByCategory } = useDishCounts(tenantId)
 
 // ─── Тэги ───
 const tagLabel: Record<string, string> = {
@@ -211,9 +212,7 @@ async function confirmDeleteDish(id: string) {
 </script>
 
 <style scoped>
-.menu-root {
-  height: 100%;
-}
+.menu-root { height: 100%; }
 
 .layout {
   display: grid;
@@ -222,7 +221,6 @@ async function confirmDeleteDish(id: string) {
   height: calc(100vh - 60px - 48px);
 }
 
-/* ─── Панели ─── */
 .categories-panel,
 .dishes-panel {
   background: #fff;
@@ -241,17 +239,8 @@ async function confirmDeleteDish(id: string) {
   flex-shrink: 0;
 }
 
-.panel-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111;
-}
-
-.dish-count {
-  font-weight: 400;
-  color: #999;
-  font-size: 13px;
-}
+.panel-title { font-size: 15px; font-weight: 700; color: #111; }
+.dish-count { font-weight: 400; color: #999; font-size: 13px; }
 
 .btn-add {
   font-size: 13px;
@@ -265,11 +254,8 @@ async function confirmDeleteDish(id: string) {
   transition: background 0.15s;
 }
 
-.btn-add:hover {
-  background: #ffe8df;
-}
+.btn-add:hover { background: #ffe8df; }
 
-/* ─── Список категорий ─── */
 .category-list {
   list-style: none;
   overflow-y: auto;
@@ -287,18 +273,9 @@ async function confirmDeleteDish(id: string) {
   transition: background 0.12s;
 }
 
-.category-item:hover {
-  background: #f7f7f7;
-}
-
-.category-item.selected {
-  background: #fff4f0;
-}
-
-.category-item.inactive .cat-name {
-  opacity: 0.45;
-  text-decoration: line-through;
-}
+.category-item:hover { background: #f7f7f7; }
+.category-item.selected { background: #fff4f0; }
+.category-item.inactive .cat-name { opacity: 0.45; text-decoration: line-through; }
 
 .cat-name {
   flex: 1;
@@ -325,9 +302,7 @@ async function confirmDeleteDish(id: string) {
   transition: opacity 0.15s;
 }
 
-.category-item:hover .cat-actions {
-  opacity: 1;
-}
+.category-item:hover .cat-actions { opacity: 1; }
 
 .category-empty,
 .dish-empty {
@@ -337,10 +312,7 @@ async function confirmDeleteDish(id: string) {
   font-size: 13px;
 }
 
-/* ─── Список блюд ─── */
-.dishes-panel {
-  overflow: hidden;
-}
+.dishes-panel { overflow: hidden; }
 
 .no-category {
   flex: 1;
@@ -370,9 +342,7 @@ async function confirmDeleteDish(id: string) {
   transition: background 0.12s;
 }
 
-.dish-item:hover {
-  background: #f7f7f7;
-}
+.dish-item:hover { background: #f7f7f7; }
 
 .dish-photo {
   width: 48px;
@@ -386,15 +356,8 @@ async function confirmDeleteDish(id: string) {
   justify-content: center;
 }
 
-.dish-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.photo-placeholder {
-  font-size: 20px;
-}
+.dish-photo img { width: 100%; height: 100%; object-fit: cover; }
+.photo-placeholder { font-size: 20px; }
 
 .dish-info {
   flex: 1;
@@ -413,28 +376,11 @@ async function confirmDeleteDish(id: string) {
   text-overflow: ellipsis;
 }
 
-.dish-name.inactive {
-  opacity: 0.4;
-  text-decoration: line-through;
-}
+.dish-name.inactive { opacity: 0.4; text-decoration: line-through; }
 
-.dish-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dish-price {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ff6b35;
-}
-
-.dish-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
+.dish-meta { display: flex; align-items: center; gap: 8px; }
+.dish-price { font-size: 13px; font-weight: 600; color: #ff6b35; }
+.dish-tags { display: flex; gap: 4px; flex-wrap: wrap; }
 
 .tag {
   font-size: 11px;
@@ -444,14 +390,8 @@ async function confirmDeleteDish(id: string) {
   color: #666;
 }
 
-.dish-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
+.dish-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
-/* ─── Общие кнопки ─── */
 .icon-btn {
   width: 30px;
   height: 30px;
@@ -466,45 +406,13 @@ async function confirmDeleteDish(id: string) {
   transition: background 0.12s;
 }
 
-.icon-btn:hover {
-  background: #f0f0f0;
-}
+.icon-btn:hover { background: #f0f0f0; }
+.icon-btn.danger:hover { background: #ffeaea; }
 
-.icon-btn.danger:hover {
-  background: #ffeaea;
-}
-
-/* ─── Форма в модалке ─── */
 .form {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
-}
-
-.input {
-  height: 42px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 0 12px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input:focus {
-  border-color: #ff6b35;
 }
 
 .form-footer {
@@ -514,42 +422,6 @@ async function confirmDeleteDish(id: string) {
   margin-top: 4px;
 }
 
-.btn-primary,
-.btn-secondary {
-  height: 38px;
-  padding: 0 18px;
-  border-radius: 9px;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
-}
-
-.btn-primary {
-  background: #ff6b35;
-  color: #fff;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #e55a25;
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #555;
-}
-
-.btn-secondary:hover {
-  background: #e5e5e5;
-}
-
-/* ─── Пустое состояние ─── */
 .empty-state,
 .loading {
   padding: 40px;
@@ -557,11 +429,7 @@ async function confirmDeleteDish(id: string) {
   color: #aaa;
 }
 
-/* ─── Адаптив ─── */
 @media (max-width: 768px) {
-  .layout {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
+  .layout { grid-template-columns: 1fr; height: auto; }
 }
 </style>

@@ -36,5 +36,21 @@ export default defineEventHandler(async (event) => {
     return
   }
 
+  // Dev fallback: ?slug=demo-pizza
+  const querySlug = getQuery(event).slug as string | undefined
+  if (querySlug) {
+    const byQuerySlug = await db
+      .collection('tenants')
+      .where('slug', '==', querySlug)
+      .limit(1)
+      .get()
+
+    if (!byQuerySlug.empty) {
+      event.context.tenantId = byQuerySlug.docs[0].id
+      event.context.tenant = { id: byQuerySlug.docs[0].id, ...byQuerySlug.docs[0].data() }
+      return
+    }
+  }
+
   throw createError({ statusCode: 404, message: 'Tenant not found' })
 })

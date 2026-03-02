@@ -1,0 +1,30 @@
+:root {
+  /* Admin brand color */
+  --color-primary: #ff6b35;
+
+  /* Palette vars used by packages/ui components */
+  --blue-50: #EFF6FF;
+  --blue-100: #DBEAFE;
+  --blue-200: #BFDBFE;
+  --blue-500: #3B82F6;
+  --grey-50: #F9FAFB;
+  --grey-100: #F3F4F6;
+  --grey-200: #E5E7EB;
+  --grey-300: #D1D5DB;
+  --grey-400: #9CA3AF;
+  --grey-500: #6B7280;
+  --grey-600: #4B5563;
+  --grey-700: #374151;
+  --grey-800: #1F2937;
+  --grey-900: #111827;
+  --green-50: #ECFDF5;
+  --green-100: #D1FAE5;
+  --green-500: #10B981;
+  --red-100: #FEF2F2;
+  --red-500: #EF4444;
+  --color-white: #fff;
+  --color-text: var(--grey-700);
+  --color-title: var(--grey-900);
+  --color-success: var(--green-500);
+  --color-error: var(--red-500);
+}

@@ -1,52 +1,50 @@
 <template>
-  <form class="form" @submit.prevent="handleSave">
-    <h3 class="section-title">Уведомления о заказах</h3>
+  <form @submit.prevent="handleSave">
+    <div class="form">
+      <p class="section-title">Уведомления о заказах</p>
 
-    <div class="field">
-      <label class="label">Email для уведомлений</label>
-      <input
-        v-model="form.email"
-        class="input"
-        type="email"
-        placeholder="orders@vasya-pizza.ru"
-      />
-      <span class="hint">На этот адрес придёт письмо при каждом новом заказе</span>
-    </div>
-
-    <div class="field">
-      <label class="label">Telegram Chat ID</label>
-      <input
-        v-model="form.telegramChatId"
-        class="input"
-        type="text"
-        placeholder="-1001234567890"
-      />
-      <span class="hint">
-        Как получить:
-        <a class="link" href="https://t.me/userinfobot" target="_blank" rel="noopener">@userinfobot</a>
-        (для личных сообщений) или добавьте бота в группу и используйте ID группы
-      </span>
-    </div>
-
-    <div class="tg-status">
-      <span class="tg-icon">🤖</span>
-      <div>
-        <p class="tg-title">Telegram бот</p>
-        <p class="tg-desc">Функция будет доступна в следующем обновлении</p>
+      <div class="field">
+        <UiInput
+          v-model="form.email"
+          label="Email для уведомлений"
+          type="email"
+          placeholder="orders@vasya-pizza.ru"
+        />
+        <span class="hint">На этот адрес придёт письмо при каждом новом заказе</span>
       </div>
-      <span class="tg-badge">Скоро</span>
-    </div>
 
-    <div class="footer">
-      <span v-if="saved" class="saved-msg">✅ Сохранено</span>
-      <button type="submit" class="btn-primary" :disabled="saving">
-        {{ saving ? 'Сохранение…' : 'Сохранить' }}
-      </button>
+      <div class="field">
+        <UiInput
+          v-model="form.telegramChatId"
+          label="Telegram Chat ID"
+          placeholder="-1001234567890"
+        />
+        <span class="hint">
+          Как получить:
+          <a class="link" href="https://t.me/userinfobot" target="_blank" rel="noopener">@userinfobot</a>
+          (для личных сообщений) или добавьте бота в группу и используйте ID группы
+        </span>
+      </div>
+
+      <div class="tg-status">
+        <span class="tg-icon">🤖</span>
+        <div>
+          <p class="tg-title">Telegram бот</p>
+          <p class="tg-desc">Функция будет доступна в следующем обновлении</p>
+        </div>
+        <span class="tg-badge">Скоро</span>
+      </div>
+
+      <div class="footer">
+        <span v-if="saved" class="saved-msg">✅ Сохранено</span>
+        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
+      </div>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
+import { UiInput, UiButton } from '@fastfood-saas/ui'
 import type { Tenant } from '@fastfood-saas/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
@@ -95,25 +93,11 @@ async function handleSave() {
 }
 
 .field { display: flex; flex-direction: column; gap: 5px; }
-.label { font-size: 13px; font-weight: 600; color: #555; }
 .hint { font-size: 12px; color: #aaa; line-height: 1.5; }
 
 .link { color: #ff6b35; text-decoration: none; }
 .link:hover { text-decoration: underline; }
 
-.input {
-  height: 42px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 0 12px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input:focus { border-color: #ff6b35; }
-
-/* Telegram статус */
 .tg-status {
   display: flex;
   align-items: center;
@@ -124,14 +108,7 @@ async function handleSave() {
 }
 
 .tg-icon { font-size: 28px; }
-
-.tg-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 2px;
-}
-
+.tg-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 2px; }
 .tg-desc { font-size: 12px; color: #aaa; }
 
 .tg-badge {
@@ -144,23 +121,6 @@ async function handleSave() {
   border-radius: 20px;
 }
 
-/* Footer */
 .footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 .saved-msg { font-size: 13px; color: #10b981; }
-
-.btn-primary {
-  height: 40px;
-  padding: 0 20px;
-  background: #ff6b35;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
-}
-
-.btn-primary:hover:not(:disabled) { background: #e55a25; }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>

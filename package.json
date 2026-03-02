@@ -4,10 +4,12 @@
   "scripts": {
     "dev:storefront": "turbo run dev --filter=storefront",
     "dev:admin": "turbo run dev --filter=admin",
+    "emulators": "firebase emulators:start --import=.firebase-data --export-on-exit=.firebase-data",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "create-tenant": "node scripts/create-tenant.mjs",
+    "create-tenant:emulator": "FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 node scripts/create-tenant.mjs",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes,storage",
     "firebase:deploy:functions": "firebase deploy --only functions"
   },
@@ -16,6 +18,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "firebase-admin": "^13.0.2",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2"
   },

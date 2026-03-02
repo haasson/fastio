@@ -5,7 +5,11 @@ dist
 .output
 .nuxt
 .firebase
+.firebase-data
 *.local
 .env
 .env.*
+service-account.json
 !.env.example
+.vercel
+.env*.local

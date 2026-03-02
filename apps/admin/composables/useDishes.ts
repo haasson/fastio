@@ -65,3 +65,28 @@ export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>)
 
   return { dishes, loading, add, update, remove, toggleActive }
 }
+
+export function useDishCounts(tenantId: Ref<string>) {
+  const { $db } = useNuxtApp()
+  const counts = ref<Record<string, number>>({})
+  let unsubscribe: (() => void) | null = null
+
+  watch(tenantId, (tid) => {
+    unsubscribe?.()
+    counts.value = {}
+    if (!tid) return
+
+    unsubscribe = onSnapshot(collection($db, 'tenants', tid, 'dishes'), (snap) => {
+      const c: Record<string, number> = {}
+      snap.docs.forEach((d) => {
+        const cid = d.data().categoryId as string
+        c[cid] = (c[cid] ?? 0) + 1
+      })
+      counts.value = c
+    })
+  }, { immediate: true })
+
+  onUnmounted(() => unsubscribe?.())
+
+  return { counts }
+}

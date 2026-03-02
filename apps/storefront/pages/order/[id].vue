@@ -76,11 +76,14 @@
 import type { Tenant, Order, OrderStatus } from '@fastfood-saas/shared'
 
 const route = useRoute()
-const { data: tenant } = await useAsyncData<Tenant>('tenant', () => $fetch('/api/tenant'))
+const rfetch = useRequestFetch()
+const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
+
+const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
 
 const { data: order, pending, error, refresh } = await useAsyncData<Order>(
   `order-${route.params.id}`,
-  () => $fetch(`/api/orders/${route.params.id}`),
+  () => rfetch(`/api/orders/${route.params.id}`, slugQuery),
 )
 
 // Опрашиваем статус каждые 15 секунд пока заказ активен

@@ -33,17 +33,23 @@ const PASSWORD = get('--password') ?? 'changeme123'
 
 // ─── Firebase init ────────────────────────────────────────────────────────────
 
-const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-  ?? resolve(process.cwd(), 'service-account.json')
+const isEmulator = !!process.env.FIRESTORE_EMULATOR_HOST
 
-try {
-  const credential = JSON.parse(readFileSync(credPath, 'utf8'))
-  initializeApp({ credential: cert(credential) })
-} catch {
-  console.error('❌  Не найден service-account.json')
-  console.error('    Скачай его: Firebase Console → Project Settings → Service accounts → Generate new private key')
-  console.error('    Положи рядом или укажи: GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json')
-  process.exit(1)
+if (isEmulator) {
+  initializeApp({ projectId: 'fastfood-saas' })
+} else {
+  const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    ?? resolve(process.cwd(), 'service-account.json')
+
+  try {
+    const credential = JSON.parse(readFileSync(credPath, 'utf8'))
+    initializeApp({ credential: cert(credential) })
+  } catch {
+    console.error('❌  Не найден service-account.json')
+    console.error('    Скачай его: Firebase Console → Project Settings → Service accounts → Generate new private key')
+    console.error('    Положи рядом или укажи: GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json')
+    process.exit(1)
+  }
 }
 
 const auth = getAuth()

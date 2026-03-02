@@ -13,7 +13,7 @@
         <section
           v-for="cat in categories"
           :key="cat.id"
-          :ref="(el) => setSectionRef(cat.id, el)"
+          :data-category-id="cat.id"
           class="category-section"
         >
           <h2 class="category-title">{{ cat.name }}</h2>
@@ -51,11 +51,14 @@ import type { Tenant, Category, Dish } from '@fastfood-saas/shared'
 import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()
+const route = useRoute()
+const rfetch = useRequestFetch()
+const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 
-const { data: tenant } = await useAsyncData<Tenant>('tenant', () => $fetch('/api/tenant'))
+const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
 const { data: menu } = await useAsyncData<{ categories: Category[]; dishes: Dish[] }>(
   'menu',
-  () => $fetch('/api/menu'),
+  () => rfetch('/api/menu', slugQuery),
 )
 
 const categories = computed(() => menu.value?.categories ?? [])
@@ -72,18 +75,17 @@ const dishesByCategory = computed(() => {
 
 // Активная категория при скролле
 const activeCategoryId = ref<string | null>(categories.value[0]?.id ?? null)
-const sectionRefs = new Map<string, Element>()
 
-function setSectionRef(id: string, el: unknown) {
-  if (el instanceof Element) sectionRefs.set(id, el)
+function getSection(id: string) {
+  return document.querySelector<HTMLElement>(`[data-category-id="${id}"]`)
 }
 
 function updateActiveCategory() {
   const offset = 130
   let current: string | null = null
-  for (const [id, el] of sectionRefs) {
-    const top = el.getBoundingClientRect().top
-    if (top - offset <= 0) current = id
+  for (const cat of categories.value) {
+    const el = getSection(cat.id)
+    if (el && el.getBoundingClientRect().top - offset <= 0) current = cat.id
   }
   if (current) activeCategoryId.value = current
 }
@@ -92,7 +94,7 @@ onMounted(() => window.addEventListener('scroll', updateActiveCategory, { passiv
 onUnmounted(() => window.removeEventListener('scroll', updateActiveCategory))
 
 function scrollToCategory(id: string) {
-  const el = sectionRefs.get(id)
+  const el = getSection(id)
   if (el) {
     const offset = 120
     const top = el.getBoundingClientRect().top + window.scrollY - offset

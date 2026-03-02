@@ -159,7 +159,10 @@ import type { Tenant } from '@fastfood-saas/shared'
 import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()
-const { data: tenant } = await useAsyncData<Tenant>('tenant', () => $fetch('/api/tenant'))
+const route = useRoute()
+const rfetch = useRequestFetch()
+const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
+const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
 
 useHead({ title: 'Корзина' })
 

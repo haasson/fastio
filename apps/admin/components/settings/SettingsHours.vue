@@ -1,41 +1,37 @@
 <template>
-  <form class="form" @submit.prevent="handleSave">
-    <h3 class="section-title">Часы работы</h3>
+  <form @submit.prevent="handleSave">
+    <div class="form">
+      <p class="section-title">Часы работы</p>
 
-    <div class="days">
-      <div v-for="day in days" :key="day.key" class="day-row">
-        <span class="day-name">{{ day.label }}</span>
-        <AppToggle
-          :model-value="!form[day.key].closed"
-          @update:model-value="form[day.key].closed = !$event"
-        />
-        <template v-if="!form[day.key].closed">
-          <input
-            v-model="form[day.key].open"
-            class="time-input"
-            type="time"
+      <div class="days">
+        <div v-for="day in days" :key="day.key" class="day-row">
+          <span class="day-name">{{ day.label }}</span>
+
+          <!-- TODO: заменить на UiSwitch когда добавят в @fastfood-saas/ui -->
+          <AppToggle
+            :model-value="!form[day.key].closed"
+            @update:model-value="form[day.key].closed = !$event"
           />
-          <span class="dash">—</span>
-          <input
-            v-model="form[day.key].close"
-            class="time-input"
-            type="time"
-          />
-        </template>
-        <span v-else class="closed-label">Выходной</span>
+
+          <template v-if="!form[day.key].closed">
+            <input v-model="form[day.key].open" class="time-input" type="time" />
+            <span class="dash">—</span>
+            <input v-model="form[day.key].close" class="time-input" type="time" />
+          </template>
+          <span v-else class="closed-label">Выходной</span>
+        </div>
       </div>
-    </div>
 
-    <div class="footer">
-      <span v-if="saved" class="saved-msg">✅ Сохранено</span>
-      <button type="submit" class="btn-primary" :disabled="saving">
-        {{ saving ? 'Сохранение…' : 'Сохранить' }}
-      </button>
+      <div class="footer">
+        <span v-if="saved" class="saved-msg">✅ Сохранено</span>
+        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
+      </div>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
+import { UiButton } from '@fastfood-saas/ui'
 import type { Tenant, TenantWorkingHours } from '@fastfood-saas/shared'
 
 type DayKey = keyof TenantWorkingHours
@@ -115,6 +111,7 @@ async function handleSave() {
   border-radius: 8px;
   padding: 0 10px;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
   transition: border-color 0.15s;
   width: 100px;
@@ -124,11 +121,7 @@ async function handleSave() {
 
 .dash { color: #ccc; font-size: 14px; }
 
-.closed-label {
-  font-size: 13px;
-  color: #bbb;
-  margin-left: 4px;
-}
+.closed-label { font-size: 13px; color: #bbb; }
 
 .footer {
   display: flex;
@@ -138,20 +131,4 @@ async function handleSave() {
 }
 
 .saved-msg { font-size: 13px; color: #10b981; }
-
-.btn-primary {
-  height: 40px;
-  padding: 0 20px;
-  background: #ff6b35;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
-}
-
-.btn-primary:hover:not(:disabled) { background: #e55a25; }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>
