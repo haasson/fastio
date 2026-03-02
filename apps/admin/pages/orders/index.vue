@@ -27,9 +27,9 @@
 </template>
 
 <script setup lang="ts">
-import { UiSegmentedControl } from '@fastfood-saas/ui'
-import type { SegmentedControlItem } from '@fastfood-saas/ui'
-import type { OrderStatus } from '@fastfood-saas/shared'
+import { UiSegmentedControl } from '@fastio/ui'
+import type { SegmentedControlItem } from '@fastio/ui'
+import type { OrderStatus } from '@fastio/shared'
 import type { OrderFilter } from '~/composables/useOrders'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -98,7 +98,7 @@ async function handleCancel(id: string) {
 </script>
 
 <style scoped lang="scss">
-@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/media-queries' as *;
 
 .orders-root {
   display: flex;

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { OrderItem } from '@fastfood-saas/shared'
+import type { OrderItem } from '@fastio/shared'
 
 export type CartItem = OrderItem & { photo: string | null }
 

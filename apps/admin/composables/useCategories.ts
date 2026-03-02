@@ -1,5 +1,5 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Category } from '@fastfood-saas/shared'
+import type { Category } from '@fastio/shared'
 
 function mapCategory(row: Record<string, unknown>): Category {
   return {

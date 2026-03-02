@@ -76,8 +76,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton, UiIcon, UiSkeleton, UiSpace, UiTag, UiCard, UiGrid, useConfirm } from '@fastfood-saas/ui'
-import type { Dish } from '@fastfood-saas/shared'
+import { UiButton, UiIcon, UiSkeleton, UiSpace, UiTag, UiCard, UiGrid, useConfirm } from '@fastio/ui'
+import type { Dish } from '@fastio/shared'
 
 const props = defineProps<{
   tenantId: string

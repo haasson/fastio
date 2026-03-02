@@ -23,10 +23,10 @@ importers:
 
   apps/admin:
     dependencies:
-      '@fastfood-saas/shared':
+      '@fastio/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@fastfood-saas/ui':
+      '@fastio/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@pinia/nuxt':
@@ -66,7 +66,7 @@ importers:
 
   apps/storefront:
     dependencies:
-      '@fastfood-saas/shared':
+      '@fastio/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@pinia/nuxt':

@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Category } from '@fastfood-saas/shared'
+import type { Category } from '@fastio/shared'
 
 defineProps<{
   categories: Category[]

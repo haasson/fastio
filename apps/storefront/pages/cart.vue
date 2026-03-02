@@ -155,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Tenant } from '@fastfood-saas/shared'
+import type { Tenant } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()

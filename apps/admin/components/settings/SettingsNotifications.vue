@@ -44,8 +44,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiButton, UiLink } from '@fastfood-saas/ui'
-import type { Tenant } from '@fastfood-saas/shared'
+import { UiInput, UiButton, UiLink } from '@fastio/ui'
+import type { Tenant } from '@fastio/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()

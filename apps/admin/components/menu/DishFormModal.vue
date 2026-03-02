@@ -55,7 +55,7 @@
       <!-- Активность -->
       <div class="active-row">
         <span class="label">Показывать в меню</span>
-        <!-- TODO: заменить на UiSwitch когда добавят в @fastfood-saas/ui -->
+        <!-- TODO: заменить на UiSwitch когда добавят в @fastio/ui -->
         <UiAppToggle v-model="form.active" />
       </div>
 
@@ -68,8 +68,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiModal, UiInput, UiInputNumber, UiButton, UiCheckbox } from '@fastfood-saas/ui'
-import type { Dish, DishTag, DishIngredient } from '@fastfood-saas/shared'
+import { UiModal, UiInput, UiInputNumber, UiButton, UiCheckbox } from '@fastio/ui'
+import type { Dish, DishTag, DishIngredient } from '@fastio/shared'
 import type { DishFormData } from '~/composables/useDishes'
 
 const props = defineProps<{
@@ -192,7 +192,7 @@ async function handleSubmit() {
 </script>
 
 <style scoped lang="scss">
-@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/media-queries' as *;
 
 .form {
   display: flex;

@@ -47,7 +47,7 @@ const selectedCategoryName = computed(
 </script>
 
 <style scoped lang="scss">
-@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/media-queries' as *;
 
 .menu-root {
   height: 100%;

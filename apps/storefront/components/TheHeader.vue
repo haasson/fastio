@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Tenant, TenantWorkingHours } from '@fastfood-saas/shared'
+import type { Tenant, TenantWorkingHours } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
 const props = defineProps<{ tenant: Tenant }>()

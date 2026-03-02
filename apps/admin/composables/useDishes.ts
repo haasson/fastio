@@ -1,5 +1,5 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Dish } from '@fastfood-saas/shared'
+import type { Dish } from '@fastio/shared'
 
 export type DishFormData = Omit<Dish, 'id' | 'tenantId' | 'photos'>
 

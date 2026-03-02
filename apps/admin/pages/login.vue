@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiButton, UiAlert } from '@fastfood-saas/ui'
+import { UiInput, UiButton, UiAlert } from '@fastio/ui'
 
 definePageMeta({ layout: false })
 

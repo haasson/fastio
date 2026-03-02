@@ -78,8 +78,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton, UiLink, UiIcon } from '@fastfood-saas/ui'
-import type { Order } from '@fastfood-saas/shared'
+import { UiButton, UiLink, UiIcon } from '@fastio/ui'
+import type { Order } from '@fastio/shared'
 import { nextStatus, nextStatusPickup, statusConfig } from '~/composables/useOrders'
 
 const props = defineProps<{

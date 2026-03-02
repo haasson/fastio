@@ -1,5 +1,5 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Order, OrderStatus } from '@fastfood-saas/shared'
+import type { Order, OrderStatus } from '@fastio/shared'
 
 export type OrderFilter = 'active' | 'completed' | 'cancelled' | 'all'
 

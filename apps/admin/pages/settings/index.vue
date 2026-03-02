@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiTabs } from '@fastfood-saas/ui'
+import { UiTabs } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })

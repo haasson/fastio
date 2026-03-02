@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Tenant } from '@fastfood-saas/shared'
+import type { Tenant } from '@fastio/shared'
 import { useAuthStore } from './auth'
 
 function mapTenant(row: Record<string, unknown>): Tenant {

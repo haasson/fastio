@@ -51,8 +51,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiModal, UiInput, UiButton, UiIcon, UiSkeleton, UiSpace, useConfirm } from '@fastfood-saas/ui'
-import type { Category } from '@fastfood-saas/shared'
+import { UiModal, UiInput, UiButton, UiIcon, UiSkeleton, UiSpace, useConfirm } from '@fastio/ui'
+import type { Category } from '@fastio/shared'
 
 const props = defineProps<{
   tenantId: string

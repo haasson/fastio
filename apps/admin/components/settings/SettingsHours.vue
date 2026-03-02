@@ -7,7 +7,7 @@
         <div v-for="day in days" :key="day.key" class="day-row">
           <span class="day-name">{{ day.label }}</span>
 
-          <!-- TODO: заменить на UiSwitch когда добавят в @fastfood-saas/ui -->
+          <!-- TODO: заменить на UiSwitch когда добавят в @fastio/ui -->
           <AppToggle
             :model-value="!form[day.key].closed"
             @update:model-value="form[day.key].closed = !$event"
@@ -31,8 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton } from '@fastfood-saas/ui'
-import type { Tenant, TenantWorkingHours } from '@fastfood-saas/shared'
+import { UiButton } from '@fastio/ui'
+import type { Tenant, TenantWorkingHours } from '@fastio/shared'
 
 type DayKey = keyof TenantWorkingHours
 

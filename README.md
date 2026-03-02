@@ -7,13 +7,13 @@
 ## Структура монорепо
 
 ```
-fastfood-saas/
+fastio/
 ├── apps/
 │   ├── admin/        — Nuxt 3, панель администратора (SPA, SSR off)
 │   └── storefront/   — Nuxt 3, витрина покупателя (SSR on)
 ├── packages/
-│   ├── shared/       — Общие TypeScript типы (@fastfood-saas/shared)
-│   └── ui/           — UI-библиотека (@fastfood-saas/ui)
+│   ├── shared/       — Общие TypeScript типы (@fastio/shared)
+│   └── ui/           — UI-библиотека (@fastio/ui)
 ├── supabase/
 │   ├── migrations/   — SQL миграции (схема, индексы, RLS, realtime)
 │   └── functions/    — Supabase Edge Functions (Deno)
@@ -102,7 +102,7 @@ fastfood-saas/
 
 ### `packages/shared` — Общие типы
 
-Пакет `@fastfood-saas/shared`, экспортирует TypeScript типы:
+Пакет `@fastio/shared`, экспортирует TypeScript типы:
 
 - **`tenant.ts`** — `Tenant`, `TenantTheme`, `TenantContacts`, `TenantWorkingHours`, `TenantNotifications`, `TenantSubscription`
 - **`menu.ts`** — `Category`, `Dish`, `DishTag`, `DishNutrition`, `DishIngredient`

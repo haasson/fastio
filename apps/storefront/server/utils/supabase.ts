@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Tenant, Category, Dish, Order } from '@fastfood-saas/shared'
+import type { Tenant, Category, Dish, Order } from '@fastio/shared'
 
 export function getServerSupabase() {
   const config = useRuntimeConfig()

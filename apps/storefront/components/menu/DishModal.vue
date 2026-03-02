@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Dish, DishTag } from '@fastfood-saas/shared'
+import type { Dish, DishTag } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
 const props = defineProps<{ dish: Dish | null }>()

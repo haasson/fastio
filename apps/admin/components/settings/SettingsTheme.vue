@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiSelect, UiButton } from '@fastfood-saas/ui'
-import type { Tenant, TenantTheme } from '@fastfood-saas/shared'
+import { UiInput, UiSelect, UiButton } from '@fastio/ui'
+import type { Tenant, TenantTheme } from '@fastio/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
@@ -94,7 +94,7 @@ async function handleSave() {
 </script>
 
 <style scoped lang="scss">
-@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/media-queries' as *;
 
 .form {
   display: flex;

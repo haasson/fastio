@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiConfigProvider } from '@fastfood-saas/ui'
+import { UiConfigProvider } from '@fastio/ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 
 const themeOverrides: GlobalThemeOverrides = {

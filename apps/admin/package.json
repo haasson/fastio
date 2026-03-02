@@ -9,8 +9,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@fastfood-saas/shared": "workspace:*",
-    "@fastfood-saas/ui": "workspace:*",
+    "@fastio/shared": "workspace:*",
+    "@fastio/ui": "workspace:*",
     "@pinia/nuxt": "^0.11.3",
     "@supabase/supabase-js": "^2.98.0",
     "@vueuse/core": "^14.2.1",

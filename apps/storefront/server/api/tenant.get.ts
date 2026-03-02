@@ -1,4 +1,4 @@
-import type { Tenant } from '@fastfood-saas/shared'
+import type { Tenant } from '@fastio/shared'
 
 export default defineEventHandler((event) => {
   const tenant = event.context.tenant as Tenant | undefined

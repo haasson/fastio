@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Tenant, Order, OrderStatus } from '@fastfood-saas/shared'
+import type { Tenant, Order, OrderStatus } from '@fastio/shared'
 
 const route = useRoute()
 const rfetch = useRequestFetch()

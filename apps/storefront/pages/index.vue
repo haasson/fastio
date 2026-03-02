@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Tenant, Category, Dish } from '@fastfood-saas/shared'
+import type { Tenant, Category, Dish } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()

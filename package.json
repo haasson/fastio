@@ -1,5 +1,5 @@
 {
-  "name": "fastfood-saas",
+  "name": "fastio",
   "private": true,
   "scripts": {
     "dev": "concurrently --kill-others-on-fail \"pnpm dev:admin\" \"pnpm dev:storefront\"",

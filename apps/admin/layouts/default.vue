@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton, UiIcon, UiConfirmModal } from '@fastfood-saas/ui'
-import type { IconName } from '@fastfood-saas/ui'
+import { UiButton, UiIcon, UiConfirmModal } from '@fastio/ui'
+import type { IconName } from '@fastio/ui'
 
 const { $supabase } = useNuxtApp()
 const route = useRoute()
@@ -76,7 +76,7 @@ async function handleLogout() {
 </script>
 
 <style scoped lang="scss">
-@use '@fastfood-saas/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/media-queries' as *;
 
 .layout-root {
   display: flex;
