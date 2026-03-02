@@ -36,37 +36,34 @@
 
 <script setup lang="ts">
 import { UiInput, UiButton, UiAlert } from '@fastfood-saas/ui'
-import { signInWithEmailAndPassword } from 'firebase/auth'
 
 definePageMeta({ layout: false })
 
-const { $auth } = useNuxtApp()
+const { $supabase } = useNuxtApp()
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
-const errorMessages: Record<string, string> = {
-  'auth/invalid-credential': 'Неверный email или пароль',
-  'auth/user-not-found': 'Пользователь не найден',
-  'auth/wrong-password': 'Неверный пароль',
-  'auth/too-many-requests': 'Слишком много попыток. Попробуйте позже',
-}
-
 async function handleSubmit() {
   error.value = ''
   loading.value = true
 
-  try {
-    await signInWithEmailAndPassword($auth, email.value, password.value)
+  const { error: authError } = await $supabase.auth.signInWithPassword({
+    email: email.value,
+    password: password.value,
+  })
+
+  if (authError) {
+    error.value = authError.message === 'Invalid login credentials'
+      ? 'Неверный email или пароль'
+      : 'Произошла ошибка. Попробуйте ещё раз'
+  } else {
     await navigateTo('/')
-  } catch (e: unknown) {
-    const code = (e as { code?: string }).code ?? ''
-    error.value = errorMessages[code] ?? 'Произошла ошибка. Попробуйте ещё раз'
-  } finally {
-    loading.value = false
   }
+
+  loading.value = false
 }
 </script>
 

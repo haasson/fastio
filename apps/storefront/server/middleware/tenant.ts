@@ -1,53 +1,52 @@
-import { getAdminDb } from '../utils/firebase-admin'
+import { getServerSupabase, mapTenant } from '../utils/supabase'
 
 export default defineEventHandler(async (event) => {
-  // Пропускаем служебные запросы Nuxt
   const url = getRequestURL(event)
   if (url.pathname.startsWith('/_nuxt') || url.pathname.startsWith('/__nuxt')) return
 
+  const supabase = getServerSupabase()
   const host = getRequestHost(event)
   const domain = host.split(':')[0]
   const slug = domain.split('.')[0]
 
-  const db = getAdminDb()
+  // Сначала ищем по кастомному домену
+  const { data: byDomain } = await supabase
+    .from('tenants')
+    .select('*')
+    .eq('custom_domain', domain)
+    .maybeSingle()
 
-  const byDomain = await db
-    .collection('tenants')
-    .where('customDomain', '==', domain)
-    .limit(1)
-    .get()
-
-  if (!byDomain.empty) {
-    event.context.tenantId = byDomain.docs[0].id
-    event.context.tenant = { id: byDomain.docs[0].id, ...byDomain.docs[0].data() }
+  if (byDomain) {
+    event.context.tenantId = byDomain.id
+    event.context.tenant = mapTenant(byDomain)
     return
   }
 
   // Fallback: поддомен вида slug.platform.com
-  const bySlug = await db
-    .collection('tenants')
-    .where('slug', '==', slug)
-    .limit(1)
-    .get()
+  const { data: bySlug } = await supabase
+    .from('tenants')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle()
 
-  if (!bySlug.empty) {
-    event.context.tenantId = bySlug.docs[0].id
-    event.context.tenant = { id: bySlug.docs[0].id, ...bySlug.docs[0].data() }
+  if (bySlug) {
+    event.context.tenantId = bySlug.id
+    event.context.tenant = mapTenant(bySlug)
     return
   }
 
   // Dev fallback: ?slug=demo-pizza
   const querySlug = getQuery(event).slug as string | undefined
   if (querySlug) {
-    const byQuerySlug = await db
-      .collection('tenants')
-      .where('slug', '==', querySlug)
-      .limit(1)
-      .get()
+    const { data: byQuerySlug } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('slug', querySlug)
+      .maybeSingle()
 
-    if (!byQuerySlug.empty) {
-      event.context.tenantId = byQuerySlug.docs[0].id
-      event.context.tenant = { id: byQuerySlug.docs[0].id, ...byQuerySlug.docs[0].data() }
+    if (byQuerySlug) {
+      event.context.tenantId = byQuerySlug.id
+      event.context.tenant = mapTenant(byQuerySlug)
       return
     }
   }

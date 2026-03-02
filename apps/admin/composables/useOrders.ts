@@ -1,13 +1,4 @@
-import {
-  collection,
-  onSnapshot,
-  updateDoc,
-  doc,
-  query,
-  orderBy,
-  where,
-  type QueryConstraint,
-} from 'firebase/firestore'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Order, OrderStatus } from '@fastfood-saas/shared'
 
 export type OrderFilter = 'active' | 'completed' | 'cancelled' | 'all'
@@ -38,50 +29,83 @@ export const statusConfig: Record<OrderStatus, { label: string; color: string }>
 
 const activeStatuses: OrderStatus[] = ['new', 'accepted', 'cooking', 'ready', 'delivering']
 
+function mapOrder(row: Record<string, unknown>): Order {
+  return {
+    id: row.id as string,
+    tenantId: row.tenant_id as string,
+    customer: row.customer as Order['customer'],
+    items: row.items as Order['items'],
+    deliveryType: row.delivery_type as Order['deliveryType'],
+    address: row.address as string | null,
+    comment: row.comment as string | null,
+    promoCode: row.promo_code as string | null,
+    discountAmount: row.discount_amount as number,
+    subtotal: row.subtotal as number,
+    deliveryFee: row.delivery_fee as number,
+    total: row.total as number,
+    status: row.status as OrderStatus,
+    paymentType: row.payment_type as Order['paymentType'],
+    createdAt: row.created_at as string,
+  }
+}
+
 export function useOrders(tenantId: Ref<string>, filter: Ref<OrderFilter>) {
-  const { $db } = useNuxtApp()
+  const { $supabase } = useNuxtApp()
   const orders = ref<Order[]>([])
   const loading = ref(true)
 
-  let unsubscribe: (() => void) | null = null
+  let channel: RealtimeChannel | null = null
+
+  async function fetchOrders(tid: string, f: OrderFilter) {
+    loading.value = true
+
+    let q = $supabase
+      .from('orders')
+      .select('*')
+      .eq('tenant_id', tid)
+      .order('created_at', { ascending: false })
+
+    if (f === 'active') {
+      q = q.in('status', activeStatuses)
+    } else if (f === 'completed') {
+      q = q.eq('status', 'completed')
+    } else if (f === 'cancelled') {
+      q = q.eq('status', 'cancelled')
+    }
+
+    const { data } = await q
+    orders.value = (data ?? []).map(mapOrder)
+    loading.value = false
+  }
 
   watch(
     [tenantId, filter],
     ([tid, f]) => {
-      unsubscribe?.()
+      channel?.unsubscribe()
+      channel = null
       orders.value = []
 
       if (!tid) return
 
-      loading.value = true
+      fetchOrders(tid, f)
 
-      const constraints: QueryConstraint[] = [orderBy('createdAt', 'desc')]
-
-      if (f === 'active') {
-        constraints.push(where('status', 'in', activeStatuses))
-      } else if (f === 'completed') {
-        constraints.push(where('status', '==', 'completed'))
-      } else if (f === 'cancelled') {
-        constraints.push(where('status', '==', 'cancelled'))
-      }
-
-      const q = query(
-        collection($db, 'tenants', tid, 'orders'),
-        ...constraints,
-      )
-
-      unsubscribe = onSnapshot(q, (snap) => {
-        orders.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Order)
-        loading.value = false
-      })
+      channel = $supabase
+        .channel(`orders:${tid}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `tenant_id=eq.${tid}`,
+        }, () => fetchOrders(tid, f))
+        .subscribe()
     },
     { immediate: true },
   )
 
-  onUnmounted(() => unsubscribe?.())
+  onUnmounted(() => channel?.unsubscribe())
 
   async function updateStatus(orderId: string, status: OrderStatus) {
-    await updateDoc(doc($db, 'tenants', tenantId.value, 'orders', orderId), { status })
+    await $supabase.from('orders').update({ status }).eq('id', orderId)
   }
 
   async function cancel(orderId: string) {

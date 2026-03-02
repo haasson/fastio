@@ -16,14 +16,10 @@ export default defineNuxtConfig({
   css: ['~/assets/css/reset.css'],
 
   runtimeConfig: {
-    firebaseAdminCredentialsB64: '',
+    supabaseServiceRoleKey: '',
     public: {
-      firebaseApiKey: '',
-      firebaseAuthDomain: '',
-      firebaseProjectId: '',
-      firebaseStorageBucket: '',
-      firebaseMessagingSenderId: '',
-      firebaseAppId: '',
+      supabaseUrl: '',
+      supabaseAnonKey: '',
     },
   },
 })

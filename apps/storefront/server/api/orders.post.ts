@@ -1,5 +1,4 @@
-import { getAdminDb } from '../utils/firebase-admin'
-import type { Order } from '@fastfood-saas/shared'
+import { getServerSupabase } from '../utils/supabase'
 
 export default defineEventHandler(async (event) => {
   const tenantId = event.context.tenantId as string | undefined
@@ -7,7 +6,6 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event)
 
-  // Базовая валидация
   if (!body.customer?.name || !body.customer?.phone) {
     throw createError({ statusCode: 400, message: 'Имя и телефон обязательны' })
   }
@@ -15,30 +13,29 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Корзина пуста' })
   }
 
-  const db = getAdminDb()
+  const supabase = getServerSupabase()
 
-  const order: Omit<Order, 'id'> = {
-    tenantId,
-    customer: body.customer,
-    items: body.items,
-    deliveryType: body.deliveryType,
-    address: body.address ?? null,
-    comment: body.comment ?? null,
-    promoCode: body.promoCode ?? null,
-    discountAmount: body.discountAmount ?? 0,
-    subtotal: body.subtotal,
-    deliveryFee: body.deliveryFee ?? 0,
-    total: body.total,
-    status: 'new',
-    paymentType: body.paymentType ?? 'cash',
-    createdAt: new Date().toISOString(),
-  }
+  const { data, error } = await supabase
+    .from('orders')
+    .insert({
+      tenant_id: tenantId,
+      customer: body.customer,
+      items: body.items,
+      delivery_type: body.deliveryType,
+      address: body.address ?? null,
+      comment: body.comment ?? null,
+      promo_code: body.promoCode ?? null,
+      discount_amount: body.discountAmount ?? 0,
+      subtotal: body.subtotal,
+      delivery_fee: body.deliveryFee ?? 0,
+      total: body.total,
+      status: 'new',
+      payment_type: body.paymentType ?? 'cash',
+    })
+    .select('id')
+    .single()
 
-  const ref = await db
-    .collection('tenants')
-    .doc(tenantId)
-    .collection('orders')
-    .add(order)
+  if (error) throw createError({ statusCode: 500, message: error.message })
 
-  return { id: ref.id }
+  return { id: data.id }
 })

@@ -4,7 +4,7 @@
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <span class="logo-icon">🍔</span>
-        <span class="logo-text">FastFood SaaS</span>
+        <span class="logo-text">Fastio</span>
       </div>
 
       <nav class="nav">
@@ -48,11 +48,10 @@
 </template>
 
 <script setup lang="ts">
-import { signOut } from 'firebase/auth'
 import { UiButton, UiIcon, UiConfirmModal } from '@fastfood-saas/ui'
 import type { IconName } from '@fastfood-saas/ui'
 
-const { $auth } = useNuxtApp()
+const { $supabase } = useNuxtApp()
 const route = useRoute()
 const sidebarOpen = ref(false)
 const tenantStore = useTenantStore()
@@ -71,7 +70,7 @@ const currentPageTitle = computed(() => {
 
 async function handleLogout() {
   tenantStore.dispose()
-  await signOut($auth)
+  await $supabase.auth.signOut()
   await navigateTo('/login')
 }
 </script>

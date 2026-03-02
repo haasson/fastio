@@ -5,7 +5,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const authStore = useAuthStore()
 
-  // Ждём пока Firebase вернёт состояние авторизации (первая загрузка)
+  // Ждём пока плагин инициализирует состояние авторизации (первая загрузка)
   if (authStore.loading) {
     await new Promise<void>((resolve) => {
       const unwatch = watch(

@@ -6,6 +6,8 @@ dist
 .nuxt
 .firebase
 .firebase-data
+supabase/.temp
+supabase/functions/.secrets
 *.local
 .env
 .env.*

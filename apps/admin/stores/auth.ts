@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { User } from 'firebase/auth'
+import type { User } from '@supabase/supabase-js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)

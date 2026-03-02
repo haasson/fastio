@@ -1,4 +1,4 @@
-# FastFood SaaS
+# Fastio
 
 Мультитенантная SaaS-платформа для ресторанов быстрого питания. Каждый ресторан получает собственную витрину (по поддомену или кастомному домену) и панель администратора для управления меню, заказами и настройками.
 
@@ -10,16 +10,15 @@
 fastfood-saas/
 ├── apps/
 │   ├── admin/        — Nuxt 3, панель администратора (SPA, SSR off)
-│   ├── storefront/   — Nuxt 3, витрина покупателя (SSR on)
-│   └── functions/    — Firebase Cloud Functions (Node 20)
+│   └── storefront/   — Nuxt 3, витрина покупателя (SSR on)
 ├── packages/
-│   └── shared/       — Общие TypeScript типы (@fastfood-saas/shared)
-├── scripts/
-│   └── create-tenant.mjs  — CLI для создания нового тенанта
-├── firestore.rules
-├── firestore.indexes.json
-├── storage.rules
-└── firebase.json
+│   ├── shared/       — Общие TypeScript типы (@fastfood-saas/shared)
+│   └── ui/           — UI-библиотека (@fastfood-saas/ui)
+├── supabase/
+│   ├── migrations/   — SQL миграции (схема, индексы, RLS, realtime)
+│   └── functions/    — Supabase Edge Functions (Deno)
+└── scripts/
+    └── create-tenant.mjs  — CLI для создания нового тенанта
 ```
 
 Монорепо управляется через **pnpm workspaces** + **Turborepo**.
@@ -31,10 +30,10 @@ fastfood-saas/
 | Слой | Технологии |
 |---|---|
 | Frontend | Nuxt 3, Vue 3, Pinia v3 (setup API), VueUse |
-| Backend | Firebase: Firestore, Auth, Storage, Cloud Functions v1 |
-| Email | SendGrid (`@sendgrid/mail`) |
-| Платежи | ЮKassa (вебхук) |
-| Деплой | Vercel (admin + storefront), Firebase (functions + rules) |
+| Backend | Supabase: PostgreSQL, Auth, Realtime, Edge Functions |
+| Email | SendGrid (через Edge Function) |
+| Платежи | ЮKassa (вебхук → Edge Function) |
+| Деплой | Vercel (admin + storefront), Supabase CLI (migrations + functions) |
 | Инструменты | pnpm 9, Turborepo 2, TypeScript 5, ESLint |
 
 ---
@@ -44,9 +43,9 @@ fastfood-saas/
 ### `apps/admin` — Панель администратора
 
 - **SSR: выключен** (чистый SPA)
-- Аутентификация через Firebase Auth
+- Аутентификация через Supabase Auth
 - Работает только для авторизованных владельцев ресторанов
-- Подключается к Firestore напрямую через клиентский SDK
+- Realtime подписки на изменения данных через Supabase channels
 
 **Страницы:**
 - `/login` — вход
@@ -57,8 +56,8 @@ fastfood-saas/
 - `/settings` — настройки ресторана (контакты, часы работы, тема, уведомления)
 
 **Stores:**
-- `auth.ts` — текущий Firebase User
-- `tenant.ts` — данные тенанта текущего владельца (realtime onSnapshot)
+- `auth.ts` — текущий Supabase User
+- `tenant.ts` — данные тенанта текущего владельца (fetch + realtime channel)
 
 **Composables:**
 - `useCategories(tenantId: Ref<string>)` — CRUD + realtime подписка
@@ -71,7 +70,7 @@ fastfood-saas/
 
 - **SSR: включён**
 - Тенант определяется на сервере по hostname (кастомный домен или поддомен `slug.platform.com`)
-- Данные меню/тенанта загружаются через Nuxt server API (firebase-admin)
+- Данные меню/тенанта загружаются через Nuxt server API (Supabase с `service_role` ключом)
 - Корзина хранится в `localStorage`
 
 **Страницы:**
@@ -80,7 +79,7 @@ fastfood-saas/
 - `/order/[id]` — страница заказа (статус)
 
 **Server middleware:**
-- `tenant.ts` — резолвит тенанта по hostname, кладёт `tenantId` и `tenant` в `event.context`
+- `tenant.ts` — резолвит тенанта по hostname, кладёт `tenant` в `event.context`
 
 **Server API:**
 - `GET /api/tenant` — данные тенанта
@@ -93,11 +92,11 @@ fastfood-saas/
 
 ---
 
-### `apps/functions` — Cloud Functions
+### `supabase/functions` — Edge Functions
 
-- **`onOrderCreated`** — Firestore trigger при создании заказа → отправляет email через SendGrid на адрес из `tenant.notifications.email`
-- **`onPaymentWebhook`** — HTTP endpoint для вебхука ЮKassa → при `payment.succeeded` обновляет `subscription.status = 'active'` у тенанта
-- **`addCustomDomain`** — Callable function → добавляет домен в Vercel проект через Vercel API + сохраняет в Firestore
+- **`send-order-email`** — Database Webhook при INSERT в `orders` → отправляет email через SendGrid на адрес из `tenant.notifications.email`
+- **`payment-webhook`** — HTTP endpoint для вебхука ЮKassa → при `payment.succeeded` обновляет `subscription.status = 'active'` у тенанта
+- **`add-custom-domain`** — JWT-protected endpoint → добавляет домен в Vercel проект через Vercel API + сохраняет в таблицу `tenants`
 
 ---
 
@@ -112,56 +111,32 @@ fastfood-saas/
 
 ---
 
-## Модель данных Firestore
+## Модель данных (PostgreSQL)
 
-```
-/tenants/{tenantId}
-  ├── name, slug, customDomain, ownerId
-  ├── theme { primaryColor, fontFamily, logoUrl, bannerUrl, preset }
-  ├── contacts { phone, email, address, city, instagram, vk }
-  ├── workingHours { mon..sun: { open, close, closed } }
-  ├── notifications { email, telegramChatId }
-  ├── subscription { status, plan, trialEndsAt, renewsAt }
-  ├── deliveryMinOrder, deliveryFee, createdAt
-  │
-  ├── /categories/{categoryId}
-  │     └── tenantId, name, order, active
-  │
-  ├── /dishes/{dishId}
-  │     └── tenantId, categoryId, name, description, price,
-  │         photos[], ingredients[], nutrition, tags[], active, order
-  │
-  ├── /orders/{orderId}
-  │     └── tenantId, customer, items[], deliveryType, address,
-  │         comment, promoCode, discountAmount, subtotal,
-  │         deliveryFee, total, status, paymentType, createdAt
-  │
-  ├── /promotions/{promotionId}
-  │     └── tenantId, title, description, bannerUrl,
-  │         discountType, discountValue, activeFrom, activeTo, active
-  │
-  └── /promoCodes/{codeId}
-        └── tenantId, code, discountType, discountValue,
-            usageLimit, usedCount, activeFrom, activeTo, active
+```sql
+tenants       — тенанты (owner_id → auth.users)
+categories    — категории меню (tenant_id FK)
+dishes        — блюда (tenant_id FK, category_id FK)
+orders        — заказы (tenant_id FK)
+promotions    — акции (tenant_id FK)
+promo_codes   — промокоды (tenant_id FK)
 ```
 
----
-
-## Правила Firestore
-
-- **Тенант**: только владелец (по `ownerId`)
-- **Категории, блюда, акции, промокоды**: читать публично, писать — только владелец
-- **Заказы**: создавать может кто угодно (покупатель), читать/обновлять — только владелец
+**RLS политики:**
+- `tenants`: только владелец (по `owner_id = auth.uid()`)
+- `categories`, `dishes`, `promotions`, `promo_codes`: читать публично, писать — только владелец
+- `orders`: создавать может кто угодно (анонимный покупатель), читать/обновлять — только владелец
 
 ---
 
 ## Мультитенантность
 
 Тенант определяется по hostname:
-1. Сначала ищется по `customDomain` (полное совпадение)
+1. Сначала ищется по `custom_domain` (полное совпадение)
 2. Затем по `slug` из поддомена (`slug.platform.com`)
+3. Фолбэк: query-параметр `?slug=` (для разработки без домена)
 
-Кастомный домен добавляется через callable function `addCustomDomain`, которая регистрирует домен в Vercel через API.
+Кастомный домен добавляется через Edge Function `add-custom-domain`, которая регистрирует домен в Vercel через API.
 
 Подписка: `trial` (14 дней) → `active` (через ЮKassa) → `suspended` / `cancelled`.
 
@@ -173,43 +148,40 @@ fastfood-saas/
 # Установка зависимостей
 pnpm install
 
-# Запуск admin
-pnpm dev:admin
+# Запустить локальный Supabase (Docker Desktop должен быть запущен)
+pnpm supabase:start
 
-# Запуск storefront
+# Запуск всего сразу (admin + storefront)
+pnpm dev
+
+# Или по отдельности
+pnpm dev:admin
 pnpm dev:storefront
 
-# Firebase эмуляторы (auth:9099, firestore:8080, storage:9199, functions:5001, ui:4000)
-firebase emulators:start
+# Supabase Studio (UI для БД)
+pnpm supabase:studio
 
-# Создание нового тенанта
-GOOGLE_APPLICATION_CREDENTIALS=./service-account.json pnpm create-tenant \
-  --name "Пицца Васи" \
-  --slug vasya-pizza \
-  --email owner@example.com \
-  --password secret123
-```
+# Создание нового тенанта (локально)
+pnpm create-tenant --name "Пицца Васи" --slug vasya-pizza --email owner@example.com --password secret123
 
-**Переменные окружения admin** (`.env`):
-```
-NUXT_PUBLIC_FIREBASE_API_KEY=
-NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NUXT_PUBLIC_FIREBASE_PROJECT_ID=
-NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NUXT_PUBLIC_FIREBASE_APP_ID=
+# Создание тенанта на remote Supabase
+pnpm create-tenant:remote --name "Пицца Васи" --slug vasya-pizza --email owner@example.com
 ```
 
-**Переменные окружения storefront** (`.env`):
+**Переменные окружения admin** (`apps/admin/.env`):
 ```
-NUXT_PUBLIC_FIREBASE_API_KEY=
-NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NUXT_PUBLIC_FIREBASE_PROJECT_ID=
-NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NUXT_PUBLIC_FIREBASE_APP_ID=
-NUXT_FIREBASE_ADMIN_CREDENTIALS_B64=   # base64 от service account JSON
+NUXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
+
+**Переменные окружения storefront** (`apps/storefront/.env`):
+```
+NUXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NUXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NUXT_SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+Для локальной разработки создай `.env.local` в каждом аппе с ключами от локального Supabase (`supabase start` выводит их в консоль).
 
 ---
 
@@ -218,31 +190,27 @@ NUXT_FIREBASE_ADMIN_CREDENTIALS_B64=   # base64 от service account JSON
 ### Vercel
 
 `admin` и `storefront` деплоятся как отдельные Vercel-проекты.
-Корневая директория каждого — соответствующая папка в `apps/`.
 
 ```bash
-# Сборка всего
 pnpm build
 ```
 
-### Firebase
+### Supabase
 
 ```bash
-# Деплой правил и индексов Firestore + Storage
-pnpm firebase:deploy:rules
+# Применить миграции на прод
+supabase db push
 
-# Деплой Cloud Functions
-pnpm firebase:deploy:functions
+# Задеплоить Edge Functions
+pnpm supabase:deploy:functions
 ```
 
-**Переменные окружения functions** (файл `apps/functions/.env` или через Firebase Console → Functions → Environment variables):
+**Переменные окружения Edge Functions** (Supabase Dashboard → Edge Functions → Secrets):
 ```
 SENDGRID_KEY=SG.xxx
 VERCEL_TOKEN=xxx
 VERCEL_PROJECT_ID=prj_xxx
 ```
-
-> `functions.config()` удалена в firebase-functions v7 — используем `process.env`.
 
 ---
 
@@ -250,3 +218,4 @@ VERCEL_PROJECT_ID=prj_xxx
 
 - Node.js >= 20
 - pnpm 9.15.0
+- Docker Desktop (для локального Supabase)
