@@ -1,0 +1,80 @@
+/*
+Box sizing rules
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* Prevent font size inflation */
+html {
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+/* Remove default margin in favour of better control in authored CSS */
+body,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+/* Remove list styles on ul, ol elements, which suggests default styling will be removed */
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Make images easier to work with */
+img,
+picture {
+  max-width: 100%;
+  display: block;
+}
+
+/* Anything that has been anchored to should have extra scroll margin */
+:target {
+  scroll-margin-block: 5ex;
+}
+
+/* Improve text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Remove outline on focus for mouse users */
+:focus {
+  outline: none;
+}
+
+/* Prevent horizontal scrolling */
+html,
+body {
+  overflow-x: clip;
+}
+
+/* Make elements with hidden attribute truly hidden */
+[hidden] {
+  display: none !important;
+}
+
+/* Smooth scrolling for users who prefer it */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

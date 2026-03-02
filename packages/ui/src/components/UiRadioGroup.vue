@@ -1,0 +1,82 @@
+<template>
+  <form-item
+    :label="label"
+    :size="size"
+    :name="name"
+    :rules="rules"
+    :model-value="selectedValue"
+  >
+    <n-radio-group
+      v-model:value="selectedValue"
+      class="radio-group"
+      v-bind="$attrs"
+    >
+      <n-space :vertical="vertical" :size="space">
+        <n-radio
+          v-for="option in options"
+          :key="option.value"
+          :value="option.value"
+          :size="size"
+          :disabled="option.disabled"
+          class="radio-option"
+        >
+          {{ option.label }}
+        </n-radio>
+      </n-space>
+    </n-radio-group>
+  </form-item>
+</template>
+
+<script setup lang="ts">
+import { NRadioGroup, NRadio, NSpace } from 'naive-ui'
+import FormItem from './internal/FormItem.vue'
+import type { Size } from '../types/responsive'
+import type { ValidationRule } from '../types/form'
+
+type RadioSize = Exclude<Size, 'tiny'>
+
+type RadioOption = {
+  value: string | number
+  label: string
+  disabled?: boolean
+}
+
+type Props = {
+  label?: string
+  options: RadioOption[]
+  vertical?: boolean
+  space?: number
+  size?: RadioSize
+  name?: string
+  rules?: ValidationRule[]
+}
+
+withDefaults(defineProps<Props>(), {
+  space: 8,
+  size: 'medium',
+})
+
+const selectedValue = defineModel<string | number | null>({ default: null })
+
+defineOptions({
+  inheritAttrs: false,
+})
+</script>
+
+<style scoped lang="scss">
+.radio-group {
+  &:deep(.n-radio) {
+    &:hover:not(.n-radio--disabled) {
+      .n-radio__dot {
+        box-shadow: inset 0 0 0 2px var(--color-primary) !important;
+      }
+    }
+
+    &:focus-visible {
+      .n-radio__dot {
+        box-shadow: inset 0 0 0 2px var(--color-primary), 0 0 0 2px var(--color-primary) !important;
+      }
+    }
+  }
+}
+</style>

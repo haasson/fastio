@@ -1,0 +1,22 @@
+@use '../mixins/media-queries' as *;
+
+:root {
+  --section-paddings: 0 16px;
+  --section-width: 100%;
+  --header-height: 64px;
+
+  @include mq-m {
+    --section-paddings: 0 32px;
+    --section-width: var(--breakpoint-m);
+  }
+
+  @include mq-l {
+    --section-paddings: 0 80px;
+    --section-width: var(--breakpoint-l);
+    --header-height: 72px;
+  }
+
+  @include mq-xl {
+    --section-width: var(--breakpoint-xl);
+  }
+}

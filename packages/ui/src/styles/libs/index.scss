@@ -1,0 +1,27 @@
+// Переопределение стилей библиотек, которые не могут быть применены в компоненте
+// Например, при телепорте элемента за пределы компонента
+
+// Modal — включаем pointer-events чтобы модалка была кликабельна
+// когда открыта поверх bottom sheet (vaul-vue ставит pointer-events: none на body)
+.n-modal-container,
+.n-modal-mask {
+  pointer-events: auto;
+}
+
+// Popover
+.n-popover {
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  font-size: 16px;
+
+  &.dark {
+    .n-popover-arrow {
+      background-color: var(--bg-black) !important;
+    }
+  }
+
+  &.ui-popover--accent {
+    border: 2px solid var(--color-primary);
+  }
+}

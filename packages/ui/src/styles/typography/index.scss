@@ -1,0 +1,17 @@
+@use '../mixins/index' as *;
+@use 'fonts';
+
+body {
+  font-family: var(--main-font);
+  color: var(--color-text);
+  background: var(--bg-page);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+address {
+  font-style: normal;
+}

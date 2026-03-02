@@ -1,0 +1,51 @@
+@use '../mixins' as *;
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e3e8 transparent;
+  min-height: 100vh;
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #e2e3e8;
+    border-radius: 8px;
+  }
+}
+
+body {
+  min-height: 100vh;
+}
+
+.ui-color-primary {
+  color: var(--color-primary);
+}
+
+.ui-color-success {
+  color: var(--color-success);
+}
+
+.ui-color-warning {
+  color: var(--color-warning);
+}
+
+.ui-color-error {
+  color: var(--color-error);
+}
+
+// Класс задается для блоков с тёмным фоном, чтобы цвет текста на нем был инвертирован
+.ui-dark-side {
+  background-color: var(--bg-black) !important;
+  color: var(--color-white) !important;
+}
+
+// Класс для добавления боковых паддингов только на мобильных устройствах
+.ui-mobile-paddings {
+  padding: var(--section-paddings);
+
+  @include mq-m {
+    padding: 0;
+  }
+}

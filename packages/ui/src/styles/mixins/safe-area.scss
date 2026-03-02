@@ -1,0 +1,54 @@
+/// Safe Area Insets Mixins
+/// Для работы с устройствами, имеющими нотчи, Dynamic Island, home indicator и т.д.
+///
+/// ВАЖНО: В проектах-потребителях нужно добавить в <head>:
+/// <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+/// Добавляет padding-top с учётом safe-area (для fixed элементов вверху)
+/// @param {Length} $fallback [0px] - значение по умолчанию для устройств без нотча
+@mixin safe-area-top($fallback: 0px) {
+  padding-top: $fallback;
+  padding-top: max(#{$fallback}, env(safe-area-inset-top));
+}
+
+/// Добавляет padding-bottom с учётом safe-area (для fixed элементов внизу)
+/// @param {Length} $fallback [0px] - значение по умолчанию для устройств без home indicator
+@mixin safe-area-bottom($fallback: 0px) {
+  padding-bottom: $fallback;
+  padding-bottom: max(#{$fallback}, env(safe-area-inset-bottom));
+}
+
+/// Добавляет padding-left с учётом safe-area (для landscape режима)
+/// @param {Length} $fallback [0px] - значение по умолчанию
+@mixin safe-area-left($fallback: 0px) {
+  padding-left: $fallback;
+  padding-left: max(#{$fallback}, env(safe-area-inset-left));
+}
+
+/// Добавляет padding-right с учётом safe-area (для landscape режима)
+/// @param {Length} $fallback [0px] - значение по умолчанию
+@mixin safe-area-right($fallback: 0px) {
+  padding-right: $fallback;
+  padding-right: max(#{$fallback}, env(safe-area-inset-right));
+}
+
+/// Добавляет горизонтальные safe-area отступы (left + right)
+/// @param {Length} $fallback [0px] - значение по умолчанию
+@mixin safe-area-horizontal($fallback: 0px) {
+  @include safe-area-left($fallback);
+  @include safe-area-right($fallback);
+}
+
+/// Добавляет вертикальные safe-area отступы (top + bottom)
+/// @param {Length} $fallback [0px] - значение по умолчанию
+@mixin safe-area-vertical($fallback: 0px) {
+  @include safe-area-top($fallback);
+  @include safe-area-bottom($fallback);
+}
+
+/// Добавляет все safe-area отступы
+/// @param {Length} $fallback [0px] - значение по умолчанию для всех сторон
+@mixin safe-area-all($fallback: 0px) {
+  @include safe-area-vertical($fallback);
+  @include safe-area-horizontal($fallback);
+}
