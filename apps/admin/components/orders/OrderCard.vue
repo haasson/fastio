@@ -54,7 +54,7 @@
         <span class="total">{{ order.total }} ₽</span>
         <span class="payment-type">
           <UiIcon :name="paymentIcon" :size="13" />
-          {{ paymentLabel[order.paymentMethod] }}
+          {{ paymentLabel[order.paymentType] }}
         </span>
       </div>
 
@@ -114,7 +114,7 @@ const paymentLabel: Record<string, string> = {
 }
 
 const paymentIcon = computed(
-  () => paymentIconMap[props.order.paymentMethod] ?? 'banknote',
+  () => paymentIconMap[props.order.paymentType] ?? 'banknote',
 )
 
 // Относительное время

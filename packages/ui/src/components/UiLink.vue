@@ -27,6 +27,7 @@ import UiIcon from './UiIcon.vue'
 import useBreakpoints from '../composables/useBreakpoints'
 import type { ResponsiveSizeMap, Breakpoint } from '../types/responsive'
 import { BREAKPOINTS_ORDER } from '../types/responsive'
+import type { IconName } from '../icons'
 
 type Size = 'tiny' | 'small' | 'medium'
 type IconPosition = 'left' | 'right'
@@ -34,7 +35,7 @@ type IconPosition = 'left' | 'right'
 type Props = {
   size?: Size
   darkSide?: boolean
-  icon?: string
+  icon?: IconName
   iconPosition?: IconPosition
   disabled?: boolean
   responsive?: boolean | ResponsiveSizeMap

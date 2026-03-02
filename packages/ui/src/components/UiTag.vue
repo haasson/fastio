@@ -33,6 +33,7 @@ import UiIcon from './UiIcon.vue'
 import UiButton from './UiButton.vue'
 import useResponsiveSize from '../composables/useResponsiveSize'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
+import type { IconName } from '../icons'
 
 type TagType = 'default' | 'primary' | 'success' | 'warning'
 
@@ -43,7 +44,7 @@ type Props = {
   hoverable?: boolean
   closable?: boolean
   square?: boolean
-  icon?: string
+  icon?: IconName
   iconBg?: string
   iconFg?: string
   size?: Size

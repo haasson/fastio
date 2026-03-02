@@ -31,6 +31,7 @@
       <template v-if="$slots.suffix" #suffix>
         <slot name="suffix" />
       </template>
+      <!-- @vue-ignore naive-ui types don't expose clear-icon slot for NInputNumber, but it works at runtime -->
       <template #clear-icon>
         <ui-icon name="crossRound" :size="iconSize" color="grey-400" />
       </template>

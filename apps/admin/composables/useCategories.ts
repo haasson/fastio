@@ -1,16 +1,6 @@
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Category } from '@fastio/shared'
 
-function mapCategory(row: Record<string, unknown>): Category {
-  return {
-    id: row.id as string,
-    tenantId: row.tenant_id as string,
-    name: row.name as string,
-    order: row.sort_order as number,
-    active: row.active as boolean,
-  }
-}
-
 export function useCategories(tenantId: Ref<string>) {
   const { $supabase } = useNuxtApp()
   const categories = ref<Category[]>([])
@@ -20,13 +10,7 @@ export function useCategories(tenantId: Ref<string>) {
 
   async function fetchCategories(id: string) {
     loading.value = true
-    const { data } = await $supabase
-      .from('categories')
-      .select('*')
-      .eq('tenant_id', id)
-      .order('sort_order')
-
-    categories.value = (data ?? []).map(mapCategory)
+    categories.value = await categoriesApi.list($supabase, id)
     loading.value = false
   }
 
@@ -58,25 +42,15 @@ export function useCategories(tenantId: Ref<string>) {
   async function add(name: string) {
     const id = tenantId.value
     if (!id) return
-    const sortOrder = categories.value.length
-    await $supabase.from('categories').insert({
-      tenant_id: id,
-      name,
-      sort_order: sortOrder,
-      active: true,
-    })
+    await categoriesApi.add($supabase, id, { name, order: categories.value.length })
   }
 
   async function update(id: string, data: Partial<Pick<Category, 'name' | 'active' | 'order'>>) {
-    await $supabase.from('categories').update({
-      ...(data.name !== undefined && { name: data.name }),
-      ...(data.active !== undefined && { active: data.active }),
-      ...(data.order !== undefined && { sort_order: data.order }),
-    }).eq('id', id)
+    await categoriesApi.update($supabase, id, data)
   }
 
   async function remove(id: string) {
-    await $supabase.from('categories').delete().eq('id', id)
+    await categoriesApi.remove($supabase, id)
   }
 
   return { categories, loading, add, update, remove }

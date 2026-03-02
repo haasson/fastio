@@ -62,7 +62,6 @@ export { default as useConfirm, confirmState } from './composables/useConfirm'
 export { default as useResponsiveSize } from './composables/useResponsiveSize'
 export { useApi, useGlobalApiError, ApiError } from './composables/useApi'
 export type { UseApiOptions, UseApiReturn, UseApiUrl } from './composables/useApi'
-
 // Types
 export type { Size, Breakpoint, ResponsiveSizeMap } from './types/responsive'
 export { BREAKPOINTS_ORDER } from './types/responsive'

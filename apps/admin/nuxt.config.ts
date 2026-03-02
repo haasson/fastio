@@ -11,6 +11,10 @@ export default defineNuxtConfig({
 
   ssr: false,
 
+  imports: {
+    dirs: ['utils/**'],
+  },
+
   modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt'],
 
   css: ['~/assets/css/reset.css', '~/assets/css/admin-theme.css'],

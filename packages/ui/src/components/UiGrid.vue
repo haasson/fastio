@@ -8,14 +8,12 @@
       :style="gridStyles"
       name="expand"
     >
-      <slot
-        v-for="(item, index) in displayedItems"
-        :key="getItemKey(item, index)"
-        :item="item"
-        :index="index"
-      />
+      <template v-for="(item, index) in displayedItems" :key="getItemKey(item, index)">
+        <slot :item="item" :index="index" />
+      </template>
     </component>
 
+    <!-- @vue-ignore slot used without items prop — manual children mode -->
     <div v-else class="grid" :style="gridStyles">
       <slot />
     </div>
@@ -82,6 +80,11 @@ type Emits = {
 }
 
 const emit = defineEmits<Emits>()
+
+defineSlots<{
+  default(props: { item: T; index: number } | Record<string, never>): unknown
+  toggle(props: { expanded: boolean; toggle: () => void; loading: boolean }): unknown
+}>()
 
 const { active } = useBreakpoints()
 

@@ -114,7 +114,7 @@ export function useApi<T = unknown, P = Record<string, unknown>>(
 
       const result = await ofetch<T>(resolvedUrl, {
         method: 'POST',
-        body: payload,
+        body: payload as Record<string, unknown>,
         signal: controller.signal,
       })
 

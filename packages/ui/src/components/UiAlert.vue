@@ -17,12 +17,13 @@ import { NAlert } from 'naive-ui'
 import UiIcon from './UiIcon.vue'
 import useResponsiveSize from '../composables/useResponsiveSize'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
+import type { IconName } from '../icons'
 
 type Props = {
   size?: Size
   responsive?: ResponsiveSizeMap
   inline?: boolean
-  icon?: string
+  icon?: IconName
   iconBg?: string
   iconFg?: string
 }

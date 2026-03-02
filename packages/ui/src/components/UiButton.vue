@@ -9,7 +9,7 @@
     <template #icon v-if="$attrs.icon">
       <ui-icon
         v-if="$attrs.icon"
-        :name="$attrs.icon as string"
+        :name="($attrs.icon as IconName)"
         :size="computedIconSize"
         :color="iconBg || 'currentColor'"
       />
@@ -24,6 +24,7 @@ import { NButton } from 'naive-ui'
 import UiIcon from './UiIcon.vue'
 import useResponsiveSize from '../composables/useResponsiveSize'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
+import type { IconName } from '../icons'
 
 type Props = {
   darkSide?: boolean

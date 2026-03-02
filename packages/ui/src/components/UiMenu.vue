@@ -17,13 +17,14 @@
 import { computed, h } from 'vue'
 import { NMenu, type MenuOption } from 'naive-ui'
 import UiIcon from './UiIcon.vue'
+import type { IconName } from '../icons'
 
 export type UiMenuKey = string | number
 
 export type UiMenuOption = {
   key: UiMenuKey
   label: string
-  icon?: string
+  icon?: IconName
   children?: UiMenuOption[]
   disabled?: boolean
   isFooter?: boolean

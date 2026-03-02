@@ -44,11 +44,12 @@
 import { ref, watch } from 'vue'
 import UiPopover from './UiPopover.vue'
 import MenuDropdownContent from './internal/MenuDropdownContent.vue'
+import type { IconName } from '../icons'
 
 export type UiMenuDropdownItem = {
   label?: string
   name: string
-  icon?: string
+  icon?: IconName
   link?: string
   onClick?: () => void
   isDivider?: boolean

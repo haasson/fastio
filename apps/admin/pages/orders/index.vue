@@ -30,7 +30,6 @@
 import { UiSegmentedControl } from '@fastio/ui'
 import type { SegmentedControlItem } from '@fastio/ui'
 import type { OrderStatus } from '@fastio/shared'
-import type { OrderFilter } from '~/composables/useOrders'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })
