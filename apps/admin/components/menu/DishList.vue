@@ -70,6 +70,8 @@
       :tenant-id="tenantId"
       :category-id="categoryId"
       :dish="editingDish"
+      :add-dish="addDish"
+      :update-dish="updateDish"
       @saved="dishModalOpen = false"
     />
   </main>
@@ -88,7 +90,7 @@ const props = defineProps<{
 const tenantIdRef = computed(() => props.tenantId)
 const categoryIdRef = computed(() => props.categoryId)
 
-const { dishes, loading: dishesLoading, remove: removeDish, toggleActive } =
+const { dishes, loading: dishesLoading, add: addDish, update: updateDish, remove: removeDish, toggleActive } =
   useDishes(tenantIdRef, categoryIdRef)
 
 const { confirm } = useConfirm()

@@ -70,21 +70,20 @@
 <script setup lang="ts">
 import { UiModal, UiInput, UiInputNumber, UiButton, UiCheckbox } from '@fastio/ui'
 import type { Dish, DishTag, DishIngredient } from '@fastio/shared'
-import type { DishFormData } from '~/composables/useDishes'
 
 const props = defineProps<{
   modelValue: boolean
   tenantId: string
   categoryId: string
   dish: Dish | null
+  addDish: (data: DishFormData) => Promise<void>
+  updateDish: (id: string, data: Partial<DishFormData>) => Promise<void>
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   saved: []
 }>()
-
-const { add, update } = useDishes(toRef(props, 'tenantId'), toRef(props, 'categoryId'))
 const saving = ref(false)
 
 const tagOptions: Record<DishTag, string> = {
@@ -180,9 +179,9 @@ async function handleSubmit() {
     }
 
     if (props.dish) {
-      await update(props.dish.id, data)
+      await props.updateDish(props.dish.id, data)
     } else {
-      await add(data)
+      await props.addDish(data)
     }
     emit('saved')
   } finally {

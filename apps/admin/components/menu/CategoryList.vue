@@ -61,12 +61,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [id: string | null]
+  'categoriesLoaded': [cats: Category[]]
 }>()
 
 const tenantIdRef = computed(() => props.tenantId)
 
 const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory } =
   useCategories(tenantIdRef)
+
+watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
 
 const { counts: dishCountByCategory } = useDishCounts(tenantIdRef)
 

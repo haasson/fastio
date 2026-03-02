@@ -8,6 +8,7 @@
       <MenuCategoryList
         v-model="selectedCategoryId"
         :tenant-id="tenantId"
+        @categories-loaded="onCategoriesLoaded"
       />
       <MenuDishList
         :tenant-id="tenantId"
@@ -19,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Category } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })
@@ -29,20 +31,18 @@ onMounted(() => tenantStore.init())
 
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
-const tenantIdRef = computed(() => tenantId.value)
-
-const { categories } = useCategories(tenantIdRef)
-
 const selectedCategoryId = ref<string | null>(null)
+const categoriesCache = ref<Category[]>([])
 
-watch(categories, (cats) => {
+function onCategoriesLoaded(cats: Category[]) {
+  categoriesCache.value = cats
   if (!selectedCategoryId.value && cats.length > 0) {
     selectedCategoryId.value = cats[0].id
   }
-})
+}
 
 const selectedCategoryName = computed(
-  () => categories.value.find((c) => c.id === selectedCategoryId.value)?.name ?? '',
+  () => categoriesCache.value.find((c) => c.id === selectedCategoryId.value)?.name ?? '',
 )
 </script>
 
