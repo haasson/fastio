@@ -70,6 +70,31 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  apps/backoffice:
+    dependencies:
+      '@fastio/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@supabase/supabase-js':
+        specifier: ^2.98.0
+        version: 2.98.0
+      naive-ui:
+        specifier: ^2.42.0
+        version: 2.43.2(vue@3.5.29(typescript@5.9.3))
+      nuxt:
+        specifier: ^3.15.0
+        version: 3.21.1(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.6.1))(ioredis@5.10.0)(magicast@0.5.2)(optionator@0.9.4)(rollup@4.59.0)(sass@1.97.3)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.3)(jiti@2.6.1)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))(yaml@2.8.2)
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.29(typescript@5.9.3)
+    devDependencies:
+      eslint:
+        specifier: ^9.35.0
+        version: 9.39.3(jiti@2.6.1)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   apps/storefront:
     dependencies:
       '@fastio/shared':

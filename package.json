@@ -5,6 +5,7 @@
     "dev": "concurrently --kill-others-on-fail \"pnpm dev:admin\" \"pnpm dev:storefront\"",
     "dev:storefront": "turbo run dev --filter=storefront",
     "dev:admin": "turbo run dev --filter=admin",
+    "dev:backoffice": "turbo run dev --filter=@fastio/backoffice",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:studio": "supabase studio",
