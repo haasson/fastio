@@ -19,7 +19,7 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@vueuse/nuxt'],
 
-  css: ['~/assets/css/ui.scss', '~/assets/css/admin-theme.css'],
+  css: ['~/assets/css/ui.scss'],
 
   runtimeConfig: {
     public: {

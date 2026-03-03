@@ -38,13 +38,17 @@
     </template>
 
     <div v-else class="state-msg">Загрузка…</div>
+
+    <div class="logout-section">
+      <UiButton type="default" icon="logOut" @click="handleLogout">Выйти из аккаунта</UiButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { definePageMeta } from '#imports'
-import { UiTabs } from '@fastio/ui'
+import { definePageMeta, useNuxtApp, navigateTo } from '#imports'
+import { UiTabs, UiButton } from '@fastio/ui'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import SettingsContacts from '~/components/settings/SettingsContacts.vue'
 import SettingsHours from '~/components/settings/SettingsHours.vue'
@@ -57,7 +61,14 @@ import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })
 
+const { $supabase } = useNuxtApp()
 const tenantStore = useTenantStore()
+
+const handleLogout = async () => {
+  tenantStore.dispose()
+  await $supabase.auth.signOut()
+  await navigateTo('/login')
+}
 const { canManageTeam } = usePermissions()
 
 onMounted(() => tenantStore.init())
@@ -87,5 +98,9 @@ const settingsTabs = computed(() => [
   padding: 28px;
   max-width: 640px;
   overflow: visible;
+}
+
+.logout-section {
+  padding-top: 8px;
 }
 </style>

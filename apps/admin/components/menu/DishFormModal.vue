@@ -48,7 +48,7 @@
           <UiCheckbox v-model="ing.removable">Убрать</UiCheckbox>
           <UiButton size="tiny" type="text" @click="removeIngredient(i)">✕</UiButton>
         </div>
-        <UiButton type="tertiary" icon="plus" @click="addIngredient">Добавить ингредиент</UiButton>
+        <UiButton type="default" icon="plus" @click="addIngredient">Добавить ингредиент</UiButton>
       </div>
 
       <!-- КБЖУ -->
@@ -95,7 +95,7 @@
       </div>
 
       <div class="form-footer">
-        <UiButton type="tertiary" @click="$emit('update:modelValue', false)">Отмена</UiButton>
+        <UiButton type="default" @click="$emit('update:modelValue', false)">Отмена</UiButton>
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
       </div>
     </form>

@@ -70,7 +70,7 @@
           {{ next.label }}
         </UiButton>
         <UiButton
-          type="tertiary"
+          type="default"
           size="small"
           :disabled="updating"
           @click="$emit('cancel', order.id)"

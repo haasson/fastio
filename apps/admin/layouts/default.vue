@@ -1,13 +1,15 @@
 <template>
-  <div class="layout-root">
+  <div class="layout-root" :class="{ 'sidebar-collapsed': collapsed }">
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <UiAppLogo :size="28" />
-        <span class="logo-text">Fastio</span>
+        <UiTitle size="h1" class="logo-text">Fastio</UiTitle>
       </div>
 
-      <TenantSwitcher />
+      <div class="tenant-wrap">
+        <TenantSwitcher />
+      </div>
 
       <nav class="nav">
         <NuxtLink
@@ -23,16 +25,14 @@
         </NuxtLink>
       </nav>
 
-      <UiButton
-        class="logout"
-        type="text"
-        dark-side
-        full-width
-        icon="logOut"
-        @click="handleLogout"
-      >
-        Выйти
-      </UiButton>
+      <div class="user-info">
+        <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
+        <UiText size="tiny" class="user-name">{{ displayName }}</UiText>
+      </div>
+
+      <button class="collapse-btn" @click="collapsed = !collapsed">
+        <UiIcon name="collapse" :size="14" :rotate="collapsed ? 180 : 0" />
+      </button>
     </aside>
 
     <!-- Overlay для мобилки -->
@@ -46,7 +46,7 @@
         <div class="burger-wrap">
           <UiAppBurger :open="sidebarOpen" @click="sidebarOpen = !sidebarOpen" />
         </div>
-        <span class="page-title">{{ currentPageTitle }}</span>
+        <UiTitle size="h3">{{ currentPageTitle }}</UiTitle>
       </header>
 
       <main class="content">
@@ -59,20 +59,32 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import { useNuxtApp, useRoute, navigateTo } from '#imports'
-import { UiButton, UiIcon, UiConfirmModal } from '@fastio/ui'
+import { useRoute } from '#imports'
+import { useLocalStorage } from '@vueuse/core'
+import { UiIcon, UiConfirmModal, UiTitle, UiText } from '@fastio/ui'
 import type { IconName } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
 import { usePermissions } from '~/composables/usePermissions'
+import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
+import { roleLabels } from '~/config/team-roles'
 
-const { $supabase } = useNuxtApp()
 const route = useRoute()
 const sidebarOpen = ref(false)
-const tenantStore = useTenantStore()
+const collapsed = useLocalStorage('sidebar-collapsed', false)
 const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings } = usePermissions()
+
+const authStore = useAuthStore()
+const tenantStore = useTenantStore()
+
+const displayName = computed(() => {
+  const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || ''
+  const role = tenantStore.currentRole ? roleLabels[tenantStore.currentRole] : ''
+
+  return role ? `${name} (${role})` : name
+})
 
 type NavItem = { to: string; icon: IconName; label: string; visible?: ComputedRef<boolean> }
 
@@ -88,12 +100,6 @@ const navItems = computed(() => allNavItems.filter((item) => !item.visible || it
 )
 
 const currentPageTitle = computed(() => navItems.value.find((item) => item.to === route.path)?.label ?? '')
-
-const handleLogout = async () => {
-  tenantStore.dispose()
-  await $supabase.auth.signOut()
-  await navigateTo('/login')
-}
 </script>
 
 <style scoped lang="scss">
@@ -108,7 +114,8 @@ const handleLogout = async () => {
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: #1a1a2e;
+  background: var(--blue-50);
+  border-right: 1px solid var(--blue-200);
   display: flex;
   flex-direction: column;
   padding: 0 0 16px;
@@ -117,7 +124,7 @@ const handleLogout = async () => {
   left: 0;
   height: 100vh;
   z-index: 100;
-  transition: transform 0.25s ease;
+  transition: transform 0.25s ease, width 0.25s ease;
   transform: translateX(-100%);
 
   &.open {
@@ -134,14 +141,8 @@ const handleLogout = async () => {
   align-items: center;
   gap: 10px;
   padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--blue-200);
   margin-bottom: 8px;
-}
-
-.logo-text {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-white);
 }
 
 .nav {
@@ -158,7 +159,7 @@ const handleLogout = async () => {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--grey-700);
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -166,8 +167,8 @@ const handleLogout = async () => {
   transition: background 0.15s, color 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--color-white);
+    background: var(--blue-100);
+    color: var(--grey-900);
   }
 
   &.active {
@@ -176,9 +177,79 @@ const handleLogout = async () => {
   }
 }
 
-.logout {
-  margin: 0 10px;
-  justify-content: flex-start;
+.collapse-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: -12px;
+  top: 60px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--blue-200);
+  background: var(--color-white);
+  color: var(--grey-500);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  z-index: 1;
+
+  &:hover {
+    background: var(--blue-50);
+    color: var(--grey-900);
+  }
+
+  @include mq-m {
+    display: flex;
+  }
+}
+
+.user-info {
+  padding: 12px 20px 4px;
+  border-top: 1px solid var(--blue-200);
+  margin-top: auto;
+  overflow: hidden;
+}
+
+.user-tenant {
+  display: block;
+  font-weight: 600;
+  color: var(--color-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-name {
+  display: block;
+  color: var(--grey-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-collapsed {
+  .sidebar {
+    width: 64px;
+  }
+
+  .logo-text,
+  .tenant-wrap,
+  .nav-item span,
+  .user-info {
+    display: none;
+  }
+
+  .sidebar-header {
+    justify-content: center;
+    padding: 24px 0 20px;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 10px 0;
+  }
+
 }
 
 .burger-wrap {
@@ -196,9 +267,16 @@ const handleLogout = async () => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: margin-left 0.25s ease;
 
   @include mq-m {
     margin-left: 240px;
+  }
+}
+
+.sidebar-collapsed .main {
+  @include mq-m {
+    margin-left: 64px;
   }
 }
 
