@@ -34,7 +34,7 @@
         @submit.prevent="submit"
       >
         <NFormItem label="Название" path="name">
-          <NInput v-model:value="form.name" placeholder="Пицца Васи" @input="onNameInput" />
+          <NInput v-model:value="form.name" placeholder="Пицца Васи" />
         </NFormItem>
 
         <NFormItem label="Слаг" path="slug">
@@ -129,18 +129,6 @@ const rules: FormRules = {
   ],
 }
 
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-}
-
-function onNameInput(value: string) {
-  form.slug = slugify(value)
-}
 
 async function submit() {
   try {
