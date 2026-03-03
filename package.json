@@ -12,6 +12,7 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
+    "backoffice:setup": "node scripts/extract-local-jwt-key.mjs",
     "create-tenant": "node scripts/create-tenant.mjs",
     "create-tenant:remote": "SUPABASE_URL=https://fnfutanbnabaguylimvq.supabase.co SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuZnV0YW5ibmFiYWd1eWxpbXZxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjQyMDUxMSwiZXhwIjoyMDg3OTk2NTExfQ.WVKykN6xbL-JOLmrUGzIwAt96-8mbpg6BDfbT4xrP0g node scripts/create-tenant.mjs",
     "supabase:deploy:functions": "supabase functions deploy",

@@ -3,7 +3,8 @@ export default defineNuxtConfig({
   devServer: { port: 4712 },
   ssr: false,
   runtimeConfig: {
-    supabaseServiceKey: '', // NUXT_SUPABASE_SERVICE_KEY
+    supabaseServiceKey: '',     // NUXT_SUPABASE_SERVICE_KEY
+    supabaseJwtPrivateKey: '',  // NUXT_SUPABASE_JWT_PRIVATE_KEY — только local dev
     public: {
       supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL
     },
