@@ -74,3 +74,6 @@ export type { ValidationRule, ValidationRuleType, FormValues, FormContext } from
 
 // Constants
 export { FORM_SIZE_KEY } from './constants/form-size'
+
+// Config
+export { default as naiveUiThemeOverrides } from './config/naive-ui-theme-overrides'
