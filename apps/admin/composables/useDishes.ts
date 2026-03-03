@@ -61,6 +61,7 @@ export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>)
   return { dishes, loading, add, update, remove, toggleActive }
 }
 
+// TODO: два композабла в одном файле? зачем? везде делаем один и дефолтный экспорт
 export function useDishCounts(tenantId: Ref<string>) {
   const { $supabase } = useNuxtApp()
   const counts = ref<Record<string, number>>({})

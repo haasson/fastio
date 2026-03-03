@@ -54,6 +54,7 @@ import type { Tenant, TenantTheme } from '@fastio/shared'
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
+// TODO: конфиги в конфиги
 const presets: { value: TenantTheme['preset']; label: string; color: string }[] = [
   { value: 'default', label: 'Оранжевый', color: '#ff6b35' },
   { value: 'dark', label: 'Тёмный', color: '#1a1a2e' },

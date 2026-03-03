@@ -7,6 +7,7 @@
 
     <UiSkeleton v-if="categoriesLoading" text :repeat="5" class="skeleton" />
 
+<!--  // TODO: везде, где можно использоват грид - используем грид. Проверь все места. И элементы можно карточками сделать  -->
     <ul v-else class="category-list">
       <li
         v-for="cat in categories"

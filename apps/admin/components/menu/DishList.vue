@@ -10,6 +10,7 @@
           {{ categoryName }}
           <span class="dish-count">({{ dishes.length }})</span>
         </span>
+<!--    // TODO: здесь и в других местах - кнопки умеют принимать иконки! не надо вручную плюсики ставить    -->
         <UiButton size="small" type="tertiary" @click="openDishModal(null)">+ Добавить блюдо</UiButton>
       </div>
 
@@ -17,6 +18,7 @@
         <UiSkeleton v-if="dishesLoading" text :repeat="6" />
 
         <template v-else-if="dishes.length === 0">
+<!--          // TODO: здесь и в других местах - не допусается простой текст! У нас есть адаптивные компоненты для текстов и заголовков в либе! -->
           <p class="dish-empty">В этой категории пока нет блюд</p>
         </template>
 
@@ -29,6 +31,7 @@
           no-animation
         >
           <template #default="{ item: dish }">
+<!--      // TODO: как будто в компонент можно вынести      -->
             <UiCard size="tiny" class="dish-card" :class="{ inactive: !dish.active }">
               <UiSpace :size="8" vertical>
                 <div class="card-photo">
@@ -95,13 +98,13 @@ const { dishes, loading: dishesLoading, add: addDish, update: updateDish, remove
 
 const { confirm } = useConfirm()
 
+// TODO: это в хэлперы, можно прям в либу
 const priceFormatter = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 })
 const formatPrice = (price: number) => priceFormatter.format(price)
 
 const tagLabel: Record<string, string> = {
   spicy: '🌶 Острое',
-  vegetarian: '🥦 Вегет.',
-  vegan: '🌱 Веган',
+  vegan: '🌱 Веганское',
   new: '🆕 Новинка',
   popular: '⭐ Популярное',
   hit: '🔥 Хит',
@@ -115,6 +118,7 @@ function openDishModal(dish: Dish | null) {
   dishModalOpen.value = true
 }
 
+// TODO: функции лучше везде сделать стрелочные
 async function confirmDeleteDish(id: string) {
   const ok = await confirm({
     title: 'Удалить блюдо?',

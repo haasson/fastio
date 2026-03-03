@@ -5,6 +5,7 @@
     :width="560"
     @update:model-value="$emit('update:modelValue', $event)"
   >
+    <!--  // TODO: форма не очищается при закрытии или добавлении блюда  -->
     <form class="form" @submit.prevent="handleSubmit">
       <!-- Основное -->
       <div class="section-title">Основное</div>
@@ -86,9 +87,9 @@ const emit = defineEmits<{
 }>()
 const saving = ref(false)
 
+// TODO: дублирование. подобные вещи точно в конфиг надо
 const tagOptions: Record<DishTag, string> = {
   spicy: '🌶 Острое',
-  vegetarian: '🥦 Вегетарианское',
   vegan: '🌱 Веганское',
   new: '🆕 Новинка',
   popular: '⭐ Популярное',
@@ -108,6 +109,7 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
+// TODO: странная типизация, что за null as number
 const nutrition = reactive({
   weight: null as number | null,
   calories: null as number | null,
@@ -116,6 +118,7 @@ const nutrition = reactive({
   carbs: null as number | null,
 })
 
+// TODO: тут вообще хрен поймешь что происходит в вотчере
 watch(
   () => props.dish,
   (d) => {

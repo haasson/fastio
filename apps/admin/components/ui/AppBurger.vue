@@ -1,3 +1,4 @@
+<!-- // TODO: все ui компоненты перенести в либу, создать там компоненты, по возможности на основе наив юай  -->
 <template>
   <button class="burger-root" :class="{ open }" :aria-label="open ? 'Закрыть меню' : 'Открыть меню'" @click="$emit('click')">
     <span />

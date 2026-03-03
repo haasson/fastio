@@ -68,6 +68,6 @@ const selectedCategoryName = computed(
 .empty-state {
   padding: 40px;
   text-align: center;
-  color: #aaa;
+  color: #aaa; // // TODO: у нас в палитре куча цветов. Не должно быть вот таких брошенных цветов нигде, везде берем из переменной
 }
 </style>

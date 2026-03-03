@@ -1,7 +1,7 @@
 :root {
   /* Admin brand color */
   --color-primary: #ff6b35;
-
+  /* Ты криво перенес палитру из bnmap-core. Оранжевый цвет тупо один. У оранжевой кнопки по ховеру даже нет стилей */
   /* Palette vars used by packages/ui components */
   --blue-50: #EFF6FF;
   --blue-100: #DBEAFE;

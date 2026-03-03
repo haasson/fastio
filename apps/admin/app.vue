@@ -10,6 +10,7 @@
 import { UiConfigProvider } from '@fastio/ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 
+// // TODO: вынести в конфиги. И желательно иметь копию палитры в js, как в css. Тогда переменные будут синхронны и можно их тут юзать
 const themeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#ff6b35',

@@ -2,6 +2,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Order, OrderStatus } from '@fastio/shared'
 
 // Следующий статус по флоу + лейбл кнопки
+// // TODO:  конфиги здесь и в других местах вынести в конфиги
 export const nextStatus: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>> = {
   new: { status: 'accepted', label: 'Принять' },
   accepted: { status: 'cooking', label: 'Готовится' },
@@ -25,6 +26,7 @@ export const statusConfig: Record<OrderStatus, { label: string; color: string }>
   cancelled: { label: 'Отменён', color: '#ef4444' },
 }
 
+// // TODO: а почему это вообще композаблы, а не стор? Есть причины для такого?
 export function useOrders(tenantId: Ref<string>, filter: Ref<OrderFilter>) {
   const { $supabase } = useNuxtApp()
   const orders = ref<Order[]>([])
