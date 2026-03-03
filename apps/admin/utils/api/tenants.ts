@@ -35,8 +35,8 @@ function tenantToDb(data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
 }
 
 export const tenantsApi = {
-  async getByOwner(sb: SupabaseClient, ownerId: string): Promise<Tenant | null> {
-    const data = await query(sb.from('tenants').select('*').eq('owner_id', ownerId).maybeSingle())
+  async getById(sb: SupabaseClient, id: string): Promise<Tenant | null> {
+    const data = await query(sb.from('tenants').select('*').eq('id', id).maybeSingle())
     return data ? mapTenant(data) : null
   },
 

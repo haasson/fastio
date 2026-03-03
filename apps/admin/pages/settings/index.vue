@@ -1,10 +1,12 @@
 <template>
   <div class="settings-root">
+<!--    // TODO: вот этот блок на каждой странице непонятен. Если заведения нет - куда мы вообще залогинились?  -->
     <div v-if="!tenantStore.tenant && !tenantStore.loading" class="state-msg">
       Заведение не найдено. Обратитесь в поддержку.
     </div>
 
     <template v-else-if="tenantStore.tenant">
+<!--   // TODO: у табов страшные иконки, нужно во всем проекте иконки заменить на монохромные стильные аналоги   -->
       <UiTabs v-model="activeTab" :tabs="settingsTabs" />
 
       <div class="section">
@@ -33,6 +35,9 @@
           :tenant="tenantStore.tenant"
           @save="tenantStore.update"
         />
+        <SettingsTeam
+          v-else-if="activeTab === 'team'"
+        />
       </div>
     </template>
 
@@ -47,17 +52,19 @@ import { useTenantStore } from '~/stores/tenant'
 definePageMeta({ middleware: 'auth' })
 
 const tenantStore = useTenantStore()
+const { canManageTeam } = usePermissions()
 onMounted(() => tenantStore.init())
 
 const activeTab = ref('contacts')
 
-const settingsTabs = [
+const settingsTabs = computed(() => [
   { value: 'contacts', label: '📍 Контакты' },
   { value: 'hours', label: '🕐 Часы работы' },
   { value: 'theme', label: '🎨 Оформление' },
   { value: 'delivery', label: '🚴 Доставка' },
   { value: 'notifications', label: '🔔 Уведомления' },
-]
+  ...(canManageTeam.value ? [{ value: 'team', label: '👥 Команда' }] : []),
+])
 </script>
 
 <style scoped lang="scss">
@@ -72,6 +79,7 @@ const settingsTabs = [
   border-radius: 14px;
   padding: 28px;
   max-width: 640px;
+  overflow: visible;
 }
 
 .state-msg {

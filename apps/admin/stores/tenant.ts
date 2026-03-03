@@ -1,12 +1,32 @@
 import { defineStore } from 'pinia'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Tenant } from '@fastio/shared'
+import type { Tenant, TenantRole } from '@fastio/shared'
 import { useAuthStore } from './auth'
 
+type MembershipWithTenant = {
+  id: string
+  tenantId: string
+  userId: string
+  role: TenantRole
+  tenant: { id: string; name: string; slug: string } | null
+}
+
+const STORAGE_KEY = 'fastio_current_tenant'
+
 export const useTenantStore = defineStore('tenant', () => {
+  const memberships = ref<MembershipWithTenant[]>([])
+  const currentTenantId = ref<string | null>(null)
   const tenant = ref<Tenant | null>(null)
   const loading = ref(false)
   let channel: RealtimeChannel | null = null
+
+  const currentRole = computed<TenantRole | null>(() => {
+    if (!currentTenantId.value) return null
+    const m = memberships.value.find(m => m.tenantId === currentTenantId.value)
+    return m?.role ?? null
+  })
+
+  const hasMultipleTenants = computed(() => memberships.value.length > 1)
 
   async function init() {
     const { $supabase } = useNuxtApp()
@@ -16,24 +36,58 @@ export const useTenantStore = defineStore('tenant', () => {
 
     loading.value = true
 
-    async function fetchTenant() {
-      tenant.value = await tenantsApi.getByOwner($supabase, authStore.user!.id)
+    // Загружаем все membership'ы юзера
+    const data = await membersApi.listByUser($supabase, authStore.user.id)
+    memberships.value = data
+
+    if (memberships.value.length === 0) {
       loading.value = false
+      return
     }
+
+    // Восстанавливаем последний выбранный тенант
+    const savedId = localStorage.getItem(STORAGE_KEY)
+    const savedExists = savedId && memberships.value.some(m => m.tenantId === savedId)
+    currentTenantId.value = savedExists ? savedId : memberships.value[0].tenantId
 
     await fetchTenant()
+    subscribeToTenant()
+    loading.value = false
+  }
 
-    if (tenant.value) {
-      channel = $supabase
-        .channel(`tenant:${tenant.value.id}`)
-        .on('postgres_changes', {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'tenants',
-          filter: `id=eq.${tenant.value.id}`,
-        }, () => fetchTenant())
-        .subscribe()
-    }
+  async function fetchTenant() {
+    if (!currentTenantId.value) return
+    const { $supabase } = useNuxtApp()
+    tenant.value = await tenantsApi.getById($supabase, currentTenantId.value)
+  }
+
+  function subscribeToTenant() {
+    if (!currentTenantId.value) return
+    const { $supabase } = useNuxtApp()
+
+    channel?.unsubscribe()
+    channel = $supabase
+      .channel(`tenant:${currentTenantId.value}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'tenants',
+        filter: `id=eq.${currentTenantId.value}`,
+      }, () => fetchTenant())
+      .subscribe()
+  }
+
+  async function switchTenant(tenantId: string) {
+    if (tenantId === currentTenantId.value) return
+
+    currentTenantId.value = tenantId
+    localStorage.setItem(STORAGE_KEY, tenantId)
+
+    channel?.unsubscribe()
+    loading.value = true
+    await fetchTenant()
+    subscribeToTenant()
+    loading.value = false
   }
 
   async function update(data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) {
@@ -46,7 +100,21 @@ export const useTenantStore = defineStore('tenant', () => {
     channel?.unsubscribe()
     channel = null
     tenant.value = null
+    memberships.value = []
+    currentTenantId.value = null
+    localStorage.removeItem(STORAGE_KEY)
   }
 
-  return { tenant, loading, init, update, dispose }
+  return {
+    memberships,
+    currentTenantId,
+    tenant,
+    loading,
+    currentRole,
+    hasMultipleTenants,
+    init,
+    switchTenant,
+    update,
+    dispose,
+  }
 })

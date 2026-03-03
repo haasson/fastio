@@ -3,9 +3,11 @@
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <span class="logo-icon">🍔</span>
+        <AppLogo :size="28" />
         <span class="logo-text">Fastio</span>
       </div>
+
+      <TenantSwitcher />
 
       <nav class="nav">
         <NuxtLink
@@ -48,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import type { ComputedRef } from 'vue'
 import { UiButton, UiIcon, UiConfirmModal } from '@fastio/ui'
 import type { IconName } from '@fastio/ui'
 
@@ -55,17 +58,24 @@ const { $supabase } = useNuxtApp()
 const route = useRoute()
 const sidebarOpen = ref(false)
 const tenantStore = useTenantStore()
+const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings } = usePermissions()
 
-const navItems: { to: string; icon: IconName; label: string }[] = [
+type NavItem = { to: string; icon: IconName; label: string; visible?: ComputedRef<boolean> }
+
+const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
-  { to: '/menu', icon: 'dishes', label: 'Меню' },
-  { to: '/orders', icon: 'orders', label: 'Заказы' },
-  { to: '/promotions', icon: 'promotions', label: 'Акции' },
-  { to: '/settings', icon: 'settings', label: 'Настройки' },
+  { to: '/menu', icon: 'dishes', label: 'Меню', visible: canManageMenu },
+  { to: '/orders', icon: 'orders', label: 'Заказы', visible: canManageOrders },
+  { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canManagePromotions },
+  { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
 ]
 
+const navItems = computed(() =>
+  allNavItems.filter(item => !item.visible || item.visible.value),
+)
+
 const currentPageTitle = computed(() => {
-  return navItems.find((item) => item.to === route.path)?.label ?? ''
+  return navItems.value.find((item) => item.to === route.path)?.label ?? ''
 })
 
 async function handleLogout() {
@@ -115,10 +125,6 @@ async function handleLogout() {
   padding: 24px 20px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   margin-bottom: 8px;
-}
-
-.logo-icon {
-  font-size: 24px;
 }
 
 .logo-text {

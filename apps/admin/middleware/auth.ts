@@ -1,4 +1,5 @@
 import { useAuthStore } from '~/stores/auth'
+import { useTenantStore } from '~/stores/tenant'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return
@@ -20,7 +21,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
     })
   }
 
+  // /invite обрабатывает авторизацию самостоятельно
+  if (to.path === '/invite') return
+
   if (!authStore.isAuthenticated && to.path !== '/login') {
     return navigateTo('/login')
+  }
+
+  // Инициализируем tenant store при первом заходе (если авторизован)
+  if (authStore.isAuthenticated) {
+    const tenantStore = useTenantStore()
+    if (!tenantStore.tenant && !tenantStore.loading) {
+      await tenantStore.init()
+    }
+
   }
 })

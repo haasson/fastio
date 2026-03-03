@@ -2,8 +2,8 @@
   <div class="login-root">
     <div class="card">
       <div class="logo">
-        <span class="logo-icon">🍔</span>
-        <span class="logo-text">FastFood SaaS</span>
+        <AppLogo :size="32" />
+        <span class="logo-text">Fastio</span>
       </div>
 
       <h1 class="title">Вход в панель управления</h1>
@@ -26,6 +26,7 @@
 
         <UiAlert v-if="error" type="error">{{ error }}</UiAlert>
 
+<!--        // TODO: кстати, почему у нас везде компоненты в кэмел кейсе? вроде это устаревший способ-->
         <UiButton submit type="primary" block :loading="loading">
           Войти
         </UiButton>
@@ -40,6 +41,7 @@ import { UiInput, UiButton, UiAlert } from '@fastio/ui'
 definePageMeta({ layout: false })
 
 const { $supabase } = useNuxtApp()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
@@ -60,7 +62,8 @@ async function handleSubmit() {
       ? 'Неверный email или пароль'
       : 'Произошла ошибка. Попробуйте ещё раз'
   } else {
-    await navigateTo('/')
+    const redirect = route.query.redirect as string
+    await navigateTo(redirect || '/')
   }
 
   loading.value = false
@@ -91,10 +94,6 @@ async function handleSubmit() {
   align-items: center;
   gap: 10px;
   margin-bottom: 32px;
-}
-
-.logo-icon {
-  font-size: 28px;
 }
 
 .logo-text {
