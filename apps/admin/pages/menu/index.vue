@@ -4,7 +4,7 @@
       <p>Заведение не найдено. Обратитесь в поддержку.</p>
     </div>
 
-    <div v-else-if="tenantStore.tenant" class="layout">
+    <template v-else-if="tenantStore.tenant">
       <MenuCategoryList
         v-model="selectedCategoryId"
         :tenant-id="tenantId"
@@ -13,9 +13,8 @@
       <MenuDishList
         :tenant-id="tenantId"
         :category-id="selectedCategoryId"
-        :category-name="selectedCategoryName"
       />
-    </div>
+    </template>
   </div>
 </template>
 
@@ -36,37 +35,20 @@ onMounted(() => tenantStore.init())
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
 const selectedCategoryId = ref<string | null>(null)
-const categoriesCache = ref<Category[]>([])
 
 const onCategoriesLoaded = (cats: Category[]) => {
-  categoriesCache.value = cats
   if (!selectedCategoryId.value && cats.length > 0) {
     selectedCategoryId.value = cats[0].id
   }
 }
-
-const selectedCategoryName = computed(
-  () => categoriesCache.value.find((c) => c.id === selectedCategoryId.value)?.name ?? '',
-)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
-
 .menu-root {
-  height: 100%;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
-  height: auto;
-
-  @include mq-m {
-    grid-template-columns: 260px 1fr;
-    height: calc(100vh - 60px - 48px);
-  }
+  height: 100%;
 }
 
 .empty-state {

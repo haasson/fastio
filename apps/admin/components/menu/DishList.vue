@@ -5,18 +5,14 @@
     </div>
 
     <template v-else>
-      <div class="panel-header">
-        <span class="panel-title">
-          {{ categoryName }}
-          <span class="dish-count">({{ dishes.length }})</span>
-        </span>
+      <UiSectionHeader label="Блюда">
         <UiButton
           size="small"
-          type="tertiary"
+          type="default"
           icon="plus"
           @click="openDishModal(null)"
-        >Добавить блюдо</UiButton>
-      </div>
+        >Добавить</UiButton>
+      </UiSectionHeader>
 
       <div class="grid-wrap">
         <UiSkeleton v-if="dishesLoading" text :repeat="6" />
@@ -27,7 +23,7 @@
           v-else
           :items="dishes"
           key-field="id"
-          :columns="{ s: 2, m: 2, l: 3 }"
+          :columns="{ s: 2, m: 3, l: 4 }"
           :gap="10"
           no-animation
         >
@@ -90,10 +86,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiIcon, UiSkeleton, UiSpace, UiTag, UiCard, UiGrid, UiSwitch, useConfirm } from '@fastio/ui'
+import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiGrid, UiSwitch, useConfirm } from '@fastio/ui'
 import type { Dish } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDishes } from '~/composables/useDishes'
 import { tagOptions } from '~/config/dish-tags'
@@ -101,7 +98,6 @@ import { tagOptions } from '~/config/dish-tags'
 const props = defineProps<{
   tenantId: string
   categoryId: string | null
-  categoryName: string
 }>()
 
 const tenantIdRef = computed(() => props.tenantId)
@@ -133,32 +129,10 @@ const confirmDeleteDish = async (id: string) => {
 
 <style scoped lang="scss">
 .dishes-root {
-  background: var(--color-bg-card);
-  border-radius: 14px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
-
-.panel-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-title);
-}
-
-.dish-count {
-  font-weight: 400;
-  color: var(--color-text-secondary);
-  font-size: 13px;
+  flex: 1;
+  min-height: 0;
 }
 
 .no-category {
@@ -173,7 +147,6 @@ const confirmDeleteDish = async (id: string) => {
 .grid-wrap {
   overflow-y: auto;
   flex: 1;
-  padding: 12px;
 }
 
 .dish-card {

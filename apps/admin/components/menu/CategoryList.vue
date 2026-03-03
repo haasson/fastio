@@ -1,33 +1,32 @@
 <template>
-  <aside class="categories-root">
-    <div class="panel-header">
-      <span class="panel-title">Категории</span>
+  <div class="categories-root">
+    <UiSectionHeader label="Категории">
       <UiButton
         size="small"
-        type="tertiary"
+        type="default"
         icon="plus"
         @click="openCategoryModal(null)"
       >Добавить</UiButton>
-    </div>
+    </UiSectionHeader>
 
     <UiSkeleton
       v-if="categoriesLoading"
       text
-      :repeat="5"
+      :repeat="3"
       class="skeleton"
     />
 
-    <ul v-else class="category-list">
-      <li
+    <div v-else class="bar">
+      <div
         v-for="cat in categories"
         :key="cat.id"
-        class="category-item"
+        class="tag"
         :class="{ selected: modelValue === cat.id, inactive: !cat.active }"
         @click="$emit('update:modelValue', cat.id)"
       >
-        <span class="cat-name">{{ cat.name }}</span>
-        <span class="cat-count">{{ dishCountByCategory[cat.id] ?? 0 }}</span>
-        <div class="cat-actions" @click.stop>
+        <span class="tag-name">{{ cat.name }}</span>
+        <span class="tag-count">{{ dishCountByCategory[cat.id] ?? 0 }}</span>
+        <div class="tag-actions" @click.stop>
           <UiButton
             type="text"
             size="tiny"
@@ -43,10 +42,8 @@
             @click="confirmDeleteCategory(cat.id)"
           />
         </div>
-      </li>
-
-      <UiAppEmpty v-if="categories.length === 0" text="Категорий пока нет" />
-    </ul>
+      </div>
+    </div>
 
     <UiModal
       v-model="categoryModalOpen"
@@ -62,20 +59,20 @@
         />
         <div class="form-footer">
           <UiSpace :size="8">
-            <UiButton type="tertiary" @click="categoryModalOpen = false">Отмена</UiButton>
+            <UiButton type="default" @click="categoryModalOpen = false">Отмена</UiButton>
             <UiButton type="primary" :loading="saving" @click="saveCategory">Сохранить</UiButton>
           </UiSpace>
         </div>
       </UiSpace>
     </UiModal>
-  </aside>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { UiModal, UiInput, UiButton, UiSkeleton, UiSpace, useConfirm } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
-import UiAppEmpty from '~/components/ui/AppEmpty.vue'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import { useCategories } from '~/composables/useCategories'
 import useDishCounts from '~/composables/useDishCounts'
 
@@ -141,89 +138,79 @@ const confirmDeleteCategory = async (id: string) => {
 
 <style scoped lang="scss">
 .categories-root {
-  background: var(--color-bg-card);
-  border-radius: 14px;
-  overflow: hidden;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
-
-.panel-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-title);
+  gap: 10px;
 }
 
 .skeleton {
-  margin: 12px;
+  padding: 0;
 }
 
-.category-list {
-  list-style: none;
-  overflow-y: auto;
-  flex: 1;
-  padding: 8px;
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
-.category-item {
+.tag {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 10px 10px 12px;
-  border-radius: 10px;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 20px;
   cursor: pointer;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   transition: background 0.12s;
+  user-select: none;
 
   &:hover {
     background: var(--color-bg-hover);
 
-    .cat-actions {
+    .tag-actions {
       opacity: 1;
+      width: auto;
+      margin-left: 2px;
     }
   }
 
   &.selected {
     background: var(--color-primary-light);
+    border-color: var(--color-primary);
   }
 
-  &.inactive .cat-name {
+  &.inactive .tag-name {
     opacity: 0.45;
     text-decoration: line-through;
   }
 }
 
-.cat-name {
-  flex: 1;
+.tag-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-title);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.cat-count {
+.tag-count {
   font-size: 12px;
   color: var(--color-text-secondary);
   background: var(--color-bg-page);
   border-radius: 6px;
-  padding: 1px 6px;
+  padding: 1px 5px;
+  white-space: nowrap;
 }
 
-.cat-actions {
+.tag-actions {
   display: flex;
   gap: 2px;
   opacity: 0;
-  transition: opacity 0.15s;
+  width: 0;
+  overflow: hidden;
+  transition: opacity 0.15s, width 0.15s;
 }
 
 .form-footer {
