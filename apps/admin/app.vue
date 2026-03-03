@@ -7,21 +7,17 @@
 </template>
 
 <script setup lang="ts">
-import { UiConfigProvider } from '@fastio/ui'
-import type { GlobalThemeOverrides } from 'naive-ui'
+import { onMounted } from 'vue'
+import { navigateTo } from '#imports'
+import { UiConfigProvider, naiveUiThemeOverrides } from '@fastio/ui'
 
-const adminPalette = {
-  orange500: '#ff6b35',
-  orange400: '#ff8a4a',
-  orange600: '#e55a25',
-} as const
+const themeOverrides = naiveUiThemeOverrides
 
-const themeOverrides: GlobalThemeOverrides = {
-  common: {
-    primaryColor: adminPalette.orange500,
-    primaryColorHover: adminPalette.orange400,
-    primaryColorPressed: adminPalette.orange600,
-    primaryColorSuppl: adminPalette.orange400,
-  },
-}
+// Invite-flow: если пользователь пришёл по invite-ссылке — отправляем на
+// установку пароля. Флаг выставляется в плагине до createClient.
+onMounted(() => {
+  if (sessionStorage.getItem('fastio:invite-pending')) {
+    navigateTo('/set-password')
+  }
+})
 </script>

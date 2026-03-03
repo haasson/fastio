@@ -5,6 +5,12 @@ import { useAuthStore } from '~/stores/auth'
 export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()
 
+  // Читаем хеш до createClient — Supabase может очистить его при инициализации.
+  // sessionStorage надёжнее стора: не затрагивается Supabase и SSR-гидрацией.
+  if (window.location.hash.includes('type=invite')) {
+    sessionStorage.setItem('fastio:invite-pending', '1')
+  }
+
   const supabase = createClient(
     config.public.supabaseUrl,
     config.public.supabaseAnonKey,

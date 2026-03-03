@@ -23,8 +23,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
     })
   }
 
-  // /invite обрабатывает авторизацию самостоятельно
-  if (to.path === '/invite') return
+  // Invite-flow: пока пароль не сохранён — держим юзера на /set-password
+  if (sessionStorage.getItem('fastio:invite-pending') && to.path !== '/set-password') {
+    return navigateTo('/set-password')
+  }
+
+  // Эти страницы обрабатывают авторизацию самостоятельно
+  if (to.path === '/invite' || to.path === '/set-password') return
 
   if (!authStore.isAuthenticated && to.path !== '/login') {
     return navigateTo('/login')
