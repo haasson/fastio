@@ -1,19 +1,13 @@
 <template>
   <div class="orders-root">
     <!-- Фильтр-табы -->
-<!--  // TODO: возможно стоит заюзать табы из либы и дать возможность их настраивать - текст и цвет. У каждого бизнеса может быть свой набор нужных тегов. Цвета выбирать из предустановленных, возможно предустановленные категории сделать - теги для обработки, для заказов в работе, отмененные, завершенные   -->
     <UiSegmentedControl v-model="filter" :items="segmentedTabs" />
 
     <!-- Загрузка -->
-<!--  // TODO: какой-то общий лоадер простой сделать и везде заменить  -->
     <div v-if="loading" class="state-msg">Загрузка…</div>
 
     <!-- Пусто -->
-<!--  // TODO: тоже нужно общий компонент. И можно какой-то общий текст, типа Тут пока ничего нет. И иконка одинаковая, у нас MVP  -->
-    <div v-else-if="orders.length === 0" class="state-msg">
-      <span class="state-icon">{{ emptyIcon }}</span>
-      <span>{{ emptyText }}</span>
-    </div>
+    <UiAppEmpty v-else-if="orders.length === 0" :icon="emptyIcon" :text="emptyText" />
 
     <!-- Список -->
     <div v-else class="grid">
@@ -30,14 +24,21 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, reactive, onMounted } from 'vue'
+import { definePageMeta } from '#imports'
 import { UiSegmentedControl } from '@fastio/ui'
 import type { SegmentedControlItem } from '@fastio/ui'
 import type { OrderStatus } from '@fastio/shared'
+import type { OrderFilter } from '~/utils/api/orders'
+import OrderCard from '~/components/orders/OrderCard.vue'
+import UiAppEmpty from '~/components/ui/AppEmpty.vue'
+import { useOrders } from '~/composables/useOrders'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })
 
 const tenantStore = useTenantStore()
+
 onMounted(() => tenantStore.init())
 
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
@@ -54,18 +55,18 @@ const tabs: { label: string; value: OrderFilter }[] = [
   { label: 'Все', value: 'all' },
 ]
 
-const segmentedTabs = computed<SegmentedControlItem[]>(() =>
-  tabs.map((tab) => ({
-    label: tab.label,
-    value: tab.value,
-    tag: tab.value === 'active' && newCount.value > 0 ? String(newCount.value) : undefined,
-  })),
+const segmentedTabs = computed<SegmentedControlItem[]>(() => tabs.map((tab) => ({
+  label: tab.label,
+  value: tab.value,
+  tag: tab.value === 'active' && newCount.value > 0 ? String(newCount.value) : undefined,
+})),
 )
 
 const emptyText = computed(() => {
   if (filter.value === 'active') return 'Активных заказов нет'
   if (filter.value === 'completed') return 'Завершённых заказов нет'
   if (filter.value === 'cancelled') return 'Отменённых заказов нет'
+
   return 'Заказов пока нет'
 })
 
@@ -73,13 +74,14 @@ const emptyIcon = computed(() => {
   if (filter.value === 'active') return '📭'
   if (filter.value === 'completed') return '✅'
   if (filter.value === 'cancelled') return '🚫'
+
   return '📋'
 })
 
 // Блокируем кнопки пока идёт запрос
 const updatingIds = reactive(new Set<string>())
 
-async function handleAdvance(id: string, status: string) {
+const handleAdvance = async (id: string, status: string) => {
   updatingIds.add(id)
   try {
     await updateStatus(id, status as OrderStatus)
@@ -88,7 +90,7 @@ async function handleAdvance(id: string, status: string) {
   }
 }
 
-async function handleCancel(id: string) {
+const handleCancel = async (id: string) => {
   if (!confirm('Отменить заказ?')) return
   updatingIds.add(id)
   try {
@@ -109,17 +111,9 @@ async function handleCancel(id: string) {
 }
 
 .state-msg {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
   padding: 60px 0;
-  color: #bbb;
-  font-size: 15px;
-}
-
-.state-icon {
-  font-size: 40px;
+  color: var(--color-text-tertiary);
+  text-align: center;
 }
 
 .grid {

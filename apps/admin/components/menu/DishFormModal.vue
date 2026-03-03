@@ -5,20 +5,30 @@
     :width="560"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <!--  // TODO: форма не очищается при закрытии или добавлении блюда  -->
     <form class="form" @submit.prevent="handleSubmit">
       <!-- Основное -->
-      <div class="section-title">Основное</div>
+      <UiText size="tiny" span class="section-title">Основное</UiText>
 
       <div class="row">
         <UiInput v-model="form.name" label="Название *" placeholder="Маргарита" />
-        <UiInputNumber v-model="form.price" label="Цена, ₽ *" :min="0" placeholder="350" />
+        <UiInputNumber
+          v-model="form.price"
+          label="Цена, ₽ *"
+          :min="0"
+          placeholder="350"
+        />
       </div>
 
-      <UiInput v-model="form.description" label="Описание" type="textarea" :rows="2" placeholder="Томатный соус, моцарелла, базилик" />
+      <UiInput
+        v-model="form.description"
+        label="Описание"
+        type="textarea"
+        :rows="2"
+        placeholder="Томатный соус, моцарелла, базилик"
+      />
 
       <!-- Теги -->
-      <div class="section-title">Теги</div>
+      <UiText size="tiny" span class="section-title">Теги</UiText>
       <div class="tags-grid">
         <UiCheckbox
           v-for="(label, value) in tagOptions"
@@ -31,33 +41,57 @@
       </div>
 
       <!-- Состав -->
-      <div class="section-title">Состав</div>
+      <UiText size="tiny" span class="section-title">Состав</UiText>
       <div class="ingredients-list">
         <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
           <UiInput v-model="ing.name" placeholder="Ингредиент" :clearable="false" />
           <UiCheckbox v-model="ing.removable">Убрать</UiCheckbox>
           <UiButton size="tiny" type="text" @click="removeIngredient(i)">✕</UiButton>
         </div>
-        <UiButton type="tertiary" @click="addIngredient">+ Добавить ингредиент</UiButton>
+        <UiButton type="tertiary" icon="plus" @click="addIngredient">Добавить ингредиент</UiButton>
       </div>
 
       <!-- КБЖУ -->
-      <div class="section-title">
+      <UiText size="tiny" span class="section-title">
         Пищевая ценность <span class="optional">(необязательно)</span>
-      </div>
+      </UiText>
       <div class="nutrition-grid">
-        <UiInputNumber v-model="nutrition.weight" label="Вес, г" :min="0" placeholder="350" />
-        <UiInputNumber v-model="nutrition.calories" label="Ккал" :min="0" placeholder="850" />
-        <UiInputNumber v-model="nutrition.protein" label="Белки, г" :min="0" placeholder="38" />
-        <UiInputNumber v-model="nutrition.fat" label="Жиры, г" :min="0" placeholder="32" />
-        <UiInputNumber v-model="nutrition.carbs" label="Углеводы, г" :min="0" placeholder="86" />
+        <UiInputNumber
+          v-model="nutrition.weight"
+          label="Вес, г"
+          :min="0"
+          placeholder="350"
+        />
+        <UiInputNumber
+          v-model="nutrition.calories"
+          label="Ккал"
+          :min="0"
+          placeholder="850"
+        />
+        <UiInputNumber
+          v-model="nutrition.protein"
+          label="Белки, г"
+          :min="0"
+          placeholder="38"
+        />
+        <UiInputNumber
+          v-model="nutrition.fat"
+          label="Жиры, г"
+          :min="0"
+          placeholder="32"
+        />
+        <UiInputNumber
+          v-model="nutrition.carbs"
+          label="Углеводы, г"
+          :min="0"
+          placeholder="86"
+        />
       </div>
 
       <!-- Активность -->
       <div class="active-row">
         <span class="label">Показывать в меню</span>
-        <!-- TODO: заменить на UiSwitch когда добавят в @fastio/ui -->
-        <UiAppToggle v-model="form.active" />
+        <UiSwitch v-model="form.active" />
       </div>
 
       <div class="form-footer">
@@ -69,8 +103,11 @@
 </template>
 
 <script setup lang="ts">
-import { UiModal, UiInput, UiInputNumber, UiButton, UiCheckbox } from '@fastio/ui'
+import { ref, reactive, watch } from 'vue'
+import { UiModal, UiInput, UiInputNumber, UiButton, UiCheckbox, UiSwitch, UiText } from '@fastio/ui'
 import type { Dish, DishTag, DishIngredient } from '@fastio/shared'
+import type { DishFormData } from '~/utils/api/dishes'
+import { tagOptions } from '~/config/dish-tags'
 
 const props = defineProps<{
   modelValue: boolean
@@ -83,18 +120,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  saved: []
+  'saved': []
 }>()
 const saving = ref(false)
-
-// TODO: дублирование. подобные вещи точно в конфиг надо
-const tagOptions: Record<DishTag, string> = {
-  spicy: '🌶 Острое',
-  vegan: '🌱 Веганское',
-  new: '🆕 Новинка',
-  popular: '⭐ Популярное',
-  hit: '🔥 Хит продаж',
-}
 
 const defaultForm = () => ({
   categoryId: props.categoryId,
@@ -109,7 +137,6 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
-// TODO: странная типизация, что за null as number
 const nutrition = reactive({
   weight: null as number | null,
   calories: null as number | null,
@@ -118,7 +145,16 @@ const nutrition = reactive({
   carbs: null as number | null,
 })
 
-// TODO: тут вообще хрен поймешь что происходит в вотчере
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val && !props.dish) {
+      Object.assign(form, defaultForm())
+      Object.assign(nutrition, { weight: null, calories: null, protein: null, fat: null, carbs: null })
+    }
+  },
+)
+
 watch(
   () => props.dish,
   (d) => {
@@ -143,7 +179,7 @@ watch(
   { immediate: true },
 )
 
-function toggleTag(value: DishTag, checked: boolean) {
+const toggleTag = (value: DishTag, checked: boolean) => {
   if (checked) {
     if (!form.tags.includes(value)) form.tags.push(value)
   } else {
@@ -151,17 +187,19 @@ function toggleTag(value: DishTag, checked: boolean) {
   }
 }
 
-function addIngredient() {
+const addIngredient = () => {
   form.ingredients.push({ name: '', removable: false })
 }
 
-function removeIngredient(index: number) {
+const removeIngredient = (index: number) => {
   form.ingredients.splice(index, 1)
 }
 
-function buildNutrition() {
+const buildNutrition = () => {
   const hasAny = Object.values(nutrition).some((v) => v !== null && v !== 0)
+
   if (!hasAny) return null
+
   return {
     weight: nutrition.weight ?? 0,
     calories: nutrition.calories ?? 0,
@@ -171,7 +209,7 @@ function buildNutrition() {
   }
 }
 
-async function handleSubmit() {
+const handleSubmit = async () => {
   saving.value = true
   try {
     const data: DishFormData = {
@@ -195,6 +233,7 @@ async function handleSubmit() {
 
 <style scoped lang="scss">
 @use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/form' as *;
 
 .form {
   display: flex;
@@ -203,11 +242,7 @@ async function handleSubmit() {
 }
 
 .section-title {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #aaa;
+  @include section-title;
   padding-top: 4px;
 }
 
@@ -260,7 +295,7 @@ async function handleSubmit() {
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--color-border);
 }
 
 .form-footer {
@@ -268,6 +303,6 @@ async function handleSubmit() {
   justify-content: flex-end;
   gap: 8px;
   padding-top: 4px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--color-border);
 }
 </style>

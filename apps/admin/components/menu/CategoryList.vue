@@ -2,12 +2,21 @@
   <aside class="categories-root">
     <div class="panel-header">
       <span class="panel-title">Категории</span>
-      <UiButton size="small" type="tertiary" @click="openCategoryModal(null)">+ Добавить</UiButton>
+      <UiButton
+        size="small"
+        type="tertiary"
+        icon="plus"
+        @click="openCategoryModal(null)"
+      >Добавить</UiButton>
     </div>
 
-    <UiSkeleton v-if="categoriesLoading" text :repeat="5" class="skeleton" />
+    <UiSkeleton
+      v-if="categoriesLoading"
+      text
+      :repeat="5"
+      class="skeleton"
+    />
 
-<!--  // TODO: везде, где можно использоват грид - используем грид. Проверь все места. И элементы можно карточками сделать  -->
     <ul v-else class="category-list">
       <li
         v-for="cat in categories"
@@ -19,18 +28,24 @@
         <span class="cat-name">{{ cat.name }}</span>
         <span class="cat-count">{{ dishCountByCategory[cat.id] ?? 0 }}</span>
         <div class="cat-actions" @click.stop>
-          <button class="icon-btn" title="Редактировать" @click="openCategoryModal(cat)">
-            <UiIcon name="pencil" :size="16" />
-          </button>
-          <button class="icon-btn" title="Удалить" @click="confirmDeleteCategory(cat.id)">
-            <UiIcon name="trash" :size="16" />
-          </button>
+          <UiButton
+            type="text"
+            size="tiny"
+            icon="pencil"
+            title="Редактировать"
+            @click="openCategoryModal(cat)"
+          />
+          <UiButton
+            type="text"
+            size="tiny"
+            icon="trash"
+            title="Удалить"
+            @click="confirmDeleteCategory(cat.id)"
+          />
         </div>
       </li>
 
-      <li v-if="categories.length === 0" class="category-empty">
-        Категорий пока нет
-      </li>
+      <UiAppEmpty v-if="categories.length === 0" text="Категорий пока нет" />
     </ul>
 
     <UiModal
@@ -39,7 +54,12 @@
       :width="400"
     >
       <UiSpace :size="16" vertical>
-        <UiInput v-model="categoryForm.name" label="Название" placeholder="Например: Пицца" autofocus />
+        <UiInput
+          v-model="categoryForm.name"
+          label="Название"
+          placeholder="Например: Пицца"
+          autofocus
+        />
         <div class="form-footer">
           <UiSpace :size="8">
             <UiButton type="tertiary" @click="categoryModalOpen = false">Отмена</UiButton>
@@ -52,8 +72,12 @@
 </template>
 
 <script setup lang="ts">
-import { UiModal, UiInput, UiButton, UiIcon, UiSkeleton, UiSpace, useConfirm } from '@fastio/ui'
+import { ref, computed, reactive, watch } from 'vue'
+import { UiModal, UiInput, UiButton, UiSkeleton, UiSpace, useConfirm } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
+import UiAppEmpty from '~/components/ui/AppEmpty.vue'
+import { useCategories } from '~/composables/useCategories'
+import useDishCounts from '~/composables/useDishCounts'
 
 const props = defineProps<{
   tenantId: string
@@ -67,8 +91,8 @@ const emit = defineEmits<{
 
 const tenantIdRef = computed(() => props.tenantId)
 
-const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory } =
-  useCategories(tenantIdRef)
+const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory }
+  = useCategories(tenantIdRef)
 
 watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
 
@@ -81,13 +105,13 @@ const editingCategory = ref<Category | null>(null)
 const categoryForm = reactive({ name: '' })
 const saving = ref(false)
 
-function openCategoryModal(cat: Category | null) {
+const openCategoryModal = (cat: Category | null) => {
   editingCategory.value = cat
   categoryForm.name = cat?.name ?? ''
   categoryModalOpen.value = true
 }
 
-async function saveCategory() {
+const saveCategory = async () => {
   saving.value = true
   try {
     if (editingCategory.value) {
@@ -101,13 +125,14 @@ async function saveCategory() {
   }
 }
 
-async function confirmDeleteCategory(id: string) {
+const confirmDeleteCategory = async (id: string) => {
   const ok = await confirm({
     title: 'Удалить категорию?',
     message: 'Блюда в ней останутся в базе.',
     confirmText: 'Удалить',
     confirmType: 'error',
   })
+
   if (!ok) return
   if (props.modelValue === id) emit('update:modelValue', null)
   await removeCategory(id)
@@ -116,7 +141,7 @@ async function confirmDeleteCategory(id: string) {
 
 <style scoped lang="scss">
 .categories-root {
-  background: #fff;
+  background: var(--color-bg-card);
   border-radius: 14px;
   overflow: hidden;
   display: flex;
@@ -128,14 +153,14 @@ async function confirmDeleteCategory(id: string) {
   align-items: center;
   justify-content: space-between;
   padding: 16px 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .panel-title {
   font-size: 15px;
   font-weight: 700;
-  color: #111;
+  color: var(--color-title);
 }
 
 .skeleton {
@@ -159,7 +184,7 @@ async function confirmDeleteCategory(id: string) {
   transition: background 0.12s;
 
   &:hover {
-    background: #f7f7f7;
+    background: var(--color-bg-hover);
 
     .cat-actions {
       opacity: 1;
@@ -167,7 +192,7 @@ async function confirmDeleteCategory(id: string) {
   }
 
   &.selected {
-    background: #fff4f0;
+    background: var(--color-primary-light);
   }
 
   &.inactive .cat-name {
@@ -180,7 +205,7 @@ async function confirmDeleteCategory(id: string) {
   flex: 1;
   font-size: 14px;
   font-weight: 500;
-  color: #111;
+  color: var(--color-title);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -188,8 +213,8 @@ async function confirmDeleteCategory(id: string) {
 
 .cat-count {
   font-size: 12px;
-  color: #aaa;
-  background: #f5f5f5;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
   border-radius: 6px;
   padding: 1px 6px;
 }
@@ -199,31 +224,6 @@ async function confirmDeleteCategory(id: string) {
   gap: 2px;
   opacity: 0;
   transition: opacity 0.15s;
-}
-
-.icon-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: #bbb;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: #f0f0f0;
-    color: #333;
-  }
-}
-
-.category-empty {
-  padding: 24px;
-  text-align: center;
-  color: #bbb;
-  font-size: 13px;
 }
 
 .form-footer {

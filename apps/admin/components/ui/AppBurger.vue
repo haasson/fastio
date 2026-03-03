@@ -1,6 +1,10 @@
-<!-- // TODO: все ui компоненты перенести в либу, создать там компоненты, по возможности на основе наив юай  -->
 <template>
-  <button class="burger-root" :class="{ open }" :aria-label="open ? 'Закрыть меню' : 'Открыть меню'" @click="$emit('click')">
+  <button
+    class="burger-root"
+    :class="{ open }"
+    :aria-label="open ? 'Закрыть меню' : 'Открыть меню'"
+    @click="$emit('click')"
+  >
     <span />
     <span />
     <span />
@@ -29,7 +33,7 @@ defineEmits<{ click: [] }>()
     display: block;
     width: 22px;
     height: 2px;
-    background: #333;
+    background: var(--grey-800);
     border-radius: 2px;
     transition: transform 0.2s, opacity 0.2s;
     transform-origin: center;

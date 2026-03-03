@@ -1,3 +1,5 @@
+import { defineNuxtRouteMiddleware, navigateTo } from '#imports'
+import { watch } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -16,7 +18,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
             unwatch()
             resolve()
           }
-        }
+        },
       )
     })
   }
@@ -31,9 +33,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Инициализируем tenant store при первом заходе (если авторизован)
   if (authStore.isAuthenticated) {
     const tenantStore = useTenantStore()
+
     if (!tenantStore.tenant && !tenantStore.loading) {
       await tenantStore.init()
     }
-
   }
 })

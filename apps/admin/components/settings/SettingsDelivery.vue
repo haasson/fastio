@@ -1,15 +1,25 @@
 <template>
   <form @submit.prevent="handleSave">
     <div class="form">
-      <p class="section-title">Настройки доставки</p>
+      <UiText size="tiny" span class="section-title">Настройки доставки</UiText>
 
       <div class="row">
         <div class="field">
-          <UiInputNumber v-model="form.deliveryMinOrder" label="Минимальная сумма заказа, ₽" :min="0" placeholder="500" />
+          <UiInputNumber
+            v-model="form.deliveryMinOrder"
+            label="Минимальная сумма заказа, ₽"
+            :min="0"
+            placeholder="500"
+          />
           <span class="hint">При сумме ниже — заказ не принимается</span>
         </div>
         <div class="field">
-          <UiInputNumber v-model="form.deliveryFee" label="Стоимость доставки, ₽" :min="0" placeholder="150" />
+          <UiInputNumber
+            v-model="form.deliveryFee"
+            label="Стоимость доставки, ₽"
+            :min="0"
+            placeholder="150"
+          />
           <span class="hint">0 — бесплатная доставка</span>
         </div>
       </div>
@@ -23,7 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton, UiInputNumber } from '@fastio/ui'
+import { ref, reactive, watch } from 'vue'
+import { UiButton, UiInputNumber, UiText } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
@@ -42,13 +53,15 @@ watch(() => props.tenant, (t) => {
 const saving = ref(false)
 const saved = ref(false)
 
-async function handleSave() {
+const handleSave = async () => {
   saving.value = true
   saved.value = false
   try {
     await emit('save', { deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0 })
     saved.value = true
-    setTimeout(() => { saved.value = false }, 3000)
+    setTimeout(() => {
+      saved.value = false
+    }, 3000)
   } finally {
     saving.value = false
   }
@@ -57,6 +70,7 @@ async function handleSave() {
 
 <style scoped lang="scss">
 @use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/form' as *;
 
 .form {
   display: flex;
@@ -65,11 +79,7 @@ async function handleSave() {
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #aaa;
+  @include section-title;
 }
 
 .row {
@@ -90,18 +100,14 @@ async function handleSave() {
 
 .hint {
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  @include settings-footer;
 }
 
 .saved-msg {
-  font-size: 13px;
-  color: #10b981;
+  @include saved-msg;
 }
 </style>

@@ -1,3 +1,5 @@
+/* TODO: Этот файл не нужен, ресет есть в либе */
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

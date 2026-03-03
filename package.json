@@ -13,7 +13,8 @@
     "lint": "turbo run lint",
     "create-tenant": "node scripts/create-tenant.mjs",
     "create-tenant:remote": "SUPABASE_URL=https://fnfutanbnabaguylimvq.supabase.co SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuZnV0YW5ibmFiYWd1eWxpbXZxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjQyMDUxMSwiZXhwIjoyMDg3OTk2NTExfQ.WVKykN6xbL-JOLmrUGzIwAt96-8mbpg6BDfbT4xrP0g node scripts/create-tenant.mjs",
-    "supabase:deploy:functions": "supabase functions deploy"
+    "supabase:deploy:functions": "supabase functions deploy",
+    "prepare": "husky"
   },
   "workspaces": [
     "apps/*",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@supabase/supabase-js": "^2.98.0",
     "concurrently": "^9.1.2",
+    "husky": "^9.1.7",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2"
   },

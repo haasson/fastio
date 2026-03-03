@@ -2,11 +2,11 @@
   <div class="login-root">
     <div class="card">
       <div class="logo">
-        <AppLogo :size="32" />
+        <UiAppLogo :size="32" />
         <span class="logo-text">Fastio</span>
       </div>
 
-      <h1 class="title">Вход в панель управления</h1>
+      <UiTitle size="h3" class="title">Вход в панель управления</UiTitle>
 
       <form class="form" @submit.prevent="handleSubmit">
         <UiInput
@@ -26,8 +26,12 @@
 
         <UiAlert v-if="error" type="error">{{ error }}</UiAlert>
 
-<!--        // TODO: кстати, почему у нас везде компоненты в кэмел кейсе? вроде это устаревший способ-->
-        <UiButton submit type="primary" block :loading="loading">
+        <UiButton
+          submit
+          type="primary"
+          block
+          :loading="loading"
+        >
           Войти
         </UiButton>
       </form>
@@ -36,7 +40,10 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiButton, UiAlert } from '@fastio/ui'
+import { ref } from 'vue'
+import { definePageMeta, useNuxtApp, useRoute, navigateTo } from '#imports'
+import { UiInput, UiButton, UiAlert, UiTitle } from '@fastio/ui'
+import UiAppLogo from '~/components/ui/AppLogo.vue'
 
 definePageMeta({ layout: false })
 
@@ -48,7 +55,7 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
-async function handleSubmit() {
+const handleSubmit = async () => {
   error.value = ''
   loading.value = true
 
@@ -63,6 +70,7 @@ async function handleSubmit() {
       : 'Произошла ошибка. Попробуйте ещё раз'
   } else {
     const redirect = route.query.redirect as string
+
     await navigateTo(redirect || '/')
   }
 
@@ -76,12 +84,12 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: var(--color-bg-page);
   padding: 16px;
 }
 
 .card {
-  background: #fff;
+  background: var(--color-bg-card);
   border-radius: 16px;
   padding: 40px 32px;
   width: 100%;
@@ -99,13 +107,10 @@ async function handleSubmit() {
 .logo-text {
   font-size: 18px;
   font-weight: 700;
-  color: #111;
+  color: var(--color-title);
 }
 
 .title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #111;
   margin: 0 0 28px;
 }
 

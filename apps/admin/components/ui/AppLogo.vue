@@ -7,7 +7,12 @@
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect width="48" height="48" rx="12" :fill="background" />
+    <rect
+      width="48"
+      height="48"
+      rx="12"
+      :fill="background"
+    />
     <path d="M20 6h10l-4 16h8L18 42l4-16h-8z" :fill="color" />
   </svg>
 </template>
@@ -20,6 +25,6 @@ withDefaults(defineProps<{
 }>(), {
   size: 28,
   color: '#ffffff',
-  background: '#ff6b35',
+  background: '#ff6b35', // --color-primary (CSS vars not usable in SVG attrs)
 })
 </script>

@@ -1,15 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TenantMember, TenantRole } from '@fastio/shared'
+import { query } from '~/utils/query'
 
-function mapMember(row: Record<string, unknown>): TenantMember {
-  return {
-    id: row.id as string,
-    tenantId: row.tenant_id as string,
-    userId: row.user_id as string,
-    role: row.role as TenantRole,
-    createdAt: row.created_at as string,
-  }
-}
+const mapMember = (row: Record<string, unknown>): TenantMember => ({
+  id: row.id as string,
+  tenantId: row.tenant_id as string,
+  userId: row.user_id as string,
+  role: row.role as TenantRole,
+  createdAt: row.created_at as string,
+})
 
 export const membersApi = {
   async listByUser(sb: SupabaseClient, userId: string) {
@@ -18,6 +17,7 @@ export const membersApi = {
         .select('*, tenants(id, name, slug)')
         .eq('user_id', userId),
     )
+
     return (data ?? []).map((row: Record<string, unknown>) => ({
       ...mapMember(row),
       tenant: row.tenants as { id: string; name: string; slug: string } | null,

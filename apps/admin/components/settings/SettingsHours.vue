@@ -1,14 +1,13 @@
 <template>
   <form @submit.prevent="handleSave">
     <div class="form">
-      <p class="section-title">Часы работы</p>
+      <UiText size="tiny" span class="section-title">Часы работы</UiText>
 
       <div class="days">
         <div v-for="day in days" :key="day.key" class="day-row">
           <span class="day-name">{{ day.label }}</span>
 
-          <!-- TODO: заменить на UiSwitch когда добавят в @fastio/ui -->
-          <AppToggle
+          <UiSwitch
             :model-value="!form[day.key].closed"
             @update:model-value="form[day.key].closed = !$event"
           />
@@ -31,47 +30,45 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton } from '@fastio/ui'
+import { ref, reactive, watch } from 'vue'
+import { UiButton, UiSwitch, UiText } from '@fastio/ui'
 import type { Tenant, TenantWorkingHours } from '@fastio/shared'
+import { workDays } from '~/config/work-days'
 
 type DayKey = keyof TenantWorkingHours
 
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
-const days: { key: DayKey; label: string }[] = [
-  { key: 'mon', label: 'Пн' },
-  { key: 'tue', label: 'Вт' },
-  { key: 'wed', label: 'Ср' },
-  { key: 'thu', label: 'Чт' },
-  { key: 'fri', label: 'Пт' },
-  { key: 'sat', label: 'Сб' },
-  { key: 'sun', label: 'Вс' },
-]
+const days = workDays
 
 const defaultDay = () => ({ open: '09:00', close: '22:00', closed: false })
 
 const form = reactive<TenantWorkingHours>(
   Object.fromEntries(
-    days.map(({ key }) => [key, { ...(props.tenant.workingHours?.[key] ?? defaultDay()) }])
-  ) as TenantWorkingHours
+    days.map(({ key }) => [key, { ...(props.tenant.workingHours?.[key] ?? defaultDay()) }]),
+  ) as TenantWorkingHours,
 )
 
 watch(() => props.tenant.workingHours, (wh) => {
   if (!wh) return
-  days.forEach(({ key }) => { Object.assign(form[key], wh[key] ?? defaultDay()) })
+  days.forEach(({ key }) => {
+    Object.assign(form[key], wh[key] ?? defaultDay())
+  })
 })
 
 const saving = ref(false)
 const saved = ref(false)
 
-async function handleSave() {
+const handleSave = async () => {
   saving.value = true
   saved.value = false
   try {
     await emit('save', { workingHours: { ...form } })
     saved.value = true
-    setTimeout(() => { saved.value = false }, 3000)
+    setTimeout(() => {
+      saved.value = false
+    }, 3000)
   } finally {
     saving.value = false
   }
@@ -79,6 +76,8 @@ async function handleSave() {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/ui/styles/mixins/form' as *;
+
 .form {
   display: flex;
   flex-direction: column;
@@ -86,11 +85,7 @@ async function handleSave() {
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #aaa;
+  @include section-title;
 }
 
 .days {
@@ -109,13 +104,13 @@ async function handleSave() {
   width: 28px;
   font-size: 13px;
   font-weight: 700;
-  color: #555;
+  color: var(--color-text-hint);
   flex-shrink: 0;
 }
 
 .time-input {
   height: 36px;
-  border: 1.5px solid #e0e0e0;
+  border: 1.5px solid var(--color-border);
   border-radius: 8px;
   padding: 0 10px;
   font-size: 14px;
@@ -125,29 +120,25 @@ async function handleSave() {
   width: 100px;
 
   &:focus {
-    border-color: #ff6b35;
+    border-color: var(--color-primary);
   }
 }
 
 .dash {
-  color: #ccc;
+  color: var(--color-text-tertiary);
   font-size: 14px;
 }
 
 .closed-label {
   font-size: 13px;
-  color: #bbb;
+  color: var(--color-text-tertiary);
 }
 
 .footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  @include settings-footer;
 }
 
 .saved-msg {
-  font-size: 13px;
-  color: #10b981;
+  @include saved-msg;
 }
 </style>

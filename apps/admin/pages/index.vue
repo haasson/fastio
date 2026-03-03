@@ -1,19 +1,18 @@
 <template>
   <div class="dashboard-root">
-    <h2 class="heading">Дашборд</h2>
-    <!-- TODO: статистика заказов, выручка, последние заказы -->
+    <UiTitle size="h4" class="heading">Дашборд</UiTitle>
   </div>
 </template>
 
 <script setup lang="ts">
+import { definePageMeta } from '#imports'
+import { UiTitle } from '@fastio/ui'
+
 definePageMeta({ middleware: 'auth' })
 </script>
 
 <style scoped lang="scss">
 .heading {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111;
   margin-bottom: 24px;
 }
 </style>

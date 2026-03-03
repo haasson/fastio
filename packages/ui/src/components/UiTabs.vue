@@ -20,6 +20,7 @@
       class="tabs-item"
       @click="handleTabClick(tab.value)"
     >
+      <ui-icon v-if="tab.icon" :name="tab.icon" :size="14" class="tab-icon" />
       {{ tab.label }}
     </ui-tag>
   </ui-space>
@@ -30,12 +31,15 @@ import { computed } from 'vue'
 import UiSpace from './UiSpace.vue'
 import UiTag from './UiTag.vue'
 import UiSelect from './UiSelect.vue'
+import UiIcon from './UiIcon.vue'
 import useBreakpoints from '../composables/useBreakpoints'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
+import type { IconName } from '../icons'
 
 type TabItem = {
   value: string | number
   label: string
+  icon?: IconName
 }
 
 type Props = {
@@ -65,6 +69,12 @@ const handleTabClick = (value: string | number) => {
 .tabs-item {
   cursor: pointer;
   font-weight: 700;
+
+  &:deep(.n-tag__content) {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 
   &:deep(.n-tag__border) {
     border-width: 2px;

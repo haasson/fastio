@@ -20,7 +20,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { definePageMeta } from '#imports'
 import type { Category } from '@fastio/shared'
+import MenuCategoryList from '~/components/menu/CategoryList.vue'
+import MenuDishList from '~/components/menu/DishList.vue'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })
@@ -34,7 +38,7 @@ const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const selectedCategoryId = ref<string | null>(null)
 const categoriesCache = ref<Category[]>([])
 
-function onCategoriesLoaded(cats: Category[]) {
+const onCategoriesLoaded = (cats: Category[]) => {
   categoriesCache.value = cats
   if (!selectedCategoryId.value && cats.length > 0) {
     selectedCategoryId.value = cats[0].id
@@ -68,6 +72,6 @@ const selectedCategoryName = computed(
 .empty-state {
   padding: 40px;
   text-align: center;
-  color: #aaa; // // TODO: у нас в палитре куча цветов. Не должно быть вот таких брошенных цветов нигде, везде берем из переменной
+  color: var(--color-text-secondary);
 }
 </style>

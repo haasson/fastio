@@ -12,12 +12,14 @@ export default defineNuxtConfig({
   ssr: false,
 
   imports: {
-    dirs: ['utils/**'],
+    autoImport: false,
   },
 
-  modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt'],
+  components: false,
 
-  css: ['~/assets/css/reset.css', '~/assets/css/admin-theme.css'],
+  modules: ['@pinia/nuxt', '@vueuse/nuxt'],
+
+  css: ['~/assets/css/ui.scss', '~/assets/css/admin-theme.css'],
 
   runtimeConfig: {
     public: {

@@ -2,9 +2,9 @@ import { createDiscreteApi } from 'naive-ui'
 
 const { message } = createDiscreteApi(['message'])
 
-export async function query<T>(
+export const query = async <T>(
   promise: PromiseLike<{ data: T; error: { message: string } | null }>,
-): Promise<T> {
+): Promise<T> => {
   const { data, error } = await promise
 
   if (error) {

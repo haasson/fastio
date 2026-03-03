@@ -1,28 +1,28 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Dish } from '@fastio/shared'
+import { query } from '~/utils/query'
 
 export type DishFormData = Omit<Dish, 'id' | 'tenantId' | 'photos'>
 
-function mapDish(row: Record<string, unknown>): Dish {
-  return {
-    id: row.id as string,
-    tenantId: row.tenant_id as string,
-    categoryId: row.category_id as string,
-    name: row.name as string,
-    description: row.description as string,
-    price: row.price as number,
-    photos: row.photos as string[],
-    ingredients: row.ingredients as Dish['ingredients'],
-    nutrition: row.nutrition as Dish['nutrition'],
-    tags: row.tags as Dish['tags'],
-    active: row.active as boolean,
-    order: row.sort_order as number,
-  }
-}
+const mapDish = (row: Record<string, unknown>): Dish => ({
+  id: row.id as string,
+  tenantId: row.tenant_id as string,
+  categoryId: row.category_id as string,
+  name: row.name as string,
+  description: row.description as string,
+  price: row.price as number,
+  photos: row.photos as string[],
+  ingredients: row.ingredients as Dish['ingredients'],
+  nutrition: row.nutrition as Dish['nutrition'],
+  tags: row.tags as Dish['tags'],
+  active: row.active as boolean,
+  order: row.sort_order as number,
+})
 
 export const dishesApi = {
   async list(sb: SupabaseClient, tenantId: string, categoryId: string) {
     const data = await query(sb.from('dishes').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).order('sort_order'))
+
     return (data ?? []).map(mapDish)
   },
 
@@ -67,10 +67,13 @@ export const dishesApi = {
   async countsByCategory(sb: SupabaseClient, tenantId: string): Promise<Record<string, number>> {
     const data = await query(sb.from('dishes').select('category_id').eq('tenant_id', tenantId))
     const counts: Record<string, number> = {}
+
     ;(data ?? []).forEach((row) => {
       const cid = row.category_id as string
+
       counts[cid] = (counts[cid] ?? 0) + 1
     })
+
     return counts
   },
 }

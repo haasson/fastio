@@ -1,35 +1,29 @@
+import { computed } from 'vue'
 import { hasMinRole } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 
-export function usePermissions() {
+export const usePermissions = () => {
   const tenantStore = useTenantStore()
 
-  const canManageMenu = computed(() =>
-    !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'manager'),
+  const canManageMenu = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'manager'),
   )
 
-  const canManageOrders = computed(() =>
-    !!tenantStore.currentRole,
+  const canManageOrders = computed(() => !!tenantStore.currentRole,
   )
 
-  const canManagePromotions = computed(() =>
-    !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'manager'),
+  const canManagePromotions = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'manager'),
   )
 
-  const canEditSettings = computed(() =>
-    !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'admin'),
+  const canEditSettings = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'admin'),
   )
 
-  const canViewSettings = computed(() =>
-    !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'manager'),
+  const canViewSettings = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'manager'),
   )
 
-  const canManageTeam = computed(() =>
-    !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'admin'),
+  const canManageTeam = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'admin'),
   )
 
-  const canDeleteTenant = computed(() =>
-    tenantStore.currentRole === 'owner',
+  const canDeleteTenant = computed(() => tenantStore.currentRole === 'owner',
   )
 
   return {

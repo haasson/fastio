@@ -1,3 +1,4 @@
+import { defineNuxtPlugin, useRuntimeConfig } from '#imports'
 import { createClient } from '@supabase/supabase-js'
 import { useAuthStore } from '~/stores/auth'
 
@@ -13,6 +14,7 @@ export default defineNuxtPlugin(async () => {
 
   // Получаем текущую сессию при старте
   const { data: { session } } = await supabase.auth.getSession()
+
   authStore.setUser(session?.user ?? null)
 
   // Слушаем изменения состояния авторизации

@@ -1,7 +1,11 @@
+import { ref } from 'vue'
+import { useNuxtApp } from '#imports'
 import type { TenantMember, TenantInvitation, TenantRole } from '@fastio/shared'
+import { membersApi } from '~/utils/api/members'
+import { invitationsApi } from '~/utils/api/invitations'
 import { useTenantStore } from '~/stores/tenant'
 
-export function useTeam() {
+export const useTeam = () => {
   const { $supabase } = useNuxtApp()
   const tenantStore = useTenantStore()
 
@@ -9,7 +13,7 @@ export function useTeam() {
   const invitations = ref<TenantInvitation[]>([])
   const loading = ref(false)
 
-  async function load() {
+  const load = async () => {
     if (!tenantStore.currentTenantId) return
 
     loading.value = true
@@ -26,7 +30,7 @@ export function useTeam() {
     loading.value = false
   }
 
-  async function invite(email: string, role: TenantRole) {
+  const invite = async (email: string, role: TenantRole) => {
     if (!tenantStore.currentTenantId) return
 
     const { error } = await $supabase.functions.invoke('invite-member', {
@@ -38,20 +42,21 @@ export function useTeam() {
     })
 
     if (!error) await load()
+
     return { error }
   }
 
-  async function changeRole(memberId: string, role: TenantRole) {
+  const changeRole = async (memberId: string, role: TenantRole) => {
     await membersApi.updateRole($supabase, memberId, role)
     await load()
   }
 
-  async function removeMember(memberId: string) {
+  const removeMember = async (memberId: string) => {
     await membersApi.remove($supabase, memberId)
     await load()
   }
 
-  async function cancelInvite(invitationId: string) {
+  const cancelInvite = async (invitationId: string) => {
     await invitationsApi.cancel($supabase, invitationId)
     await load()
   }

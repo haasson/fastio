@@ -3,7 +3,7 @@
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <AppLogo :size="28" />
+        <UiAppLogo :size="28" />
         <span class="logo-text">Fastio</span>
       </div>
 
@@ -23,7 +23,14 @@
         </NuxtLink>
       </nav>
 
-      <UiButton class="logout" type="text" dark-side full-width icon="logOut" @click="handleLogout">
+      <UiButton
+        class="logout"
+        type="text"
+        dark-side
+        full-width
+        icon="logOut"
+        @click="handleLogout"
+      >
         Выйти
       </UiButton>
     </aside>
@@ -50,9 +57,16 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import type { ComputedRef } from 'vue'
+import { useNuxtApp, useRoute, navigateTo } from '#imports'
 import { UiButton, UiIcon, UiConfirmModal } from '@fastio/ui'
 import type { IconName } from '@fastio/ui'
+import TenantSwitcher from '~/components/TenantSwitcher.vue'
+import UiAppLogo from '~/components/ui/AppLogo.vue'
+import UiAppBurger from '~/components/ui/AppBurger.vue'
+import { usePermissions } from '~/composables/usePermissions'
+import { useTenantStore } from '~/stores/tenant'
 
 const { $supabase } = useNuxtApp()
 const route = useRoute()
@@ -70,15 +84,12 @@ const allNavItems: NavItem[] = [
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
 ]
 
-const navItems = computed(() =>
-  allNavItems.filter(item => !item.visible || item.visible.value),
+const navItems = computed(() => allNavItems.filter((item) => !item.visible || item.visible.value),
 )
 
-const currentPageTitle = computed(() => {
-  return navItems.value.find((item) => item.to === route.path)?.label ?? ''
-})
+const currentPageTitle = computed(() => navItems.value.find((item) => item.to === route.path)?.label ?? '')
 
-async function handleLogout() {
+const handleLogout = async () => {
   tenantStore.dispose()
   await $supabase.auth.signOut()
   await navigateTo('/login')
@@ -91,7 +102,7 @@ async function handleLogout() {
 .layout-root {
   display: flex;
   min-height: 100vh;
-  background: #f7f7f8;
+  background: var(--color-bg-page);
 }
 
 .sidebar {
@@ -130,7 +141,7 @@ async function handleLogout() {
 .logo-text {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .nav {
@@ -156,12 +167,12 @@ async function handleLogout() {
 
   &:hover {
     background: rgba(255, 255, 255, 0.06);
-    color: #fff;
+    color: var(--color-white);
   }
 
   &.active {
-    background: #ff6b35;
-    color: #fff;
+    background: var(--color-primary);
+    color: var(--color-white);
   }
 }
 
@@ -193,8 +204,8 @@ async function handleLogout() {
 
 .topbar {
   height: 60px;
-  background: #fff;
-  border-bottom: 1px solid #efefef;
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -207,7 +218,7 @@ async function handleLogout() {
 .page-title {
   font-size: 16px;
   font-weight: 600;
-  color: #111;
+  color: var(--color-title);
 }
 
 .content {

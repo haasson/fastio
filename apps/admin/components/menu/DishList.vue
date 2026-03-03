@@ -10,17 +10,18 @@
           {{ categoryName }}
           <span class="dish-count">({{ dishes.length }})</span>
         </span>
-<!--    // TODO: здесь и в других местах - кнопки умеют принимать иконки! не надо вручную плюсики ставить    -->
-        <UiButton size="small" type="tertiary" @click="openDishModal(null)">+ Добавить блюдо</UiButton>
+        <UiButton
+          size="small"
+          type="tertiary"
+          icon="plus"
+          @click="openDishModal(null)"
+        >Добавить блюдо</UiButton>
       </div>
 
       <div class="grid-wrap">
         <UiSkeleton v-if="dishesLoading" text :repeat="6" />
 
-        <template v-else-if="dishes.length === 0">
-<!--          // TODO: здесь и в других местах - не допусается простой текст! У нас есть адаптивные компоненты для текстов и заголовков в либе! -->
-          <p class="dish-empty">В этой категории пока нет блюд</p>
-        </template>
+        <UiAppEmpty v-else-if="dishes.length === 0" icon="🍽" text="В этой категории пока нет блюд" />
 
         <UiGrid
           v-else
@@ -31,7 +32,6 @@
           no-animation
         >
           <template #default="{ item: dish }">
-<!--      // TODO: как будто в компонент можно вынести      -->
             <UiCard size="tiny" class="dish-card" :class="{ inactive: !dish.active }">
               <UiSpace :size="8" vertical>
                 <div class="card-photo">
@@ -43,21 +43,29 @@
 
                 <UiSpace :size="4" align="center">
                   <span class="dish-price">{{ formatPrice(dish.price) }}</span>
-                  <UiTag v-for="tag in dish.tags" :key="tag" size="tiny">{{ tagLabel[tag] }}</UiTag>
+                  <UiTag v-for="tag in dish.tags" :key="tag" size="tiny">{{ tagOptions[tag] }}</UiTag>
                 </UiSpace>
 
                 <div class="card-actions">
-                  <UiAppToggle
+                  <UiSwitch
                     :model-value="dish.active"
                     @update:model-value="toggleActive(dish.id, $event)"
                   />
                   <div class="card-btns">
-                    <button class="icon-btn" title="Редактировать" @click="openDishModal(dish)">
-                      <UiIcon name="pencil" :size="16" />
-                    </button>
-                    <button class="icon-btn" title="Удалить" @click="confirmDeleteDish(dish.id)">
-                      <UiIcon name="trash" :size="16" />
-                    </button>
+                    <UiButton
+                      type="text"
+                      size="tiny"
+                      icon="pencil"
+                      title="Редактировать"
+                      @click="openDishModal(dish)"
+                    />
+                    <UiButton
+                      type="text"
+                      size="tiny"
+                      icon="trash"
+                      title="Удалить"
+                      @click="confirmDeleteDish(dish.id)"
+                    />
                   </div>
                 </div>
               </UiSpace>
@@ -81,8 +89,14 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton, UiIcon, UiSkeleton, UiSpace, UiTag, UiCard, UiGrid, useConfirm } from '@fastio/ui'
+import { ref, computed } from 'vue'
+import { UiButton, UiIcon, UiSkeleton, UiSpace, UiTag, UiCard, UiGrid, UiSwitch, useConfirm } from '@fastio/ui'
 import type { Dish } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
+import UiAppEmpty from '~/components/ui/AppEmpty.vue'
+import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
+import { useDishes } from '~/composables/useDishes'
+import { tagOptions } from '~/config/dish-tags'
 
 const props = defineProps<{
   tenantId: string
@@ -93,45 +107,33 @@ const props = defineProps<{
 const tenantIdRef = computed(() => props.tenantId)
 const categoryIdRef = computed(() => props.categoryId)
 
-const { dishes, loading: dishesLoading, add: addDish, update: updateDish, remove: removeDish, toggleActive } =
-  useDishes(tenantIdRef, categoryIdRef)
+const { dishes, loading: dishesLoading, add: addDish, update: updateDish, remove: removeDish, toggleActive }
+  = useDishes(tenantIdRef, categoryIdRef)
 
 const { confirm } = useConfirm()
-
-// TODO: это в хэлперы, можно прям в либу
-const priceFormatter = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 })
-const formatPrice = (price: number) => priceFormatter.format(price)
-
-const tagLabel: Record<string, string> = {
-  spicy: '🌶 Острое',
-  vegan: '🌱 Веганское',
-  new: '🆕 Новинка',
-  popular: '⭐ Популярное',
-  hit: '🔥 Хит',
-}
 
 const dishModalOpen = ref(false)
 const editingDish = ref<Dish | null>(null)
 
-function openDishModal(dish: Dish | null) {
+const openDishModal = (dish: Dish | null) => {
   editingDish.value = dish
   dishModalOpen.value = true
 }
 
-// TODO: функции лучше везде сделать стрелочные
-async function confirmDeleteDish(id: string) {
+const confirmDeleteDish = async (id: string) => {
   const ok = await confirm({
     title: 'Удалить блюдо?',
     confirmText: 'Удалить',
     confirmType: 'error',
   })
+
   if (ok) await removeDish(id)
 }
 </script>
 
 <style scoped lang="scss">
 .dishes-root {
-  background: #fff;
+  background: var(--color-bg-card);
   border-radius: 14px;
   overflow: hidden;
   display: flex;
@@ -143,19 +145,19 @@ async function confirmDeleteDish(id: string) {
   align-items: center;
   justify-content: space-between;
   padding: 16px 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .panel-title {
   font-size: 15px;
   font-weight: 700;
-  color: #111;
+  color: var(--color-title);
 }
 
 .dish-count {
   font-weight: 400;
-  color: #999;
+  color: var(--color-text-secondary);
   font-size: 13px;
 }
 
@@ -164,7 +166,7 @@ async function confirmDeleteDish(id: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ccc;
+  color: var(--color-text-tertiary);
   font-size: 15px;
 }
 
@@ -185,7 +187,7 @@ async function confirmDeleteDish(id: string) {
   aspect-ratio: 4 / 3;
   border-radius: 12px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--color-bg-page);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,7 +206,7 @@ async function confirmDeleteDish(id: string) {
 .dish-name {
   font-size: 13px;
   font-weight: 600;
-  color: #111;
+  color: var(--color-title);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -214,7 +216,7 @@ async function confirmDeleteDish(id: string) {
 .dish-price {
   font-size: 13px;
   font-weight: 700;
-  color: #ff6b35;
+  color: var(--color-primary);
   white-space: nowrap;
 }
 
@@ -227,30 +229,5 @@ async function confirmDeleteDish(id: string) {
 .card-btns {
   display: flex;
   gap: 2px;
-}
-
-.icon-btn {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: #bbb;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: #f0f0f0;
-    color: #333;
-  }
-}
-
-.dish-empty {
-  padding: 24px;
-  text-align: center;
-  color: #bbb;
-  font-size: 13px;
 }
 </style>

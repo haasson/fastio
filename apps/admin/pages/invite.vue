@@ -2,7 +2,7 @@
   <div class="invite-root">
     <div class="card">
       <div class="logo">
-        <AppLogo :size="32" />
+        <UiAppLogo :size="32" />
         <UiTitle size="h4">Fastio</UiTitle>
       </div>
 
@@ -22,7 +22,10 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, watch } from 'vue'
+import { definePageMeta, useRoute, useNuxtApp, navigateTo } from '#imports'
 import { UiButton, UiAlert, UiTitle, UiText, UiSpace } from '@fastio/ui'
+import UiAppLogo from '~/components/ui/AppLogo.vue'
 import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({ layout: false })
@@ -41,6 +44,7 @@ onMounted(async () => {
   if (!token) {
     error.value = 'Неверная ссылка приглашения'
     loading.value = false
+
     return
   }
 
@@ -62,6 +66,7 @@ onMounted(async () => {
   // Если не авторизован — редирект на логин с возвратом
   if (!authStore.isAuthenticated) {
     await navigateTo(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+
     return
   }
 
@@ -86,12 +91,12 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: var(--color-bg-page);
   padding: 16px;
 }
 
 .card {
-  background: #fff;
+  background: var(--color-bg-card);
   border-radius: 16px;
   padding: 40px 32px;
   width: 100%;

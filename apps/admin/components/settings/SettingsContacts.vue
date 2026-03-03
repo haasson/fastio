@@ -1,8 +1,7 @@
 <template>
-<!-- // TODO: формы в либе нам для чего? и вообще формы тут и в других местах можно перевести на схемы. Т.е. создать компонент, который работает на основе формы из либы и принимает схему полей. И рендерит их. В схеме можно настраивать ширину, лейблы, валидацию, что угодно  -->
   <form @submit.prevent="handleSave">
     <div class="form">
-      <p class="section-title">Контактная информация</p>
+      <UiText size="tiny" span class="section-title">Контактная информация</UiText>
 
       <UiInput v-model="form.name" label="Название заведения *" placeholder="Пицца Васи" />
 
@@ -16,7 +15,12 @@
         <UiInput v-model="form.address" label="Адрес" placeholder="ул. Пушкина, д. 1" />
       </div>
 
-      <p class="section-title" style="margin-top: 8px;">Соцсети</p>
+      <UiText
+        size="tiny"
+        span
+        class="section-title"
+        style="margin-top: 8px;"
+      >Соцсети</UiText>
 
       <div class="row">
         <UiInput v-model="form.instagram" label="Instagram" placeholder="@vasya_pizza" />
@@ -32,7 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiButton } from '@fastio/ui'
+import { ref, reactive, watch } from 'vue'
+import { UiInput, UiButton, UiText } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
@@ -61,7 +66,7 @@ watch(() => props.tenant, (t) => {
 const saving = ref(false)
 const saved = ref(false)
 
-async function handleSave() {
+const handleSave = async () => {
   saving.value = true
   saved.value = false
   try {
@@ -77,7 +82,9 @@ async function handleSave() {
       },
     })
     saved.value = true
-    setTimeout(() => { saved.value = false }, 3000)
+    setTimeout(() => {
+      saved.value = false
+    }, 3000)
   } finally {
     saving.value = false
   }
@@ -86,6 +93,7 @@ async function handleSave() {
 
 <style scoped lang="scss">
 @use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/form' as *;
 
 .form {
   display: flex;
@@ -94,11 +102,7 @@ async function handleSave() {
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #aaa;
+  @include section-title;
 }
 
 .row {
@@ -112,15 +116,11 @@ async function handleSave() {
 }
 
 .footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  @include settings-footer;
   margin-top: 8px;
 }
 
 .saved-msg {
-  font-size: 13px;
-  color: #10b981;
+  @include saved-msg;
 }
 </style>

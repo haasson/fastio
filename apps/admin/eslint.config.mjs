@@ -1,6 +1,5 @@
-// @ts-check
-import withNuxt from './.nuxt/eslint.config.mjs'
+import eslintConfig from '@fastio/shared/configs/eslint'
 
-export default withNuxt(
-  // Your custom configs here
-)
+export default [
+  ...eslintConfig,
+]

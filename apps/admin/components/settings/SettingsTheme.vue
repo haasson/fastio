@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="handleSave">
     <div class="form">
-      <p class="section-title">Тема оформления</p>
+      <UiText size="tiny" span class="section-title">Тема оформления</UiText>
 
       <div class="presets">
         <button
@@ -33,7 +33,12 @@
       <div class="field">
         <label class="label">Логотип</label>
         <div class="logo-area">
-          <img v-if="form.logoUrl" :src="form.logoUrl" class="logo-preview" alt="Логотип" />
+          <img
+            v-if="form.logoUrl"
+            :src="form.logoUrl"
+            class="logo-preview"
+            alt="Логотип"
+          />
           <span v-else class="logo-placeholder">Нет логотипа</span>
           <UiButton disabled>📎 Загрузить (скоро)</UiButton>
         </div>
@@ -48,32 +53,23 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiSelect, UiButton } from '@fastio/ui'
+import { ref, reactive, watch } from 'vue'
+import { UiInput, UiSelect, UiButton, UiText } from '@fastio/ui'
 import type { Tenant, TenantTheme } from '@fastio/shared'
+import { themePresets, fontOptions } from '~/config/theme-presets'
 
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
-// TODO: конфиги в конфиги
-const presets: { value: TenantTheme['preset']; label: string; color: string }[] = [
-  { value: 'default', label: 'Оранжевый', color: '#ff6b35' },
-  { value: 'dark', label: 'Тёмный', color: '#1a1a2e' },
-  { value: 'warm', label: 'Красный', color: '#dc2626' },
-  { value: 'minimal', label: 'Минимал', color: '#111111' },
-]
-
-const fontOptions = [
-  { value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', label: 'Системный (по умолчанию)' },
-  { value: '"Inter", sans-serif', label: 'Inter' },
-  { value: '"Nunito", sans-serif', label: 'Nunito' },
-  { value: '"Montserrat", sans-serif', label: 'Montserrat' },
-]
+const presets = themePresets
 
 const form = reactive<TenantTheme>({ ...props.tenant.theme })
 
-watch(() => props.tenant.theme, (t) => { Object.assign(form, t) })
+watch(() => props.tenant.theme, (t) => {
+  Object.assign(form, t)
+})
 
-function selectPreset(preset: (typeof presets)[number]) {
+const selectPreset = (preset: (typeof presets)[number]) => {
   form.preset = preset.value
   form.primaryColor = preset.color
 }
@@ -81,13 +77,15 @@ function selectPreset(preset: (typeof presets)[number]) {
 const saving = ref(false)
 const saved = ref(false)
 
-async function handleSave() {
+const handleSave = async () => {
   saving.value = true
   saved.value = false
   try {
     await emit('save', { theme: { ...form } })
     saved.value = true
-    setTimeout(() => { saved.value = false }, 3000)
+    setTimeout(() => {
+      saved.value = false
+    }, 3000)
   } finally {
     saving.value = false
   }
@@ -96,6 +94,7 @@ async function handleSave() {
 
 <style scoped lang="scss">
 @use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/ui/styles/mixins/form' as *;
 
 .form {
   display: flex;
@@ -104,11 +103,7 @@ async function handleSave() {
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #aaa;
+  @include section-title;
 }
 
 .presets {
@@ -127,15 +122,15 @@ async function handleSave() {
   align-items: center;
   gap: 6px;
   padding: 12px 8px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid var(--color-border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-bg-card);
   cursor: pointer;
   transition: border-color 0.15s;
   position: relative;
 
   &:hover {
-    border-color: #ddd;
+    border-color: var(--color-text-tertiary);
   }
 
   &.selected {
@@ -153,7 +148,7 @@ async function handleSave() {
 .preset-name {
   font-size: 11px;
   font-weight: 600;
-  color: #555;
+  color: var(--color-text-hint);
 }
 
 .preset-check {
@@ -174,7 +169,7 @@ async function handleSave() {
 .label {
   font-size: 13px;
   font-weight: 600;
-  color: #555;
+  color: var(--color-text-hint);
 }
 
 .color-row {
@@ -206,7 +201,7 @@ async function handleSave() {
   align-items: center;
   gap: 14px;
   padding: 14px;
-  border: 1.5px dashed #e0e0e0;
+  border: 1.5px dashed var(--color-border);
   border-radius: 10px;
 }
 
@@ -218,18 +213,14 @@ async function handleSave() {
 
 .logo-placeholder {
   font-size: 13px;
-  color: #bbb;
+  color: var(--color-text-tertiary);
 }
 
 .footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  @include settings-footer;
 }
 
 .saved-msg {
-  font-size: 13px;
-  color: #10b981;
+  @include saved-msg;
 }
 </style>

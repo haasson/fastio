@@ -23,30 +23,24 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { UiIcon } from '@fastio/ui'
 import type { TenantRole } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
+import { roleLabels } from '~/config/team-roles'
 
 const tenantStore = useTenantStore()
 const open = ref(false)
 
 const currentName = computed(() => {
-  const m = tenantStore.memberships.find(m => m.tenantId === tenantStore.currentTenantId)
+  const m = tenantStore.memberships.find((m) => m.tenantId === tenantStore.currentTenantId)
+
   return m?.tenant?.name ?? 'Выберите заведение'
 })
 
-const roleLabels: Record<TenantRole, string> = {
-  owner: 'Владелец',
-  admin: 'Админ',
-  manager: 'Менеджер',
-  staff: 'Сотрудник',
-}
+const roleLabel = (role: TenantRole) => roleLabels[role]
 
-function roleLabel(role: TenantRole) {
-  return roleLabels[role]
-}
-
-function select(tenantId: string) {
+const select = (tenantId: string) => {
   tenantStore.switchTenant(tenantId)
   open.value = false
 }
@@ -69,7 +63,7 @@ function select(tenantId: string) {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   border: none;
-  color: #fff;
+  color: var(--color-white);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -120,7 +114,7 @@ function select(tenantId: string) {
 
   &.active {
     background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    color: var(--color-white);
   }
 }
 

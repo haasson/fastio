@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { useNuxtApp } from '#imports'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Tenant, TenantRole } from '@fastio/shared'
+import { tenantsApi } from '~/utils/api/tenants'
+import { membersApi } from '~/utils/api/members'
 import { useAuthStore } from './auth'
 
 type MembershipWithTenant = {
@@ -22,46 +26,21 @@ export const useTenantStore = defineStore('tenant', () => {
 
   const currentRole = computed<TenantRole | null>(() => {
     if (!currentTenantId.value) return null
-    const m = memberships.value.find(m => m.tenantId === currentTenantId.value)
+    const m = memberships.value.find((m) => m.tenantId === currentTenantId.value)
+
     return m?.role ?? null
   })
 
   const hasMultipleTenants = computed(() => memberships.value.length > 1)
 
-  async function init() {
-    const { $supabase } = useNuxtApp()
-    const authStore = useAuthStore()
-
-    if (!authStore.user) return
-
-    loading.value = true
-
-    // Загружаем все membership'ы юзера
-    const data = await membersApi.listByUser($supabase, authStore.user.id)
-    memberships.value = data
-
-    if (memberships.value.length === 0) {
-      loading.value = false
-      return
-    }
-
-    // Восстанавливаем последний выбранный тенант
-    const savedId = localStorage.getItem(STORAGE_KEY)
-    const savedExists = savedId && memberships.value.some(m => m.tenantId === savedId)
-    currentTenantId.value = savedExists ? savedId : memberships.value[0].tenantId
-
-    await fetchTenant()
-    subscribeToTenant()
-    loading.value = false
-  }
-
-  async function fetchTenant() {
+  const fetchTenant = async () => {
     if (!currentTenantId.value) return
     const { $supabase } = useNuxtApp()
+
     tenant.value = await tenantsApi.getById($supabase, currentTenantId.value)
   }
 
-  function subscribeToTenant() {
+  const subscribeToTenant = () => {
     if (!currentTenantId.value) return
     const { $supabase } = useNuxtApp()
 
@@ -77,7 +56,35 @@ export const useTenantStore = defineStore('tenant', () => {
       .subscribe()
   }
 
-  async function switchTenant(tenantId: string) {
+  const init = async () => {
+    const { $supabase } = useNuxtApp()
+    const authStore = useAuthStore()
+
+    if (!authStore.user) return
+
+    loading.value = true
+
+    const data = await membersApi.listByUser($supabase, authStore.user.id)
+
+    memberships.value = data
+
+    if (memberships.value.length === 0) {
+      loading.value = false
+
+      return
+    }
+
+    const savedId = localStorage.getItem(STORAGE_KEY)
+    const savedExists = savedId && memberships.value.some((m) => m.tenantId === savedId)
+
+    currentTenantId.value = savedExists ? savedId : memberships.value[0].tenantId
+
+    await fetchTenant()
+    subscribeToTenant()
+    loading.value = false
+  }
+
+  const switchTenant = async (tenantId: string) => {
     if (tenantId === currentTenantId.value) return
 
     currentTenantId.value = tenantId
@@ -90,13 +97,14 @@ export const useTenantStore = defineStore('tenant', () => {
     loading.value = false
   }
 
-  async function update(data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) {
+  const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) => {
     if (!tenant.value) return
     const { $supabase } = useNuxtApp()
+
     await tenantsApi.update($supabase, tenant.value.id, data)
   }
 
-  function dispose() {
+  const dispose = () => {
     channel?.unsubscribe()
     channel = null
     tenant.value = null

@@ -1,5 +1,5 @@
-@use 'variables/index';
-@use 'reset/index';
-@use 'typography/index';
-@use 'layout/index';
-@use 'libs/index';
+@use 'variables/index' as vars;
+@use 'reset/index' as reset;
+@use 'typography/index' as typography;
+@use 'layout/index' as layout;
+@use 'libs/index' as libs;

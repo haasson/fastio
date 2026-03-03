@@ -1,12 +1,8 @@
 <template>
   <div class="settings-root">
-<!--    // TODO: вот этот блок на каждой странице непонятен. Если заведения нет - куда мы вообще залогинились?  -->
-    <div v-if="!tenantStore.tenant && !tenantStore.loading" class="state-msg">
-      Заведение не найдено. Обратитесь в поддержку.
-    </div>
+    <UiAppEmpty v-if="!tenantStore.tenant && !tenantStore.loading" text="Заведение не найдено. Обратитесь в поддержку." />
 
     <template v-else-if="tenantStore.tenant">
-<!--   // TODO: у табов страшные иконки, нужно во всем проекте иконки заменить на монохромные стильные аналоги   -->
       <UiTabs v-model="activeTab" :tabs="settingsTabs" />
 
       <div class="section">
@@ -46,24 +42,35 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { definePageMeta } from '#imports'
 import { UiTabs } from '@fastio/ui'
+import UiAppEmpty from '~/components/ui/AppEmpty.vue'
+import SettingsContacts from '~/components/settings/SettingsContacts.vue'
+import SettingsHours from '~/components/settings/SettingsHours.vue'
+import SettingsTheme from '~/components/settings/SettingsTheme.vue'
+import SettingsDelivery from '~/components/settings/SettingsDelivery.vue'
+import SettingsNotifications from '~/components/settings/SettingsNotifications.vue'
+import SettingsTeam from '~/components/settings/SettingsTeam.vue'
+import { usePermissions } from '~/composables/usePermissions'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })
 
 const tenantStore = useTenantStore()
 const { canManageTeam } = usePermissions()
+
 onMounted(() => tenantStore.init())
 
 const activeTab = ref('contacts')
 
 const settingsTabs = computed(() => [
-  { value: 'contacts', label: '📍 Контакты' },
-  { value: 'hours', label: '🕐 Часы работы' },
-  { value: 'theme', label: '🎨 Оформление' },
-  { value: 'delivery', label: '🚴 Доставка' },
-  { value: 'notifications', label: '🔔 Уведомления' },
-  ...(canManageTeam.value ? [{ value: 'team', label: '👥 Команда' }] : []),
+  { value: 'contacts', label: 'Контакты', icon: 'mapPin' as const },
+  { value: 'hours', label: 'Часы работы', icon: 'clock' as const },
+  { value: 'theme', label: 'Оформление', icon: 'palette' as const },
+  { value: 'delivery', label: 'Доставка', icon: 'bike' as const },
+  { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
+  ...(canManageTeam.value ? [{ value: 'team', label: 'Команда', icon: 'users' as const }] : []),
 ])
 </script>
 
@@ -75,16 +82,10 @@ const settingsTabs = computed(() => [
 }
 
 .section {
-  background: #fff;
+  background: var(--color-bg-card);
   border-radius: 14px;
   padding: 28px;
   max-width: 640px;
   overflow: visible;
-}
-
-.state-msg {
-  color: #aaa;
-  padding: 40px;
-  text-align: center;
 }
 </style>

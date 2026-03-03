@@ -2,7 +2,7 @@
   <div class="team-root">
     <!-- Форма инвайта -->
     <div class="invite-form">
-      <p class="section-title">Пригласить в команду</p>
+      <UiText size="tiny" span class="section-title">Пригласить в команду</UiText>
       <UiSpace :size="8" align="start">
         <UiInput v-model="inviteEmail" placeholder="email@example.com" :clearable="false" />
         <UiSelect v-model="inviteRole" :options="roleOptions" style="min-width: 160px" />
@@ -13,7 +13,7 @@
 
     <!-- Участники -->
     <div>
-      <p class="section-title">Участники</p>
+      <UiText size="tiny" span class="section-title">Участники</UiText>
 
       <UiSkeleton v-if="team.loading.value" text :repeat="3" />
 
@@ -45,7 +45,7 @@
 
     <!-- Pending инвайты -->
     <div v-if="team.invitations.value.length">
-      <p class="section-title">Ожидают принятия</p>
+      <UiText size="tiny" span class="section-title">Ожидают принятия</UiText>
 
       <div v-for="inv in team.invitations.value" :key="inv.id" class="member-row">
         <div class="member-info">
@@ -54,7 +54,12 @@
 
         <UiTag :type="roleTagType(inv.role)" size="small">{{ roleLabel(inv.role) }}</UiTag>
 
-        <UiButton v-if="canManageTeam" type="text" size="small" @click="handleCancelInvite(inv)">
+        <UiButton
+          v-if="canManageTeam"
+          type="text"
+          size="small"
+          @click="handleCancelInvite(inv)"
+        >
           Отменить
         </UiButton>
       </div>
@@ -63,12 +68,16 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import {
   UiInput, UiSelect, UiButton, UiAlert, UiTag, UiText,
   UiSpace, UiSkeleton, UiMenuDropdown, useConfirm,
 } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
+import { useTeam } from '~/composables/useTeam'
+import { usePermissions } from '~/composables/usePermissions'
+import { roleLabels, roleOptions, roleTagTypes } from '~/config/team-roles'
 
 const team = useTeam()
 const { canManageTeam } = usePermissions()
@@ -79,55 +88,33 @@ const inviteRole = ref<TenantRole>('staff')
 const inviting = ref(false)
 const inviteError = ref('')
 
-const roleOptions = [
-  { value: 'admin', label: 'Админ' },
-  { value: 'manager', label: 'Менеджер' },
-  { value: 'staff', label: 'Сотрудник' },
-]
+const roleLabel = (role: TenantRole) => roleLabels[role]
+const roleTagType = (role: TenantRole) => roleTagTypes[role]
 
-const roleLabels: Record<TenantRole, string> = {
-  owner: 'Владелец',
-  admin: 'Админ',
-  manager: 'Менеджер',
-  staff: 'Сотрудник',
-}
-
-function roleLabel(role: TenantRole) {
-  return roleLabels[role]
-}
-
-function roleTagType(role: TenantRole) {
-  const map: Record<TenantRole, 'warning' | 'primary' | 'success' | 'default'> = {
-    owner: 'warning',
-    admin: 'primary',
-    manager: 'success',
-    staff: 'default',
-  }
-  return map[role]
-}
-
-function getRoleMenuItems(member: TenantMember): UiMenuDropdownItem[] {
+const getRoleMenuItems = (member: TenantMember): UiMenuDropdownItem[] => {
   const roles: TenantRole[] = ['admin', 'manager', 'staff']
-  return roles.map(r => ({
+
+  return roles.map((r) => ({
     name: r,
     label: roleLabels[r],
     checked: member.role === r,
   }))
 }
 
-async function handleRoleMenuClick(member: TenantMember, roleName: string) {
+const handleRoleMenuClick = async (member: TenantMember, roleName: string) => {
   if (roleName !== member.role) {
     await team.changeRole(member.id, roleName as TenantRole)
   }
 }
 
-async function handleInvite() {
+const handleInvite = async () => {
   if (!inviteEmail.value) return
 
   inviting.value = true
   inviteError.value = ''
 
   const { error } = await team.invite(inviteEmail.value, inviteRole.value) ?? {}
+
   if (error) {
     inviteError.value = 'Не удалось отправить приглашение'
   } else {
@@ -137,23 +124,25 @@ async function handleInvite() {
   inviting.value = false
 }
 
-async function handleRemove(member: TenantMember) {
+const handleRemove = async (member: TenantMember) => {
   const confirmed = await confirm({
     title: 'Удалить участника',
     message: `${member.email ?? member.displayName} будет удалён из команды`,
     confirmText: 'Удалить',
     confirmType: 'error',
   })
+
   if (confirmed) await team.removeMember(member.id)
 }
 
-async function handleCancelInvite(inv: TenantInvitation) {
+const handleCancelInvite = async (inv: TenantInvitation) => {
   const confirmed = await confirm({
     title: 'Отменить приглашение',
     message: `Приглашение для ${inv.email} будет отменено`,
     confirmText: 'Отменить приглашение',
     confirmType: 'error',
   })
+
   if (confirmed) await team.cancelInvite(inv.id)
 }
 
@@ -161,6 +150,8 @@ onMounted(() => team.load())
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/ui/styles/mixins/form' as *;
+
 .team-root {
   display: flex;
   flex-direction: column;
@@ -168,11 +159,7 @@ onMounted(() => team.load())
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #aaa;
+  @include section-title;
   margin-bottom: 12px;
 }
 
@@ -187,7 +174,7 @@ onMounted(() => team.load())
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .member-info {

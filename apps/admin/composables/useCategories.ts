@@ -1,14 +1,17 @@
+import { ref, watch, onUnmounted } from 'vue'
+import { useNuxtApp } from '#imports'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Category } from '@fastio/shared'
+import { categoriesApi } from '~/utils/api/categories'
 
-export function useCategories(tenantId: Ref<string>) {
+export const useCategories = (tenantId: Ref<string>) => {
   const { $supabase } = useNuxtApp()
   const categories = ref<Category[]>([])
   const loading = ref(true)
 
   let channel: RealtimeChannel | null = null
 
-  async function fetchCategories(id: string) {
+  const fetchCategories = async (id: string) => {
     loading.value = true
     categories.value = await categoriesApi.list($supabase, id)
     loading.value = false
@@ -39,17 +42,18 @@ export function useCategories(tenantId: Ref<string>) {
 
   onUnmounted(() => channel?.unsubscribe())
 
-  async function add(name: string) {
+  const add = async (name: string) => {
     const id = tenantId.value
+
     if (!id) return
     await categoriesApi.add($supabase, id, { name, order: categories.value.length })
   }
 
-  async function update(id: string, data: Partial<Pick<Category, 'name' | 'active' | 'order'>>) {
+  const update = async (id: string, data: Partial<Pick<Category, 'name' | 'active' | 'order'>>) => {
     await categoriesApi.update($supabase, id, data)
   }
 
-  async function remove(id: string) {
+  const remove = async (id: string) => {
     await categoriesApi.remove($supabase, id)
   }
 

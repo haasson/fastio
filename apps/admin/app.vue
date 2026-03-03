@@ -10,13 +10,18 @@
 import { UiConfigProvider } from '@fastio/ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 
-// // TODO: вынести в конфиги. И желательно иметь копию палитры в js, как в css. Тогда переменные будут синхронны и можно их тут юзать
+const adminPalette = {
+  orange500: '#ff6b35',
+  orange400: '#ff8a4a',
+  orange600: '#e55a25',
+} as const
+
 const themeOverrides: GlobalThemeOverrides = {
   common: {
-    primaryColor: '#ff6b35',
-    primaryColorHover: '#ff8a4a',
-    primaryColorPressed: '#e55a25',
-    primaryColorSuppl: '#ff8a4a',
+    primaryColor: adminPalette.orange500,
+    primaryColorHover: adminPalette.orange400,
+    primaryColorPressed: adminPalette.orange600,
+    primaryColorSuppl: adminPalette.orange400,
   },
 }
 </script>

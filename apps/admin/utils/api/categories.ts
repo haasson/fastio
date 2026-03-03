@@ -1,19 +1,19 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Category } from '@fastio/shared'
+import { query } from '~/utils/query'
 
-function mapCategory(row: Record<string, unknown>): Category {
-  return {
-    id: row.id as string,
-    tenantId: row.tenant_id as string,
-    name: row.name as string,
-    order: row.sort_order as number,
-    active: row.active as boolean,
-  }
-}
+const mapCategory = (row: Record<string, unknown>): Category => ({
+  id: row.id as string,
+  tenantId: row.tenant_id as string,
+  name: row.name as string,
+  order: row.sort_order as number,
+  active: row.active as boolean,
+})
 
 export const categoriesApi = {
   async list(sb: SupabaseClient, tenantId: string) {
     const data = await query(sb.from('categories').select('*').eq('tenant_id', tenantId).order('sort_order'))
+
     return (data ?? []).map(mapCategory)
   },
 

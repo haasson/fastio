@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="handleSave">
     <div class="form">
-      <p class="section-title">Уведомления о заказах</p>
+      <UiText size="tiny" span class="section-title">Уведомления о заказах</UiText>
 
       <div class="field">
         <UiInput
@@ -21,7 +21,12 @@
         />
         <span class="hint">
           Как получить:
-          <UiLink size="small" href="https://t.me/userinfobot" target="_blank" rel="noopener">@userinfobot</UiLink>
+          <UiLink
+            size="small"
+            href="https://t.me/userinfobot"
+            target="_blank"
+            rel="noopener"
+          >@userinfobot</UiLink>
           (для личных сообщений) или добавьте бота в группу и используйте ID группы
         </span>
       </div>
@@ -29,8 +34,8 @@
       <div class="tg-status">
         <span class="tg-icon">🤖</span>
         <div>
-          <p class="tg-title">Telegram бот</p>
-          <p class="tg-desc">Функция будет доступна в следующем обновлении</p>
+          <UiText size="small" class="tg-title">Telegram бот</UiText>
+          <UiText size="tiny" class="tg-desc">Функция будет доступна в следующем обновлении</UiText>
         </div>
         <span class="tg-badge">Скоро</span>
       </div>
@@ -44,7 +49,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiInput, UiButton, UiLink } from '@fastio/ui'
+import { ref, reactive, watch } from 'vue'
+import { UiInput, UiButton, UiLink, UiText } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
@@ -63,7 +69,7 @@ watch(() => props.tenant.notifications, (n) => {
 const saving = ref(false)
 const saved = ref(false)
 
-async function handleSave() {
+const handleSave = async () => {
   saving.value = true
   saved.value = false
   try {
@@ -74,7 +80,9 @@ async function handleSave() {
       },
     })
     saved.value = true
-    setTimeout(() => { saved.value = false }, 3000)
+    setTimeout(() => {
+      saved.value = false
+    }, 3000)
   } finally {
     saving.value = false
   }
@@ -82,6 +90,8 @@ async function handleSave() {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/ui/styles/mixins/form' as *;
+
 .form {
   display: flex;
   flex-direction: column;
@@ -89,11 +99,7 @@ async function handleSave() {
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #aaa;
+  @include section-title;
 }
 
 .field {
@@ -104,7 +110,7 @@ async function handleSave() {
 
 .hint {
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
@@ -113,7 +119,7 @@ async function handleSave() {
   align-items: center;
   gap: 12px;
   padding: 14px;
-  background: #f9f9f9;
+  background: var(--color-bg-page);
   border-radius: 12px;
 }
 
@@ -124,34 +130,30 @@ async function handleSave() {
 .tg-title {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--grey-800);
   margin-bottom: 2px;
 }
 
 .tg-desc {
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .tg-badge {
   margin-left: auto;
   font-size: 11px;
   font-weight: 700;
-  background: #f0f0f0;
-  color: #888;
+  background: var(--color-border);
+  color: var(--color-text-secondary);
   padding: 3px 10px;
   border-radius: 20px;
 }
 
 .footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  @include settings-footer;
 }
 
 .saved-msg {
-  font-size: 13px;
-  color: #10b981;
+  @include saved-msg;
 }
 </style>

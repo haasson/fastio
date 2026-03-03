@@ -69,7 +69,12 @@
         >
           {{ next.label }}
         </UiButton>
-        <UiButton type="tertiary" size="small" :disabled="updating" @click="$emit('cancel', order.id)">
+        <UiButton
+          type="tertiary"
+          size="small"
+          :disabled="updating"
+          @click="$emit('cancel', order.id)"
+        >
           Отменить
         </UiButton>
       </div>
@@ -78,9 +83,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useNow } from '@vueuse/core'
 import { UiButton, UiLink, UiIcon } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { nextStatus, nextStatusPickup, statusConfig } from '~/composables/useOrders'
+import { statusConfig, nextStatus, nextStatusPickup } from '~/config/order-statuses'
 
 const props = defineProps<{
   order: Order
@@ -98,6 +105,7 @@ const statusCfg = computed(() => statusConfig[props.order.status])
 
 const next = computed(() => {
   const map = props.order.deliveryType === 'pickup' ? nextStatusPickup : nextStatus
+
   return map[props.order.status] ?? null
 })
 
@@ -122,21 +130,24 @@ const now = useNow({ interval: 30_000 })
 const relativeTime = computed(() => {
   const diff = now.value.getTime() - new Date(props.order.createdAt).getTime()
   const min = Math.floor(diff / 60_000)
+
   if (min < 1) return 'только что'
   if (min < 60) return `${min} мин назад`
   const h = Math.floor(min / 60)
+
   if (h < 24) return `${h} ч назад`
+
   return new Date(props.order.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
 })
 
-function advance() {
+const advance = () => {
   if (next.value) emit('advance', props.order.id, next.value.status)
 }
 </script>
 
 <style scoped lang="scss">
 .card-root {
-  background: #fff;
+  background: var(--color-bg-card);
   border-radius: 14px;
   padding: 16px;
   display: flex;
@@ -146,18 +157,18 @@ function advance() {
   transition: border-color 0.2s;
 
   &.new {
-    border-color: #3b82f6;
+    border-color: var(--blue-500);
     animation: pulse-border 2s ease-in-out infinite;
   }
 }
 
 @keyframes pulse-border {
   0%, 100% {
-    border-color: #3b82f6;
+    border-color: var(--blue-500);
   }
 
   50% {
-    border-color: #93c5fd;
+    border-color: var(--blue-200);
   }
 }
 
@@ -179,7 +190,7 @@ function advance() {
 .number {
   font-size: 15px;
   font-weight: 800;
-  color: #111;
+  color: var(--color-title);
   font-variant-numeric: tabular-nums;
 }
 
@@ -193,25 +204,25 @@ function advance() {
   gap: 4px;
 
   &.delivery {
-    background: #eff6ff;
-    color: #3b82f6;
+    background: var(--blue-50);
+    color: var(--blue-500);
   }
 
   &.pickup {
-    background: #f0fdf4;
-    color: #16a34a;
+    background: var(--green-50);
+    color: var(--green-500);
   }
 }
 
 .time {
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .status-badge {
   font-size: 11px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-white);
   padding: 3px 8px;
   border-radius: 6px;
 }
@@ -225,12 +236,12 @@ function advance() {
 .customer-name {
   font-size: 14px;
   font-weight: 600;
-  color: #111;
+  color: var(--color-title);
 }
 
 .address {
   font-size: 13px;
-  color: #555;
+  color: var(--color-text-hint);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -242,8 +253,8 @@ function advance() {
   flex-direction: column;
   gap: 3px;
   padding: 8px 0;
-  border-top: 1px solid #f5f5f5;
-  border-bottom: 1px solid #f5f5f5;
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .item {
@@ -255,18 +266,18 @@ function advance() {
 .item-name {
   flex: 1;
   font-size: 13px;
-  color: #333;
+  color: var(--grey-800);
 }
 
 .item-qty {
   font-size: 12px;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 
 .item-price {
   font-size: 13px;
   font-weight: 600;
-  color: #111;
+  color: var(--color-title);
   min-width: 56px;
   text-align: right;
 }
@@ -274,7 +285,7 @@ function advance() {
 .discount,
 .comment {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-hint);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -297,18 +308,18 @@ function advance() {
 
 .total-label {
   font-size: 13px;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .total {
   font-size: 17px;
   font-weight: 800;
-  color: #111;
+  color: var(--color-title);
 }
 
 .payment-type {
   font-size: 11px;
-  color: #aaa;
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   gap: 3px;

@@ -9,6 +9,7 @@ import {
   PlusCircle,
   MinusCircle,
   Calendar,
+  Clock,
   LogOut,
   Menu,
   LayoutDashboard,
@@ -16,6 +17,7 @@ import {
   ClipboardList,
   Gift,
   Settings,
+  Palette,
   Pencil,
   Trash2,
   Plus,
@@ -26,6 +28,7 @@ import {
   Banknote,
   Smartphone,
   MessageCircle,
+  Users,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -58,6 +61,9 @@ export const iconRegistry = {
   banknote: Banknote,
   smartphone: Smartphone,
   messageCircle: MessageCircle,
+  clock: Clock,
+  palette: Palette,
+  users: Users,
 } as const
 
 export type IconName = keyof typeof iconRegistry
