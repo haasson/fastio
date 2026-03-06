@@ -1,10 +1,7 @@
 <template>
   <div class="login-root">
     <div class="card">
-      <div class="logo">
-        <UiAppLogo :size="32" />
-        <span class="logo-text">Fastio</span>
-      </div>
+      <AppBrand class="brand" />
 
       <template v-if="hashError">
         <UiTitle size="h3" class="title">Ссылка недействительна</UiTitle>
@@ -57,7 +54,7 @@
 import { ref, onMounted } from 'vue'
 import { definePageMeta, useNuxtApp, useRoute, navigateTo } from '#imports'
 import { UiForm, UiInput, UiButton, UiAlert, UiTitle, UiSpace } from '@fastio/ui'
-import UiAppLogo from '~/components/ui/AppLogo.vue'
+import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
@@ -69,6 +66,8 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 const hashError = ref('')
+
+const inviteToken = route.query.token as string | undefined
 
 onMounted(() => {
   const hash = window.location.hash.slice(1)
@@ -102,9 +101,11 @@ const handleSubmit = async () => {
       ? 'Неверный email или пароль'
       : 'Произошла ошибка. Попробуйте ещё раз'
   } else {
-    const redirect = route.query.redirect as string
+    if (inviteToken) {
+      await $supabase.functions.invoke('accept-invite', { body: { token: inviteToken } })
+    }
 
-    await navigateTo(redirect || '/')
+    await navigateTo('/')
   }
 
   loading.value = false
@@ -130,17 +131,8 @@ const handleSubmit = async () => {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.brand {
   margin-bottom: 32px;
-}
-
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-title);
 }
 
 .title {

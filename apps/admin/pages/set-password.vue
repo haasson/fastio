@@ -1,15 +1,16 @@
 <template>
   <div class="set-password-root">
     <div class="card">
-      <div class="logo">
-        <UiAppLogo :size="32" />
-        <span class="logo-text">Fastio</span>
-      </div>
+      <AppBrand class="brand" />
 
       <UiTitle size="h3" class="title">Установите пароль</UiTitle>
       <UiText size="small" class="subtitle">Введите имя и придумайте пароль для входа</UiText>
 
-      <UiForm :error="error" @submit="handleSubmit">
+      <UiAlert v-if="emailConfirmSent" type="info" style="margin-bottom: 16px">
+        Проверьте почту — отправили письмо для подтверждения регистрации
+      </UiAlert>
+
+      <UiForm v-if="!emailConfirmSent" :error="error" @submit="handleSubmit">
         <UiInput
           v-model="form.name"
           name="name"
@@ -46,7 +47,7 @@
           block
           :loading="loading"
         >
-          Сохранить и войти
+          {{ inviteToken ? 'Создать аккаунт и присоединиться' : 'Сохранить и войти' }}
         </UiButton>
       </UiForm>
     </div>
@@ -55,22 +56,62 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { definePageMeta, useNuxtApp, navigateTo } from '#imports'
-import { UiForm, UiInput, UiButton, UiTitle, UiText } from '@fastio/ui'
-import UiAppLogo from '~/components/ui/AppLogo.vue'
+import { definePageMeta, useRoute, useNuxtApp, navigateTo } from '#imports'
+import { UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
+import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
 const { $supabase } = useNuxtApp()
+const route = useRoute()
+
+const inviteToken = route.query.token as string | undefined
+const inviteEmail = route.query.email as string | undefined
 
 const form = reactive({ name: '', password: '', passwordConfirm: '' })
 const error = ref('')
 const loading = ref(false)
+const emailConfirmSent = ref(false)
 
 const handleSubmit = async () => {
   error.value = ''
   loading.value = true
 
+  // Инвайт нового юзера — нужно создать аккаунт
+  if (inviteToken && inviteEmail) {
+    const appUrl = window.location.origin
+    const { error: signUpError } = await $supabase.auth.signUp({
+      email: inviteEmail,
+      password: form.password,
+      options: {
+        data: { full_name: form.name },
+        emailRedirectTo: `${appUrl}/set-password?token=${inviteToken}&email=${encodeURIComponent(inviteEmail)}`,
+      },
+    })
+
+    if (signUpError) {
+      error.value = 'Не удалось создать аккаунт. Попробуйте ещё раз'
+      loading.value = false
+
+      return
+    }
+
+    const { data: { session } } = await $supabase.auth.getSession()
+
+    if (session) {
+      await $supabase.functions.invoke('accept-invite', { body: { token: inviteToken } })
+      await navigateTo('/')
+    } else {
+      // Продакшн: ждём подтверждения email
+      emailConfirmSent.value = true
+    }
+
+    loading.value = false
+
+    return
+  }
+
+  // Обычный флоу — юзер уже авторизован, просто устанавливает пароль
   const { error: updateError } = await $supabase.auth.updateUser({
     password: form.password,
     data: { full_name: form.name },
@@ -79,7 +120,6 @@ const handleSubmit = async () => {
   if (updateError) {
     error.value = 'Не удалось сохранить. Попробуйте ещё раз'
   } else {
-    sessionStorage.removeItem('fastio:invite-pending')
     await navigateTo('/')
   }
 
@@ -106,17 +146,8 @@ const handleSubmit = async () => {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.brand {
   margin-bottom: 32px;
-}
-
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-title);
 }
 
 .title {

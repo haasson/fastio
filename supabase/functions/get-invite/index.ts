@@ -36,15 +36,21 @@ Deno.serve(async (req) => {
     return json({ error: 'Invitation expired' }, { status: 410 })
   }
 
-  const { data: tenant } = await adminSupabase
-    .from('tenants')
-    .select('name')
-    .eq('id', invitation.tenant_id)
-    .single()
+  const [{ data: tenant }, { data: { users } }] = await Promise.all([
+    adminSupabase
+      .from('tenants')
+      .select('name')
+      .eq('id', invitation.tenant_id)
+      .single(),
+    adminSupabase.auth.admin.listUsers(),
+  ])
+
+  const userExists = users.some((u) => u.email === invitation.email)
 
   return json({
     email: invitation.email,
     role: invitation.role,
     tenantName: tenant?.name ?? '',
+    userExists,
   }, { status: 200 })
 })
