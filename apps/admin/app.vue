@@ -1,5 +1,5 @@
 <template>
-  <UiConfigProvider :theme-overrides="themeOverrides">
+  <UiConfigProvider :is-dark="isDark">
     <UiConfirmModal />
     <NuxtLayout>
       <NuxtPage />
@@ -8,11 +8,28 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, watch, provide, onMounted } from 'vue'
 import { navigateTo } from '#imports'
-import { UiConfigProvider, UiConfirmModal, naiveUiThemeOverrides } from '@fastio/ui'
+import { UiConfigProvider, UiConfirmModal } from '@fastio/ui'
 
-const themeOverrides = naiveUiThemeOverrides
+const isDark = ref(false)
+
+watch(isDark, (dark) => {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+}, { immediate: true })
+
+// Sync isDark when data-theme is changed externally (e.g. via DevTools)
+onMounted(() => {
+  const observer = new MutationObserver(() => {
+    const theme = document.documentElement.getAttribute('data-theme')
+
+    isDark.value = theme === 'dark'
+  })
+
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+})
+
+provide('isDark', isDark)
 
 // Invite-flow: если пользователь пришёл по invite-ссылке — отправляем на
 // установку пароля. Флаг выставляется в плагине до createClient.

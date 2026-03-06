@@ -228,31 +228,13 @@ defineOptions({
 
     &:hover:not(.n-input--disabled) {
       &:deep(.n-input__state-border) {
-        border-color: var(--green-500);
+        border-color: var(--color-success);
       }
     }
 
     &.n-input--focus {
       &:deep(.n-input__state-border) {
-        border-color: var(--green-500);
-      }
-    }
-  }
-
-  &.n-input--warning-status {
-    &:deep(.n-input__state-border) {
-      border: 2px solid var(--color-warning);
-    }
-
-    &:hover:not(.n-input--disabled) {
-      &:deep(.n-input__state-border) {
-        border-color: var(--yellow-500);
-      }
-    }
-
-    &.n-input--focus {
-      &:deep(.n-input__state-border) {
-        border-color: var(--yellow-500);
+        border-color: var(--color-success);
       }
     }
   }

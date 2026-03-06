@@ -2,44 +2,46 @@
   <div class="layout-root" :class="{ 'sidebar-collapsed': collapsed }">
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ open: sidebarOpen }">
-      <div class="sidebar-header">
-        <UiAppLogo :size="28" />
-        <UiTitle size="h1" class="logo-text">Fastio</UiTitle>
-      </div>
-
-      <div class="tenant-wrap">
-        <TenantSwitcher />
-      </div>
-
-      <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
-
-      <div class="user-info">
-        <UiSelect
-          v-if="branchStore.hasBranches"
-          :value="branchStore.currentBranchId ?? ''"
-          :options="branchOptions"
-          class="branch-select"
-          @update:value="handleBranchChange"
-        />
-
-        <div class="user-row">
-          <div class="user-names">
-            <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
-            <UiText size="tiny" class="user-name">{{ displayName }}</UiText>
-          </div>
-          <UiButton
-            type="text"
-            size="small"
-            icon="logOut"
-            class="logout-btn"
-            @click="handleLogout"
-          />
+      <UiConfigProvider :is-dark="true">
+        <div class="sidebar-header">
+          <UiAppLogo :size="28" />
+          <UiTitle size="h1" class="logo-text">Fastio</UiTitle>
         </div>
-      </div>
 
-      <button class="collapse-btn" @click="collapsed = !collapsed">
-        <UiIcon name="collapse" :size="14" :rotate="collapsed ? 180 : 0" />
-      </button>
+        <div class="tenant-wrap">
+          <TenantSwitcher />
+        </div>
+
+        <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
+
+        <div class="user-info">
+          <UiSelect
+            v-if="branchStore.hasBranches"
+            :value="branchStore.currentBranchId ?? ''"
+            :options="branchOptions"
+            class="branch-select"
+            @update:value="handleBranchChange"
+          />
+
+          <div class="user-row">
+            <div class="user-names">
+              <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
+              <UiText size="tiny" class="user-name">{{ displayName }}</UiText>
+            </div>
+            <UiButton
+              type="text"
+              size="small"
+              icon="logOut"
+              class="logout-btn"
+              @click="handleLogout"
+            />
+          </div>
+        </div>
+
+        <button class="collapse-btn" @click="collapsed = !collapsed">
+          <UiIcon name="collapse" :size="14" :rotate="collapsed ? 180 : 0" />
+        </button>
+      </UiConfigProvider>
     </aside>
 
     <!-- Overlay для мобилки -->
@@ -65,7 +67,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useNuxtApp, navigateTo } from '#imports'
 import { useLocalStorage } from '@vueuse/core'
-import { UiTitle, UiText, UiSelect, UiButton, useConfirm } from '@fastio/ui'
+import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon, useConfirm } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
@@ -169,8 +171,9 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: var(--blue-50);
-  border-right: 1px solid var(--blue-200);
+  background: var(--grey-900);
+  border-right: 1px solid var(--grey-700);
+  color: var(--grey-300);
   display: flex;
   flex-direction: column;
   padding: 0 0 16px;
@@ -181,6 +184,17 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
   z-index: 100;
   transition: transform 0.25s ease, width 0.25s ease;
   transform: translateX(-100%);
+
+  :deep(> .n-config-provider) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+
+    > .n-message-provider { // naive adds this wrapper
+      display: contents;
+    }
+  }
 
   &.open {
     transform: translateX(0);
@@ -196,8 +210,12 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
   align-items: center;
   gap: 10px;
   padding: 24px 20px 20px;
-  border-bottom: 1px solid var(--blue-200);
+  border-bottom: 1px solid var(--grey-700);
   margin-bottom: 8px;
+
+  :deep(*) {
+    color: var(--grey-50);
+  }
 }
 
 .collapse-btn {
@@ -210,16 +228,16 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1px solid var(--blue-200);
-  background: var(--color-white);
-  color: var(--grey-500);
+  border: 1px solid var(--grey-700);
+  background: var(--grey-900);
+  color: var(--grey-400);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
   z-index: 1;
 
   &:hover {
-    background: var(--blue-50);
-    color: var(--grey-900);
+    background: var(--grey-800);
+    color: var(--grey-50);
   }
 
   @include mq-m {
@@ -229,7 +247,7 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 
 .user-info {
   padding: 12px 16px 4px;
-  border-top: 1px solid var(--blue-200);
+  border-top: 1px solid var(--grey-700);
   margin-top: auto;
   display: flex;
   flex-direction: column;
@@ -254,7 +272,7 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 .user-tenant {
   display: block;
   font-weight: 600;
-  color: var(--color-title);
+  color: var(--grey-50);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -262,7 +280,7 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 
 .user-name {
   display: block;
-  color: var(--grey-500);
+  color: var(--grey-400);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -270,10 +288,10 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 
 .logout-btn {
   flex-shrink: 0;
-  color: var(--grey-400);
+  color: var(--grey-500);
 
   &:hover {
-    color: var(--grey-700);
+    color: var(--grey-300);
   }
 }
 
@@ -344,7 +362,7 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay-bg);
   z-index: 99;
 
   @include mq-m {

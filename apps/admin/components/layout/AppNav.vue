@@ -59,7 +59,7 @@ defineExpose({ navItems })
   gap: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: var(--grey-700);
+  color: var(--grey-400);
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -67,8 +67,8 @@ defineExpose({ navItems })
   transition: background 0.15s, color 0.15s;
 
   &:hover {
-    background: var(--blue-100);
-    color: var(--grey-900);
+    background: var(--grey-800);
+    color: var(--grey-50);
   }
 
   &.active {

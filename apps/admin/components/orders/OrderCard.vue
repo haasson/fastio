@@ -27,7 +27,7 @@
     <!-- Клиент -->
     <div class="customer">
       <span class="customer-name">{{ order.customer.name }}</span>
-      <UiLink size="small" :href="`tel:${order.customer.phone}`">{{ order.customer.phone }}</UiLink>
+      <a :href="`tel:${order.customer.phone}`">{{ order.customer.phone }}</a>
     </div>
 
     <!-- Адрес -->
@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiButton, UiLink, UiIcon, UiMenuDropdown, UiTag, COLORS } from '@fastio/ui'
+import { UiButton, UiIcon, UiMenuDropdown, UiTag, COLORS } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { STATUS_GROUP_COLORS, STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'

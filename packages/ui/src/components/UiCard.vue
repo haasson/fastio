@@ -70,14 +70,14 @@ withDefaults(defineProps<UiCardProps>(), {
   &:where(.with-header) {
     position: relative;
     box-shadow: none;
-    background-color: var(--grey-200);
+    background-color: var(--color-border);
 
     &::after {
       content: '';
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      box-shadow: inset 0 0 0 3px var(--grey-200);
+      box-shadow: inset 0 0 0 3px var(--color-border);
       pointer-events: none;
     }
 

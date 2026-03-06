@@ -130,7 +130,7 @@ onUnmounted(() => {
   position: fixed;
   inset: 0;
   z-index: 2100;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--overlay-bg);
 }
 
 .drawer-content {
@@ -144,7 +144,7 @@ onUnmounted(() => {
   max-width: var(--bottom-sheet-max-width, 640px);
   max-height: var(--bottom-sheet-max-height, 70vh);
   margin: 0 auto;
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 16px 16px 0 0;
 }
 

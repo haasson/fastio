@@ -78,7 +78,7 @@ const handleTabClick = (value: string | number) => {
 
   &:deep(.n-tag__border) {
     border-width: 2px;
-    border-color: var(--grey-900);
+    border-color: var(--color-title);
   }
 
   &:not(.tag--empty):deep(.n-tag__border) {

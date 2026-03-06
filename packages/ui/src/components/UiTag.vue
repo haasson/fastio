@@ -104,11 +104,11 @@ $tag-sizes: (
 );
 
 $tag-types: (
-  'default': ('bg': var(--grey-200), 'color': var(--grey-900), 'border': var(--grey-200), 'empty-color': var(--grey-900), 'secondary-bg': var(--grey-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--grey-50)),
-  'primary': ('bg': var(--color-primary), 'color': var(--color-white), 'border': var(--color-primary), 'empty-color': var(--color-primary), 'secondary-bg': var(--blue-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--blue-50)),
-  'success': ('bg': var(--color-success), 'color': var(--color-white), 'border': var(--color-success), 'empty-color': var(--color-success), 'secondary-bg': var(--green-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--green-50)),
-  'warning': ('bg': var(--yellow-600), 'color': var(--color-white), 'border': var(--yellow-600), 'empty-color': var(--yellow-600), 'secondary-bg': var(--yellow-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--yellow-50)),
-  'error':   ('bg': var(--red-500), 'color': var(--color-white), 'border': var(--red-500), 'empty-color': var(--red-500), 'secondary-bg': var(--red-50), 'secondary-color': var(--red-500), 'secondary-border': var(--red-50)),
+  'default': ('bg': var(--color-border), 'color': var(--color-title), 'border': var(--color-border), 'empty-color': var(--color-title), 'secondary-bg': var(--color-bg-page), 'secondary-color': var(--color-title), 'secondary-border': var(--color-bg-page)),
+  'primary': ('bg': var(--color-primary), 'color': var(--color-white), 'border': var(--color-primary), 'empty-color': var(--color-primary), 'secondary-bg': var(--color-primary-light), 'secondary-color': var(--color-title), 'secondary-border': var(--color-primary-light)),
+  'success': ('bg': var(--color-success), 'color': var(--color-white), 'border': var(--color-success), 'empty-color': var(--color-success), 'secondary-bg': var(--color-success-light), 'secondary-color': var(--color-title), 'secondary-border': var(--color-success-light)),
+  'warning': ('bg': var(--yellow-600), 'color': var(--color-white), 'border': var(--yellow-600), 'empty-color': var(--yellow-600), 'secondary-bg': var(--color-warning-light), 'secondary-color': var(--color-title), 'secondary-border': var(--color-warning-light)),
+  'error':   ('bg': var(--red-500), 'color': var(--color-white), 'border': var(--red-500), 'empty-color': var(--red-500), 'secondary-bg': var(--color-error-light), 'secondary-color': var(--red-500), 'secondary-border': var(--color-error-light)),
 );
 
 .n-tag {
@@ -216,13 +216,13 @@ $tag-types: (
 
 .tag-close {
   margin-left: 4px;
-  --icon-bg: var(--grey-100);
-  --icon-fg: var(--grey-500);
+  --icon-bg: var(--color-bg-hover);
+  --icon-fg: var(--color-text-hint);
 
   :deep(*) { transition: fill 0.2s ease; }
 
   &:hover {
-    --icon-bg: var(--grey-200);
+    --icon-bg: var(--color-border);
   }
 }
 </style>

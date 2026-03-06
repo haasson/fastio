@@ -230,7 +230,7 @@ const toggle = () => {
 
 .toggle-button {
   :deep(.n-button__content) {
-    color: var(--grey-700);
+    color: var(--color-text);
   }
 }
 </style>

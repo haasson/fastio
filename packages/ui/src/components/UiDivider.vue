@@ -30,7 +30,7 @@ withDefaults(defineProps<Props>(), {
 .divider {
   :deep(.n-divider__line) {
     height: 2px;
-    background-color: var(--grey-200);
+    background-color: var(--color-border);
   }
 
   :deep(.n-divider__title) {

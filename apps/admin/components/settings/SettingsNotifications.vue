@@ -23,12 +23,7 @@
         />
         <span class="hint">
           Как получить:
-          <UiLink
-            size="small"
-            href="https://t.me/userinfobot"
-            target="_blank"
-            rel="noopener"
-          >@userinfobot</UiLink>
+          <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>
           (для личных сообщений) или добавьте бота в группу и используйте ID группы
         </span>
       </div>
@@ -51,7 +46,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiLink, UiText, UiIcon, UiTag, useMessage } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, useMessage } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 
 const props = defineProps<{ tenant: Tenant }>()

@@ -20,11 +20,11 @@ defineProps<{
 @use 'sass:map';
 
 $counter-types: (
-  'default': ('bg': var(--grey-100), 'color': var(--grey-500)),
-  'primary': ('bg': var(--blue-50),  'color': var(--color-primary)),
-  'success': ('bg': var(--green-50), 'color': var(--color-success)),
-  'warning': ('bg': var(--yellow-50),'color': var(--yellow-600)),
-  'error':   ('bg': var(--red-50),   'color': var(--red-500)),
+  'default': ('bg': var(--color-bg-hover), 'color': var(--color-text-hint)),
+  'primary': ('bg': var(--color-primary-light), 'color': var(--color-primary)),
+  'success': ('bg': var(--color-success-light), 'color': var(--color-success)),
+  'warning': ('bg': var(--color-warning-light), 'color': var(--yellow-600)),
+  'error':   ('bg': var(--color-error-light), 'color': var(--red-500)),
 );
 
 $counter-sizes: (

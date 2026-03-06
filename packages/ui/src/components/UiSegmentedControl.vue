@@ -137,7 +137,7 @@ watch(() => props.items, () => {
   display: inline-flex;
   gap: 2px;
   padding: 2px;
-  border: 2px solid var(--grey-200);
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-white);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -264,14 +264,14 @@ watch(() => props.items, () => {
     justify-content: center;
     gap: 6px;
     border-radius: 6px;
-    color: var(--grey-500);
+    color: var(--color-text-hint);
     font-weight: 700;
     cursor: pointer;
     user-select: none;
     transition: all 0.2s ease;
 
     &:hover {
-      background: var(--blue-50);
+      background: var(--color-primary-light);
     }
 
     &.active {
@@ -283,7 +283,7 @@ watch(() => props.items, () => {
 
       .tag {
         background: var(--color-white);
-        color: var(--grey-900);
+        color: var(--color-title);
       }
     }
 

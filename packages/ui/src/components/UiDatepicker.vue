@@ -207,8 +207,8 @@ $datepicker-sizes: (
     border-radius: 50px;
 
     &.n-date-panel-date__date--current {
-      color: var(--grey-900);
-      background-color: var(--blue-50);
+      color: var(--color-title);
+      background-color: var(--color-primary-light);
     }
 
     &.n-date-panel-date__date--selected {
@@ -217,11 +217,11 @@ $datepicker-sizes: (
     }
 
     &:hover:not(.n-date-panel-date__date--selected) {
-      background-color: var(--blue-50);
+      background-color: var(--color-primary-light);
     }
 
     &.n-date-panel-date__date--covered {
-      background-color: var(--blue-50);
+      background-color: var(--color-primary-light);
     }
   }
 
@@ -230,7 +230,7 @@ $datepicker-sizes: (
     border-radius: 50px;
 
     &:hover {
-      background-color: var(--blue-50);
+      background-color: var(--color-primary-light);
     }
 
     &.n-date-panel-month__month-cell--selected,
@@ -241,14 +241,14 @@ $datepicker-sizes: (
 
     &.n-date-panel-month__month-cell--current,
     &.n-date-panel-year__year-cell--current {
-      color: var(--grey-900);
-      background-color: var(--blue-50);
+      color: var(--color-title);
+      background-color: var(--color-primary-light);
     }
   }
 
   &:deep(.n-date-panel-header__title) {
     &:hover {
-      background-color: var(--blue-50);
+      background-color: var(--color-primary-light);
     }
   }
 

@@ -105,7 +105,7 @@ const computedIconSize = computed(() => {
       border-color: var(--blue-400);
     }
     &:focus-visible {
-      background-color: var(--blue-50);
+      background-color: var(--color-primary-light);
     }
   }
 
@@ -186,8 +186,8 @@ const computedIconSize = computed(() => {
 
   &:where(.type-tertiary) {
     background-color: var(--bg-page);
-    color: var(--grey-900);
-    border: 2px solid var(--grey-200);
+    color: var(--color-title);
+    border: 2px solid var(--color-border);
     font-family: var(--main-font);
 
     &:hover:not(.n-button--disabled):not(.n-button--loading) {
@@ -196,7 +196,7 @@ const computedIconSize = computed(() => {
     }
     &:focus-visible {
       background-color: var(--bg-page);
-      color: var(--grey-900);
+      color: var(--color-title);
       border-color: var(--color-primary);
     }
   }
@@ -204,13 +204,13 @@ const computedIconSize = computed(() => {
   &:where(.type-tertiary.text-button) {
     background-color: transparent;
     border: none;
-    color: var(--grey-900);
+    color: var(--color-title);
 
     &:hover:not(.n-button--disabled):not(.n-button--loading) {
-      color: var(--grey-700);
+      color: var(--color-text);
     }
     &:focus-visible {
-      color: var(--grey-700);
+      color: var(--color-text);
     }
   }
 

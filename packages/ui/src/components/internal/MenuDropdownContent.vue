@@ -97,7 +97,7 @@ function onItemClick(item: UiMenuDropdownItem) {
 .header {
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--grey-200);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .footer {
@@ -124,7 +124,7 @@ function onItemClick(item: UiMenuDropdownItem) {
   transition: background-color 0.2s;
 
   &:hover:not(&--disabled) {
-    background-color: var(--blue-50);
+    background-color: var(--color-primary-light);
   }
 
   &:where(.item--disabled) {
@@ -173,7 +173,7 @@ function onItemClick(item: UiMenuDropdownItem) {
   position: relative;
   height: 1px;
   margin: 12px 0;
-  background-color: var(--grey-200);
+  background-color: var(--color-border);
 }
 
 .divider-label {

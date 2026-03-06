@@ -97,7 +97,7 @@ defineExpose({
 .form-error {
   padding: 8px 12px;
   border-radius: 8px;
-  background: var(--color-error-light, rgba(255, 0, 0, 0.08));
+  background: var(--color-error-light);
   color: var(--color-error);
   font-size: 14px;
 }

@@ -36,11 +36,8 @@ export type { UiModalProps, ModalAction } from './components/UiModal.vue'
 export type { UiBottomSheetProps } from './components/UiBottomSheet.vue'
 
 // Navigation components
-export { default as UiLink } from './components/UiLink.vue'
-export { default as UiBreadcrumbs } from './components/UiBreadcrumbs.vue'
 export { default as UiMenu } from './components/UiMenu.vue'
 export { default as UiMenuDropdown } from './components/UiMenuDropdown.vue'
-export type { BreadcrumbItem } from './components/UiBreadcrumbs.vue'
 export type { UiMenuOption, UiMenuKey } from './components/UiMenu.vue'
 export type { UiMenuDropdownItem } from './components/UiMenuDropdown.vue'
 
@@ -81,4 +78,4 @@ export { FORM_SIZE_KEY } from './constants/form-size'
 export { COLORS } from './constants/colors'
 
 // Config
-export { default as naiveUiThemeOverrides } from './config/naive-ui-theme-overrides'
+export { default as naiveUiThemeOverrides, lightThemeOverrides, darkThemeOverrides } from './config/naive-ui-theme-overrides'

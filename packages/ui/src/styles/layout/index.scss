@@ -2,7 +2,7 @@
 
 html {
   scrollbar-width: thin;
-  scrollbar-color: #e2e3e8 transparent;
+  scrollbar-color: var(--color-border) transparent;
   min-height: 100vh;
 
   ::-webkit-scrollbar {
@@ -10,7 +10,7 @@ html {
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #e2e3e8;
+    background: var(--color-border);
     border-radius: 8px;
   }
 }

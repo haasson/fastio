@@ -333,15 +333,9 @@ $select-sizes: (
     height: 100%;
   }
 
-  :deep(.n-base-select-option--selected) {
-    &:before {
-      border: 1px solid var(--blue-50);
-    }
-  }
-
   :deep(.n-base-select-group-header) {
     font-weight: 700;
-    color: var(--grey-700);
+    color: var(--color-text);
   }
 
   :deep(.n-base-select-menu) {
@@ -375,12 +369,6 @@ $select-sizes: (
       }
 
       color: var(--color-text) !important;
-    }
-
-    :deep(.n-base-select-option--pending) {
-      &:before {
-        background: var(--blue-50) !important;
-      }
     }
   }
 

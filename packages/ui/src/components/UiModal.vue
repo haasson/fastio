@@ -221,7 +221,7 @@ const handleActionClick = async (action: ModalAction) => {
   position: absolute;
   top: 16px;
   right: 16px;
-  color: var(--grey-300);
+  color: var(--color-text-tertiary);
   cursor: pointer;
   transition: color 0.3s;
 
@@ -231,7 +231,7 @@ const handleActionClick = async (action: ModalAction) => {
   }
 
   &:hover {
-    color: var(--grey-500);
+    color: var(--color-text-hint);
   }
 }
 
@@ -297,7 +297,7 @@ const handleActionClick = async (action: ModalAction) => {
   align-items: center;
   justify-content: center;
   border-radius: inherit;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--overlay-loading);
 }
 
 .loading-fade-enter-active,
@@ -313,7 +313,7 @@ const handleActionClick = async (action: ModalAction) => {
 .spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid var(--grey-200);
+  border: 3px solid var(--color-border);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
