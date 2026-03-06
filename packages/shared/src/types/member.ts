@@ -22,10 +22,3 @@ export type TenantInvitation = {
   acceptedAt: string | null
   createdAt: string
 }
-
-const ROLE_ORDER: TenantRole[] = ['owner', 'admin', 'manager', 'staff']
-
-// TODO: не должно быть функции в типах
-export function hasMinRole(userRole: TenantRole, requiredRole: TenantRole): boolean {
-  return ROLE_ORDER.indexOf(userRole) <= ROLE_ORDER.indexOf(requiredRole)
-}

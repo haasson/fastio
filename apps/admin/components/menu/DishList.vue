@@ -30,7 +30,6 @@
             <template v-else-if="!dishesLoading">
               <UiAppEmpty v-if="dishes.length === 0" icon="dishes" text="В этой категории пока нет блюд" />
 
-              <!--    TODO: тоже очень много похожего на карточки из закозов. Можно подумать об унификации      -->
               <template v-else>
                 <!-- Вид карточек -->
                 <VueDraggable

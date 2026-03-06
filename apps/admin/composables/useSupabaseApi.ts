@@ -9,6 +9,8 @@ import { orderStatusesApi } from '~/utils/api/order-statuses'
 import { membersApi } from '~/utils/api/members'
 import { invitationsApi } from '~/utils/api/invitations'
 import { tenantsApi } from '~/utils/api/tenants'
+import { authApi } from '~/utils/api/auth'
+import { functionsApi } from '~/utils/api/functions'
 
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
 
@@ -25,7 +27,6 @@ const bindAll = <T extends ApiModule>(api: T, sb: SupabaseClient): BoundApi<T> =
 export const useSupabaseApi = () => {
   const { $supabase: sb } = useNuxtApp()
 
-  // TODO: может для всех сущностей вынести функции в отдельный файл? А то какие-то отдельно, какие-то тут инлайново
   return {
     branches: bindAll(branchesApi, sb),
     categories: bindAll(categoriesApi, sb),
@@ -36,18 +37,7 @@ export const useSupabaseApi = () => {
     members: bindAll(membersApi, sb),
     invitations: bindAll(invitationsApi, sb),
     tenants: bindAll(tenantsApi, sb),
-    auth: {
-      signIn: (email: string, password: string) => sb.auth.signInWithPassword({ email, password }),
-      signUp: (email: string, password: string, options?: { data?: Record<string, unknown>; emailRedirectTo?: string }) => sb.auth.signUp({ email, password, options }),
-      signOut: () => sb.auth.signOut(),
-      getSession: () => sb.auth.getSession(),
-      updateUser: (attrs: { password?: string; data?: Record<string, unknown> }) => sb.auth.updateUser(attrs),
-    },
-    functions: {
-      listTeam: (body: object) => sb.functions.invoke('list-team', { body }),
-      inviteMember: (body: object) => sb.functions.invoke('invite-member', { body }),
-      acceptInvite: (body: object) => sb.functions.invoke('accept-invite', { body }),
-      getInvite: (body: object) => sb.functions.invoke('get-invite', { body }),
-    },
+    auth: bindAll(authApi, sb),
+    functions: bindAll(functionsApi, sb),
   }
 }
