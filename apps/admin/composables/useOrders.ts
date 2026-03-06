@@ -1,55 +1,41 @@
-import { ref, watch, onUnmounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useNuxtApp } from '#imports'
-import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Order, OrderStatus } from '@fastio/shared'
-import { ordersApi, type OrderFilter } from '~/utils/api/orders'
+import type { Order } from '@fastio/shared'
+import { ordersApi, mapOrder, type OrderFilter } from '~/utils/api/orders'
+import { useRealtimeList } from '~/composables/useRealtimeList'
 
-export function useOrders(tenantId: Ref<string>, filter: Ref<OrderFilter>) {
+export function useOrders(
+  tenantId: Ref<string>,
+  filter: Ref<OrderFilter>,
+  branchId: Ref<string | null> = ref(null),
+) {
   const { $supabase } = useNuxtApp()
-  const orders = ref<Order[]>([])
-  const loading = ref(true)
 
-  let channel: RealtimeChannel | null = null
+  const { items: orders, loading } = useRealtimeList({
+    channelKey: computed(() => tenantId.value && filter.value
+      ? `orders:${tenantId.value}:${filter.value}:${branchId.value}`
+      : null,
+    ),
+    table: 'orders',
+    filter: computed(() => `tenant_id=eq.${tenantId.value}`),
+    fetch: () => ordersApi.list($supabase, tenantId.value, filter.value!, branchId.value),
+    mapper: mapOrder,
+    shouldInclude: (order: Order) => filter.value !== null
+      && order.status === filter.value
+      && (branchId.value === null || order.branchId === branchId.value),
+  })
 
-  const fetchOrders = async (tid: string, f: OrderFilter) => {
-    loading.value = true
-    orders.value = await ordersApi.list($supabase, tid, f)
-    loading.value = false
-  }
-
-  watch(
-    [tenantId, filter],
-    ([tid, f]) => {
-      channel?.unsubscribe()
-      channel = null
-      orders.value = []
-
-      if (!tid) return
-
-      fetchOrders(tid, f)
-
-      channel = $supabase
-        .channel(`orders:${tid}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'orders',
-          filter: `tenant_id=eq.${tid}`,
-        }, () => fetchOrders(tid, f))
-        .subscribe()
-    },
-    { immediate: true },
-  )
-
-  onUnmounted(() => channel?.unsubscribe())
-
-  const updateStatus = async (orderId: string, status: OrderStatus) => {
+  const updateStatus = async (orderId: string, status: string) => {
     await ordersApi.updateStatus($supabase, orderId, status)
+    const i = orders.value.findIndex((o) => o.id === orderId)
+
+    if (i === -1) return
+    if (status !== filter.value) {
+      orders.value.splice(i, 1)
+    } else {
+      orders.value[i] = { ...orders.value[i], status }
+    }
   }
 
-  const cancel = async (orderId: string) => {
-    await updateStatus(orderId, 'cancelled')
-  }
-
-  return { orders, loading, updateStatus, cancel }
+  return { orders, loading, updateStatus }
 }

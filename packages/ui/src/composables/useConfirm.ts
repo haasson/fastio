@@ -4,6 +4,8 @@ import useModals from './useModals'
 export type ConfirmOptions = {
   title: string
   message?: string
+  alert?: string
+  confirmDisabled?: boolean
   cancelText?: string | false
   confirmText?: string | false
   cancelType?: 'default' | 'primary' | 'error' | 'warning' | 'success' | 'text'

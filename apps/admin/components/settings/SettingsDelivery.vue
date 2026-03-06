@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSave">
+  <UiForm @submit="handleSave">
     <div class="form">
       <UiText size="tiny" span class="section-title">Настройки доставки</UiText>
 
@@ -25,43 +25,39 @@
       </div>
 
       <div class="footer">
-        <span v-if="saved" class="saved-msg">✅ Сохранено</span>
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
       </div>
     </div>
-  </form>
+  </UiForm>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiButton, UiInputNumber, UiText } from '@fastio/ui'
+import { UiForm, UiButton, UiInputNumber, UiText, useMessage } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
+import { useTenantStore } from '~/stores/tenant'
 
 const props = defineProps<{ tenant: Tenant }>()
-const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
-const form = reactive({
-  deliveryMinOrder: (props.tenant.deliveryMinOrder ?? null) as number | null,
-  deliveryFee: (props.tenant.deliveryFee ?? null) as number | null,
+const tenantStore = useTenantStore()
+
+const buildForm = (t: Tenant) => ({
+  deliveryMinOrder: (t.deliveryMinOrder ?? null) as number | null,
+  deliveryFee: (t.deliveryFee ?? null) as number | null,
 })
 
-watch(() => props.tenant, (t) => {
-  form.deliveryMinOrder = t.deliveryMinOrder ?? null
-  form.deliveryFee = t.deliveryFee ?? null
-})
+const form = reactive(buildForm(props.tenant))
+
+watch(() => props.tenant, (t) => Object.assign(form, buildForm(t)))
 
 const saving = ref(false)
-const saved = ref(false)
+const { success } = useMessage()
 
 const handleSave = async () => {
   saving.value = true
-  saved.value = false
   try {
-    await emit('save', { deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0 })
-    saved.value = true
-    setTimeout(() => {
-      saved.value = false
-    }, 3000)
+    await tenantStore.update({ deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0 })
+    success('Сохранено')
   } finally {
     saving.value = false
   }
@@ -69,7 +65,6 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
 @use '@fastio/ui/styles/mixins/form' as *;
 
 .form {
@@ -83,13 +78,7 @@ const handleSave = async () => {
 }
 
 .row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-
-  @include mq-m {
-    grid-template-columns: 1fr 1fr;
-  }
+  @include form-row(16px);
 }
 
 .field {
@@ -107,7 +96,4 @@ const handleSave = async () => {
   @include settings-footer;
 }
 
-.saved-msg {
-  @include saved-msg;
-}
 </style>

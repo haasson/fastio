@@ -1,138 +1,37 @@
 <template>
   <div v-if="tenantStore.hasMultipleTenants" class="switcher-root">
-    <button class="trigger" @click="open = !open">
-      <span class="name">{{ currentName }}</span>
-      <UiIcon name="chevronRound" :size="14" :rotate="open ? 180 : 0" />
-    </button>
-
-    <div v-if="open" class="dropdown">
-      <button
-        v-for="m in tenantStore.memberships"
-        :key="m.tenantId"
-        class="option"
-        :class="{ active: m.tenantId === tenantStore.currentTenantId }"
-        @click="select(m.tenantId)"
-      >
-        <span class="option-name">{{ m.tenant?.name ?? 'Без названия' }}</span>
-        <span class="option-role">{{ roleLabel(m.role) }}</span>
-      </button>
-    </div>
-
-    <div v-if="open" class="backdrop" @click="open = false" />
+    <UiSelect
+      v-model:value="currentTenantId"
+      :options="tenantOptions"
+      size="small"
+      stateless
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { UiIcon } from '@fastio/ui'
-import type { TenantRole } from '@fastio/shared'
+import { computed } from 'vue'
+import { UiSelect } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { roleLabels } from '~/config/team-roles'
 
 const tenantStore = useTenantStore()
-const open = ref(false)
 
-const currentName = computed(() => {
-  const m = tenantStore.memberships.find((m) => m.tenantId === tenantStore.currentTenantId)
+const tenantOptions = computed(() => tenantStore.memberships.map((membership) => ({
+  label: `${membership.tenant?.name ?? 'Без названия'} (${roleLabels[membership.role]})`,
+  value: membership.tenantId,
+})),
+)
 
-  return m?.tenant?.name ?? 'Выберите заведение'
+const currentTenantId = computed({
+  get: () => tenantStore.currentTenantId ?? '',
+  set: (id: string) => tenantStore.switchTenant(id),
 })
-
-const roleLabel = (role: TenantRole) => roleLabels[role]
-
-const select = (tenantId: string) => {
-  tenantStore.switchTenant(tenantId)
-  open.value = false
-}
 </script>
 
 <style scoped lang="scss">
 .switcher-root {
-  position: relative;
   padding: 0 10px;
   margin-bottom: 8px;
-}
-
-.trigger {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  color: var(--color-white);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.12);
-  }
-}
-
-.name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dropdown {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  top: 100%;
-  margin-top: 4px;
-  background: #252540;
-  border-radius: 10px;
-  padding: 4px;
-  z-index: 10;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.option {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: none;
-  background: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  &.active {
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--color-white);
-  }
-}
-
-.option-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.option-role {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 9;
 }
 </style>

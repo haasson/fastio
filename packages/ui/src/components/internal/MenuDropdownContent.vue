@@ -12,7 +12,7 @@
         <div
           v-else
           class="item"
-          :class="{ 'item--disabled': item.disabled }"
+          :class="{ 'item--disabled': item.disabled, 'item--compact': compact }"
           @click="onItemClick(item)"
         >
           <ui-checkbox
@@ -21,7 +21,8 @@
             class="item-checkbox"
             @click.stop
           />
-          <template v-if="item.icon">
+          <span v-if="item.color" class="item-dot" :style="{ background: item.color }" />
+          <template v-else-if="item.icon">
             <img
               v-if="isExternalIcon(item.icon)"
               :src="item.icon"
@@ -53,6 +54,7 @@ import type { UiMenuDropdownItem } from '../UiMenuDropdown.vue'
 
 type Props = {
   items: UiMenuDropdownItem[]
+  compact?: boolean
 }
 
 type Emits = {
@@ -62,6 +64,7 @@ type Emits = {
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()
+
 
 function isExternalIcon(icon: string): boolean {
   return icon.startsWith('http') || icon.startsWith('/')
@@ -128,10 +131,23 @@ function onItemClick(item: UiMenuDropdownItem) {
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  &:where(.item--compact) {
+    height: 34px;
+    padding: 0 10px;
+    gap: 8px;
+  }
 }
 
 .item-checkbox {
   flex-shrink: 0;
+}
+
+.item-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
 .item-icon {

@@ -1,35 +1,41 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant } from '@fastio/shared'
 import { query } from '~/utils/query'
+import type { TenantRow } from './db-types'
+import { filterDefined } from '~/utils/filterDefined'
 
-const mapTenant = (row: Record<string, unknown>): Tenant => ({
-  id: row.id as string,
-  ownerId: row.owner_id as string,
-  name: row.name as string,
-  slug: row.slug as string,
-  customDomain: row.custom_domain as string | null,
-  theme: row.theme as Tenant['theme'],
-  contacts: row.contacts as Tenant['contacts'],
-  workingHours: row.working_hours as Tenant['workingHours'],
-  notifications: row.notifications as Tenant['notifications'],
-  subscription: row.subscription as Tenant['subscription'],
-  deliveryMinOrder: row.delivery_min_order as number,
-  deliveryFee: row.delivery_fee as number,
-  createdAt: row.created_at as string,
-})
+const mapTenant = (raw: Record<string, unknown>): Tenant => {
+  const row = raw as TenantRow
 
-const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) => ({
-  ...(data.name !== undefined && { name: data.name }),
-  ...(data.slug !== undefined && { slug: data.slug }),
-  ...(data.customDomain !== undefined && { custom_domain: data.customDomain }),
-  ...(data.theme !== undefined && { theme: data.theme }),
-  ...(data.contacts !== undefined && { contacts: data.contacts }),
-  ...(data.workingHours !== undefined && { working_hours: data.workingHours }),
-  ...(data.notifications !== undefined && { notifications: data.notifications }),
-  ...(data.subscription !== undefined && { subscription: data.subscription }),
-  ...(data.deliveryMinOrder !== undefined && { delivery_min_order: data.deliveryMinOrder }),
-  ...(data.deliveryFee !== undefined && { delivery_fee: data.deliveryFee }),
-})
+  return {
+    id: row.id,
+    ownerId: row.owner_id,
+    name: row.name,
+    slug: row.slug,
+    customDomain: row.custom_domain,
+    theme: row.theme,
+    contacts: row.contacts,
+    workingHours: row.working_hours,
+    notifications: row.notifications,
+    subscription: row.subscription,
+    deliveryMinOrder: row.delivery_min_order,
+    deliveryFee: row.delivery_fee,
+    createdAt: row.created_at,
+  }
+}
+
+const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) => filterDefined({
+  name: data.name,
+  slug: data.slug,
+  custom_domain: data.customDomain,
+  theme: data.theme,
+  contacts: data.contacts,
+  working_hours: data.workingHours,
+  notifications: data.notifications,
+  subscription: data.subscription,
+  delivery_min_order: data.deliveryMinOrder,
+  delivery_fee: data.deliveryFee,
+}) as Partial<TenantRow>
 
 export const tenantsApi = {
   async getById(sb: SupabaseClient, id: string): Promise<Tenant | null> {

@@ -1,18 +1,23 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { TenantInvitation, TenantRole } from '@fastio/shared'
+import type { TenantInvitation } from '@fastio/shared'
 import { query } from '~/utils/query'
+import type { TenantInvitationRow } from './db-types'
 
-const mapInvitation = (row: Record<string, unknown>): TenantInvitation => ({
-  id: row.id as string,
-  tenantId: row.tenantId as string ?? row.tenant_id as string,
-  email: row.email as string,
-  role: row.role as TenantRole,
-  invitedBy: row.invitedBy as string ?? row.invited_by as string,
-  token: row.token as string,
-  expiresAt: row.expiresAt as string ?? row.expires_at as string,
-  acceptedAt: (row.acceptedAt ?? row.accepted_at ?? null) as string | null,
-  createdAt: row.createdAt as string ?? row.created_at as string,
-})
+const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
+  const row = raw as TenantInvitationRow
+
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    email: row.email,
+    role: row.role,
+    invitedBy: row.invited_by,
+    token: row.token,
+    expiresAt: row.expires_at,
+    acceptedAt: row.accepted_at,
+    createdAt: row.created_at,
+  }
+}
 
 export const invitationsApi = {
   async list(sb: SupabaseClient, tenantId: string) {

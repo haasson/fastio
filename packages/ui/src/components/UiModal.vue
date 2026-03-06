@@ -101,7 +101,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const isVModel = computed(() => props.modelValue !== undefined)
+const isVModel = computed(() => !props.name)
 
 const modalController = modalManager.createController()
 const nModalRef = ref<InstanceType<typeof NModal> | null>(null)

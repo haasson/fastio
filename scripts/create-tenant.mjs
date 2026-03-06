@@ -141,15 +141,12 @@ async function main() {
         phone: '',
         email: EMAIL,
         address: '',
-        city: '',
         instagram: null,
         vk: null,
+        telegram: null,
+        whatsapp: null,
       },
-      working_hours: Object.fromEntries(
-        ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((d) => [
-          d, { open: '10:00', close: '22:00', closed: false },
-        ])
-      ),
+      working_hours: 'Пн–Вс 10:00–22:00',
       notifications: { email: EMAIL, telegramChatId: null },
       subscription: {
         status: 'trial',

@@ -6,43 +6,57 @@
         <span class="logo-text">Fastio</span>
       </div>
 
-      <UiTitle size="h3" class="title">Вход в панель управления</UiTitle>
+      <template v-if="hashError">
+        <UiTitle size="h3" class="title">Ссылка недействительна</UiTitle>
+        <UiSpace :size="16" vertical>
+          <UiAlert type="error">{{ hashError }}</UiAlert>
+          <UiButton type="primary" block @click="hashError = ''">Войти по паролю</UiButton>
+        </UiSpace>
+      </template>
 
-      <form class="form" @submit.prevent="handleSubmit">
-        <UiInput
-          v-model="email"
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          :clearable="false"
-        />
+      <template v-else>
+        <UiTitle size="h3" class="title">Вход в панель управления</UiTitle>
 
-        <UiInput
-          v-model="password"
-          label="Пароль"
-          type="password"
-          :clearable="false"
-        />
+        <UiForm class="form" @submit="handleSubmit">
+          <UiInput
+            v-model="email"
+            name="email"
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            :clearable="false"
+            :rules="[{ type: 'required', message: 'Введите email' }, { type: 'email', message: 'Некорректный email' }]"
+          />
 
-        <UiAlert v-if="error" type="error">{{ error }}</UiAlert>
+          <UiInput
+            v-model="password"
+            name="password"
+            label="Пароль"
+            type="password"
+            :clearable="false"
+            :rules="[{ type: 'required', message: 'Введите пароль' }]"
+          />
 
-        <UiButton
-          submit
-          type="primary"
-          block
-          :loading="loading"
-        >
-          Войти
-        </UiButton>
-      </form>
+          <UiAlert v-if="error" type="error">{{ error }}</UiAlert>
+
+          <UiButton
+            submit
+            type="primary"
+            block
+            :loading="loading"
+          >
+            Войти
+          </UiButton>
+        </UiForm>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { definePageMeta, useNuxtApp, useRoute, navigateTo } from '#imports'
-import { UiInput, UiButton, UiAlert, UiTitle } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, UiAlert, UiTitle, UiSpace } from '@fastio/ui'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 
 definePageMeta({ layout: false })
@@ -54,6 +68,25 @@ const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+const hashError = ref('')
+
+onMounted(() => {
+  const hash = window.location.hash.slice(1)
+
+  if (!hash) return
+
+  const params = new URLSearchParams(hash)
+  const errorCode = params.get('error_code')
+  const errorParam = params.get('error')
+
+  if (errorCode === 'otp_expired') {
+    hashError.value = 'Ссылка из письма устарела. Запросите новое приглашение или войдите по паролю.'
+  } else if (errorParam) {
+    hashError.value = 'Ссылка недействительна. Войдите с паролем или запросите новую ссылку.'
+  }
+
+  history.replaceState(null, '', window.location.pathname + window.location.search)
+})
 
 const handleSubmit = async () => {
   error.value = ''

@@ -13,13 +13,14 @@
       <MenuDishList
         :tenant-id="tenantId"
         :category-id="selectedCategoryId"
+        :categories="loadedCategories"
       />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, shallowRef } from 'vue'
 import { definePageMeta } from '#imports'
 import type { Category } from '@fastio/shared'
 import MenuCategoryList from '~/components/menu/CategoryList.vue'
@@ -35,8 +36,10 @@ onMounted(() => tenantStore.init())
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
 const selectedCategoryId = ref<string | null>(null)
+const loadedCategories = shallowRef<Category[]>([])
 
 const onCategoriesLoaded = (cats: Category[]) => {
+  loadedCategories.value = cats
   if (!selectedCategoryId.value && cats.length > 0) {
     selectedCategoryId.value = cats[0].id
   }

@@ -9,12 +9,14 @@
     :reverse-actions="options.reverseActions"
   >
     <p v-if="options.message" class="confirm-message">{{ options.message }}</p>
+    <ui-alert v-if="options.alert" type="warning" class="confirm-alert">{{ options.alert }}</ui-alert>
   </ui-modal>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import UiModal from './UiModal.vue'
+import UiAlert from './UiAlert.vue'
 import { confirmState } from '../composables/useConfirm'
 import type { ModalAction } from './UiModal.vue'
 
@@ -36,6 +38,7 @@ const actions = computed<ModalAction[]>(() => {
       text: options.value.confirmText || 'Подтвердить',
       type: options.value.confirmType || 'primary',
       actionType: 'confirm',
+      disabled: options.value.confirmDisabled,
     })
   }
 
@@ -49,5 +52,9 @@ const actions = computed<ModalAction[]>(() => {
   font-size: 16px;
   line-height: 1.5;
   color: var(--color-text);
+}
+
+.confirm-alert {
+  margin-top: 12px;
 }
 </style>

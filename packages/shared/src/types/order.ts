@@ -1,17 +1,19 @@
 export type OrderDeliveryType = 'delivery' | 'pickup'
 
-export type OrderStatus =
-  | 'new'
-  | 'accepted'
-  | 'cooking'
-  | 'ready'
-  | 'delivering'
-  | 'completed'
-  | 'cancelled'
+export type OrderStatusGroup = 'new' | 'in_progress' | 'completed' | 'cancelled'
+
+export type OrderStatus = {
+  id: string
+  tenantId: string
+  name: string
+  groupType: OrderStatusGroup
+  position: number
+}
 
 export type OrderItem = {
   dishId: string
   dishName: string
+  categoryName?: string
   price: number
   quantity: number
   removedIngredients: string[]
@@ -20,6 +22,17 @@ export type OrderItem = {
 export type OrderCustomer = {
   name: string
   phone: string
+}
+
+export type OrderNote = {
+  id: string
+  orderId: string
+  tenantId: string
+  authorId: string
+  authorName: string
+  authorRole: string
+  content: string
+  createdAt: string
 }
 
 export type Order = {
@@ -35,7 +48,8 @@ export type Order = {
   subtotal: number
   deliveryFee: number
   total: number
-  status: OrderStatus
+  status: string
   paymentType: 'cash' | 'card' | 'online'
+  branchId: string | null
   createdAt: string
 }

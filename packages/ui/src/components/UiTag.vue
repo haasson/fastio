@@ -35,7 +35,7 @@ import useResponsiveSize from '../composables/useResponsiveSize'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
 import type { IconName } from '../icons'
 
-type TagType = 'default' | 'primary' | 'success' | 'warning'
+type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error'
 
 type Props = {
   type?: TagType
@@ -107,7 +107,8 @@ $tag-types: (
   'default': ('bg': var(--grey-200), 'color': var(--grey-900), 'border': var(--grey-200), 'empty-color': var(--grey-900), 'secondary-bg': var(--grey-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--grey-50)),
   'primary': ('bg': var(--color-primary), 'color': var(--color-white), 'border': var(--color-primary), 'empty-color': var(--color-primary), 'secondary-bg': var(--blue-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--blue-50)),
   'success': ('bg': var(--color-success), 'color': var(--color-white), 'border': var(--color-success), 'empty-color': var(--color-success), 'secondary-bg': var(--green-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--green-50)),
-  'warning': ('bg': var(--yellow-400), 'color': var(--color-white), 'border': var(--yellow-400), 'empty-color': var(--yellow-400), 'secondary-bg': var(--yellow-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--yellow-50)),
+  'warning': ('bg': var(--yellow-600), 'color': var(--color-white), 'border': var(--yellow-600), 'empty-color': var(--yellow-600), 'secondary-bg': var(--yellow-50), 'secondary-color': var(--grey-900), 'secondary-border': var(--yellow-50)),
+  'error':   ('bg': var(--red-500), 'color': var(--color-white), 'border': var(--red-500), 'empty-color': var(--red-500), 'secondary-bg': var(--red-50), 'secondary-color': var(--red-500), 'secondary-border': var(--red-50)),
 );
 
 .n-tag {

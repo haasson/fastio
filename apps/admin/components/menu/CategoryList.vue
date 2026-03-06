@@ -2,11 +2,10 @@
   <div class="categories-root">
     <UiSectionHeader label="Категории">
       <UiButton
-        size="small"
-        type="default"
-        icon="plus"
-        @click="openCategoryModal(null)"
-      >Добавить</UiButton>
+        size="medium"
+        type="primary"
+        @click="editMode = !editMode"
+      >{{ editMode ? 'Готово' : 'Редактировать список' }}</UiButton>
     </UiSectionHeader>
 
     <UiSkeleton
@@ -16,65 +15,90 @@
       class="skeleton"
     />
 
-    <div v-else class="bar">
-      <div
-        v-for="cat in categories"
-        :key="cat.id"
-        class="tag"
-        :class="{ selected: modelValue === cat.id, inactive: !cat.active }"
-        @click="$emit('update:modelValue', cat.id)"
+    <div v-else class="bar-row">
+      <VueDraggable
+        v-model="categories"
+        class="cats"
+        :disabled="!editMode"
+        :animation="180"
+        ghost-class="tag-ghost"
+        @end="reorderCategories"
       >
-        <span class="tag-name">{{ cat.name }}</span>
-        <span class="tag-count">{{ dishCountByCategory[cat.id] ?? 0 }}</span>
-        <div class="tag-actions" @click.stop>
-          <UiButton
-            type="text"
-            size="tiny"
-            icon="pencil"
-            title="Редактировать"
-            @click="openCategoryModal(cat)"
-          />
-          <UiButton
-            type="text"
-            size="tiny"
-            icon="trash"
-            title="Удалить"
-            @click="confirmDeleteCategory(cat.id)"
-          />
-        </div>
-      </div>
+        <AppEditableTag
+          v-for="(cat, idx) in categories"
+          :key="cat.id"
+          :label="cat.name"
+          :selected="!editMode && modelValue === cat.id"
+          :editing="editMode"
+          :inactive="!cat.active"
+          :count="dishCountByCategory[cat.id] ?? 0"
+          :animation-delay="`${idx * 0.05}s`"
+          deletable
+          @click="$emit('update:modelValue', cat.id)"
+          @edit="openCategoryModal(cat)"
+          @delete="confirmDeleteCategory(cat.id)"
+        />
+      </VueDraggable>
+
+      <UiTag
+        class="add-tag"
+        type="default"
+        empty
+        round
+        hoverable
+        @click="openCategoryModal(null)"
+      >
+        <UiIcon name="plus" :size="14" />
+      </UiTag>
     </div>
 
     <UiModal
       v-model="categoryModalOpen"
       :title="editingCategory ? 'Редактировать категорию' : 'Новая категория'"
-      :width="400"
+      :width="500"
+      :actions="modalActions"
+      :on-confirm="onConfirm"
     >
-      <UiSpace :size="16" vertical>
+      <UiForm ref="formRef" class="form">
         <UiInput
           v-model="categoryForm.name"
+          name="name"
           label="Название"
           placeholder="Например: Пицца"
           autofocus
+          :rules="[{ type: 'required', message: 'Введите название' }]"
         />
-        <div class="form-footer">
-          <UiSpace :size="8">
-            <UiButton type="default" @click="categoryModalOpen = false">Отмена</UiButton>
-            <UiButton type="primary" :loading="saving" @click="saveCategory">Сохранить</UiButton>
-          </UiSpace>
-        </div>
-      </UiSpace>
+
+        <UiCheckbox v-if="editingCategory" v-model="categoryForm.active">
+          Категория активна
+        </UiCheckbox>
+
+        <UiCheckbox v-model="categoryForm.useFirstDishPhoto">
+          Использовать картинку первого блюда
+        </UiCheckbox>
+
+        <DishPhotoUpload
+          v-if="!categoryForm.useFirstDishPhoto"
+          v-model="currentPhotoUrl"
+          @pending="pendingPhotoFile = $event"
+        />
+      </UiForm>
     </UiModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
-import { UiModal, UiInput, UiButton, UiSkeleton, UiSpace, useConfirm } from '@fastio/ui'
+import { VueDraggable } from 'vue-draggable-plus'
+import { UiModal, UiForm, UiInput, UiButton, UiSkeleton, UiCheckbox, UiIcon, UiTag, useConfirm } from '@fastio/ui'
+import AppEditableTag from '~/components/ui/AppEditableTag.vue'
 import type { Category } from '@fastio/shared'
+import { useNuxtApp } from '#imports'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import DishPhotoUpload from '~/components/menu/DishPhotoUpload.vue'
 import { useCategories } from '~/composables/useCategories'
 import useDishCounts from '~/composables/useDishCounts'
+import { categoriesApi } from '~/utils/api/categories'
 
 const props = defineProps<{
   tenantId: string
@@ -86,10 +110,13 @@ const emit = defineEmits<{
   'categoriesLoaded': [cats: Category[]]
 }>()
 
+const { $supabase: sb } = useNuxtApp()
 const tenantIdRef = computed(() => props.tenantId)
 
-const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory }
+const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory, reorder }
   = useCategories(tenantIdRef)
+
+const reorderCategories = () => reorder(categories.value)
 
 watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
 
@@ -97,37 +124,74 @@ const { counts: dishCountByCategory } = useDishCounts(tenantIdRef)
 
 const { confirm } = useConfirm()
 
+const editMode = ref(false)
+const formRef = ref()
 const categoryModalOpen = ref(false)
 const editingCategory = ref<Category | null>(null)
-const categoryForm = reactive({ name: '' })
+const categoryForm = reactive({ name: '', useFirstDishPhoto: false, active: true })
+const currentPhotoUrl = ref<string | null>(null)
+const originalPhotoUrl = ref<string | null>(null)
+const pendingPhotoFile = ref<File | null>(null)
 const saving = ref(false)
+
+const modalActions = computed(() => [
+  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+])
 
 const openCategoryModal = (cat: Category | null) => {
   editingCategory.value = cat
   categoryForm.name = cat?.name ?? ''
+  categoryForm.active = cat?.active ?? true
+  categoryForm.useFirstDishPhoto = cat?.useFirstDishPhoto ?? false
+  originalPhotoUrl.value = cat?.photoUrl ?? null
+  currentPhotoUrl.value = cat?.photoUrl ?? null
+  pendingPhotoFile.value = null
   categoryModalOpen.value = true
 }
 
-const saveCategory = async () => {
+const onConfirm = async () => {
+  if (!formRef.value?.validate()) return false
+
   saving.value = true
   try {
-    if (editingCategory.value) {
-      await updateCategory(editingCategory.value.id, { name: categoryForm.name })
-    } else {
-      await addCategory(categoryForm.name)
+    let photoUrl = currentPhotoUrl.value
+
+    if (pendingPhotoFile.value) {
+      if (originalPhotoUrl.value) {
+        await categoriesApi.deletePhoto(sb, originalPhotoUrl.value)
+      }
+      photoUrl = await categoriesApi.uploadPhoto(sb, props.tenantId, pendingPhotoFile.value)
+    } else if (currentPhotoUrl.value === null && originalPhotoUrl.value) {
+      await categoriesApi.deletePhoto(sb, originalPhotoUrl.value)
     }
-    categoryModalOpen.value = false
+
+    const photoData = categoryForm.useFirstDishPhoto
+      ? { photoUrl: null, useFirstDishPhoto: true }
+      : { photoUrl, useFirstDishPhoto: false }
+
+    if (editingCategory.value) {
+      await updateCategory(editingCategory.value.id, { name: categoryForm.name, active: categoryForm.active, ...photoData })
+    } else {
+      await addCategory(categoryForm.name, photoData)
+    }
+  } catch {
+    return false
   } finally {
     saving.value = false
   }
 }
 
 const confirmDeleteCategory = async (id: string) => {
+  const hasDishes = (dishCountByCategory.value[id] ?? 0) > 0
   const ok = await confirm({
     title: 'Удалить категорию?',
-    message: 'Блюда в ней останутся в базе.',
     confirmText: 'Удалить',
     confirmType: 'error',
+    ...(hasDishes && {
+      alert: 'Сначала удалите или перенесите все блюда из этой категории',
+      confirmDisabled: true,
+    }),
   })
 
   if (!ok) return
@@ -142,79 +206,42 @@ const confirmDeleteCategory = async (id: string) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--color-border);
 }
 
 .skeleton {
   padding: 0;
 }
 
-.bar {
+.bar-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
 
-.tag {
+.cats {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 20px;
-  cursor: pointer;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  transition: background 0.12s;
-  user-select: none;
+}
 
-  &:hover {
-    background: var(--color-bg-hover);
+.tag-ghost {
+  opacity: 0.4;
+}
 
-    .tag-actions {
-      opacity: 1;
-      width: auto;
-      margin-left: 2px;
-    }
-  }
-
-  &.selected {
-    background: var(--color-primary-light);
-    border-color: var(--color-primary);
-  }
-
-  &.inactive .tag-name {
-    opacity: 0.45;
-    text-decoration: line-through;
+.add-tag {
+  :deep(.n-tag__border) {
+    display: block;
+    border-style: dashed;
   }
 }
 
-.tag-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-title);
-  white-space: nowrap;
-}
-
-.tag-count {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-page);
-  border-radius: 6px;
-  padding: 1px 5px;
-  white-space: nowrap;
-}
-
-.tag-actions {
+.form {
   display: flex;
-  gap: 2px;
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  transition: opacity 0.15s, width 0.15s;
-}
-
-.form-footer {
-  display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 14px;
 }
 </style>

@@ -1,103 +1,221 @@
 <template>
   <div class="orders-root">
-    <!-- Фильтр-табы -->
-    <UiSegmentedControl v-model="filter" :items="segmentedTabs" />
+    <!-- Фильтр-теги -->
+    <div class="statuses-section">
+      <!--   TODO: Эта страница очень похожа на страницу меню. Но структурно они очень разные. Привести к единому виду, посмотреть что можно переиспользовать   -->
+
+      <UiSectionHeader label="Статусы">
+        <UiButton size="medium" type="primary" @click="editMode = !editMode">
+          {{ editMode ? 'Готово' : 'Редактировать список' }}
+        </UiButton>
+      </UiSectionHeader>
+
+      <div class="bar-row">
+        <VueDraggable
+          v-model="statuses"
+          class="tags"
+          :disabled="!editMode"
+          :animation="180"
+          ghost-class="tag-ghost"
+          @end="reorderStatuses"
+        >
+          <AppEditableTag
+            v-for="(status, idx) in statuses"
+            :key="status.id"
+            :label="status.name"
+            :type="STATUS_GROUP_TAG_TYPES[status.groupType]"
+            :selected="!editMode && filter === status.id"
+            :editing="editMode"
+            :count="!editMode ? statusCounts[status.id] : undefined"
+            :animation-delay="`${idx * 0.05}s`"
+            @click="filter = status.id"
+            @edit="openStatusModal(status)"
+          />
+        </VueDraggable>
+
+        <UiTag
+          class="add-tag"
+          type="default"
+          empty
+          round
+          hoverable
+          @click="openStatusModal(null)"
+        >
+          <UiIcon name="plus" :size="14" />
+        </UiTag>
+      </div>
+    </div>
+
+    <!-- Заголовок списка -->
+    <div class="list-header">
+      <span class="list-title">Заказы</span>
+      <UiSegmentedControl
+        v-model="orderView"
+        :items="[{ icon: 'layoutGrid', value: 'cards' }, { icon: 'list', value: 'list' }]"
+        size="medium"
+      />
+    </div>
 
     <!-- Загрузка -->
     <div v-if="loading" class="state-msg">Загрузка…</div>
 
     <!-- Пусто -->
-    <UiAppEmpty v-else-if="orders.length === 0" :icon="emptyIcon" :text="emptyText" />
+    <UiAppEmpty v-else-if="orders.length === 0" icon="orders" text="Заказов пока нет" />
 
-    <!-- Список -->
-    <div v-else class="grid">
-      <OrderCard
-        v-for="order in orders"
-        :key="order.id"
-        :order="order"
-        :updating="updatingIds.has(order.id)"
-        @advance="handleAdvance"
-        @cancel="handleCancel"
-      />
-    </div>
+    <template v-else>
+      <!-- Карточки -->
+      <div v-if="orderView === 'cards'" class="grid">
+        <OrderCard
+          v-for="order in orders"
+          :key="order.id"
+          :order="order"
+          :updating="updatingIds.has(order.id)"
+          :statuses="statuses"
+          :branch-name="branchStore.currentBranchId === null ? getBranchName(order.branchId) : undefined"
+          @status-change="handleStatusChange"
+          @open-edit="openEditModal"
+        />
+      </div>
+
+      <!-- Список -->
+      <div v-else class="rows">
+        <OrderRow
+          v-for="order in orders"
+          :key="order.id"
+          :order="order"
+          :updating="updatingIds.has(order.id)"
+          :statuses="statuses"
+          :branch-name="branchStore.currentBranchId === null ? getBranchName(order.branchId) : undefined"
+          @status-change="handleStatusChange"
+          @open-edit="openEditModal"
+        />
+      </div>
+    </template>
+
+    <OrderStatusModal
+      v-model="statusModalOpen"
+      :status="editingStatus"
+      @save="handleStatusSave"
+    />
+
+    <OrderEditModal
+      v-model="editModalOpen"
+      :order="editingOrder"
+      :statuses="statuses"
+      :tenant-id="tenantId"
+      @saved="handleOrderSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
-import { definePageMeta } from '#imports'
-import { UiSegmentedControl } from '@fastio/ui'
-import type { SegmentedControlItem } from '@fastio/ui'
-import type { OrderStatus } from '@fastio/shared'
-import type { OrderFilter } from '~/utils/api/orders'
+import { ref, computed, reactive, watch } from 'vue'
+import { definePageMeta, useNuxtApp } from '#imports'
+import { useLocalStorage } from '@vueuse/core'
+import { UiIcon, UiTag, UiButton, UiSegmentedControl } from '@fastio/ui'
+import { VueDraggable } from 'vue-draggable-plus'
+import type { Order, OrderStatus, OrderStatusGroup } from '@fastio/shared'
+import AppEditableTag from '~/components/ui/AppEditableTag.vue'
 import OrderCard from '~/components/orders/OrderCard.vue'
+import OrderRow from '~/components/orders/OrderRow.vue'
+import OrderStatusModal from '~/components/orders/OrderStatusModal.vue'
+import OrderEditModal from '~/components/orders/OrderEditModal.vue'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import { useOrders } from '~/composables/useOrders'
+import { ordersApi } from '~/utils/api/orders'
+import { useOrderStatuses } from '~/composables/useOrderStatuses'
 import { useTenantStore } from '~/stores/tenant'
+import { useBranchStore } from '~/stores/branch'
+import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 
 definePageMeta({ middleware: 'auth' })
 
+const { $supabase } = useNuxtApp()
 const tenantStore = useTenantStore()
+const branchStore = useBranchStore()
 
-onMounted(() => tenantStore.init())
+tenantStore.init()
 
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const branchId = computed(() => branchStore.currentBranchId)
 
-const filter = ref<OrderFilter>('active')
-const { orders, loading, updateStatus, cancel } = useOrders(tenantId, filter)
+const { statuses, add: addStatus, update: updateStatus, reorder } = useOrderStatuses(tenantId)
+const orderView = useLocalStorage<'cards' | 'list'>('orders:view', 'cards')
 
-const newCount = computed(() => orders.value.filter((o) => o.status === 'new').length)
+const filter = ref<string | null>(null)
+const editMode = ref(false)
 
-const tabs: { label: string; value: OrderFilter }[] = [
-  { label: 'Активные', value: 'active' },
-  { label: 'Завершённые', value: 'completed' },
-  { label: 'Отменённые', value: 'cancelled' },
-  { label: 'Все', value: 'all' },
-]
+watch(statuses, (list) => {
+  if (!filter.value && list.length) filter.value = list[0].id
+}, { immediate: true })
 
-const segmentedTabs = computed<SegmentedControlItem[]>(() => tabs.map((tab) => ({
-  label: tab.label,
-  value: tab.value,
-  tag: tab.value === 'active' && newCount.value > 0 ? String(newCount.value) : undefined,
-})),
-)
+const { orders, loading, updateStatus: updateOrderStatus } = useOrders(tenantId, filter, branchId)
 
-const emptyText = computed(() => {
-  if (filter.value === 'active') return 'Активных заказов нет'
-  if (filter.value === 'completed') return 'Завершённых заказов нет'
-  if (filter.value === 'cancelled') return 'Отменённых заказов нет'
+const statusCounts = ref<Record<string, number>>({})
 
-  return 'Заказов пока нет'
-})
+const fetchCounts = async () => {
+  if (!tenantId.value) return
+  statusCounts.value = await ordersApi.counts($supabase, tenantId.value, branchId.value)
+}
 
-const emptyIcon = computed(() => {
-  if (filter.value === 'active') return '📭'
-  if (filter.value === 'completed') return '✅'
-  if (filter.value === 'cancelled') return '🚫'
+watch([tenantId, branchId], fetchCounts, { immediate: true })
 
-  return '📋'
-})
-
-// Блокируем кнопки пока идёт запрос
 const updatingIds = reactive(new Set<string>())
 
-const handleAdvance = async (id: string, status: string) => {
+const handleStatusChange = async (id: string, statusId: string) => {
   updatingIds.add(id)
   try {
-    await updateStatus(id, status as OrderStatus)
+    await updateOrderStatus(id, statusId)
+    await fetchCounts()
   } finally {
     updatingIds.delete(id)
   }
 }
 
-const handleCancel = async (id: string) => {
-  if (!confirm('Отменить заказ?')) return
-  updatingIds.add(id)
-  try {
-    await cancel(id)
-  } finally {
-    updatingIds.delete(id)
+const getBranchName = (branchId: string | null | undefined) => {
+  if (!branchId) return undefined
+
+  return branchStore.branches.find((b) => b.id === branchId)?.name
+}
+
+const reorderStatuses = () => reorder(statuses.value)
+
+const editModalOpen = ref(false)
+const editingOrder = ref<Order | null>(null)
+
+const openEditModal = (order: Order) => {
+  editingOrder.value = order
+  editModalOpen.value = true
+}
+
+const handleOrderSaved = (updatedOrder: Order) => {
+  const i = orders.value.findIndex((o) => o.id === updatedOrder.id)
+
+  if (i === -1) return
+  if (updatedOrder.status !== filter.value) {
+    orders.value.splice(i, 1)
+  } else {
+    orders.value[i] = updatedOrder
   }
+  fetchCounts()
+}
+
+const statusModalOpen = ref(false)
+const editingStatus = ref<OrderStatus | null>(null)
+
+const openStatusModal = (status: OrderStatus | null) => {
+  editingStatus.value = status
+  statusModalOpen.value = true
+}
+
+const handleStatusSave = async (data: { name: string; groupType: OrderStatusGroup }) => {
+  if (editingStatus.value) {
+    await updateStatus(editingStatus.value.id, data)
+  } else {
+    await addStatus(data)
+  }
+  statusModalOpen.value = false
 }
 </script>
 
@@ -108,6 +226,57 @@ const handleCancel = async (id: string) => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.statuses-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-ghost {
+  opacity: 0.4;
+}
+
+.add-tag {
+  :deep(.n-tag__border) {
+    display: block;
+    border-style: dashed;
+  }
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.list-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .state-msg {

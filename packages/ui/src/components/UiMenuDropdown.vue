@@ -13,6 +13,7 @@
 
     <menu-dropdown-content
       :items="items"
+      :compact="compact"
       @item-click="emit('item-click', $event)"
       @close="close"
     >
@@ -28,6 +29,7 @@
   <menu-dropdown-content
     v-else
     :items="items"
+    :compact="compact"
     @item-click="emit('item-click', $event)"
     @close="close"
   >
@@ -50,6 +52,7 @@ export type UiMenuDropdownItem = {
   label?: string
   name: string
   icon?: IconName
+  color?: string
   link?: string
   onClick?: () => void
   isDivider?: boolean
@@ -61,6 +64,7 @@ type Props = {
   items: UiMenuDropdownItem[]
   inline?: boolean
   show?: boolean
+  compact?: boolean
 }
 
 type Emits = {
@@ -71,6 +75,7 @@ type Emits = {
 const props = withDefaults(defineProps<Props>(), {
   inline: false,
   show: undefined,
+  compact: false,
 })
 const emit = defineEmits<Emits>()
 

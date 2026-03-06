@@ -5,6 +5,7 @@ export type TenantMember = {
   tenantId: string
   userId: string
   role: TenantRole
+  branchIds: string[]
   createdAt: string
   email?: string
   displayName?: string
@@ -24,6 +25,7 @@ export type TenantInvitation = {
 
 const ROLE_ORDER: TenantRole[] = ['owner', 'admin', 'manager', 'staff']
 
+// TODO: не должно быть функции в типах
 export function hasMinRole(userRole: TenantRole, requiredRole: TenantRole): boolean {
   return ROLE_ORDER.indexOf(userRole) <= ROLE_ORDER.indexOf(requiredRole)
 }

@@ -1,92 +1,170 @@
 <template>
   <div class="team-root">
     <!-- Форма инвайта -->
-    <div class="invite-form">
+    <UiForm ref="inviteFormRef" class="invite-form">
       <UiText size="tiny" span class="section-title">Пригласить в команду</UiText>
       <UiSpace :size="8" align="start">
-        <UiInput v-model="inviteEmail" placeholder="email@example.com" :clearable="false" />
+        <UiInput
+          v-model="inviteEmail"
+          name="email"
+          placeholder="email@example.com"
+          :clearable="false"
+          :rules="[
+            { type: 'required', message: 'Введите email' },
+            { type: 'email', message: 'Некорректный email' },
+          ]"
+        />
         <UiSelect v-model="inviteRole" :options="roleOptions" style="min-width: 160px" />
         <UiButton type="primary" :loading="inviting" @click="handleInvite">Пригласить</UiButton>
       </UiSpace>
-      <UiAlert v-if="inviteError" type="error">{{ inviteError }}</UiAlert>
-    </div>
 
+      <template v-if="branches.length > 0 && inviteRole !== 'admin' && inviteRole !== 'owner'">
+        <UiText size="tiny" span class="section-title">Доступ к филиалам</UiText>
+        <div class="branch-checkboxes">
+          <UiText size="small" class="all-branches-hint">Без выбора — доступ ко всем филиалам</UiText>
+          <UiCheckbox
+            v-for="branch in branches"
+            :key="branch.id"
+            :model-value="inviteBranchIds.includes(branch.id)"
+            @update:model-value="toggleInviteBranch(branch.id, $event)"
+          >
+            {{ branch.name }}
+          </UiCheckbox>
+        </div>
+      </template>
+
+      <UiAlert v-if="inviteError" type="error">{{ inviteError }}</UiAlert>
+    </UiForm>
+
+    <!--  TODO: таблицы очень большие, в отдельный компонент  -->
     <!-- Участники -->
     <div>
       <UiText size="tiny" span class="section-title">Участники</UiText>
 
-      <UiSkeleton v-if="team.loading.value" text :repeat="3" />
-
-      <template v-else-if="team.members.value.length">
-        <div v-for="m in team.members.value" :key="m.id" class="member-row">
-          <div class="member-info">
-            <UiText size="medium">{{ m.displayName || m.email }}</UiText>
-            <UiText v-if="m.displayName && m.email" size="tiny">{{ m.email }}</UiText>
-          </div>
-
-          <UiTag :type="roleTagType(m.role)" size="small">{{ roleLabel(m.role) }}</UiTag>
-
-          <UiSpace v-if="m.role !== 'owner' && canManageTeam" :size="4">
-            <UiMenuDropdown
-              :items="getRoleMenuItems(m)"
-              @item-click="(name) => handleRoleMenuClick(m, name)"
-            >
-              <template #trigger>
-                <UiButton type="text" size="small" icon="settings">Роль</UiButton>
-              </template>
-            </UiMenuDropdown>
-            <UiButton type="text" size="small" @click="handleRemove(m)">Удалить</UiButton>
-          </UiSpace>
-        </div>
-      </template>
-
+      <UiSkeleton v-if="teamLoading" text :repeat="3" />
+      <UiDataTable
+        v-else-if="members.length"
+        :columns="memberColumns"
+        :data="members"
+        :row-key="(row: TenantMember) => row.id"
+        :bordered="false"
+        size="small"
+        class="members-table"
+      />
       <UiText v-else size="small">Пока нет участников</UiText>
     </div>
 
-    <!-- Pending инвайты -->
-    <div v-if="team.invitations.value.length">
-      <UiText size="tiny" span class="section-title">Ожидают принятия</UiText>
-
-      <div v-for="inv in team.invitations.value" :key="inv.id" class="member-row">
-        <div class="member-info">
-          <UiText size="medium">{{ inv.email }}</UiText>
+    <!-- Branch assignment modal -->
+    <UiModal
+      v-if="editingMemberBranches"
+      :model-value="true"
+      title="Доступ к филиалам"
+      :width="400"
+      @update:model-value="editingMemberBranches = null"
+    >
+      <div class="branch-modal">
+        <UiText size="small" class="all-branches-hint">Без выбора — доступ ко всем филиалам</UiText>
+        <div class="branch-checkboxes">
+          <UiCheckbox
+            v-for="branch in branches"
+            :key="branch.id"
+            :model-value="editingBranchIds.includes(branch.id)"
+            @update:model-value="toggleEditBranch(branch.id, $event)"
+          >
+            {{ branch.name }}
+          </UiCheckbox>
         </div>
-
-        <UiTag :type="roleTagType(inv.role)" size="small">{{ roleLabel(inv.role) }}</UiTag>
-
-        <UiButton
-          v-if="canManageTeam"
-          type="text"
-          size="small"
-          @click="handleCancelInvite(inv)"
-        >
-          Отменить
-        </UiButton>
+        <div class="branch-modal-footer">
+          <UiButton type="default" @click="editingMemberBranches = null">Отмена</UiButton>
+          <UiButton type="primary" :loading="savingBranches" @click="saveBranchAssignment">Сохранить</UiButton>
+        </div>
       </div>
+    </UiModal>
+
+    <!-- Pending инвайты -->
+    <div v-if="invitations.length">
+      <UiText size="tiny" span class="section-title">Ожидают принятия</UiText>
+      <UiDataTable
+        :columns="inviteColumns"
+        :data="invitations"
+        :row-key="(row: TenantInvitation) => row.id"
+        :bordered="false"
+        size="large"
+        class="members-table"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { h, ref, computed, onMounted } from 'vue'
+import { useNuxtApp } from '#imports'
 import {
-  UiInput, UiSelect, UiButton, UiAlert, UiTag, UiText,
-  UiSpace, UiSkeleton, UiMenuDropdown, useConfirm,
+  UiInput, UiSelect, UiButton, UiAlert, UiTag, UiText, UiModal, UiCheckbox,
+  UiSpace, UiSkeleton, UiMenuDropdown, UiDataTable, UiForm, useConfirm, useMessage,
 } from '@fastio/ui'
-import type { UiMenuDropdownItem } from '@fastio/ui'
+import type { UiMenuDropdownItem, DataTableColumns } from '@fastio/ui'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
 import { useTeam } from '~/composables/useTeam'
 import { usePermissions } from '~/composables/usePermissions'
+import { useBranchStore } from '~/stores/branch'
+import { membersApi } from '~/utils/api/members'
 import { roleLabels, roleOptions, roleTagTypes } from '~/config/team-roles'
+import { formatDate } from '~/utils/formatDate'
 
-const team = useTeam()
+const { $supabase } = useNuxtApp()
+const { members, invitations, loading: teamLoading, load, invite, changeRole, removeMember, cancelInvite } = useTeam()
 const { canManageTeam } = usePermissions()
 const { confirm } = useConfirm()
+const message = useMessage()
+const branchStore = useBranchStore()
+const branches = computed(() => branchStore.branches)
 
+const inviteFormRef = ref()
 const inviteEmail = ref('')
 const inviteRole = ref<TenantRole>('staff')
 const inviting = ref(false)
 const inviteError = ref('')
+const inviteBranchIds = ref<string[]>([])
+
+const toggleInviteBranch = (id: string, checked: boolean) => {
+  if (checked) {
+    if (!inviteBranchIds.value.includes(id)) inviteBranchIds.value.push(id)
+  } else {
+    inviteBranchIds.value = inviteBranchIds.value.filter((b) => b !== id)
+  }
+}
+
+// Branch assignment per member
+const editingMemberBranches = ref<TenantMember | null>(null)
+const editingBranchIds = ref<string[]>([])
+const savingBranches = ref(false)
+
+const openBranchEdit = (member: TenantMember) => {
+  editingMemberBranches.value = member
+  editingBranchIds.value = [...(member.branchIds ?? [])]
+}
+
+const toggleEditBranch = (id: string, checked: boolean) => {
+  if (checked) {
+    if (!editingBranchIds.value.includes(id)) editingBranchIds.value.push(id)
+  } else {
+    editingBranchIds.value = editingBranchIds.value.filter((b) => b !== id)
+  }
+}
+
+const saveBranchAssignment = async () => {
+  if (!editingMemberBranches.value) return
+
+  savingBranches.value = true
+  try {
+    await membersApi.updateBranchIds($supabase, editingMemberBranches.value.id, editingBranchIds.value)
+    await load()
+    editingMemberBranches.value = null
+  } finally {
+    savingBranches.value = false
+  }
+}
 
 const roleLabel = (role: TenantRole) => roleLabels[role]
 const roleTagType = (role: TenantRole) => roleTagTypes[role]
@@ -103,22 +181,120 @@ const getRoleMenuItems = (member: TenantMember): UiMenuDropdownItem[] => {
 
 const handleRoleMenuClick = async (member: TenantMember, roleName: string) => {
   if (roleName !== member.role) {
-    await team.changeRole(member.id, roleName as TenantRole)
+    await changeRole(member.id, roleName as TenantRole)
   }
 }
 
+// TODO: мы реально можем только через рендер функции создавать таблицу?
+const memberColumns = computed<DataTableColumns<TenantMember>>(() => {
+  const cols: DataTableColumns<TenantMember> = [
+    {
+      title: 'Участник',
+      key: 'member',
+      render: (row) => h('div', { class: 'member-cell' }, [
+        h(UiText, { size: 'medium', class: 'member-name' }, () => row.displayName || row.email || '—'),
+        row.displayName && row.email
+          ? h(UiText, { size: 'tiny', class: 'member-email' }, () => row.email!)
+          : null,
+      ]),
+    },
+    {
+      title: 'Роль',
+      key: 'role',
+      width: 110,
+      render: (row) => h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
+    },
+    {
+      title: 'Добавлен',
+      key: 'createdAt',
+      width: 130,
+      render: (row) => h(UiText, { size: 'small', class: 'hint-cell' }, () => formatDate(row.createdAt)),
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 200,
+      render: (row) => {
+        if (row.role === 'owner' || !canManageTeam.value) return null
+
+        return h(UiSpace, { size: 4 }, () => [
+          h(
+            UiMenuDropdown,
+            { items: getRoleMenuItems(row), onItemClick: (name: string) => handleRoleMenuClick(row, name) },
+            { trigger: () => h(UiButton, { type: 'text', size: 'small', icon: 'settings' }, () => 'Роль') },
+          ),
+          ...(branches.value.length > 0 && row.role !== 'admin'
+            ? [h(UiButton, { type: 'text', size: 'small', onClick: () => openBranchEdit(row) }, () => 'Филиалы')]
+            : []),
+          h(UiButton, { type: 'text', size: 'small', onClick: () => handleRemove(row) }, () => 'Удалить'),
+        ])
+      },
+    },
+  ]
+
+  if (branches.value.length > 0) {
+    cols.splice(2, 0, {
+      title: 'Филиалы',
+      key: 'branches',
+      render: (row) => {
+        if (!row.branchIds?.length)
+          return h(UiText, { size: 'small', class: 'hint-cell' }, () => 'Все')
+
+        const names = branches.value
+          .filter((b) => row.branchIds.includes(b.id))
+          .map((b) => b.name)
+          .join(', ')
+
+        return h(UiText, { size: 'small' }, () => names)
+      },
+    })
+  }
+
+  return cols
+})
+
+const inviteColumns = computed<DataTableColumns<TenantInvitation>>(() => [
+  {
+    title: 'Email',
+    key: 'email',
+    render: (row) => h(UiText, { size: 'medium' }, () => row.email),
+  },
+  {
+    title: 'Роль',
+    key: 'role',
+    width: 110,
+    render: (row) => h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
+  },
+  {
+    title: 'Истекает',
+    key: 'expiresAt',
+    width: 130,
+    render: (row) => h(UiText, { size: 'small', class: 'hint-cell' }, () => formatDate(row.expiresAt)),
+  },
+  {
+    title: '',
+    key: 'actions',
+    width: 120,
+    render: (row) => canManageTeam.value
+      ? h(UiButton, { type: 'text', size: 'small', onClick: () => handleCancelInvite(row) }, () => 'Отменить')
+      : null,
+  },
+])
+
 const handleInvite = async () => {
-  if (!inviteEmail.value) return
+  if (!inviteFormRef.value?.validate()) return
 
   inviting.value = true
   inviteError.value = ''
 
-  const { error } = await team.invite(inviteEmail.value, inviteRole.value) ?? {}
+  const { error } = await invite(inviteEmail.value, inviteRole.value) ?? {}
 
   if (error) {
     inviteError.value = 'Не удалось отправить приглашение'
   } else {
     inviteEmail.value = ''
+    inviteBranchIds.value = []
+    message.success('Приглашение отправлено')
   }
 
   inviting.value = false
@@ -132,7 +308,7 @@ const handleRemove = async (member: TenantMember) => {
     confirmType: 'error',
   })
 
-  if (confirmed) await team.removeMember(member.id)
+  if (confirmed) await removeMember(member.id)
 }
 
 const handleCancelInvite = async (inv: TenantInvitation) => {
@@ -143,10 +319,10 @@ const handleCancelInvite = async (inv: TenantInvitation) => {
     confirmType: 'error',
   })
 
-  if (confirmed) await team.cancelInvite(inv.id)
+  if (confirmed) await cancelInvite(inv.id)
 }
 
-onMounted(() => team.load())
+onMounted(() => load())
 </script>
 
 <style scoped lang="scss">
@@ -169,16 +345,48 @@ onMounted(() => team.load())
   gap: 12px;
 }
 
-.member-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--color-border-light);
+.members-table {
+  margin-top: 4px;
 }
 
-.member-info {
-  flex: 1;
-  min-width: 0;
+.member-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.member-name {
+  font-weight: 600;
+}
+
+.member-email,
+.hint-cell {
+  color: var(--color-text-tertiary);
+}
+
+.branch-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.all-branches-hint {
+  color: var(--color-text-tertiary);
+  padding-bottom: 4px;
+}
+
+.branch-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.branch-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
 }
 </style>

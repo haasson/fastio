@@ -4,12 +4,14 @@
     :date-locale="dateRuRU"
     :theme-overrides="themeOverrides"
   >
-    <slot />
+    <n-message-provider>
+      <slot />
+    </n-message-provider>
   </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { NConfigProvider, ruRU, dateRuRU } from 'naive-ui'
+import { NConfigProvider, NMessageProvider, ruRU, dateRuRU } from 'naive-ui'
 import type { GlobalThemeOverrides } from 'naive-ui'
 
 type Props = {

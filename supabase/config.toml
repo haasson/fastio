@@ -149,13 +149,13 @@ enabled = true
 # in emails.
 site_url = "http://localhost:4710"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://localhost:4710", "http://localhost:4710/login"]
+additional_redirect_urls = ["https://localhost:4710", "http://localhost:4710/login", "http://localhost:4710/set-password", "http://localhost:4710/invite"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to the local API URL (http://127.0.0.1:<port>/auth/v1).
 # jwt_issuer = ""
 # Path to JWT signing key. DO NOT commit your signing keys file to git.
-# signing_keys_path = "./signing_keys.json"
+# signing_keys_path = "./signing_key.json"
 # If disabled, the refresh token will never expire.
 enable_refresh_token_rotation = true
 # Allows refresh tokens to be reused after expiry, up to the specified interval in seconds.
@@ -369,6 +369,24 @@ enabled = true
 port = 54327
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
+
+[functions.list-team]
+verify_jwt = false
+
+[functions.invite-member]
+verify_jwt = false
+
+[functions.accept-invite]
+verify_jwt = false
+
+[functions.add-custom-domain]
+verify_jwt = false
+
+[functions.send-order-email]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
 
 # Experimental features may be deprecated any time
 [experimental]

@@ -19,6 +19,8 @@ export type Category = {
   name: string
   order: number
   active: boolean
+  photoUrl: string | null
+  useFirstDishPhoto: boolean
 }
 
 export type Dish = {

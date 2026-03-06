@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSave">
+  <UiForm @submit="handleSave">
     <div class="form">
       <UiText size="tiny" span class="section-title">Тема оформления</UiText>
 
@@ -23,7 +23,13 @@
         <label class="label">Основной цвет</label>
         <div class="color-row">
           <input v-model="form.primaryColor" class="color-picker" type="color" />
-          <UiInput v-model="form.primaryColor" placeholder="#ff6b35" :clearable="false" />
+          <UiInput
+            v-model="form.primaryColor"
+            name="primaryColor"
+            placeholder="#ff6b35"
+            :clearable="false"
+            :rules="[{ type: 'pattern', pattern: /^#[0-9a-fA-F]{6}$/, message: 'Формат: #RRGGBB' }]"
+          />
           <div class="color-preview" :style="{ background: form.primaryColor }" />
         </div>
       </div>
@@ -40,21 +46,20 @@
             alt="Логотип"
           />
           <span v-else class="logo-placeholder">Нет логотипа</span>
-          <UiButton disabled>📎 Загрузить (скоро)</UiButton>
+          <UiButton disabled>Загрузить (скоро)</UiButton>
         </div>
       </div>
 
       <div class="footer">
-        <span v-if="saved" class="saved-msg">✅ Сохранено</span>
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
       </div>
     </div>
-  </form>
+  </UiForm>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiInput, UiSelect, UiButton, UiText } from '@fastio/ui'
+import { UiForm, UiInput, UiSelect, UiButton, UiText, useMessage } from '@fastio/ui'
 import type { Tenant, TenantTheme } from '@fastio/shared'
 import { themePresets, fontOptions } from '~/config/theme-presets'
 
@@ -75,17 +80,13 @@ const selectPreset = (preset: (typeof presets)[number]) => {
 }
 
 const saving = ref(false)
-const saved = ref(false)
+const { success } = useMessage()
 
 const handleSave = async () => {
   saving.value = true
-  saved.value = false
   try {
     await emit('save', { theme: { ...form } })
-    saved.value = true
-    setTimeout(() => {
-      saved.value = false
-    }, 3000)
+    success('Сохранено')
   } finally {
     saving.value = false
   }
@@ -220,7 +221,4 @@ const handleSave = async () => {
   @include settings-footer;
 }
 
-.saved-msg {
-  @include saved-msg;
-}
 </style>

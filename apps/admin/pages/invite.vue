@@ -3,85 +3,244 @@
     <div class="card">
       <div class="logo">
         <UiAppLogo :size="32" />
-        <UiTitle size="h4">Fastio</UiTitle>
+        <span class="logo-text">Fastio</span>
       </div>
 
-      <UiText v-if="loading" size="small" class="loading-msg">Принимаем приглашение…</UiText>
+      <div v-if="pageLoading" class="state">
+        <UiText size="small">Загружаем приглашение…</UiText>
+      </div>
 
-      <UiSpace v-else-if="error" :size="16" vertical>
-        <UiAlert type="error">{{ error }}</UiAlert>
-        <UiButton type="primary" full-width @click="navigateTo('/')">На главную</UiButton>
-      </UiSpace>
+      <div v-else-if="fatalError" class="state">
+        <UiAlert type="error">{{ fatalError }}</UiAlert>
+      </div>
 
-      <UiSpace v-else-if="success" :size="16" vertical>
-        <UiAlert type="success">Вы присоединились к команде!</UiAlert>
-        <UiButton type="primary" full-width @click="navigateTo('/')">Перейти в панель</UiButton>
-      </UiSpace>
+      <div v-else-if="success" class="state">
+        <UiAlert type="success">Вы присоединились к команде {{ invite?.tenantName }}!</UiAlert>
+        <UiButton
+          type="primary"
+          block
+          style="margin-top: 16px"
+          @click="navigateTo('/')"
+        >
+          Перейти в панель
+        </UiButton>
+      </div>
+
+      <template v-else-if="invite">
+        <UiTitle size="h4" class="title">Приглашение в команду</UiTitle>
+        <UiText size="small" class="subtitle">
+          Вас приглашают в <strong>{{ invite.tenantName }}</strong>
+        </UiText>
+
+        <UiSegmentedControl
+          v-model="mode"
+          :options="[{ label: 'Регистрация', value: 'register' }, { label: 'Войти', value: 'login' }]"
+          class="mode-switcher"
+        />
+
+        <!-- Регистрация -->
+        <UiForm v-if="mode === 'register'" :error="formError" @submit="handleRegister">
+          <UiInput
+            :model-value="invite.email"
+            label="Email"
+            :clearable="false"
+            :disabled="true"
+          />
+          <UiInput
+            v-model="form.name"
+            name="name"
+            label="Ваше имя"
+            placeholder="Иван Иванов"
+            :clearable="false"
+            :rules="[{ required: true, message: 'Введите ваше имя' }]"
+          />
+          <UiInput
+            v-model="form.password"
+            name="password"
+            label="Пароль"
+            type="password"
+            :clearable="false"
+            :rules="[
+              { required: true, message: 'Введите пароль' },
+              { type: 'minLength', min: 6, message: 'Минимум 6 символов' },
+            ]"
+          />
+          <UiButton
+            submit
+            type="primary"
+            block
+            :loading="submitting"
+          >
+            Создать аккаунт и присоединиться
+          </UiButton>
+        </UiForm>
+
+        <!-- Вход -->
+        <UiForm v-else :error="formError" @submit="handleLogin">
+          <UiInput
+            v-model="loginForm.email"
+            name="email"
+            label="Email"
+            :clearable="false"
+            :rules="[{ required: true, message: 'Введите email' }]"
+          />
+          <UiInput
+            v-model="loginForm.password"
+            name="password"
+            label="Пароль"
+            type="password"
+            :clearable="false"
+            :rules="[{ required: true, message: 'Введите пароль' }]"
+          />
+          <UiButton
+            submit
+            type="primary"
+            block
+            :loading="submitting"
+          >
+            Войти и присоединиться
+          </UiButton>
+        </UiForm>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { definePageMeta, useRoute, useNuxtApp, navigateTo } from '#imports'
-import { UiButton, UiAlert, UiTitle, UiText, UiSpace } from '@fastio/ui'
+import { UiButton, UiAlert, UiTitle, UiText, UiForm, UiInput, UiSegmentedControl } from '@fastio/ui'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
-import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({ layout: false })
 
 const route = useRoute()
 const { $supabase } = useNuxtApp()
-const authStore = useAuthStore()
 
-const loading = ref(true)
-const error = ref('')
+type InviteDetails = { email: string; role: string; tenantName: string }
+
+const pageLoading = ref(true)
+const submitting = ref(false)
+const fatalError = ref('')
+const formError = ref('')
 const success = ref(false)
+const invite = ref<InviteDetails | null>(null)
+const mode = ref<'register' | 'login'>('register')
+
+const token = route.query.token as string
+
+const form = reactive({ name: '', password: '' })
+const loginForm = reactive({ email: '', password: '' })
+
+const acceptInvite = async () => {
+  const { error } = await $supabase.functions.invoke('accept-invite', { body: { token } })
+
+  if (error) throw new Error('Не удалось принять приглашение')
+  success.value = true
+}
+
+const handleRegister = async () => {
+  formError.value = ''
+  submitting.value = true
+
+  try {
+    const appUrl = window.location.origin
+    const { error: signUpError } = await $supabase.auth.signUp({
+      email: invite.value!.email,
+      password: form.password,
+      options: {
+        data: { full_name: form.name },
+        emailRedirectTo: `${appUrl}/invite?token=${token}`,
+      },
+    })
+
+    if (signUpError) {
+      formError.value = signUpError.message
+
+      return
+    }
+
+    // На локалке (autoconfirm=true) сессия есть сразу
+    const { data: { session } } = await $supabase.auth.getSession()
+
+    if (session) {
+      await acceptInvite()
+    } else {
+      // Продакшн: нужно подтвердить email
+      fatalError.value = 'Проверьте почту — мы отправили письмо для подтверждения регистрации'
+    }
+  } catch (e) {
+    formError.value = e instanceof Error ? e.message : 'Произошла ошибка'
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleLogin = async () => {
+  formError.value = ''
+  submitting.value = true
+
+  try {
+    const { error: signInError } = await $supabase.auth.signInWithPassword({
+      email: loginForm.email,
+      password: loginForm.password,
+    })
+
+    if (signInError) {
+      formError.value = 'Неверный email или пароль'
+
+      return
+    }
+
+    await acceptInvite()
+  } catch (e) {
+    formError.value = e instanceof Error ? e.message : 'Произошла ошибка'
+  } finally {
+    submitting.value = false
+  }
+}
 
 onMounted(async () => {
-  const token = route.query.token as string
-
   if (!token) {
-    error.value = 'Неверная ссылка приглашения'
-    loading.value = false
+    fatalError.value = 'Неверная ссылка приглашения'
+    pageLoading.value = false
 
     return
   }
 
-  // Ждём инициализации auth
-  if (authStore.loading) {
-    await new Promise<void>((resolve) => {
-      const unwatch = watch(
-        () => authStore.loading,
-        (val) => {
-          if (!val) {
-            unwatch()
-            resolve()
-          }
-        },
-      )
-    })
-  }
+  // Если юзер уже авторизован — сразу принимаем инвайт
+  const { data: { session } } = await $supabase.auth.getSession()
 
-  // Если не авторизован — редирект на логин с возвратом
-  if (!authStore.isAuthenticated) {
-    await navigateTo(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+  if (session) {
+    try {
+      await acceptInvite()
+    } catch {
+      fatalError.value = 'Не удалось принять приглашение. Возможно, вы уже состоите в команде или email не совпадает.'
+    }
+    pageLoading.value = false
 
     return
   }
 
-  // Принимаем инвайт
-  const { data, error: fnError } = await $supabase.functions.invoke('accept-invite', {
-    body: { token },
-  })
+  // Загружаем детали инвайта
+  const { data, error } = await $supabase.functions.invoke('get-invite', { body: { token } })
 
-  if (fnError || data?.error) {
-    error.value = data?.error ?? 'Не удалось принять приглашение'
+  if (error || data?.error) {
+    const msg = data?.error ?? ''
+
+    if (msg === 'Invitation already accepted') {
+      fatalError.value = 'Это приглашение уже было принято'
+    } else if (msg === 'Invitation expired') {
+      fatalError.value = 'Срок действия приглашения истёк'
+    } else {
+      fatalError.value = 'Приглашение не найдено или недействительно'
+    }
   } else {
-    success.value = true
+    invite.value = data
+    loginForm.email = data.email
   }
 
-  loading.value = false
+  pageLoading.value = false
 })
 </script>
 
@@ -111,8 +270,27 @@ onMounted(async () => {
   margin-bottom: 32px;
 }
 
-.loading-msg {
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-title);
+}
+
+.title {
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  display: block;
+  color: var(--color-text-secondary);
+  margin-bottom: 24px;
+}
+
+.mode-switcher {
+  margin-bottom: 20px;
+}
+
+.state {
   text-align: center;
-  padding: 20px 0;
 }
 </style>

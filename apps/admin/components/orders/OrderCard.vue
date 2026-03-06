@@ -1,19 +1,26 @@
 <template>
-  <div class="card-root" :class="{ new: order.status === 'new' }">
+  <div class="card-root" :class="{ 'is-new': currentStatus?.groupType === 'new' }" @click="emit('open-edit', order)">
     <!-- Шапка -->
     <div class="header">
       <div class="header-left">
         <span class="number">#{{ shortId }}</span>
-        <span class="delivery-badge" :class="order.deliveryType">
-          <template v-if="order.deliveryType === 'delivery'"><UiIcon name="bike" :size="12" /> Доставка</template>
-          <template v-else>Самовывоз</template>
-        </span>
+        <UiTag
+          :type="order.deliveryType === 'delivery' ? 'primary' : 'success'"
+          secondary
+          size="tiny"
+          :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
+        >
+          {{ order.deliveryType === 'delivery' ? 'Доставка' : 'Самовывоз' }}
+        </UiTag>
+        <UiTag v-if="branchName" size="tiny">{{ branchName }}</UiTag>
       </div>
       <div class="header-right">
         <span class="time">{{ relativeTime }}</span>
-        <span class="status-badge" :style="{ background: statusCfg.color }">
-          {{ statusCfg.label }}
-        </span>
+        <UiTag
+          v-if="currentStatus"
+          size="tiny"
+          :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
+        >{{ currentStatus.name }}</UiTag>
       </div>
     </div>
 
@@ -58,25 +65,20 @@
         </span>
       </div>
 
-      <!-- Кнопки действий -->
-      <div v-if="order.status !== 'completed' && order.status !== 'cancelled'" class="actions">
-        <UiButton
-          v-if="next"
-          type="primary"
-          size="small"
-          :disabled="updating"
-          @click="advance"
+      <!-- Смена статуса -->
+      <div v-if="statuses.length" class="actions" @click.stop>
+        <UiMenuDropdown
+          :items="statusMenuItems"
+          trigger="click"
+          compact
+          @item-click="onStatusSelect"
         >
-          {{ next.label }}
-        </UiButton>
-        <UiButton
-          type="default"
-          size="small"
-          :disabled="updating"
-          @click="$emit('cancel', order.id)"
-        >
-          Отменить
-        </UiButton>
+          <template #trigger>
+            <UiButton type="default" size="small" :disabled="updating">
+              Сменить статус
+            </UiButton>
+          </template>
+        </UiMenuDropdown>
       </div>
     </div>
   </div>
@@ -85,29 +87,43 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiButton, UiLink, UiIcon } from '@fastio/ui'
-import type { Order } from '@fastio/shared'
-import { statusConfig, nextStatus, nextStatusPickup } from '~/config/order-statuses'
+import { UiButton, UiLink, UiIcon, UiMenuDropdown, UiTag, COLORS } from '@fastio/ui'
+import type { Order, OrderStatus } from '@fastio/shared'
+import { STATUS_GROUP_COLORS, STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { formatRelativeTime } from '~/utils/formatRelativeTime'
 
 const props = defineProps<{
   order: Order
   updating?: boolean
+  branchName?: string
+  statuses: OrderStatus[]
 }>()
 
 const emit = defineEmits<{
-  advance: [id: string, status: string]
-  cancel: [id: string]
+  'status-change': [id: string, statusId: string]
+  'open-edit': [order: Order]
 }>()
 
 const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
 
-const statusCfg = computed(() => statusConfig[props.order.status])
+const currentStatus = computed(() => props.statuses.find((s) => s.id === props.order.status) ?? null,
+)
 
-const next = computed(() => {
-  const map = props.order.deliveryType === 'pickup' ? nextStatusPickup : nextStatus
+const statusColor = computed(() => currentStatus.value ? STATUS_GROUP_COLORS[currentStatus.value.groupType] : COLORS.GREY_500,
+)
 
-  return map[props.order.status] ?? null
-})
+const statusMenuItems = computed(() => props.statuses
+  .filter((s) => s.id !== props.order.status)
+  .map((s) => ({
+    name: s.id,
+    label: s.name,
+    color: STATUS_GROUP_COLORS[s.groupType],
+  })),
+)
+
+const onStatusSelect = (statusId: string) => {
+  emit('status-change', props.order.id, statusId)
+}
 
 const paymentIconMap: Record<string, 'banknote' | 'creditCard' | 'smartphone'> = {
   cash: 'banknote',
@@ -125,24 +141,8 @@ const paymentIcon = computed(
   () => paymentIconMap[props.order.paymentType] ?? 'banknote',
 )
 
-// Относительное время
 const now = useNow({ interval: 30_000 })
-const relativeTime = computed(() => {
-  const diff = now.value.getTime() - new Date(props.order.createdAt).getTime()
-  const min = Math.floor(diff / 60_000)
-
-  if (min < 1) return 'только что'
-  if (min < 60) return `${min} мин назад`
-  const h = Math.floor(min / 60)
-
-  if (h < 24) return `${h} ч назад`
-
-  return new Date(props.order.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
-})
-
-const advance = () => {
-  if (next.value) emit('advance', props.order.id, next.value.status)
-}
+const relativeTime = computed(() => formatRelativeTime(props.order.createdAt, now.value))
 </script>
 
 <style scoped lang="scss">
@@ -154,9 +154,14 @@ const advance = () => {
   flex-direction: column;
   gap: 10px;
   border: 2px solid transparent;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.12s;
+  cursor: pointer;
 
-  &.new {
+  &:hover {
+    background: var(--color-bg-card-hover, var(--color-bg-card));
+  }
+
+  &.is-new {
     border-color: var(--blue-500);
     animation: pulse-border 2s ease-in-out infinite;
   }
@@ -194,37 +199,9 @@ const advance = () => {
   font-variant-numeric: tabular-nums;
 }
 
-.delivery-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  &.delivery {
-    background: var(--blue-50);
-    color: var(--blue-500);
-  }
-
-  &.pickup {
-    background: var(--green-50);
-    color: var(--green-500);
-  }
-}
-
 .time {
   font-size: 12px;
   color: var(--color-text-secondary);
-}
-
-.status-badge {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-white);
-  padding: 3px 8px;
-  border-radius: 6px;
 }
 
 .customer {

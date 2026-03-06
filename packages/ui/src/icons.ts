@@ -14,6 +14,8 @@ import {
   LogOut,
   Menu,
   LayoutDashboard,
+  LayoutGrid,
+  List,
   UtensilsCrossed,
   ClipboardList,
   Gift,
@@ -30,6 +32,8 @@ import {
   Smartphone,
   MessageCircle,
   Users,
+  Image as ImageIcon,
+  GripVertical,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -66,6 +70,10 @@ export const iconRegistry = {
   clock: Clock,
   palette: Palette,
   users: Users,
+  image: ImageIcon,
+  grip: GripVertical,
+  layoutGrid: LayoutGrid,
+  list: List,
 } as const
 
 export type IconName = keyof typeof iconRegistry

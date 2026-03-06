@@ -11,23 +11,30 @@
         <TenantSwitcher />
       </div>
 
-      <nav class="nav">
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.to"
-          :to="item.to"
-          class="nav-item"
-          active-class="active"
-          @click="sidebarOpen = false"
-        >
-          <UiIcon :name="item.icon" :size="18" />
-          <span>{{ item.label }}</span>
-        </NuxtLink>
-      </nav>
+      <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
 
       <div class="user-info">
-        <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
-        <UiText size="tiny" class="user-name">{{ displayName }}</UiText>
+        <UiSelect
+          v-if="branchStore.hasBranches"
+          :value="branchStore.currentBranchId ?? ''"
+          :options="branchOptions"
+          class="branch-select"
+          @update:value="handleBranchChange"
+        />
+
+        <div class="user-row">
+          <div class="user-names">
+            <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
+            <UiText size="tiny" class="user-name">{{ displayName }}</UiText>
+          </div>
+          <UiButton
+            type="text"
+            size="small"
+            icon="logOut"
+            class="logout-btn"
+            @click="handleLogout"
+          />
+        </div>
       </div>
 
       <button class="collapse-btn" @click="collapsed = !collapsed">
@@ -37,8 +44,6 @@
 
     <!-- Overlay для мобилки -->
     <div v-if="sidebarOpen" class="overlay" @click="sidebarOpen = false" />
-
-    <UiConfirmModal />
 
     <!-- Main -->
     <div class="main">
@@ -58,26 +63,27 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { ComputedRef } from 'vue'
-import { useRoute } from '#imports'
+import { useRoute, useNuxtApp, navigateTo } from '#imports'
 import { useLocalStorage } from '@vueuse/core'
-import { UiIcon, UiConfirmModal, UiTitle, UiText } from '@fastio/ui'
-import type { IconName } from '@fastio/ui'
+import { UiTitle, UiText, UiSelect, UiButton, useConfirm } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
+import AppNav from '~/components/layout/AppNav.vue'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
-import { usePermissions } from '~/composables/usePermissions'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
+import { useBranchStore } from '~/stores/branch'
 import { roleLabels } from '~/config/team-roles'
 
 const route = useRoute()
+const { $supabase } = useNuxtApp()
+const { confirm } = useConfirm()
 const sidebarOpen = ref(false)
 const collapsed = useLocalStorage('sidebar-collapsed', false)
-const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings } = usePermissions()
 
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
+const branchStore = useBranchStore()
 
 const displayName = computed(() => {
   const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || ''
@@ -86,20 +92,69 @@ const displayName = computed(() => {
   return role ? `${name} (${role})` : name
 })
 
-type NavItem = { to: string; icon: IconName; label: string; visible?: ComputedRef<boolean> }
-
-const allNavItems: NavItem[] = [
-  { to: '/', icon: 'dashboard', label: 'Дашборд' },
-  { to: '/menu', icon: 'dishes', label: 'Меню', visible: canManageMenu },
-  { to: '/orders', icon: 'orders', label: 'Заказы', visible: canManageOrders },
-  { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canManagePromotions },
-  { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
-]
-
-const navItems = computed(() => allNavItems.filter((item) => !item.visible || item.visible.value),
+// Branch select
+const currentMember = computed(() => tenantStore.memberships.find((m) => m.tenantId === tenantStore.currentTenantId),
 )
 
-const currentPageTitle = computed(() => navItems.value.find((item) => item.to === route.path)?.label ?? '')
+const canSeeAll = computed(() => {
+  const role = tenantStore.currentRole
+
+  if (role === 'owner' || role === 'admin') return true
+
+  return (currentMember.value?.branchIds ?? []).length === 0
+})
+
+const availableBranches = computed(() => {
+  const memberBranchIds = currentMember.value?.branchIds ?? []
+
+  if (canSeeAll.value) return branchStore.branches
+
+  return branchStore.branches.filter((b) => memberBranchIds.includes(b.id))
+})
+
+const branchOptions = computed(() => {
+  const opts: { label: string; value: string }[] = []
+
+  if (canSeeAll.value) {
+    opts.push({ label: 'Все филиалы', value: '' })
+  }
+
+  availableBranches.value.forEach((b) => {
+    opts.push({ label: b.name, value: b.id })
+  })
+
+  return opts
+})
+
+const handleBranchChange = (val: string) => {
+  branchStore.setBranch(val === '' ? null : val)
+}
+
+// Logout
+const handleLogout = async () => {
+  const confirmed = await confirm({
+    title: 'Выйти из аккаунта?',
+    message: 'Вы будете перенаправлены на страницу входа',
+    confirmText: 'Выйти',
+    confirmType: 'error',
+  })
+
+  if (!confirmed) return
+
+  tenantStore.dispose()
+  await $supabase.auth.signOut()
+  await navigateTo('/login')
+}
+
+const pageTitles: Record<string, string> = {
+  '/': 'Дашборд',
+  '/menu': 'Меню',
+  '/orders': 'Заказы',
+  '/promotions': 'Акции',
+  '/settings': 'Настройки',
+}
+
+const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 </script>
 
 <style scoped lang="scss">
@@ -145,38 +200,6 @@ const currentPageTitle = computed(() => navItems.value.find((item) => item.to ==
   margin-bottom: 8px;
 }
 
-.nav {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 0 10px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  color: var(--grey-700);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-
-  &:hover {
-    background: var(--blue-100);
-    color: var(--grey-900);
-  }
-
-  &.active {
-    background: var(--color-primary);
-    color: var(--color-white);
-  }
-}
-
 .collapse-btn {
   display: none;
   align-items: center;
@@ -205,10 +228,27 @@ const currentPageTitle = computed(() => navItems.value.find((item) => item.to ==
 }
 
 .user-info {
-  padding: 12px 20px 4px;
+  padding: 12px 16px 4px;
   border-top: 1px solid var(--blue-200);
   margin-top: auto;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.branch-select {
+  width: 100%;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-names {
+  flex: 1;
+  min-width: 0;
 }
 
 .user-tenant {
@@ -228,6 +268,15 @@ const currentPageTitle = computed(() => navItems.value.find((item) => item.to ==
   text-overflow: ellipsis;
 }
 
+.logout-btn {
+  flex-shrink: 0;
+  color: var(--grey-400);
+
+  &:hover {
+    color: var(--grey-700);
+  }
+}
+
 .sidebar-collapsed {
   .sidebar {
     width: 64px;
@@ -235,7 +284,6 @@ const currentPageTitle = computed(() => navItems.value.find((item) => item.to ==
 
   .logo-text,
   .tenant-wrap,
-  .nav-item span,
   .user-info {
     display: none;
   }
@@ -243,11 +291,6 @@ const currentPageTitle = computed(() => navItems.value.find((item) => item.to ==
   .sidebar-header {
     justify-content: center;
     padding: 24px 0 20px;
-  }
-
-  .nav-item {
-    justify-content: center;
-    padding: 10px 0;
   }
 
 }
@@ -291,12 +334,6 @@ const currentPageTitle = computed(() => navItems.value.find((item) => item.to ==
   position: sticky;
   top: 0;
   z-index: 50;
-}
-
-.page-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-title);
 }
 
 .content {

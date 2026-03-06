@@ -1,90 +1,90 @@
 <template>
-  <form @submit.prevent="handleSave">
-    <div class="form">
-      <UiText size="tiny" span class="section-title">Контактная информация</UiText>
+  <UiForm class="form" @submit="handleSave">
+    <UiText size="tiny" span class="section-title">Основное</UiText>
 
-      <UiInput v-model="form.name" label="Название заведения *" placeholder="Пицца Васи" />
+    <UiInput v-model="form.name" label="Название заведения *" placeholder="Пицца Васи" />
 
-      <div class="row">
-        <UiInput v-model="form.phone" label="Телефон *" placeholder="+7 (999) 000-00-00" />
-        <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
-      </div>
-
-      <div class="row">
-        <UiInput v-model="form.city" label="Город" placeholder="Москва" />
-        <UiInput v-model="form.address" label="Адрес" placeholder="ул. Пушкина, д. 1" />
-      </div>
-
-      <UiText
-        size="tiny"
-        span
-        class="section-title"
-        style="margin-top: 8px;"
-      >Соцсети</UiText>
-
-      <div class="row">
-        <UiInput v-model="form.instagram" label="Instagram" placeholder="@vasya_pizza" />
-        <UiInput v-model="form.vk" label="ВКонтакте" placeholder="vk.com/vasya_pizza" />
-      </div>
-
-      <div class="footer">
-        <span v-if="saved" class="saved-msg">✅ Сохранено</span>
-        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
-      </div>
+    <div class="row">
+      <UiInput v-model="form.phone" label="Телефон *" placeholder="+7 (999) 000-00-00" />
+      <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
     </div>
-  </form>
+
+    <UiInput v-model="form.address" label="Адрес" placeholder="Москва, ул. Пушкина, д. 1" />
+
+    <UiText size="tiny" span class="section-title">Соцсети и мессенджеры</UiText>
+
+    <div class="row">
+      <UiInput v-model="form.instagram" label="Instagram" placeholder="@vasya_pizza" />
+      <UiInput v-model="form.vk" label="ВКонтакте" placeholder="vk.com/vasya_pizza" />
+    </div>
+
+    <div class="row">
+      <UiInput v-model="form.telegram" label="Telegram" placeholder="@vasya_pizza" />
+      <UiInput v-model="form.whatsapp" label="WhatsApp" placeholder="+7 (999) 000-00-00" />
+    </div>
+
+    <UiText size="tiny" span class="section-title">Часы работы</UiText>
+
+    <UiInput
+      v-model="form.workingHours"
+      label="Режим работы"
+      type="textarea"
+      :rows="2"
+      placeholder="Пн–Пт 10:00–22:00, Сб–Вс 11:00–21:00"
+    />
+
+    <div class="footer">
+      <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
+    </div>
+  </UiForm>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiInput, UiButton, UiText } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, UiText, useMessage } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
+import { useTenantStore } from '~/stores/tenant'
 
 const props = defineProps<{ tenant: Tenant }>()
-const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
-const form = reactive({
-  name: props.tenant.name ?? '',
-  phone: props.tenant.contacts?.phone ?? '',
-  email: props.tenant.contacts?.email ?? '',
-  city: props.tenant.contacts?.city ?? '',
-  address: props.tenant.contacts?.address ?? '',
-  instagram: props.tenant.contacts?.instagram ?? '',
-  vk: props.tenant.contacts?.vk ?? '',
+const tenantStore = useTenantStore()
+
+const buildForm = (t: Tenant) => ({
+  name: t.name ?? '',
+  phone: t.contacts?.phone ?? '',
+  email: t.contacts?.email ?? '',
+  address: t.contacts?.address ?? '',
+  instagram: t.contacts?.instagram ?? '',
+  vk: t.contacts?.vk ?? '',
+  telegram: t.contacts?.telegram ?? '',
+  whatsapp: t.contacts?.whatsapp ?? '',
+  workingHours: t.workingHours ?? '',
 })
 
-watch(() => props.tenant, (t) => {
-  form.name = t.name ?? ''
-  form.phone = t.contacts?.phone ?? ''
-  form.email = t.contacts?.email ?? ''
-  form.city = t.contacts?.city ?? ''
-  form.address = t.contacts?.address ?? ''
-  form.instagram = t.contacts?.instagram ?? ''
-  form.vk = t.contacts?.vk ?? ''
-})
+const form = reactive(buildForm(props.tenant))
+
+watch(() => props.tenant, (t) => Object.assign(form, buildForm(t)))
 
 const saving = ref(false)
-const saved = ref(false)
+const { success } = useMessage()
 
 const handleSave = async () => {
   saving.value = true
-  saved.value = false
   try {
-    await emit('save', {
+    await tenantStore.update({
       name: form.name,
       contacts: {
         phone: form.phone,
         email: form.email,
-        city: form.city,
         address: form.address,
-        instagram: form.instagram,
-        vk: form.vk,
+        instagram: form.instagram || null,
+        vk: form.vk || null,
+        telegram: form.telegram || null,
+        whatsapp: form.whatsapp || null,
       },
+      workingHours: form.workingHours,
     })
-    saved.value = true
-    setTimeout(() => {
-      saved.value = false
-    }, 3000)
+    success('Сохранено')
   } finally {
     saving.value = false
   }
@@ -92,7 +92,6 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
 @use '@fastio/ui/styles/mixins/form' as *;
 
 .form {
@@ -103,16 +102,11 @@ const handleSave = async () => {
 
 .section-title {
   @include section-title;
+  padding-top: 4px;
 }
 
 .row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-
-  @include mq-m {
-    grid-template-columns: 1fr 1fr;
-  }
+  @include form-row;
 }
 
 .footer {
@@ -120,7 +114,4 @@ const handleSave = async () => {
   margin-top: 8px;
 }
 
-.saved-msg {
-  @include saved-msg;
-}
 </style>

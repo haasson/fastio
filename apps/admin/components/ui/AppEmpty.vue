@@ -1,6 +1,11 @@
 <template>
   <div class="empty-root">
-    <span v-if="icon" class="icon">{{ icon }}</span>
+    <UiIcon
+      v-if="icon"
+      :name="icon"
+      :size="40"
+      class="icon"
+    />
     <UiText size="small" class="text">
       <slot>{{ text }}</slot>
     </UiText>
@@ -8,11 +13,12 @@
 </template>
 
 <script setup lang="ts">
-import { UiText } from '@fastio/ui'
+import { UiText, UiIcon } from '@fastio/ui'
+import type { IconName } from '@fastio/ui'
 
 withDefaults(defineProps<{
   text?: string
-  icon?: string
+  icon?: IconName
 }>(), {
   text: 'Тут пока ничего нет',
 })
@@ -29,7 +35,7 @@ withDefaults(defineProps<{
 }
 
 .icon {
-  font-size: 40px;
+  color: var(--color-text-tertiary);
 }
 
 .text {

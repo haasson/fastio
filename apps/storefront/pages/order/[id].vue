@@ -26,7 +26,7 @@
               :class="{
                 done: stepIndex >= i,
                 active: stepIndex === i,
-                cancelled: order.status === 'cancelled',
+                cancelled: false,
               }"
             >
               <div class="step-dot" />
@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Tenant, Order, OrderStatus } from '@fastio/shared'
+import type { Tenant, Order } from '@fastio/shared'
 
 const route = useRoute()
 const rfetch = useRequestFetch()
@@ -86,43 +86,32 @@ const { data: order, pending, error, refresh } = await useAsyncData<Order>(
   () => rfetch(`/api/orders/${route.params.id}`, slugQuery),
 )
 
-// Опрашиваем статус каждые 15 секунд пока заказ активен
-const activeStatuses: OrderStatus[] = ['new', 'accepted', 'cooking', 'ready', 'delivering']
+// Опрашиваем статус каждые 15 секунд
 useIntervalFn(() => {
-  if (order.value && activeStatuses.includes(order.value.status)) refresh()
+  if (order.value) refresh()
 }, 15_000)
 
 useHead({ title: `Заказ #${String(route.params.id).slice(0, 6).toUpperCase()}` })
 
 const steps = [
-  { status: 'new', label: 'Принят' },
-  { status: 'cooking', label: 'Готовится' },
-  { status: 'ready', label: 'Готов' },
-  { status: 'delivering', label: 'Доставляется' },
-  { status: 'completed', label: 'Доставлен' },
+  { label: 'Принят' },
+  { label: 'Готовится' },
+  { label: 'Готов' },
+  { label: 'Доставляется' },
+  { label: 'Доставлен' },
 ]
 
-const stepIndex = computed(() => {
-  const idx = steps.findIndex((s) => s.status === order.value?.status)
-  return idx === -1 ? 0 : idx
-})
+// Прогресс статичен — статусы теперь кастомные, отображаем фиксированные шаги визуально
+const stepIndex = computed(() => 0)
 
-const progressWidth = computed(() => {
-  if (!steps.length) return '0%'
-  return `${(stepIndex.value / (steps.length - 1)) * 100}%`
-})
+const progressWidth = computed(() => '0%')
 
-const statusConfig: Record<OrderStatus, { label: string; desc: string; icon: string; color: string }> = {
-  new: { label: 'Заказ принят', desc: 'Ожидаем подтверждения от заведения', icon: '📋', color: '#3b82f6' },
-  accepted: { label: 'Заказ подтверждён', desc: 'Скоро начнём готовить', icon: '✅', color: '#8b5cf6' },
-  cooking: { label: 'Готовим', desc: 'Уже на кухне, чуть-чуть подождите', icon: '👨‍🍳', color: '#f59e0b' },
-  ready: { label: 'Готово!', desc: 'Заказ ждёт передачи курьеру', icon: '🔔', color: '#10b981' },
-  delivering: { label: 'Едет к вам', desc: 'Курьер уже в пути', icon: '🚴', color: '#06b6d4' },
-  completed: { label: 'Доставлен', desc: 'Приятного аппетита!', icon: '🎉', color: '#10b981' },
-  cancelled: { label: 'Отменён', desc: 'Заказ был отменён', icon: '❌', color: '#ef4444' },
-}
-
-const statusCfg = computed(() => statusConfig[order.value?.status ?? 'new'])
+const statusCfg = computed(() => ({
+  label: 'Заказ оформлен',
+  desc: 'Статус обновится в ближайшее время',
+  icon: '📋',
+  color: '#3b82f6',
+}))
 </script>
 
 <style scoped lang="scss">

@@ -1,4 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+const json = (body: unknown, init?: ResponseInit) =>
+  new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
@@ -23,7 +25,7 @@ Deno.serve(async (req) => {
 
   const { tenantId } = await req.json() as { tenantId: string }
   if (!tenantId) {
-    return new Response(JSON.stringify({ error: 'tenantId is required' }), { status: 400 })
+    return json({ error: 'tenantId is required' }, { status: 400 })
   }
 
   const adminSupabase = createClient(
@@ -40,7 +42,7 @@ Deno.serve(async (req) => {
     .single()
 
   if (!membership) {
-    return new Response(JSON.stringify({ error: 'Not a member' }), { status: 403 })
+    return json({ error: 'Not a member' }, { status: 403 })
   }
 
   // Загружаем мемберов
@@ -51,8 +53,13 @@ Deno.serve(async (req) => {
     .order('created_at')
 
   // Обогащаем данными из auth.users через admin API
-  const { data: { users } } = await adminSupabase.auth.admin.listUsers({ perPage: 1000 })
-  const usersMap = new Map(users.map(u => [u.id, u]))
+  let usersMap = new Map()
+  try {
+    const { data: { users } } = await adminSupabase.auth.admin.listUsers({ perPage: 1000 })
+    usersMap = new Map(users.map(u => [u.id, u]))
+  } catch (e) {
+    console.error('Failed to list auth users:', e)
+  }
 
   const enrichedMembers = (members ?? []).map(m => {
     const authUser = usersMap.get(m.user_id)
@@ -90,5 +97,5 @@ Deno.serve(async (req) => {
     }))
   }
 
-  return new Response(JSON.stringify({ members: enrichedMembers, invitations }), { status: 200 })
+  return json({ members: enrichedMembers, invitations }, { status: 200 })
 })

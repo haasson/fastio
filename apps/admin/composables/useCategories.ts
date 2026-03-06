@@ -1,61 +1,46 @@
-import { ref, watch, onUnmounted } from 'vue'
+import { computed } from 'vue'
 import { useNuxtApp } from '#imports'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Category } from '@fastio/shared'
-import { categoriesApi } from '~/utils/api/categories'
+import { categoriesApi, mapCategory } from '~/utils/api/categories'
+import { useRealtimeList } from '~/composables/useRealtimeList'
 
 export const useCategories = (tenantId: Ref<string>) => {
   const { $supabase } = useNuxtApp()
-  const categories = ref<Category[]>([])
-  const loading = ref(true)
 
-  let channel: RealtimeChannel | null = null
+  const { items: categories, loading } = useRealtimeList({
+    channelKey: computed(() => tenantId.value ? `categories:${tenantId.value}` : null),
+    table: 'categories',
+    filter: computed(() => `tenant_id=eq.${tenantId.value}`),
+    fetch: () => categoriesApi.list($supabase, tenantId.value),
+    mapper: mapCategory,
+  })
 
-  const fetchCategories = async (id: string) => {
-    loading.value = true
-    categories.value = await categoriesApi.list($supabase, id)
-    loading.value = false
+  const add = async (name: string, photo?: { photoUrl?: string | null; useFirstDishPhoto?: boolean }) => {
+    if (!tenantId.value) return
+    const cat = await categoriesApi.add($supabase, tenantId.value, { name, order: categories.value.length, ...photo })
+
+    if (cat) categories.value.push(cat)
   }
 
-  watch(
-    tenantId,
-    (id) => {
-      channel?.unsubscribe()
-      channel = null
+  const update = async (id: string, data: Partial<Pick<Category, 'name' | 'active' | 'order' | 'photoUrl' | 'useFirstDishPhoto'>>) => {
+    const cat = await categoriesApi.update($supabase, id, data)
 
-      if (!id) return
+    if (cat) {
+      const i = categories.value.findIndex((c) => c.id === id)
 
-      fetchCategories(id)
-
-      channel = $supabase
-        .channel(`categories:${id}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'categories',
-          filter: `tenant_id=eq.${id}`,
-        }, () => fetchCategories(id))
-        .subscribe()
-    },
-    { immediate: true },
-  )
-
-  onUnmounted(() => channel?.unsubscribe())
-
-  const add = async (name: string) => {
-    const id = tenantId.value
-
-    if (!id) return
-    await categoriesApi.add($supabase, id, { name, order: categories.value.length })
-  }
-
-  const update = async (id: string, data: Partial<Pick<Category, 'name' | 'active' | 'order'>>) => {
-    await categoriesApi.update($supabase, id, data)
+      if (i !== -1) categories.value[i] = cat
+    }
   }
 
   const remove = async (id: string) => {
     await categoriesApi.remove($supabase, id)
+    categories.value = categories.value.filter((c) => c.id !== id)
   }
 
-  return { categories, loading, add, update, remove }
+  const reorder = async (reordered: Category[]) => {
+    categories.value = reordered
+    await categoriesApi.reorder($supabase, reordered.map((c, i) => ({ id: c.id, order: i })))
+  }
+
+  return { categories, loading, add, update, remove, reorder }
 }

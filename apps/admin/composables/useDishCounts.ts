@@ -1,37 +1,31 @@
 import { ref, watch, onUnmounted } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useNuxtApp } from '#imports'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 import { dishesApi } from '~/utils/api/dishes'
 
 const useDishCounts = (tenantId: Ref<string>) => {
   const { $supabase } = useNuxtApp()
   const counts = ref<Record<string, number>>({})
-  let channel: RealtimeChannel | null = null
+  let unsubscribe: (() => void) | null = null
 
   const fetchCounts = async (tid: string) => {
     counts.value = await dishesApi.countsByCategory($supabase, tid)
   }
 
   watch(tenantId, (tid) => {
-    channel?.unsubscribe()
-    channel = null
+    unsubscribe?.()
+    unsubscribe = null
     counts.value = {}
     if (!tid) return
 
     fetchCounts(tid)
 
-    channel = $supabase
-      .channel(`dish-counts:${tid}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'dishes',
-        filter: `tenant_id=eq.${tid}`,
-      }, () => fetchCounts(tid))
-      .subscribe()
+    const debouncedFetch = useDebounceFn(() => fetchCounts(tid), 300)
+
+    unsubscribe = dishesApi.subscribeToDishChanges($supabase, tid, debouncedFetch)
   }, { immediate: true })
 
-  onUnmounted(() => channel?.unsubscribe())
+  onUnmounted(() => unsubscribe?.())
 
   return { counts }
 }

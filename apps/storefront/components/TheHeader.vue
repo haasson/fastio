@@ -17,31 +17,20 @@
       </div>
     </div>
 
-    <div v-if="tenant.contacts.address" class="subheader">
-      📍 {{ tenant.contacts.city ? `${tenant.contacts.city}, ` : '' }}{{ tenant.contacts.address }}
-      <span v-if="todayHours" class="hours">· {{ todayHours }}</span>
+    <div v-if="tenant.contacts.address || tenant.workingHours" class="subheader">
+      <span v-if="tenant.contacts.address">📍 {{ tenant.contacts.address }}</span>
+      <span v-if="tenant.workingHours" class="hours">· {{ tenant.workingHours }}</span>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import type { Tenant, TenantWorkingHours } from '@fastio/shared'
+import type { Tenant } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
 const props = defineProps<{ tenant: Tenant }>()
 const cartStore = useCartStore()
 const cartCount = computed(() => cartStore.count)
-
-const dayKeys: (keyof TenantWorkingHours)[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-
-const todayHours = computed(() => {
-  const wh = props.tenant.workingHours
-  if (!wh) return null
-  const key = dayKeys[new Date().getDay()]
-  const day = wh[key]
-  if (!day || day.closed) return 'Выходной'
-  return `${day.open} — ${day.close}`
-})
 </script>
 
 <style scoped lang="scss">

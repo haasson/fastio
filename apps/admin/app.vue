@@ -1,5 +1,6 @@
 <template>
   <UiConfigProvider :theme-overrides="themeOverrides">
+    <UiConfirmModal />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
@@ -9,7 +10,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { navigateTo } from '#imports'
-import { UiConfigProvider, naiveUiThemeOverrides } from '@fastio/ui'
+import { UiConfigProvider, UiConfirmModal, naiveUiThemeOverrides } from '@fastio/ui'
 
 const themeOverrides = naiveUiThemeOverrides
 
@@ -21,3 +22,5 @@ onMounted(() => {
   }
 })
 </script>
+
+// TODO: не проще переложить сразу всё, а потом фильтрануть?

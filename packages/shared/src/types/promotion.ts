@@ -11,6 +11,7 @@ export type Promotion = {
   activeFrom: string | null
   activeTo: string | null
   active: boolean
+  branchIds: string[]
 }
 
 export type PromoCode = {

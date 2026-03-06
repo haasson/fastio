@@ -1,14 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TenantMember, TenantRole } from '@fastio/shared'
 import { query } from '~/utils/query'
+import type { TenantMemberRow } from './db-types'
 
-const mapMember = (row: Record<string, unknown>): TenantMember => ({
-  id: row.id as string,
-  tenantId: row.tenant_id as string,
-  userId: row.user_id as string,
-  role: row.role as TenantRole,
-  createdAt: row.created_at as string,
-})
+const mapMember = (raw: Record<string, unknown>): TenantMember => {
+  const row = raw as TenantMemberRow
+
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    userId: row.user_id,
+    role: row.role,
+    branchIds: row.branch_ids ?? [],
+    createdAt: row.created_at,
+  }
+}
 
 export const membersApi = {
   async listByUser(sb: SupabaseClient, userId: string) {
@@ -18,14 +24,19 @@ export const membersApi = {
         .eq('user_id', userId),
     )
 
-    return (data ?? []).map((row: Record<string, unknown>) => ({
-      ...mapMember(row),
-      tenant: row.tenants as { id: string; name: string; slug: string } | null,
-    }))
+    return (data ?? []).map((raw: Record<string, unknown>) => {
+      const row = raw as TenantMemberRow
+
+      return { ...mapMember(raw), tenant: row.tenants ?? null }
+    })
   },
 
   async updateRole(sb: SupabaseClient, memberId: string, role: TenantRole) {
     await query(sb.from('tenant_members').update({ role }).eq('id', memberId))
+  },
+
+  async updateBranchIds(sb: SupabaseClient, memberId: string, branchIds: string[]) {
+    await query(sb.from('tenant_members').update({ branch_ids: branchIds }).eq('id', memberId))
   },
 
   async remove(sb: SupabaseClient, memberId: string) {

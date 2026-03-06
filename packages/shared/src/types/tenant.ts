@@ -10,17 +10,10 @@ export type TenantContacts = {
   phone: string
   email: string
   address: string
-  city: string
   instagram: string | null
   vk: string | null
-}
-
-export type TenantWorkingHours = {
-  [day in 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun']: {
-    open: string
-    close: string
-    closed: boolean
-  }
+  telegram: string | null
+  whatsapp: string | null
 }
 
 export type TenantNotifications = {
@@ -43,7 +36,7 @@ export type Tenant = {
   ownerId: string
   theme: TenantTheme
   contacts: TenantContacts
-  workingHours: TenantWorkingHours
+  workingHours: string
   notifications: TenantNotifications
   subscription: TenantSubscription
   deliveryMinOrder: number

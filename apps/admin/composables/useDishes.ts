@@ -1,66 +1,58 @@
-import { ref, watch, onUnmounted } from 'vue'
+import { computed } from 'vue'
 import { useNuxtApp } from '#imports'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Dish } from '@fastio/shared'
-import { dishesApi, type DishFormData } from '~/utils/api/dishes'
+import { dishesApi, mapDish, type DishFormData } from '~/utils/api/dishes'
+import { useRealtimeList } from '~/composables/useRealtimeList'
 
 export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const { $supabase } = useNuxtApp()
-  const dishes = ref<Dish[]>([])
-  const loading = ref(false)
 
-  let channel: RealtimeChannel | null = null
-
-  const fetchDishes = async (tid: string, cid: string) => {
-    loading.value = true
-    dishes.value = await dishesApi.list($supabase, tid, cid)
-    loading.value = false
-  }
-
-  watch(
-    [tenantId, categoryId],
-    ([tid, cid]) => {
-      channel?.unsubscribe()
-      channel = null
-      dishes.value = []
-
-      if (!tid || !cid) return
-
-      fetchDishes(tid, cid)
-
-      channel = $supabase
-        .channel(`dishes:${tid}:${cid}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'dishes',
-          filter: `tenant_id=eq.${tid}`,
-        }, () => fetchDishes(tid, cid))
-        .subscribe()
-    },
-    { immediate: true },
-  )
-
-  onUnmounted(() => channel?.unsubscribe())
+  const { items: dishes, loading } = useRealtimeList({
+    channelKey: computed(() => tenantId.value && categoryId.value ? `dishes:${tenantId.value}:${categoryId.value}` : null),
+    table: 'dishes',
+    filter: computed(() => `tenant_id=eq.${tenantId.value}`),
+    fetch: () => dishesApi.list($supabase, tenantId.value, categoryId.value!),
+    mapper: mapDish,
+    shouldInclude: (dish) => dish.categoryId === categoryId.value,
+  })
 
   const add = async (data: DishFormData) => {
-    const tid = tenantId.value
+    if (!tenantId.value) return
+    const dish = await dishesApi.add($supabase, tenantId.value, { ...data, order: dishes.value.length })
 
-    if (!tid) return
-    await dishesApi.add($supabase, tid, { ...data, order: dishes.value.length })
+    if (dish && dish.categoryId === categoryId.value) dishes.value.push(dish)
   }
 
   const update = async (id: string, data: Partial<DishFormData>) => {
-    await dishesApi.update($supabase, id, data)
+    const dish = await dishesApi.update($supabase, id, data)
+
+    if (!dish) return
+    const i = dishes.value.findIndex((d) => d.id === id)
+
+    if (i === -1) return
+    if (dish.categoryId !== categoryId.value) {
+      dishes.value.splice(i, 1)
+    } else {
+      dishes.value[i] = dish
+    }
   }
 
   const remove = async (id: string) => {
     await dishesApi.remove($supabase, id)
+    dishes.value = dishes.value.filter((d) => d.id !== id)
   }
 
   const toggleActive = async (id: string, active: boolean) => {
+    const dish = dishes.value.find((d) => d.id === id)
+
+    if (dish) dish.active = active
     await dishesApi.toggleActive($supabase, id, active)
   }
 
-  return { dishes, loading, add, update, remove, toggleActive }
+  const reorder = async (reordered: Dish[]) => {
+    dishes.value = reordered
+    await dishesApi.reorder($supabase, reordered.map((d, i) => ({ id: d.id, order: i })))
+  }
+
+  return { dishes, loading, add, update, remove, toggleActive, reorder }
 }

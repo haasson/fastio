@@ -1,4 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+const json = (body: unknown, init?: ResponseInit) =>
+  new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
@@ -28,11 +30,11 @@ Deno.serve(async (req) => {
   }
 
   if (!tenantId || !email || !role) {
-    return new Response(JSON.stringify({ error: 'tenantId, email, role are required' }), { status: 400 })
+    return json({ error: 'tenantId, email, role are required' }, { status: 400 })
   }
 
   if (!['admin', 'manager', 'staff'].includes(role)) {
-    return new Response(JSON.stringify({ error: 'Invalid role' }), { status: 400 })
+    return json({ error: 'Invalid role' }, { status: 400 })
   }
 
   const adminSupabase = createClient(
@@ -49,25 +51,13 @@ Deno.serve(async (req) => {
     .single()
 
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    return new Response(JSON.stringify({ error: 'Insufficient permissions' }), { status: 403 })
+    return json({ error: 'Insufficient permissions' }, { status: 403 })
   }
 
-  // Проверяем что email ещё не в команде
-  const { data: existingMember } = await adminSupabase
-    .from('tenant_members')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .eq('user_id', (
-      await adminSupabase.auth.admin.listUsers()
-    ).data.users.find(u => u.email === email)?.id ?? '00000000-0000-0000-0000-000000000000')
-    .maybeSingle()
+  // Создаём/обновляем приглашение (upsert по tenant_id+email)
+  const token = crypto.randomUUID()
 
-  if (existingMember) {
-    return new Response(JSON.stringify({ error: 'User is already a member' }), { status: 409 })
-  }
-
-  // Создаём приглашение (upsert по tenant_id+email)
-  const { data: invitation, error: inviteError } = await adminSupabase
+  const { error: inviteError } = await adminSupabase
     .from('tenant_invitations')
     .upsert(
       {
@@ -75,18 +65,16 @@ Deno.serve(async (req) => {
         email,
         role,
         invited_by: user.id,
-        token: crypto.randomUUID(),
+        token,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         accepted_at: null,
       },
       { onConflict: 'tenant_id,email' },
     )
-    .select('token')
-    .single()
 
   if (inviteError) {
     console.error('Invite error:', inviteError)
-    return new Response(JSON.stringify({ error: 'Failed to create invitation' }), { status: 500 })
+    return json({ error: 'Failed to create invitation' }, { status: 500 })
   }
 
   // Получаем имя тенанта для письма
@@ -97,38 +85,43 @@ Deno.serve(async (req) => {
     .single()
 
   const appUrl = Deno.env.get('APP_URL') ?? 'https://admin.fastio.ru'
-  const inviteUrl = `${appUrl}/invite?token=${invitation.token}`
+  const inviteUrl = `${appUrl}/invite?token=${token}`
 
-  // Отправляем email
-  const sendgridResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${Deno.env.get('SENDGRID_KEY')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      to: [{ email }],
-      from: { email: 'noreply@fastio.ru' },
-      subject: `Приглашение в команду ${tenant?.name ?? 'Fastio'}`,
-      content: [{
-        type: 'text/plain',
-        value: [
-          `Вас пригласили в команду «${tenant?.name}» на платформе Fastio.`,
-          '',
-          `Роль: ${role}`,
-          '',
-          `Для принятия приглашения перейдите по ссылке:`,
-          inviteUrl,
-          '',
-          'Ссылка действительна 7 дней.',
-        ].join('\n'),
-      }],
-    }),
-  })
+  console.log(`Invite URL: ${inviteUrl}`)
 
-  if (!sendgridResponse.ok) {
-    console.error('SendGrid error:', await sendgridResponse.text())
+  // Отправляем email через SendGrid (опционально — на локалке ключа нет)
+  const sendgridKey = Deno.env.get('SENDGRID_KEY')
+  if (sendgridKey) {
+    const sendgridResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${sendgridKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: [{ email }],
+        from: { email: 'noreply@fastio.ru' },
+        subject: `Приглашение в команду ${tenant?.name ?? 'Fastio'}`,
+        content: [{
+          type: 'text/plain',
+          value: [
+            `Вас пригласили в команду «${tenant?.name}» на платформе Fastio.`,
+            '',
+            `Роль: ${role}`,
+            '',
+            'Для принятия приглашения перейдите по ссылке:',
+            inviteUrl,
+            '',
+            'Ссылка действительна 7 дней.',
+          ].join('\n'),
+        }],
+      }),
+    })
+
+    if (!sendgridResponse.ok) {
+      console.error('SendGrid error:', await sendgridResponse.text())
+    }
   }
 
-  return new Response(JSON.stringify({ success: true, token: invitation.token }), { status: 200 })
+  return json({ success: true }, { status: 200 })
 })

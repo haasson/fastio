@@ -29,6 +29,7 @@
     <ui-text v-if="!empty" size="small" class="content">
       <slot />
     </ui-text>
+    <slot v-else />
   </n-collapse-item>
 </template>
 

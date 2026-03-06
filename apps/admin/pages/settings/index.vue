@@ -9,12 +9,6 @@
         <SettingsContacts
           v-if="activeTab === 'contacts'"
           :tenant="tenantStore.tenant"
-          @save="tenantStore.update"
-        />
-        <SettingsHours
-          v-else-if="activeTab === 'hours'"
-          :tenant="tenantStore.tenant"
-          @save="tenantStore.update"
         />
         <SettingsTheme
           v-else-if="activeTab === 'theme'"
@@ -24,7 +18,6 @@
         <SettingsDelivery
           v-else-if="activeTab === 'delivery'"
           :tenant="tenantStore.tenant"
-          @save="tenantStore.update"
         />
         <SettingsNotifications
           v-else-if="activeTab === 'notifications'"
@@ -34,41 +27,33 @@
         <SettingsTeam
           v-else-if="activeTab === 'team'"
         />
+        <SettingsBranches
+          v-else-if="activeTab === 'branches'"
+        />
       </div>
     </template>
 
     <div v-else class="state-msg">Загрузка…</div>
-
-    <div class="logout-section">
-      <UiButton type="default" icon="logOut" @click="handleLogout">Выйти из аккаунта</UiButton>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { definePageMeta, useNuxtApp, navigateTo } from '#imports'
-import { UiTabs, UiButton } from '@fastio/ui'
+import { definePageMeta } from '#imports'
+import { UiTabs } from '@fastio/ui'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import SettingsContacts from '~/components/settings/SettingsContacts.vue'
-import SettingsHours from '~/components/settings/SettingsHours.vue'
 import SettingsTheme from '~/components/settings/SettingsTheme.vue'
 import SettingsDelivery from '~/components/settings/SettingsDelivery.vue'
 import SettingsNotifications from '~/components/settings/SettingsNotifications.vue'
 import SettingsTeam from '~/components/settings/SettingsTeam.vue'
+import SettingsBranches from '~/components/settings/SettingsBranches.vue'
 import { usePermissions } from '~/composables/usePermissions'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })
 
-const { $supabase } = useNuxtApp()
 const tenantStore = useTenantStore()
-
-const handleLogout = async () => {
-  tenantStore.dispose()
-  await $supabase.auth.signOut()
-  await navigateTo('/login')
-}
 const { canManageTeam } = usePermissions()
 
 onMounted(() => tenantStore.init())
@@ -77,11 +62,11 @@ const activeTab = ref('contacts')
 
 const settingsTabs = computed(() => [
   { value: 'contacts', label: 'Контакты', icon: 'mapPin' as const },
-  { value: 'hours', label: 'Часы работы', icon: 'clock' as const },
   { value: 'theme', label: 'Оформление', icon: 'palette' as const },
   { value: 'delivery', label: 'Доставка', icon: 'bike' as const },
   { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
   ...(canManageTeam.value ? [{ value: 'team', label: 'Команда', icon: 'users' as const }] : []),
+  ...(canManageTeam.value ? [{ value: 'branches', label: 'Филиалы', icon: 'mapPin' as const }] : []),
 ])
 </script>
 
@@ -96,11 +81,6 @@ const settingsTabs = computed(() => [
   background: var(--color-bg-card);
   border-radius: 14px;
   padding: 28px;
-  max-width: 640px;
   overflow: visible;
-}
-
-.logout-section {
-  padding-top: 8px;
 }
 </style>

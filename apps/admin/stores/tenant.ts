@@ -6,12 +6,14 @@ import type { Tenant, TenantRole } from '@fastio/shared'
 import { tenantsApi } from '~/utils/api/tenants'
 import { membersApi } from '~/utils/api/members'
 import { useAuthStore } from './auth'
+import { useBranchStore } from './branch'
 
 type MembershipWithTenant = {
   id: string
   tenantId: string
   userId: string
   role: TenantRole
+  branchIds: string[]
   tenant: { id: string; name: string; slug: string } | null
 }
 
@@ -36,8 +38,15 @@ export const useTenantStore = defineStore('tenant', () => {
   const fetchTenant = async () => {
     if (!currentTenantId.value) return
     const { $supabase } = useNuxtApp()
+    const branchStore = useBranchStore()
 
     tenant.value = await tenantsApi.getById($supabase, currentTenantId.value)
+
+    const membership = memberships.value.find((m) => m.tenantId === currentTenantId.value)
+    const isAdmin = membership?.role === 'owner' || membership?.role === 'admin'
+    const memberBranchIds = membership?.branchIds ?? []
+
+    await branchStore.init(currentTenantId.value, memberBranchIds, isAdmin)
   }
 
   const subscribeToTenant = () => {
@@ -87,6 +96,9 @@ export const useTenantStore = defineStore('tenant', () => {
   const switchTenant = async (tenantId: string) => {
     if (tenantId === currentTenantId.value) return
 
+    const branchStore = useBranchStore()
+
+    branchStore.dispose()
     currentTenantId.value = tenantId
     localStorage.setItem(STORAGE_KEY, tenantId)
 
@@ -105,6 +117,9 @@ export const useTenantStore = defineStore('tenant', () => {
   }
 
   const dispose = () => {
+    const branchStore = useBranchStore()
+
+    branchStore.dispose()
     channel?.unsubscribe()
     channel = null
     tenant.value = null

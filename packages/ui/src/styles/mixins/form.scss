@@ -1,3 +1,15 @@
+@use './media-queries' as *;
+
+@mixin form-row($gap: 12px) {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $gap;
+
+  @include mq-m {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @mixin section-title {
   font-weight: 700;
   text-transform: uppercase;
@@ -13,6 +25,9 @@
 }
 
 @mixin saved-msg {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   color: var(--color-success);
 }

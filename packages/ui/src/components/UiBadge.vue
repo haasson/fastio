@@ -1,6 +1,6 @@
 <template>
   <n-badge class="badge" :class="{ pulse, primary }">
-    <slot />
+    <slot v-if="$slots.default" />
   </n-badge>
 </template>
 

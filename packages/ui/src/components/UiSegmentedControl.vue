@@ -13,7 +13,8 @@
       ref="itemRefs"
       @click="selectItem(item.value || index)"
     >
-      <span class="label">{{ item.label }}</span>
+      <UiIcon v-if="item.icon" :name="item.icon" class="item-icon" />
+      <span v-if="item.label" class="label">{{ item.label }}</span>
       <span v-if="item.tag" class="tag">{{ item.tag }}</span>
     </div>
   </div>
@@ -24,9 +25,12 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch, type CSSPropert
 import useResponsiveSize from '../composables/useResponsiveSize'
 import { throttle } from '../utils/throttle'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
+import type { IconName } from '../icons'
+import UiIcon from './UiIcon.vue'
 
 export type SegmentedControlItem = {
-  label: string
+  label?: string
+  icon?: IconName
   value?: string | number
   tag?: string
 }
@@ -57,6 +61,7 @@ const emit = defineEmits<Emits>()
 const itemRefs = ref<HTMLElement[]>([])
 const backgroundStyle = ref<CSSProperties>({})
 const resizeObserver = ref<ResizeObserver | null>(null)
+const hasInteracted = ref(false)
 
 const selectedValue = computed({
   get: () => props.modelValue,
@@ -72,6 +77,7 @@ const isSelected = (value: string | number): boolean => {
 }
 
 const selectItem = (value: string | number) => {
+  hasInteracted.value = true
   selectedValue.value = value
   updateBackground()
 }
@@ -90,22 +96,19 @@ const updateBackground = async () => {
   }
 
   const activeElement = itemRefs.value[activeIndex]
-  const containerRect = activeElement.parentElement?.getBoundingClientRect()
-  const elementRect = activeElement.getBoundingClientRect()
 
-  if (containerRect) {
-    backgroundStyle.value = {
-      transform: `translateX(${elementRect.left - containerRect.left}px)`,
-      width: `${elementRect.width}px`,
-      opacity: '1',
-    }
+  backgroundStyle.value = {
+    transform: `translateX(${activeElement.offsetLeft}px)`,
+    width: `${activeElement.offsetWidth}px`,
+    opacity: '1',
+    transition: hasInteracted.value ? undefined : 'none',
   }
 }
 
 const throttledUpdateBackground = throttle(updateBackground, 100)
 
 onMounted(() => {
-  setTimeout(updateBackground, 10)
+  updateBackground()
 
   if (itemRefs.value[0]?.parentElement) {
     resizeObserver.value = new ResizeObserver(throttledUpdateBackground)
@@ -249,6 +252,7 @@ watch(() => props.items, () => {
     background: var(--color-primary);
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   }
 
   .item {
@@ -287,6 +291,12 @@ watch(() => props.items, () => {
       background: var(--color-primary);
       color: var(--color-white);
     }
+  }
+
+  .item-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
   }
 
   .label {

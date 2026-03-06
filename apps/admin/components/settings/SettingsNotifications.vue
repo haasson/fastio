@@ -1,14 +1,16 @@
 <template>
-  <form @submit.prevent="handleSave">
+  <UiForm @submit="handleSave">
     <div class="form">
       <UiText size="tiny" span class="section-title">Уведомления о заказах</UiText>
 
       <div class="field">
         <UiInput
           v-model="form.email"
+          name="email"
           label="Email для уведомлений"
           type="email"
           placeholder="orders@vasya-pizza.ru"
+          :rules="[{ type: 'email', message: 'Некорректный email' }]"
         />
         <span class="hint">На этот адрес придёт письмо при каждом новом заказе</span>
       </div>
@@ -32,25 +34,24 @@
       </div>
 
       <div class="tg-status">
-        <span class="tg-icon">🤖</span>
+        <span class="tg-icon"><UiIcon name="messageCircle" :size="28" /></span>
         <div>
           <UiText size="small" class="tg-title">Telegram бот</UiText>
           <UiText size="tiny" class="tg-desc">Функция будет доступна в следующем обновлении</UiText>
         </div>
-        <span class="tg-badge">Скоро</span>
+        <UiTag size="small" class="tg-badge">Скоро</UiTag>
       </div>
 
       <div class="footer">
-        <span v-if="saved" class="saved-msg">✅ Сохранено</span>
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
       </div>
     </div>
-  </form>
+  </UiForm>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiInput, UiButton, UiLink, UiText } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, UiLink, UiText, UiIcon, UiTag, useMessage } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 
 const props = defineProps<{ tenant: Tenant }>()
@@ -67,11 +68,10 @@ watch(() => props.tenant.notifications, (n) => {
 })
 
 const saving = ref(false)
-const saved = ref(false)
+const { success } = useMessage()
 
 const handleSave = async () => {
   saving.value = true
-  saved.value = false
   try {
     await emit('save', {
       notifications: {
@@ -79,10 +79,7 @@ const handleSave = async () => {
         telegramChatId: form.telegramChatId || null,
       },
     })
-    saved.value = true
-    setTimeout(() => {
-      saved.value = false
-    }, 3000)
+    success('Сохранено')
   } finally {
     saving.value = false
   }
@@ -124,7 +121,9 @@ const handleSave = async () => {
 }
 
 .tg-icon {
-  font-size: 28px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
 }
 
 .tg-title {
@@ -141,19 +140,10 @@ const handleSave = async () => {
 
 .tg-badge {
   margin-left: auto;
-  font-size: 11px;
-  font-weight: 700;
-  background: var(--color-border);
-  color: var(--color-text-secondary);
-  padding: 3px 10px;
-  border-radius: 20px;
 }
 
 .footer {
   @include settings-footer;
 }
 
-.saved-msg {
-  @include saved-msg;
-}
 </style>

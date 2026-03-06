@@ -2,127 +2,211 @@
   <UiModal
     :model-value="modelValue"
     :title="dish ? 'Редактировать блюдо' : 'Новое блюдо'"
-    :width="560"
+    :width="900"
+    :actions="modalActions"
+    :on-confirm="onConfirm"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <form class="form" @submit.prevent="handleSubmit">
-      <!-- Основное -->
-      <UiText size="tiny" span class="section-title">Основное</UiText>
-
-      <div class="row">
-        <UiInput v-model="form.name" label="Название *" placeholder="Маргарита" />
-        <UiInputNumber
-          v-model="form.price"
-          label="Цена, ₽ *"
-          :min="0"
-          placeholder="350"
-        />
-      </div>
-
-      <UiInput
-        v-model="form.description"
-        label="Описание"
-        type="textarea"
-        :rows="2"
-        placeholder="Томатный соус, моцарелла, базилик"
-      />
-
-      <!-- Теги -->
-      <UiText size="tiny" span class="section-title">Теги</UiText>
-      <div class="tags-grid">
-        <UiCheckbox
-          v-for="(label, value) in tagOptions"
-          :key="value"
-          :model-value="form.tags.includes(String(value) as DishTag)"
-          @update:model-value="toggleTag(String(value) as DishTag, $event)"
-        >
-          {{ label }}
-        </UiCheckbox>
-      </div>
-
-      <!-- Состав -->
-      <UiText size="tiny" span class="section-title">Состав</UiText>
-      <div class="ingredients-list">
-        <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
-          <UiInput v-model="ing.name" placeholder="Ингредиент" :clearable="false" />
-          <UiCheckbox v-model="ing.removable">Убрать</UiCheckbox>
-          <UiButton size="tiny" type="text" @click="removeIngredient(i)">✕</UiButton>
+    <UiForm ref="formRef" class="form">
+      <!-- Фото + Основное -->
+      <div class="top-grid">
+        <div class="col-photo">
+          <UiText size="tiny" span class="section-title">Фото</UiText>
+          <DishPhotoUpload
+            :key="photoKey"
+            :model-value="currentPhotoUrl"
+            @update:model-value="currentPhotoUrl = $event; photoRemoved = !$event"
+            @pending="pendingPhotoFile = $event"
+          />
         </div>
-        <UiButton type="default" icon="plus" @click="addIngredient">Добавить ингредиент</UiButton>
+
+        <div class="col-main">
+          <UiText size="tiny" span class="section-title">Основное</UiText>
+
+          <div class="row">
+            <UiInput
+              v-model="form.name"
+              name="name"
+              label="Название *"
+              placeholder="Маргарита"
+              :rules="[{ type: 'required', message: 'Введите название' }]"
+            />
+            <UiInputNumber
+              v-model="form.price"
+              name="price"
+              label="Цена, ₽ *"
+              :min="0"
+              placeholder="350"
+              :rules="[{ type: 'required', message: 'Введите цену' }]"
+            />
+          </div>
+
+          <UiInput
+            v-model="form.description"
+            label="Описание"
+            type="textarea"
+            :rows="2"
+            placeholder="Томатный соус, моцарелла, базилик"
+          />
+
+          <UiSelect
+            v-if="categories.length > 1"
+            v-model:value="form.categoryId"
+            label="Категория"
+            :options="categoryOptions"
+          />
+        </div>
       </div>
 
-      <!-- КБЖУ -->
-      <UiText size="tiny" span class="section-title">
-        Пищевая ценность <span class="optional">(необязательно)</span>
-      </UiText>
-      <div class="nutrition-grid">
-        <UiInputNumber
-          v-model="nutrition.weight"
-          label="Вес, г"
-          :min="0"
-          placeholder="350"
-        />
-        <UiInputNumber
-          v-model="nutrition.calories"
-          label="Ккал"
-          :min="0"
-          placeholder="850"
-        />
-        <UiInputNumber
-          v-model="nutrition.protein"
-          label="Белки, г"
-          :min="0"
-          placeholder="38"
-        />
-        <UiInputNumber
-          v-model="nutrition.fat"
-          label="Жиры, г"
-          :min="0"
-          placeholder="32"
-        />
-        <UiInputNumber
-          v-model="nutrition.carbs"
-          label="Углеводы, г"
-          :min="0"
-          placeholder="86"
-        />
-      </div>
+      <UiCollapse :expanded-names="['tags', 'ingredients']" class="sections">
+        <!-- Теги -->
+        <UiCollapseItem
+          name="tags"
+          title="Теги"
+          icon="chevron"
+          :icon-size="20"
+          icon-bg="grey-400"
+          empty
+        >
+          <div class="tags-grid">
+            <UiCheckbox
+              v-for="(label, value) in tagOptions"
+              :key="value"
+              :model-value="form.tags.includes(String(value) as DishTag)"
+              @update:model-value="toggleTag(String(value) as DishTag, $event)"
+            >
+              {{ label }}
+            </UiCheckbox>
+          </div>
+        </UiCollapseItem>
 
-      <!-- Активность -->
-      <div class="active-row">
-        <span class="label">Показывать в меню</span>
-        <UiSwitch v-model="form.active" />
-      </div>
+        <!-- Состав -->
+        <UiCollapseItem
+          name="ingredients"
+          title="Состав"
+          icon="chevron"
+          :icon-size="20"
+          icon-bg="grey-400"
+          empty
+        >
+          <div class="ingredients-list">
+            <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
+              <UiInput v-model="ing.name" placeholder="Ингредиент" :clearable="false" />
+              <UiCheckbox v-model="ing.removable">Можно убрать</UiCheckbox>
+              <UiButton size="tiny" type="text" @click="removeIngredient(i)">✕</UiButton>
+            </div>
+            <UiButton type="default" icon="plus" @click="addIngredient">Добавить ингредиент</UiButton>
+          </div>
+        </UiCollapseItem>
 
-      <div class="form-footer">
-        <UiButton type="default" @click="$emit('update:modelValue', false)">Отмена</UiButton>
-        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
-      </div>
-    </form>
+        <!-- КБЖУ -->
+        <UiCollapseItem
+          name="nutrition"
+          title="Пищевая ценность"
+          icon="chevron"
+          :icon-size="20"
+          icon-bg="grey-400"
+          empty
+        >
+          <div class="nutrition-grid">
+            <UiInputNumber
+              v-model="nutrition.weight"
+              label="Вес, г"
+              :min="0"
+              placeholder="350"
+            />
+            <UiInputNumber
+              v-model="nutrition.calories"
+              label="Ккал"
+              :min="0"
+              placeholder="850"
+            />
+            <UiInputNumber
+              v-model="nutrition.protein"
+              label="Белки, г"
+              :min="0"
+              placeholder="38"
+            />
+            <UiInputNumber
+              v-model="nutrition.fat"
+              label="Жиры, г"
+              :min="0"
+              placeholder="32"
+            />
+            <UiInputNumber
+              v-model="nutrition.carbs"
+              label="Углеводы, г"
+              :min="0"
+              placeholder="86"
+            />
+          </div>
+        </UiCollapseItem>
+
+        <!-- Настройки -->
+        <DishSettingsSection
+          ref="settingsRef"
+          :active="form.active"
+          :dish-id="dish?.id ?? null"
+          :price="form.price"
+          :refresh-key="settingsRefreshKey"
+          @update:active="form.active = $event"
+        />
+      </UiCollapse>
+
+    </UiForm>
   </UiModal>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { UiModal, UiInput, UiInputNumber, UiButton, UiCheckbox, UiSwitch, UiText } from '@fastio/ui'
-import type { Dish, DishTag, DishIngredient } from '@fastio/shared'
+import { ref, reactive, computed, watch } from 'vue'
+import { useNuxtApp } from '#imports'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiCheckbox, UiText, UiSelect, UiCollapse, UiCollapseItem } from '@fastio/ui'
+import type { Dish, DishTag, DishIngredient, Category } from '@fastio/shared'
 import type { DishFormData } from '~/utils/api/dishes'
+import { dishesApi } from '~/utils/api/dishes'
 import { tagOptions } from '~/config/dish-tags'
+import { useBranchStore } from '~/stores/branch'
+import DishPhotoUpload from '~/components/menu/DishPhotoUpload.vue'
+import DishSettingsSection from '~/components/menu/DishSettingsSection.vue'
 
 const props = defineProps<{
   modelValue: boolean
   tenantId: string
   categoryId: string
+  categories: Category[]
   dish: Dish | null
   addDish: (data: DishFormData) => Promise<void>
   updateDish: (id: string, data: Partial<DishFormData>) => Promise<void>
 }>()
+
+const { $supabase } = useNuxtApp()
+const branchStore = useBranchStore()
+const branches = computed(() => branchStore.branches)
+
+const settingsRef = ref<InstanceType<typeof DishSettingsSection> | null>(null)
+const settingsRefreshKey = ref(0)
+
+const categoryOptions = computed(() => props.categories.map((c) => ({ label: c.name, value: c.id })),
+)
+
+const formRef = ref()
+const modalActions = computed(() => [
+  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+])
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'saved': []
 }>()
 const saving = ref(false)
+
+// Photo state
+const photoKey = ref(0)
+const originalPhotoUrl = ref<string | null>(null) // URL from saved dish, used for deletion
+const currentPhotoUrl = ref<string | null>(null) // current display URL (null when user removes)
+const pendingPhotoFile = ref<File | null>(null)
+const photoRemoved = ref(false)
 
 const defaultForm = () => ({
   categoryId: props.categoryId,
@@ -148,26 +232,41 @@ const nutrition = reactive({
 watch(
   () => props.modelValue,
   (val) => {
-    if (val && !props.dish) {
-      Object.assign(form, defaultForm())
-      Object.assign(nutrition, { weight: null, calories: null, protein: null, fat: null, carbs: null })
+    if (val) {
+      photoKey.value++
+      originalPhotoUrl.value = props.dish?.photos[0] ?? null
+      currentPhotoUrl.value = props.dish?.photos[0] ?? null
+      pendingPhotoFile.value = null
+      photoRemoved.value = false
+      settingsRefreshKey.value++
+
+      if (!props.dish) {
+        Object.assign(form, defaultForm())
+        Object.assign(nutrition, { weight: null, calories: null, protein: null, fat: null, carbs: null })
+      }
     }
   },
 )
 
 watch(
   () => props.dish,
-  (d) => {
-    if (d) {
-      form.name = d.name
-      form.description = d.description
-      form.price = d.price
-      form.tags = [...d.tags]
-      form.active = d.active
-      form.order = d.order
-      form.ingredients = d.ingredients.map((i: DishIngredient) => ({ ...i }))
-      if (d.nutrition) {
-        Object.assign(nutrition, d.nutrition)
+  (dish) => {
+    originalPhotoUrl.value = dish?.photos[0] ?? null
+    currentPhotoUrl.value = dish?.photos[0] ?? null
+    pendingPhotoFile.value = null
+    photoRemoved.value = false
+
+    if (dish) {
+      form.categoryId = dish.categoryId
+      form.name = dish.name
+      form.description = dish.description
+      form.price = dish.price
+      form.tags = [...dish.tags]
+      form.active = dish.active
+      form.order = dish.order
+      form.ingredients = dish.ingredients.map((ing: DishIngredient) => ({ ...ing }))
+      if (dish.nutrition) {
+        Object.assign(nutrition, dish.nutrition)
       } else {
         Object.assign(nutrition, { weight: null, calories: null, protein: null, fat: null, carbs: null })
       }
@@ -209,22 +308,46 @@ const buildNutrition = () => {
   }
 }
 
-const handleSubmit = async () => {
+const onConfirm = async () => {
+  if (!formRef.value?.validate()) return false
+
   saving.value = true
   try {
+    let photos = currentPhotoUrl.value ? [currentPhotoUrl.value] : []
+
+    if (pendingPhotoFile.value) {
+      if (originalPhotoUrl.value) {
+        await dishesApi.deletePhoto($supabase, originalPhotoUrl.value)
+      }
+      const url = await dishesApi.uploadPhoto($supabase, props.tenantId, pendingPhotoFile.value)
+
+      photos = [url]
+    } else if (photoRemoved.value && originalPhotoUrl.value) {
+      await dishesApi.deletePhoto($supabase, originalPhotoUrl.value)
+      photos = []
+    }
+
     const data: DishFormData = {
       ...form,
       price: form.price ?? 0,
-      categoryId: props.categoryId,
       nutrition: buildNutrition(),
+      photos,
     }
 
     if (props.dish) {
       await props.updateDish(props.dish.id, data)
+
+      if (branches.value.length > 0) {
+        const prices = settingsRef.value?.getBranchPrices() ?? []
+
+        await dishesApi.setBranchPrices($supabase, props.dish.id, prices)
+      }
     } else {
       await props.addDish(data)
     }
     emit('saved')
+  } catch {
+    return false
   } finally {
     saving.value = false
   }
@@ -246,10 +369,26 @@ const handleSubmit = async () => {
   padding-top: 4px;
 }
 
-.optional {
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
+.sections {
+  margin-top: 4px;
+}
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+
+  @include mq-m {
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+  }
+}
+
+.col-photo,
+.col-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .row {
@@ -290,19 +429,4 @@ const handleSubmit = async () => {
   }
 }
 
-.active-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-top: 1px solid var(--color-border);
-}
-
-.form-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 4px;
-  border-top: 1px solid var(--color-border);
-}
 </style>

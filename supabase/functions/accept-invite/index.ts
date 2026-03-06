@@ -1,4 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+const json = (body: unknown, init?: ResponseInit) =>
+  new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
@@ -23,7 +25,7 @@ Deno.serve(async (req) => {
 
   const { token } = await req.json() as { token: string }
   if (!token) {
-    return new Response(JSON.stringify({ error: 'token is required' }), { status: 400 })
+    return json({ error: 'token is required' }, { status: 400 })
   }
 
   const adminSupabase = createClient(
@@ -40,17 +42,17 @@ Deno.serve(async (req) => {
     .single()
 
   if (!invitation) {
-    return new Response(JSON.stringify({ error: 'Invitation not found or already accepted' }), { status: 404 })
+    return json({ error: 'Invitation not found or already accepted' }, { status: 404 })
   }
 
   // Проверяем срок
   if (new Date(invitation.expires_at) < new Date()) {
-    return new Response(JSON.stringify({ error: 'Invitation expired' }), { status: 410 })
+    return json({ error: 'Invitation expired' }, { status: 410 })
   }
 
   // Проверяем email
   if (user.email !== invitation.email) {
-    return new Response(JSON.stringify({ error: 'Email mismatch' }), { status: 403 })
+    return json({ error: 'Email mismatch' }, { status: 403 })
   }
 
   // Создаём membership
@@ -64,10 +66,10 @@ Deno.serve(async (req) => {
 
   if (memberError) {
     if (memberError.code === '23505') {
-      return new Response(JSON.stringify({ error: 'Already a member' }), { status: 409 })
+      return json({ error: 'Already a member' }, { status: 409 })
     }
     console.error('Member insert error:', memberError)
-    return new Response(JSON.stringify({ error: 'Failed to join team' }), { status: 500 })
+    return json({ error: 'Failed to join team' }, { status: 500 })
   }
 
   // Помечаем приглашение как принятое
@@ -76,9 +78,9 @@ Deno.serve(async (req) => {
     .update({ accepted_at: new Date().toISOString() })
     .eq('id', invitation.id)
 
-  return new Response(JSON.stringify({
+  return json({
     success: true,
     tenantId: invitation.tenant_id,
     role: invitation.role,
-  }), { status: 200 })
+  }, { status: 200 })
 })

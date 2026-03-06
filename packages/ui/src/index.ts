@@ -4,6 +4,7 @@ export { default as UiButton } from './components/UiButton.vue'
 export { default as UiText } from './components/UiText.vue'
 export { default as UiTitle } from './components/UiTitle.vue'
 export { default as UiBadge } from './components/UiBadge.vue'
+export { default as UiCounter } from './components/UiCounter.vue'
 export { default as UiTag } from './components/UiTag.vue'
 export { default as UiDivider } from './components/UiDivider.vue'
 
@@ -47,6 +48,8 @@ export type { UiMenuDropdownItem } from './components/UiMenuDropdown.vue'
 export { default as UiConfigProvider } from './components/UiConfigProvider.vue'
 
 // Utility components
+export { default as UiDataTable } from './components/UiDataTable.vue'
+export type { DataTableColumns, DataTableColumn } from 'naive-ui'
 export { default as UiAlert } from './components/UiAlert.vue'
 export { default as UiSpace } from './components/UiSpace.vue'
 export { default as UiPagination } from './components/UiPagination.vue'
@@ -60,6 +63,7 @@ export type { UiPictureProps } from './components/UiPicture.vue'
 export { default as useBreakpoints } from './composables/useBreakpoints'
 export { default as useModals, useModalConfig, modalManager } from './composables/useModals'
 export { default as useConfirm, confirmState } from './composables/useConfirm'
+export { default as useMessage } from './composables/useMessage'
 export { default as useResponsiveSize } from './composables/useResponsiveSize'
 export { useApi, useGlobalApiError, ApiError } from './composables/useApi'
 export type { UseApiOptions, UseApiReturn, UseApiUrl } from './composables/useApi'
@@ -74,6 +78,7 @@ export type { ValidationRule, ValidationRuleType, FormValues, FormContext } from
 
 // Constants
 export { FORM_SIZE_KEY } from './constants/form-size'
+export { COLORS } from './constants/colors'
 
 // Config
 export { default as naiveUiThemeOverrides } from './config/naive-ui-theme-overrides'
