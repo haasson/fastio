@@ -12,7 +12,7 @@
       <div class="top-grid">
         <div class="col-photo">
           <UiText size="tiny" span class="section-title">Фото</UiText>
-          <DishPhotoUpload
+          <PhotoUpload
             :key="photoKey"
             :model-value="currentPhotoUrl"
             @update:model-value="currentPhotoUrl = $event; photoRemoved = !$event"
@@ -159,14 +159,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { useNuxtApp } from '#imports'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiCheckbox, UiText, UiSelect, UiCollapse, UiCollapseItem } from '@fastio/ui'
 import type { Dish, DishTag, DishIngredient, Category } from '@fastio/shared'
 import type { DishFormData } from '~/utils/api/dishes'
-import { dishesApi } from '~/utils/api/dishes'
+import { useSupabaseApi } from '#imports'
 import { tagOptions } from '~/config/dish-tags'
 import { useBranchStore } from '~/stores/branch'
-import DishPhotoUpload from '~/components/menu/DishPhotoUpload.vue'
+import PhotoUpload from '~/components/ui/PhotoUpload.vue'
 import DishSettingsSection from '~/components/menu/DishSettingsSection.vue'
 
 const props = defineProps<{
@@ -179,7 +178,7 @@ const props = defineProps<{
   updateDish: (id: string, data: Partial<DishFormData>) => Promise<void>
 }>()
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const branchStore = useBranchStore()
 const branches = computed(() => branchStore.branches)
 
@@ -317,13 +316,13 @@ const onConfirm = async () => {
 
     if (pendingPhotoFile.value) {
       if (originalPhotoUrl.value) {
-        await dishesApi.deletePhoto($supabase, originalPhotoUrl.value)
+        await api.dishes.deletePhoto(originalPhotoUrl.value)
       }
-      const url = await dishesApi.uploadPhoto($supabase, props.tenantId, pendingPhotoFile.value)
+      const url = await api.dishes.uploadPhoto(props.tenantId, pendingPhotoFile.value)
 
       photos = [url]
     } else if (photoRemoved.value && originalPhotoUrl.value) {
-      await dishesApi.deletePhoto($supabase, originalPhotoUrl.value)
+      await api.dishes.deletePhoto(originalPhotoUrl.value)
       photos = []
     }
 
@@ -340,7 +339,7 @@ const onConfirm = async () => {
       if (branches.value.length > 0) {
         const prices = settingsRef.value?.getBranchPrices() ?? []
 
-        await dishesApi.setBranchPrices($supabase, props.dish.id, prices)
+        await api.dishes.setBranchPrices(props.dish.id, prices)
       }
     } else {
       await props.addDish(data)

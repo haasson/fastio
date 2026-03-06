@@ -8,7 +8,7 @@
             <span v-if="item.categoryName" class="item-category">{{ item.categoryName }}</span>
             <span class="item-name">{{ item.dishName }}</span>
           </div>
-          <div v-if="item.removedIngredients.length" class="item-mods">
+          <div v-if="item.removedIngredients?.length" class="item-mods">
             <UiTag
               v-for="ing in item.removedIngredients"
               :key="ing"
@@ -116,7 +116,7 @@ const addDish = (item: OrderItem) => {
   mutate((items) => {
     const existing = items.find((i) => i.dishId === item.dishId)
 
-    if (existing && !item.removedIngredients.length) {
+    if (existing && !item.removedIngredients?.length) {
       existing.quantity += 1
     } else {
       items.push({ ...item })
@@ -193,7 +193,7 @@ const updateDishItem = (item: OrderItem) => {
   font-size: 10px;
   font-weight: 600;
   color: var(--color-text-secondary);
-  background: var(--color-bg-subtle, var(--grey-100));
+  background: var(--color-bg-subtle);
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;

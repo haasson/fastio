@@ -13,14 +13,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { definePageMeta, useRoute, useNuxtApp, navigateTo } from '#imports'
+import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
 import { UiAlert, UiText } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
 const route = useRoute()
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 
 const pageLoading = ref(true)
 const fatalError = ref('')
@@ -36,10 +36,10 @@ onMounted(async () => {
   }
 
   // Если юзер уже авторизован — сразу принимаем инвайт
-  const { data: { session } } = await $supabase.auth.getSession()
+  const { data: { session } } = await api.auth.getSession()
 
   if (session) {
-    const { error } = await $supabase.functions.invoke('accept-invite', { body: { token } })
+    const { error } = await api.functions.acceptInvite({ token })
 
     if (error) {
       fatalError.value = 'Не удалось принять приглашение. Возможно, вы уже состоите в команде или email не совпадает.'
@@ -52,7 +52,7 @@ onMounted(async () => {
   }
 
   // Загружаем детали инвайта
-  const { data, error } = await $supabase.functions.invoke('get-invite', { body: { token } })
+  const { data, error } = await api.functions.getInvite({ token })
 
   if (error || data?.error) {
     const msg = data?.error ?? ''

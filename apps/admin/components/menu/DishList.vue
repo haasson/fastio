@@ -44,14 +44,14 @@
                   <UiCard
                     v-for="dish in dishes"
                     :key="dish.id"
-                    size="tiny"
+                    size="small"
                     class="dish-card"
                     :class="{ inactive: !dish.active }"
                   >
                     <UiSpace :size="8" vertical>
                       <div class="card-photo">
                         <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" />
-                        <span v-else class="photo-placeholder">🍽</span>
+                        <UiPhotoPlaceholder v-else size="medium" />
                       </div>
 
                       <span class="dish-name">{{ dish.name }}</span>
@@ -106,7 +106,7 @@
                     <UiIcon name="grip" class="drag-handle" />
                     <div class="list-photo">
                       <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" />
-                      <span v-else class="list-photo-placeholder">🍽</span>
+                      <UiPhotoPlaceholder v-else size="small" />
                     </div>
                     <span class="list-name">{{ dish.name }}</span>
                     <div class="list-tags">
@@ -160,7 +160,7 @@
 import { ref, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, useConfirm } from '@fastio/ui'
+import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder, useConfirm } from '@fastio/ui'
 import type { Dish, Category } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
@@ -175,11 +175,30 @@ const props = defineProps<{
   categories: Category[]
 }>()
 
+const emit = defineEmits<{
+  dishesChanged: []
+}>()
+
 const tenantIdRef = computed(() => props.tenantId)
 const categoryIdRef = computed(() => props.categoryId)
 
-const { dishes, loading: dishesLoading, add: addDish, update: updateDish, remove: removeDish, toggleActive, reorder }
+const { dishes, loading: dishesLoading, add: rawAddDish, update: rawUpdateDish, remove: rawRemoveDish, toggleActive, reorder }
   = useDishes(tenantIdRef, categoryIdRef)
+
+const addDish = async (...args: Parameters<typeof rawAddDish>) => {
+  await rawAddDish(...args)
+  emit('dishesChanged')
+}
+
+const updateDish = async (...args: Parameters<typeof rawUpdateDish>) => {
+  await rawUpdateDish(...args)
+  emit('dishesChanged')
+}
+
+const removeDish = async (...args: Parameters<typeof rawRemoveDish>) => {
+  await rawRemoveDish(...args)
+  emit('dishesChanged')
+}
 
 const { showSkeleton } = useDelayedLoading(dishesLoading)
 
@@ -325,10 +344,6 @@ const reorderDishes = () => reorder(dishes.value)
   }
 }
 
-.photo-placeholder {
-  font-size: 28px;
-}
-
 .dish-name {
   font-size: 13px;
   font-weight: 600;
@@ -411,10 +426,6 @@ const reorderDishes = () => reorder(dishes.value)
     height: 100%;
     object-fit: cover;
   }
-}
-
-.list-photo-placeholder {
-  font-size: 18px;
 }
 
 .list-name {

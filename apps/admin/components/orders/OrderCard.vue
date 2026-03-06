@@ -1,13 +1,21 @@
 <template>
-  <div class="card-root" :class="{ 'is-new': currentStatus?.groupType === 'new' }" @click="emit('open-edit', order)">
+  <UiCard
+    clickable
+    :accent="currentStatus?.groupType === 'new'"
+    class="card-root"
+    @click="emit('open-edit', order)"
+  >
     <!-- Шапка -->
     <div class="header">
       <div class="header-left">
         <span class="number">#{{ shortId }}</span>
         <UiTag
-          :type="order.deliveryType === 'delivery' ? 'primary' : 'success'"
-          secondary
-          size="tiny"
+          v-if="currentStatus"
+          size="small"
+          :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
+        >{{ currentStatus.name }}</UiTag>
+        <UiTag
+          size="small"
           :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
         >
           {{ order.deliveryType === 'delivery' ? 'Доставка' : 'Самовывоз' }}
@@ -16,11 +24,6 @@
       </div>
       <div class="header-right">
         <span class="time">{{ relativeTime }}</span>
-        <UiTag
-          v-if="currentStatus"
-          size="tiny"
-          :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
-        >{{ currentStatus.name }}</UiTag>
       </div>
     </div>
 
@@ -65,31 +68,30 @@
         </span>
       </div>
 
-      <!-- Смена статуса -->
-      <div v-if="statuses.length" class="actions" @click.stop>
-        <UiMenuDropdown
-          :items="statusMenuItems"
-          trigger="click"
-          compact
-          @item-click="onStatusSelect"
-        >
-          <template #trigger>
-            <UiButton type="default" size="small" :disabled="updating">
-              Сменить статус
-            </UiButton>
-          </template>
-        </UiMenuDropdown>
-      </div>
     </div>
-  </div>
+
+    <div v-if="quickActionStatuses.length" class="actions" @click.stop>
+      <UiButton
+        v-for="target in quickActionStatuses"
+        :key="target.id"
+        :type="STATUS_GROUP_TAG_TYPES[target.groupType]"
+        ghost
+        size="small"
+        :disabled="updating"
+        @click="emit('status-change', order.id, target.id)"
+      >
+        {{ target.name }}
+      </UiButton>
+    </div>
+  </UiCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiButton, UiIcon, UiMenuDropdown, UiTag, COLORS } from '@fastio/ui'
+import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
-import { STATUS_GROUP_COLORS, STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 
 const props = defineProps<{
@@ -109,21 +111,15 @@ const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
 const currentStatus = computed(() => props.statuses.find((s) => s.id === props.order.status) ?? null,
 )
 
-const statusColor = computed(() => currentStatus.value ? STATUS_GROUP_COLORS[currentStatus.value.groupType] : COLORS.GREY_500,
-)
+const quickActionStatuses = computed(() => {
+  const current = props.statuses.find((s) => s.id === props.order.status)
 
-const statusMenuItems = computed(() => props.statuses
-  .filter((s) => s.id !== props.order.status)
-  .map((s) => ({
-    name: s.id,
-    label: s.name,
-    color: STATUS_GROUP_COLORS[s.groupType],
-  })),
-)
+  if (!current?.quickActions?.length) return []
 
-const onStatusSelect = (statusId: string) => {
-  emit('status-change', props.order.id, statusId)
-}
+  return current.quickActions
+    .map((id) => props.statuses.find((s) => s.id === id))
+    .filter(Boolean) as OrderStatus[]
+})
 
 const paymentIconMap: Record<string, 'banknote' | 'creditCard' | 'smartphone'> = {
   cash: 'banknote',
@@ -147,34 +143,7 @@ const relativeTime = computed(() => formatRelativeTime(props.order.createdAt, no
 
 <style scoped lang="scss">
 .card-root {
-  background: var(--color-bg-card);
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
   gap: 10px;
-  border: 2px solid transparent;
-  transition: border-color 0.2s, background 0.12s;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--color-bg-card-hover, var(--color-bg-card));
-  }
-
-  &.is-new {
-    border-color: var(--blue-500);
-    animation: pulse-border 2s ease-in-out infinite;
-  }
-}
-
-@keyframes pulse-border {
-  0%, 100% {
-    border-color: var(--blue-500);
-  }
-
-  50% {
-    border-color: var(--blue-200);
-  }
 }
 
 .header {
@@ -305,5 +274,10 @@ const relativeTime = computed(() => formatRelativeTime(props.order.createdAt, no
 .actions {
   display: flex;
   gap: 6px;
+  width: 100%;
+
+  :deep(.n-button) {
+    flex: 1;
+  }
 }
 </style>

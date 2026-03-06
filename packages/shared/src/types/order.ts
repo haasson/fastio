@@ -8,7 +8,10 @@ export type OrderStatus = {
   name: string
   groupType: OrderStatusGroup
   position: number
+  quickActions: string[]
 }
+
+export type OrderStatusData = Partial<Pick<OrderStatus, 'name' | 'groupType' | 'quickActions'>>
 
 export type OrderItem = {
   dishId: string

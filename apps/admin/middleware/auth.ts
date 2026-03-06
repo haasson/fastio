@@ -29,7 +29,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Эти страницы обрабатывают авторизацию самостоятельно
-  if (to.path === '/invite' || to.path === '/set-password') return
+  if (to.path === '/invite' || to.path === '/set-password' || to.path === '/no-access') return
 
   if (!authStore.isAuthenticated && to.path !== '/login') {
     return navigateTo('/login')
@@ -41,6 +41,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     if (!tenantStore.tenant && !tenantStore.loading) {
       await tenantStore.init()
+    }
+
+    // Юзер без единого тенанта — выкидываем
+    if (!tenantStore.loading && tenantStore.memberships.length === 0 && to.path !== '/no-access') {
+      return navigateTo('/no-access')
     }
   }
 })

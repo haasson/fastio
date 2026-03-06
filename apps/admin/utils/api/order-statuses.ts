@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { OrderStatus } from '@fastio/shared'
+import type { OrderStatus, OrderStatusData } from '@fastio/shared'
 import { query } from '~/utils/query'
+import { filterDefined } from '~/utils/filterDefined'
 import type { OrderStatusRow } from './db-types'
 
 export const mapOrderStatus = (raw: Record<string, unknown>): OrderStatus => {
@@ -12,6 +13,7 @@ export const mapOrderStatus = (raw: Record<string, unknown>): OrderStatus => {
     name: row.name,
     groupType: row.group_type,
     position: row.position,
+    quickActions: row.quick_actions ?? [],
   }
 }
 
@@ -24,7 +26,7 @@ export const orderStatusesApi = {
     return (data ?? []).map(mapOrderStatus)
   },
 
-  async add(sb: SupabaseClient, tenantId: string, data: { name: string; groupType: OrderStatusGroup }): Promise<OrderStatus | null> {
+  async add(sb: SupabaseClient, tenantId: string, data: Required<Pick<OrderStatusData, 'name' | 'groupType'>> & OrderStatusData): Promise<OrderStatus | null> {
     const existing = await query(
       sb.from('order_statuses').select('position').eq('tenant_id', tenantId).order('position', { ascending: false }).limit(1),
     )
@@ -42,9 +44,11 @@ export const orderStatusesApi = {
     return result ? mapOrderStatus(result) : null
   },
 
-  async update(sb: SupabaseClient, id: string, data: { name: string; groupType: OrderStatusGroup }): Promise<OrderStatus | null> {
+  async update(sb: SupabaseClient, id: string, data: OrderStatusData): Promise<OrderStatus | null> {
     const result = await query(
-      sb.from('order_statuses').update({ name: data.name, group_type: data.groupType }).eq('id', id).select().single(),
+      sb.from('order_statuses').update(
+        filterDefined({ name: data.name, group_type: data.groupType, quick_actions: data.quickActions }),
+      ).eq('id', id).select().single(),
     )
 
     return result ? mapOrderStatus(result) : null

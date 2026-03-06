@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { Category } from '@fastio/shared'
+import type { Category, CategoryData } from '@fastio/shared'
 import { mapCategory } from '~/utils/api/categories'
 import { useRealtimeList } from '~/composables/useRealtimeList'
 import { useSupabaseApi } from '~/composables/useSupabaseApi'
@@ -15,14 +15,14 @@ export const useCategories = (tenantId: Ref<string>) => {
     mapper: mapCategory,
   })
 
-  const add = async (name: string, photo?: { photoUrl?: string | null; useFirstDishPhoto?: boolean }) => {
+  const add = async (name: string, extra?: { photoUrl?: string | null; useFirstDishPhoto?: boolean; color?: string | null }) => {
     if (!tenantId.value) return
-    const cat = await api.categories.add(tenantId.value, { name, order: categories.value.length, ...photo })
+    const cat = await api.categories.add(tenantId.value, { name, order: categories.value.length, ...extra })
 
     if (cat) categories.value.push(cat)
   }
 
-  const update = async (id: string, data: Partial<Pick<Category, 'name' | 'active' | 'order' | 'photoUrl' | 'useFirstDishPhoto'>>) => {
+  const update = async (id: string, data: CategoryData) => {
     const cat = await api.categories.update(id, data)
 
     if (cat) {

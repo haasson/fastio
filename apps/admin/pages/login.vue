@@ -52,13 +52,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { definePageMeta, useNuxtApp, useRoute, navigateTo } from '#imports'
+import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
 import { UiForm, UiInput, UiButton, UiAlert, UiTitle, UiSpace } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const route = useRoute()
 
 const email = ref('')
@@ -91,10 +91,7 @@ const handleSubmit = async () => {
   error.value = ''
   loading.value = true
 
-  const { error: authError } = await $supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value,
-  })
+  const { error: authError } = await api.auth.signIn(email.value, password.value)
 
   if (authError) {
     error.value = authError.message === 'Invalid login credentials'
@@ -102,7 +99,7 @@ const handleSubmit = async () => {
       : 'Произошла ошибка. Попробуйте ещё раз'
   } else {
     if (inviteToken) {
-      await $supabase.functions.invoke('accept-invite', { body: { token: inviteToken } })
+      await api.functions.acceptInvite({ token: inviteToken })
     }
 
     await navigateTo('/')

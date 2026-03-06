@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { OrderStatus, OrderStatusGroup } from '@fastio/shared'
+import type { OrderStatus, OrderStatusData } from '@fastio/shared'
 import { mapOrderStatus } from '~/utils/api/order-statuses'
 import { useRealtimeList } from '~/composables/useRealtimeList'
 import { useSupabaseApi } from '~/composables/useSupabaseApi'
@@ -15,14 +15,14 @@ export const useOrderStatuses = (tenantId: Ref<string>) => {
     mapper: mapOrderStatus,
   })
 
-  const add = async (data: { name: string; groupType: OrderStatusGroup }) => {
+  const add = async (data: Required<Pick<OrderStatusData, 'name' | 'groupType'>> & OrderStatusData) => {
     if (!tenantId.value) return
     const status = await api.orderStatuses.add(tenantId.value, data)
 
     if (status) statuses.value.push(status)
   }
 
-  const update = async (id: string, data: { name: string; groupType: OrderStatusGroup }) => {
+  const update = async (id: string, data: OrderStatusData) => {
     const updated = await api.orderStatuses.update(id, data)
 
     if (updated) {

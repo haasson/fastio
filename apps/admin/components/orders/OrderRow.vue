@@ -1,10 +1,18 @@
 <template>
-  <div class="row-root">
+  <UiCard
+    clickable
+    size="small"
+    class="row-root"
+    @click="emit('open-edit', order)"
+  >
     <div class="left">
       <span class="number">#{{ shortId }}</span>
       <UiTag
-        :type="order.deliveryType === 'delivery' ? 'primary' : 'success'"
-        secondary
+        v-if="currentStatus"
+        size="tiny"
+        :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
+      >{{ currentStatus.name }}</UiTag>
+      <UiTag
         size="tiny"
         :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
       >
@@ -23,42 +31,27 @@
     <div class="right">
       <span class="time">{{ relativeTime }}</span>
       <span class="total">{{ order.total }} ₽</span>
-      <UiTag
-        v-if="currentStatus"
-        size="tiny"
-        :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
-      >{{ currentStatus.name }}</UiTag>
-
-      <UiMenuDropdown
-        v-if="statuses.length"
-        :items="statusMenuItems"
-        trigger="click"
-        compact
-        @item-click="emit('status-change', order.id, $event)"
-      >
-        <template #trigger>
-          <UiButton type="default" size="tiny" :disabled="updating">
-            Сменить
-          </UiButton>
-        </template>
-      </UiMenuDropdown>
-
       <UiButton
-        type="text"
+        v-for="target in quickActionStatuses"
+        :key="target.id"
+        :type="STATUS_GROUP_TAG_TYPES[target.groupType]"
+        ghost
         size="tiny"
-        icon="pencil"
-        @click="emit('open-edit', order)"
-      />
+        :disabled="updating"
+        @click.stop="emit('status-change', order.id, target.id)"
+      >
+        {{ target.name }}
+      </UiButton>
     </div>
-  </div>
+  </UiCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiButton, UiIcon, UiMenuDropdown, UiTag, COLORS } from '@fastio/ui'
+import { UiButton, UiCard, UiTag } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
-import { STATUS_GROUP_COLORS, STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 
 const props = defineProps<{
   order: Order
@@ -77,17 +70,15 @@ const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
 const currentStatus = computed(() => props.statuses.find((s) => s.id === props.order.status) ?? null,
 )
 
-const statusColor = computed(() => currentStatus.value ? STATUS_GROUP_COLORS[currentStatus.value.groupType] : COLORS.GREY_500,
-)
+const quickActionStatuses = computed(() => {
+  const current = props.statuses.find((s) => s.id === props.order.status)
 
-const statusMenuItems = computed(() => props.statuses
-  .filter((s) => s.id !== props.order.status)
-  .map((s) => ({
-    name: s.id,
-    label: s.name,
-    color: STATUS_GROUP_COLORS[s.groupType],
-  })),
-)
+  if (!current?.quickActions?.length) return []
+
+  return current.quickActions
+    .map((id) => props.statuses.find((s) => s.id === id))
+    .filter(Boolean) as OrderStatus[]
+})
 
 const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} × ${i.quantity}`).join(', '),
 )
@@ -109,12 +100,9 @@ const relativeTime = computed(() => {
 
 <style scoped lang="scss">
 .row-root {
-  display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  background: var(--color-bg-card);
-  border-radius: 10px;
   min-width: 0;
 }
 

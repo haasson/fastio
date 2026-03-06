@@ -53,6 +53,7 @@ export { default as UiPagination } from './components/UiPagination.vue'
 export { default as UiSkeleton } from './components/UiSkeleton.vue'
 export { default as UiGrid } from './components/UiGrid.vue'
 export { default as UiPicture } from './components/UiPicture.vue'
+export { default as UiPhotoPlaceholder } from './components/UiPhotoPlaceholder.vue'
 export type { UiSpaceProps } from './components/UiSpace.vue'
 export type { UiPictureProps } from './components/UiPicture.vue'
 

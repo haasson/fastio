@@ -14,7 +14,6 @@
         :size="computedSize"
         class="select"
         :show-checkmark="false"
-        :to="false"
         :max-tag-count="1"
         :render-tag="renderTag"
         :render-label="renderLabel"

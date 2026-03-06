@@ -107,6 +107,7 @@ export type OrderStatusRow = {
   name: string
   group_type: OrderStatusGroup
   position: number
+  quick_actions: string[] | null
 }
 
 export type OrderNoteRow = {

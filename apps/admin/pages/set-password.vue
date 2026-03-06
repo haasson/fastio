@@ -56,13 +56,13 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { definePageMeta, useRoute, useNuxtApp, navigateTo } from '#imports'
+import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
 import { UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const route = useRoute()
 
 const inviteToken = route.query.token as string | undefined
@@ -80,13 +80,9 @@ const handleSubmit = async () => {
   // Инвайт нового юзера — нужно создать аккаунт
   if (inviteToken && inviteEmail) {
     const appUrl = window.location.origin
-    const { error: signUpError } = await $supabase.auth.signUp({
-      email: inviteEmail,
-      password: form.password,
-      options: {
-        data: { full_name: form.name },
-        emailRedirectTo: `${appUrl}/set-password?token=${inviteToken}&email=${encodeURIComponent(inviteEmail)}`,
-      },
+    const { error: signUpError } = await api.auth.signUp(inviteEmail, form.password, {
+      data: { full_name: form.name },
+      emailRedirectTo: `${appUrl}/set-password?token=${inviteToken}&email=${encodeURIComponent(inviteEmail)}`,
     })
 
     if (signUpError) {
@@ -96,10 +92,11 @@ const handleSubmit = async () => {
       return
     }
 
-    const { data: { session } } = await $supabase.auth.getSession()
+    const { data: { session } } = await api.auth.getSession()
 
     if (session) {
-      await $supabase.functions.invoke('accept-invite', { body: { token: inviteToken } })
+      await api.functions.acceptInvite({ token: inviteToken })
+      sessionStorage.removeItem('fastio:invite-pending')
       await navigateTo('/')
     } else {
       // Продакшн: ждём подтверждения email
@@ -112,7 +109,7 @@ const handleSubmit = async () => {
   }
 
   // Обычный флоу — юзер уже авторизован, просто устанавливает пароль
-  const { error: updateError } = await $supabase.auth.updateUser({
+  const { error: updateError } = await api.auth.updateUser({
     password: form.password,
     data: { full_name: form.name },
   })
@@ -120,6 +117,7 @@ const handleSubmit = async () => {
   if (updateError) {
     error.value = 'Не удалось сохранить. Попробуйте ещё раз'
   } else {
+    sessionStorage.removeItem('fastio:invite-pending')
     await navigateTo('/')
   }
 

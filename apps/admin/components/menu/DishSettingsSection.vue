@@ -37,9 +37,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { useNuxtApp } from '#imports'
 import { UiCollapseItem, UiSwitch, UiInputNumber } from '@fastio/ui'
-import { dishesApi } from '~/utils/api/dishes'
+import { useSupabaseApi } from '#imports'
 import { useBranchStore } from '~/stores/branch'
 
 const props = defineProps<{
@@ -53,7 +52,7 @@ defineEmits<{
   'update:active': [value: boolean]
 }>()
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const branchStore = useBranchStore()
 const branches = computed(() => branchStore.branches)
 
@@ -68,7 +67,7 @@ const reset = () => {
 }
 
 const load = async (dishId: string) => {
-  const prices = await dishesApi.getBranchPrices($supabase, dishId)
+  const prices = await api.dishes.getBranchPrices(dishId)
 
   branches.value.forEach((b) => {
     branchPrices[b.id] = null

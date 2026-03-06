@@ -1,32 +1,21 @@
-import { ref, watch, onUnmounted } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
+import { ref, watch } from 'vue'
 import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 const useDishCounts = (tenantId: Ref<string>) => {
   const api = useSupabaseApi()
   const counts = ref<Record<string, number>>({})
-  let unsubscribe: (() => void) | null = null
 
-  const fetchCounts = async (tid: string) => {
-    counts.value = await api.dishes.countsByCategory(tid)
+  const refresh = async () => {
+    if (!tenantId.value) return
+    counts.value = await api.dishes.countsByCategory(tenantId.value)
   }
 
   watch(tenantId, (tid) => {
-    unsubscribe?.()
-    unsubscribe = null
     counts.value = {}
-    if (!tid) return
-
-    fetchCounts(tid)
-
-    const debouncedFetch = useDebounceFn(() => fetchCounts(tid), 300)
-
-    unsubscribe = api.dishes.subscribeToDishChanges(tid, debouncedFetch)
+    if (tid) refresh()
   }, { immediate: true })
 
-  onUnmounted(() => unsubscribe?.())
-
-  return { counts }
+  return { counts, refresh }
 }
 
 export default useDishCounts

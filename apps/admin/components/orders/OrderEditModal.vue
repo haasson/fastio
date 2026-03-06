@@ -114,12 +114,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { useNuxtApp } from '#imports'
 import {
   UiModal, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiButton, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
-import { ordersApi } from '~/utils/api/orders'
+import { useSupabaseApi } from '#imports'
 import { useTenantStore } from '~/stores/tenant'
 import { STATUS_GROUP_COLORS, STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import OrderItemsSection from './OrderItemsSection.vue'
@@ -137,7 +136,7 @@ const emit = defineEmits<{
   'saved': [order: Order]
 }>()
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const tenantStore = useTenantStore()
 
 const saving = ref(false)
@@ -210,7 +209,7 @@ const onSave = async () => {
   if (!props.order) return false
   saving.value = true
   try {
-    const updated = await ordersApi.update($supabase, props.order.id, {
+    const updated = await api.orders.update(props.order.id, {
       customer: { name: form.customerName, phone: form.customerPhone },
       items: form.items,
       deliveryType: form.deliveryType,
@@ -287,7 +286,7 @@ const modalActions = computed(() => [
 }
 
 .totals-section {
-  background: var(--color-bg-subtle, var(--grey-50));
+  background: var(--color-bg-subtle);
   border-radius: 10px;
   padding: 12px 14px;
   gap: 8px;

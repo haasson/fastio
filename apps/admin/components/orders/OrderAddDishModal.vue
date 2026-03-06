@@ -108,11 +108,9 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
-import { useNuxtApp } from '#imports'
 import { UiModal, UiButton, UiIcon, UiTag } from '@fastio/ui'
 import type { Dish, Category, OrderItem } from '@fastio/shared'
-import { categoriesApi } from '~/utils/api/categories'
-import { dishesApi } from '~/utils/api/dishes'
+import { useSupabaseApi } from '#imports'
 
 const props = defineProps<{
   modelValue: boolean
@@ -126,7 +124,7 @@ const emit = defineEmits<{
   'update': [item: OrderItem]
 }>()
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 
 const loading = ref(false)
 const categories = ref<Category[]>([])
@@ -172,8 +170,8 @@ const modalTitle = computed(() => {
 const fetchData = async () => {
   loading.value = true
   const [cats, dishes] = await Promise.all([
-    categoriesApi.list($supabase, props.tenantId),
-    dishesApi.listAllActive($supabase, props.tenantId),
+    api.categories.list(props.tenantId),
+    api.dishes.listAllActive(props.tenantId),
   ])
 
   categories.value = cats
@@ -345,7 +343,7 @@ const onConfirm = () => {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--color-bg-subtle, var(--grey-50));
+  background: var(--color-bg-subtle);
   border-radius: 12px;
 }
 

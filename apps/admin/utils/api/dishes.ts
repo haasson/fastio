@@ -141,15 +141,6 @@ export const dishesApi = {
     return sb.storage.from('dish-images').getPublicUrl(path).data.publicUrl
   },
 
-  subscribeToDishChanges(sb: SupabaseClient, tenantId: string, onChange: () => void): () => void {
-    const channel = sb
-      .channel(`dish-counts:${tenantId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'dishes', filter: `tenant_id=eq.${tenantId}` }, () => onChange())
-      .subscribe()
-
-    return () => channel.unsubscribe()
-  },
-
   async deletePhoto(sb: SupabaseClient, url: string): Promise<void> {
     const marker = '/dish-images/'
     const idx = url.indexOf(marker)

@@ -98,21 +98,20 @@
 
 <script setup lang="ts">
 import { h, ref, computed, onMounted } from 'vue'
-import { useNuxtApp } from '#imports'
 import {
   UiInput, UiSelect, UiButton, UiAlert, UiTag, UiText, UiModal, UiCheckbox,
   UiSpace, UiSkeleton, UiMenuDropdown, UiDataTable, UiForm, useConfirm, useMessage,
 } from '@fastio/ui'
 import type { UiMenuDropdownItem, DataTableColumns } from '@fastio/ui'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
+import { useSupabaseApi } from '#imports'
 import { useTeam } from '~/composables/useTeam'
 import { usePermissions } from '~/composables/usePermissions'
 import { useBranchStore } from '~/stores/branch'
-import { membersApi } from '~/utils/api/members'
 import { roleLabels, roleOptions, roleTagTypes } from '~/config/team-roles'
 import { formatDate } from '~/utils/formatDate'
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const { members, invitations, loading: teamLoading, load, invite, changeRole, removeMember, cancelInvite } = useTeam()
 const { canManageTeam } = usePermissions()
 const { confirm } = useConfirm()
@@ -158,7 +157,7 @@ const saveBranchAssignment = async () => {
 
   savingBranches.value = true
   try {
-    await membersApi.updateBranchIds($supabase, editingMemberBranches.value.id, editingBranchIds.value)
+    await api.members.updateBranchIds(editingMemberBranches.value.id, editingBranchIds.value)
     await load()
     editingMemberBranches.value = null
   } finally {

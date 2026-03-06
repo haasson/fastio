@@ -8,12 +8,14 @@
       <MenuCategoryList
         v-model="selectedCategoryId"
         :tenant-id="tenantId"
+        :dish-counts="dishCounts"
         @categories-loaded="onCategoriesLoaded"
       />
       <MenuDishList
         :tenant-id="tenantId"
         :category-id="selectedCategoryId"
         :categories="loadedCategories"
+        @dishes-changed="refreshDishCounts"
       />
     </template>
   </div>
@@ -26,6 +28,7 @@ import type { Category } from '@fastio/shared'
 import MenuCategoryList from '~/components/menu/CategoryList.vue'
 import MenuDishList from '~/components/menu/DishList.vue'
 import { useTenantStore } from '~/stores/tenant'
+import useDishCounts from '~/composables/useDishCounts'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -34,6 +37,7 @@ const tenantStore = useTenantStore()
 onMounted(() => tenantStore.init())
 
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { counts: dishCounts, refresh: refreshDishCounts } = useDishCounts(tenantId)
 
 const selectedCategoryId = ref<string | null>(null)
 const loadedCategories = shallowRef<Category[]>([])

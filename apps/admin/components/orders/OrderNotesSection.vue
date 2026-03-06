@@ -41,10 +41,9 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useNuxtApp } from '#imports'
 import { UiInput, UiButton } from '@fastio/ui'
 import type { OrderNote } from '@fastio/shared'
-import { orderNotesApi } from '~/utils/api/order-notes'
+import { useSupabaseApi } from '#imports'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
@@ -55,7 +54,7 @@ const props = defineProps<{
   refreshKey: number
 }>()
 
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
 
@@ -76,14 +75,14 @@ const noteRoleColor = (role: string) => NOTE_ROLE_COLORS[role] ?? 'var(--grey-40
 
 const fetchNotes = async () => {
   notesLoading.value = true
-  notes.value = await orderNotesApi.list($supabase, props.orderId)
+  notes.value = await api.orderNotes.list(props.orderId)
   notesLoading.value = false
 }
 
 const submitNote = async () => {
   if (!authStore.user || !newNote.value.trim()) return
   addingNote.value = true
-  const note = await orderNotesApi.add($supabase, {
+  const note = await api.orderNotes.add({
     orderId: props.orderId,
     tenantId: props.tenantId,
     authorId: authStore.user.id,
@@ -143,7 +142,7 @@ watch(
   gap: 3px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: var(--color-bg-subtle, var(--grey-50));
+  background: var(--color-bg-subtle);
   border-left: 3px solid var(--grey-400);
 }
 

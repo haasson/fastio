@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, type Ref } from 'vue'
-import { useRoute, useNuxtApp, navigateTo } from '#imports'
+import { useRoute, navigateTo, useSupabaseApi } from '#imports'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon, useConfirm } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
@@ -85,7 +85,7 @@ import { useBranchStore } from '~/stores/branch'
 import { roleLabels } from '~/config/team-roles'
 
 const route = useRoute()
-const { $supabase } = useNuxtApp()
+const api = useSupabaseApi()
 const { confirm } = useConfirm()
 const sidebarOpen = ref(false)
 const collapsed = useLocalStorage('sidebar-collapsed', false)
@@ -153,7 +153,7 @@ const handleLogout = async () => {
   if (!confirmed) return
 
   tenantStore.dispose()
-  await $supabase.auth.signOut()
+  await api.auth.signOut()
   await navigateTo('/login')
 }
 

@@ -48,6 +48,9 @@ const baseOverrides = {
     // heightLarge: '48px',
     // fontWeight: '700',
   },
+  Tabs: {
+    colorSegment: COLORS.BLUE_50,
+  },
   Tag: {
     // border: `2px solid ${COLORS.GREY_200}`,
     // borderPrimary: `2px solid ${COLORS.PRIMARY}`,
@@ -276,6 +279,9 @@ const darkColors: GlobalThemeOverrides = {
     borderColor: COLORS.GREY_700,
     textColorBase: COLORS.GREY_50,
     // closeIconColor: COLORS.GREY_600,
+  },
+  Tabs: {
+    colorSegment: 'rgba(59, 130, 246, 0.12)',
   },
   // Input: {
   //   placeholderColor: COLORS.GREY_500,

@@ -23,6 +23,8 @@ export type Category = {
   useFirstDishPhoto: boolean
 }
 
+export type CategoryData = Partial<Pick<Category, 'name' | 'active' | 'order' | 'photoUrl' | 'useFirstDishPhoto'>>
+
 export type Dish = {
   id: string
   tenantId: string
