@@ -13,7 +13,7 @@
       v-model:value="value"
       v-maska="phoneMask"
       :size="computedSize"
-      :class="inputClasses"
+      class="input"
       :clearable="(statusIconName && !hasError) ? false : isClearable"
       :placeholder="resolvedPlaceholder"
       :status="hasError ? 'error' : (status || undefined)"
@@ -127,8 +127,6 @@ const computedSize = useResponsiveSize({
   responsive: props.responsive,
 })
 
-const inputSize = computed(() => computedSize.value)
-
 const hasPhoneValidation = computed(() => {
   return props.rules?.some((rule) => rule.type === 'phone')
 })
@@ -157,14 +155,6 @@ const isClearable = computed(() => {
   return props.clearable
 })
 
-const inputClasses = computed(() => {
-  return {
-    'input': true,
-    [`input--${inputSize.value}`]: true,
-    'input--stateless': props.stateless,
-  }
-})
-
 const statusIconName = computed<'checkRound' | 'warningRound' | undefined>(() => {
   if (props.status === 'success') return 'checkRound'
   if (props.status === 'warning') return 'warningRound'
@@ -186,7 +176,7 @@ const handleStatusClear = () => {
 }
 
 const iconSize = computed(() => {
-  switch (inputSize.value) {
+  switch (computedSize.value) {
     case 'tiny': return 12
     case 'small': return 14
     case 'medium': return 16
@@ -201,92 +191,6 @@ defineOptions({
 </script>
 
 <style scoped lang="scss">
-.input {
-  &:deep(.n-base-clear__clear) {
-    width: unset;
-    height: unset;
-  }
-
-  &:deep(.n-input__border) {
-    transition: opacity .3s ease;
-  }
-
-  &:hover:not(.n-input--disabled),
-  &.n-input--focus,
-  &.n-input--error-status,
-  &.n-input--warning-status,
-  &.n-input--success-status {
-    &:deep(.n-input__border) {
-      opacity: 0;
-    }
-  }
-
-  &.n-input--success-status {
-    &:deep(.n-input__state-border) {
-      border: 2px solid var(--color-success);
-    }
-
-    &:hover:not(.n-input--disabled) {
-      &:deep(.n-input__state-border) {
-        border-color: var(--color-success);
-      }
-    }
-
-    &.n-input--focus {
-      &:deep(.n-input__state-border) {
-        border-color: var(--color-success);
-      }
-    }
-  }
-
-  &:where(.input--tiny) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 6px;
-    }
-    &:deep(.n-input__suffix) {
-      --n-icon-size: 12px;
-    }
-  }
-
-  &:where(.input--small) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 8px;
-    }
-    &:deep(.n-input__suffix) {
-      --n-icon-size: 14px;
-    }
-  }
-
-  &:where(.input--medium) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 12px;
-    }
-    &:deep(.n-input__suffix) {
-      --n-icon-size: 16px;
-    }
-  }
-
-  &:where(.input--large) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 12px;
-    }
-    &:deep(.n-input__suffix) {
-      --n-icon-size: 24px;
-    }
-  }
-
-  &:where(.input--stateless) {
-    &:deep(.n-input__border),
-    &:deep(.n-input__state-border) {
-      display: none;
-    }
-
-    &:deep(.n-input-wrapper) {
-      background: transparent;
-    }
-  }
-}
-
 .password-toggle {
   display: inline-flex;
   align-items: center;

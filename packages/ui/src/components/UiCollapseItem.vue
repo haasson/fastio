@@ -67,34 +67,6 @@ const isChevronIcon = computed(() => props.icon === 'chevron')
 </script>
 
 <style scoped lang="scss">
-@use '../styles/mixins/media-queries' as *;
-
-.collapse-item-root {
-  :deep(.n-collapse-item-arrow) {
-    display: none !important;
-  }
-
-  :deep(.n-collapse-item__header) {
-    align-items: flex-start;
-
-    @include mq-l {
-      align-items: center;
-    }
-  }
-
-  :deep(.n-collapse-item__header-main) {
-    padding-right: 20px;
-  }
-
-  :deep(.n-collapse-item__content-inner) {
-    padding-top: 8px !important;
-  }
-}
-
-.collapse-item-title {
-  line-height: 24px;
-}
-
 .collapse-icon {
   display: flex;
 }

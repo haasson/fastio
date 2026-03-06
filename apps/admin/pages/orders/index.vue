@@ -1,49 +1,10 @@
 <template>
   <div class="orders-root">
-    <!-- Фильтр-теги -->
+    <!-- Фильтр по статусам -->
     <div class="statuses-section">
-      <!--   TODO: Эта страница очень похожа на страницу меню. Но структурно они очень разные. Привести к единому виду, посмотреть что можно переиспользовать   -->
+      <UiSectionHeader label="Статусы" />
 
-      <UiSectionHeader label="Статусы">
-        <UiButton size="medium" type="primary" @click="editMode = !editMode">
-          {{ editMode ? 'Готово' : 'Редактировать список' }}
-        </UiButton>
-      </UiSectionHeader>
-
-      <div class="bar-row">
-        <VueDraggable
-          v-model="statuses"
-          class="tags"
-          :disabled="!editMode"
-          :animation="180"
-          ghost-class="tag-ghost"
-          @end="reorderStatuses"
-        >
-          <AppEditableTag
-            v-for="(status, idx) in statuses"
-            :key="status.id"
-            :label="status.name"
-            :type="STATUS_GROUP_TAG_TYPES[status.groupType]"
-            :selected="!editMode && filter === status.id"
-            :editing="editMode"
-            :count="!editMode ? statusCounts[status.id] : undefined"
-            :animation-delay="`${idx * 0.05}s`"
-            @click="filter = status.id"
-            @edit="openStatusModal(status)"
-          />
-        </VueDraggable>
-
-        <UiTag
-          class="add-tag"
-          type="default"
-          empty
-          round
-          hoverable
-          @click="openStatusModal(null)"
-        >
-          <UiIcon name="plus" :size="14" />
-        </UiTag>
-      </div>
+      <UiTabs v-model="filter" :tabs="statusTabs" />
     </div>
 
     <!-- Заголовок списка -->
@@ -51,7 +12,7 @@
       <span class="list-title">Заказы</span>
       <UiSegmentedControl
         v-model="orderView"
-        :items="[{ icon: 'layoutGrid', value: 'cards' }, { icon: 'list', value: 'list' }]"
+        :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Список', value: 'list' }]"
         size="medium"
       />
     </div>
@@ -112,10 +73,8 @@
 import { ref, computed, reactive, watch } from 'vue'
 import { definePageMeta, useNuxtApp } from '#imports'
 import { useLocalStorage } from '@vueuse/core'
-import { UiIcon, UiTag, UiButton, UiSegmentedControl } from '@fastio/ui'
-import { VueDraggable } from 'vue-draggable-plus'
+import { UiTabs, UiSegmentedControl } from '@fastio/ui'
 import type { Order, OrderStatus, OrderStatusGroup } from '@fastio/shared'
-import AppEditableTag from '~/components/ui/AppEditableTag.vue'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderRow from '~/components/orders/OrderRow.vue'
 import OrderStatusModal from '~/components/orders/OrderStatusModal.vue'
@@ -140,14 +99,15 @@ tenantStore.init()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const branchId = computed(() => branchStore.currentBranchId)
 
-const { statuses, add: addStatus, update: updateStatus, reorder } = useOrderStatuses(tenantId)
+const { statuses, add: addStatus, update: updateStatus } = useOrderStatuses(tenantId)
 const orderView = useLocalStorage<'cards' | 'list'>('orders:view', 'cards')
 
-const filter = ref<string | null>(null)
-const editMode = ref(false)
+const filter = ref<string>('')
 
 watch(statuses, (list) => {
-  if (!filter.value && list.length) filter.value = list[0].id
+  if ((!filter.value || !list.find((s) => s.id === filter.value)) && list.length) {
+    filter.value = list[0].id
+  }
 }, { immediate: true })
 
 const { orders, loading, updateStatus: updateOrderStatus } = useOrders(tenantId, filter, branchId)
@@ -160,6 +120,14 @@ const fetchCounts = async () => {
 }
 
 watch([tenantId, branchId], fetchCounts, { immediate: true })
+
+const statusTabs = computed(() => statuses.value.map((s) => ({
+  value: s.id,
+  label: s.name,
+  type: STATUS_GROUP_TAG_TYPES[s.groupType],
+  count: statusCounts.value[s.id] ?? 0,
+})),
+)
 
 const updatingIds = reactive(new Set<string>())
 
@@ -178,8 +146,6 @@ const getBranchName = (branchId: string | null | undefined) => {
 
   return branchStore.branches.find((b) => b.id === branchId)?.name
 }
-
-const reorderStatuses = () => reorder(statuses.value)
 
 const editModalOpen = ref(false)
 const editingOrder = ref<Order | null>(null)
@@ -232,31 +198,6 @@ const handleStatusSave = async (data: { name: string; groupType: OrderStatusGrou
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.bar-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.tag-ghost {
-  opacity: 0.4;
-}
-
-.add-tag {
-  :deep(.n-tag__border) {
-    display: block;
-    border-style: dashed;
-  }
 }
 
 .list-header {

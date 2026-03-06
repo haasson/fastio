@@ -262,16 +262,15 @@ const handleActionClick = async (action: ModalAction) => {
     gap: 12px;
   }
 
-  :deep(.n-button) {
+  > * {
     flex: 1;
-    width: 0;
     min-width: 0;
   }
 
   &--column {
     flex-direction: column;
 
-    :deep(.n-button) {
+    > * {
       flex: none;
       width: 100%;
     }

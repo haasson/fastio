@@ -1,7 +1,6 @@
 <template>
   <n-pagination
     v-model:page="currentPage"
-    :class="paginationClasses"
     :page-slot="pageSlot"
     :size="naiveSize"
     v-bind="$attrs"
@@ -58,31 +57,8 @@ const naiveSize = computed(() => {
   return computedSize.value
 })
 
-const paginationClasses = computed(() => {
-  return {
-    'hide-arrows': !props.showArrows,
-    'size-tiny': computedSize.value === 'tiny',
-  }
-})
-
 defineOptions({
   inheritAttrs: false,
 })
 </script>
 
-<style scoped lang="scss">
-.n-pagination {
-  font-family: var(--secondary-font);
-
-  &:where(.hide-arrows) {
-    &:deep(.n-pagination-item--button) {
-      display: none;
-    }
-  }
-
-  &:where(.size-tiny) {
-    --n-item-font-size: 12px !important;
-    --n-item-size: 24px !important;
-  }
-}
-</style>

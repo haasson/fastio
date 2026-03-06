@@ -10,7 +10,7 @@
           <span class="header-title">Блюда</span>
           <UiSegmentedControl
             v-model="dishView"
-            :items="[{ icon: 'layoutGrid', value: 'cards' }, { icon: 'list', value: 'list' }]"
+            :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Список', value: 'list' }]"
             size="medium"
           />
         </div>

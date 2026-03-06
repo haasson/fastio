@@ -9,7 +9,7 @@
     <n-checkbox
       v-model:checked="checked"
       :size="size"
-      :class="['checkbox', { 'checkbox--round': round }]"
+      :class="{ 'checkbox--round': round }"
       v-bind="$attrs"
     >
       <slot />
@@ -44,37 +44,3 @@ defineOptions({
 })
 </script>
 
-<style scoped lang="scss">
-.checkbox {
-  &:hover:not(.n-checkbox--disabled) {
-    &:deep(.n-checkbox-box__border) {
-      border-color: var(--color-primary) !important;
-    }
-    &.n-checkbox--checked {
-      &:deep(.n-checkbox-box) {
-        background-color: var(--color-primary) !important;
-      }
-    }
-  }
-
-  &:focus-visible {
-    &:deep(.n-checkbox-box) {
-      box-shadow: 0 0 0 2px var(--color-primary) !important;
-    }
-  }
-
-  &:where(.checkbox--round) {
-    &:deep(.n-checkbox-box) {
-      border-radius: 50% !important;
-    }
-
-    &:deep(.n-checkbox-box__border) {
-      border-radius: 50% !important;
-    }
-
-    &:deep(.n-checkbox-icon) {
-      transform: scale(0.8);
-    }
-  }
-}
-</style>

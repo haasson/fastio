@@ -54,6 +54,13 @@
           <UiAppBurger :open="sidebarOpen" @click="sidebarOpen = !sidebarOpen" />
         </div>
         <UiTitle size="h3">{{ currentPageTitle }}</UiTitle>
+        <UiButton
+          type="text"
+          size="small"
+          :icon="isDark ? 'sun' : 'moon'"
+          class="theme-btn"
+          @click="isDark = !isDark"
+        />
       </header>
 
       <main class="content">
@@ -64,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, inject, type Ref } from 'vue'
 import { useRoute, useNuxtApp, navigateTo } from '#imports'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon, useConfirm } from '@fastio/ui'
@@ -82,6 +89,8 @@ const { $supabase } = useNuxtApp()
 const { confirm } = useConfirm()
 const sidebarOpen = ref(false)
 const collapsed = useLocalStorage('sidebar-collapsed', false)
+
+const isDark = inject<Ref<boolean>>('isDark', ref(false))
 
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
@@ -352,6 +361,11 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
   position: sticky;
   top: 0;
   z-index: 50;
+}
+
+.theme-btn {
+  margin-left: auto;
+  color: var(--color-text-secondary);
 }
 
 .content {

@@ -10,7 +10,7 @@
     <n-date-picker
       v-model:value="value"
       :size="(computedSize as any)"
-      :class="datepickerClasses"
+      class="datepicker"
       :type="type || 'date'"
       :status="hasError ? 'error' : undefined"
       format="dd MMMM YYYY"
@@ -68,17 +68,8 @@ const computedSize = useResponsiveSize({
   responsive: props.responsive,
 })
 
-const datepickerSize = computed(() => computedSize.value)
-
-const datepickerClasses = computed(() => {
-  return {
-    datepicker: true,
-    [`datepicker--${datepickerSize.value}`]: true,
-  }
-})
-
 const calendarIconSize = computed(() => {
-  switch (datepickerSize.value) {
+  switch (computedSize.value) {
     case 'tiny':
     case 'small':
       return 24
@@ -88,7 +79,7 @@ const calendarIconSize = computed(() => {
 })
 
 const chevronIconSize = computed(() => {
-  return datepickerSize.value === 'large' ? 32 : 24
+  return computedSize.value === 'large' ? 32 : 24
 })
 
 const currentYear = dayjs().year()
@@ -98,175 +89,3 @@ defineOptions({
 })
 </script>
 
-<style scoped lang="scss">
-@use 'sass:map';
-
-$datepicker-sizes: (
-  'tiny': ('border-radius': 8px),
-  'small': ('border-radius': 12px),
-  'medium': ('border-radius': 12px),
-  'large': ('border-radius': 20px),
-);
-
-.form-item {
-  @each $size, $config in $datepicker-sizes {
-    &:has(.datepicker--#{$size}) {
-      :deep(.n-input__border),
-      :deep(.n-input__state-border) {
-        border-radius: #{map.get($config, 'border-radius')} !important;
-      }
-    }
-  }
-}
-
-.datepicker {
-  &:deep(.n-base-clear) {
-    * {
-      width: 100%;
-      height: 100%;
-    }
-  }
-
-  &:deep(.n-input__border) {
-    border-width: 2px !important;
-    transition: opacity .3s ease;
-  }
-
-  &:deep(.n-input__state-border) {
-    border-width: 2px !important;
-  }
-
-  &:deep(.n-input:not(.n-input--disabled):hover),
-  &:deep(.n-input.n-input--focus),
-  &:deep(.n-input.n-input--error-status),
-  &:deep(.n-input.n-input--warning-status) {
-    .n-input__border {
-      opacity: 0;
-    }
-  }
-
-  &:deep(.n-date-picker-icon) {
-    color: var(--color-primary) !important;
-  }
-
-  &:where(.datepicker--tiny),
-  &:where(.datepicker--small) {
-    &:deep(.n-input__suffix) {
-      --n-icon-size: 24px;
-    }
-  }
-
-  &:where(.datepicker--medium),
-  &:where(.datepicker--large) {
-    &:deep(.n-input__suffix) {
-      --n-icon-size: 32px;
-    }
-  }
-
-  &:deep(.n-date-panel) {
-    border-radius: 12px;
-    border: 2px solid var(--color-primary);
-  }
-
-  &:deep(.n-date-panel-month__month-year) {
-    --n-calendar-days-font-size: 14px;
-    --n-item-font-size: 16px;
-    --n-calendar-title-font-size: 14px;
-
-    .n-date-panel-month__text {
-      font-weight: 400;
-    }
-  }
-
-  &:where(.datepicker--large) {
-    &:deep(.n-date-panel-calendar) {
-      --n-item-cell-width: 50px;
-      --n-item-cell-height: 42px;
-      --n-calendar-left-padding: 24px;
-    }
-    &:deep(.n-date-panel) {
-      --n-date-panel-width: 360px;
-    }
-    &:deep(.n-date-panel-month__month-year) {
-      --n-calendar-title-font-size: 16px;
-    }
-    &:deep(.n-date-panel-month__prev),
-    &:deep(.n-date-panel-month__next) {
-      --n-arrow-size: 32px;
-    }
-    &:deep(.n-date-panel-weekdays__day) {
-      --n-calendar-days-font-size: 16px;
-    }
-    &:deep(.n-date-panel-date) {
-      --n-item-font-size: 20px;
-      --n-item-size: 40px;
-    }
-  }
-
-  &:deep(.n-date-panel-date__date) {
-    border-radius: 50px;
-
-    &.n-date-panel-date__date--current {
-      color: var(--color-title);
-      background-color: var(--color-primary-light);
-    }
-
-    &.n-date-panel-date__date--selected {
-      color: var(--color-white);
-      background-color: var(--color-primary);
-    }
-
-    &:hover:not(.n-date-panel-date__date--selected) {
-      background-color: var(--color-primary-light);
-    }
-
-    &.n-date-panel-date__date--covered {
-      background-color: var(--color-primary-light);
-    }
-  }
-
-  &:deep(.n-date-panel-month__month-cell),
-  &:deep(.n-date-panel-year__year-cell) {
-    border-radius: 50px;
-
-    &:hover {
-      background-color: var(--color-primary-light);
-    }
-
-    &.n-date-panel-month__month-cell--selected,
-    &.n-date-panel-year__year-cell--selected {
-      color: var(--color-white);
-      background-color: var(--color-primary);
-    }
-
-    &.n-date-panel-month__month-cell--current,
-    &.n-date-panel-year__year-cell--current {
-      color: var(--color-title);
-      background-color: var(--color-primary-light);
-    }
-  }
-
-  &:deep(.n-date-panel-header__title) {
-    &:hover {
-      background-color: var(--color-primary-light);
-    }
-  }
-
-  &:deep(.n-date-panel-month) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-  }
-
-  &:deep(.n-date-panel-month__prev),
-  &:deep(.n-date-panel-month__next) {
-    flex-shrink: 0;
-  }
-
-  &:deep(.n-date-panel-month__fast-prev),
-  &:deep(.n-date-panel-month__fast-next) {
-    display: none;
-  }
-}
-</style>

@@ -34,6 +34,8 @@ import {
   Users,
   Image as ImageIcon,
   GripVertical,
+  Sun,
+  Moon,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -74,6 +76,8 @@ export const iconRegistry = {
   grip: GripVertical,
   layoutGrid: LayoutGrid,
   list: List,
+  sun: Sun,
+  moon: Moon,
 } as const
 
 export type IconName = keyof typeof iconRegistry

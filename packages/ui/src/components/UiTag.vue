@@ -1,7 +1,9 @@
 <template>
   <n-tag
+    :type="type"
     :size="computedSize"
     :class="tagClasses"
+    :color="tagColor"
     :closable="false"
   >
     <template #avatar v-if="$slots.avatar || icon">
@@ -67,6 +69,24 @@ const computedSize = useResponsiveSize({
   responsive: props.responsive,
 })
 
+const TAG_COLORS: Record<string, { bg: string; text: string }> = {
+  primary: { bg: 'var(--color-primary)', text: '#fff' },
+  success: { bg: 'var(--color-success)', text: '#fff' },
+  warning: { bg: 'var(--yellow-600)', text: '#fff' },
+  error:   { bg: 'var(--color-error)', text: '#fff' },
+}
+
+const tagColor = computed(() => {
+  const c = TAG_COLORS[props.type]
+  if (!c) return undefined
+
+  if (props.empty) {
+    return { color: 'transparent', textColor: c.bg, borderColor: c.bg }
+  }
+
+  return { color: c.bg, textColor: c.text, borderColor: c.bg }
+})
+
 const tagClasses = computed(() => {
   const classes = [`tag--${props.type}`, `tag--${computedSize.value}`]
 
@@ -94,135 +114,29 @@ const iconSize = computed(() => {
 </script>
 
 <style scoped lang="scss">
-@use 'sass:map';
+:deep(.n-tag__content) {
+  display: inline-flex;
+  align-items: center;
+}
 
-$tag-sizes: (
-  'tiny': ('height': 24px, 'padding': 0 8px, 'closable-padding': 0 4px 0 8px, 'round-icon-padding': 0 12px 0 8px),
-  'small': ('height': 32px, 'padding': 0 12px, 'closable-padding': 0 6px 0 12px, 'round-icon-padding': 0 16px 0 12px),
-  'medium': ('height': 40px, 'padding': 0 16px, 'closable-padding': 0 8px 0 16px, 'round-icon-padding': 0 24px 0 16px),
-  'large': ('height': 48px, 'padding': 0 16px, 'closable-padding': 0 8px 0 16px, 'round-icon-padding': 0 32px 0 20px),
-);
-
-$tag-types: (
-  'default': ('bg': var(--color-border), 'color': var(--color-title), 'border': var(--color-border), 'empty-color': var(--color-title), 'secondary-bg': var(--color-bg-page), 'secondary-color': var(--color-title), 'secondary-border': var(--color-bg-page)),
-  'primary': ('bg': var(--color-primary), 'color': var(--color-white), 'border': var(--color-primary), 'empty-color': var(--color-primary), 'secondary-bg': var(--color-primary-light), 'secondary-color': var(--color-title), 'secondary-border': var(--color-primary-light)),
-  'success': ('bg': var(--color-success), 'color': var(--color-white), 'border': var(--color-success), 'empty-color': var(--color-success), 'secondary-bg': var(--color-success-light), 'secondary-color': var(--color-title), 'secondary-border': var(--color-success-light)),
-  'warning': ('bg': var(--yellow-600), 'color': var(--color-white), 'border': var(--yellow-600), 'empty-color': var(--yellow-600), 'secondary-bg': var(--color-warning-light), 'secondary-color': var(--color-title), 'secondary-border': var(--color-warning-light)),
-  'error':   ('bg': var(--red-500), 'color': var(--color-white), 'border': var(--red-500), 'empty-color': var(--red-500), 'secondary-bg': var(--color-error-light), 'secondary-color': var(--red-500), 'secondary-border': var(--color-error-light)),
-);
-
-.n-tag {
-  border-radius: 8px;
-
-  &:deep(.n-tag__content) {
-    display: flex;
-    align-items: center;
-  }
-
-  &:deep(.n-tag__border) {
-    display: none;
-    border-radius: inherit;
-    border-width: 1px;
-  }
-
-  &.tag--empty:deep(.n-tag__border) {
-    display: block;
-  }
-
-  &.n-tag--round {
-    border-radius: 999px;
-  }
-
-  &.tag--has-icon {
-    &:deep(.n-tag__avatar) {
-      margin: 0 8px 0 0;
-    }
-  }
-
-  @each $size, $props in $tag-sizes {
-    &.tag--#{$size} {
-      $height: map.get($props, 'height');
-      @if $height { height: $height; }
-      padding: map.get($props, 'padding');
-
-      @if $size == 'large' {
-        border-radius: 12px;
-        font-size: 16px;
-
-        &.n-tag--round { border-radius: 999px; }
-      }
-
-      &.tag--closable {
-        padding: map.get($props, 'closable-padding');
-      }
-
-      &.n-tag--round.tag--has-icon {
-        padding: map.get($props, 'round-icon-padding');
-      }
-    }
-  }
-
-  &.tag--square {
-    aspect-ratio: 1;
-    padding: 0;
-    justify-content: center;
-  }
-
-  @each $type, $props in $tag-types {
-    &:where(.tag--#{$type}) {
-      background: map.get($props, 'bg');
-      color: map.get($props, 'color');
-
-      &:deep(.n-tag__border) {
-        border-color: map.get($props, 'border');
-      }
-    }
-
-    &:where(.tag--#{$type}.tag--empty) {
-      background: transparent;
-      color: map.get($props, 'empty-color');
-    }
-
-    &:where(.tag--#{$type}.tag--secondary) {
-      background: map.get($props, 'secondary-bg');
-      color: map.get($props, 'secondary-color');
-
-      &:deep(.n-tag__border) {
-        border-color: map.get($props, 'secondary-border');
-      }
-    }
-  }
-
-  &.tag--hoverable {
-    cursor: pointer;
-
-    &:deep(.n-tag__border) {
-      transition: border-color 0.2s ease;
-    }
-  }
-
-  &:where(.tag--primary.tag--secondary.tag--hoverable) {
-    &:deep(.n-tag__border) {
-      display: block;
-      border-width: 2px;
-      border-color: transparent;
-    }
-
-    &:hover:deep(.n-tag__border) {
-      border-color: var(--color-primary);
-    }
-  }
+:deep(.n-tag__border) {
+  transition: border-color 0.15s !important;
 }
 
 .tag-close {
   margin-left: 4px;
-  --icon-bg: var(--color-bg-hover);
-  --icon-fg: var(--color-text-hint);
+}
 
-  :deep(*) { transition: fill 0.2s ease; }
+.tag--hoverable {
+  cursor: pointer;
+  transition: filter 0.15s;
 
   &:hover {
-    --icon-bg: var(--color-border);
+    filter: brightness(0.95);
+  }
+
+  &:not(.tag--empty):hover {
+    filter: brightness(1.1);
   }
 }
 </style>

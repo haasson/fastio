@@ -12,7 +12,7 @@
     <n-input-number
       v-model:value="modelValue"
       :size="computedSize"
-      :class="inputClasses"
+      class="input"
       :min="min"
       :max="max"
       :step="step"
@@ -78,11 +78,6 @@ const computedSize = useResponsiveSize({
   responsive: props.responsive,
 })
 
-const inputClasses = computed(() => ({
-  'input': true,
-  [`input--${computedSize.value}`]: true,
-}))
-
 const iconSize = computed(() => {
   switch (computedSize.value) {
     case 'tiny': return 12
@@ -108,55 +103,3 @@ defineOptions({
 })
 </script>
 
-<style scoped lang="scss">
-.input {
-  width: 100%;
-
-  &:deep(.n-input-number-input) {
-    text-align: left;
-  }
-
-  &:deep(.n-base-clear__clear) {
-    width: unset;
-    height: unset;
-  }
-
-  &:deep(.n-input__border) {
-    transition: opacity .3s ease;
-  }
-
-  &:hover:not(.n-input-number--disabled),
-  &.n-input--focus,
-  &.n-input--error-status,
-  &.n-input--warning-status,
-  &.n-input--success-status {
-    &:deep(.n-input__border) {
-      opacity: 0;
-    }
-  }
-
-  &:where(.input--tiny) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 6px;
-    }
-  }
-
-  &:where(.input--small) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 8px;
-    }
-  }
-
-  &:where(.input--medium) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 12px;
-    }
-  }
-
-  &:where(.input--large) {
-    &:deep(.n-input-wrapper) {
-      border-radius: 12px;
-    }
-  }
-}
-</style>

@@ -1,12 +1,6 @@
 <template>
   <div class="categories-root">
-    <UiSectionHeader label="Категории">
-      <UiButton
-        size="medium"
-        type="primary"
-        @click="editMode = !editMode"
-      >{{ editMode ? 'Готово' : 'Редактировать список' }}</UiButton>
-    </UiSectionHeader>
+    <UiSectionHeader label="Категории" />
 
     <UiSkeleton
       v-if="categoriesLoading"
@@ -15,42 +9,12 @@
       class="skeleton"
     />
 
-    <div v-else class="bar-row">
-      <VueDraggable
-        v-model="categories"
-        class="cats"
-        :disabled="!editMode"
-        :animation="180"
-        ghost-class="tag-ghost"
-        @end="reorderCategories"
-      >
-        <AppEditableTag
-          v-for="(cat, idx) in categories"
-          :key="cat.id"
-          :label="cat.name"
-          :selected="!editMode && modelValue === cat.id"
-          :editing="editMode"
-          :inactive="!cat.active"
-          :count="dishCountByCategory[cat.id] ?? 0"
-          :animation-delay="`${idx * 0.05}s`"
-          deletable
-          @click="$emit('update:modelValue', cat.id)"
-          @edit="openCategoryModal(cat)"
-          @delete="confirmDeleteCategory(cat.id)"
-        />
-      </VueDraggable>
-
-      <UiTag
-        class="add-tag"
-        type="default"
-        empty
-        round
-        hoverable
-        @click="openCategoryModal(null)"
-      >
-        <UiIcon name="plus" :size="14" />
-      </UiTag>
-    </div>
+    <UiTabs
+      v-else
+      :model-value="modelValue ?? ''"
+      :tabs="categoryTabs"
+      @update:model-value="$emit('update:modelValue', String($event))"
+    />
 
     <UiModal
       v-model="categoryModalOpen"
@@ -89,9 +53,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
-import { VueDraggable } from 'vue-draggable-plus'
-import { UiModal, UiForm, UiInput, UiButton, UiSkeleton, UiCheckbox, UiIcon, UiTag, useConfirm } from '@fastio/ui'
-import AppEditableTag from '~/components/ui/AppEditableTag.vue'
+import { UiModal, UiForm, UiInput, UiSkeleton, UiCheckbox, UiTabs, useConfirm } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
 import { useNuxtApp } from '#imports'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
@@ -113,18 +75,22 @@ const emit = defineEmits<{
 const { $supabase: sb } = useNuxtApp()
 const tenantIdRef = computed(() => props.tenantId)
 
-const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory, reorder }
+const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory }
   = useCategories(tenantIdRef)
-
-const reorderCategories = () => reorder(categories.value)
 
 watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
 
 const { counts: dishCountByCategory } = useDishCounts(tenantIdRef)
 
+const categoryTabs = computed(() => categories.value.map((c) => ({
+  value: c.id,
+  label: c.name,
+  count: dishCountByCategory.value[c.id] ?? 0,
+})),
+)
+
 const { confirm } = useConfirm()
 
-const editMode = ref(false)
 const formRef = ref()
 const categoryModalOpen = ref(false)
 const editingCategory = ref<Category | null>(null)
@@ -212,31 +178,6 @@ const confirmDeleteCategory = async (id: string) => {
 
 .skeleton {
   padding: 0;
-}
-
-.bar-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.cats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.tag-ghost {
-  opacity: 0.4;
-}
-
-.add-tag {
-  :deep(.n-tag__border) {
-    display: block;
-    border-style: dashed;
-  }
 }
 
 .form {

@@ -34,14 +34,3 @@ const handleExpandedNamesUpdate = (newExpandedNames: (string | number)[]) => {
 }
 </script>
 
-<style scoped lang="scss">
-.n-collapse:where(.collapse--clean) {
-  :deep(.n-collapse-item:not(:first-child)) {
-    border-top: none;
-
-    .n-collapse-item__header {
-      padding-top: 0;
-    }
-  }
-}
-</style>

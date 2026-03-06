@@ -63,20 +63,3 @@ defineOptions({
 })
 </script>
 
-<style scoped lang="scss">
-.radio-group {
-  &:deep(.n-radio) {
-    &:hover:not(.n-radio--disabled) {
-      .n-radio__dot {
-        box-shadow: inset 0 0 0 2px var(--color-primary) !important;
-      }
-    }
-
-    &:focus-visible {
-      .n-radio__dot {
-        box-shadow: inset 0 0 0 2px var(--color-primary), 0 0 0 2px var(--color-primary) !important;
-      }
-    }
-  }
-}
-</style>

@@ -15,13 +15,22 @@
       :size="props.size"
       :responsive="props.responsive"
       round
+      hoverable
       :empty="activeTab !== tab.value"
-      :type="activeTab === tab.value ? 'primary' : 'default'"
+      :type="tab.type ?? 'primary'"
       class="tabs-item"
       @click="handleTabClick(tab.value)"
     >
       <ui-icon v-if="tab.icon" :name="tab.icon" :size="14" class="tab-icon" />
       {{ tab.label }}
+      <ui-counter
+        v-if="tab.count !== undefined"
+        :value="tab.count"
+        :type="tab.type ?? 'primary'"
+        :filled="activeTab === tab.value"
+        size="tiny"
+        class="tab-count"
+      />
     </ui-tag>
   </ui-space>
 </template>
@@ -32,14 +41,19 @@ import UiSpace from './UiSpace.vue'
 import UiTag from './UiTag.vue'
 import UiSelect from './UiSelect.vue'
 import UiIcon from './UiIcon.vue'
+import UiCounter from './UiCounter.vue'
 import useBreakpoints from '../composables/useBreakpoints'
 import type { Size, ResponsiveSizeMap } from '../types/responsive'
 import type { IconName } from '../icons'
+
+type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error'
 
 type TabItem = {
   value: string | number
   label: string
   icon?: IconName
+  count?: number
+  type?: TagType
 }
 
 type Props = {
@@ -68,21 +82,9 @@ const handleTabClick = (value: string | number) => {
 <style scoped lang="scss">
 .tabs-item {
   cursor: pointer;
-  font-weight: 700;
+}
 
-  &:deep(.n-tag__content) {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  &:deep(.n-tag__border) {
-    border-width: 2px;
-    border-color: var(--color-title);
-  }
-
-  &:not(.tag--empty):deep(.n-tag__border) {
-    border-color: transparent;
-  }
+.tab-count {
+  margin-left: 6px;
 }
 </style>

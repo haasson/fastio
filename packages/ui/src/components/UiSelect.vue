@@ -12,7 +12,7 @@
         v-model:value="selectedValues"
         v-model:show="isOpen"
         :size="computedSize"
-        :class="selectClasses"
+        class="select"
         :show-checkmark="false"
         :to="false"
         :max-tag-count="1"
@@ -71,10 +71,8 @@ export type UiSelectProps = {
   label?: string
   size?: Size
   responsive?: ResponsiveSizeMap
-  accent?: boolean
   name?: string
   rules?: ValidationRule[]
-  stateless?: boolean
   filterable?: boolean
 }
 
@@ -102,22 +100,11 @@ const computedSize = useResponsiveSize({
   responsive: props.responsive,
 })
 
-const selectSize = computed(() => computedSize.value)
 const isMultiple = computed(() => 'multiple' in attrs)
 const isFilterable = computed(() => props.filterable)
 
-const selectClasses = computed(() => {
-  return {
-    'select': true,
-    [`select--${selectSize.value}`]: true,
-    'select--multiple': isMultiple.value,
-    'select--accent': props.accent,
-    'select--stateless': props.stateless,
-  }
-})
-
 const iconSize = computed(() => {
-  switch (selectSize.value) {
+  switch (computedSize.value) {
     case 'tiny': return 16
     case 'large': return 40
     default: return 24
@@ -125,7 +112,7 @@ const iconSize = computed(() => {
 })
 
 const checkboxSize = computed(() => {
-  switch (selectSize.value) {
+  switch (computedSize.value) {
     case 'tiny':
     case 'small':
       return 'medium'
@@ -248,198 +235,3 @@ defineOptions({
 })
 </script>
 
-<style scoped lang="scss">
-@use 'sass:map';
-
-$select-sizes: (
-  'tiny': (
-    'font-size': 12px,
-    'border-radius': 6px,
-    'padding-right': 28px,
-    'padding': 8px,
-    'option-height': 24px,
-    'grouped-padding': 16px,
-    'option-border-radius': 4px,
-    'loader-size': 16px,
-    'loader-right': 8px,
-  ),
-  'small': (
-    'font-size': 14px,
-    'border-radius': 6px,
-    'padding-right': 36px,
-    'padding': 12px,
-    'option-height': 32px,
-    'grouped-padding': 20px,
-    'option-border-radius': 4px,
-    'loader-size': 20px,
-    'loader-right': 12px,
-  ),
-  'medium': (
-    'font-size': 16px,
-    'border-radius': 8px,
-    'padding-right': 44px,
-    'padding': 16px,
-    'option-height': 40px,
-    'grouped-padding': 28px,
-    'option-border-radius': 4px,
-    'loader-size': 24px,
-    'loader-right': 16px,
-  ),
-  'large': (
-    'font-size': 16px,
-    'border-radius': 12px,
-    'padding-right': 44px,
-    'padding': 24px,
-    'option-height': 48px,
-    'grouped-padding': 40px,
-    'option-border-radius': 8px,
-    'loader-size': 24px,
-    'loader-right': 16px,
-  ),
-);
-
-.form-item {
-  :deep(.n-base-selection__border) {
-    border-width: 2px !important;
-    box-shadow: none !important;
-    transition: opacity .3s ease;
-  }
-
-  :deep(.n-base-selection__state-border) {
-    border-width: 2px !important;
-    box-shadow: none !important;
-  }
-
-  :deep(.n-base-selection:not(.n-base-selection--disabled):hover),
-  :deep(.n-base-selection.n-base-selection--focus),
-  :deep(.n-base-selection.n-base-selection--active),
-  :deep(.n-base-selection.n-base-selection--error-status),
-  :deep(.n-base-selection.n-base-selection--warning-status) {
-    .n-base-selection__border {
-      opacity: 0;
-    }
-  }
-
-  &:has(.select--accent) {
-    :deep(.n-base-selection:not(.n-base-selection--disabled)) {
-      .n-base-selection__border {
-        border-color: var(--color-primary) !important;
-      }
-    }
-  }
-
-  :deep(.n-base-clear__placeholder) {
-    width: 100%;
-    height: 100%;
-  }
-
-  :deep(.n-base-select-group-header) {
-    font-weight: 700;
-    color: var(--color-text);
-  }
-
-  :deep(.n-base-select-menu) {
-    margin-top: 8px;
-    margin-bottom: 8px;
-    overflow: hidden;
-    border: 2px solid var(--color-primary);
-
-    .n-base-select-menu__header {
-      border-bottom: none;
-    }
-  }
-
-  :deep(.n-base-selection-tag-wrapper) {
-    padding-bottom: 0;
-    display: block;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-
-    &:not(:first-child) {
-      display: none;
-    }
-  }
-
-  &:has(.select--multiple) {
-    :deep(.n-base-select-option--selected) {
-      &:before {
-        background: transparent !important;
-        border: none !important;
-      }
-
-      color: var(--color-text) !important;
-    }
-  }
-
-  @each $size, $config in $select-sizes {
-    &:has(.select--#{$size}) {
-      :deep(.n-base-selection) {
-        font-size: #{map.get($config, 'font-size')};
-        border-radius: #{map.get($config, 'border-radius')};
-      }
-
-      :deep(.n-base-select-menu) {
-        border-radius: #{map.get($config, 'border-radius')};
-      }
-
-      :deep(.n-base-selection-placeholder.n-base-selection-overlay),
-      :deep(.n-base-selection-input),
-      :deep(.n-base-selection-label__render-label),
-      :deep(.n-base-selection-tags) {
-        padding: 0 #{map.get($config, 'padding-right')} 0 #{map.get($config, 'padding')} !important;
-      }
-
-      :deep(.n-base-select-group-header),
-      :deep(.n-base-select-option) {
-        padding-left: #{map.get($config, 'padding')} !important;
-        padding-right: #{map.get($config, 'padding')} !important;
-        font-size: #{map.get($config, 'font-size')} !important;
-      }
-
-      :deep(.n-base-select-option--grouped) {
-        padding-left: #{map.get($config, 'grouped-padding')} !important;
-      }
-
-      :deep(.n-base-select-option--selected),
-      :deep(.n-base-select-option--pending) {
-        &:before {
-          border-radius: #{map.get($config, 'option-border-radius')} !important;
-        }
-      }
-
-      :deep(.n-base-loading.n-base-suffix) {
-        width: #{map.get($config, 'loader-size')};
-        height: #{map.get($config, 'loader-size')};
-        right: #{map.get($config, 'loader-right')};
-      }
-    }
-  }
-}
-
-.select {
-  &:deep(.n-base-suffix__arrow) {
-    .select-arrow {
-      transition: transform 0.3s ease;
-    }
-  }
-
-  &:deep(.n-base-loading.n-base-suffix) {
-    * {
-      width: 100%;
-      height: 100%;
-    }
-  }
-
-  &:where(.select--stateless) {
-    &:deep(.n-base-selection__border),
-    &:deep(.n-base-selection__state-border) {
-      display: none;
-    }
-
-    &:deep(.n-base-selection) {
-      background: transparent;
-    }
-  }
-}
-</style>
