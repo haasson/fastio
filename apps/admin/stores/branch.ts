@@ -3,11 +3,14 @@ import { ref, computed } from 'vue'
 import { useNuxtApp } from '#imports'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Branch } from '@fastio/shared'
-import { branchesApi } from '~/utils/api/branches'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 const STORAGE_KEY = 'fastio_current_branch'
 
 export const useBranchStore = defineStore('branch', () => {
+  const { $supabase } = useNuxtApp()
+  const api = useSupabaseApi()
+
   const branches = ref<Branch[]>([])
   const currentBranchId = ref<string | null>(null)
   let channel: RealtimeChannel | null = null
@@ -21,9 +24,7 @@ export const useBranchStore = defineStore('branch', () => {
   const hasBranches = computed(() => branches.value.length > 0)
 
   const init = async (tenantId: string, memberBranchIds: string[], isAdmin: boolean) => {
-    const { $supabase } = useNuxtApp()
-
-    branches.value = await branchesApi.list($supabase, tenantId)
+    branches.value = await api.branches.list(tenantId)
 
     if (branches.value.length === 0) return
 
@@ -60,7 +61,7 @@ export const useBranchStore = defineStore('branch', () => {
         table: 'branches',
         filter: `tenant_id=eq.${tenantId}`,
       }, async () => {
-        branches.value = await branchesApi.list($supabase, tenantId)
+        branches.value = await api.branches.list(tenantId)
       })
       .subscribe()
   }

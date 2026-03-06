@@ -1,15 +1,14 @@
 import { ref, watch, onUnmounted } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { useNuxtApp } from '#imports'
-import { dishesApi } from '~/utils/api/dishes'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 const useDishCounts = (tenantId: Ref<string>) => {
-  const { $supabase } = useNuxtApp()
+  const api = useSupabaseApi()
   const counts = ref<Record<string, number>>({})
   let unsubscribe: (() => void) | null = null
 
   const fetchCounts = async (tid: string) => {
-    counts.value = await dishesApi.countsByCategory($supabase, tid)
+    counts.value = await api.dishes.countsByCategory(tid)
   }
 
   watch(tenantId, (tid) => {
@@ -22,7 +21,7 @@ const useDishCounts = (tenantId: Ref<string>) => {
 
     const debouncedFetch = useDebounceFn(() => fetchCounts(tid), 300)
 
-    unsubscribe = dishesApi.subscribeToDishChanges($supabase, tid, debouncedFetch)
+    unsubscribe = api.dishes.subscribeToDishChanges(tid, debouncedFetch)
   }, { immediate: true })
 
   onUnmounted(() => unsubscribe?.())

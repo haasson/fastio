@@ -1,29 +1,29 @@
 import { computed } from 'vue'
-import { useNuxtApp } from '#imports'
 import type { BranchFormData } from '@fastio/shared'
-import { branchesApi, mapBranch } from '~/utils/api/branches'
+import { mapBranch } from '~/utils/api/branches'
 import { useRealtimeList } from '~/composables/useRealtimeList'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 export const useBranches = (tenantId: Ref<string>) => {
-  const { $supabase } = useNuxtApp()
+  const api = useSupabaseApi()
 
   const { items: branches, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value ? `branches:${tenantId.value}` : null),
     table: 'branches',
     filter: computed(() => `tenant_id=eq.${tenantId.value}`),
-    fetch: () => branchesApi.list($supabase, tenantId.value),
+    fetch: () => api.branches.list(tenantId.value),
     mapper: mapBranch,
   })
 
   const add = async (data: BranchFormData) => {
     if (!tenantId.value) return
-    const branch = await branchesApi.add($supabase, tenantId.value, data)
+    const branch = await api.branches.add(tenantId.value, data)
 
     if (branch) branches.value.push(branch)
   }
 
   const update = async (id: string, data: Partial<BranchFormData>) => {
-    const branch = await branchesApi.update($supabase, id, data)
+    const branch = await api.branches.update(id, data)
 
     if (branch) {
       const i = branches.value.findIndex((b) => b.id === id)
@@ -33,7 +33,7 @@ export const useBranches = (tenantId: Ref<string>) => {
   }
 
   const remove = async (id: string) => {
-    await branchesApi.remove($supabase, id)
+    await api.branches.remove(id)
     branches.value = branches.value.filter((b) => b.id !== id)
   }
 

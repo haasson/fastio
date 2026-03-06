@@ -1,15 +1,15 @@
 import { computed, ref } from 'vue'
-import { useNuxtApp } from '#imports'
 import type { Order } from '@fastio/shared'
-import { ordersApi, mapOrder, type OrderFilter } from '~/utils/api/orders'
+import { mapOrder, type OrderFilter } from '~/utils/api/orders'
 import { useRealtimeList } from '~/composables/useRealtimeList'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 export function useOrders(
   tenantId: Ref<string>,
   filter: Ref<OrderFilter>,
   branchId: Ref<string | null> = ref(null),
 ) {
-  const { $supabase } = useNuxtApp()
+  const api = useSupabaseApi()
 
   const { items: orders, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value && filter.value
@@ -18,7 +18,7 @@ export function useOrders(
     ),
     table: 'orders',
     filter: computed(() => `tenant_id=eq.${tenantId.value}`),
-    fetch: () => ordersApi.list($supabase, tenantId.value, filter.value!, branchId.value),
+    fetch: () => api.orders.list(tenantId.value, filter.value!, branchId.value),
     mapper: mapOrder,
     shouldInclude: (order: Order) => filter.value !== null
       && order.status === filter.value
@@ -26,7 +26,7 @@ export function useOrders(
   })
 
   const updateStatus = async (orderId: string, status: string) => {
-    await ordersApi.updateStatus($supabase, orderId, status)
+    await api.orders.updateStatus(orderId, status)
     const i = orders.value.findIndex((o) => o.id === orderId)
 
     if (i === -1) return

@@ -3,8 +3,7 @@ import { ref, computed } from 'vue'
 import { useNuxtApp } from '#imports'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Tenant, TenantRole } from '@fastio/shared'
-import { tenantsApi } from '~/utils/api/tenants'
-import { membersApi } from '~/utils/api/members'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 import { useAuthStore } from './auth'
 import { useBranchStore } from './branch'
 
@@ -20,6 +19,9 @@ type MembershipWithTenant = {
 const STORAGE_KEY = 'fastio_current_tenant'
 
 export const useTenantStore = defineStore('tenant', () => {
+  const { $supabase } = useNuxtApp()
+  const api = useSupabaseApi()
+
   const memberships = ref<MembershipWithTenant[]>([])
   const currentTenantId = ref<string | null>(null)
   const tenant = ref<Tenant | null>(null)
@@ -37,10 +39,9 @@ export const useTenantStore = defineStore('tenant', () => {
 
   const fetchTenant = async () => {
     if (!currentTenantId.value) return
-    const { $supabase } = useNuxtApp()
     const branchStore = useBranchStore()
 
-    tenant.value = await tenantsApi.getById($supabase, currentTenantId.value)
+    tenant.value = await api.tenants.getById(currentTenantId.value)
 
     const membership = memberships.value.find((m) => m.tenantId === currentTenantId.value)
     const isAdmin = membership?.role === 'owner' || membership?.role === 'admin'
@@ -51,7 +52,6 @@ export const useTenantStore = defineStore('tenant', () => {
 
   const subscribeToTenant = () => {
     if (!currentTenantId.value) return
-    const { $supabase } = useNuxtApp()
 
     channel?.unsubscribe()
     channel = $supabase
@@ -66,14 +66,13 @@ export const useTenantStore = defineStore('tenant', () => {
   }
 
   const init = async () => {
-    const { $supabase } = useNuxtApp()
     const authStore = useAuthStore()
 
     if (!authStore.user) return
 
     loading.value = true
 
-    const data = await membersApi.listByUser($supabase, authStore.user.id)
+    const data = await api.members.listByUser(authStore.user.id)
 
     memberships.value = data
 
@@ -111,9 +110,8 @@ export const useTenantStore = defineStore('tenant', () => {
 
   const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) => {
     if (!tenant.value) return
-    const { $supabase } = useNuxtApp()
 
-    await tenantsApi.update($supabase, tenant.value.id, data)
+    await api.tenants.update(tenant.value.id, data)
   }
 
   const dispose = () => {

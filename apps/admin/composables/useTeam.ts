@@ -1,44 +1,30 @@
-import { ref } from 'vue'
-import { useNuxtApp } from '#imports'
+import { computed } from 'vue'
 import type { TenantMember, TenantInvitation, TenantRole } from '@fastio/shared'
-import { membersApi } from '~/utils/api/members'
-import { invitationsApi } from '~/utils/api/invitations'
+import { useQuery } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 export const useTeam = () => {
-  const { $supabase } = useNuxtApp()
+  const api = useSupabaseApi()
   const tenantStore = useTenantStore()
 
-  const members = ref<TenantMember[]>([])
-  const invitations = ref<TenantInvitation[]>([])
-  const loading = ref(false)
+  const { data, loading, execute: load } = useQuery(async () => {
+    if (!tenantStore.currentTenantId) return null
+    const { data } = await api.functions.listTeam({ tenantId: tenantStore.currentTenantId })
 
-  const load = async () => {
-    if (!tenantStore.currentTenantId) return
+    return data as { members: TenantMember[]; invitations: TenantInvitation[] } | null
+  })
 
-    loading.value = true
-
-    const { data } = await $supabase.functions.invoke('list-team', {
-      body: { tenantId: tenantStore.currentTenantId },
-    })
-
-    if (data) {
-      members.value = data.members ?? []
-      invitations.value = data.invitations ?? []
-    }
-
-    loading.value = false
-  }
+  const members = computed<TenantMember[]>(() => data.value?.members ?? [])
+  const invitations = computed<TenantInvitation[]>(() => data.value?.invitations ?? [])
 
   const invite = async (email: string, role: TenantRole) => {
     if (!tenantStore.currentTenantId) return
 
-    const { error } = await $supabase.functions.invoke('invite-member', {
-      body: {
-        tenantId: tenantStore.currentTenantId,
-        email,
-        role,
-      },
+    const { error } = await api.functions.inviteMember({
+      tenantId: tenantStore.currentTenantId,
+      email,
+      role,
     })
 
     if (!error) await load()
@@ -47,17 +33,17 @@ export const useTeam = () => {
   }
 
   const changeRole = async (memberId: string, role: TenantRole) => {
-    await membersApi.updateRole($supabase, memberId, role)
+    await api.members.updateRole(memberId, role)
     await load()
   }
 
   const removeMember = async (memberId: string) => {
-    await membersApi.remove($supabase, memberId)
+    await api.members.remove(memberId)
     await load()
   }
 
   const cancelInvite = async (invitationId: string) => {
-    await invitationsApi.cancel($supabase, invitationId)
+    await api.invitations.cancel(invitationId)
     await load()
   }
 

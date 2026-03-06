@@ -1,30 +1,30 @@
 import { computed } from 'vue'
-import { useNuxtApp } from '#imports'
 import type { Dish } from '@fastio/shared'
-import { dishesApi, mapDish, type DishFormData } from '~/utils/api/dishes'
+import { mapDish, type DishFormData } from '~/utils/api/dishes'
 import { useRealtimeList } from '~/composables/useRealtimeList'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>) {
-  const { $supabase } = useNuxtApp()
+  const api = useSupabaseApi()
 
   const { items: dishes, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value && categoryId.value ? `dishes:${tenantId.value}:${categoryId.value}` : null),
     table: 'dishes',
     filter: computed(() => `tenant_id=eq.${tenantId.value}`),
-    fetch: () => dishesApi.list($supabase, tenantId.value, categoryId.value!),
+    fetch: () => api.dishes.list(tenantId.value, categoryId.value!),
     mapper: mapDish,
     shouldInclude: (dish) => dish.categoryId === categoryId.value,
   })
 
   const add = async (data: DishFormData) => {
     if (!tenantId.value) return
-    const dish = await dishesApi.add($supabase, tenantId.value, { ...data, order: dishes.value.length })
+    const dish = await api.dishes.add(tenantId.value, { ...data, order: dishes.value.length })
 
     if (dish && dish.categoryId === categoryId.value) dishes.value.push(dish)
   }
 
   const update = async (id: string, data: Partial<DishFormData>) => {
-    const dish = await dishesApi.update($supabase, id, data)
+    const dish = await api.dishes.update(id, data)
 
     if (!dish) return
     const i = dishes.value.findIndex((d) => d.id === id)
@@ -38,7 +38,7 @@ export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>)
   }
 
   const remove = async (id: string) => {
-    await dishesApi.remove($supabase, id)
+    await api.dishes.remove(id)
     dishes.value = dishes.value.filter((d) => d.id !== id)
   }
 
@@ -46,12 +46,12 @@ export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>)
     const dish = dishes.value.find((d) => d.id === id)
 
     if (dish) dish.active = active
-    await dishesApi.toggleActive($supabase, id, active)
+    await api.dishes.toggleActive(id, active)
   }
 
   const reorder = async (reordered: Dish[]) => {
     dishes.value = reordered
-    await dishesApi.reorder($supabase, reordered.map((d, i) => ({ id: d.id, order: i })))
+    await api.dishes.reorder(reordered.map((d, i) => ({ id: d.id, order: i })))
   }
 
   return { dishes, loading, add, update, remove, toggleActive, reorder }

@@ -10,6 +10,7 @@ export const query = async <T>(
   if (error) {
     console.error('[Supabase]', error.message, error)
     message.error(error.message)
+    throw new Error(error.message)
   }
 
   return data

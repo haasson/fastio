@@ -65,8 +65,8 @@ export { default as useModals, useModalConfig, modalManager } from './composable
 export { default as useConfirm, confirmState } from './composables/useConfirm'
 export { default as useMessage } from './composables/useMessage'
 export { default as useResponsiveSize } from './composables/useResponsiveSize'
-export { useApi, useGlobalApiError, ApiError } from './composables/useApi'
-export type { UseApiOptions, UseApiReturn, UseApiUrl } from './composables/useApi'
+export { useQuery } from './composables/useQuery'
+export { useMutation } from './composables/useMutation'
 // Types
 export type { Size, Breakpoint, ResponsiveSizeMap } from './types/responsive'
 export { BREAKPOINTS_ORDER } from './types/responsive'
