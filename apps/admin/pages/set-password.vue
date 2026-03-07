@@ -1,6 +1,6 @@
 <template>
   <div class="set-password-root">
-    <div class="card">
+    <UiCard size="large" class="auth-card">
       <AppBrand class="brand" />
 
       <UiTitle size="h3" class="title">Установите пароль</UiTitle>
@@ -50,14 +50,14 @@
           {{ inviteToken ? 'Создать аккаунт и присоединиться' : 'Сохранить и войти' }}
         </UiButton>
       </UiForm>
-    </div>
+    </UiCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
-import { UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
+import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
@@ -135,13 +135,8 @@ const handleSubmit = async () => {
   padding: 16px;
 }
 
-.card {
-  background: var(--color-bg-card);
-  border-radius: 16px;
-  padding: 40px 32px;
-  width: 100%;
+.auth-card {
   max-width: 400px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .brand {

@@ -1,20 +1,20 @@
 <template>
   <div class="invite-root">
-    <div class="card">
+    <UiCard size="large" class="auth-card">
       <AppBrand class="brand" />
 
       <div class="state">
         <UiText v-if="pageLoading" size="small">Загружаем приглашение…</UiText>
         <UiAlert v-else-if="fatalError" type="error">{{ fatalError }}</UiAlert>
       </div>
-    </div>
+    </UiCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
-import { UiAlert, UiText } from '@fastio/ui'
+import { UiCard, UiAlert, UiText } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
@@ -88,13 +88,8 @@ onMounted(async () => {
   padding: 16px;
 }
 
-.card {
-  background: var(--color-bg-card);
-  border-radius: 16px;
-  padding: 40px 32px;
-  width: 100%;
+.auth-card {
   max-width: 400px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .brand {
