@@ -7,6 +7,7 @@ export type TenantTheme = {
 }
 
 export type TenantContacts = {
+  phoneMode: 'shared' | 'per_branch'
   phone: string
   email: string
   address: string
