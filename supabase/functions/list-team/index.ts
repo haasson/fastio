@@ -48,29 +48,60 @@ Deno.serve(async (req) => {
   // Загружаем мемберов
   const { data: members } = await adminSupabase
     .from('tenant_members')
-    .select('id, tenant_id, user_id, role, created_at')
+    .select('id, tenant_id, user_id, role, branch_ids, blocked_until, created_at')
     .eq('tenant_id', tenantId)
     .order('created_at')
 
-  // Обогащаем данными из auth.users через admin API
-  let usersMap = new Map()
-  try {
-    const { data: { users } } = await adminSupabase.auth.admin.listUsers({ perPage: 1000 })
-    usersMap = new Map(users.map(u => [u.id, u]))
-  } catch (e) {
-    console.error('Failed to list auth users:', e)
+  const memberUserIds = (members ?? []).map(m => m.user_id)
+
+  // Загружаем принятые инвайты для отображения "кто пригласил"
+  const { data: acceptedInvites } = await adminSupabase
+    .from('tenant_invitations')
+    .select('email, invited_by')
+    .eq('tenant_id', tenantId)
+    .not('accepted_at', 'is', null)
+
+  // email участника → user_id пригласившего
+  const invitedByMap = new Map(
+    (acceptedInvites ?? []).map(inv => [inv.email, inv.invited_by])
+  )
+
+  const inviterUserIds = [...new Set(
+    (acceptedInvites ?? []).map(inv => inv.invited_by).filter(Boolean)
+  )]
+
+  // Получаем профили участников и пригласивших через DB (надёжно, SECURITY DEFINER)
+  const allUserIds = [...new Set([...memberUserIds, ...inviterUserIds])]
+  const { data: profileRows } = await adminSupabase
+    .rpc('get_user_profiles', { user_ids: allUserIds })
+
+  type UserProfile = { user_id: string; email: string; full_name: string | null }
+  const profileMap = new Map<string, UserProfile>(
+    (profileRows ?? []).map((u: UserProfile) => [u.user_id, u])
+  )
+
+  const getDisplayName = (userId: string) => {
+    const p = profileMap.get(userId)
+    return p?.full_name ?? p?.email ?? null
   }
 
   const enrichedMembers = (members ?? []).map(m => {
-    const authUser = usersMap.get(m.user_id)
+    const profile = profileMap.get(m.user_id)
+    const email = profile?.email ?? null
+    const invitedByUserId = email ? invitedByMap.get(email) : null
+    const invitedBy = invitedByUserId ? getDisplayName(invitedByUserId) : null
+
     return {
       id: m.id,
       tenantId: m.tenant_id,
       userId: m.user_id,
       role: m.role,
+      branchIds: m.branch_ids ?? [],
+      blockedUntil: m.blocked_until ?? null,
       createdAt: m.created_at,
-      email: authUser?.email ?? null,
-      displayName: authUser?.user_metadata?.display_name ?? authUser?.email ?? null,
+      email,
+      displayName: getDisplayName(m.user_id),
+      invitedBy,
     }
   })
 
@@ -94,6 +125,7 @@ Deno.serve(async (req) => {
       expiresAt: inv.expires_at,
       acceptedAt: inv.accepted_at,
       createdAt: inv.created_at,
+      branchIds: inv.branch_ids ?? [],
     }))
   }
 

@@ -36,6 +36,7 @@ export type TenantMemberRow = {
   user_id: string
   role: TenantRole
   branch_ids: string[]
+  blocked_until: string | null
   created_at: string
   tenants?: { id: string; name: string; slug: string } | null
 }
@@ -50,6 +51,7 @@ export type TenantInvitationRow = {
   expires_at: string
   accepted_at: string | null
   created_at: string
+  branch_ids: string[]
 }
 
 export type CategoryRow = {

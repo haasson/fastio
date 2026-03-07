@@ -6,9 +6,11 @@ export type TenantMember = {
   userId: string
   role: TenantRole
   branchIds: string[]
+  blockedUntil?: string | null
   createdAt: string
   email?: string
   displayName?: string
+  invitedBy?: string
 }
 
 export type TenantInvitation = {
@@ -21,4 +23,5 @@ export type TenantInvitation = {
   expiresAt: string
   acceptedAt: string | null
   createdAt: string
+  branchIds: string[]
 }

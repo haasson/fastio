@@ -5,7 +5,7 @@
     <template v-else-if="tenantStore.tenant">
       <UiTabs v-model="activeTab" :tabs="settingsTabs" />
 
-      <div class="section">
+      <UiCard size="large">
         <SettingsContacts
           v-if="activeTab === 'contacts'"
           :tenant="tenantStore.tenant"
@@ -30,7 +30,7 @@
         <SettingsBranches
           v-else-if="activeTab === 'branches'"
         />
-      </div>
+      </UiCard>
     </template>
 
     <div v-else class="state-msg">Загрузка…</div>
@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { definePageMeta, useRoute, useRouter } from '#imports'
-import { UiTabs } from '@fastio/ui'
+import { UiTabs, UiCard } from '@fastio/ui'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import SettingsContacts from '~/components/settings/SettingsContacts.vue'
 import SettingsTheme from '~/components/settings/SettingsTheme.vue'
@@ -89,10 +89,4 @@ const settingsTabs = computed(() => [
   gap: 16px;
 }
 
-.section {
-  background: var(--color-bg-card);
-  border-radius: 14px;
-  padding: 28px;
-  overflow: visible;
-}
 </style>

@@ -10,3 +10,11 @@ defineOptions({
 })
 </script>
 
+<style scoped lang="scss">
+.data-table {
+  :deep(.n-data-table-td),
+  :deep(.n-data-table-th) {
+    font-size: 13px;
+  }
+}
+</style>

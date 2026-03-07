@@ -18,18 +18,31 @@ export const useTeam = () => {
   const members = computed<TenantMember[]>(() => data.value?.members ?? [])
   const invitations = computed<TenantInvitation[]>(() => data.value?.invitations ?? [])
 
-  const invite = async (email: string, role: TenantRole) => {
+  const invite = async (email: string, role: TenantRole, branchIds: string[] = []) => {
     if (!tenantStore.currentTenantId) return
 
     const { error } = await api.functions.inviteMember({
       tenantId: tenantStore.currentTenantId,
       email,
       role,
+      branchIds,
     })
 
-    if (!error) await load()
+    if (error) {
+      let message = 'Не удалось отправить приглашение'
 
-    return { error }
+      try {
+        const body = await (error as { context?: { json?: () => Promise<{ error?: string }> } }).context?.json?.()
+
+        if (body?.error) message = body.error
+      } catch { /* ignore parse errors */ }
+
+      return { error, message }
+    }
+
+    await load()
+
+    return { error: null, message: null }
   }
 
   const changeRole = async (memberId: string, role: TenantRole) => {
@@ -42,8 +55,33 @@ export const useTeam = () => {
     await load()
   }
 
+  const blockMember = async (memberId: string, blockedUntil: string) => {
+    await api.members.block(memberId, blockedUntil)
+    await load()
+  }
+
+  const unblockMember = async (memberId: string) => {
+    await api.members.unblock(memberId)
+    await load()
+  }
+
   const cancelInvite = async (invitationId: string) => {
     await api.invitations.cancel(invitationId)
+    await load()
+  }
+
+  const resendInvite = async (invitationId: string) => {
+    const inv = invitations.value.find((i) => i.id === invitationId)
+
+    if (!inv) return
+
+    await api.functions.inviteMember({
+      tenantId: inv.tenantId,
+      email: inv.email,
+      role: inv.role,
+      branchIds: inv.branchIds,
+      force: true,
+    })
     await load()
   }
 
@@ -55,6 +93,9 @@ export const useTeam = () => {
     invite,
     changeRole,
     removeMember,
+    blockMember,
+    unblockMember,
     cancelInvite,
+    resendInvite,
   }
 }

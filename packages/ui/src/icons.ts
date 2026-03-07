@@ -40,6 +40,8 @@ import {
   ChevronRight,
   Archive,
   ArchiveRestore,
+  Send,
+  Ban,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -86,6 +88,8 @@ export const iconRegistry = {
   chevronRight: ChevronRight,
   archive: Archive,
   archiveRestore: ArchiveRestore,
+  send: Send,
+  ban: Ban,
 } as const
 
 export type IconName = keyof typeof iconRegistry

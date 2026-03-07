@@ -39,6 +39,18 @@ export const membersApi = {
     await query(sb.from('tenant_members').update({ branch_ids: branchIds }).eq('id', memberId))
   },
 
+  async updateRoleAndBranches(sb: SupabaseClient, memberId: string, role: TenantRole, branchIds: string[]) {
+    await query(sb.from('tenant_members').update({ role, branch_ids: branchIds }).eq('id', memberId))
+  },
+
+  async block(sb: SupabaseClient, memberId: string, blockedUntil: string) {
+    await query(sb.from('tenant_members').update({ blocked_until: blockedUntil }).eq('id', memberId))
+  },
+
+  async unblock(sb: SupabaseClient, memberId: string) {
+    await query(sb.from('tenant_members').update({ blocked_until: null }).eq('id', memberId))
+  },
+
   async remove(sb: SupabaseClient, memberId: string) {
     await query(sb.from('tenant_members').delete().eq('id', memberId))
   },

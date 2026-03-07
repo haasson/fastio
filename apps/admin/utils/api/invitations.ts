@@ -16,6 +16,7 @@ const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
     expiresAt: row.expires_at,
     acceptedAt: row.accepted_at,
     createdAt: row.created_at,
+    branchIds: row.branch_ids ?? [],
   }
 }
 

@@ -23,10 +23,12 @@ Deno.serve(async (req) => {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const { tenantId, email, role } = await req.json() as {
+  const { tenantId, email, role, branchIds = [], force = false } = await req.json() as {
     tenantId: string
     email: string
     role: string
+    branchIds?: string[]
+    force?: boolean
   }
 
   if (!tenantId || !email || !role) {
@@ -54,27 +56,51 @@ Deno.serve(async (req) => {
     return json({ error: 'Insufficient permissions' }, { status: 403 })
   }
 
-  // Создаём/обновляем приглашение (upsert по tenant_id+email)
-  const token = crypto.randomUUID()
+  // Проверяем статус: уже участник или есть pending-инвайт
+  const { data: inviteStatus } = await adminSupabase
+    .rpc('get_invite_status', { _tenant_id: tenantId, _email: email })
 
-  const { error: inviteError } = await adminSupabase
-    .from('tenant_invitations')
-    .upsert(
-      {
+  if (inviteStatus === 'member') {
+    return json({ error: 'Этот пользователь уже является участником команды' }, { status: 409 })
+  }
+  if (inviteStatus === 'pending' && !force) {
+    return json({ error: 'Приглашение этому пользователю уже отправлено' }, { status: 409 })
+  }
+
+  const token = crypto.randomUUID()
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+
+  if (inviteStatus === 'pending') {
+    // force=true: обновляем существующий инвайт
+    const { error: updateError } = await adminSupabase
+      .from('tenant_invitations')
+      .update({ token, expires_at: expiresAt, branch_ids: branchIds })
+      .eq('tenant_id', tenantId)
+      .eq('email', email)
+      .is('accepted_at', null)
+
+    if (updateError) {
+      console.error('Resend error:', updateError)
+      return json({ error: 'Failed to resend invitation' }, { status: 500 })
+    }
+  } else {
+    // Создаём новое приглашение
+    const { error: inviteError } = await adminSupabase
+      .from('tenant_invitations')
+      .insert({
         tenant_id: tenantId,
         email,
         role,
         invited_by: user.id,
         token,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        accepted_at: null,
-      },
-      { onConflict: 'tenant_id,email' },
-    )
+        expires_at: expiresAt,
+        branch_ids: branchIds,
+      })
 
-  if (inviteError) {
-    console.error('Invite error:', inviteError)
-    return json({ error: 'Failed to create invitation' }, { status: 500 })
+    if (inviteError) {
+      console.error('Invite error:', inviteError)
+      return json({ error: 'Failed to create invitation' }, { status: 500 })
+    }
   }
 
   // Получаем имя тенанта для письма
