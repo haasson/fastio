@@ -6,6 +6,7 @@
       <UiSpace :size="8" align="start">
         <UiInput
           v-model="inviteEmail"
+          label="Email"
           name="email"
           placeholder="email@example.com"
           :clearable="false"
@@ -14,14 +15,22 @@
             { type: 'email', message: 'Некорректный email' },
           ]"
         />
-        <UiSelect v-model="inviteRole" :options="roleOptions" style="min-width: 160px" />
-        <UiButton type="primary" :loading="inviting" @click="handleInvite">Пригласить</UiButton>
+        <UiSelect
+          v-model:value="inviteRole"
+          label="Роль"
+          :options="roleOptions"
+          :rules="[{ type: 'required', message: 'Выберите роль' }]"
+          style="min-width: 160px"
+        />
       </UiSpace>
 
       <template v-if="branches.length > 0 && inviteRole !== 'admin' && inviteRole !== 'owner'">
-        <UiText size="tiny" span class="section-title">Доступ к филиалам</UiText>
-        <div class="branch-checkboxes">
-          <UiText size="small" class="all-branches-hint">Без выбора — доступ ко всем филиалам</UiText>
+        <UiRadioGroup
+          v-model="inviteBranchMode"
+          label="Доступ к филиалам"
+          :options="branchAccessOptions"
+        />
+        <div v-if="inviteBranchMode === 'selected'" class="branch-checkboxes">
           <UiCheckbox
             v-for="branch in branches"
             :key="branch.id"
@@ -34,6 +43,9 @@
       </template>
 
       <UiAlert v-if="inviteError" type="error">{{ inviteError }}</UiAlert>
+      <div>
+        <UiButton type="primary" :loading="inviting" @click="handleInvite">Пригласить</UiButton>
+      </div>
     </UiForm>
 
     <!-- Участники -->
@@ -53,30 +65,43 @@
       <UiText v-else size="small">Пока нет участников</UiText>
     </div>
 
-    <!-- Branch assignment modal -->
+    <!-- Edit modal -->
     <UiModal
-      v-if="editingMemberBranches"
+      v-if="editingMember"
       :model-value="true"
-      title="Доступ к филиалам"
+      title="Редактировать участника"
       :width="400"
-      @update:model-value="editingMemberBranches = null"
+      :loading="savingEdit"
+      :actions="[
+        { text: 'Отмена', type: 'default', actionType: 'decline' },
+        { text: 'Сохранить', type: 'primary', actionType: 'confirm' },
+      ]"
+      :on-confirm="saveEdit"
+      @update:model-value="editingMember = null"
     >
-      <div class="branch-modal">
-        <UiText size="small" class="all-branches-hint">Без выбора — доступ ко всем филиалам</UiText>
-        <div class="branch-checkboxes">
-          <UiCheckbox
-            v-for="branch in branches"
-            :key="branch.id"
-            :model-value="editingBranchIds.includes(branch.id)"
-            @update:model-value="toggleEditBranch(branch.id, $event)"
-          >
-            {{ branch.name }}
-          </UiCheckbox>
-        </div>
-        <div class="branch-modal-footer">
-          <UiButton type="default" @click="editingMemberBranches = null">Отмена</UiButton>
-          <UiButton type="primary" :loading="savingBranches" @click="saveBranchAssignment">Сохранить</UiButton>
-        </div>
+      <div class="edit-modal">
+        <UiSelect
+          v-model:value="editForm.role"
+          label="Роль"
+          :options="roleOptions"
+        />
+        <template v-if="branches.length > 0 && editForm.role !== 'admin' && editForm.role !== 'owner'">
+          <UiRadioGroup
+            v-model="editBranchMode"
+            label="Доступ к филиалам"
+            :options="branchAccessOptions"
+          />
+          <div v-if="editBranchMode === 'selected'" class="branch-checkboxes">
+            <UiCheckbox
+              v-for="branch in branches"
+              :key="branch.id"
+              :model-value="editForm.branchIds.includes(branch.id)"
+              @update:model-value="toggleEditBranch(branch.id, $event)"
+            >
+              {{ branch.name }}
+            </UiCheckbox>
+          </div>
+        </template>
       </div>
     </UiModal>
 
@@ -88,7 +113,7 @@
         :data="invitations"
         :row-key="(row: TenantInvitation) => row.id"
         :bordered="false"
-        size="large"
+        size="small"
         class="members-table"
       />
     </div>
@@ -96,10 +121,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import {
   UiInput, UiSelect, UiButton, UiAlert, UiText, UiModal, UiCheckbox,
-  UiSpace, UiSkeleton, UiDataTable, UiForm, useConfirm, useMessage,
+  UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, useConfirm, useMessage,
 } from '@fastio/ui'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
 import { useSupabaseApi } from '#imports'
@@ -110,7 +135,7 @@ import { roleOptions } from '~/config/team-roles'
 import { buildMemberColumns, buildInviteColumns } from './team-columns'
 
 const api = useSupabaseApi()
-const { members, invitations, loading: teamLoading, load, invite, changeRole, removeMember, cancelInvite } = useTeam()
+const { members, invitations, loading: teamLoading, load, invite, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
 const { canManageTeam } = usePermissions()
 const { confirm } = useConfirm()
 const message = useMessage()
@@ -122,7 +147,17 @@ const inviteEmail = ref('')
 const inviteRole = ref<TenantRole>('staff')
 const inviting = ref(false)
 const inviteError = ref('')
+const inviteBranchMode = ref<'all' | 'selected'>('all')
 const inviteBranchIds = ref<string[]>([])
+
+const branchAccessOptions = [
+  { label: 'Ко всем филиалам', value: 'all' },
+  { label: 'К выбранным', value: 'selected' },
+]
+
+watch(inviteBranchMode, (mode) => {
+  if (mode === 'all') inviteBranchIds.value = []
+})
 
 const toggleInviteBranch = (id: string, checked: boolean) => {
   if (checked) {
@@ -132,69 +167,111 @@ const toggleInviteBranch = (id: string, checked: boolean) => {
   }
 }
 
-// Branch assignment per member
-const editingMemberBranches = ref<TenantMember | null>(null)
-const editingBranchIds = ref<string[]>([])
-const savingBranches = ref(false)
+// Edit modal
+const editingMember = ref<TenantMember | null>(null)
+const editForm = reactive({ role: '' as TenantRole, branchIds: [] as string[] })
+const editBranchMode = ref<'all' | 'selected'>('all')
+const savingEdit = ref(false)
 
-const openBranchEdit = (member: TenantMember) => {
-  editingMemberBranches.value = member
-  editingBranchIds.value = [...(member.branchIds ?? [])]
+watch(editBranchMode, (mode) => {
+  if (mode === 'all') editForm.branchIds = []
+})
+
+const openEdit = (member: TenantMember) => {
+  editingMember.value = member
+  editForm.role = member.role
+  editForm.branchIds = [...(member.branchIds ?? [])]
+  editBranchMode.value = editForm.branchIds.length > 0 ? 'selected' : 'all'
 }
 
 const toggleEditBranch = (id: string, checked: boolean) => {
   if (checked) {
-    if (!editingBranchIds.value.includes(id)) editingBranchIds.value.push(id)
+    if (!editForm.branchIds.includes(id)) editForm.branchIds.push(id)
   } else {
-    editingBranchIds.value = editingBranchIds.value.filter((b) => b !== id)
+    editForm.branchIds = editForm.branchIds.filter((b) => b !== id)
   }
 }
 
-const saveBranchAssignment = async () => {
-  if (!editingMemberBranches.value) return
-
-  savingBranches.value = true
+const saveEdit = async () => {
+  if (!editingMember.value) return
+  savingEdit.value = true
   try {
-    await api.members.updateBranchIds(editingMemberBranches.value.id, editingBranchIds.value)
+    const branchIds = editBranchMode.value === 'all' ? [] : editForm.branchIds
+
+    await api.members.updateRoleAndBranches(editingMember.value.id, editForm.role, branchIds)
     await load()
-    editingMemberBranches.value = null
+    editingMember.value = null
   } finally {
-    savingBranches.value = false
+    savingEdit.value = false
   }
 }
 
-const handleRoleMenuClick = async (member: TenantMember, roleName: string) => {
-  if (roleName !== member.role) {
-    await changeRole(member.id, roleName as TenantRole)
+const isBlocked = (member: TenantMember) => !!member.blockedUntil && new Date(member.blockedUntil) > new Date()
+
+const handleBlock = async (member: TenantMember) => {
+  if (isBlocked(member)) {
+    const confirmed = await confirm({
+      title: 'Разблокировать участника',
+      message: `${member.email ?? member.displayName} получит доступ обратно`,
+      confirmText: 'Разблокировать',
+    })
+
+    if (confirmed) {
+      await unblockMember(member.id)
+      message.success('Участник разблокирован')
+    }
+  } else {
+    const confirmed = await confirm({
+      title: 'Заблокировать участника',
+      message: `${member.email ?? member.displayName} потеряет доступ`,
+      confirmText: 'Заблокировать',
+      confirmType: 'error',
+    })
+
+    if (confirmed) {
+      const forever = new Date(9999, 0).toISOString()
+
+      await blockMember(member.id, forever)
+      message.success('Участник заблокирован')
+    }
   }
 }
 
 const memberColumns = computed(() => buildMemberColumns({
   branches,
   canManageTeam,
-  onRoleChange: handleRoleMenuClick,
-  onBranchEdit: openBranchEdit,
+  onEdit: openEdit,
+  onBlock: handleBlock,
   onRemove: handleRemove,
 }))
 
 const inviteColumns = computed(() => buildInviteColumns({
+  branches,
   canManageTeam,
+  onResend: handleResendInvite,
   onCancel: handleCancelInvite,
 }))
 
 const handleInvite = async () => {
   if (!inviteFormRef.value?.validate()) return
 
+  if (inviteBranchMode.value === 'selected' && inviteBranchIds.value.length === 0) {
+    inviteError.value = 'Выберите хотя бы один филиал'
+
+    return
+  }
+
   inviting.value = true
   inviteError.value = ''
 
-  const { error } = await invite(inviteEmail.value, inviteRole.value) ?? {}
+  const { error, message: errorMessage } = await invite(inviteEmail.value, inviteRole.value, inviteBranchIds.value) ?? {}
 
   if (error) {
-    inviteError.value = 'Не удалось отправить приглашение'
+    inviteError.value = errorMessage ?? 'Не удалось отправить приглашение'
   } else {
     inviteEmail.value = ''
     inviteBranchIds.value = []
+    inviteBranchMode.value = 'all'
     message.success('Приглашение отправлено')
   }
 
@@ -210,6 +287,19 @@ const handleRemove = async (member: TenantMember) => {
   })
 
   if (confirmed) await removeMember(member.id)
+}
+
+const handleResendInvite = async (inv: TenantInvitation) => {
+  const confirmed = await confirm({
+    title: 'Переотправить приглашение',
+    message: `Новое приглашение будет отправлено на ${inv.email}`,
+    confirmText: 'Отправить',
+  })
+
+  if (confirmed) {
+    await resendInvite(inv.id)
+    message.success('Приглашение отправлено повторно')
+  }
 }
 
 const handleCancelInvite = async (inv: TenantInvitation) => {
@@ -232,7 +322,7 @@ onMounted(() => load())
 .team-root {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
 }
 
 .section-title {
@@ -248,46 +338,32 @@ onMounted(() => load())
 
 .members-table {
   margin-top: 4px;
-}
 
-.member-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+  :deep(.member-cell) {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
 
-.member-name {
-  font-weight: 600;
-}
+  :deep(.member-name) {
+    font-weight: 600;
+  }
 
-.member-email,
-.hint-cell {
-  color: var(--color-text-tertiary);
+  :deep(.member-invited-by) {
+    color: var(--color-text-tertiary);
+  }
+
 }
 
 .branch-checkboxes {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 8px 0;
 }
 
-.all-branches-hint {
-  color: var(--color-text-tertiary);
-  padding-bottom: 4px;
-}
-
-.branch-modal {
+.edit-modal {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.branch-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-border);
 }
 </style>
