@@ -26,6 +26,7 @@ export type TenantRow = {
   subscription: TenantSubscription
   delivery_min_order: number
   delivery_fee: number
+  delivery_description: string
   created_at: string
 }
 

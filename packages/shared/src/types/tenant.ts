@@ -42,5 +42,6 @@ export type Tenant = {
   subscription: TenantSubscription
   deliveryMinOrder: number
   deliveryFee: number
+  deliveryDescription: string
   createdAt: string
 }

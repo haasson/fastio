@@ -24,6 +24,13 @@
         </div>
       </div>
 
+      <UiText size="tiny" span class="section-title">Условия доставки</UiText>
+
+      <RichTextEditor
+        v-model="form.deliveryDescription"
+        label="Описание условий доставки"
+      />
+
       <div class="footer">
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
       </div>
@@ -36,6 +43,7 @@ import { ref, reactive, watch } from 'vue'
 import { UiForm, UiButton, UiInputNumber, UiText, useMessage } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
+import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 
 const props = defineProps<{ tenant: Tenant }>()
 
@@ -44,6 +52,7 @@ const tenantStore = useTenantStore()
 const buildForm = (t: Tenant) => ({
   deliveryMinOrder: (t.deliveryMinOrder ?? null) as number | null,
   deliveryFee: (t.deliveryFee ?? null) as number | null,
+  deliveryDescription: t.deliveryDescription ?? '',
 })
 
 const form = reactive(buildForm(props.tenant))
@@ -56,7 +65,7 @@ const { success } = useMessage()
 const handleSave = async () => {
   saving.value = true
   try {
-    await tenantStore.update({ deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0 })
+    await tenantStore.update({ deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0, deliveryDescription: form.deliveryDescription })
     success('Сохранено')
   } finally {
     saving.value = false
