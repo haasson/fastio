@@ -15,3 +15,5 @@ service-account.json
 !.env.example
 .vercel
 .env*.local
+WISHLIST.md
+docs/
