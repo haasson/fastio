@@ -134,4 +134,5 @@ export type BranchRow = {
   notifications: TenantNotifications | null
   created_at: string
   updated_at: string
+  archived_at: string | null
 }

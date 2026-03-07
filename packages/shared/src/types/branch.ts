@@ -13,9 +13,10 @@ export type Branch = {
   notifications: TenantNotifications | null
   createdAt: string
   updatedAt: string
+  archivedAt: string | null
 }
 
-export type BranchFormData = Omit<Branch, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>
+export type BranchFormData = Omit<Branch, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'archivedAt'>
 
 export type DishBranchPrice = {
   dishId: string

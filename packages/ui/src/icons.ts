@@ -38,6 +38,8 @@ import {
   Moon,
   CircleHelp,
   ChevronRight,
+  Archive,
+  ArchiveRestore,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -82,6 +84,8 @@ export const iconRegistry = {
   moon: Moon,
   help: CircleHelp,
   chevronRight: ChevronRight,
+  archive: Archive,
+  archiveRestore: ArchiveRestore,
 } as const
 
 export type IconName = keyof typeof iconRegistry

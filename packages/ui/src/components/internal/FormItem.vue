@@ -88,7 +88,7 @@ $form-item-sizes: (
   flex-direction: column;
 
   .label {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     color: var(--color-text);
   }
 

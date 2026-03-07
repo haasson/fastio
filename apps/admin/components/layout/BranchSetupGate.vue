@@ -1,0 +1,87 @@
+<template>
+  <div class="gate-root">
+    <UiCard class="gate-card">
+      <UiIcon name="mapPin" :size="48" class="icon" />
+      <UiTitle size="h3">Добавьте первый филиал</UiTitle>
+      <UiText size="small" class="desc">
+        Перед началом работы нужно добавить хотя бы один филиал —
+        к нему будут привязываться заказы.
+      </UiText>
+      <UiButton
+        v-if="canManageTeam"
+        type="primary"
+        icon="plus"
+        @click="modalOpen = true"
+      >
+        Добавить филиал
+      </UiButton>
+      <UiText v-else size="small" class="hint">
+        Обратитесь к администратору для настройки филиала
+      </UiText>
+    </UiCard>
+
+    <BranchFormModal
+      v-if="canManageTeam"
+      v-model="modalOpen"
+      :branch="null"
+      @save="handleSave"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { UiTitle, UiText, UiButton, UiIcon, UiCard } from '@fastio/ui'
+import { usePermissions } from '~/composables/usePermissions'
+import { useTenantStore } from '~/stores/tenant'
+import { useBranchStore } from '~/stores/branch'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import type { BranchFormData } from '@fastio/shared'
+import BranchFormModal from '~/components/settings/BranchFormModal.vue'
+
+const tenantStore = useTenantStore()
+const branchStore = useBranchStore()
+const api = useSupabaseApi()
+const { canManageTeam } = usePermissions()
+
+const modalOpen = ref(false)
+const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+
+const handleSave = async (data: BranchFormData) => {
+  if (!tenantId.value) return
+  const branch = await api.branches.add(tenantId.value, data)
+
+  if (branch) branchStore.branches.push(branch)
+  modalOpen.value = false
+}
+</script>
+
+<style scoped lang="scss">
+.gate-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 100%;
+  padding: 40px 16px;
+}
+
+.gate-card {
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  max-width: 380px;
+}
+
+.icon {
+  color: var(--color-primary);
+}
+
+.desc {
+  color: var(--color-text-secondary);
+}
+
+.hint {
+  color: var(--color-text-tertiary);
+}
+</style>

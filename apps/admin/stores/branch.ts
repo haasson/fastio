@@ -26,6 +26,20 @@ export const useBranchStore = defineStore('branch', () => {
   const init = async (tenantId: string, memberBranchIds: string[], isAdmin: boolean) => {
     branches.value = await api.branches.list(tenantId)
 
+    // Always subscribe to realtime so that adding the first branch is reflected immediately
+    channel?.unsubscribe()
+    channel = $supabase
+      .channel(`branches:${tenantId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'branches',
+        filter: `tenant_id=eq.${tenantId}`,
+      }, async () => {
+        branches.value = await api.branches.list(tenantId)
+      })
+      .subscribe()
+
     if (branches.value.length === 0) return
 
     // Determine available branches for current user
@@ -50,20 +64,6 @@ export const useBranchStore = defineStore('branch', () => {
       currentBranchId.value = available[0]?.id ?? null
       if (currentBranchId.value) localStorage.setItem(STORAGE_KEY, currentBranchId.value)
     }
-
-    // Subscribe to realtime
-    channel?.unsubscribe()
-    channel = $supabase
-      .channel(`branches:${tenantId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'branches',
-        filter: `tenant_id=eq.${tenantId}`,
-      }, async () => {
-        branches.value = await api.branches.list(tenantId)
-      })
-      .subscribe()
   }
 
   const setBranch = (id: string | null) => {

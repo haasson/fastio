@@ -34,15 +34,35 @@
           <UiButton
             type="text"
             size="medium"
-            icon="trash"
-            title="Удалить"
-            @click="handleRemove(branch)"
+            icon="archive"
+            title="Архивировать"
+            :loading="archivingId === branch.id"
+            @click="handleArchive(branch)"
           />
         </UiSpace>
       </div>
     </template>
 
-    <UiText v-else size="small">Нет филиалов. Добавьте первый.</UiText>
+    <UiText v-else size="small">Нет активных филиалов.</UiText>
+
+    <!-- Архив -->
+    <template v-if="archivedBranches.length">
+      <UiDivider />
+      <UiText size="tiny" span class="section-title">Архив</UiText>
+      <div v-for="branch in archivedBranches" :key="branch.id" class="branch-row archived">
+        <div class="branch-info">
+          <UiText size="medium" class="branch-name">{{ branch.name }}</UiText>
+          <UiText v-if="branch.address" size="tiny" class="branch-address">{{ branch.address }}</UiText>
+        </div>
+        <UiButton
+          type="text"
+          size="medium"
+          icon="archiveRestore"
+          title="Восстановить"
+          @click="handleRestore(branch)"
+        />
+      </div>
+    </template>
 
     <BranchFormModal
       v-model="modalOpen"
@@ -54,21 +74,24 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiText, UiTag, UiSpace, UiSkeleton, useConfirm } from '@fastio/ui'
+import { UiButton, UiText, UiTag, UiSpace, UiSkeleton, UiDivider, useConfirm } from '@fastio/ui'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useBranches } from '~/composables/useBranches'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
+import { useSupabaseApi } from '~/composables/useSupabaseApi'
 import BranchFormModal from './BranchFormModal.vue'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
+const api = useSupabaseApi()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
-const { branches, loading, add, update, remove } = useBranches(tenantId)
+const { branches, archivedBranches, loading, add, update, archive, restore } = useBranches(tenantId)
 const { confirm } = useConfirm()
 
 const modalOpen = ref(false)
 const editingBranch = ref<Branch | null>(null)
+const archivingId = ref<string | null>(null)
 
 const openAdd = () => {
   editingBranch.value = null
@@ -89,18 +112,43 @@ const handleSave = async (data: BranchFormData) => {
   modalOpen.value = false
 }
 
-const handleRemove = async (branch: Branch) => {
+const handleArchive = async (branch: Branch) => {
+  archivingId.value = branch.id
+  const hasActive = await api.branches.hasActiveOrders(branch.id, tenantId.value)
+
+  archivingId.value = null
+
+  if (hasActive) {
+    await confirm({
+      title: 'Нельзя архивировать филиал',
+      message: `У филиала «${branch.name}» есть активные заказы. Переведите все заказы в статус «Выполнен» или «Отменён», а затем попробуйте снова.`,
+      confirmText: false,
+      cancelText: 'Понятно',
+    })
+
+    return
+  }
+
   const confirmed = await confirm({
-    title: 'Удалить филиал',
-    message: `Филиал «${branch.name}» будет удалён`,
-    confirmText: 'Удалить',
-    confirmType: 'error',
+    title: 'Архивировать филиал?',
+    message: `Филиал «${branch.name}» будет скрыт. Его можно будет восстановить из архива.`,
+    confirmText: 'Архивировать',
   })
 
-  if (confirmed) {
-    if (branchStore.currentBranchId === branch.id) branchStore.setBranch(null)
-    await remove(branch.id)
-  }
+  if (!confirmed) return
+
+  if (branchStore.currentBranchId === branch.id) branchStore.setBranch(null)
+  await archive(branch.id)
+}
+
+const handleRestore = async (branch: Branch) => {
+  const confirmed = await confirm({
+    title: 'Восстановить филиал?',
+    message: `Филиал «${branch.name}» снова станет активным.`,
+    confirmText: 'Восстановить',
+  })
+
+  if (confirmed) await restore(branch.id)
 }
 </script>
 
@@ -129,6 +177,10 @@ const handleRemove = async (branch: Branch) => {
   gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid var(--color-border-light);
+
+  &.archived {
+    opacity: 0.6;
+  }
 }
 
 .branch-info {

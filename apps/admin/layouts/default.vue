@@ -63,8 +63,9 @@
         />
       </header>
 
-      <main class="content">
-        <slot />
+      <main class="content" :class="{ 'content-gate': showBranchGate }">
+        <BranchSetupGate v-if="showBranchGate" />
+        <slot v-else />
       </main>
     </div>
   </div>
@@ -77,6 +78,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon, useConfirm } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
+import BranchSetupGate from '~/components/layout/BranchSetupGate.vue'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
 import { useAuthStore } from '~/stores/auth'
@@ -95,6 +97,9 @@ const isDark = inject<Ref<boolean>>('isDark', ref(false))
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
+
+const showBranchGate = computed(() => !tenantStore.loading && !!tenantStore.tenant && !branchStore.hasBranches,
+)
 
 const displayName = computed(() => {
   const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || ''
@@ -371,6 +376,11 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 .content {
   flex: 1;
   padding: 24px;
+
+  &.content-gate {
+    display: flex;
+    padding: 0;
+  }
 }
 
 .overlay {

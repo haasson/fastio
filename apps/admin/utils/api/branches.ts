@@ -20,6 +20,7 @@ export const mapBranch = (raw: Record<string, unknown>): Branch => {
     notifications: row.notifications,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    archivedAt: row.archived_at ?? null,
   }
 }
 
@@ -37,7 +38,15 @@ const branchToDb = (data: BranchFormData) => ({
 export const branchesApi = {
   async list(sb: SupabaseClient, tenantId: string): Promise<Branch[]> {
     const data = await query(
-      sb.from('branches').select('*').eq('tenant_id', tenantId).order('created_at'),
+      sb.from('branches').select('*').eq('tenant_id', tenantId).is('archived_at', null).order('created_at'),
+    )
+
+    return (data ?? []).map(mapBranch)
+  },
+
+  async listArchived(sb: SupabaseClient, tenantId: string): Promise<Branch[]> {
+    const data = await query(
+      sb.from('branches').select('*').eq('tenant_id', tenantId).not('archived_at', 'is', null).order('archived_at', { ascending: false }),
     )
 
     return (data ?? []).map(mapBranch)
@@ -68,7 +77,38 @@ export const branchesApi = {
     return result ? mapBranch(result) : null
   },
 
-  async remove(sb: SupabaseClient, id: string): Promise<void> {
-    await query(sb.from('branches').delete().eq('id', id))
+  async archive(sb: SupabaseClient, id: string): Promise<Branch | null> {
+    const result = await query(
+      sb.from('branches').update({ archived_at: new Date().toISOString() }).eq('id', id).select().single(),
+    )
+
+    return result ? mapBranch(result) : null
+  },
+
+  async restore(sb: SupabaseClient, id: string): Promise<Branch | null> {
+    const result = await query(
+      sb.from('branches').update({ archived_at: null }).eq('id', id).select().single(),
+    )
+
+    return result ? mapBranch(result) : null
+  },
+
+  async hasActiveOrders(sb: SupabaseClient, branchId: string, tenantId: string): Promise<boolean> {
+    const { data: statuses } = await sb
+      .from('order_statuses')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .in('group_type', ['new', 'in_progress'])
+
+    if (!statuses || statuses.length === 0) return false
+
+    const statusIds = statuses.map((s: { id: string }) => s.id)
+    const { count } = await sb
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('branch_id', branchId)
+      .in('status', statusIds)
+
+    return (count ?? 0) > 0
   },
 }
