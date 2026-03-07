@@ -10,6 +10,15 @@
     >
       <UiIcon :name="item.icon" :size="18" />
       <span>{{ item.label }}</span>
+      <UiCounter
+        v-if="item.to === '/orders' && showOrdersBadge"
+        :value="newOrderCount"
+        type="error"
+        size="tiny"
+        filled
+        class="orders-counter"
+        :class="{ blink: blinkingCounter }"
+      />
     </NuxtLink>
   </nav>
 </template>
@@ -17,15 +26,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import { UiIcon } from '@fastio/ui'
+import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/ui'
 import { usePermissions } from '~/composables/usePermissions'
+import { useNotificationPrefs } from '~/composables/useNotificationPrefs'
+import { useNewOrderCounter } from '~/composables/useNewOrderCounter'
 
 defineProps<{ collapsed?: boolean }>()
 
 type NavItem = { to: string; icon: IconName; label: string; visible?: ComputedRef<boolean> }
 
 const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings } = usePermissions()
+const { blinkingCounter } = useNotificationPrefs()
+const { count: newOrderCount } = useNewOrderCounter()
+
+const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.value > 0)
 
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
@@ -77,11 +92,24 @@ defineExpose({ navItems })
   }
 }
 
+.orders-counter {
+  margin-left: auto;
+
+  &.blink {
+    animation: counter-blink 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes counter-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 .nav--collapsed .nav-item {
   justify-content: center;
   padding: 10px 0;
 
-  span {
+  span, .orders-counter {
     display: none;
   }
 }

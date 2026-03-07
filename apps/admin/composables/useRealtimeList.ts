@@ -53,6 +53,10 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
     items.value = await options.fetch()
     loading.value = false
 
+    const { data: { session } } = await $supabase.auth.getSession()
+
+    if (session?.access_token) $supabase.realtime.setAuth(session.access_token)
+
     channel = $supabase
       .channel(key)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: options.table, filter }, onInsert)
@@ -73,7 +77,13 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
     { immediate: true },
   )
 
+  const refresh = async () => {
+    loading.value = true
+    items.value = await options.fetch()
+    loading.value = false
+  }
+
   onUnmounted(() => channel?.unsubscribe())
 
-  return { items, loading }
+  return { items, loading, refresh }
 }

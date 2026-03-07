@@ -38,8 +38,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { definePageMeta } from '#imports'
+import { computed, onMounted } from 'vue'
+import { definePageMeta, useRoute, useRouter } from '#imports'
 import { UiTabs } from '@fastio/ui'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import SettingsContacts from '~/components/settings/SettingsContacts.vue'
@@ -58,7 +58,19 @@ const { canManageTeam } = usePermissions()
 
 onMounted(() => tenantStore.init())
 
-const activeTab = ref('contacts')
+const route = useRoute()
+const router = useRouter()
+
+const VALID_TABS = ['contacts', 'theme', 'delivery', 'notifications', 'team', 'branches']
+
+const activeTab = computed({
+  get: () => {
+    const hash = route.hash.replace('#', '')
+
+    return VALID_TABS.includes(hash) ? hash : 'contacts'
+  },
+  set: (tab: string) => router.replace({ hash: `#${tab}` }),
+})
 
 const settingsTabs = computed(() => [
   { value: 'contacts', label: 'Контакты', icon: 'mapPin' as const },

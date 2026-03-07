@@ -51,7 +51,7 @@ export const ordersApi = {
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('status', filter)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
 
     if (branchId !== null) {
       q = q.eq('branch_id', branchId)

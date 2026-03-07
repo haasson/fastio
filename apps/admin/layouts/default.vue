@@ -74,6 +74,8 @@
 <script setup lang="ts">
 import { ref, computed, inject, type Ref } from 'vue'
 import { useRoute, navigateTo, useSupabaseApi } from '#imports'
+import { useOrdersChannel } from '~/composables/useOrdersChannel'
+import { useOrderAlertHandler } from '~/composables/useOrderAlertHandler'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon, useConfirm } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
@@ -97,6 +99,10 @@ const isDark = inject<Ref<boolean>>('isDark', ref(false))
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
+
+// Уведомления о новых заказах
+useOrdersChannel(computed(() => tenantStore.currentTenantId))
+useOrderAlertHandler()
 
 const showBranchGate = computed(() => !tenantStore.loading && !!tenantStore.tenant && !branchStore.hasBranches,
 )

@@ -1,5 +1,5 @@
 <template>
-  <div class="orders-root">
+  <div class="orders-root" @click="resetOrderCount">
     <OrderStatusList
       v-model="selectedStatusId"
       :tenant-id="tenantId"
@@ -21,6 +21,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, shallowRef } from 'vue'
 import { definePageMeta } from '#imports'
+import { useNewOrderCounter } from '~/composables/useNewOrderCounter'
 import type { OrderStatus } from '@fastio/shared'
 import OrderStatusList from '~/components/orders/OrderStatusList.vue'
 import OrderList from '~/components/orders/OrderList.vue'
@@ -29,6 +30,10 @@ import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 
 definePageMeta({ middleware: 'auth' })
+
+const { count: newOrderCount, reset: resetOrderCount } = useNewOrderCounter()
+
+resetOrderCount()
 
 const api = useSupabaseApi()
 const tenantStore = useTenantStore()
@@ -57,6 +62,7 @@ const fetchCounts = async () => {
 }
 
 watch([tenantId, branchId], fetchCounts, { immediate: true })
+watch(newOrderCount, fetchCounts)
 </script>
 
 <style scoped lang="scss">

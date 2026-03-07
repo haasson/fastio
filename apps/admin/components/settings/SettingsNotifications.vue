@@ -3,29 +3,43 @@
     <div class="form">
       <UiText size="tiny" span class="section-title">Уведомления о заказах</UiText>
 
-      <div class="field">
-        <UiInput
-          v-model="form.email"
-          name="email"
-          label="Email для уведомлений"
-          type="email"
-          placeholder="orders@vasya-pizza.ru"
-          :rules="[{ type: 'email', message: 'Некорректный email' }]"
-        />
-        <span class="hint">На этот адрес придёт письмо при каждом новом заказе</span>
+      <div class="row">
+        <div class="field">
+          <UiInput
+            v-model="form.email"
+            name="email"
+            label="Email для уведомлений"
+            type="email"
+            placeholder="orders@vasya-pizza.ru"
+            :rules="[{ type: 'email', message: 'Некорректный email' }]"
+          />
+          <span class="hint">На этот адрес придёт письмо при каждом новом заказе</span>
+        </div>
+
+        <div class="field">
+          <UiInput
+            v-model="form.telegramChatId"
+            label="Telegram Chat ID"
+            placeholder="-1001234567890"
+          />
+          <span class="hint">
+            Как получить:
+            <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>
+            (для личных сообщений) или добавьте бота в группу и используйте ID группы
+          </span>
+        </div>
       </div>
 
-      <div class="field">
-        <UiInput
-          v-model="form.telegramChatId"
-          label="Telegram Chat ID"
-          placeholder="-1001234567890"
-        />
-        <span class="hint">
-          Как получить:
-          <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>
-          (для личных сообщений) или добавьте бота в группу и используйте ID группы
-        </span>
+      <UiText size="tiny" span class="section-title">Браузерные уведомления</UiText>
+
+      <div class="prefs">
+        <div class="pref">
+          <div>
+            <UiText size="small" class="pref-label">Мигающий счётчик в меню</UiText>
+            <span class="hint">Счётчик новых заказов будет мигать в боковом меню</span>
+          </div>
+          <UiSwitch v-model="blinkingCounter" />
+        </div>
       </div>
 
       <div class="tg-status">
@@ -46,8 +60,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, useMessage } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, UiSwitch, useMessage } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
+import { useNotificationPrefs } from '~/composables/useNotificationPrefs'
+
+const { blinkingCounter } = useNotificationPrefs()
 
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
@@ -94,6 +111,16 @@ const handleSave = async () => {
   @include section-title;
 }
 
+.row {
+  display: flex;
+  gap: 16px;
+
+  .field {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -104,6 +131,25 @@ const handleSave = async () => {
   font-size: 12px;
   color: var(--color-text-secondary);
   line-height: 1.5;
+}
+
+.prefs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pref {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pref-label {
+  font-weight: 500;
+  margin-bottom: 2px;
+  display: block;
 }
 
 .tg-status {

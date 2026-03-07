@@ -113,15 +113,7 @@ const openEditModal = (order: Order) => {
   editModalOpen.value = true
 }
 
-const handleOrderSaved = (updatedOrder: Order) => {
-  const i = orders.value.findIndex((o) => o.id === updatedOrder.id)
-
-  if (i === -1) return
-  if (updatedOrder.status !== props.statusId) {
-    orders.value.splice(i, 1)
-  } else {
-    orders.value[i] = updatedOrder
-  }
+const handleOrderSaved = () => {
   emit('ordersChanged')
 }
 </script>
