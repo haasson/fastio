@@ -32,27 +32,34 @@
           </div>
         </div>
         <div class="item-controls">
-          <div class="qty-controls">
-            <button class="qty-btn" @click="changeQty(idx, -1)">
-              <UiIcon name="minusRound" :size="16" />
-            </button>
-            <span class="qty-value">{{ item.quantity }}</span>
-            <button class="qty-btn" @click="changeQty(idx, 1)">
-              <UiIcon name="plusRound" :size="16" />
-            </button>
-          </div>
+          <template v-if="!readonly">
+            <div class="qty-controls">
+              <button class="qty-btn" @click="changeQty(idx, -1)">
+                <UiIcon name="minusRound" :size="16" />
+              </button>
+              <span class="qty-value">{{ item.quantity }}</span>
+              <button class="qty-btn" @click="changeQty(idx, 1)">
+                <UiIcon name="plusRound" :size="16" />
+              </button>
+            </div>
+          </template>
+          <template v-else>
+            <span class="qty-value qty-readonly">× {{ item.quantity }}</span>
+          </template>
           <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
-          <button class="edit-item-btn" title="Изменить состав" @click="openEditItem(idx)">
-            <UiIcon name="pencil" :size="13" />
-          </button>
-          <button class="remove-btn" title="Удалить" @click="removeItem(idx)">
-            <UiIcon name="close" :size="13" />
-          </button>
+          <template v-if="!readonly">
+            <button class="edit-item-btn" title="Изменить состав" @click="openEditItem(idx)">
+              <UiIcon name="pencil" :size="13" />
+            </button>
+            <button class="remove-btn" title="Удалить" @click="removeItem(idx)">
+              <UiIcon name="close" :size="13" />
+            </button>
+          </template>
         </div>
       </li>
     </ul>
 
-    <div class="add-dish-row">
+    <div v-if="!readonly" class="add-dish-row">
       <UiButton
         type="default"
         size="small"
@@ -84,6 +91,7 @@ import OrderAddDishModal from './OrderAddDishModal.vue'
 const props = defineProps<{
   items: OrderItem[]
   tenantId: string
+  readonly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -269,6 +277,10 @@ const updateDishItem = (item: OrderItem) => {
   color: var(--color-title);
   min-width: 18px;
   text-align: center;
+}
+
+.qty-readonly {
+  color: var(--color-text-secondary);
 }
 
 .item-price {

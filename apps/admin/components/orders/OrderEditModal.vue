@@ -37,24 +37,37 @@
       <section class="section">
         <div class="section-label">Клиент</div>
         <div class="fields-row">
-          <UiInput v-model="form.customerName" label="Имя" placeholder="Иван Иванов" />
-          <UiInput v-model="form.customerPhone" label="Телефон" placeholder="+7 999 000 00 00" />
+          <UiInput
+            v-model="form.customerName"
+            label="Имя"
+            placeholder="Иван Иванов"
+            :disabled="!can.editCustomer"
+          />
+          <UiInput
+            v-model="form.customerPhone"
+            label="Телефон"
+            placeholder="+7 999 000 00 00"
+            :disabled="!can.editCustomer"
+          />
         </div>
       </section>
 
       <!-- Доставка -->
       <section class="section">
         <div class="section-label">Доставка</div>
-        <UiSegmentedControl
-          v-model="form.deliveryType"
-          :items="deliveryItems"
-          size="medium"
-        />
+        <div :class="{ 'field-disabled': !can.editDeliveryType }">
+          <UiSegmentedControl
+            v-model="form.deliveryType"
+            :items="deliveryItems"
+            size="medium"
+          />
+        </div>
         <UiInput
           v-if="form.deliveryType === 'delivery'"
           v-model="form.address"
           label="Адрес"
           placeholder="ул. Пушкина, д. 10, кв. 5"
+          :disabled="!can.editAddress"
           class="mt"
         />
       </section>
@@ -63,6 +76,7 @@
       <OrderItemsSection
         :items="form.items"
         :tenant-id="tenantId"
+        :readonly="!can.editItems"
         @update:items="form.items = $event"
       />
 
@@ -78,7 +92,12 @@
         </div>
         <div class="total-line">
           <span class="total-key">Стоимость доставки</span>
-          <UiInputNumber v-model="form.deliveryFee" :min="0" class="fee-input" />
+          <UiInputNumber
+            v-model="form.deliveryFee"
+            :min="0"
+            :disabled="!can.editDeliveryFee"
+            class="fee-input"
+          />
         </div>
         <div class="total-line total-final">
           <span class="total-key">Итого</span>
@@ -92,6 +111,7 @@
         <UiSelect
           v-model:value="form.paymentType"
           :options="paymentOptions"
+          :disabled="!can.editPayment"
         />
       </section>
 
@@ -144,8 +164,22 @@ const notesRefreshKey = ref(0)
 
 const shortId = computed(() => props.order?.id.slice(0, 6).toUpperCase() ?? '')
 
-const currentStatus = computed(() => props.statuses.find((s) => s.id === form.status) ?? null,
-)
+const currentStatus = computed(() => props.statuses.find((s) => s.id === form.status) ?? null)
+
+const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
+
+const can = computed(() => {
+  const g = statusGroup.value
+
+  return {
+    editCustomer: g === 'new' || g === 'in_progress',
+    editDeliveryType: g === 'new',
+    editAddress: g === 'new',
+    editItems: g === 'new',
+    editDeliveryFee: g === 'new' || g === 'in_progress',
+    editPayment: g === 'new' || g === 'in_progress',
+  }
+})
 
 const statusMenuItems = computed(() => props.statuses
   .filter((s) => s.id !== form.status)
@@ -283,6 +317,11 @@ const modalActions = computed(() => [
 
 .mt {
   margin-top: 2px;
+}
+
+.field-disabled {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .totals-section {
