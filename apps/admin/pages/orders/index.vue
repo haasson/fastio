@@ -2,16 +2,13 @@
   <div class="orders-root" @click="resetOrderCount">
     <OrderStatusList
       v-model="selectedStatusId"
-      :tenant-id="tenantId"
       :order-counts="orderCounts"
-      @statuses-loaded="onStatusesLoaded"
     />
 
     <OrderList
       v-if="selectedStatusId"
       :tenant-id="tenantId"
       :status-id="selectedStatusId"
-      :statuses="loadedStatuses"
       :branch-id="branchId"
       @orders-changed="fetchCounts"
     />
@@ -19,15 +16,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, shallowRef } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { definePageMeta } from '#imports'
 import { useNewOrderCounter } from '~/composables/useNewOrderCounter'
-import type { OrderStatus } from '@fastio/shared'
 import OrderStatusList from '~/components/orders/OrderStatusList.vue'
 import OrderList from '~/components/orders/OrderList.vue'
 import { useSupabaseApi } from '~/composables/useSupabaseApi'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
+import { useOrderStatusesStore } from '~/stores/order-statuses'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -44,15 +41,14 @@ tenantStore.init()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const branchId = computed(() => branchStore.currentBranchId)
 
+const { statuses } = useOrderStatusesStore()
 const selectedStatusId = ref<string | null>(null)
-const loadedStatuses = shallowRef<OrderStatus[]>([])
 
-const onStatusesLoaded = (statuses: OrderStatus[]) => {
-  loadedStatuses.value = statuses
-  if (!selectedStatusId.value && statuses.length > 0) {
-    selectedStatusId.value = statuses[0].id
+watch(statuses, (list) => {
+  if (!selectedStatusId.value && list.length > 0) {
+    selectedStatusId.value = list[0].id
   }
-}
+}, { immediate: true })
 
 const orderCounts = ref<Record<string, number>>({})
 

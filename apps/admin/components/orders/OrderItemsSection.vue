@@ -2,7 +2,7 @@
   <section class="section">
     <div class="section-label">Состав</div>
     <ul class="items-list">
-      <li v-for="(item, idx) in items" :key="item.dishId + idx" class="item-row">
+      <li v-for="(item, idx) in items" :key="`${item.dishId}-${idx}`" class="item-row">
         <div class="item-body">
           <div class="item-title-row">
             <span v-if="item.categoryName" class="item-category">{{ item.categoryName }}</span>

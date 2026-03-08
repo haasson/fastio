@@ -22,7 +22,6 @@
           :key="order.id"
           :order="order"
           :updating="updatingIds.has(order.id)"
-          :statuses="statuses"
           :branch-name="branchId === null ? getBranchName(order.branchId) : undefined"
           @status-change="handleStatusChange"
           @open-edit="openEditModal"
@@ -36,7 +35,6 @@
           :key="order.id"
           :order="order"
           :updating="updatingIds.has(order.id)"
-          :statuses="statuses"
           :branch-name="branchId === null ? getBranchName(order.branchId) : undefined"
           @status-change="handleStatusChange"
           @open-edit="openEditModal"
@@ -47,7 +45,6 @@
     <OrderEditModal
       v-model="editModalOpen"
       :order="editingOrder"
-      :statuses="statuses"
       :tenant-id="tenantId"
       @saved="handleOrderSaved"
     />
@@ -58,7 +55,7 @@
 import { ref, computed, reactive } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { UiSegmentedControl } from '@fastio/ui'
-import type { Order, OrderStatus } from '@fastio/shared'
+import type { Order } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderRow from '~/components/orders/OrderRow.vue'
 import OrderEditModal from '~/components/orders/OrderEditModal.vue'
@@ -66,11 +63,11 @@ import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import { useOrders } from '~/composables/useOrders'
 import { useBranchStore } from '~/stores/branch'
+import { useOrderStatusesStore } from '~/stores/order-statuses'
 
 const props = defineProps<{
   tenantId: string
   statusId: string | null
-  statuses: OrderStatus[]
   branchId: string | null
 }>()
 
@@ -83,10 +80,9 @@ const statusIdRef = computed(() => props.statusId)
 const branchIdRef = computed(() => props.branchId)
 
 const branchStore = useBranchStore()
+const { statuses } = useOrderStatusesStore()
 
-const statusesRef = computed(() => props.statuses)
-
-const { orders, loading, updateStatus: updateOrderStatus } = useOrders(tenantIdRef, statusIdRef, branchIdRef, statusesRef)
+const { orders, loading, updateStatus: updateOrderStatus } = useOrders(tenantIdRef, statusIdRef, branchIdRef, computed(() => statuses))
 
 const orderView = useLocalStorage<'cards' | 'list'>('orders:view', 'cards')
 const updatingIds = reactive(new Set<string>())

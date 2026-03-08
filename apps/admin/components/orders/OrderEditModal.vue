@@ -156,9 +156,11 @@ import { ref, reactive, computed, watch } from 'vue'
 import {
   UiModal, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
-import type { Order, OrderStatus } from '@fastio/shared'
+import type { Order } from '@fastio/shared'
 import { useSupabaseApi } from '#imports'
-import { STATUS_GROUP_COLORS, STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useStatusColor } from '~/composables/useStatusColor'
 import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
 import { useOrderEventLogger } from '~/composables/useOrderEventLogger'
 import OrderItemsSection from './OrderItemsSection.vue'
@@ -168,7 +170,6 @@ import OrderEventsSection from './OrderEventsSection.vue'
 const props = defineProps<{
   modelValue: boolean
   order: Order | null
-  statuses: OrderStatus[]
   tenantId: string
 }>()
 
@@ -179,6 +180,8 @@ const emit = defineEmits<{
 
 const api = useSupabaseApi()
 const { logSaveEvents } = useOrderEventLogger()
+const { statuses } = useOrderStatusesStore()
+const { getStatusColor } = useStatusColor()
 
 const saving = ref(false)
 const notesRefreshKey = ref(0)
@@ -192,7 +195,7 @@ const tabs = [
 
 const shortId = computed(() => props.order?.id.slice(0, 6).toUpperCase() ?? '')
 
-const currentStatus = computed(() => props.statuses.find((s) => s.id === form.status) ?? null)
+const currentStatus = computed(() => statuses.find((s) => s.id === form.status) ?? null)
 
 const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
 
@@ -209,12 +212,12 @@ const can = computed(() => {
   }
 })
 
-const statusMenuItems = computed(() => props.statuses
+const statusMenuItems = computed(() => statuses
   .filter((s) => s.id !== form.status)
   .map((s) => ({
     name: s.id,
     label: s.name,
-    color: STATUS_GROUP_COLORS[s.groupType],
+    color: getStatusColor(s.id),
   })),
 )
 
@@ -288,7 +291,7 @@ const onSave = async () => {
     })
 
     if (updated) {
-      logSaveEvents(form, props.order!, props.statuses)
+      logSaveEvents(form, props.order!, statuses)
       emit('saved', updated)
     }
   } finally {

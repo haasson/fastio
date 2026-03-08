@@ -25,32 +25,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { UiTabs } from '@fastio/ui'
-import type { OrderStatus } from '@fastio/shared'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
-import { useOrderStatuses } from '~/composables/useOrderStatuses'
+import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 
 const props = defineProps<{
-  tenantId: string
   modelValue: string | null
   orderCounts: Record<string, number>
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [id: string | null]
-  'statusesLoaded': [statuses: OrderStatus[]]
 }>()
 
-const tenantIdRef = computed(() => props.tenantId)
-
 const { statuses, add: addStatus, update: updateStatus, remove: removeStatus, reorder: reorderStatuses }
-  = useOrderStatuses(tenantIdRef)
-
-watch(statuses, (list) => emit('statusesLoaded', list), { immediate: true })
+  = useOrderStatusesStore()
 
 const statusTabs = computed(() => statuses.value.map((s) => ({
   value: s.id,

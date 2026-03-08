@@ -94,12 +94,12 @@ import type { Order, OrderStatus } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
+import { useOrderStatusesStore } from '~/stores/order-statuses'
 
 const props = defineProps<{
   order: Order
   updating?: boolean
   branchName?: string
-  statuses: OrderStatus[]
 }>()
 
 const emit = defineEmits<{
@@ -107,18 +107,20 @@ const emit = defineEmits<{
   'open-edit': [order: Order]
 }>()
 
+const { statuses } = useOrderStatusesStore()
+
 const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
 
-const currentStatus = computed(() => props.statuses.find((s) => s.id === props.order.status) ?? null,
+const currentStatus = computed(() => statuses.find((s) => s.id === props.order.status) ?? null,
 )
 
 const quickActionStatuses = computed(() => {
-  const current = props.statuses.find((s) => s.id === props.order.status)
+  const current = statuses.find((s) => s.id === props.order.status)
 
   if (!current?.quickActions?.length) return []
 
   return current.quickActions
-    .map((id) => props.statuses.find((s) => s.id === id))
+    .map((id) => statuses.find((s) => s.id === id))
     .filter(Boolean) as OrderStatus[]
 })
 

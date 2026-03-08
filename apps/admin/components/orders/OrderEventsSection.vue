@@ -2,10 +2,13 @@
   <section class="section">
     <div v-if="loading" class="empty">Загрузка…</div>
     <div v-else-if="events.length === 0" class="empty">История событий пуста</div>
-    <div v-else class="events-list">
-      <div v-for="event in events" :key="event.id" class="event">
-        <div class="event-dot" :style="{ background: eventColor(event.eventType) }" />
-        <div class="event-body">
+    <UiTimeline v-else>
+      <UiTimelineItem
+        v-for="{ event, color } in enrichedEvents"
+        :key="event.id"
+        :color="color"
+      >
+        <template #default>
           <template v-if="event.eventType === 'field_updated'">
             <div
               v-for="(change, i) in fieldChanges(event)"
@@ -37,27 +40,32 @@
             </div>
           </template>
           <div v-else class="event-text">{{ eventText(event) }}</div>
+        </template>
+        <template #footer>
           <div class="event-meta">
             <span class="event-actor">{{ event.actorName ?? 'Сторфронт' }}</span>
             <span class="event-sep">·</span>
             <span class="event-time">{{ formatRelativeTime(event.createdAt, now) }}</span>
           </div>
-        </div>
-      </div>
-    </div>
+        </template>
+      </UiTimelineItem>
+    </UiTimeline>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useNuxtApp } from '#imports'
+import { UiTimeline, UiTimelineItem } from '@fastio/ui'
 import type { OrderEvent, OrderItem } from '@fastio/shared'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useSupabaseApi } from '~/composables/useSupabaseApi'
 import { mapOrderEvent } from '~/utils/api/order-events'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
-import { EVENT_COLORS, FIELD_LABELS } from '~/config/order-events'
+import { FIELD_LABELS } from '~/config/order-events'
+import { COLORS } from '@fastio/ui'
 import { formatFieldValue, formatEventText } from '~/utils/format-order'
+import { useStatusColor } from '~/composables/useStatusColor'
 
 const props = defineProps<{
   orderId: string
@@ -66,6 +74,7 @@ const props = defineProps<{
 
 const { $supabase } = useNuxtApp()
 const api = useSupabaseApi()
+const { getStatusColor } = useStatusColor()
 
 const loading = ref(false)
 const events = ref<OrderEvent[]>([])
@@ -73,7 +82,18 @@ const now = new Date()
 
 let channel: RealtimeChannel | null = null
 
-const eventColor = (type: string) => EVENT_COLORS[type] ?? 'var(--grey-400)'
+const enrichedEvents = computed(() => {
+  const firstChange = events.value.find((e) => e.eventType === 'status_changed')
+  let runningColor = firstChange ? getStatusColor(firstChange.meta.from_id) : COLORS.GREY_400
+
+  return events.value.map((event) => {
+    if (event.eventType === 'status_changed') {
+      runningColor = getStatusColor(event.meta.to_id)
+    }
+
+    return { event, color: runningColor }
+  })
+})
 
 type FieldChange = { label: string; oldFormatted: string; newFormatted: string }
 
@@ -170,32 +190,6 @@ onUnmounted(() => channel?.unsubscribe())
 .empty {
   font-size: 13px;
   color: var(--color-text-tertiary);
-}
-
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.event {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.event-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-top: 4px;
-  flex-shrink: 0;
-}
-
-.event-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .event-text {
