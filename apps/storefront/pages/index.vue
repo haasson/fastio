@@ -22,6 +22,7 @@
               v-for="dish in dishesByCategory[cat.id]"
               :key="dish.id"
               :dish="dish"
+              :has-modifiers="!!(dishModifiers[dish.id]?.length)"
               @open="openDish"
             />
           </div>
@@ -42,12 +43,16 @@
     </Transition>
 
     <!-- Модалка блюда -->
-    <MenuDishModal :dish="selectedDish" @close="selectedDish = null" />
+    <MenuDishModal
+      :dish="selectedDish"
+      :modifier-groups="selectedDish ? (dishModifiers[selectedDish.id] ?? []) : []"
+      @close="selectedDish = null"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Tenant, Category, Dish } from '@fastio/shared'
+import type { Tenant, Category, Dish, DishModifierGroup } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()
@@ -56,13 +61,14 @@ const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 
 const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
-const { data: menu } = await useAsyncData<{ categories: Category[]; dishes: Dish[] }>(
+const { data: menu } = await useAsyncData<{ categories: Category[]; dishes: Dish[]; dishModifiers: Record<string, DishModifierGroup[]> }>(
   'menu',
   () => rfetch('/api/menu', slugQuery),
 )
 
 const categories = computed(() => menu.value?.categories ?? [])
 const dishes = computed(() => menu.value?.dishes ?? [])
+const dishModifiers = computed(() => menu.value?.dishModifiers ?? {})
 
 const dishesByCategory = computed(() => {
   const map: Record<string, Dish[]> = {}

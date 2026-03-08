@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Dish, DishBranchPrice } from '@fastio/shared'
+import type { Dish, DishBranchPrice, DishModifierGroup, DishModifierOption } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { DishRow, DishBranchPriceRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
@@ -150,5 +150,99 @@ export const dishesApi = {
     const path = url.substring(idx + marker.length)
 
     await query(sb.storage.from('dish-images').remove([path]))
+  },
+
+  async getDishModifiers(sb: SupabaseClient, dishId: string): Promise<DishModifierGroup[]> {
+    const groupRows = await query(
+      sb.from('dish_modifier_groups')
+        .select('group_id, sort_order, modifier_groups(id, name)')
+        .eq('dish_id', dishId)
+        .order('sort_order'),
+    ) as unknown as { group_id: string; sort_order: number; modifier_groups: { id: string; name: string } }[]
+
+    if (!groupRows || groupRows.length === 0) return []
+
+    const optionRows = await query(
+      sb.from('dish_modifier_options')
+        .select('option_id, price_delta, is_default, sort_order, modifier_options(id, name, group_id)')
+        .eq('dish_id', dishId)
+        .order('sort_order'),
+    ) as unknown as { option_id: string; price_delta: number; is_default: boolean; sort_order: number; modifier_options: { id: string; name: string; group_id: string } }[]
+
+    const optionsByGroup = new Map<string, DishModifierOption[]>()
+
+    for (const row of optionRows ?? []) {
+      const groupId = row.modifier_options.group_id
+      const arr = optionsByGroup.get(groupId) ?? []
+
+      arr.push({
+        optionId: row.option_id,
+        optionName: row.modifier_options.name,
+        groupId,
+        groupName: '',
+        priceDelta: Number(row.price_delta),
+        isDefault: row.is_default,
+        sortOrder: row.sort_order,
+      })
+      optionsByGroup.set(groupId, arr)
+    }
+
+    return groupRows.map((g) => {
+      const options = (optionsByGroup.get(g.group_id) ?? []).map((o) => ({
+        ...o,
+        groupName: g.modifier_groups.name,
+      }))
+
+      return {
+        groupId: g.group_id,
+        groupName: g.modifier_groups.name,
+        sortOrder: g.sort_order,
+        options,
+      }
+    })
+  },
+
+  async getDishIdsWithModifiers(sb: SupabaseClient, dishIds: string[]): Promise<Set<string>> {
+    const data = await query(
+      sb.from('dish_modifier_groups').select('dish_id').in('dish_id', dishIds),
+    )
+
+    return new Set((data ?? []).map((row: Record<string, unknown>) => row.dish_id as string))
+  },
+
+  async setDishModifiers(
+    sb: SupabaseClient,
+    dishId: string,
+    modifierGroups: DishModifierGroup[],
+  ): Promise<void> {
+    // Clear existing bindings
+    await query(sb.from('dish_modifier_options').delete().eq('dish_id', dishId))
+    await query(sb.from('dish_modifier_groups').delete().eq('dish_id', dishId))
+
+    if (modifierGroups.length === 0) return
+
+    // Insert group bindings
+    await query(
+      sb.from('dish_modifier_groups').insert(
+        modifierGroups.map((g, i) => ({
+          dish_id: dishId,
+          group_id: g.groupId,
+          sort_order: i,
+        })),
+      ),
+    )
+
+    // Insert option bindings
+    const allOptions = modifierGroups.flatMap((g) => g.options.map((o, i) => ({
+      dish_id: dishId,
+      option_id: o.optionId,
+      price_delta: o.priceDelta,
+      is_default: o.isDefault,
+      sort_order: i,
+    })))
+
+    if (allOptions.length > 0) {
+      await query(sb.from('dish_modifier_options').insert(allOptions))
+    }
   },
 }

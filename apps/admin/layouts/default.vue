@@ -171,6 +171,7 @@ const handleLogout = async () => {
 const pageTitles: Record<string, string> = {
   '/': 'Дашборд',
   '/menu': 'Меню',
+  '/menu/modifiers': 'Модификаторы',
   '/orders': 'Заказы',
   '/promotions': 'Акции',
   '/settings': 'Настройки',

@@ -185,8 +185,11 @@ const { dishes, loading: dishesLoading, add: rawAddDish, update: rawUpdateDish, 
   = useDishes(tenantIdRef, categoryIdRef)
 
 const addDish = async (...args: Parameters<typeof rawAddDish>) => {
-  await rawAddDish(...args)
+  const dish = await rawAddDish(...args)
+
   emit('dishesChanged')
+
+  return dish
 }
 
 const updateDish = async (...args: Parameters<typeof rawUpdateDish>) => {

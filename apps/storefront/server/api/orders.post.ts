@@ -101,20 +101,78 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Пересчитываем subtotal по реальным ценам
-  const serverItems = body.items.map((item: { dishId: string; dishName: string; quantity: number; removedIngredients: string[] }) => {
+  // Загружаем модификаторы для валидации
+  const { data: allDishOptions } = await supabase
+    .from('dish_modifier_options')
+    .select('dish_id, option_id, price_delta, modifier_options(id, name, group_id, modifier_groups(name))')
+    .in('dish_id', dishIds)
+
+  // Индексируем: dishId -> optionId -> { priceDelta, groupName, optionName }
+  type ValidOption = { priceDelta: number; groupName: string; optionName: string }
+  type DishOptionRow = {
+    dish_id: string
+    option_id: string
+    price_delta: number
+    modifier_options: { id: string; name: string; group_id: string; modifier_groups: { name: string } }
+  }
+  const validOptionsMap = new Map<string, Map<string, ValidOption>>()
+
+  for (const row of (allDishOptions ?? []) as unknown as DishOptionRow[]) {
+    if (!validOptionsMap.has(row.dish_id)) validOptionsMap.set(row.dish_id, new Map())
+    validOptionsMap.get(row.dish_id)!.set(row.option_id, {
+      priceDelta: Number(row.price_delta),
+      groupName: row.modifier_options.modifier_groups.name,
+      optionName: row.modifier_options.name,
+    })
+  }
+
+  // Пересчитываем subtotal по реальным ценам + валидация модификаторов
+  const serverItems = body.items.map((item: { dishId: string; dishName: string; quantity: number; removedIngredients: string[]; modifiers?: { groupName: string; optionName: string; priceDelta: number }[] }) => {
     const dish = dishMap.get(item.dishId)!
+    const basePrice = Number(dish.price)
+
+    // Validate and recalculate modifiers from DB
+    const serverModifiers: { groupName: string; optionName: string; priceDelta: number }[] = []
+    const dishValidOptions = validOptionsMap.get(item.dishId)
+
+    if (item.modifiers && item.modifiers.length > 0) {
+      for (const mod of item.modifiers) {
+        // Find matching option by groupName + optionName
+        let found = false
+
+        if (dishValidOptions) {
+          for (const [, validOpt] of dishValidOptions) {
+            if (validOpt.groupName === mod.groupName && validOpt.optionName === mod.optionName) {
+              serverModifiers.push({
+                groupName: validOpt.groupName,
+                optionName: validOpt.optionName,
+                priceDelta: validOpt.priceDelta,
+              })
+              found = true
+              break
+            }
+          }
+        }
+
+        if (!found) {
+          throw createError({ statusCode: 400, message: `Модификатор "${mod.optionName}" недоступен для "${item.dishName}"` })
+        }
+      }
+    }
+
     return {
       dishId: item.dishId,
       dishName: item.dishName,
-      price: Number(dish.price),
+      price: basePrice,
       quantity: item.quantity,
       removedIngredients: item.removedIngredients ?? [],
+      ...(serverModifiers.length > 0 ? { modifiers: serverModifiers } : {}),
     }
   })
 
   const subtotal = serverItems.reduce(
-    (sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity,
+    (sum: number, item: { price: number; quantity: number; modifiers?: { priceDelta: number }[] }) =>
+      sum + (item.price + (item.modifiers?.reduce((s: number, m: { priceDelta: number }) => s + m.priceDelta, 0) ?? 0)) * item.quantity,
     0,
   )
 

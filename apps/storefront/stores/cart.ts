@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { OrderItem } from '@fastio/shared'
+import { getItemUnitPrice } from '@fastio/shared'
 
 export type CartItem = OrderItem & { photo: string | null }
 
@@ -7,13 +8,16 @@ export const useCartStore = defineStore('cart', () => {
   const items = ref<CartItem[]>([])
 
   const count = computed(() => items.value.reduce((s, i) => s + i.quantity, 0))
-  const subtotal = computed(() => items.value.reduce((s, i) => s + i.price * i.quantity, 0))
+  const subtotal = computed(() =>
+    items.value.reduce((s, i) => s + getItemUnitPrice(i) * i.quantity, 0),
+  )
 
   function add(item: CartItem) {
     const existing = items.value.find(
       (i) =>
         i.dishId === item.dishId &&
-        JSON.stringify(i.removedIngredients) === JSON.stringify(item.removedIngredients),
+        JSON.stringify(i.removedIngredients) === JSON.stringify(item.removedIngredients) &&
+        JSON.stringify(i.modifiers ?? []) === JSON.stringify(item.modifiers ?? []),
     )
     if (existing) {
       existing.quantity += item.quantity
@@ -57,7 +61,12 @@ export const useCartStore = defineStore('cart', () => {
     if (import.meta.client) {
       try {
         const raw = localStorage.getItem('cart')
-        if (raw) items.value = JSON.parse(raw)
+        if (raw) {
+          items.value = (JSON.parse(raw) as CartItem[]).map((item) => ({
+            ...item,
+            modifiers: item.modifiers ?? [],
+          }))
+        }
       } catch {
         items.value = []
       }

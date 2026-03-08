@@ -58,15 +58,11 @@
         </div>
       </div>
 
-      <UiCollapse :expanded-names="['tags', 'ingredients']" class="sections">
+      <UiCollapse :expanded-names="[]" class="sections">
         <!-- Теги -->
         <UiCollapseItem
           name="tags"
           title="Теги"
-          icon="chevron"
-          :icon-size="20"
-          icon-bg="grey-400"
-          empty
         >
           <div class="tags-grid">
             <UiCheckbox
@@ -80,14 +76,19 @@
           </div>
         </UiCollapseItem>
 
+        <!-- Модификаторы -->
+        <DishModifiersSection
+          ref="modifiersRef"
+          :tenant-id="tenantId"
+          :category-id="form.categoryId"
+          :dish-id="dish?.id ?? null"
+          :refresh-key="settingsRefreshKey"
+        />
+
         <!-- Состав -->
         <UiCollapseItem
           name="ingredients"
           title="Состав"
-          icon="chevron"
-          :icon-size="20"
-          icon-bg="grey-400"
-          empty
         >
           <div class="ingredients-list">
             <div v-for="(ing, i) in form.ingredients" :key="i" class="ingredient-row">
@@ -103,10 +104,6 @@
         <UiCollapseItem
           name="nutrition"
           title="Пищевая ценность"
-          icon="chevron"
-          :icon-size="20"
-          icon-bg="grey-400"
-          empty
         >
           <div class="nutrition-grid">
             <UiInputNumber
@@ -167,6 +164,7 @@ import { tagOptions } from '~/config/dish-tags'
 import { useBranchStore } from '~/stores/branch'
 import PhotoUpload from '~/components/ui/PhotoUpload.vue'
 import DishSettingsSection from '~/components/menu/DishSettingsSection.vue'
+import DishModifiersSection from '~/components/menu/DishModifiersSection.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -174,7 +172,7 @@ const props = defineProps<{
   categoryId: string
   categories: Category[]
   dish: Dish | null
-  addDish: (data: DishFormData) => Promise<void>
+  addDish: (data: DishFormData) => Promise<Dish | null | void>
   updateDish: (id: string, data: Partial<DishFormData>) => Promise<void>
 }>()
 
@@ -183,6 +181,7 @@ const branchStore = useBranchStore()
 const branches = computed(() => branchStore.branches)
 
 const settingsRef = ref<InstanceType<typeof DishSettingsSection> | null>(null)
+const modifiersRef = ref<InstanceType<typeof DishModifiersSection> | null>(null)
 const settingsRefreshKey = ref(0)
 
 const categoryOptions = computed(() => props.categories.map((c) => ({ label: c.name, value: c.id })),
@@ -341,8 +340,21 @@ const onConfirm = async () => {
 
         await api.dishes.setBranchPrices(props.dish.id, prices)
       }
+
+      const modifiers = modifiersRef.value?.getModifiers() ?? []
+
+      await api.dishes.setDishModifiers(props.dish.id, modifiers)
     } else {
-      await props.addDish(data)
+      const newDish = await props.addDish(data)
+
+      // Save modifiers for new dish if any
+      if (newDish) {
+        const modifiers = modifiersRef.value?.getModifiers() ?? []
+
+        if (modifiers.length > 0) {
+          await api.dishes.setDishModifiers(newDish.id, modifiers)
+        }
+      }
     }
     emit('saved')
   } catch {

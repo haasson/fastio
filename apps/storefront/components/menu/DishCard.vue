@@ -17,8 +17,8 @@
     </div>
 
     <div class="footer">
-      <span class="price">{{ dish.price }} ₽</span>
-      <button class="add-btn" @click.stop="quickAdd">
+      <span class="price">{{ hasModifiers ? 'от ' : '' }}{{ dish.price }} ₽</span>
+      <button class="add-btn" @click.stop="hasModifiers ? $emit('open', dish) : quickAdd()">
         <span>+</span>
       </button>
     </div>
@@ -29,7 +29,7 @@
 import type { Dish, DishTag } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
-const props = defineProps<{ dish: Dish }>()
+const props = defineProps<{ dish: Dish; hasModifiers?: boolean }>()
 const emit = defineEmits<{ open: [dish: Dish] }>()
 
 const cartStore = useCartStore()

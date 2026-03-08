@@ -16,11 +16,13 @@ export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>)
     shouldInclude: (dish) => dish.categoryId === categoryId.value,
   })
 
-  const add = async (data: DishFormData) => {
-    if (!tenantId.value) return
+  const add = async (data: DishFormData): Promise<Dish | null> => {
+    if (!tenantId.value) return null
     const dish = await api.dishes.add(tenantId.value, { ...data, order: dishes.value.length })
 
     if (dish && dish.categoryId === categoryId.value) dishes.value.push(dish)
+
+    return dish
   }
 
   const update = async (id: string, data: Partial<DishFormData>) => {

@@ -8,6 +8,17 @@
             <span v-if="item.categoryName" class="item-category">{{ item.categoryName }}</span>
             <span class="item-name">{{ item.dishName }}</span>
           </div>
+          <div v-if="item.modifiers?.length" class="item-mods">
+            <UiTag
+              v-for="mod in item.modifiers"
+              :key="mod.groupName + mod.optionName"
+              size="tiny"
+              secondary
+            >
+              {{ mod.optionName }}
+              <template v-if="mod.priceDelta > 0"> +{{ mod.priceDelta }}₽</template>
+            </UiTag>
+          </div>
           <div v-if="item.removedIngredients?.length" class="item-mods">
             <UiTag
               v-for="ing in item.removedIngredients"
@@ -30,7 +41,7 @@
               <UiIcon name="plusRound" :size="16" />
             </button>
           </div>
-          <span class="item-price">{{ item.price * item.quantity }} ₽</span>
+          <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
           <button class="edit-item-btn" title="Изменить состав" @click="openEditItem(idx)">
             <UiIcon name="pencil" :size="13" />
           </button>
@@ -67,6 +78,7 @@
 import { ref, computed } from 'vue'
 import { UiButton, UiIcon, UiTag } from '@fastio/ui'
 import type { OrderItem } from '@fastio/shared'
+import { getItemUnitPrice } from '@fastio/shared'
 import OrderAddDishModal from './OrderAddDishModal.vue'
 
 const props = defineProps<{

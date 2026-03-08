@@ -11,6 +11,7 @@ import { invitationsApi } from '~/utils/api/invitations'
 import { tenantsApi } from '~/utils/api/tenants'
 import { authApi } from '~/utils/api/auth'
 import { functionsApi } from '~/utils/api/functions'
+import { modifiersApi } from '~/utils/api/modifiers'
 
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
 
@@ -39,5 +40,6 @@ export const useSupabaseApi = () => {
     tenants: bindAll(tenantsApi, sb),
     auth: bindAll(authApi, sb),
     functions: bindAll(functionsApi, sb),
+    modifiers: bindAll(modifiersApi, sb),
   }
 }

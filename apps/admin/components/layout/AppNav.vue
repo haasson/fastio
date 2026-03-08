@@ -45,6 +45,7 @@ const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.va
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
   { to: '/menu', icon: 'dishes', label: 'Меню', visible: canManageMenu },
+  { to: '/menu/modifiers', icon: 'list', label: 'Модификаторы', visible: canManageMenu },
   { to: '/orders', icon: 'orders', label: 'Заказы', visible: canManageOrders },
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canManagePromotions },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },

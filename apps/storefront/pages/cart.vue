@@ -23,17 +23,20 @@
               </div>
               <div class="item-info">
                 <span class="item-name">{{ item.dishName }}</span>
+                <span v-if="item.modifiers?.length" class="item-modifiers">
+                  {{ item.modifiers.map(m => m.optionName).join(', ') }}
+                </span>
                 <span v-if="item.removedIngredients.length" class="item-removed">
                   Без: {{ item.removedIngredients.join(', ') }}
                 </span>
-                <span class="item-price">{{ item.price }} ₽</span>
+                <span class="item-price">{{ getItemUnitPrice(item) }} ₽</span>
               </div>
               <div class="item-qty">
                 <button class="qty-btn" @click="cartStore.decrement(i)">−</button>
                 <span class="qty">{{ item.quantity }}</span>
                 <button class="qty-btn" @click="cartStore.increment(i)">+</button>
               </div>
-              <span class="item-total">{{ item.price * item.quantity }} ₽</span>
+              <span class="item-total">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
               <button class="remove-btn" @click="cartStore.remove(i)">✕</button>
             </div>
 
@@ -156,6 +159,7 @@
 
 <script setup lang="ts">
 import type { Tenant } from '@fastio/shared'
+import { getItemUnitPrice } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()
@@ -385,6 +389,11 @@ async function placeOrder() {
   font-size: 14px;
   font-weight: 600;
   color: #111;
+}
+
+.item-modifiers {
+  font-size: 11px;
+  color: #888;
 }
 
 .item-removed {

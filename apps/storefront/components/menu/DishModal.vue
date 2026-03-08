@@ -45,6 +45,29 @@
               </div>
             </div>
 
+            <!-- Модификаторы -->
+            <div v-for="group in modifierGroups" :key="group.groupId" class="modifier-group">
+              <p class="modifier-title">{{ group.groupName }}</p>
+              <div class="modifier-options">
+                <label
+                  v-for="opt in group.options"
+                  :key="opt.optionId"
+                  class="modifier-pill"
+                  :class="{ selected: selectedModifiers[group.groupId] === opt.optionId }"
+                >
+                  <input
+                    v-model="selectedModifiers[group.groupId]"
+                    type="radio"
+                    :name="`mod-${group.groupId}`"
+                    :value="opt.optionId"
+                    class="modifier-radio"
+                  />
+                  <span class="pill-label">{{ opt.optionName }}</span>
+                  <span class="pill-price">{{ formatOptionPrice(dish!.price, opt.priceDelta) }} ₽</span>
+                </label>
+              </div>
+            </div>
+
             <!-- Убрать ингредиенты -->
             <div v-if="removableIngredients.length" class="ingredients-section">
               <p class="ingredients-title">Убрать из состава:</p>
@@ -76,7 +99,7 @@
               </div>
 
               <button class="add-btn" @click="addToCart">
-                В корзину · {{ dish.price * qty }} ₽
+                В корзину · {{ totalPrice * qty }} ₽
               </button>
             </div>
           </div>
@@ -87,24 +110,50 @@
 </template>
 
 <script setup lang="ts">
-import type { Dish, DishTag } from '@fastio/shared'
+import type { Dish, DishTag, DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 
-const props = defineProps<{ dish: Dish | null }>()
+const props = defineProps<{
+  dish: Dish | null
+  modifierGroups: DishModifierGroup[]
+}>()
 const emit = defineEmits<{ close: [] }>()
 
 const cartStore = useCartStore()
 const qty = ref(1)
 const removedIngredients = ref<string[]>([])
+const selectedModifiers = reactive<Record<string, string>>({})
 
 watch(() => props.dish, () => {
   qty.value = 1
   removedIngredients.value = []
+  // Reset modifiers to defaults
+  Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
+  for (const group of props.modifierGroups) {
+    const defaultOpt = group.options.find((o) => o.isDefault) ?? group.options[0]
+    if (defaultOpt) selectedModifiers[group.groupId] = defaultOpt.optionId
+  }
 })
 
 const removableIngredients = computed(() =>
   props.dish?.ingredients.filter((i) => i.removable) ?? [],
 )
+
+const modifiersDelta = computed(() => {
+  let delta = 0
+  for (const group of props.modifierGroups) {
+    const selectedId = selectedModifiers[group.groupId]
+    const opt = group.options.find((o) => o.optionId === selectedId)
+    if (opt) delta += opt.priceDelta
+  }
+  return delta
+})
+
+const totalPrice = computed(() => (props.dish?.price ?? 0) + modifiersDelta.value)
+
+function formatOptionPrice(basePrice: number, priceDelta: number) {
+  return basePrice + priceDelta
+}
 
 const tagLabel: Record<DishTag, string> = {
   spicy: '🌶 Острое',
@@ -117,12 +166,27 @@ const tagLabel: Record<DishTag, string> = {
 
 function addToCart() {
   if (!props.dish) return
+
+  const modifiers: OrderItemModifier[] = []
+  for (const group of props.modifierGroups) {
+    const selectedId = selectedModifiers[group.groupId]
+    const opt = group.options.find((o) => o.optionId === selectedId)
+    if (opt) {
+      modifiers.push({
+        groupName: group.groupName,
+        optionName: opt.optionName,
+        priceDelta: opt.priceDelta,
+      })
+    }
+  }
+
   cartStore.add({
     dishId: props.dish.id,
     dishName: props.dish.name,
     price: props.dish.price,
     quantity: qty.value,
     removedIngredients: [...removedIngredients.value],
+    modifiers: modifiers.length > 0 ? modifiers : undefined,
     photo: props.dish.photos[0] ?? null,
   })
   emit('close')
@@ -267,6 +331,57 @@ function addToCart() {
 .nutr-label {
   font-size: 10px;
   color: #aaa;
+}
+
+.modifier-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modifier-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.modifier-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.modifier-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  transition: border-color 0.12s, background 0.12s;
+
+  &.selected {
+    border-color: var(--primary);
+    background: var(--primary-light, #fff4f0);
+  }
+}
+
+.modifier-radio {
+  display: none;
+}
+
+.pill-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.pill-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
 }
 
 .ingredients-section {

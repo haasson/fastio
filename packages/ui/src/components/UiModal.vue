@@ -16,7 +16,7 @@
         </div>
 
         <div class="header">
-          <h4 v-if="effectiveTitle" class="title">
+          <ui-title v-if="effectiveTitle" size="h3" responsive tag="h4" class="title">
             {{ effectiveTitle }}
             <ui-popover v-if="titleHint" no-sheet trigger="hover" :width="260" :padding="12">
               <template #trigger>
@@ -24,7 +24,7 @@
               </template>
               {{ titleHint }}
             </ui-popover>
-          </h4>
+          </ui-title>
           <slot name="header" />
         </div>
 
@@ -67,6 +67,7 @@ import { NModal } from 'naive-ui'
 import UiIcon from './UiIcon.vue'
 import UiButton from './UiButton.vue'
 import UiPopover from './UiPopover.vue'
+import UiTitle from './UiTitle.vue'
 import ClientOnly from './internal/ClientOnly.vue'
 import { modalManager } from '../composables/useModals'
 import { layerManager } from '../utils/layers'
@@ -205,27 +206,16 @@ const handleActionClick = async (action: ModalAction) => {
   flex-direction: column;
   max-height: 90vh;
   position: relative;
-  padding: 24px 16px;
+  padding: 24px;
   background-color: var(--color-white);
   border-radius: 16px;
-  @include mq-l {
-    padding: 40px 32px;
-    border-radius: 24px;
-  }
 }
 
 .title {
-  @include secondary-font(24);
-
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 0;
-  line-height: 1.3;
-
-  @include mq-l {
-    @include secondary-font(32);
-  }
 }
 
 .title-hint {
@@ -246,11 +236,6 @@ const handleActionClick = async (action: ModalAction) => {
   cursor: pointer;
   transition: color 0.3s;
 
-  @include mq-l {
-    top: 24px;
-    right: 24px;
-  }
-
   &:hover {
     color: var(--color-text-hint);
   }
@@ -261,18 +246,10 @@ const handleActionClick = async (action: ModalAction) => {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-
-  @include mq-l {
-    margin-top: 24px;
-  }
 }
 
 .footer {
-  margin-top: 24px;
-
-  @include mq-l {
-    margin-top: 32px;
-  }
+  margin-top: 20px;
 }
 
 .modal-actions {

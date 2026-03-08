@@ -1,3 +1,5 @@
+import type { OrderItemModifier } from './modifier'
+
 export type OrderDeliveryType = 'delivery' | 'pickup'
 
 export type OrderStatusGroup = 'new' | 'in_progress' | 'completed' | 'cancelled'
@@ -20,7 +22,10 @@ export type OrderItem = {
   price: number
   quantity: number
   removedIngredients: string[]
+  modifiers?: OrderItemModifier[]
 }
+
+export type { OrderItemModifier } from './modifier'
 
 export type OrderCustomer = {
   name: string

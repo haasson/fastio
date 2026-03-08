@@ -56,6 +56,28 @@
         </div>
       </div>
 
+      <!-- Модификаторы -->
+      <template v-if="dishModifierGroups.length">
+        <div v-for="group in dishModifierGroups" :key="group.groupId" class="modifier-section">
+          <div class="section-label">{{ group.groupName }}</div>
+          <div class="modifier-pills">
+            <UiTag
+              v-for="opt in group.options"
+              :key="opt.optionId"
+              size="small"
+              :type="selectedModifiers[group.groupId] === opt.optionId ? 'primary' : 'default'"
+              :secondary="selectedModifiers[group.groupId] !== opt.optionId"
+              hoverable
+              round
+              @click="selectedModifiers[group.groupId] = opt.optionId"
+            >
+              {{ opt.optionName }}
+              <template v-if="opt.priceDelta > 0"> +{{ opt.priceDelta }}₽</template>
+            </UiTag>
+          </div>
+        </div>
+      </template>
+
       <template v-if="removableIngredients.length">
         <div class="section-label">Состав <span class="section-hint">— нажмите, чтобы убрать</span></div>
         <div class="ingredients">
@@ -109,7 +131,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { UiModal, UiButton, UiIcon, UiTag } from '@fastio/ui'
-import type { Dish, Category, OrderItem } from '@fastio/shared'
+import type { Dish, Category, OrderItem, DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import { useSupabaseApi } from '#imports'
 
 const props = defineProps<{
@@ -134,6 +156,10 @@ const selectedDish = ref<Dish | null>(null)
 const removed = reactive<Record<string, boolean>>({})
 const step = ref<'pick' | 'customize'>('pick')
 
+// Modifiers
+const dishModifierGroups = ref<DishModifierGroup[]>([])
+const selectedModifiers = reactive<Record<string, string>>({})
+
 watch(
   () => props.modelValue,
   async (open) => {
@@ -141,7 +167,9 @@ watch(
     step.value = 'pick'
     selectedDish.value = null
     selectedCategoryId.value = null
+    dishModifierGroups.value = []
     Object.keys(removed).forEach((k) => delete removed[k])
+    Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
     if (!allDishes.value.length) await fetchData()
 
     if (props.editItem) {
@@ -152,6 +180,19 @@ watch(
         props.editItem.removedIngredients.forEach((ing) => {
           removed[ing] = true
         })
+        await loadDishModifiers(dish.id)
+        // Restore selected modifiers from editItem
+        if (props.editItem.modifiers?.length) {
+          for (const mod of props.editItem.modifiers) {
+            for (const group of dishModifierGroups.value) {
+              if (group.groupName === mod.groupName) {
+                const opt = group.options.find((o) => o.optionName === mod.optionName)
+
+                if (opt) selectedModifiers[group.groupId] = opt.optionId
+              }
+            }
+          }
+        }
         step.value = 'customize'
       }
     } else if (!selectedCategoryId.value && categories.value.length) {
@@ -159,6 +200,18 @@ watch(
     }
   },
 )
+
+const loadDishModifiers = async (dishId: string) => {
+  dishModifierGroups.value = await api.dishes.getDishModifiers(dishId)
+  // Set defaults
+  for (const group of dishModifierGroups.value) {
+    const defaultOpt = group.options.find((o) => o.isDefault) ?? group.options[0]
+
+    if (defaultOpt && !selectedModifiers[group.groupId]) {
+      selectedModifiers[group.groupId] = defaultOpt.optionId
+    }
+  }
+}
 
 const modalTitle = computed(() => {
   if (step.value === 'pick') return 'Добавить блюдо'
@@ -185,9 +238,11 @@ const categoryDishes = computed(() => allDishes.value.filter((d) => d.categoryId
 const removableIngredients = computed(() => selectedDish.value?.ingredients.filter((i) => i.removable) ?? [],
 )
 
-const selectDish = (dish: Dish) => {
+const selectDish = async (dish: Dish) => {
   selectedDish.value = dish
   Object.keys(removed).forEach((k) => delete removed[k])
+  Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
+  await loadDishModifiers(dish.id)
   step.value = 'customize'
 }
 
@@ -200,6 +255,22 @@ const onConfirm = () => {
 
   const categoryName = categories.value.find((c) => c.id === selectedDish.value!.categoryId)?.name
 
+  // Build modifiers snapshot
+  const modifiers: OrderItemModifier[] = []
+
+  for (const group of dishModifierGroups.value) {
+    const selectedId = selectedModifiers[group.groupId]
+    const opt = group.options.find((o) => o.optionId === selectedId)
+
+    if (opt) {
+      modifiers.push({
+        groupName: group.groupName,
+        optionName: opt.optionName,
+        priceDelta: opt.priceDelta,
+      })
+    }
+  }
+
   const item: OrderItem = {
     dishId: selectedDish.value.id,
     dishName: selectedDish.value.name,
@@ -207,6 +278,7 @@ const onConfirm = () => {
     price: selectedDish.value.price,
     quantity: props.editItem?.quantity ?? 1,
     removedIngredients,
+    ...(modifiers.length > 0 ? { modifiers } : {}),
   }
 
   if (props.editItem) {
@@ -408,6 +480,18 @@ const onConfirm = () => {
 .ing-icon {
   flex-shrink: 0;
   margin-right: 4px;
+}
+
+.modifier-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modifier-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .no-ingredients {

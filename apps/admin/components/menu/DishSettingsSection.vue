@@ -2,10 +2,6 @@
   <UiCollapseItem
     name="settings"
     title="Настройки"
-    icon="chevron"
-    :icon-size="20"
-    icon-bg="grey-400"
-    empty
   >
     <div class="content">
       <div class="toggle-row">
