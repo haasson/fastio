@@ -5,6 +5,7 @@ import { categoriesApi } from '~/utils/api/categories'
 import { dishesApi } from '~/utils/api/dishes'
 import { ordersApi } from '~/utils/api/orders'
 import { orderNotesApi } from '~/utils/api/order-notes'
+import { orderEventsApi } from '~/utils/api/order-events'
 import { orderStatusesApi } from '~/utils/api/order-statuses'
 import { membersApi } from '~/utils/api/members'
 import { invitationsApi } from '~/utils/api/invitations'
@@ -34,6 +35,7 @@ export const useSupabaseApi = () => {
     dishes: bindAll(dishesApi, sb),
     orders: bindAll(ordersApi, sb),
     orderNotes: bindAll(orderNotesApi, sb),
+    orderEvents: bindAll(orderEventsApi, sb),
     orderStatuses: bindAll(orderStatusesApi, sb),
     members: bindAll(membersApi, sb),
     invitations: bindAll(invitationsApi, sb),

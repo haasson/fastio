@@ -10,119 +10,138 @@
   >
     <div v-if="order" class="content">
 
-      <!-- Статус -->
-      <section class="section">
-        <div class="section-label">Статус</div>
-        <div class="status-row">
-          <UiTag
-            v-if="currentStatus"
-            size="tiny"
-            :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
-          >{{ currentStatus.name }}</UiTag>
-          <UiMenuDropdown
-            v-if="statusMenuItems.length"
-            :items="statusMenuItems"
-            trigger="click"
-            compact
-            @item-click="form.status = $event"
-          >
-            <template #trigger>
-              <UiButton type="default" size="small">Сменить</UiButton>
-            </template>
-          </UiMenuDropdown>
-        </div>
-      </section>
-
-      <!-- Клиент -->
-      <section class="section">
-        <div class="section-label">Клиент</div>
-        <div class="fields-row">
-          <UiInput
-            v-model="form.customerName"
-            label="Имя"
-            placeholder="Иван Иванов"
-            :disabled="!can.editCustomer"
-          />
-          <UiInput
-            v-model="form.customerPhone"
-            label="Телефон"
-            placeholder="+7 999 000 00 00"
-            :disabled="!can.editCustomer"
-          />
-        </div>
-      </section>
-
-      <!-- Доставка -->
-      <section class="section">
-        <div class="section-label">Доставка</div>
-        <div :class="{ 'field-disabled': !can.editDeliveryType }">
-          <UiSegmentedControl
-            v-model="form.deliveryType"
-            :items="deliveryItems"
-            size="medium"
-          />
-        </div>
-        <UiInput
-          v-if="form.deliveryType === 'delivery'"
-          v-model="form.address"
-          label="Адрес"
-          placeholder="ул. Пушкина, д. 10, кв. 5"
-          :disabled="!can.editAddress"
-          class="mt"
-        />
-      </section>
-
-      <!-- Состав -->
-      <OrderItemsSection
-        :items="form.items"
-        :tenant-id="tenantId"
-        :readonly="!can.editItems"
-        @update:items="form.items = $event"
+      <UiTabs
+        v-model="activeTab"
+        :tabs="tabs"
+        prevent-compact
       />
 
-      <!-- Итого -->
-      <section class="section totals-section">
-        <div class="total-line">
-          <span class="total-key">Сумма</span>
-          <span class="total-val">{{ subtotal }} ₽</span>
-        </div>
-        <div v-if="form.discountAmount > 0" class="total-line">
-          <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
-          <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
-        </div>
-        <div class="total-line">
-          <span class="total-key">Стоимость доставки</span>
-          <UiInputNumber
-            v-model="form.deliveryFee"
-            :min="0"
-            :disabled="!can.editDeliveryFee"
-            class="fee-input"
+      <!-- Данные заказа -->
+      <template v-if="activeTab === 'data'">
+
+        <!-- Статус -->
+        <section class="section">
+          <div class="section-label">Статус</div>
+          <div class="status-row">
+            <UiTag
+              v-if="currentStatus"
+              size="tiny"
+              :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
+            >{{ currentStatus.name }}</UiTag>
+            <UiMenuDropdown
+              v-if="statusMenuItems.length"
+              :items="statusMenuItems"
+              trigger="click"
+              compact
+              @item-click="form.status = $event"
+            >
+              <template #trigger>
+                <UiButton type="default" size="small">Сменить</UiButton>
+              </template>
+            </UiMenuDropdown>
+          </div>
+        </section>
+
+        <!-- Клиент -->
+        <section class="section">
+          <div class="section-label">Клиент</div>
+          <div class="fields-row">
+            <UiInput
+              v-model="form.customerName"
+              label="Имя"
+              placeholder="Иван Иванов"
+              :disabled="!can.editCustomer"
+            />
+            <UiInput
+              v-model="form.customerPhone"
+              label="Телефон"
+              placeholder="+7 999 000 00 00"
+              :disabled="!can.editCustomer"
+            />
+          </div>
+        </section>
+
+        <!-- Доставка -->
+        <section class="section">
+          <div class="section-label">Доставка</div>
+          <div :class="{ 'field-disabled': !can.editDeliveryType }">
+            <UiSegmentedControl
+              v-model="form.deliveryType"
+              :items="deliveryItems"
+              size="medium"
+            />
+          </div>
+          <UiInput
+            v-if="form.deliveryType === 'delivery'"
+            v-model="form.address"
+            label="Адрес"
+            placeholder="ул. Пушкина, д. 10, кв. 5"
+            :disabled="!can.editAddress"
+            class="mt"
           />
-        </div>
-        <div class="total-line total-final">
-          <span class="total-key">Итого</span>
-          <span class="total-val">{{ total }} ₽</span>
-        </div>
-      </section>
+        </section>
 
-      <!-- Оплата -->
-      <section class="section">
-        <div class="section-label">Способ оплаты</div>
-        <UiSelect
-          v-model:value="form.paymentType"
-          :options="paymentOptions"
-          :disabled="!can.editPayment"
+        <!-- Состав -->
+        <OrderItemsSection
+          :items="form.items"
+          :tenant-id="tenantId"
+          :readonly="!can.editItems"
+          @update:items="form.items = $event"
         />
-      </section>
 
-      <!-- Комментарий клиента -->
-      <section v-if="order.comment" class="section">
-        <div class="section-label">Комментарий клиента</div>
-        <UiAlert size="small" type="info" icon="messageCircle">{{ order.comment }}</UiAlert>
-      </section>
+        <!-- Итого -->
+        <section class="section totals-section">
+          <div class="total-line">
+            <span class="total-key">Сумма</span>
+            <span class="total-val">{{ subtotal }} ₽</span>
+          </div>
+          <div v-if="form.discountAmount > 0" class="total-line">
+            <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
+            <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
+          </div>
+          <div class="total-line">
+            <span class="total-key">Стоимость доставки</span>
+            <UiInputNumber
+              v-model="form.deliveryFee"
+              :min="0"
+              :disabled="!can.editDeliveryFee"
+              class="fee-input"
+            />
+          </div>
+          <div class="total-line total-final">
+            <span class="total-key">Итого</span>
+            <span class="total-val">{{ total }} ₽</span>
+          </div>
+        </section>
 
-      <!-- Заметки операторов -->
+        <!-- Оплата -->
+        <section class="section">
+          <div class="section-label">Способ оплаты</div>
+          <UiSelect
+            v-model:value="form.paymentType"
+            :options="paymentOptions"
+            :disabled="!can.editPayment"
+          />
+        </section>
+
+        <!-- Комментарий клиента -->
+        <section v-if="order.comment" class="section">
+          <div class="section-label">Комментарий клиента</div>
+          <UiAlert size="small" type="info" icon="messageCircle">{{ order.comment }}</UiAlert>
+        </section>
+
+      </template>
+
+      <!-- История -->
+      <OrderEventsSection
+        v-else-if="activeTab === 'history'"
+        :order-id="order.id"
+        :refresh-key="notesRefreshKey"
+      />
+
+      <!-- Заметки -->
       <OrderNotesSection
+        v-else
         :order-id="order.id"
         :tenant-id="tenantId"
         :refresh-key="notesRefreshKey"
@@ -135,14 +154,16 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  UiModal, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiButton, UiMenuDropdown, UiAlert, UiTag,
+  UiModal, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { useSupabaseApi } from '#imports'
-import { useTenantStore } from '~/stores/tenant'
 import { STATUS_GROUP_COLORS, STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
+import { useOrderEventLogger } from '~/composables/useOrderEventLogger'
 import OrderItemsSection from './OrderItemsSection.vue'
 import OrderNotesSection from './OrderNotesSection.vue'
+import OrderEventsSection from './OrderEventsSection.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -157,10 +178,17 @@ const emit = defineEmits<{
 }>()
 
 const api = useSupabaseApi()
-const tenantStore = useTenantStore()
+const { logSaveEvents } = useOrderEventLogger()
 
 const saving = ref(false)
 const notesRefreshKey = ref(0)
+const activeTab = ref<'data' | 'history' | 'notes'>('data')
+
+const tabs = [
+  { label: 'Заказ', value: 'data' },
+  { label: 'История', value: 'history' },
+  { label: 'Заметки', value: 'notes' },
+]
 
 const shortId = computed(() => props.order?.id.slice(0, 6).toUpperCase() ?? '')
 
@@ -225,6 +253,7 @@ watch(
   (open) => {
     if (!open || !props.order) return
     Object.assign(form, buildForm(props.order))
+    activeTab.value = 'data'
     notesRefreshKey.value++
   },
 )
@@ -258,7 +287,10 @@ const onSave = async () => {
       paymentType: form.paymentType,
     })
 
-    if (updated) emit('saved', updated)
+    if (updated) {
+      logSaveEvents(form, props.order!, props.statuses)
+      emit('saved', updated)
+    }
   } finally {
     saving.value = false
   }
@@ -266,20 +298,18 @@ const onSave = async () => {
 
 // ─── Options ──────────────────────────────────────────────────────────────────
 
-const deliveryItems = [
-  { label: 'Доставка', value: 'delivery' },
-  { label: 'Самовывоз', value: 'pickup' },
-]
+const deliveryItems = DELIVERY_OPTIONS
+const paymentOptions = PAYMENT_OPTIONS
 
-const paymentOptions = [
-  { label: 'Наличные', value: 'cash' },
-  { label: 'Карта при получении', value: 'card' },
-]
+const modalActions = computed(() => {
+  const actions = [{ text: 'Закрыть', type: 'default' as const, actionType: 'decline' as const }]
 
-const modalActions = computed(() => [
-  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
-])
+  if (activeTab.value === 'data') {
+    actions.push({ text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value })
+  }
+
+  return actions
+})
 </script>
 
 <style scoped lang="scss">

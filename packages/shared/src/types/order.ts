@@ -43,6 +43,20 @@ export type OrderNote = {
   createdAt: string
 }
 
+export type OrderEventType = 'order_created' | 'status_changed' | 'items_updated' | 'field_updated'
+
+export type OrderEvent = {
+  id: string
+  orderId: string
+  tenantId: string
+  actorId: string | null
+  actorName: string | null
+  actorRole: string | null
+  eventType: OrderEventType
+  meta: Record<string, unknown>
+  createdAt: string
+}
+
 export type Order = {
   id: string
   tenantId: string

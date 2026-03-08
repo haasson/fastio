@@ -16,7 +16,7 @@
         size="tiny"
         :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
       >
-        {{ order.deliveryType === 'delivery' ? 'Доставка' : 'Самовывоз' }}
+        {{ DELIVERY_TYPE_LABELS[order.deliveryType] }}
       </UiTag>
       <UiTag v-if="branchName" size="tiny">{{ branchName }}</UiTag>
     </div>
@@ -52,6 +52,7 @@ import { useNow } from '@vueuse/core'
 import { UiButton, UiCard, UiTag } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { DELIVERY_TYPE_LABELS } from '~/config/order-options'
 
 const props = defineProps<{
   order: Order

@@ -18,7 +18,7 @@
           size="small"
           :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
         >
-          {{ order.deliveryType === 'delivery' ? 'Доставка' : 'Самовывоз' }}
+          {{ DELIVERY_TYPE_LABELS[order.deliveryType] }}
         </UiTag>
         <UiTag v-if="branchName" size="tiny">{{ branchName }}</UiTag>
       </div>
@@ -64,7 +64,7 @@
         <span class="total">{{ order.total }} ₽</span>
         <span class="payment-type">
           <UiIcon :name="paymentIcon" :size="13" />
-          {{ paymentLabel[order.paymentType] }}
+          {{ PAYMENT_TYPE_LABELS[order.paymentType] }}
         </span>
       </div>
 
@@ -92,6 +92,7 @@ import { useNow } from '@vueuse/core'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 
 const props = defineProps<{
@@ -121,21 +122,7 @@ const quickActionStatuses = computed(() => {
     .filter(Boolean) as OrderStatus[]
 })
 
-const paymentIconMap: Record<string, 'banknote' | 'creditCard' | 'smartphone'> = {
-  cash: 'banknote',
-  card: 'creditCard',
-  online: 'smartphone',
-}
-
-const paymentLabel: Record<string, string> = {
-  cash: 'Наличные',
-  card: 'Карта при получении',
-  online: 'Онлайн',
-}
-
-const paymentIcon = computed(
-  () => paymentIconMap[props.order.paymentType] ?? 'banknote',
-)
+const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')
 
 const now = useNow({ interval: 30_000 })
 const relativeTime = computed(() => formatRelativeTime(props.order.createdAt, now.value))

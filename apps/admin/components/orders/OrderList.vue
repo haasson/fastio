@@ -84,7 +84,9 @@ const branchIdRef = computed(() => props.branchId)
 
 const branchStore = useBranchStore()
 
-const { orders, loading, updateStatus: updateOrderStatus } = useOrders(tenantIdRef, statusIdRef, branchIdRef)
+const statusesRef = computed(() => props.statuses)
+
+const { orders, loading, updateStatus: updateOrderStatus } = useOrders(tenantIdRef, statusIdRef, branchIdRef, statusesRef)
 
 const orderView = useLocalStorage<'cards' | 'list'>('orders:view', 'cards')
 const updatingIds = reactive(new Set<string>())

@@ -39,6 +39,10 @@ export const COLORS = {
   GREEN_100: '#D1FAE5',
   GREEN_500: '#10B981',
 
+  // System Colors - Orange
+  ORANGE_400: '#FB923C',
+  ORANGE_500: '#F97316',
+
   // System Colors - Red
   RED_100: '#FEF2F2',
   RED_500: '#EF4444',

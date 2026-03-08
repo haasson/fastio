@@ -124,6 +124,18 @@ export type OrderNoteRow = {
   created_at: string
 }
 
+export type OrderEventRow = {
+  id: string
+  order_id: string
+  tenant_id: string
+  actor_id: string | null
+  actor_name: string | null
+  actor_role: string | null
+  event_type: string
+  meta: Record<string, unknown>
+  created_at: string
+}
+
 export type BranchRow = {
   id: string
   tenant_id: string
