@@ -1,11 +1,8 @@
 <template>
-  <UiModal
+  <UiDrawer
     :model-value="modelValue"
     :title="`Заказ #${shortId}`"
-    :width="660"
-    :loading="saving"
-    :actions="modalActions"
-    :on-confirm="onSave"
+    :width="860"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <div v-if="order" class="content">
@@ -148,13 +145,18 @@
       />
 
     </div>
-  </UiModal>
+
+    <template v-if="activeTab === 'data'" #footer>
+      <UiButton type="default" @click="$emit('update:modelValue', false)">Закрыть</UiButton>
+      <UiButton type="primary" :loading="saving" @click="onSave">Сохранить</UiButton>
+    </template>
+  </UiDrawer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  UiModal, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
+  UiDrawer, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { useOrderEdit } from '~/composables/useOrderEdit'
@@ -303,17 +305,6 @@ const onSave = async () => {
 
 const deliveryItems = DELIVERY_OPTIONS
 const paymentOptions = PAYMENT_OPTIONS
-
-const modalActions = computed(() => {
-  type ModalAction = { text: string; type: 'default' | 'primary'; actionType: 'decline' | 'confirm'; loading?: boolean }
-  const actions: ModalAction[] = [{ text: 'Закрыть', type: 'default', actionType: 'decline' }]
-
-  if (activeTab.value === 'data') {
-    actions.push({ text: 'Сохранить', type: 'primary', actionType: 'confirm', loading: saving.value })
-  }
-
-  return actions
-})
 </script>
 
 <style scoped lang="scss">
