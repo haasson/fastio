@@ -1,6 +1,6 @@
 <template>
   <n-tabs
-    :value="modelValue"
+    :value="modelValue ?? undefined"
     type="segment"
     :size="size"
     animated

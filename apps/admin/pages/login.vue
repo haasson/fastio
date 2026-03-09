@@ -52,13 +52,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
+import { definePageMeta, useRoute, navigateTo, useDatabase } from '#imports'
 import { UiCard, UiForm, UiInput, UiButton, UiAlert, UiTitle, UiSpace } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
-const api = useSupabaseApi()
+const api = useDatabase()
 const route = useRoute()
 
 const email = ref('')

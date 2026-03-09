@@ -159,9 +159,9 @@ import { ref, reactive, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiCheckbox, UiText, UiSelect, UiCollapse, UiCollapseItem } from '@fastio/ui'
 import type { Dish, DishTag, DishIngredient, Category } from '@fastio/shared'
 import type { DishFormData } from '~/utils/api/dishes'
-import { useSupabaseApi } from '#imports'
 import { tagOptions } from '~/config/dish-tags'
 import { useBranchStore } from '~/stores/branch'
+import { useDishSave } from '~/composables/useDishSave'
 import PhotoUpload from '~/components/ui/PhotoUpload.vue'
 import DishSettingsSection from '~/components/menu/DishSettingsSection.vue'
 import DishModifiersSection from '~/components/menu/DishModifiersSection.vue'
@@ -176,7 +176,8 @@ const props = defineProps<{
   updateDish: (id: string, data: Partial<DishFormData>) => Promise<void>
 }>()
 
-const api = useSupabaseApi()
+const tenantIdRef = computed(() => props.tenantId)
+const { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()
 const branches = computed(() => branchStore.branches)
 
@@ -314,14 +315,10 @@ const onConfirm = async () => {
     let photos = currentPhotoUrl.value ? [currentPhotoUrl.value] : []
 
     if (pendingPhotoFile.value) {
-      if (originalPhotoUrl.value) {
-        await api.dishes.deletePhoto(originalPhotoUrl.value)
-      }
-      const url = await api.dishes.uploadPhoto(props.tenantId, pendingPhotoFile.value)
-
-      photos = [url]
+      if (originalPhotoUrl.value) await deletePhoto(originalPhotoUrl.value)
+      photos = [await uploadPhoto(pendingPhotoFile.value)]
     } else if (photoRemoved.value && originalPhotoUrl.value) {
-      await api.dishes.deletePhoto(originalPhotoUrl.value)
+      await deletePhoto(originalPhotoUrl.value)
       photos = []
     }
 
@@ -336,24 +333,17 @@ const onConfirm = async () => {
       await props.updateDish(props.dish.id, data)
 
       if (branches.value.length > 0) {
-        const prices = settingsRef.value?.getBranchPrices() ?? []
-
-        await api.dishes.setBranchPrices(props.dish.id, prices)
+        await saveBranchPrices(props.dish.id, settingsRef.value?.getBranchPrices() ?? [])
       }
 
-      const modifiers = modifiersRef.value?.getModifiers() ?? []
-
-      await api.dishes.setDishModifiers(props.dish.id, modifiers)
+      await saveDishModifiers(props.dish.id, modifiersRef.value?.getModifiers() ?? [])
     } else {
       const newDish = await props.addDish(data)
 
-      // Save modifiers for new dish if any
       if (newDish) {
         const modifiers = modifiersRef.value?.getModifiers() ?? []
 
-        if (modifiers.length > 0) {
-          await api.dishes.setDishModifiers(newDish.id, modifiers)
-        }
+        if (modifiers.length > 0) await saveDishModifiers(newDish.id, modifiers)
       }
     }
     emit('saved')

@@ -2,10 +2,10 @@ import { computed } from 'vue'
 import type { TenantMember, TenantInvitation, TenantRole } from '@fastio/shared'
 import { useQuery } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 
 export const useTeam = () => {
-  const api = useSupabaseApi()
+  const api = useDatabase()
   const tenantStore = useTenantStore()
 
   const { data, loading, execute: load } = useQuery(async () => {
@@ -47,6 +47,11 @@ export const useTeam = () => {
 
   const changeRole = async (memberId: string, role: TenantRole) => {
     await api.members.updateRole(memberId, role)
+    await load()
+  }
+
+  const updateRoleAndBranches = async (memberId: string, role: TenantRole, branchIds: string[]) => {
+    await api.members.updateRoleAndBranches(memberId, role, branchIds)
     await load()
   }
 
@@ -92,6 +97,7 @@ export const useTeam = () => {
     load,
     invite,
     changeRole,
+    updateRoleAndBranches,
     removeMember,
     blockMember,
     unblockMember,

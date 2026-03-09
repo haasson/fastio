@@ -1,8 +1,8 @@
-import { ref, watch } from 'vue'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { ref, watch, type Ref } from 'vue'
+import { useDatabase } from '~/composables/useDatabase'
 
 const useDishCounts = (tenantId: Ref<string>) => {
-  const api = useSupabaseApi()
+  const api = useDatabase()
   const counts = ref<Record<string, number>>({})
 
   const refresh = async () => {

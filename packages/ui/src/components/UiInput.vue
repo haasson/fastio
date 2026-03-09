@@ -99,7 +99,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const attrs = useAttrs()
-const value = defineModel<string>({ default: '' })
+const value = defineModel<string | null>({ default: '' })
 const passwordVisible = ref(false)
 
 const nativeInputProps = computed(() => {

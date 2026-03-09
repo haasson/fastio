@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, type Ref } from 'vue'
-import { useRoute, navigateTo, useSupabaseApi } from '#imports'
+import { useRoute, navigateTo, useDatabase } from '#imports'
 import { useOrdersChannel } from '~/composables/useOrdersChannel'
 import { useOrderAlertHandler } from '~/composables/useOrderAlertHandler'
 import { useLocalStorage } from '@vueuse/core'
@@ -89,7 +89,7 @@ import { useBranchStore } from '~/stores/branch'
 import { roleLabels } from '~/config/team-roles'
 
 const route = useRoute()
-const api = useSupabaseApi()
+const api = useDatabase()
 const { confirm } = useConfirm()
 const sidebarOpen = ref(false)
 const collapsed = useLocalStorage('sidebar-collapsed', false)
@@ -104,7 +104,7 @@ const branchStore = useBranchStore()
 useOrdersChannel(computed(() => tenantStore.currentTenantId))
 useOrderAlertHandler()
 
-const showBranchGate = computed(() => !tenantStore.loading && !!tenantStore.tenant && !branchStore.hasBranches,
+const showBranchGate = computed(() => !tenantStore.loading && !branchStore.loading && !!tenantStore.tenant && !branchStore.hasBranches,
 )
 
 const displayName = computed(() => {
@@ -148,8 +148,10 @@ const branchOptions = computed(() => {
   return opts
 })
 
-const handleBranchChange = (val: string) => {
-  branchStore.setBranch(val === '' ? null : val)
+const handleBranchChange = (val: string | number | (string | number)[] | null) => {
+  const strVal = String(val ?? '')
+
+  branchStore.setBranch(strVal === '' ? null : strVal)
 }
 
 // Logout

@@ -1,11 +1,11 @@
-import { computed } from 'vue'
+import { computed, type Ref } from 'vue'
 import type { OrderStatus, OrderStatusData } from '@fastio/shared'
 import { mapOrderStatus } from '~/utils/api/order-statuses'
 import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 
 export const useOrderStatuses = (tenantId: Ref<string>) => {
-  const api = useSupabaseApi()
+  const api = useDatabase()
 
   const { items: statuses, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value ? `order_statuses:${tenantId.value}` : null),

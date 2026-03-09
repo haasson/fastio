@@ -1,6 +1,6 @@
-import { ref, watch, onUnmounted } from 'vue'
-import { useNuxtApp } from '#imports'
+import { ref, watch, onUnmounted, getCurrentInstance, type Ref } from 'vue'
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { useDatabase } from '~/composables/useDatabase'
 
 type Options<T extends { id: string }> = {
   /** Реактивный ключ канала. null = подписка неактивна */
@@ -15,7 +15,7 @@ type Options<T extends { id: string }> = {
 }
 
 export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
-  const { $supabase } = useNuxtApp()
+  const api = useDatabase()
   const items = ref<T[]>([]) as Ref<T[]>
   const loading = ref(false)
 
@@ -53,16 +53,8 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
     items.value = await options.fetch()
     loading.value = false
 
-    const { data: { session } } = await $supabase.auth.getSession()
-
-    if (session?.access_token) $supabase.realtime.setAuth(session.access_token)
-
-    channel = $supabase
-      .channel(key)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: options.table, filter }, onInsert)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: options.table, filter }, onUpdate)
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: options.table }, onDelete)
-      .subscribe()
+    await api.realtime.setupAuth()
+    channel = api.realtime.subscribeToTable(key, options.table, filter, { onInsert, onUpdate, onDelete })
   }
 
   watch(
@@ -83,7 +75,7 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
     loading.value = false
   }
 
-  onUnmounted(() => channel?.unsubscribe())
+  if (getCurrentInstance()) onUnmounted(() => channel?.unsubscribe())
 
   return { items, loading, refresh }
 }

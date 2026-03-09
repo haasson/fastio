@@ -91,7 +91,7 @@
     :actions="[]"
   >
     <PhotoUpload
-      :key="photoModalItemId"
+      :key="photoModalItemId ?? undefined"
       :model-value="currentPhotoForModal"
       @update:model-value="onPhotoRemoved"
       @pending="onPhotoPending"

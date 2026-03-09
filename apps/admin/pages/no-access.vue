@@ -19,12 +19,12 @@
 import { definePageMeta, navigateTo } from '#imports'
 import { UiButton, UiTitle } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ layout: false })
 
-const api = useSupabaseApi()
+const api = useDatabase()
 const tenantStore = useTenantStore()
 
 const logout = async () => {

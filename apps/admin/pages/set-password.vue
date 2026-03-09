@@ -56,13 +56,13 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
+import { definePageMeta, useRoute, navigateTo, useDatabase } from '#imports'
 import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
-const api = useSupabaseApi()
+const api = useDatabase()
 const route = useRoute()
 
 const inviteToken = route.query.token as string | undefined

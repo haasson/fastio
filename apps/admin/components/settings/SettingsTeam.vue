@@ -127,15 +127,13 @@ import {
   UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, useConfirm, useMessage,
 } from '@fastio/ui'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
-import { useSupabaseApi } from '#imports'
 import { useTeam } from '~/composables/useTeam'
 import { usePermissions } from '~/composables/usePermissions'
 import { useBranchStore } from '~/stores/branch'
 import { roleOptions } from '~/config/team-roles'
 import { buildMemberColumns, buildInviteColumns } from './team-columns'
 
-const api = useSupabaseApi()
-const { members, invitations, loading: teamLoading, load, invite, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
+const { members, invitations, loading: teamLoading, load, invite, updateRoleAndBranches, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
 const { canManageTeam } = usePermissions()
 const { confirm } = useConfirm()
 const message = useMessage()
@@ -198,7 +196,7 @@ const saveEdit = async () => {
   try {
     const branchIds = editBranchMode.value === 'all' ? [] : editForm.branchIds
 
-    await api.members.updateRoleAndBranches(editingMember.value.id, editForm.role, branchIds)
+    await updateRoleAndBranches(editingMember.value.id, editForm.role, branchIds)
     await load()
     editingMember.value = null
   } finally {

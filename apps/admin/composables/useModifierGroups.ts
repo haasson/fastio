@@ -2,10 +2,10 @@ import { computed, type Ref } from 'vue'
 import type { ModifierGroupFormData } from '@fastio/shared'
 import { mapModifierGroup } from '~/utils/api/modifiers'
 import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 
 export function useModifierGroups(tenantId: Ref<string>) {
-  const api = useSupabaseApi()
+  const api = useDatabase()
 
   const { items: groups, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value ? `modifier_groups:${tenantId.value}` : null),

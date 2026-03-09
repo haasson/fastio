@@ -2,7 +2,7 @@ import { computed, ref, watch, onUnmounted, type Ref } from 'vue'
 import type { Order, OrderStatus } from '@fastio/shared'
 import type { OrderFilter } from '~/utils/api/orders'
 import { orderEvents } from '~/composables/useOrdersChannel'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -12,7 +12,7 @@ export function useOrders(
   branchId: Ref<string | null> = ref(null),
   statuses: Ref<OrderStatus[]> = ref([]),
 ) {
-  const api = useSupabaseApi()
+  const api = useDatabase()
   const authStore = useAuthStore()
   const tenantStore = useTenantStore()
   const _orders = ref<Order[]>([])
@@ -92,7 +92,7 @@ export function useOrders(
           to_id: newStatusId,
           to_name: newStatus?.name ?? null,
         },
-      })
+      }).catch(console.error)
     }
 
     if (i === -1) return

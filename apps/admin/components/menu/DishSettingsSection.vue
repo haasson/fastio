@@ -32,10 +32,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { UiCollapseItem, UiSwitch, UiInputNumber } from '@fastio/ui'
-import { useSupabaseApi } from '#imports'
 import { useBranchStore } from '~/stores/branch'
+import { useDishBranchPrices } from '~/composables/useDishBranchPrices'
 
 const props = defineProps<{
   active: boolean
@@ -48,64 +48,15 @@ defineEmits<{
   'update:active': [value: boolean]
 }>()
 
-const api = useSupabaseApi()
 const branchStore = useBranchStore()
 const branches = computed(() => branchStore.branches)
+const dishId = computed(() => props.dishId)
+const refreshKey = computed(() => props.refreshKey)
 
-const useBranchPrices = ref(false)
-const branchPrices = reactive<Record<string, number | null>>({})
-
-const reset = () => {
-  useBranchPrices.value = false
-  branches.value.forEach((b) => {
-    branchPrices[b.id] = null
-  })
-}
-
-const load = async (dishId: string) => {
-  const prices = await api.dishes.getBranchPrices(dishId)
-
-  branches.value.forEach((b) => {
-    branchPrices[b.id] = null
-  })
-
-  if (prices.length > 0) {
-    useBranchPrices.value = true
-    prices.forEach((p) => {
-      branchPrices[p.branchId] = p.price
-    })
-  } else {
-    useBranchPrices.value = false
-  }
-}
-
-const onToggleBranchPrices = (val: boolean) => {
-  if (!val) {
-    Object.keys(branchPrices).forEach((k) => {
-      branchPrices[k] = null
-    })
-  }
-}
-
-const getBranchPrices = () => useBranchPrices.value
-  ? branches.value
-      .filter((b) => branchPrices[b.id] != null)
-      .map((b) => ({ branchId: b.id, price: branchPrices[b.id] as number }))
-  : []
+const { useBranchPrices, branchPrices, onToggleBranchPrices, getBranchPrices }
+  = useDishBranchPrices(dishId, branches, refreshKey)
 
 defineExpose({ getBranchPrices })
-
-watch(
-  () => props.refreshKey,
-  () => {
-    if (props.dishId && branches.value.length > 0) {
-      load(props.dishId)
-    } else {
-      reset()
-    }
-  },
-  { immediate: true },
-)
 </script>
 
 <style scoped lang="scss">

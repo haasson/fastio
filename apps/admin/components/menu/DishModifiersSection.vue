@@ -108,10 +108,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, useMessage } from '@fastio/ui'
-import type { Dish, ModifierGroup, DishModifierGroup, DishModifierOption } from '@fastio/shared'
-import { useSupabaseApi } from '#imports'
+import { useDishModifiersEditor } from '~/composables/useDishModifiersEditor'
 
 const props = defineProps<{
   tenantId: string
@@ -120,160 +119,27 @@ const props = defineProps<{
   refreshKey: number
 }>()
 
-const api = useSupabaseApi()
 const { success } = useMessage()
 
-const loading = ref(false)
-const availableGroups = ref<ModifierGroup[]>([])
-const attachedGroups = ref<DishModifierGroup[]>([])
-const selectedGroupId = ref<string | null>(null)
-const copyFromDishId = ref<string | null>(null)
-const categoryDishes = ref<Dish[]>([])
-const addMode = ref<'group' | 'copy' | null>(null)
+const tenantId = computed(() => props.tenantId)
+const categoryId = computed(() => props.categoryId)
+const dishId = computed(() => props.dishId)
+const refreshKey = computed(() => props.refreshKey)
 
-const loadAvailableGroups = async () => {
-  if (!props.tenantId) return
-  availableGroups.value = await api.modifiers.list(props.tenantId)
-}
-
-const dishesWithModifiers = ref<Set<string>>(new Set())
-
-const loadCategoryDishes = async () => {
-  if (!props.tenantId || !props.categoryId) return
-  const dishes = await api.dishes.list(props.tenantId, props.categoryId)
-
-  categoryDishes.value = dishes.filter((d) => d.id !== props.dishId)
-
-  const dishIds = categoryDishes.value.map((d) => d.id)
-
-  if (dishIds.length > 0) {
-    dishesWithModifiers.value = await api.dishes.getDishIdsWithModifiers(dishIds)
-  }
-}
-
-const copyDishSelectOptions = computed(() => categoryDishes.value
-  .filter((d) => dishesWithModifiers.value.has(d.id))
-  .map((d) => ({ label: d.name, value: d.id })),
-)
+const {
+  loading, availableGroups, attachedGroups, selectedGroupId, copyFromDishId, addMode,
+  canAddGroup, hasCopySource, groupSelectOptions, copyDishSelectOptions,
+  addGroup, removeGroup, getGroupSourceOptions, isOptionAttached, getAttachedOption,
+  toggleOption, setDefault, getModifiers,
+  copyFromDish: copyFromDishRaw,
+} = useDishModifiersEditor(tenantId, categoryId, dishId, refreshKey)
 
 const copyFromDish = async () => {
-  if (!copyFromDishId.value) return
-  const modifiers = await api.dishes.getDishModifiers(copyFromDishId.value)
-
-  attachedGroups.value = modifiers
-  copyFromDishId.value = null
-  addMode.value = null
+  await copyFromDishRaw()
   success('Скопировано')
 }
 
-const canAddGroup = computed(() => unattachedGroups.value.length > 0)
-const hasCopySource = computed(() => copyDishSelectOptions.value.length > 0)
-
-const unattachedGroups = computed(() => availableGroups.value.filter(
-  (g) => !attachedGroups.value.some((a) => a.groupId === g.id),
-),
-)
-
-const groupSelectOptions = computed(() => unattachedGroups.value.map((g) => ({ label: g.name, value: g.id })),
-)
-
-const addGroup = () => {
-  const group = availableGroups.value.find((g) => g.id === selectedGroupId.value)
-
-  if (!group) return
-
-  const options: DishModifierOption[] = group.options.map((o, i) => ({
-    optionId: o.id,
-    optionName: o.name,
-    groupId: group.id,
-    groupName: group.name,
-    priceDelta: 0,
-    isDefault: i === 0,
-    sortOrder: i,
-  }))
-
-  attachedGroups.value.push({
-    groupId: group.id,
-    groupName: group.name,
-    sortOrder: attachedGroups.value.length,
-    options,
-  })
-
-  selectedGroupId.value = null
-  addMode.value = null
-}
-
-const removeGroup = (index: number) => {
-  attachedGroups.value.splice(index, 1)
-}
-
-const getGroupSourceOptions = (groupId: string) => availableGroups.value.find((g) => g.id === groupId)?.options ?? []
-
-const isOptionAttached = (groupIndex: number, optionId: string) => attachedGroups.value[groupIndex].options.some((o) => o.optionId === optionId)
-
-const getAttachedOption = (groupIndex: number, optionId: string) => attachedGroups.value[groupIndex].options.find((o) => o.optionId === optionId)
-
-const toggleOption = (groupIndex: number, sourceOpt: { id: string; name: string }, checked: boolean) => {
-  const group = attachedGroups.value[groupIndex]
-
-  if (checked) {
-    group.options.push({
-      optionId: sourceOpt.id,
-      optionName: sourceOpt.name,
-      groupId: group.groupId,
-      groupName: group.groupName,
-      priceDelta: 0,
-      isDefault: group.options.length === 0,
-      sortOrder: group.options.length,
-    })
-  } else {
-    group.options = group.options.filter((o) => o.optionId !== sourceOpt.id)
-    // If removed option was default, make first remaining default
-    if (!group.options.some((o) => o.isDefault) && group.options.length > 0) {
-      group.options[0].isDefault = true
-    }
-  }
-}
-
-const setDefault = (groupIndex: number, optionId: string, value: boolean) => {
-  const group = attachedGroups.value[groupIndex]
-
-  // Ensure exactly one default per group
-  for (const opt of group.options) {
-    opt.isDefault = opt.optionId === optionId ? value : false
-  }
-
-  // If none selected, default to first
-  if (!group.options.some((o) => o.isDefault) && group.options.length > 0) {
-    group.options[0].isDefault = true
-  }
-}
-
-const loadDishModifiers = async (dishId: string) => {
-  attachedGroups.value = await api.dishes.getDishModifiers(dishId)
-}
-
-const getModifiers = (): DishModifierGroup[] => attachedGroups.value
-
 defineExpose({ getModifiers })
-
-watch(
-  () => props.refreshKey,
-  async () => {
-    loading.value = true
-    try {
-      await Promise.all([loadAvailableGroups(), loadCategoryDishes()])
-      if (props.dishId) {
-        await loadDishModifiers(props.dishId)
-      } else {
-        attachedGroups.value = []
-      }
-    } finally {
-      loading.value = false
-    }
-  },
-  { immediate: true },
-)
 </script>
 
 <style scoped lang="scss">

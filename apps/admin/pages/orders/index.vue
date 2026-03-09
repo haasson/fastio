@@ -17,14 +17,15 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { definePageMeta } from '#imports'
 import { useNewOrderCounter } from '~/composables/useNewOrderCounter'
 import OrderStatusList from '~/components/orders/OrderStatusList.vue'
 import OrderList from '~/components/orders/OrderList.vue'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useOrderCounts } from '~/composables/useOrderCounts'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -32,7 +33,6 @@ const { count: newOrderCount, reset: resetOrderCount } = useNewOrderCounter()
 
 resetOrderCount()
 
-const api = useSupabaseApi()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 
@@ -41,7 +41,7 @@ tenantStore.init()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const branchId = computed(() => branchStore.currentBranchId)
 
-const { statuses } = useOrderStatusesStore()
+const { statuses } = storeToRefs(useOrderStatusesStore())
 const selectedStatusId = ref<string | null>(null)
 
 watch(statuses, (list) => {
@@ -50,14 +50,8 @@ watch(statuses, (list) => {
   }
 }, { immediate: true })
 
-const orderCounts = ref<Record<string, number>>({})
+const { counts: orderCounts, fetchCounts } = useOrderCounts(tenantId, branchId)
 
-const fetchCounts = async () => {
-  if (!tenantId.value) return
-  orderCounts.value = await api.orders.counts(tenantId.value, branchId.value)
-}
-
-watch([tenantId, branchId], fetchCounts, { immediate: true })
 watch(newOrderCount, fetchCounts)
 </script>
 

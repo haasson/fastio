@@ -1,11 +1,11 @@
-import { computed } from 'vue'
+import { computed, type Ref } from 'vue'
 import type { Category, CategoryData } from '@fastio/shared'
 import { mapCategory } from '~/utils/api/categories'
 import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 
 export const useCategories = (tenantId: Ref<string>) => {
-  const api = useSupabaseApi()
+  const api = useDatabase()
 
   const { items: categories, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value ? `categories:${tenantId.value}` : null),
@@ -42,5 +42,23 @@ export const useCategories = (tenantId: Ref<string>) => {
     await api.categories.reorder(reordered.map((c, i) => ({ id: c.id, order: i })))
   }
 
-  return { categories, loading, add, update, remove, reorder }
+  const updatePhoto = async (id: string, file: File) => {
+    const cat = categories.value.find((c) => c.id === id)
+
+    if (cat?.photoUrl) await api.categories.deletePhoto(cat.photoUrl)
+
+    const url = await api.categories.uploadPhoto(tenantId.value, file)
+
+    await update(id, { photoUrl: url })
+  }
+
+  const removePhoto = async (id: string) => {
+    const cat = categories.value.find((c) => c.id === id)
+
+    if (cat?.photoUrl) await api.categories.deletePhoto(cat.photoUrl)
+
+    await update(id, { photoUrl: null })
+  }
+
+  return { categories, loading, add, update, remove, reorder, updatePhoto, removePhoto }
 }

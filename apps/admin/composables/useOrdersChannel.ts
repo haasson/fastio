@@ -1,8 +1,7 @@
-import { watch, onUnmounted, type Ref } from 'vue'
-import { useNuxtApp } from '#imports'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import { type Ref } from 'vue'
 import type { Order } from '@fastio/shared'
 import { mapOrder } from '~/utils/api/orders'
+import { useRealtimeWatch } from '~/composables/useRealtimeWatch'
 
 type Handler<T> = (payload: T) => void
 
@@ -33,45 +32,10 @@ export const orderEvents = {
  * Call ONCE in layout. Creates a single realtime channel for orders.
  */
 export function useOrdersChannel(tenantId: Ref<string | null>) {
-  const { $supabase } = useNuxtApp()
-  let channel: RealtimeChannel | null = null
-
-  const setup = async (id: string) => {
-    const { data: { session } } = await $supabase.auth.getSession()
-
-    if (session?.access_token) $supabase.realtime.setAuth(session.access_token)
-
-    channel = $supabase
-      .channel(`orders:${id}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'orders',
-        filter: `tenant_id=eq.${id}`,
-      }, ({ new: row }) => {
-        const order = mapOrder(row as Record<string, unknown>)
-
-        insertHandlers.forEach((h) => h(order))
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'orders',
-        filter: `tenant_id=eq.${id}`,
-      }, ({ new: row }) => {
-        const order = mapOrder(row as Record<string, unknown>)
-
-        updateHandlers.forEach((h) => h(order))
-      })
-      .on('postgres_changes', {
-        event: 'DELETE', schema: 'public', table: 'orders',
-      }, ({ old: row }) => {
-        deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id }))
-      })
-      .subscribe()
-  }
-
-  watch(tenantId, (id) => {
-    channel?.unsubscribe()
-    channel = null
-    if (id) setup(id)
-  }, { immediate: true })
-
-  onUnmounted(() => channel?.unsubscribe())
+  useRealtimeWatch('orders', tenantId, {
+    column: 'tenant_id',
+    onInsert: (row) => insertHandlers.forEach((h) => h(mapOrder(row))),
+    onUpdate: (row) => updateHandlers.forEach((h) => h(mapOrder(row))),
+    onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
+  })
 }

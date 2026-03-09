@@ -1,7 +1,7 @@
 import type { Order, OrderStatus } from '@fastio/shared'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 
 type OrderForm = {
   status: string
@@ -30,7 +30,7 @@ const FIELD_MAPPINGS: FieldMapping[] = [
 ]
 
 export const useOrderEventLogger = () => {
-  const api = useSupabaseApi()
+  const api = useDatabase()
   const authStore = useAuthStore()
   const tenantStore = useTenantStore()
 
@@ -58,7 +58,7 @@ export const useOrderEventLogger = () => {
           to_id: form.status,
           to_name: newStatus?.name ?? null,
         },
-      })
+      }).catch(console.error)
     }
 
     const fieldChanges = FIELD_MAPPINGS
@@ -66,11 +66,11 @@ export const useOrderEventLogger = () => {
       .map((m) => ({ field: m.field, old_value: m.orderVal(order), new_value: m.formVal(form) }))
 
     if (fieldChanges.length > 0) {
-      api.orderEvents.add({ ...actor, eventType: 'field_updated', meta: { changes: fieldChanges } })
+      api.orderEvents.add({ ...actor, eventType: 'field_updated', meta: { changes: fieldChanges } }).catch(console.error)
     }
 
     if (JSON.stringify(form.items) !== JSON.stringify(order.items)) {
-      api.orderEvents.add({ ...actor, eventType: 'items_updated', meta: { before: order.items, after: form.items } })
+      api.orderEvents.add({ ...actor, eventType: 'items_updated', meta: { before: order.items, after: form.items } }).catch(console.error)
     }
   }
 

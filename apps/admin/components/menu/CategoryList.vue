@@ -41,7 +41,6 @@ import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
 import { useCategories } from '~/composables/useCategories'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
 
 const props = defineProps<{
   tenantId: string
@@ -55,9 +54,8 @@ const emit = defineEmits<{
 }>()
 
 const tenantIdRef = computed(() => props.tenantId)
-const api = useSupabaseApi()
 
-const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory, reorder: reorderCategories }
+const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory, reorder: reorderCategories, updatePhoto: updateCategoryPhoto, removePhoto: removeCategoryPhoto }
   = useCategories(tenantIdRef)
 
 watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
@@ -99,22 +97,9 @@ const handleReorder = async (items: ManagedItem[]) => {
   })))
 }
 
-const handleUpdatePhoto = async (id: string, file: File) => {
-  const cat = categories.value.find((c) => c.id === id)
+const handleUpdatePhoto = (id: string, file: File) => updateCategoryPhoto(id, file)
 
-  if (cat?.photoUrl) await api.categories.deletePhoto(cat.photoUrl)
-
-  const url = await api.categories.uploadPhoto(props.tenantId, file)
-
-  await updateCategory(id, { photoUrl: url })
-}
-
-const handleRemovePhoto = async (id: string) => {
-  const cat = categories.value.find((c) => c.id === id)
-
-  if (cat?.photoUrl) await api.categories.deletePhoto(cat.photoUrl)
-  await updateCategory(id, { photoUrl: null })
-}
+const handleRemovePhoto = (id: string) => removeCategoryPhoto(id)
 </script>
 
 <style scoped lang="scss">

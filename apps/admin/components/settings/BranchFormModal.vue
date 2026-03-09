@@ -23,7 +23,7 @@
         v-model="form.phone"
         label="Телефон"
         placeholder="+7 (900) 000-00-00"
-        :rules="[{ type: 'phone' }]"
+        :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
       />
 
       <div class="active-row">

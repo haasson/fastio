@@ -13,7 +13,9 @@ import { tenantsApi } from '~/utils/api/tenants'
 import { authApi } from '~/utils/api/auth'
 import { functionsApi } from '~/utils/api/functions'
 import { modifiersApi } from '~/utils/api/modifiers'
+import { realtimeApi } from '~/utils/api/realtime'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
 
 type BoundApi<T extends ApiModule> = {
@@ -23,13 +25,15 @@ type BoundApi<T extends ApiModule> = {
 }
 
 const bindAll = <T extends ApiModule>(api: T, sb: SupabaseClient): BoundApi<T> => Object.fromEntries(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Object.entries(api).map(([k, fn]) => [k, (...args: any[]) => fn(sb, ...args)]),
 ) as BoundApi<T>
 
-export const useSupabaseApi = () => {
+export const useDatabase = () => {
   const { $supabase: sb } = useNuxtApp()
 
   return {
+    realtime: bindAll(realtimeApi, sb),
     branches: bindAll(branchesApi, sb),
     categories: bindAll(categoriesApi, sb),
     dishes: bindAll(dishesApi, sb),

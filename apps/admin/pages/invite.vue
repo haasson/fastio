@@ -13,14 +13,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { definePageMeta, useRoute, navigateTo, useSupabaseApi } from '#imports'
+import { definePageMeta, useRoute, navigateTo, useDatabase } from '#imports'
 import { UiCard, UiAlert, UiText } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 
 definePageMeta({ layout: false })
 
 const route = useRoute()
-const api = useSupabaseApi()
+const api = useDatabase()
 
 const pageLoading = ref(true)
 const fatalError = ref('')

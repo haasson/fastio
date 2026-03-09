@@ -1,11 +1,11 @@
-import { computed } from 'vue'
+import { computed, type Ref } from 'vue'
 import type { Dish } from '@fastio/shared'
 import { mapDish, type DishFormData } from '~/utils/api/dishes'
 import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 
 export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>) {
-  const api = useSupabaseApi()
+  const api = useDatabase()
 
   const { items: dishes, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value && categoryId.value ? `dishes:${tenantId.value}:${categoryId.value}` : null),

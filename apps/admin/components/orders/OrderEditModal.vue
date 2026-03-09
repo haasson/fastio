@@ -157,7 +157,7 @@ import {
   UiModal, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { useSupabaseApi } from '#imports'
+import { useOrderEdit } from '~/composables/useOrderEdit'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useStatusColor } from '~/composables/useStatusColor'
@@ -178,7 +178,7 @@ const emit = defineEmits<{
   'saved': [order: Order]
 }>()
 
-const api = useSupabaseApi()
+const { update: updateOrder } = useOrderEdit()
 const { logSaveEvents } = useOrderEventLogger()
 const { statuses } = useOrderStatusesStore()
 const { getStatusColor } = useStatusColor()
@@ -275,7 +275,7 @@ const onSave = async () => {
   if (!props.order) return false
   saving.value = true
   try {
-    const updated = await api.orders.update(props.order.id, {
+    const updated = await updateOrder(props.order.id, {
       customer: { name: form.customerName, phone: form.customerPhone },
       items: form.items,
       deliveryType: form.deliveryType,
@@ -305,10 +305,11 @@ const deliveryItems = DELIVERY_OPTIONS
 const paymentOptions = PAYMENT_OPTIONS
 
 const modalActions = computed(() => {
-  const actions = [{ text: 'Закрыть', type: 'default' as const, actionType: 'decline' as const }]
+  type ModalAction = { text: string; type: 'default' | 'primary'; actionType: 'decline' | 'confirm'; loading?: boolean }
+  const actions: ModalAction[] = [{ text: 'Закрыть', type: 'default', actionType: 'decline' }]
 
   if (activeTab.value === 'data') {
-    actions.push({ text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value })
+    actions.push({ text: 'Сохранить', type: 'primary', actionType: 'confirm', loading: saving.value })
   }
 
   return actions

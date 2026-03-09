@@ -54,33 +54,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
-import { useNuxtApp } from '#imports'
+import { computed, watch } from 'vue'
 import { UiTimeline, UiTimelineItem } from '@fastio/ui'
 import type { OrderEvent, OrderItem } from '@fastio/shared'
-import type { RealtimeChannel } from '@supabase/supabase-js'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
-import { mapOrderEvent } from '~/utils/api/order-events'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 import { FIELD_LABELS } from '~/config/order-events'
 import { COLORS } from '@fastio/ui'
 import { formatFieldValue, formatEventText } from '~/utils/format-order'
 import { useStatusColor } from '~/composables/useStatusColor'
+import { useOrderEvents } from '~/composables/useOrderEvents'
 
 const props = defineProps<{
   orderId: string
   refreshKey: number
 }>()
 
-const { $supabase } = useNuxtApp()
-const api = useSupabaseApi()
 const { getStatusColor } = useStatusColor()
 
-const loading = ref(false)
-const events = ref<OrderEvent[]>([])
+const orderId = computed(() => props.orderId)
+const { events, loading, refresh } = useOrderEvents(orderId)
 const now = new Date()
-
-let channel: RealtimeChannel | null = null
 
 const enrichedEvents = computed(() => {
   const firstChange = events.value.find((e) => e.eventType === 'status_changed')
@@ -140,46 +133,7 @@ const itemsChanges = (event: OrderEvent): ItemChange[] => {
 
 const eventText = (event: OrderEvent) => formatEventText(event.eventType, event.meta)
 
-const fetchEvents = async () => {
-  loading.value = true
-  events.value = await api.orderEvents.list(props.orderId)
-  loading.value = false
-}
-
-const setupRealtime = async () => {
-  channel?.unsubscribe()
-  const { data: { session } } = await $supabase.auth.getSession()
-
-  if (session?.access_token) $supabase.realtime.setAuth(session.access_token)
-
-  channel = $supabase
-    .channel(`order_events:${props.orderId}`)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'order_events',
-      filter: `order_id=eq.${props.orderId}`,
-    }, ({ new: row }) => {
-      const event = mapOrderEvent(row as Record<string, unknown>)
-
-      if (!events.value.find((e) => e.id === event.id)) {
-        events.value.push(event)
-      }
-    })
-    .subscribe()
-}
-
-watch(
-  () => props.refreshKey,
-  () => {
-    events.value = []
-    fetchEvents()
-    setupRealtime()
-  },
-  { immediate: true },
-)
-
-onUnmounted(() => channel?.unsubscribe())
+watch(() => props.refreshKey, refresh)
 </script>
 
 <style scoped lang="scss">

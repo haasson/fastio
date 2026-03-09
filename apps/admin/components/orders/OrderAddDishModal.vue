@@ -131,8 +131,8 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { UiModal, UiButton, UiIcon, UiTag } from '@fastio/ui'
-import type { Dish, Category, OrderItem, DishModifierGroup, OrderItemModifier } from '@fastio/shared'
-import { useSupabaseApi } from '#imports'
+import type { Dish, OrderItem, DishModifierGroup, OrderItemModifier } from '@fastio/shared'
+import { useOrderDishPicker } from '~/composables/useOrderDishPicker'
 
 const props = defineProps<{
   modelValue: boolean
@@ -146,11 +146,9 @@ const emit = defineEmits<{
   'update': [item: OrderItem]
 }>()
 
-const api = useSupabaseApi()
+const tenantIdRef = computed(() => props.tenantId)
+const { loading, categories, allDishes, fetchData, getDishModifiers } = useOrderDishPicker(tenantIdRef)
 
-const loading = ref(false)
-const categories = ref<Category[]>([])
-const allDishes = ref<Dish[]>([])
 const selectedCategoryId = ref<string | null>(null)
 const selectedDish = ref<Dish | null>(null)
 const removed = reactive<Record<string, boolean>>({})
@@ -202,7 +200,7 @@ watch(
 )
 
 const loadDishModifiers = async (dishId: string) => {
-  dishModifierGroups.value = await api.dishes.getDishModifiers(dishId)
+  dishModifierGroups.value = await getDishModifiers(dishId)
   // Set defaults
   for (const group of dishModifierGroups.value) {
     const defaultOpt = group.options.find((o) => o.isDefault) ?? group.options[0]
@@ -219,18 +217,6 @@ const modalTitle = computed(() => {
 
   return selectedDish.value?.name ?? ''
 })
-
-const fetchData = async () => {
-  loading.value = true
-  const [cats, dishes] = await Promise.all([
-    api.categories.list(props.tenantId),
-    api.dishes.listAllActive(props.tenantId),
-  ])
-
-  categories.value = cats
-  allDishes.value = dishes
-  loading.value = false
-}
 
 const categoryDishes = computed(() => allDishes.value.filter((d) => d.categoryId === selectedCategoryId.value),
 )

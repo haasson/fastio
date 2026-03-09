@@ -27,7 +27,7 @@
         name="phone"
         class="phone-input"
         placeholder="+7 (999) 000-00-00"
-        :rules="[{ type: 'required', message: 'Введите телефон' }, { type: 'phone' }]"
+        :rules="[{ type: 'required', message: 'Введите телефон' }, { type: 'phone', message: 'Введите корректный телефон' }]"
       />
     </div>
 

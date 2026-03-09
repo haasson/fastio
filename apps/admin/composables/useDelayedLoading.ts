@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 
 const useDelayedLoading = (loading: Ref<boolean>, delay = 1000) => {
   const showSkeleton = ref(false)

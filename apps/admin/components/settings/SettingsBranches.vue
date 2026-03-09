@@ -74,19 +74,20 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiButton, UiText, UiTag, UiSpace, UiSkeleton, UiDivider, useConfirm } from '@fastio/ui'
 import type { Branch, BranchFormData } from '@fastio/shared'
-import { useBranches } from '~/composables/useBranches'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useSupabaseApi } from '~/composables/useSupabaseApi'
+import { useDatabase } from '~/composables/useDatabase'
 import BranchFormModal from './BranchFormModal.vue'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
-const api = useSupabaseApi()
+const api = useDatabase()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
-const { branches, archivedBranches, loading, add, update, archive, restore } = useBranches(tenantId)
+const { branches, archivedBranches, loading } = storeToRefs(branchStore)
+const { add, update, archive, restore } = branchStore
 const { confirm } = useConfirm()
 
 const modalOpen = ref(false)

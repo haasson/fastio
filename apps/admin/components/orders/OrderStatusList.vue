@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiTabs } from '@fastio/ui'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
@@ -42,8 +43,9 @@ const emit = defineEmits<{
   'update:modelValue': [id: string | null]
 }>()
 
-const { statuses, add: addStatus, update: updateStatus, remove: removeStatus, reorder: reorderStatuses }
-  = useOrderStatusesStore()
+const statusesStore = useOrderStatusesStore()
+const { statuses } = storeToRefs(statusesStore)
+const { add: addStatus, update: updateStatus, remove: removeStatus, reorder: reorderStatuses } = statusesStore
 
 const statusTabs = computed(() => statuses.value.map((s) => ({
   value: s.id,

@@ -40,13 +40,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { UiInput, UiButton } from '@fastio/ui'
-import type { OrderNote } from '@fastio/shared'
-import { useSupabaseApi } from '#imports'
-import { useAuthStore } from '~/stores/auth'
-import { useTenantStore } from '~/stores/tenant'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
+import { useOrderNotes } from '~/composables/useOrderNotes'
 
 const props = defineProps<{
   orderId: string
@@ -54,13 +51,11 @@ const props = defineProps<{
   refreshKey: number
 }>()
 
-const api = useSupabaseApi()
-const authStore = useAuthStore()
-const tenantStore = useTenantStore()
+const orderId = computed(() => props.orderId)
+const tenantId = computed(() => props.tenantId)
+const { notes, loading: notesLoading, fetch: fetchNotes, add: addNote } = useOrderNotes(orderId, tenantId)
 
-const notesLoading = ref(false)
 const addingNote = ref(false)
-const notes = ref<OrderNote[]>([])
 const newNote = ref('')
 const now = new Date()
 
@@ -73,28 +68,11 @@ const NOTE_ROLE_COLORS: Record<string, string> = {
 
 const noteRoleColor = (role: string) => NOTE_ROLE_COLORS[role] ?? 'var(--grey-400)'
 
-const fetchNotes = async () => {
-  notesLoading.value = true
-  notes.value = await api.orderNotes.list(props.orderId)
-  notesLoading.value = false
-}
-
 const submitNote = async () => {
-  if (!authStore.user || !newNote.value.trim()) return
+  if (!newNote.value.trim()) return
   addingNote.value = true
-  const note = await api.orderNotes.add({
-    orderId: props.orderId,
-    tenantId: props.tenantId,
-    authorId: authStore.user.id,
-    authorName: authStore.user.email ?? 'Оператор',
-    authorRole: tenantStore.currentRole ?? 'staff',
-    content: newNote.value.trim(),
-  })
-
-  if (note) {
-    notes.value.push(note)
-    newNote.value = ''
-  }
+  await addNote(newNote.value.trim())
+  newNote.value = ''
   addingNote.value = false
 }
 
