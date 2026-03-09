@@ -44,10 +44,6 @@ withDefaults(defineProps<UiCardProps>(), {
     }
   }
 
-  &:where(.accent) {
-    border: 2px solid var(--color-primary);
-  }
-
   &:where(.size-small) { padding: 12px; }
   &:where(.size-medium) { padding: 16px; }
   &:where(.size-large) { padding: 20px; }

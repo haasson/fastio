@@ -1,8 +1,8 @@
 <template>
   <UiCard
     clickable
-    :accent="currentStatus?.groupType === 'new'"
     class="card-root"
+    :style="currentStatus ? { outline: `1px solid ${STATUS_GROUP_COLORS[currentStatus.groupType]}` } : undefined"
     @click="emit('open-edit', order)"
   >
     <!-- Шапка -->
@@ -91,7 +91,7 @@ import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
-import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
