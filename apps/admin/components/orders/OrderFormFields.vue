@@ -8,7 +8,7 @@
         name="customerName"
         label="Имя"
         placeholder="Иван Иванов"
-        :rules="[{ type: 'required', message: 'Введите имя' }]"
+        :rules="[validationRules.name.required]"
         :disabled="!perms.editCustomer"
       />
       <UiInput
@@ -16,7 +16,7 @@
         name="customerPhone"
         label="Телефон"
         placeholder="+7 999 000 00 00"
-        :rules="[{ type: 'phone', message: 'Введите телефон' }]"
+        :rules="[validationRules.phone.required, validationRules.phone.format]"
         :disabled="!perms.editCustomer"
       />
     </div>
@@ -34,7 +34,7 @@
       name="address"
       label="Адрес"
       placeholder="ул. Пушкина, д. 10, кв. 5"
-      :rules="[{ type: 'required', message: 'Введите адрес' }]"
+      :rules="[validationRules.address.required]"
       :disabled="!perms.editAddress"
       class="mt"
     />
@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl } from '@fastio/ui'
+import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, validationRules } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
 import OrderItemsSection from './OrderItemsSection.vue'

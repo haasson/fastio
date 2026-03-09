@@ -78,6 +78,9 @@ export type { ConfirmOptions } from './composables/useConfirm'
 // Form types
 export type { ValidationRule, ValidationRuleType, FormValues, FormContext } from './types/form'
 
+// Utils
+export { validationRules } from './utils/validation-rules'
+
 // Constants
 export { FORM_SIZE_KEY } from './constants/form-size'
 export { COLORS } from './constants/colors'
