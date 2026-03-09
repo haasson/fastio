@@ -1,6 +1,10 @@
 <template>
   <div class="categories-root">
-    <UiSectionHeader title="Категории" editable @edit="managerOpen = true" />
+    <UiSectionHeader title="Категории">
+      <template #left>
+        <AppEditBtn @click="managerOpen = true" />
+      </template>
+    </UiSectionHeader>
 
     <UiSkeleton
       v-if="categoriesLoading"
@@ -38,6 +42,7 @@ import { ref, computed, watch } from 'vue'
 import { UiSkeleton, UiTabs } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import AppEditBtn from '~/components/ui/AppEditBtn.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
 import { useCategories } from '~/composables/data/useCategories'

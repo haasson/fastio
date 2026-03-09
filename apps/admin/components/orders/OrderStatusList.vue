@@ -1,6 +1,10 @@
 <template>
   <div class="statuses-root">
-    <UiSectionHeader title="Статусы" editable @edit="managerOpen = true" />
+    <UiSectionHeader title="Статусы">
+      <template #left>
+        <AppEditBtn @click="managerOpen = true" />
+      </template>
+    </UiSectionHeader>
 
     <UiTabs
       :model-value="modelValue ?? ''"
@@ -29,6 +33,7 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiTabs } from '@fastio/ui'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import AppEditBtn from '~/components/ui/AppEditBtn.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
 import { useOrderStatusesStore } from '~/stores/order-statuses'

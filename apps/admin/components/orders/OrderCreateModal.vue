@@ -3,6 +3,8 @@
     :model-value="modelValue"
     title="Новый заказ"
     :width="860"
+    :actions="drawerActions"
+    :on-confirm="onSave"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="content">
@@ -17,16 +19,12 @@
       />
     </UiForm>
 
-    <template #footer>
-      <UiButton type="default" @click="$emit('update:modelValue', false)">Закрыть</UiButton>
-      <UiButton type="primary" :loading="saving" @click="onSave">Создать</UiButton>
-    </template>
   </UiDrawer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiDrawer, UiForm, UiButton } from '@fastio/ui'
+import { UiDrawer, UiForm } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
@@ -49,6 +47,11 @@ const { statuses } = useOrderStatusesStore()
 const saving = ref(false)
 const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 const itemsError = ref('')
+
+const drawerActions = computed(() => [
+  { text: 'Закрыть', type: 'default' as const, actionType: 'decline' as const },
+  { text: 'Создать', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+])
 
 const form = reactive({
   status: '',
@@ -91,7 +94,7 @@ const onSave = async () => {
   const hasItems = form.items.length > 0
 
   if (!hasItems) itemsError.value = 'Добавьте хотя бы одно блюдо'
-  if (!formValid || !hasItems) return
+  if (!formValid || !hasItems) return false
 
   saving.value = true
   try {

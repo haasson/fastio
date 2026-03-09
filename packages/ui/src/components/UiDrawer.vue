@@ -24,9 +24,20 @@
           </div>
         </template>
         <slot />
-        <template v-if="$slots.footer" #footer>
+        <template v-if="$slots.footer || actions" #footer>
           <div class="footer">
-            <slot name="footer" />
+            <slot name="footer">
+              <UiButton
+                v-for="(action, index) in actions"
+                :key="index"
+                :type="(action.type as any)"
+                :disabled="action.disabled"
+                :loading="action.loading"
+                @click="handleActionClick(action)"
+              >
+                {{ action.text }}
+              </UiButton>
+            </slot>
           </div>
         </template>
       </n-drawer-content>
@@ -39,14 +50,26 @@ import { ref, watch, computed } from 'vue'
 import { NDrawer, NDrawerContent } from 'naive-ui'
 import ClientOnly from './internal/ClientOnly.vue'
 import UiIcon from './UiIcon.vue'
+import UiButton from './UiButton.vue'
 import { layerManager } from '../utils/layers'
 import useBreakpoints from '../composables/useBreakpoints'
+
+export type DrawerAction = {
+  text: string
+  type?: 'primary' | 'default' | 'error' | 'warning' | 'success' | 'text'
+  disabled?: boolean
+  loading?: boolean
+  actionType: 'confirm' | 'decline'
+}
 
 export type UiDrawerProps = {
   modelValue: boolean
   title?: string
   width?: number | string
   closable?: boolean
+  actions?: DrawerAction[]
+  onConfirm?: () => boolean | void | Promise<boolean | void>
+  onDecline?: () => boolean | void | Promise<boolean | void>
 }
 
 const props = withDefaults(defineProps<UiDrawerProps>(), {
@@ -78,6 +101,22 @@ watch(() => props.modelValue, (shown) => {
 
 function onUpdateShow(value: boolean) {
   emit('update:modelValue', value)
+}
+
+async function handleActionClick(action: DrawerAction) {
+  if (action.actionType === 'confirm') {
+    if (props.onConfirm) {
+      const result = await props.onConfirm()
+      if (result === false) return
+    }
+    emit('update:modelValue', false)
+  } else {
+    if (props.onDecline) {
+      const result = await props.onDecline()
+      if (result === false) return
+    }
+    emit('update:modelValue', false)
+  }
 }
 </script>
 

@@ -3,6 +3,8 @@
     :model-value="modelValue"
     :title="`Заказ #${shortId}`"
     :width="860"
+    :actions="drawerActions"
+    :on-confirm="onSave"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <div v-if="order" class="content">
@@ -72,17 +74,13 @@
 
     </div>
 
-    <template v-if="activeTab === 'data'" #footer>
-      <UiButton type="default" @click="$emit('update:modelValue', false)">Закрыть</UiButton>
-      <UiButton type="primary" :loading="saving" @click="onSave">Сохранить</UiButton>
-    </template>
   </UiDrawer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  UiDrawer, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
+  UiDrawer, UiTabs, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -113,6 +111,11 @@ const { getStatusColor } = useStatusColor()
 const saving = ref(false)
 const notesRefreshKey = ref(0)
 const activeTab = ref<'data' | 'history' | 'notes'>('data')
+
+const drawerActions = computed(() => [
+  { text: 'Закрыть', type: 'default' as const, actionType: 'decline' as const },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, disabled: activeTab.value !== 'data' },
+])
 
 const tabs = [
   { label: 'Заказ', value: 'data' },

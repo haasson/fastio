@@ -6,30 +6,13 @@
     </div>
     <div class="right">
       <slot name="right" />
-      <UiButton
-        v-if="editable"
-        type="text"
-        size="tiny"
-        icon="pencil"
-        class="edit-btn"
-        @click="$emit('edit')"
-      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { UiButton } from '@fastio/ui'
-
-withDefaults(defineProps<{
+defineProps<{
   title: string
-  editable?: boolean
-}>(), {
-  editable: false,
-})
-
-defineEmits<{
-  edit: []
 }>()
 </script>
 
@@ -44,7 +27,7 @@ defineEmits<{
 .left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .right {
@@ -60,12 +43,5 @@ defineEmits<{
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
-}
-
-.edit-btn {
-  opacity: 0.5;
-  transition: opacity 0.15s;
-
-  &:hover { opacity: 1; }
 }
 </style>

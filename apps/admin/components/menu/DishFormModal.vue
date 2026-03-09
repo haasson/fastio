@@ -1,9 +1,9 @@
 <template>
-  <UiModal
+  <UiDrawer
     :model-value="modelValue"
     :title="dish ? 'Редактировать блюдо' : 'Новое блюдо'"
     :width="900"
-    :actions="modalActions"
+    :actions="drawerActions"
     :on-confirm="onConfirm"
     @update:model-value="$emit('update:modelValue', $event)"
   >
@@ -151,12 +151,12 @@
       </UiCollapse>
 
     </UiForm>
-  </UiModal>
+  </UiDrawer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiCheckbox, UiText, UiSelect, UiCollapse, UiCollapseItem } from '@fastio/ui'
+import { UiDrawer, UiForm, UiInput, UiInputNumber, UiButton, UiCheckbox, UiText, UiSelect, UiCollapse, UiCollapseItem } from '@fastio/ui'
 import type { Dish, DishTag, DishIngredient, Category } from '@fastio/shared'
 import type { DishFormData } from '~/utils/api/dishes'
 import { tagOptions } from '~/config/dish-tags'
@@ -189,7 +189,7 @@ const categoryOptions = computed(() => props.categories.map((c) => ({ label: c.n
 )
 
 const formRef = ref()
-const modalActions = computed(() => [
+const drawerActions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
   { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
 ])
