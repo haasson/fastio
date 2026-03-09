@@ -29,8 +29,8 @@ import type { ComputedRef } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/ui'
 import { usePermissions } from '~/composables/usePermissions'
-import { useNotificationPrefs } from '~/composables/useNotificationPrefs'
-import { useNewOrderCounter } from '~/composables/useNewOrderCounter'
+import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
+import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 
 defineProps<{ collapsed?: boolean }>()
 

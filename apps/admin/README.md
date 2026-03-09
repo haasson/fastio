@@ -23,7 +23,7 @@ utils/api/*.ts
       ↓
 useDatabase()
       ↓
-composables/use*.ts
+composables/data/use*.ts
       ↓
 stores/*.ts  (опционально)
       ↓
@@ -51,25 +51,36 @@ const api = useDatabase()
 await api.branches.list(tenantId) // sb уже привязан
 ```
 
-**Правило:** компоненты и composables берут API только через `useDatabase()`, никогда не импортируют `supabase` напрямую.
+**Правило:** `useDatabase()` используется только в `composables/data/` и в компонентах/страницах, где нет смысла заводить отдельный composable (разовые операции без реактивного состояния).
 
-#### 3. `composables/use*.ts` — бизнес-логика и реактивность
+#### 3. `composables/data/` — data composables
 
-Вызывают `api.*`, управляют состоянием, возвращают удобный интерфейс. Вся логика работы с данными — здесь.
+Работают с БД через `useDatabase()`: управляют реактивным состоянием, подписываются на realtime, инкапсулируют бизнес-логику работы с данными. Composable создаётся только когда есть реальная необходимость: реактивное состояние (`ref`, `computed`, `watch`), lifecycle (`onUnmounted`) или переиспользование логики. Если нужна просто разовая операция — `useDatabase()` прямо в компоненте.
 
 ```ts
 const { branches, loading, add, archive } = useBranches(tenantId)
 ```
 
-**Правило:** никаких прямых вызовов `api.*` в компонентах или сторах.
+Также здесь живут realtime-примитивы (`useRealtimeList`, `useRealtimeWatch`) и канал заказов (`useOrdersChannel`).
 
-#### 4. `stores/*.ts` — глобальное состояние
+#### 4. `composables/` — feature composables
+
+Composables без прямой работы с БД: вспомогательная логика, UI-состояние, утилиты.
+
+```
+useStatusColor.ts       — маппинг статусов в цвета
+usePermissions.ts       — проверка прав по роли
+useDelayedLoading.ts    — задержка индикатора загрузки
+useDishModifiersEditor.ts — локальное состояние редактора модификаторов
+```
+
+#### 5. `stores/*.ts` — глобальное состояние
 
 Используются только когда данные нужны в нескольких несвязанных частях приложения (tenant, branch, auth, статусы заказов). Стор сам логики не содержит — создаёт composable и пробрасывает наружу.
 
-#### 5. Компоненты
+#### 6. Компоненты
 
-Только рендер и вызов методов из composable. Никаких `api.*`, никакого `useDatabase()`.
+Рендер + вызов методов из composable или `useDatabase()` для разовых операций. Никаких прямых импортов из `utils/api/`.
 
 ---
 

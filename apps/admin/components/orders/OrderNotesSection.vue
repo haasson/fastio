@@ -43,7 +43,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiInput, UiButton } from '@fastio/ui'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
-import { useOrderNotes } from '~/composables/useOrderNotes'
+import { useOrderNotes } from '~/composables/data/useOrderNotes'
 
 const props = defineProps<{
   orderId: string

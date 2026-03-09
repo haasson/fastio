@@ -1,7 +1,7 @@
 import { computed, type Ref } from 'vue'
 import { mapOrderEvent } from '~/utils/api/order-events'
-import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useDatabase } from '~/composables/useDatabase'
+import { useRealtimeList } from '~/composables/data/useRealtimeList'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useOrderEvents = (orderId: Ref<string>) => {
   const api = useDatabase()

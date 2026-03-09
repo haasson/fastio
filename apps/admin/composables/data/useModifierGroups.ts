@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 import type { ModifierGroupFormData } from '@fastio/shared'
 import { mapModifierGroup } from '~/utils/api/modifiers'
-import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useDatabase } from '~/composables/useDatabase'
+import { useRealtimeList } from '~/composables/data/useRealtimeList'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export function useModifierGroups(tenantId: Ref<string>) {
   const api = useDatabase()

@@ -35,7 +35,7 @@
 import { computed } from 'vue'
 import { UiCollapseItem, UiSwitch, UiInputNumber } from '@fastio/ui'
 import { useBranchStore } from '~/stores/branch'
-import { useDishBranchPrices } from '~/composables/useDishBranchPrices'
+import { useDishBranchPrices } from '~/composables/data/useDishBranchPrices'
 
 const props = defineProps<{
   active: boolean

@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue'
 import type { Category, Dish } from '@fastio/shared'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useOrderDishPicker = (tenantId: Ref<string>) => {
   const api = useDatabase()

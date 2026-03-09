@@ -13,7 +13,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { definePageMeta, useRoute, navigateTo, useDatabase } from '#imports'
+import { definePageMeta, useRoute, navigateTo } from '#imports'
+import { useDatabase } from '~/composables/data/useDatabase'
 import { UiCard, UiAlert, UiText } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 

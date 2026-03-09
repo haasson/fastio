@@ -1,7 +1,7 @@
 <template>
   <UiForm @submit="handleSave">
     <div class="form">
-      <UiText size="tiny" span class="section-title">Тема оформления</UiText>
+      <UiSectionHeader title="Тема оформления" />
 
       <div class="presets">
         <button
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { UiForm, UiInput, UiSelect, UiButton, UiText, useMessage } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Tenant, TenantTheme } from '@fastio/shared'
 import { themePresets, fontOptions } from '~/config/theme-presets'
 
@@ -94,17 +95,13 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
 @use '@fastio/ui/styles/mixins/form' as *;
+@use '@fastio/ui/styles/mixins/media-queries' as *;
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.section-title {
-  @include section-title;
 }
 
 .presets {

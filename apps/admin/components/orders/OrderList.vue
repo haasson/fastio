@@ -1,11 +1,21 @@
 <template>
   <div class="order-list-root">
-    <UiSectionHeader label="Заказы">
-      <UiSegmentedControl
-        v-model="orderView"
-        :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Список', value: 'list' }]"
-        size="medium"
-      />
+    <UiSectionHeader title="Заказы">
+      <template #left>
+        <UiSegmentedControl
+          v-model="orderView"
+          :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Список', value: 'list' }]"
+          size="medium"
+        />
+      </template>
+      <template #right>
+        <UiButton
+          type="primary"
+          size="medium"
+          icon="plus"
+          @click="createModalOpen = true"
+        >Новый заказ</UiButton>
+      </template>
     </UiSectionHeader>
 
     <!-- Загрузка -->
@@ -48,20 +58,28 @@
       :tenant-id="tenantId"
       @saved="handleOrderSaved"
     />
+
+    <OrderCreateModal
+      v-model="createModalOpen"
+      :tenant-id="tenantId"
+      :branch-id="branchId"
+      @created="handleOrderCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { UiSegmentedControl } from '@fastio/ui'
+import { UiSegmentedControl, UiButton } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderRow from '~/components/orders/OrderRow.vue'
 import OrderEditModal from '~/components/orders/OrderEditModal.vue'
+import OrderCreateModal from '~/components/orders/OrderCreateModal.vue'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
-import { useOrders } from '~/composables/useOrders'
+import { useOrders } from '~/composables/data/useOrders'
 import { useBranchStore } from '~/stores/branch'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 
@@ -112,6 +130,13 @@ const openEditModal = (order: Order) => {
 }
 
 const handleOrderSaved = () => {
+  emit('ordersChanged')
+}
+
+const createModalOpen = ref(false)
+
+const handleOrderCreated = () => {
+  createModalOpen.value = false
   emit('ordersChanged')
 }
 </script>

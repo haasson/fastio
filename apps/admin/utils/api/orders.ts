@@ -16,7 +16,24 @@ export type OrderUpdateData = {
   deliveryFee?: number
   total?: number
   status?: string
-  paymentType?: string
+  paymentType?: 'cash' | 'card' | 'online'
+}
+
+export type OrderCreateData = {
+  tenantId: string
+  branchId: string | null
+  customer: OrderCustomer
+  items: OrderItem[]
+  deliveryType: OrderDeliveryType
+  address: string | null
+  comment: string | null
+  promoCode: string | null
+  discountAmount: number
+  subtotal: number
+  deliveryFee: number
+  total: number
+  status: string
+  paymentType: 'cash' | 'card' | 'online'
 }
 
 export type OrderFilter = string | null
@@ -44,6 +61,21 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
   }
 }
 
+const toOrderPayload = (data: OrderUpdateData): Partial<OrderRow> => filterDefined({
+  customer: data.customer,
+  items: data.items,
+  delivery_type: data.deliveryType,
+  address: data.address,
+  comment: data.comment,
+  promo_code: data.promoCode,
+  discount_amount: data.discountAmount,
+  subtotal: data.subtotal,
+  delivery_fee: data.deliveryFee,
+  total: data.total,
+  status: data.status,
+  payment_type: data.paymentType,
+}) as Partial<OrderRow>
+
 export const ordersApi = {
   async list(sb: SupabaseClient, tenantId: string, filter: string, branchId: string | null = null) {
     let q = sb
@@ -63,22 +95,7 @@ export const ordersApi = {
   },
 
   async update(sb: SupabaseClient, orderId: string, data: OrderUpdateData): Promise<Order | null> {
-    const payload = filterDefined({
-      customer: data.customer,
-      items: data.items,
-      delivery_type: data.deliveryType,
-      address: data.address,
-      comment: data.comment,
-      promo_code: data.promoCode,
-      discount_amount: data.discountAmount,
-      subtotal: data.subtotal,
-      delivery_fee: data.deliveryFee,
-      total: data.total,
-      status: data.status,
-      payment_type: data.paymentType,
-    }) as Partial<OrderRow>
-
-    const result = await query(sb.from('orders').update(payload).eq('id', orderId).select().single())
+    const result = await query(sb.from('orders').update(toOrderPayload(data)).eq('id', orderId).select().single())
 
     return result ? mapOrder(result) : null
   },
@@ -100,5 +117,17 @@ export const ordersApi = {
 
   async updateStatus(sb: SupabaseClient, orderId: string, status: string) {
     await query(sb.from('orders').update({ status }).eq('id', orderId))
+  },
+
+  async create(sb: SupabaseClient, data: OrderCreateData): Promise<Order | null> {
+    const result = await query(
+      sb.from('orders').insert({
+        ...toOrderPayload(data),
+        tenant_id: data.tenantId,
+        branch_id: data.branchId,
+      }).select().single(),
+    )
+
+    return result ? mapOrder(result) : null
   },
 }

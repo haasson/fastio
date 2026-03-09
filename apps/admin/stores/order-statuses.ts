@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
-import { useOrderStatuses } from '~/composables/useOrderStatuses'
+import { useOrderStatuses } from '~/composables/data/useOrderStatuses'
 import { useTenantStore } from './tenant'
 
 // Статусы заказов нужны во многих компонентах (OrderCard, OrderRow, OrderEditModal и др.),

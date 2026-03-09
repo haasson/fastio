@@ -73,9 +73,10 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, type Ref } from 'vue'
-import { useRoute, navigateTo, useDatabase } from '#imports'
-import { useOrdersChannel } from '~/composables/useOrdersChannel'
-import { useOrderAlertHandler } from '~/composables/useOrderAlertHandler'
+import { useRoute, navigateTo } from '#imports'
+import { useDatabase } from '~/composables/data/useDatabase'
+import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
+import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon, useConfirm } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'

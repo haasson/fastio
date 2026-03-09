@@ -1,6 +1,6 @@
 <template>
   <UiForm class="form" @submit="handleSave">
-    <UiText size="tiny" span class="section-title">Основное</UiText>
+    <UiSectionHeader title="Основное" />
 
     <div class="grid">
       <UiInput
@@ -39,7 +39,7 @@
       placeholder="Пн–Пт 10:00–22:00, Сб–Вс 11:00–21:00"
     />
 
-    <UiText size="tiny" span class="section-title">Соцсети и мессенджеры</UiText>
+    <UiSectionHeader title="Соцсети и мессенджеры" />
 
     <div class="grid">
       <UiInput v-model="form.instagram" label="Instagram" placeholder="@vasya_pizza" />
@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { UiForm, UiInput, UiButton, UiText, UiRadioGroup, useMessage } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Tenant } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -121,10 +122,6 @@ const handleSave = async () => {
   flex-direction: column;
   gap: 20px;
   max-width: 680px;
-}
-
-.section-title {
-  @include section-title;
 }
 
 .grid {

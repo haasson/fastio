@@ -1,8 +1,8 @@
 import { computed, ref, watch, onUnmounted, type Ref } from 'vue'
 import type { Order, OrderStatus } from '@fastio/shared'
 import type { OrderFilter } from '~/utils/api/orders'
-import { orderEvents } from '~/composables/useOrdersChannel'
-import { useDatabase } from '~/composables/useDatabase'
+import { orderEvents } from '~/composables/data/useOrdersChannel'
+import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 

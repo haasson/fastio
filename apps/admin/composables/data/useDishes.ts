@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 import type { Dish } from '@fastio/shared'
 import { mapDish, type DishFormData } from '~/utils/api/dishes'
-import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useDatabase } from '~/composables/useDatabase'
+import { useRealtimeList } from '~/composables/data/useRealtimeList'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()

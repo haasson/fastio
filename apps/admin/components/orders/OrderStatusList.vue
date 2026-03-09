@@ -1,6 +1,6 @@
 <template>
   <div class="statuses-root">
-    <UiSectionHeader label="Статусы" editable @edit="managerOpen = true" />
+    <UiSectionHeader title="Статусы" editable @edit="managerOpen = true" />
 
     <UiTabs
       :model-value="modelValue ?? ''"

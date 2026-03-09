@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 import type { OrderStatus, OrderStatusData } from '@fastio/shared'
 import { mapOrderStatus } from '~/utils/api/order-statuses'
-import { useRealtimeList } from '~/composables/useRealtimeList'
-import { useDatabase } from '~/composables/useDatabase'
+import { useRealtimeList } from '~/composables/data/useRealtimeList'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useOrderStatuses = (tenantId: Ref<string>) => {
   const api = useDatabase()

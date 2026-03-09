@@ -1,5 +1,5 @@
 import { ref, watch, type Ref } from 'vue'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useOrderCounts = (tenantId: Ref<string>, branchId: Ref<string | null>) => {
   const api = useDatabase()

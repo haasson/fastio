@@ -1,7 +1,11 @@
 <template>
   <div class="section-header-root">
-    <span class="left">
-      <span class="label">{{ label }}</span>
+    <div class="left">
+      <span class="label">{{ title }}</span>
+      <slot name="left" />
+    </div>
+    <div class="right">
+      <slot name="right" />
       <UiButton
         v-if="editable"
         type="text"
@@ -10,10 +14,7 @@
         class="edit-btn"
         @click="$emit('edit')"
       />
-    </span>
-    <span class="right">
-      <slot />
-    </span>
+    </div>
   </div>
 </template>
 
@@ -21,7 +22,7 @@
 import { UiButton } from '@fastio/ui'
 
 withDefaults(defineProps<{
-  label: string
+  title: string
   editable?: boolean
 }>(), {
   editable: false,
@@ -36,13 +37,20 @@ defineEmits<{
 .section-header-root {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .label {
@@ -51,14 +59,13 @@ defineEmits<{
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .edit-btn {
   opacity: 0.5;
   transition: opacity 0.15s;
 
-  &:hover {
-    opacity: 1;
-  }
+  &:hover { opacity: 1; }
 }
 </style>

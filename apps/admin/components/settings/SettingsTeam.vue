@@ -2,7 +2,7 @@
   <div class="team-root">
     <!-- Форма инвайта -->
     <UiForm ref="inviteFormRef" class="invite-form">
-      <UiText size="tiny" span class="section-title">Пригласить в команду</UiText>
+      <UiSectionHeader title="Пригласить в команду" />
       <UiSpace :size="8" align="start">
         <UiInput
           v-model="inviteEmail"
@@ -50,7 +50,7 @@
 
     <!-- Участники -->
     <div>
-      <UiText size="tiny" span class="section-title">Участники</UiText>
+      <UiSectionHeader title="Участники" />
 
       <UiSkeleton v-if="teamLoading" text :repeat="3" />
       <UiDataTable
@@ -107,7 +107,7 @@
 
     <!-- Pending инвайты -->
     <div v-if="invitations.length">
-      <UiText size="tiny" span class="section-title">Ожидают принятия</UiText>
+      <UiSectionHeader title="Ожидают принятия" />
       <UiDataTable
         :columns="inviteColumns"
         :data="invitations"
@@ -126,8 +126,9 @@ import {
   UiInput, UiSelect, UiButton, UiAlert, UiText, UiModal, UiCheckbox,
   UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, useConfirm, useMessage,
 } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
-import { useTeam } from '~/composables/useTeam'
+import { useTeam } from '~/composables/data/useTeam'
 import { usePermissions } from '~/composables/usePermissions'
 import { useBranchStore } from '~/stores/branch'
 import { roleOptions } from '~/config/team-roles'
@@ -315,17 +316,10 @@ onMounted(() => load())
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/form' as *;
-
 .team-root {
   display: flex;
   flex-direction: column;
   gap: 40px;
-}
-
-.section-title {
-  @include section-title;
-  margin-bottom: 12px;
 }
 
 .invite-form {

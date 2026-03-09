@@ -39,89 +39,15 @@
           </div>
         </section>
 
-        <!-- Клиент -->
-        <section class="section">
-          <div class="section-label">Клиент</div>
-          <div class="fields-row">
-            <UiInput
-              v-model="form.customerName"
-              label="Имя"
-              placeholder="Иван Иванов"
-              :disabled="!can.editCustomer"
-            />
-            <UiInput
-              v-model="form.customerPhone"
-              label="Телефон"
-              placeholder="+7 999 000 00 00"
-              :disabled="!can.editCustomer"
-            />
-          </div>
-        </section>
-
-        <!-- Доставка -->
-        <section class="section">
-          <div class="section-label">Доставка</div>
-          <div :class="{ 'field-disabled': !can.editDeliveryType }">
-            <UiSegmentedControl
-              v-model="form.deliveryType"
-              :items="deliveryItems"
-              size="medium"
-            />
-          </div>
-          <UiInput
-            v-if="form.deliveryType === 'delivery'"
-            v-model="form.address"
-            label="Адрес"
-            placeholder="ул. Пушкина, д. 10, кв. 5"
-            :disabled="!can.editAddress"
-            class="mt"
-          />
-        </section>
-
-        <!-- Состав -->
-        <OrderItemsSection
-          :items="form.items"
+        <OrderFormFields
+          :form="form"
           :tenant-id="tenantId"
-          :readonly="!can.editItems"
-          @update:items="form.items = $event"
+          :subtotal="subtotal"
+          :total="total"
+          :permissions="can"
         />
 
-        <!-- Итого -->
-        <section class="section totals-section">
-          <div class="total-line">
-            <span class="total-key">Сумма</span>
-            <span class="total-val">{{ subtotal }} ₽</span>
-          </div>
-          <div v-if="form.discountAmount > 0" class="total-line">
-            <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
-            <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
-          </div>
-          <div class="total-line">
-            <span class="total-key">Стоимость доставки</span>
-            <UiInputNumber
-              v-model="form.deliveryFee"
-              :min="0"
-              :disabled="!can.editDeliveryFee"
-              class="fee-input"
-            />
-          </div>
-          <div class="total-line total-final">
-            <span class="total-key">Итого</span>
-            <span class="total-val">{{ total }} ₽</span>
-          </div>
-        </section>
-
-        <!-- Оплата -->
-        <section class="section">
-          <div class="section-label">Способ оплаты</div>
-          <UiSelect
-            v-model:value="form.paymentType"
-            :options="paymentOptions"
-            :disabled="!can.editPayment"
-          />
-        </section>
-
-        <!-- Комментарий клиента -->
+        <!-- Комментарий клиента (readonly) -->
         <section v-if="order.comment" class="section">
           <div class="section-label">Комментарий клиента</div>
           <UiAlert size="small" type="info" icon="messageCircle">{{ order.comment }}</UiAlert>
@@ -156,16 +82,15 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  UiDrawer, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
+  UiDrawer, UiTabs, UiButton, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { useOrderEdit } from '~/composables/useOrderEdit'
+import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useStatusColor } from '~/composables/useStatusColor'
-import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
-import { useOrderEventLogger } from '~/composables/useOrderEventLogger'
-import OrderItemsSection from './OrderItemsSection.vue'
+import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
+import OrderFormFields from './OrderFormFields.vue'
 import OrderNotesSection from './OrderNotesSection.vue'
 import OrderEventsSection from './OrderEventsSection.vue'
 
@@ -180,7 +105,7 @@ const emit = defineEmits<{
   'saved': [order: Order]
 }>()
 
-const { update: updateOrder } = useOrderEdit()
+const api = useDatabase()
 const { logSaveEvents } = useOrderEventLogger()
 const { statuses } = useOrderStatusesStore()
 const { getStatusColor } = useStatusColor()
@@ -265,11 +190,9 @@ watch(
 
 // ─── Computed totals ──────────────────────────────────────────────────────────
 
-const subtotal = computed(() => form.items.reduce((s, i) => s + i.price * i.quantity, 0),
-)
+const subtotal = computed(() => form.items.reduce((s, i) => s + i.price * i.quantity, 0))
 
-const total = computed(() => subtotal.value - form.discountAmount + form.deliveryFee,
-)
+const total = computed(() => subtotal.value - form.discountAmount + form.deliveryFee)
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
 
@@ -277,7 +200,7 @@ const onSave = async () => {
   if (!props.order) return false
   saving.value = true
   try {
-    const updated = await updateOrder(props.order.id, {
+    const updated = await api.orders.update(props.order.id, {
       customer: { name: form.customerName, phone: form.customerPhone },
       items: form.items,
       deliveryType: form.deliveryType,
@@ -300,11 +223,6 @@ const onSave = async () => {
     saving.value = false
   }
 }
-
-// ─── Options ──────────────────────────────────────────────────────────────────
-
-const deliveryItems = DELIVERY_OPTIONS
-const paymentOptions = PAYMENT_OPTIONS
 </script>
 
 <style scoped lang="scss">
@@ -332,75 +250,5 @@ const paymentOptions = PAYMENT_OPTIONS
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.fields-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.mt {
-  margin-top: 2px;
-}
-
-.field-disabled {
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.totals-section {
-  background: var(--color-bg-subtle);
-  border-radius: 10px;
-  padding: 12px 14px;
-  gap: 8px;
-}
-
-.total-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.total-key {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.total-val {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-title);
-}
-
-.discount {
-  color: var(--green-500);
-}
-
-.promo-code {
-  font-weight: 600;
-  color: var(--color-title);
-}
-
-.fee-input {
-  width: 90px;
-}
-
-.total-final {
-  padding-top: 8px;
-  margin-top: 2px;
-  border-top: 1px solid var(--color-border-light);
-
-  .total-key {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-title);
-  }
-
-  .total-val {
-    font-size: 16px;
-    font-weight: 800;
-  }
 }
 </style>

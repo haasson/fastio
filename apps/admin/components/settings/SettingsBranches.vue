@@ -1,14 +1,15 @@
 <template>
   <div class="branches-root">
-    <div class="header">
-      <UiText size="tiny" span class="section-title">Филиалы</UiText>
-      <UiButton
-        type="primary"
-        icon="plus"
-        size="small"
-        @click="openAdd"
-      >Добавить</UiButton>
-    </div>
+    <UiSectionHeader title="Филиалы">
+      <template #right>
+        <UiButton
+          type="primary"
+          icon="plus"
+          size="small"
+          @click="openAdd"
+        >Добавить</UiButton>
+      </template>
+    </UiSectionHeader>
 
     <UiSkeleton v-if="loading" text :repeat="3" />
 
@@ -48,7 +49,7 @@
     <!-- Архив -->
     <template v-if="archivedBranches.length">
       <UiDivider />
-      <UiText size="tiny" span class="section-title">Архив</UiText>
+      <UiSectionHeader title="Архив" />
       <div v-for="branch in archivedBranches" :key="branch.id" class="branch-row archived">
         <div class="branch-info">
           <UiText size="medium" class="branch-name">{{ branch.name }}</UiText>
@@ -76,10 +77,11 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton, UiText, UiTag, UiSpace, UiSkeleton, UiDivider, useConfirm } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase } from '~/composables/data/useDatabase'
 import BranchFormModal from './BranchFormModal.vue'
 
 const tenantStore = useTenantStore()
@@ -154,22 +156,10 @@ const handleRestore = async (branch: Branch) => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/form' as *;
-
 .branches-root {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.section-title {
-  @include section-title;
 }
 
 .branch-row {

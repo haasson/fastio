@@ -1,6 +1,6 @@
 import { onUnmounted } from 'vue'
-import { orderEvents } from '~/composables/useOrdersChannel'
-import { useNewOrderCounter } from '~/composables/useNewOrderCounter'
+import { orderEvents } from '~/composables/data/useOrdersChannel'
+import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 
 /**
  * Reacts to new orders from the shared channel: counter.

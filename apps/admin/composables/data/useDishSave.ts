@@ -1,6 +1,6 @@
 import { type Ref } from 'vue'
 import type { DishBranchPrice, DishModifierGroup } from '@fastio/shared'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useDishSave = (tenantId: Ref<string>) => {
   const api = useDatabase()

@@ -1,7 +1,7 @@
 import { type Ref } from 'vue'
 import type { Order } from '@fastio/shared'
 import { mapOrder } from '~/utils/api/orders'
-import { useRealtimeWatch } from '~/composables/useRealtimeWatch'
+import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 
 type Handler<T> = (payload: T) => void
 

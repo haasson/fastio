@@ -132,7 +132,7 @@
 import { ref, computed, reactive, watch } from 'vue'
 import { UiModal, UiButton, UiIcon, UiTag } from '@fastio/ui'
 import type { Dish, OrderItem, DishModifierGroup, OrderItemModifier } from '@fastio/shared'
-import { useOrderDishPicker } from '~/composables/useOrderDishPicker'
+import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
 
 const props = defineProps<{
   modelValue: boolean

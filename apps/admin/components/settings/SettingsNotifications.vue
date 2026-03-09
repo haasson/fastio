@@ -1,7 +1,7 @@
 <template>
   <UiForm @submit="handleSave">
     <div class="form">
-      <UiText size="tiny" span class="section-title">Уведомления о заказах</UiText>
+      <UiSectionHeader title="Уведомления о заказах" />
 
       <div class="row">
         <div class="field">
@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <UiText size="tiny" span class="section-title">Браузерные уведомления</UiText>
+      <UiSectionHeader title="Браузерные уведомления" />
 
       <div class="prefs">
         <div class="pref">
@@ -61,8 +61,9 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, UiSwitch, useMessage } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Tenant } from '@fastio/shared'
-import { useNotificationPrefs } from '~/composables/useNotificationPrefs'
+import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 
 const { blinkingCounter } = useNotificationPrefs()
 
@@ -105,10 +106,6 @@ const handleSave = async () => {
   display: flex;
   flex-direction: column;
   gap: 18px;
-}
-
-.section-title {
-  @include section-title;
 }
 
 .row {

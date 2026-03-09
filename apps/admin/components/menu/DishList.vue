@@ -5,22 +5,23 @@
     </div>
 
     <template v-else>
-      <div class="dishes-header">
-        <div class="header-left">
-          <span class="header-title">Блюда</span>
+      <UiSectionHeader title="Блюда">
+        <template #left>
           <UiSegmentedControl
             v-model="dishView"
             :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Список', value: 'list' }]"
             size="medium"
           />
-        </div>
-        <UiButton
-          size="medium"
-          type="primary"
-          icon="plus"
-          @click="openDishModal(null)"
-        >Добавить</UiButton>
-      </div>
+        </template>
+        <template #right>
+          <UiButton
+            size="medium"
+            type="primary"
+            icon="plus"
+            @click="openDishModal(null)"
+          >Добавить</UiButton>
+        </template>
+      </UiSectionHeader>
 
       <div class="grid-wrap">
         <Transition name="dishes-fade" mode="out-in">
@@ -160,11 +161,12 @@ import { ref, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder, useConfirm } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Dish, Category } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
-import { useDishes } from '~/composables/useDishes'
+import { useDishes } from '~/composables/data/useDishes'
 import useDelayedLoading from '~/composables/useDelayedLoading'
 import { tagOptions } from '~/config/dish-tags'
 
@@ -246,28 +248,6 @@ const reorderDishes = () => reorder(dishes.value)
   justify-content: center;
   color: var(--color-text-tertiary);
   font-size: 15px;
-}
-
-.dishes-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.header-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
 }
 
 .header-actions {

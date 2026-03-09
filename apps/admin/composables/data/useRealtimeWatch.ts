@@ -1,6 +1,6 @@
 import { watch, onUnmounted, getCurrentInstance, type Ref } from 'vue'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 type Handlers = {
   /** Колонка для фильтра. По умолчанию 'id' */

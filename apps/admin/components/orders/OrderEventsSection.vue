@@ -62,7 +62,7 @@ import { FIELD_LABELS } from '~/config/order-events'
 import { COLORS } from '@fastio/ui'
 import { formatFieldValue, formatEventText } from '~/utils/format-order'
 import { useStatusColor } from '~/composables/useStatusColor'
-import { useOrderEvents } from '~/composables/useOrderEvents'
+import { useOrderEvents } from '~/composables/data/useOrderEvents'
 
 const props = defineProps<{
   orderId: string

@@ -1,7 +1,7 @@
 <template>
   <UiForm @submit="handleSave">
     <div class="form">
-      <UiText size="tiny" span class="section-title">Настройки доставки</UiText>
+      <UiSectionHeader title="Настройки доставки" />
 
       <div class="row">
         <div class="field">
@@ -24,7 +24,7 @@
         </div>
       </div>
 
-      <UiText size="tiny" span class="section-title">Условия доставки</UiText>
+      <UiSectionHeader title="Условия доставки" />
 
       <RichTextEditor
         v-model="form.deliveryDescription"
@@ -41,6 +41,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { UiForm, UiButton, UiInputNumber, UiText, useMessage } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Tenant } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
@@ -80,10 +81,6 @@ const handleSave = async () => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.section-title {
-  @include section-title;
 }
 
 .row {

@@ -1,6 +1,6 @@
 <template>
   <div class="categories-root">
-    <UiSectionHeader label="Категории" editable @edit="managerOpen = true" />
+    <UiSectionHeader title="Категории" editable @edit="managerOpen = true" />
 
     <UiSkeleton
       v-if="categoriesLoading"
@@ -40,7 +40,7 @@ import type { Category } from '@fastio/shared'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
-import { useCategories } from '~/composables/useCategories'
+import { useCategories } from '~/composables/data/useCategories'
 
 const props = defineProps<{
   tenantId: string

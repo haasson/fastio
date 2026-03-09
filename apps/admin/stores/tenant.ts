@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useBranchStore } from './branch'
-import { useTenant } from '~/composables/useTenant'
+import { useTenant } from '~/composables/data/useTenant'
 
 export const useTenantStore = defineStore('tenant', () => {
   const authStore = useAuthStore()

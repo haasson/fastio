@@ -28,7 +28,7 @@ import type { Category } from '@fastio/shared'
 import MenuCategoryList from '~/components/menu/CategoryList.vue'
 import MenuDishList from '~/components/menu/DishList.vue'
 import { useTenantStore } from '~/stores/tenant'
-import useDishCounts from '~/composables/useDishCounts'
+import useDishCounts from '~/composables/data/useDishCounts'
 
 definePageMeta({ middleware: 'auth' })
 

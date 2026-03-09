@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import type { TenantMember, TenantInvitation, TenantRole } from '@fastio/shared'
 import { useQuery } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useTeam = () => {
   const api = useDatabase()

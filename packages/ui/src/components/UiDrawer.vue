@@ -9,10 +9,20 @@
       @update:show="onUpdateShow"
     >
       <n-drawer-content
-        :title="title"
-        :closable="closable"
+        :closable="false"
         :native-scrollbar="false"
       >
+        <template #header>
+          <div class="drawer-header">
+            <span class="drawer-title">{{ title }}</span>
+            <div class="header-right">
+              <slot name="header-actions" />
+              <div v-if="closable" class="close-btn" @click="onUpdateShow(false)">
+                <ui-icon name="close" :size="20" color="currentColor" />
+              </div>
+            </div>
+          </div>
+        </template>
         <slot />
         <template v-if="$slots.footer" #footer>
           <div class="footer">
@@ -28,6 +38,7 @@
 import { ref, watch, computed } from 'vue'
 import { NDrawer, NDrawerContent } from 'naive-ui'
 import ClientOnly from './internal/ClientOnly.vue'
+import UiIcon from './UiIcon.vue'
 import { layerManager } from '../utils/layers'
 import useBreakpoints from '../composables/useBreakpoints'
 
@@ -71,14 +82,42 @@ function onUpdateShow(value: boolean) {
 </script>
 
 <style scoped lang="scss">
-.drawer-root {
-  /* всё через naive-ui */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-title);
+}
+
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color 0.3s;
+
+  &:hover {
+    color: var(--color-text-hint);
+  }
 }
 
 .footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 16px;
+  padding: 0;
 }
 </style>

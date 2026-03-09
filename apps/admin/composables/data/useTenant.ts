@@ -1,7 +1,7 @@
 import { ref, computed, type Ref } from 'vue'
 import type { Tenant, TenantRole } from '@fastio/shared'
-import { useDatabase } from '~/composables/useDatabase'
-import { useRealtimeWatch } from '~/composables/useRealtimeWatch'
+import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 
 type MembershipWithTenant = {
   id: string

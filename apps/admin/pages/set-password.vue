@@ -56,7 +56,8 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { definePageMeta, useRoute, navigateTo, useDatabase } from '#imports'
+import { definePageMeta, useRoute, navigateTo } from '#imports'
+import { useDatabase } from '~/composables/data/useDatabase'
 import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 

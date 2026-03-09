@@ -1,6 +1,6 @@
 import { ref, reactive, watch, type Ref } from 'vue'
 import type { Branch, DishBranchPrice } from '@fastio/shared'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useDishBranchPrices = (
   dishId: Ref<string | null>,

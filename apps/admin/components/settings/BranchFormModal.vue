@@ -8,8 +8,7 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
-      <!-- Основное -->
-      <UiText size="tiny" span class="section-title">Основное</UiText>
+      <UiSectionHeader title="Основное" />
 
       <UiInput
         v-model="form.name"
@@ -33,13 +32,14 @@
 
       <!-- Часы работы -->
       <div class="override-block">
-        <div class="override-header">
-          <UiText size="tiny" span class="section-title">Часы работы</UiText>
-          <div class="override-toggle">
-            <UiText size="tiny">Своё расписание</UiText>
-            <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
-          </div>
-        </div>
+        <UiSectionHeader title="Часы работы">
+          <template #right>
+            <div class="override-toggle">
+              <UiText size="tiny">Своё расписание</UiText>
+              <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
+            </div>
+          </template>
+        </UiSectionHeader>
 
         <UiInput
           v-if="useCustomHours"
@@ -54,13 +54,14 @@
 
       <!-- Доставка -->
       <div class="override-block">
-        <div class="override-header">
-          <UiText size="tiny" span class="section-title">Доставка</UiText>
-          <div class="override-toggle">
-            <UiText size="tiny">Свои условия</UiText>
-            <UiSwitch :model-value="useCustomDelivery" @update:model-value="toggleCustomDelivery" />
-          </div>
-        </div>
+        <UiSectionHeader title="Доставка">
+          <template #right>
+            <div class="override-toggle">
+              <UiText size="tiny">Свои условия</UiText>
+              <UiSwitch :model-value="useCustomDelivery" @update:model-value="toggleCustomDelivery" />
+            </div>
+          </template>
+        </UiSectionHeader>
 
         <template v-if="useCustomDelivery">
           <div class="delivery-row">
@@ -83,13 +84,14 @@
 
       <!-- Уведомления -->
       <div class="override-block">
-        <div class="override-header">
-          <UiText size="tiny" span class="section-title">Уведомления</UiText>
-          <div class="override-toggle">
-            <UiText size="tiny">Свои уведомления</UiText>
-            <UiSwitch :model-value="useCustomNotifications" @update:model-value="toggleCustomNotifications" />
-          </div>
-        </div>
+        <UiSectionHeader title="Уведомления">
+          <template #right>
+            <div class="override-toggle">
+              <UiText size="tiny">Свои уведомления</UiText>
+              <UiSwitch :model-value="useCustomNotifications" @update:model-value="toggleCustomNotifications" />
+            </div>
+          </template>
+        </UiSectionHeader>
 
         <template v-if="useCustomNotifications && form.notifications">
           <UiInput
@@ -108,6 +110,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiText } from '@fastio/ui'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Branch, BranchFormData } from '@fastio/shared'
 
 const props = defineProps<{
@@ -193,17 +196,10 @@ const onConfirm = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/form' as *;
-
 .form {
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.section-title {
-  @include section-title;
-  padding-top: 4px;
 }
 
 .active-row {
@@ -221,13 +217,6 @@ const onConfirm = async () => {
   gap: 10px;
   padding: 12px 0;
   border-top: 1px solid var(--color-border-light);
-}
-
-.override-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 
 .override-toggle {
