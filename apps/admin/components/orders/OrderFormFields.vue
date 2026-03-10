@@ -1,7 +1,7 @@
 <template>
   <!-- Клиент -->
-  <section class="section">
-    <div class="section-label">Клиент</div>
+  <div class="block">
+    <div class="block-label">Клиент</div>
     <div class="fields-row">
       <UiInput
         v-model="form.customerName"
@@ -20,75 +20,80 @@
         :disabled="!perms.editCustomer"
       />
     </div>
-  </section>
+  </div>
 
   <!-- Доставка -->
-  <section v-if="deliveryEnabled" class="section">
-    <div class="section-label">Доставка</div>
-    <div :class="{ 'field-disabled': !perms.editDeliveryType }">
-      <UiSegmentedControl v-model="form.deliveryType" :items="deliveryItems" size="medium" />
-    </div>
-    <UiInput
-      v-if="form.deliveryType === 'delivery'"
-      v-model="form.address"
-      name="address"
-      label="Адрес"
-      placeholder="ул. Пушкина, д. 10, кв. 5"
-      :rules="[validationRules.address.required]"
-      :disabled="!perms.editAddress"
-      class="mt"
-    />
-  </section>
-
-  <!-- Состав -->
-  <OrderItemsSection
-    :items="form.items"
-    :tenant-id="tenantId"
-    :readonly="!perms.editItems"
-    @update:items="form.items = $event"
-  />
-  <div v-if="itemsError" class="items-error">{{ itemsError }}</div>
-
-  <!-- Итого -->
-  <section class="section totals-section">
-    <div class="total-line">
-      <span class="total-key">Сумма</span>
-      <span class="total-val">{{ subtotal }} ₽</span>
-    </div>
-    <div v-if="(form.discountAmount ?? 0) > 0" class="total-line">
-      <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
-      <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
-    </div>
-    <div v-if="deliveryEnabled" class="total-line">
-      <span class="total-key">Стоимость доставки</span>
-      <UiInputNumber
-        v-model="form.deliveryFee"
-        :min="0"
-        :disabled="!perms.editDeliveryFee"
-        class="fee-input"
+  <div v-if="deliveryEnabled" class="block">
+    <div class="block-label">Доставка</div>
+    <div class="delivery-row">
+      <div :class="{ 'field-disabled': !perms.editDeliveryType }">
+        <UiSegmentedControl v-model="form.deliveryType" :items="deliveryItems" size="medium" />
+      </div>
+      <UiInput
+        v-if="form.deliveryType === 'delivery'"
+        v-model="form.address"
+        name="address"
+        label="Адрес"
+        placeholder="ул. Пушкина, д. 10, кв. 5"
+        :rules="[validationRules.address.required]"
+        :disabled="!perms.editAddress"
       />
     </div>
-    <div class="total-line total-final">
-      <span class="total-key">Итого</span>
-      <span class="total-val">{{ total }} ₽</span>
-    </div>
-  </section>
+  </div>
 
-  <!-- Оплата -->
-  <section class="section">
-    <div class="section-label">Способ оплаты</div>
-    <UiSelect
-      v-model:value="form.paymentType"
-      :options="paymentOptions"
-      :disabled="!perms.editPayment"
+  <!-- Состав заказа -->
+  <div class="block">
+    <div class="block-label">Состав</div>
+    <OrderItemsSection
+      :items="form.items"
+      :tenant-id="tenantId"
+      :readonly="!perms.editItems"
+      @update:items="form.items = $event"
     />
-  </section>
+    <div v-if="itemsError" class="items-error">{{ itemsError }}</div>
+
+    <!-- Итого -->
+    <div class="totals">
+      <div class="total-line">
+        <span class="total-key">Сумма</span>
+        <span class="total-val">{{ subtotal }} ₽</span>
+      </div>
+      <div v-if="(form.discountAmount ?? 0) > 0" class="total-line">
+        <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
+        <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
+      </div>
+      <div v-if="deliveryEnabled" class="total-line">
+        <span class="total-key">Стоимость доставки</span>
+        <UiInputNumber
+          v-model="form.deliveryFee"
+          :min="0"
+          :disabled="!perms.editDeliveryFee"
+          class="fee-input"
+        />
+      </div>
+      <div class="total-line total-final">
+        <span class="total-key">Итого</span>
+        <span class="total-val">{{ total }} ₽</span>
+      </div>
+    </div>
+
+    <!-- Оплата -->
+    <div class="payment-row">
+      <span class="block-label">Способ оплаты</span>
+      <UiSelect
+        v-model:value="form.paymentType"
+        :options="paymentOptions"
+        :disabled="!perms.editPayment"
+        class="payment-select"
+      />
+    </div>
+  </div>
 
   <!-- Комментарий (только в режиме создания) -->
-  <section v-if="commentEditable" class="section">
-    <div class="section-label">Комментарий</div>
+  <div v-if="commentEditable" class="block">
+    <div class="block-label">Комментарий</div>
     <UiInput v-model="form.comment" placeholder="Любые пожелания..." />
-  </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -152,13 +157,18 @@ const paymentOptions = PAYMENT_OPTIONS
 </script>
 
 <style scoped lang="scss">
-.section {
+@use '@fastio/ui/src/styles/mixins/media-queries' as mq;
+
+.block {
+  border: 1px dashed var(--color-border);
+  border-radius: 10px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.section-label {
+.block-label {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -172,8 +182,23 @@ const paymentOptions = PAYMENT_OPTIONS
   gap: 10px;
 }
 
-.mt {
-  margin-top: 2px;
+.delivery-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @include mq.mq-m {
+    flex-direction: row;
+    align-items: flex-end;
+
+    > :first-child {
+      flex-shrink: 0;
+    }
+
+    > :last-child {
+      flex: 1;
+    }
+  }
 }
 
 .field-disabled {
@@ -184,13 +209,15 @@ const paymentOptions = PAYMENT_OPTIONS
 .items-error {
   font-size: 12px;
   color: var(--color-error);
-  margin-top: -10px;
+  margin-top: -4px;
 }
 
-.totals-section {
+.totals {
   background: var(--color-bg-subtle);
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
@@ -240,5 +267,17 @@ const paymentOptions = PAYMENT_OPTIONS
     font-size: 16px;
     font-weight: 800;
   }
+}
+
+.payment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.payment-select {
+  width: 180px;
 }
 </style>

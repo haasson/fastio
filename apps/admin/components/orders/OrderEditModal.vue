@@ -9,78 +9,72 @@
   >
     <div v-if="order" class="content">
 
-      <UiTabs
-        v-model="activeTab"
-        :tabs="tabs"
-        prevent-compact
-      />
+      <UiCollapse :expanded-names="['data']">
 
-      <!-- Данные заказа -->
-      <template v-if="activeTab === 'data'">
-
-        <!-- Статус -->
-        <section class="section">
-          <div class="section-label">Статус</div>
-          <div class="status-row">
+        <UiCollapseItem name="data" title="Заказ">
+          <template #header-extra>
             <UiTag
               v-if="currentStatus"
               size="tiny"
               :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
             >{{ currentStatus.name }}</UiTag>
-            <UiMenuDropdown
-              v-if="statusMenuItems.length"
-              :items="statusMenuItems"
-              trigger="click"
-              compact
-              @item-click="form.status = $event"
-            >
-              <template #trigger>
-                <UiButton type="default" size="small">Сменить</UiButton>
-              </template>
-            </UiMenuDropdown>
+          </template>
+
+          <div class="section-content">
+            <!-- Статус -->
+            <div v-if="statusMenuItems.length" class="status-row">
+              <UiMenuDropdown
+                :items="statusMenuItems"
+                trigger="click"
+                compact
+                @item-click="form.status = $event"
+              >
+                <template #trigger>
+                  <UiButton type="default" size="small">Сменить статус</UiButton>
+                </template>
+              </UiMenuDropdown>
+            </div>
+
+            <OrderFormFields
+              :form="form"
+              :tenant-id="tenantId"
+              :subtotal="subtotal"
+              :total="total"
+              :permissions="can"
+            />
+
+            <!-- Комментарий клиента (readonly) -->
+            <div v-if="order.comment" class="comment-block">
+              <UiAlert size="small" type="info" icon="messageCircle">{{ order.comment }}</UiAlert>
+            </div>
           </div>
-        </section>
+        </UiCollapseItem>
 
-        <OrderFormFields
-          :form="form"
-          :tenant-id="tenantId"
-          :subtotal="subtotal"
-          :total="total"
-          :permissions="can"
-        />
+        <UiCollapseItem name="history" title="История">
+          <OrderEventsSection
+            :order-id="order.id"
+            :refresh-key="notesRefreshKey"
+          />
+        </UiCollapseItem>
 
-        <!-- Комментарий клиента (readonly) -->
-        <section v-if="order.comment" class="section">
-          <div class="section-label">Комментарий клиента</div>
-          <UiAlert size="small" type="info" icon="messageCircle">{{ order.comment }}</UiAlert>
-        </section>
+        <UiCollapseItem name="notes" title="Заметки">
+          <OrderNotesSection
+            :order-id="order.id"
+            :tenant-id="tenantId"
+            :refresh-key="notesRefreshKey"
+          />
+        </UiCollapseItem>
 
-      </template>
-
-      <!-- История -->
-      <OrderEventsSection
-        v-else-if="activeTab === 'history'"
-        :order-id="order.id"
-        :refresh-key="notesRefreshKey"
-      />
-
-      <!-- Заметки -->
-      <OrderNotesSection
-        v-else
-        :order-id="order.id"
-        :tenant-id="tenantId"
-        :refresh-key="notesRefreshKey"
-      />
+      </UiCollapse>
 
     </div>
-
   </UiDrawer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  UiDrawer, UiTabs, UiMenuDropdown, UiAlert, UiTag,
+  UiDrawer, UiCollapse, UiCollapseItem, UiMenuDropdown, UiAlert, UiTag, UiButton,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
@@ -111,18 +105,11 @@ const { getStatusColor } = useStatusColor()
 
 const saving = ref(false)
 const notesRefreshKey = ref(0)
-const activeTab = ref<'data' | 'history' | 'notes'>('data')
 
 const drawerActions = computed(() => [
   { text: 'Закрыть', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, disabled: activeTab.value !== 'data' },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
 ])
-
-const tabs = [
-  { label: 'Заказ', value: 'data' },
-  { label: 'История', value: 'history' },
-  { label: 'Заметки', value: 'notes' },
-]
 
 const shortId = computed(() => props.order?.id.slice(0, 6).toUpperCase() ?? '')
 
@@ -187,7 +174,6 @@ watch(
   (open) => {
     if (!open || !props.order) return
     Object.assign(form, buildForm(props.order))
-    activeTab.value = 'data'
     notesRefreshKey.value++
   },
 )
@@ -233,26 +219,22 @@ const onSave = async () => {
 .content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
-.section {
+.section-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.section-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--color-text-secondary);
+  gap: 12px;
+  padding-top: 4px;
 }
 
 .status-row {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.comment-block {
+  margin-top: 4px;
 }
 </style>
