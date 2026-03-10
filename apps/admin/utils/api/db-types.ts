@@ -24,6 +24,7 @@ export type TenantRow = {
   working_hours: string
   notifications: TenantNotifications
   subscription: TenantSubscription
+  delivery_enabled: boolean
   delivery_min_order: number
   delivery_fee: number
   delivery_description: string

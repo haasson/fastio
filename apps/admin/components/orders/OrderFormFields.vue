@@ -23,7 +23,7 @@
   </section>
 
   <!-- Доставка -->
-  <section class="section">
+  <section v-if="deliveryEnabled" class="section">
     <div class="section-label">Доставка</div>
     <div :class="{ 'field-disabled': !perms.editDeliveryType }">
       <UiSegmentedControl v-model="form.deliveryType" :items="deliveryItems" size="medium" />
@@ -59,7 +59,7 @@
       <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
       <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
     </div>
-    <div class="total-line">
+    <div v-if="deliveryEnabled" class="total-line">
       <span class="total-key">Стоимость доставки</span>
       <UiInputNumber
         v-model="form.deliveryFee"
@@ -96,6 +96,7 @@ import { computed } from 'vue'
 import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, validationRules } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
+import { useTenantStore } from '~/stores/tenant'
 import OrderItemsSection from './OrderItemsSection.vue'
 
 type OrderFormData = {
@@ -142,6 +143,9 @@ const perms = computed(() => ({
   editDeliveryFee: props.permissions.editDeliveryFee ?? true,
   editPayment: props.permissions.editPayment ?? true,
 }))
+
+const tenantStore = useTenantStore()
+const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? true)
 
 const deliveryItems = DELIVERY_OPTIONS
 const paymentOptions = PAYMENT_OPTIONS

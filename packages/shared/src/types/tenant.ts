@@ -40,6 +40,7 @@ export type Tenant = {
   workingHours: string
   notifications: TenantNotifications
   subscription: TenantSubscription
+  deliveryEnabled: boolean
   deliveryMinOrder: number
   deliveryFee: number
   deliveryDescription: string

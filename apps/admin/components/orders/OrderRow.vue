@@ -13,6 +13,7 @@
         :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
       >{{ currentStatus.name }}</UiTag>
       <UiTag
+        v-if="deliveryEnabled"
         size="tiny"
         :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
       >
@@ -54,6 +55,7 @@ import type { Order, OrderStatus } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS } from '~/config/order-options'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useTenantStore } from '~/stores/tenant'
 
 const props = defineProps<{
   order: Order
@@ -67,6 +69,8 @@ const emit = defineEmits<{
 }>()
 
 const { statuses } = useOrderStatusesStore()
+const tenantStore = useTenantStore()
+const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? true)
 
 const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
 

@@ -15,6 +15,7 @@
           :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
         >{{ currentStatus.name }}</UiTag>
         <UiTag
+          v-if="deliveryEnabled"
           size="small"
           :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
         >
@@ -34,7 +35,7 @@
     </div>
 
     <!-- Адрес -->
-    <div v-if="order.deliveryType === 'delivery' && order.address" class="address">
+    <div v-if="deliveryEnabled && order.deliveryType === 'delivery' && order.address" class="address">
       <UiIcon name="mapPin" :size="14" /> {{ order.address }}
     </div>
 
@@ -96,6 +97,7 @@ import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-stat
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useTenantStore } from '~/stores/tenant'
 
 const props = defineProps<{
   order: Order
@@ -109,6 +111,8 @@ const emit = defineEmits<{
 }>()
 
 const { statuses } = useOrderStatusesStore()
+const tenantStore = useTenantStore()
+const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? true)
 
 const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
 
