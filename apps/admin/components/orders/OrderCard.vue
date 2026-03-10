@@ -43,7 +43,7 @@
       <li v-for="item in order.items" :key="item.dishId" class="item">
         <span class="item-name">{{ item.dishName }}</span>
         <span class="item-qty">× {{ item.quantity }}</span>
-        <span class="item-price">{{ item.price * item.quantity }} ₽</span>
+        <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
       </li>
     </ul>
 
@@ -91,6 +91,7 @@ import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
+import { getItemUnitPrice } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'

@@ -1,10 +1,10 @@
-import type { TenantTheme } from '@fastio/shared'
+import type { TenantThemePreset } from '@fastio/shared'
 
-export const themePresets: { value: TenantTheme['preset']; label: string; color: string }[] = [
-  { value: 'default', label: 'Оранжевый', color: '#ff6b35' },
-  { value: 'dark', label: 'Тёмный', color: '#1a1a2e' },
-  { value: 'warm', label: 'Красный', color: '#dc2626' },
-  { value: 'minimal', label: 'Минимал', color: '#111111' },
+export const themePresets: { value: TenantThemePreset; label: string; preview: string }[] = [
+  { value: 'light', label: 'Светлая', preview: '#f7f7f8' },
+  { value: 'dark', label: 'Тёмная', preview: '#141414' },
+  { value: 'warm', label: 'Тёплая', preview: '#fdf6f0' },
+  { value: 'minimal', label: 'Минимал', preview: '#ffffff' },
 ]
 
 export const fontOptions = [

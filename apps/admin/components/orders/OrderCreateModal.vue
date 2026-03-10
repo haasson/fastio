@@ -26,6 +26,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { UiDrawer, UiForm } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
+import { getItemUnitPrice } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import OrderFormFields from './OrderFormFields.vue'
@@ -86,7 +87,7 @@ watch(() => form.items, (items) => {
   if (items.length) itemsError.value = ''
 })
 
-const subtotal = computed(() => form.items.reduce((s, i) => s + i.price * i.quantity, 0))
+const subtotal = computed(() => form.items.reduce((s, i) => s + getItemUnitPrice(i) * i.quantity, 0))
 const total = computed(() => subtotal.value + form.deliveryFee)
 
 const onSave = async () => {

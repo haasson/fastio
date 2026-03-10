@@ -10,8 +10,8 @@
           type="button"
           class="preset"
           :class="{ selected: form.preset === preset.value }"
-          :style="{ '--preset-color': preset.color }"
-          @click="selectPreset(preset)"
+          :style="{ '--preset-color': preset.preview }"
+          @click="form.preset = preset.value"
         >
           <span class="preset-swatch" />
           <span class="preset-name">{{ preset.label }}</span>
@@ -37,6 +37,30 @@
       <UiSelect v-model:value="form.fontFamily" :options="fontOptions" label="Шрифт" />
 
       <div class="field">
+        <label class="label">Стиль кнопок</label>
+        <UiSegmentedControl
+          v-model="form.buttonRadius"
+          :items="buttonRadiusOptions"
+        />
+      </div>
+
+      <UiInputNumber
+        v-model="form.cardRadius"
+        label="Радиус карточек (px)"
+        :min="8"
+        :max="24"
+        :show-button="true"
+      />
+
+      <div class="field">
+        <label class="label">Тени карточек</label>
+        <UiRadioGroup
+          v-model="form.cardShadow"
+          :options="cardShadowOptions"
+        />
+      </div>
+
+      <div class="field">
         <label class="label">Логотип</label>
         <div class="logo-area">
           <img
@@ -59,7 +83,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiSelect, UiButton, UiText, useMessage } from '@fastio/ui'
+import { UiForm, UiInput, UiSelect, UiButton, UiInputNumber, UiRadioGroup, UiSegmentedControl, useMessage } from '@fastio/ui'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Tenant, TenantTheme } from '@fastio/shared'
 import { themePresets, fontOptions } from '~/config/theme-presets'
@@ -69,16 +93,35 @@ const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
 const presets = themePresets
 
-const form = reactive<TenantTheme>({ ...props.tenant.theme })
+const buttonRadiusOptions = [
+  { value: 'square', label: 'Квадратные' },
+  { value: 'rounded', label: 'Скруглённые' },
+  { value: 'pill', label: 'Пилюля' },
+]
 
-watch(() => props.tenant.theme, (t) => {
-  Object.assign(form, t)
+const cardShadowOptions = [
+  { value: 'none', label: 'Без теней' },
+  { value: 'subtle', label: 'Лёгкие' },
+  { value: 'medium', label: 'Средние' },
+]
+
+const form = reactive<TenantTheme>({
+  ...props.tenant.theme,
+  buttonRadius: props.tenant.theme.buttonRadius ?? 'rounded',
+  cardRadius: props.tenant.theme.cardRadius ?? 14,
+  cardShadow: props.tenant.theme.cardShadow ?? 'subtle',
+  preset: props.tenant.theme.preset === 'default' ? 'light' : (props.tenant.theme.preset ?? 'light'),
 })
 
-const selectPreset = (preset: (typeof presets)[number]) => {
-  form.preset = preset.value
-  form.primaryColor = preset.color
-}
+watch(() => props.tenant.theme, (t) => {
+  Object.assign(form, {
+    ...t,
+    buttonRadius: t.buttonRadius ?? 'rounded',
+    cardRadius: t.cardRadius ?? 14,
+    cardShadow: t.cardShadow ?? 'subtle',
+    preset: t.preset === 'default' ? 'light' : (t.preset ?? 'light'),
+  })
+})
 
 const saving = ref(false)
 const { success } = useMessage()
@@ -132,7 +175,7 @@ const handleSave = async () => {
   }
 
   &.selected {
-    border-color: var(--preset-color);
+    border-color: var(--color-primary);
   }
 }
 
@@ -141,6 +184,7 @@ const handleSave = async () => {
   height: 36px;
   border-radius: 50%;
   background: var(--preset-color);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .preset-name {
@@ -154,7 +198,7 @@ const handleSave = async () => {
   top: 6px;
   right: 8px;
   font-size: 11px;
-  color: var(--preset-color);
+  color: var(--color-primary);
   font-weight: 800;
 }
 
@@ -217,5 +261,4 @@ const handleSave = async () => {
 .footer {
   @include settings-footer;
 }
-
 </style>

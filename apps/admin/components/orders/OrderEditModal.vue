@@ -83,6 +83,7 @@ import {
   UiDrawer, UiTabs, UiMenuDropdown, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
+import { getItemUnitPrice } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
@@ -193,7 +194,7 @@ watch(
 
 // ─── Computed totals ──────────────────────────────────────────────────────────
 
-const subtotal = computed(() => form.items.reduce((s, i) => s + i.price * i.quantity, 0))
+const subtotal = computed(() => form.items.reduce((s, i) => s + getItemUnitPrice(i) * i.quantity, 0))
 
 const total = computed(() => subtotal.value - form.discountAmount + form.deliveryFee)
 
