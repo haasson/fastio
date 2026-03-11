@@ -13,7 +13,10 @@ const cartStore = useCartStore()
 onMounted(() => cartStore.restore())
 
 // Применяем тему тенанта как CSS-переменные
-const { data: tenant } = await useAsyncData<Tenant>('tenant', () => $fetch('/api/tenant'))
+const route = useRoute()
+const rfetch = useRequestFetch()
+const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
+const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
 
 useHead({
   titleTemplate: (title) => title ? `${title} — ${tenant.value?.name ?? ''}` : (tenant.value?.name ?? ''),
@@ -43,6 +46,23 @@ const themeStyle = computed(() => {
   --primary: #ff6b35;
   --primary-light: color-mix(in srgb, var(--primary) 12%, white);
   --primary-dark: color-mix(in srgb, var(--primary) 80%, black);
+
+  /* Light theme */
+  --color-bg: #ffffff;
+  --color-surface: #f5f5f5;
+  --color-text: #111111;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+  --color-border: #e0e0e0;
+}
+
+[data-theme="dark"] {
+  --color-bg: #2d1208;
+  --color-surface: #3d1a0e;
+  --color-text: #f5ede8;
+  --color-text-secondary: #c4a090;
+  --color-text-muted: #8a6055;
+  --color-border: #4d2418;
 }
 
 body {

@@ -1,13 +1,19 @@
 <template>
-  <div class="page-root">
+  <div class="page-root" data-theme="dark">
 
     <!-- Липкий блок: шапка + категории -->
     <div ref="stickyRef" class="sticky-top">
       <header class="header">
         <div class="container header-inner">
-          <span>Лого</span>
-          <span>Инфо о заведении</span>
-          <span>Корзина</span>
+          <img v-if="tenant?.theme?.logoUrl" class="logo" :src="tenant.theme.logoUrl" :alt="tenant.name" />
+        <span v-else class="logo-fallback">{{ tenant?.name ?? 'Лого' }}</span>
+          <div class="venue-info">
+          <span class="venue-hours">{{ tenant?.workingHours }}</span>
+          <a class="venue-phone" :href="`tel:${tenant?.contacts?.phone}`">{{ tenant?.contacts?.phone }}</a>
+        </div>
+          <button class="cart-btn" aria-label="Корзина">
+          <ShoppingCart :size="22" :stroke-width="1.7" />
+        </button>
         </div>
       </header>
 
@@ -46,7 +52,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Tenant } from '@fastio/shared'
+import { ShoppingCart } from 'lucide-vue-next'
 import { useElementSize } from '@vueuse/core'
+
+const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const stickyRef = useTemplateRef('stickyRef')
 const { height: stickyHeight } = useElementSize(stickyRef)
@@ -58,6 +68,8 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .container {
@@ -76,13 +88,55 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
 
 /* Шапка */
 .header {
-  background: #eee;
+  background: var(--color-bg);
   padding: 12px 0;
 }
 
 .header-inner {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logo-fallback {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.venue-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.cart-btn {
+  color: var(--color-text);
+  padding: 6px;
+  border-radius: 8px;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.venue-hours {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.venue-phone {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 /* Навигация по категориям */

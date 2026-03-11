@@ -44,6 +44,7 @@ import {
   Ban,
   Maximize,
   Minimize,
+  ShoppingCart,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -94,6 +95,7 @@ export const iconRegistry = {
   ban: Ban,
   maximize: Maximize,
   minimize: Minimize,
+  cart: ShoppingCart,
 } as const
 
 export type IconName = keyof typeof iconRegistry
