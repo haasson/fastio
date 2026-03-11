@@ -3,7 +3,11 @@ export type TenantTheme = {
   fontFamily: string
   logoUrl: string | null
   bannerUrl: string | null
-  preset: 'default' | 'dark' | 'warm' | 'minimal'
+  preset: 'light' | 'dark' | 'warm' | 'minimal'
+  buttonRadius: 'square' | 'rounded' | 'pill'
+  cardRadius: number
+  cardShadow: 'none' | 'subtle' | 'medium'
+  layout: 'multipage' | 'menu'
 }
 
 export type TenantContacts = {

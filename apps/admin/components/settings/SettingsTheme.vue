@@ -20,6 +20,27 @@
       </div>
 
       <div class="field">
+        <label class="label">Лейаут сайта</label>
+        <div class="layouts">
+          <button
+            v-for="opt in layoutOptions"
+            :key="opt.value"
+            type="button"
+            class="layout-card"
+            :class="{ selected: form.layout === opt.value }"
+            @click="form.layout = opt.value"
+          >
+            <div class="layout-preview">
+              <UiIcon :name="opt.icon" :size="28" />
+            </div>
+            <span class="layout-name">{{ opt.label }}</span>
+            <span class="layout-desc">{{ opt.desc }}</span>
+            <span v-if="form.layout === opt.value" class="layout-check">✓</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
         <label class="label">Основной цвет</label>
         <div class="color-row">
           <input v-model="form.primaryColor" class="color-picker" type="color" />
@@ -62,15 +83,11 @@
 
       <div class="field">
         <label class="label">Логотип</label>
-        <div class="logo-area">
-          <img
-            v-if="form.logoUrl"
-            :src="form.logoUrl"
-            class="logo-preview"
-            alt="Логотип"
+        <div class="logo-upload">
+          <PhotoUpload
+            v-model="form.logoUrl"
+            @pending="pendingLogoFile = $event"
           />
-          <span v-else class="logo-placeholder">Нет логотипа</span>
-          <UiButton disabled>Загрузить (скоро)</UiButton>
         </div>
       </div>
 
@@ -83,15 +100,22 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiSelect, UiButton, UiInputNumber, UiRadioGroup, UiSegmentedControl, useMessage } from '@fastio/ui'
+import { UiForm, UiInput, UiSelect, UiButton, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiIcon, useMessage } from '@fastio/ui'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import PhotoUpload from '~/components/ui/PhotoUpload.vue'
 import type { Tenant, TenantTheme } from '@fastio/shared'
 import { themePresets, fontOptions } from '~/config/theme-presets'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 const props = defineProps<{ tenant: Tenant }>()
 const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
 const presets = themePresets
+
+const layoutOptions = [
+  { value: 'multipage', label: 'Мультистраничный', desc: 'Каждая категория — отдельная страница', icon: 'layoutGrid' },
+  { value: 'menu', label: 'Меню', desc: 'Все блюда на одной странице со скроллом', icon: 'list' },
+] as const
 
 const buttonRadiusOptions = [
   { value: 'square', label: 'Квадратные' },
@@ -110,6 +134,7 @@ const form = reactive<TenantTheme>({
   buttonRadius: props.tenant.theme.buttonRadius ?? 'rounded',
   cardRadius: props.tenant.theme.cardRadius ?? 14,
   cardShadow: props.tenant.theme.cardShadow ?? 'subtle',
+  layout: props.tenant.theme.layout ?? 'multipage',
   preset: props.tenant.theme.preset === 'default' ? 'light' : (props.tenant.theme.preset ?? 'light'),
 })
 
@@ -119,16 +144,23 @@ watch(() => props.tenant.theme, (t) => {
     buttonRadius: t.buttonRadius ?? 'rounded',
     cardRadius: t.cardRadius ?? 14,
     cardShadow: t.cardShadow ?? 'subtle',
+    layout: t.layout ?? 'multipage',
     preset: t.preset === 'default' ? 'light' : (t.preset ?? 'light'),
   })
 })
 
 const saving = ref(false)
+const pendingLogoFile = ref<File | null>(null)
 const { success } = useMessage()
+const db = useDatabase()
 
 const handleSave = async () => {
   saving.value = true
   try {
+    if (pendingLogoFile.value) {
+      form.logoUrl = await db.tenants.uploadLogo(props.tenant.id, pendingLogoFile.value)
+      pendingLogoFile.value = null
+    }
     await emit('save', { theme: { ...form } })
     success('Сохранено')
   } finally {
@@ -202,6 +234,60 @@ const handleSave = async () => {
   font-weight: 800;
 }
 
+.layouts {
+  display: flex;
+  gap: 10px;
+}
+
+.layout-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg-card);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  position: relative;
+  text-align: left;
+
+  &:hover {
+    border-color: var(--color-text-tertiary);
+  }
+
+  &.selected {
+    border-color: var(--color-primary);
+  }
+}
+
+.layout-preview {
+  color: var(--color-text-hint);
+  margin-bottom: 4px;
+}
+
+.layout-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.layout-desc {
+  font-size: 11px;
+  color: var(--color-text-hint);
+  line-height: 1.4;
+}
+
+.layout-check {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 11px;
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -238,24 +324,8 @@ const handleSave = async () => {
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.logo-area {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  border: 1.5px dashed var(--color-border);
-  border-radius: 10px;
-}
-
-.logo-preview {
-  height: 48px;
-  object-fit: contain;
-  border-radius: 6px;
-}
-
-.logo-placeholder {
-  font-size: 13px;
-  color: var(--color-text-tertiary);
+.logo-upload {
+  max-width: 240px;
 }
 
 .footer {

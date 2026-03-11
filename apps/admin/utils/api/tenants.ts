@@ -3,6 +3,7 @@ import type { Tenant } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
+import { optimizeImage } from '~/utils/imageOptimize'
 
 const mapTenant = (raw: Record<string, unknown>): Tenant => {
   const row = raw as TenantRow
@@ -50,5 +51,17 @@ export const tenantsApi = {
 
   async update(sb: SupabaseClient, id: string, data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) {
     await query(sb.from('tenants').update(tenantToDb(data)).eq('id', id))
+  },
+
+  async uploadLogo(sb: SupabaseClient, tenantId: string, file: File): Promise<string> {
+    const isSvg = file.type === 'image/svg+xml'
+    const blob = isSvg ? file : await optimizeImage(file)
+    const ext = isSvg ? 'svg' : 'webp'
+    const contentType = isSvg ? 'image/svg+xml' : 'image/webp'
+    const path = `${tenantId}/logo.${ext}`
+
+    await query(sb.storage.from('tenant-assets').upload(path, blob, { contentType, upsert: true }))
+
+    return sb.storage.from('tenant-assets').getPublicUrl(path).data.publicUrl
   },
 }
