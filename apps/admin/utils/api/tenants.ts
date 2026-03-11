@@ -62,6 +62,8 @@ export const tenantsApi = {
 
     await query(sb.storage.from('tenant-assets').upload(path, blob, { contentType, upsert: true }))
 
-    return sb.storage.from('tenant-assets').getPublicUrl(path).data.publicUrl
+    const { publicUrl } = sb.storage.from('tenant-assets').getPublicUrl(path).data
+
+    return `${publicUrl}?t=${Date.now()}`
   },
 }

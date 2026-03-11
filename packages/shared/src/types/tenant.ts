@@ -1,9 +1,11 @@
+export type TenantThemePreset = 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon'
+
 export type TenantTheme = {
   primaryColor: string
   fontFamily: string
   logoUrl: string | null
   bannerUrl: string | null
-  preset: 'light' | 'dark' | 'warm' | 'minimal'
+  preset: TenantThemePreset
   buttonRadius: 'square' | 'rounded' | 'pill'
   cardRadius: number
   cardShadow: 'none' | 'subtle' | 'medium'

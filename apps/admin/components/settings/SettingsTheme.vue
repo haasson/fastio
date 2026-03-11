@@ -135,7 +135,7 @@ const form = reactive<TenantTheme>({
   cardRadius: props.tenant.theme.cardRadius ?? 14,
   cardShadow: props.tenant.theme.cardShadow ?? 'subtle',
   layout: props.tenant.theme.layout ?? 'multipage',
-  preset: props.tenant.theme.preset === 'default' ? 'light' : (props.tenant.theme.preset ?? 'light'),
+  preset: props.tenant.theme.preset ?? 'fresh',
 })
 
 watch(() => props.tenant.theme, (t) => {
@@ -145,7 +145,7 @@ watch(() => props.tenant.theme, (t) => {
     cardRadius: t.cardRadius ?? 14,
     cardShadow: t.cardShadow ?? 'subtle',
     layout: t.layout ?? 'multipage',
-    preset: t.preset === 'default' ? 'light' : (t.preset ?? 'light'),
+    preset: t.preset ?? 'fresh',
   })
 })
 

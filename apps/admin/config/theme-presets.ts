@@ -1,10 +1,16 @@
 import type { TenantThemePreset } from '@fastio/shared'
 
 export const themePresets: { value: TenantThemePreset; label: string; preview: string }[] = [
-  { value: 'light', label: 'Светлая', preview: '#f7f7f8' },
-  { value: 'dark', label: 'Тёмная', preview: '#141414' },
-  { value: 'warm', label: 'Тёплая', preview: '#fdf6f0' },
-  { value: 'minimal', label: 'Минимал', preview: '#ffffff' },
+  { value: 'fresh', label: '🍊 Fresh', preview: '#ffffff' },
+  { value: 'dark', label: '🌑 Dark', preview: '#2d1208' },
+  { value: 'forest', label: '🌲 Forest', preview: '#0f1f14' },
+  { value: 'sakura', label: '🌸 Sakura', preview: '#fff5f9' },
+  { value: 'slate', label: '🪨 Slate', preview: '#0f172a' },
+  { value: 'cream', label: '🧈 Cream', preview: '#fdf8f0' },
+  { value: 'neon', label: '⚡ Neon', preview: '#08000f' },
+  { value: 'sunset', label: '🌅 Sunset', preview: '#1a0a2e' },
+  { value: 'ocean', label: '🌊 Ocean', preview: '#040d1a' },
+  { value: 'lemon', label: '🍋 Lemon', preview: '#fffff0' },
 ]
 
 export const fontOptions = [

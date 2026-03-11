@@ -1,5 +1,5 @@
 <template>
-  <div class="page-root" data-theme="dark">
+  <div class="page-root">
 
     <!-- Липкий блок: шапка + категории -->
     <div ref="stickyRef" class="sticky-top">
@@ -68,8 +68,6 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--color-bg);
-  color: var(--color-text);
 }
 
 .container {
@@ -141,7 +139,7 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
 
 /* Навигация по категориям */
 .category-nav {
-  background: #ddd;
+  background: var(--color-surface);
   padding: 10px 0;
 }
 
@@ -150,7 +148,8 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ccc;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
 }
 
 /* Категории */
@@ -165,7 +164,8 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
 }
 
 .category-card {
-  background: #e8e8e8;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   padding: 60px 16px;
   display: flex;
   align-items: center;
@@ -175,7 +175,8 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
 /* Футер */
 .footer {
   margin-top: auto;
-  background: #ddd;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   padding: 24px 0;
 }
 </style>
