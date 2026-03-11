@@ -11,7 +11,7 @@
         v-if="canManageTeam"
         type="primary"
         icon="plus"
-        @click="drawerOpen = true"
+        @click="openBranchDrawer()"
       >
         Добавить филиал
       </UiButton>
@@ -30,21 +30,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { UiTitle, UiText, UiButton, UiIcon, UiCard } from '@fastio/ui'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useBranchStore } from '~/stores/branch'
 import type { BranchFormData } from '@fastio/shared'
 import BranchDrawer from '~/components/settings/BranchDrawer.vue'
+import useDrawer from '~/composables/ui/useDrawer'
 
 const branchStore = useBranchStore()
 const { canManageTeam } = usePermissions()
 
-const drawerOpen = ref(false)
+const { isOpen: drawerOpen, open: openBranchDrawer, close: closeBranchDrawer } = useDrawer()
 
 const handleSave = async (data: BranchFormData) => {
   await branchStore.add(data)
-  drawerOpen.value = false
+  closeBranchDrawer()
 }
 </script>
 

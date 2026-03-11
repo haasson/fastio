@@ -13,7 +13,7 @@
           type="primary"
           size="medium"
           icon="plus"
-          @click="createModalOpen = true"
+          @click="openCreateModal()"
         >Новый заказ</UiButton>
       </template>
     </UiSectionHeader>
@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { UiSegmentedControl, UiButton } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
@@ -82,6 +82,7 @@ import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import { useOrders } from '~/composables/data/useOrders'
 import { useBranchStore } from '~/stores/branch'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
+import useDrawer from '~/composables/ui/useDrawer'
 
 const props = defineProps<{
   tenantId: string
@@ -121,22 +122,15 @@ const getBranchName = (branchId: string | null | undefined) => {
   return branchStore.branches.find((b) => b.id === branchId)?.name
 }
 
-const editModalOpen = ref(false)
-const editingOrder = ref<Order | null>(null)
-
-const openEditModal = (order: Order) => {
-  editingOrder.value = order
-  editModalOpen.value = true
-}
+const { isOpen: editModalOpen, data: editingOrder, open: openEditModal } = useDrawer<Order>()
+const { isOpen: createModalOpen, open: openCreateModal, close: closeCreateModal } = useDrawer()
 
 const handleOrderSaved = () => {
   emit('ordersChanged')
 }
 
-const createModalOpen = ref(false)
-
 const handleOrderCreated = () => {
-  createModalOpen.value = false
+  closeCreateModal()
   emit('ordersChanged')
 }
 </script>

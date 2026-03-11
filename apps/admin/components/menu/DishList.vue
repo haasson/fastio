@@ -151,13 +151,13 @@
       :dish="editingDish"
       :add-dish="addDish"
       :update-dish="updateDish"
-      @saved="dishModalOpen = false"
+      @saved="closeDishModal"
     />
   </main>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder, useConfirm } from '@fastio/ui'
@@ -168,6 +168,7 @@ import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDishes } from '~/composables/data/useDishes'
 import useDelayedLoading from '~/composables/ui/useDelayedLoading'
+import useDrawer from '~/composables/ui/useDrawer'
 import { tagOptions } from '~/config/dish-tags'
 
 const props = defineProps<{
@@ -210,13 +211,7 @@ const { confirm } = useConfirm()
 
 const dishView = useLocalStorage<'cards' | 'list'>('menu:dish-view', 'cards')
 
-const dishModalOpen = ref(false)
-const editingDish = ref<Dish | null>(null)
-
-const openDishModal = (dish: Dish | null) => {
-  editingDish.value = dish
-  dishModalOpen.value = true
-}
+const { isOpen: dishModalOpen, data: editingDish, open: openDishModal, close: closeDishModal } = useDrawer<Dish>()
 
 const confirmDeleteDish = async (id: string) => {
   const ok = await confirm({

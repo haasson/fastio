@@ -64,7 +64,7 @@
         type="default"
         size="small"
         icon="plus"
-        @click="addDishModalOpen = true"
+        @click="openAddDishModal()"
       >
         Добавить блюдо
       </UiButton>
@@ -82,11 +82,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { UiButton, UiIcon, UiTag } from '@fastio/ui'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 import OrderAddDishModal from './OrderAddDishModal.vue'
+import useDrawer from '~/composables/ui/useDrawer'
 
 const props = defineProps<{
   items: OrderItem[]
@@ -98,10 +99,9 @@ const emit = defineEmits<{
   'update:items': [items: OrderItem[]]
 }>()
 
-const addDishModalOpen = ref(false)
-const editingItemIndex = ref<number | null>(null)
+const { isOpen: addDishModalOpen, data: editingItemIndex, open: openAddDishModal, close: closeAddDishModal } = useDrawer<number>()
 
-const editingItem = computed(() => editingItemIndex.value !== null ? props.items[editingItemIndex.value] : undefined,
+const editingItem = computed(() => editingItemIndex.value !== null ? props.items[editingItemIndex.value!] : undefined,
 )
 
 const mutate = (fn: (items: OrderItem[]) => void) => {
@@ -122,14 +122,10 @@ const changeQty = (idx: number, delta: number) => {
 
 const removeItem = (idx: number) => mutate((items) => items.splice(idx, 1))
 
-const openEditItem = (idx: number) => {
-  editingItemIndex.value = idx
-  addDishModalOpen.value = true
-}
+const openEditItem = (idx: number) => openAddDishModal(idx)
 
 const onAddDishModalClose = (open: boolean) => {
-  addDishModalOpen.value = open
-  if (!open) editingItemIndex.value = null
+  if (!open) closeAddDishModal()
 }
 
 const addDish = (item: OrderItem) => {
@@ -142,8 +138,7 @@ const addDish = (item: OrderItem) => {
       items.push({ ...item })
     }
   })
-  editingItemIndex.value = null
-  addDishModalOpen.value = false
+  closeAddDishModal()
 }
 
 const updateDishItem = (item: OrderItem) => {
@@ -152,8 +147,7 @@ const updateDishItem = (item: OrderItem) => {
       items[editingItemIndex.value!] = item
     })
   }
-  editingItemIndex.value = null
-  addDishModalOpen.value = false
+  closeAddDishModal()
 }
 </script>
 

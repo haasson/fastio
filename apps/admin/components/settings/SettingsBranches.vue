@@ -87,6 +87,7 @@ import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
 import BranchDrawer from './BranchDrawer.vue'
+import useDrawer from '~/composables/ui/useDrawer'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
@@ -101,19 +102,11 @@ const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? fa
 const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
 
-const drawerOpen = ref(false)
-const editingBranch = ref<Branch | null>(null)
+const { isOpen: drawerOpen, data: editingBranch, open: openBranchDrawer, close: closeBranchDrawer } = useDrawer<Branch>()
 const archivingId = ref<string | null>(null)
 
-const openAdd = () => {
-  editingBranch.value = null
-  drawerOpen.value = true
-}
-
-const openEdit = (branch: Branch) => {
-  editingBranch.value = branch
-  drawerOpen.value = true
-}
+const openAdd = () => openBranchDrawer(null)
+const openEdit = (branch: Branch) => openBranchDrawer(branch)
 
 const handleSave = async (data: BranchFormData) => {
   if (editingBranch.value) {
@@ -121,7 +114,7 @@ const handleSave = async (data: BranchFormData) => {
   } else {
     await add(data)
   }
-  drawerOpen.value = false
+  closeBranchDrawer()
 }
 
 const handleArchive = async (branch: Branch) => {
