@@ -13,8 +13,6 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt'],
 
-  css: ['~/assets/css/reset.css'],
-
   runtimeConfig: {
     supabaseServiceRoleKey: '',
     public: {

@@ -33,6 +33,12 @@ const themeStyle = computed(() => {
 </script>
 
 <style lang="scss">
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 :root {
   --primary: #ff6b35;
   --primary-light: color-mix(in srgb, var(--primary) 12%, white);
@@ -41,5 +47,27 @@ const themeStyle = computed(() => {
 
 body {
   font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+ul, ol {
+  list-style: none;
 }
 </style>
