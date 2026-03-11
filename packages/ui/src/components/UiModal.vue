@@ -64,13 +64,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { NModal } from 'naive-ui'
-import UiIcon from './UiIcon.vue'
+import { UiIcon } from '@fastio/icons'
 import UiButton from './UiButton.vue'
 import UiPopover from './UiPopover.vue'
 import UiTitle from './UiTitle.vue'
 import ClientOnly from './internal/ClientOnly.vue'
-import { modalManager } from '../composables/useModals'
-import { layerManager } from '../utils/layers'
+import { modalManager } from '@fastio/kit'
+import { layerManager } from '@fastio/kit'
 
 export type ModalAction = {
   text: string
@@ -199,7 +199,7 @@ const handleActionClick = async (action: ModalAction) => {
 </script>
 
 <style scoped lang="scss">
-@use '../styles/mixins' as *;
+@use '@fastio/styles/mixins' as *;
 
 .modal-wrapper {
   display: flex;

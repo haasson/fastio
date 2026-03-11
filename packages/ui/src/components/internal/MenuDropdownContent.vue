@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import UiIcon from '../UiIcon.vue'
+import { UiIcon } from '@fastio/icons'
 import UiCheckbox from '../UiCheckbox.vue'
 import type { UiMenuDropdownItem } from '../UiMenuDropdown.vue'
 
@@ -92,7 +92,7 @@ function onItemClick(item: UiMenuDropdownItem) {
 </script>
 
 <style scoped lang="scss">
-@use '../../styles/mixins' as *;
+@use '@fastio/styles/mixins' as *;
 
 .header {
   margin-bottom: 12px;

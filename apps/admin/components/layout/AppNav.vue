@@ -27,7 +27,7 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
-import type { IconName } from '@fastio/ui'
+import type { IconName } from '@fastio/icons'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
@@ -59,7 +59,7 @@ defineExpose({ navItems })
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/media-queries' as *;
 
 .nav {
   flex: 1;

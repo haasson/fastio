@@ -1,5 +1,5 @@
 import type { OrderStatusGroup } from '@fastio/shared'
-import { COLORS } from '@fastio/ui'
+import { COLORS } from '@fastio/kit'
 
 export const STATUS_GROUP_TAG_TYPES: Record<OrderStatusGroup, 'primary' | 'warning' | 'success' | 'default' | 'error'> = {
   new: 'primary',

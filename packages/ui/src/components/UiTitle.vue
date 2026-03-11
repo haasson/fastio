@@ -24,7 +24,7 @@ const titleClasses = computed(() => ({
 </script>
 
 <style scoped lang="scss">
-@use '../styles/mixins' as *;
+@use '@fastio/styles/mixins' as *;
 
 .title {
   font-weight: 800;

@@ -13,7 +13,10 @@
     "*.{js,ts,vue}": "eslint --fix"
   },
   "dependencies": {
+    "@fastio/icons": "workspace:*",
+    "@fastio/kit": "workspace:*",
     "@fastio/shared": "workspace:*",
+    "@fastio/styles": "workspace:*",
     "@fastio/ui": "workspace:*",
     "@pinia/nuxt": "^0.11.3",
     "@supabase/supabase-js": "^2.98.0",

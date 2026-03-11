@@ -61,10 +61,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { definePageMeta } from '#imports'
 import { UiButton, UiText, UiSkeleton, UiSwitch, UiBadge, UiTag } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useModifierGroups } from '~/composables/data/useModifierGroups'
-import { useConfirm } from '@fastio/ui'
 import ModifierGroupFormModal from '~/components/menu/ModifierGroupFormModal.vue'
 
 definePageMeta({ middleware: 'auth' })
@@ -113,7 +113,7 @@ const handleRemove = async (group: ModifierGroup) => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/media-queries' as *;
 
 .modifiers-root {
   display: flex;

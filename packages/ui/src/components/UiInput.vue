@@ -73,12 +73,12 @@
 import { computed, ref, useAttrs } from 'vue'
 import { NInput } from 'naive-ui'
 import { vMaska } from 'maska/vue'
-import UiIcon from './UiIcon.vue'
-import type { IconName } from '../icons'
+import { UiIcon } from '@fastio/icons'
+import type { IconName } from '@fastio/icons'
 import FormItem from './internal/FormItem.vue'
-import useResponsiveSize from '../composables/useResponsiveSize'
-import type { Size, ResponsiveSizeMap } from '../types/responsive'
-import type { ValidationRule } from '../types/form'
+import { useResponsiveSize } from '@fastio/kit'
+import type { Size, ResponsiveSizeMap } from '@fastio/kit'
+import type { ValidationRule } from '@fastio/kit'
 
 type Props = {
   label?: string

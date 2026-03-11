@@ -22,7 +22,7 @@ withDefaults(defineProps<UiCardProps>(), {
 </script>
 
 <style scoped lang="scss">
-@use '../styles/mixins' as *;
+@use '@fastio/styles/mixins' as *;
 
 .card {
   display: flex;

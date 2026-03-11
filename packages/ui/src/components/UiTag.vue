@@ -31,11 +31,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NTag, type TagProps } from 'naive-ui'
-import UiIcon from './UiIcon.vue'
+import { UiIcon } from '@fastio/icons'
 import UiButton from './UiButton.vue'
-import useResponsiveSize from '../composables/useResponsiveSize'
-import type { Size, ResponsiveSizeMap } from '../types/responsive'
-import type { IconName } from '../icons'
+import { useResponsiveSize } from '@fastio/kit'
+import type { Size, ResponsiveSizeMap } from '@fastio/kit'
+import type { IconName } from '@fastio/icons'
 
 type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error'
 

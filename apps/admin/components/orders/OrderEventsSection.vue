@@ -56,10 +56,10 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { UiTimeline, UiTimelineItem } from '@fastio/ui'
+import { COLORS } from '@fastio/kit'
 import type { OrderEvent, OrderItem } from '@fastio/shared'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 import { FIELD_LABELS } from '~/config/order-events'
-import { COLORS } from '@fastio/ui'
 import { formatFieldValue, formatEventText } from '~/utils/format-order'
 import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEvents } from '~/composables/data/useOrderEvents'

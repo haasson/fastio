@@ -102,7 +102,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiModal, UiButton, UiIcon, UiSelect, UiPhotoPlaceholder, useConfirm } from '@fastio/ui'
+import { UiModal, UiButton, UiIcon, UiSelect, UiPhotoPlaceholder } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
 import type { OrderStatusGroup } from '@fastio/shared'
 import { STATUS_GROUP_LABELS } from '~/config/order-status-groups'
 import PhotoUpload from '~/components/ui/PhotoUpload.vue'

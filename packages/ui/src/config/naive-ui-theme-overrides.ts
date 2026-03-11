@@ -1,5 +1,5 @@
 import type { GlobalThemeOverrides } from 'naive-ui'
-import { COLORS } from '../constants/colors'
+import { COLORS } from '@fastio/kit'
 
 function deepMerge(target: GlobalThemeOverrides, source: GlobalThemeOverrides): GlobalThemeOverrides {
   const result = { ...target } as Record<string, unknown>

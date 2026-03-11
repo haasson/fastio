@@ -1,4 +1,4 @@
-import type { IconName } from '@fastio/ui'
+import type { IconName } from '@fastio/icons'
 
 export const PAYMENT_TYPE_LABELS: Record<string, string> = {
   cash: 'Наличные',

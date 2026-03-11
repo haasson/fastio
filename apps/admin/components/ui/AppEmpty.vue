@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { UiText, UiIcon } from '@fastio/ui'
-import type { IconName } from '@fastio/ui'
+import type { IconName } from '@fastio/icons'
 
 withDefaults(defineProps<{
   text?: string

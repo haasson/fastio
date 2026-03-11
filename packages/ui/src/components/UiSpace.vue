@@ -12,9 +12,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NSpace } from 'naive-ui'
-import useBreakpoints from '../composables/useBreakpoints'
-import type { Breakpoint } from '../types/responsive'
-import { BREAKPOINTS_ORDER } from '../types/responsive'
+import { useBreakpoints } from '@fastio/kit'
+import type { Breakpoint } from '@fastio/kit'
+import { BREAKPOINTS_ORDER } from '@fastio/kit'
 
 type ResponsiveSizeMap = Partial<Record<Breakpoint, number>>
 

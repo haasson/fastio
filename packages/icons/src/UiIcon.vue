@@ -13,9 +13,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import useBreakpoints from '../composables/useBreakpoints'
-import { iconRegistry } from '../icons'
-import type { IconName } from '../icons'
+import { useBreakpoints } from '@fastio/kit'
+import { iconRegistry } from './icons'
+import type { IconName } from './icons'
 
 type ResponsiveSizes = {
   s?: number

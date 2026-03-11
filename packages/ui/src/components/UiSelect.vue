@@ -57,13 +57,13 @@
 <script setup lang="ts">
 import { computed, h, ref, useAttrs } from 'vue'
 import { NSelect, type SelectOption } from 'naive-ui'
-import UiIcon from './UiIcon.vue'
+import { UiIcon } from '@fastio/icons'
 import UiInput from './UiInput.vue'
 import ClientOnly from './internal/ClientOnly.vue'
 import FormItem from './internal/FormItem.vue'
-import useResponsiveSize from '../composables/useResponsiveSize'
-import type { ResponsiveSizeMap, Size } from '../types/responsive'
-import type { ValidationRule } from '../types/form'
+import { useResponsiveSize } from '@fastio/kit'
+import type { ResponsiveSizeMap, Size } from '@fastio/kit'
+import type { ValidationRule } from '@fastio/kit'
 import UiCheckbox from './UiCheckbox.vue'
 
 export type UiSelectProps = {

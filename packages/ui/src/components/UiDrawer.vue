@@ -49,10 +49,10 @@
 import { ref, watch, computed } from 'vue'
 import { NDrawer, NDrawerContent } from 'naive-ui'
 import ClientOnly from './internal/ClientOnly.vue'
-import UiIcon from './UiIcon.vue'
+import { UiIcon } from '@fastio/icons'
 import UiButton from './UiButton.vue'
-import { layerManager } from '../utils/layers'
-import useBreakpoints from '../composables/useBreakpoints'
+import { layerManager } from '@fastio/kit'
+import { useBreakpoints } from '@fastio/kit'
 
 export type DrawerAction = {
   text: string

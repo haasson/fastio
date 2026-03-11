@@ -11,9 +11,9 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, onBeforeUnmount, useAttrs, ref, watch } from 'vue'
-import { validateValue } from '../../utils/validators'
-import type { Size } from '../../types/responsive'
-import type { FormContext, ValidationRule } from '../../types/form'
+import { validateValue } from '@fastio/kit'
+import type { Size } from '@fastio/kit'
+import type { FormContext, ValidationRule } from '@fastio/kit'
 
 type Props = {
   label?: string

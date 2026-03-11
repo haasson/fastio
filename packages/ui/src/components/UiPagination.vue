@@ -10,9 +10,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NPagination, type PaginationProps } from 'naive-ui'
-import useBreakpoints from '../composables/useBreakpoints'
-import type { Size, Breakpoint, ResponsiveSizeMap } from '../types/responsive'
-import { BREAKPOINTS_ORDER } from '../types/responsive'
+import { useBreakpoints } from '@fastio/kit'
+import type { Size, Breakpoint, ResponsiveSizeMap } from '@fastio/kit'
+import { BREAKPOINTS_ORDER } from '@fastio/kit'
 
 interface Props extends /* @vue-ignore */ Omit<PaginationProps, 'size'> {
   showArrows?: boolean

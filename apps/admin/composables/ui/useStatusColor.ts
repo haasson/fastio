@@ -1,4 +1,4 @@
-import { COLORS } from '@fastio/ui'
+import { COLORS } from '@fastio/kit'
 import { STATUS_GROUP_COLORS } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 

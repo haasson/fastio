@@ -25,8 +25,8 @@
 import { computed } from 'vue'
 import { NSwitch } from 'naive-ui'
 import FormItem from './internal/FormItem.vue'
-import type { Size } from '../types/responsive'
-import type { ValidationRule } from '../types/form'
+import type { Size } from '@fastio/kit'
+import type { ValidationRule } from '@fastio/kit'
 
 type Props = {
   label?: string

@@ -1,5 +1,7 @@
+// Re-export everything from @fastio/icons
+export * from '@fastio/icons'
+
 // Components
-export { default as UiIcon } from './components/UiIcon.vue'
 export { default as UiButton } from './components/UiButton.vue'
 export { default as UiText } from './components/UiText.vue'
 export { default as UiTitle } from './components/UiTitle.vue'
@@ -12,7 +14,6 @@ export { default as UiDivider } from './components/UiDivider.vue'
 export { default as UiForm } from './components/UiForm.vue'
 export { default as UiInput } from './components/UiInput.vue'
 export { default as UiInputNumber } from './components/UiInputNumber.vue'
-export type { IconName } from './icons'
 export { default as UiSelect } from './components/UiSelect.vue'
 export { default as UiCheckbox } from './components/UiCheckbox.vue'
 export { default as UiRadioGroup } from './components/UiRadioGroup.vue'
@@ -61,29 +62,11 @@ export { default as UiPhotoPlaceholder } from './components/UiPhotoPlaceholder.v
 export type { UiSpaceProps } from './components/UiSpace.vue'
 export type { UiPictureProps } from './components/UiPicture.vue'
 
-// Composables
-export { default as useBreakpoints } from './composables/useBreakpoints'
-export { default as useModals, useModalConfig, modalManager } from './composables/useModals'
-export { default as useConfirm, confirmState } from './composables/useConfirm'
+// Re-export everything from @fastio/kit (composables, types, utils, constants)
+export * from '@fastio/kit'
+
+// Naive UI specific (stays in @fastio/ui)
 export { default as useMessage } from './composables/useMessage'
-export { default as useResponsiveSize } from './composables/useResponsiveSize'
-export { useQuery } from './composables/useQuery'
-export { useMutation } from './composables/useMutation'
-// Types
-export type { Size, Breakpoint, ResponsiveSizeMap } from './types/responsive'
-export { BREAKPOINTS_ORDER } from './types/responsive'
-export type { ModalController, ModalConfig, UseModalsReturn } from './types/modals'
-export type { ConfirmOptions } from './composables/useConfirm'
-
-// Form types
-export type { ValidationRule, ValidationRuleType, FormValues, FormContext } from './types/form'
-
-// Utils
-export { validationRules } from './utils/validation-rules'
-
-// Constants
-export { FORM_SIZE_KEY } from './constants/form-size'
-export { COLORS } from './constants/colors'
 
 // Config
 export { default as naiveUiThemeOverrides, lightThemeOverrides, darkThemeOverrides } from './config/naive-ui-theme-overrides'

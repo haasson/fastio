@@ -21,10 +21,10 @@
 <script setup lang="ts">
 import { computed, useAttrs, useSlots } from 'vue'
 import { NButton } from 'naive-ui'
-import UiIcon from './UiIcon.vue'
-import useResponsiveSize from '../composables/useResponsiveSize'
-import type { Size, ResponsiveSizeMap } from '../types/responsive'
-import type { IconName } from '../icons'
+import { UiIcon } from '@fastio/icons'
+import { useResponsiveSize } from '@fastio/kit'
+import type { Size, ResponsiveSizeMap } from '@fastio/kit'
+import type { IconName } from '@fastio/icons'
 
 type Props = {
   size?: Size

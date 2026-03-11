@@ -125,7 +125,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, validationRules } from '@fastio/ui'
+import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert } from '@fastio/ui'
+import { validationRules } from '@fastio/kit'
 import type { Order, DeliveryZone } from '@fastio/shared'
 import { findDeliveryZone } from '@fastio/shared'
 import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
@@ -254,7 +255,7 @@ const paymentOptions = PAYMENT_OPTIONS
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as mq;
+@use '@fastio/styles/mixins/media-queries' as mq;
 
 .block {
   border: 1px dashed var(--color-border);

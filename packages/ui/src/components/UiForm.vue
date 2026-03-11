@@ -9,9 +9,9 @@
 
 <script setup lang="ts">
 import { computed, provide } from 'vue'
-import type { FormContext, FormValues } from '../types/form'
-import type { ResponsiveSizeMap } from '../types/responsive'
-import { FORM_SIZE_KEY } from '../constants/form-size'
+import type { FormContext, FormValues } from '@fastio/kit'
+import type { ResponsiveSizeMap } from '@fastio/kit'
+import { FORM_SIZE_KEY } from '@fastio/kit'
 
 type Props = {
   form?: FormValues
@@ -82,7 +82,7 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-@use '../styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/media-queries' as *;
 
 .ui-form {
   display: flex;

@@ -43,9 +43,9 @@
 
 <script setup lang="ts" generic="T">
 import { computed, ref, shallowRef, onMounted, watch, TransitionGroup, type Component } from 'vue'
-import useBreakpoints from '../composables/useBreakpoints'
-import type { Breakpoint } from '../types/responsive'
-import { BREAKPOINTS_ORDER } from '../types/responsive'
+import { useBreakpoints } from '@fastio/kit'
+import type { Breakpoint } from '@fastio/kit'
+import { BREAKPOINTS_ORDER } from '@fastio/kit'
 import UiButton from './UiButton.vue'
 
 type ResponsiveNumber = Partial<Record<Breakpoint, number>>

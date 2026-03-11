@@ -147,7 +147,7 @@ const onConfirm = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/form' as *;
+@use '@fastio/styles/mixins/form' as *;
 
 .form {
   display: flex;

@@ -27,7 +27,7 @@ const textClasses = computed(() => ({
 </script>
 
 <style scoped lang="scss">
-@use '../styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/media-queries' as *;
 
 .text {
   font-family: var(--main-font);

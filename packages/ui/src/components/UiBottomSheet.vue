@@ -38,8 +38,8 @@
 import { computed, ref, onUnmounted, watch } from 'vue'
 import { DrawerRoot, DrawerPortal, DrawerOverlay, DrawerContent, DrawerTitle, DrawerHandle } from 'vaul-vue'
 import UiTitle from './UiTitle.vue'
-import { layerManager } from '../utils/layers'
-import { modalManager } from '../composables/useModals'
+import { layerManager } from '@fastio/kit'
+import { modalManager } from '@fastio/kit'
 
 export type UiBottomSheetProps = {
   modelValue?: boolean
@@ -124,7 +124,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use '../styles/mixins/safe-area' as *;
+@use '@fastio/styles/mixins/safe-area' as *;
 
 .drawer-overlay {
   position: fixed;

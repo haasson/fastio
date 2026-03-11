@@ -17,7 +17,7 @@
 import { computed } from 'vue'
 import UiModal from './UiModal.vue'
 import UiAlert from './UiAlert.vue'
-import { confirmState } from '../composables/useConfirm'
+import { confirmState } from '@fastio/kit'
 import type { ModalAction } from './UiModal.vue'
 
 const options = computed(() => confirmState.currentOptions.value)

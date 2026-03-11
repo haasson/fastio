@@ -16,8 +16,8 @@
 <script setup lang="ts">
 import { computed, h } from 'vue'
 import { NMenu, type MenuOption } from 'naive-ui'
-import UiIcon from './UiIcon.vue'
-import type { IconName } from '../icons'
+import { UiIcon } from '@fastio/icons'
+import type { IconName } from '@fastio/icons'
 
 export type UiMenuKey = string | number
 

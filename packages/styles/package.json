@@ -1,0 +1,9 @@
+{
+  "name": "@fastio/styles",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@fontsource/inter": "^5.2.6",
+    "@fontsource/urbanist": "^5.2.6"
+  }
+}

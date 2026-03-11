@@ -26,9 +26,18 @@ importers:
 
   apps/admin:
     dependencies:
+      '@fastio/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
+      '@fastio/kit':
+        specifier: workspace:*
+        version: link:../../packages/kit
       '@fastio/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@fastio/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
       '@fastio/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -153,6 +162,24 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/icons:
+    dependencies:
+      '@fastio/kit':
+        specifier: workspace:*
+        version: link:../kit
+      lucide-vue-next:
+        specifier: ^0.575.0
+        version: 0.575.0(vue@3.5.29(typescript@5.9.3))
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.29(typescript@5.9.3)
+
+  packages/kit:
+    dependencies:
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.29(typescript@5.9.3)
+
   packages/shared:
     devDependencies:
       '@eslint/js':
@@ -171,7 +198,7 @@ importers:
         specifier: ^10.0.0
         version: 10.4.0(eslint@9.39.3(jiti@2.6.1))
 
-  packages/ui:
+  packages/styles:
     dependencies:
       '@fontsource/inter':
         specifier: ^5.2.6
@@ -179,21 +206,27 @@ importers:
       '@fontsource/urbanist':
         specifier: ^5.2.6
         version: 5.2.7
+
+  packages/ui:
+    dependencies:
+      '@fastio/icons':
+        specifier: workspace:*
+        version: link:../icons
+      '@fastio/kit':
+        specifier: workspace:*
+        version: link:../kit
+      '@fastio/styles':
+        specifier: workspace:*
+        version: link:../styles
       dayjs:
         specifier: ^1.11.18
         version: 1.11.19
-      lucide-vue-next:
-        specifier: ^0.575.0
-        version: 0.575.0(vue@3.5.29(typescript@5.9.3))
       maska:
         specifier: ^3.2.0
         version: 3.2.0
       naive-ui:
         specifier: ^2.42.0
         version: 2.43.2(vue@3.5.29(typescript@5.9.3))
-      ofetch:
-        specifier: ^1.4.1
-        version: 1.5.1
       vaul-vue:
         specifier: ^0.4.1
         version: 0.4.1(reka-ui@2.9.1(vue@3.5.29(typescript@5.9.3)))(vue@3.5.29(typescript@5.9.3))

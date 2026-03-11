@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { ValidationRule } from '@fastio/ui'
+import type { ValidationRule } from '@fastio/kit'
 import {
   UiText, UiButton, UiInput, UiInputNumber,
   UiSpace, UiSelect, UiForm,

@@ -20,8 +20,8 @@
 <script setup lang="ts">
 import { NCheckbox } from 'naive-ui'
 import FormItem from './internal/FormItem.vue'
-import type { Size } from '../types/responsive'
-import type { ValidationRule } from '../types/form'
+import type { Size } from '@fastio/kit'
+import type { ValidationRule } from '@fastio/kit'
 
 type CheckboxSize = Exclude<Size, 'tiny'>
 

@@ -16,8 +16,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NSkeleton } from 'naive-ui'
-import useResponsiveSize from '../composables/useResponsiveSize'
-import type { Breakpoint } from '../types/responsive'
+import { useResponsiveSize } from '@fastio/kit'
+import type { Breakpoint } from '@fastio/kit'
 
 type SkeletonSize = 'small' | 'medium' | 'large'
 type SkeletonResponsiveMap = Partial<Record<Breakpoint, SkeletonSize>>

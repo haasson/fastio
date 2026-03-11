@@ -30,8 +30,8 @@
 <script setup lang="ts">
 import { NRadioGroup, NRadio, NSpace } from 'naive-ui'
 import FormItem from './internal/FormItem.vue'
-import type { Size } from '../types/responsive'
-import type { ValidationRule } from '../types/form'
+import type { Size } from '@fastio/kit'
+import type { ValidationRule } from '@fastio/kit'
 
 type RadioSize = Exclude<Size, 'tiny'>
 

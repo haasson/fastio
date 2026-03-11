@@ -13,9 +13,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import useBreakpoints from '../composables/useBreakpoints'
-import { BREAKPOINTS_ORDER } from '../types/responsive'
-import type { Breakpoint } from '../types/responsive'
+import { useBreakpoints } from '@fastio/kit'
+import { BREAKPOINTS_ORDER } from '@fastio/kit'
+import type { Breakpoint } from '@fastio/kit'
 
 type SourceMap = Partial<Record<Breakpoint, string>>
 

@@ -170,8 +170,8 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/form' as *;
-@use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/form' as *;
+@use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
   display: flex;

@@ -78,7 +78,8 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
 import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
 import { useLocalStorage } from '@vueuse/core'
-import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon, useConfirm } from '@fastio/ui'
+import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
 import BranchSetupGate from '~/components/layout/BranchSetupGate.vue'
@@ -184,7 +185,7 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/media-queries' as *;
 
 .layout-root {
   display: flex;

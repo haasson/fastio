@@ -91,7 +91,7 @@ onBeforeUnmount(() => editor.value?.destroy())
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/media-queries' as *;
 
 .editor-root {
   display: flex;

@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { TenantMember, TenantInvitation, TenantRole } from '@fastio/shared'
-import { useQuery } from '@fastio/ui'
+import { useQuery } from '@fastio/kit'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 

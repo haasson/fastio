@@ -79,7 +79,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, useConfirm } from '@fastio/ui'
+import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'

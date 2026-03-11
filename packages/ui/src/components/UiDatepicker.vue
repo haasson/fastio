@@ -41,12 +41,12 @@
 import { computed } from 'vue'
 import { NDatePicker } from 'naive-ui'
 import dayjs from 'dayjs'
-import UiIcon from './UiIcon.vue'
+import { UiIcon } from '@fastio/icons'
 import FormItem from './internal/FormItem.vue'
-import useResponsiveSize from '../composables/useResponsiveSize'
+import { useResponsiveSize } from '@fastio/kit'
 import type { DatePickerType } from 'naive-ui/es/date-picker/src/config'
-import type { Size, ResponsiveSizeMap } from '../types/responsive'
-import type { ValidationRule } from '../types/form'
+import type { Size, ResponsiveSizeMap } from '@fastio/kit'
+import type { ValidationRule } from '@fastio/kit'
 
 type Props = {
   label?: string
