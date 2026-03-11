@@ -11,7 +11,7 @@
         v-if="canManageTeam"
         type="primary"
         icon="plus"
-        @click="modalOpen = true"
+        @click="drawerOpen = true"
       >
         Добавить филиал
       </UiButton>
@@ -20,9 +20,9 @@
       </UiText>
     </UiCard>
 
-    <BranchFormModal
+    <BranchDrawer
       v-if="canManageTeam"
-      v-model="modalOpen"
+      v-model="drawerOpen"
       :branch="null"
       @save="handleSave"
     />
@@ -32,19 +32,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { UiTitle, UiText, UiButton, UiIcon, UiCard } from '@fastio/ui'
-import { usePermissions } from '~/composables/usePermissions'
+import { usePermissions } from '~/composables/auth/usePermissions'
 import { useBranchStore } from '~/stores/branch'
 import type { BranchFormData } from '@fastio/shared'
-import BranchFormModal from '~/components/settings/BranchFormModal.vue'
+import BranchDrawer from '~/components/settings/BranchDrawer.vue'
 
 const branchStore = useBranchStore()
 const { canManageTeam } = usePermissions()
 
-const modalOpen = ref(false)
+const drawerOpen = ref(false)
 
 const handleSave = async (data: BranchFormData) => {
   await branchStore.add(data)
-  modalOpen.value = false
+  drawerOpen.value = false
 }
 </script>
 

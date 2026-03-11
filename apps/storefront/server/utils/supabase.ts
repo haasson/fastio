@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Tenant, Category, Dish, Order } from '@fastio/shared'
+import { mapDeliveryZoneRow } from '@fastio/shared'
 
 export function getServerSupabase() {
   const config = useRuntimeConfig()
@@ -70,6 +71,10 @@ export function mapOrder(row: Record<string, unknown>): Order {
     total: row.total as number,
     status: row.status as Order['status'],
     paymentType: row.payment_type as Order['paymentType'],
+    branchId: row.branch_id as string | null,
+    deliveryZoneId: row.delivery_zone_id as string | null,
     createdAt: row.created_at as string,
   }
 }
+
+export { mapDeliveryZoneRow }

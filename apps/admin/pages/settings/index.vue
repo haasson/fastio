@@ -15,9 +15,8 @@
           :tenant="tenantStore.tenant"
           @save="tenantStore.update"
         />
-        <SettingsDelivery
+        <SettingsDeliveryZones
           v-else-if="activeTab === 'delivery'"
-          :tenant="tenantStore.tenant"
         />
         <SettingsNotifications
           v-else-if="activeTab === 'notifications'"
@@ -44,11 +43,11 @@ import { UiTabs, UiCard } from '@fastio/ui'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import SettingsContacts from '~/components/settings/SettingsContacts.vue'
 import SettingsTheme from '~/components/settings/SettingsTheme.vue'
-import SettingsDelivery from '~/components/settings/SettingsDelivery.vue'
 import SettingsNotifications from '~/components/settings/SettingsNotifications.vue'
 import SettingsTeam from '~/components/settings/SettingsTeam.vue'
 import SettingsBranches from '~/components/settings/SettingsBranches.vue'
-import { usePermissions } from '~/composables/usePermissions'
+import SettingsDeliveryZones from '~/components/settings/SettingsDeliveryZones.vue'
+import { usePermissions } from '~/composables/auth/usePermissions'
 import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({ middleware: 'auth' })

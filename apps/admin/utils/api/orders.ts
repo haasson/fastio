@@ -17,6 +17,7 @@ export type OrderUpdateData = {
   total?: number
   status?: string
   paymentType?: 'cash' | 'card' | 'online'
+  branchId?: string | null
 }
 
 export type OrderCreateData = {
@@ -57,6 +58,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     status: row.status,
     paymentType: row.payment_type,
     branchId: row.branch_id,
+    deliveryZoneId: row.delivery_zone_id,
     createdAt: row.created_at,
   }
 }
@@ -72,6 +74,7 @@ const toOrderPayload = (data: OrderUpdateData): Partial<OrderRow> => filterDefin
   subtotal: data.subtotal,
   delivery_fee: data.deliveryFee,
   total: data.total,
+  branch_id: data.branchId,
   status: data.status,
   payment_type: data.paymentType,
 }) as Partial<OrderRow>

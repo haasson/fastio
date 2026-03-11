@@ -102,6 +102,7 @@ export type OrderRow = {
   status: string
   payment_type: 'cash' | 'card' | 'online'
   branch_id: string | null
+  delivery_zone_id: string | null
   created_at: string
 }
 
@@ -141,6 +142,7 @@ export type BranchRow = {
   id: string
   tenant_id: string
   name: string
+  color: string
   address: string | null
   phone: string | null
   is_active: boolean
@@ -148,6 +150,8 @@ export type BranchRow = {
   delivery_min_order: number | null
   delivery_fee: number | null
   notifications: TenantNotifications | null
+  latitude: number | null
+  longitude: number | null
   created_at: string
   updated_at: string
   archived_at: string | null

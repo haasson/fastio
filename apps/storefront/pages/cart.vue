@@ -73,7 +73,7 @@
 
             <form @submit.prevent="placeOrder">
               <!-- Доставка/самовывоз -->
-              <div class="delivery-toggle">
+              <div v-if="deliveryEnabled" class="delivery-toggle">
                 <button
                   type="button"
                   class="toggle-opt"
@@ -102,9 +102,45 @@
                 <input v-model="form.phone" class="input" type="tel" required placeholder="+7 (999) 000-00-00" />
               </div>
 
-              <div v-if="form.deliveryType === 'delivery'" class="field">
+              <div v-if="form.deliveryType === 'delivery'" class="field address-field">
                 <label class="label">Адрес доставки *</label>
-                <input v-model="form.address" class="input" type="text" required placeholder="ул. Пушкина, д. 1, кв. 10" />
+                <input
+                  v-model="form.address"
+                  class="input"
+                  type="text"
+                  required
+                  placeholder="ул. Пушкина, д. 1, кв. 10"
+                  autocomplete="off"
+                  @input="onAddressInput"
+                  @focus="showSuggestions = true"
+                  @blur="hideSuggestionsDelayed"
+                />
+                <div v-if="showSuggestions && dadataSuggestions.length" class="suggestions">
+                  <button
+                    v-for="s in dadataSuggestions"
+                    :key="s.value"
+                    type="button"
+                    class="suggestion"
+                    @click="selectSuggestion(s)"
+                  >
+                    {{ s.value }}
+                  </button>
+                </div>
+                <p v-if="addressChecking" class="address-status checking">Проверяем адрес…</p>
+                <p v-else-if="addressResult?.outsideZones" class="address-status error">
+                  Доставка по этому адресу недоступна
+                </p>
+                <template v-else-if="addressResult?.zone">
+                  <p v-if="deliveryFee > 0" class="address-status ok">
+                    Доставка: {{ addressResult.zone.deliveryFee }} ₽
+                    <template v-if="addressResult.zone.freeDeliveryFrom > 0">
+                      · бесплатно от {{ addressResult.zone.freeDeliveryFrom }} ₽
+                    </template>
+                  </p>
+                  <p v-else class="address-status ok">
+                    Бесплатная доставка
+                  </p>
+                </template>
               </div>
 
               <!-- Оплата -->
@@ -129,9 +165,9 @@
                   <span>Товары</span>
                   <span>{{ cartStore.subtotal }} ₽</span>
                 </div>
-                <div v-if="form.deliveryType === 'delivery' && (tenant?.deliveryFee ?? 0) > 0" class="summary-row">
+                <div v-if="form.deliveryType === 'delivery' && deliveryFee > 0" class="summary-row">
                   <span>Доставка</span>
-                  <span>{{ tenant?.deliveryFee }} ₽</span>
+                  <span>{{ deliveryFee }} ₽</span>
                 </div>
                 <div v-if="discountAmount > 0" class="summary-row discount">
                   <span>Скидка</span>
@@ -146,7 +182,7 @@
               <p v-if="minOrderError" class="order-error">{{ minOrderError }}</p>
               <p v-if="orderError" class="order-error">{{ orderError }}</p>
 
-              <button type="submit" class="btn-primary submit-btn" :disabled="submitting || !!minOrderError">
+              <button type="submit" class="btn-primary submit-btn" :disabled="submitting || !!minOrderError || submitBlocked">
                 {{ submitting ? 'Оформляем…' : `Заказать на ${total} ₽` }}
               </button>
             </form>
@@ -161,6 +197,7 @@
 import type { Tenant } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
+import { useDadataSuggestions, type DadataSuggestion } from '~/composables/useDadataSuggestions'
 
 const cartStore = useCartStore()
 const route = useRoute()
@@ -170,14 +207,64 @@ const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api
 
 useHead({ title: 'Корзина' })
 
+const deliveryEnabled = computed(() => tenant.value?.deliveryEnabled ?? false)
+
 // Форма
 const form = reactive({
-  deliveryType: 'delivery' as 'delivery' | 'pickup',
+  deliveryType: (tenant.value?.deliveryEnabled ? 'delivery' : 'pickup') as 'delivery' | 'pickup',
   name: '',
   phone: '',
   address: '',
+  geoLat: null as number | null,
+  geoLon: null as number | null,
   paymentType: 'cash' as 'cash' | 'card' | 'online',
   comment: '',
+})
+
+// DaData autocomplete
+const { suggestions: dadataSuggestions, search: searchDadata, clear: clearDadata, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
+const addressChecking = ref(false)
+const addressResult = ref<{ zone: { deliveryFee: number; minOrder: number; freeDeliveryFrom: number; branchId: string } | null; outsideZones?: boolean } | null>(null)
+
+const onAddressInput = () => {
+  form.geoLat = null
+  form.geoLon = null
+  addressResult.value = null
+  searchDadata(form.address)
+}
+
+const selectSuggestion = async (s: DadataSuggestion) => {
+  form.address = s.value
+  showSuggestions.value = false
+  clearDadata()
+
+  const lat = s.data.geo_lat ? Number(s.data.geo_lat) : null
+  const lon = s.data.geo_lon ? Number(s.data.geo_lon) : null
+
+  form.geoLat = lat
+  form.geoLon = lon
+
+  if (lat && lon) {
+    addressChecking.value = true
+    try {
+      addressResult.value = await $fetch('/api/check-address', {
+        method: 'POST',
+        body: { lat, lon },
+      })
+    } catch {
+      addressResult.value = null
+    } finally {
+      addressChecking.value = false
+    }
+  }
+}
+
+// Блокировка сабмита если адрес вне зон (outsideZones === true означает что зоны есть, но адрес не попал)
+const submitBlocked = computed(() => {
+  if (form.deliveryType !== 'delivery') return false
+  if (addressChecking.value) return true
+  if (addressResult.value?.outsideZones) return true
+  return false
 })
 
 const paymentOptions = [
@@ -209,9 +296,15 @@ function clearPromo() {
 }
 
 // Расчёт итога
-const deliveryFee = computed(() =>
-  form.deliveryType === 'delivery' ? (tenant.value?.deliveryFee ?? 0) : 0,
-)
+const deliveryFee = computed(() => {
+  if (form.deliveryType !== 'delivery') return 0
+  if (addressResult.value?.zone) {
+    const zone = addressResult.value.zone
+    if (zone.freeDeliveryFrom > 0 && cartStore.subtotal >= zone.freeDeliveryFrom) return 0
+    return zone.deliveryFee
+  }
+  return tenant.value?.deliveryFee ?? 0
+})
 
 
 const discountAmount = computed(() => {
@@ -227,8 +320,9 @@ const total = computed(() =>
 )
 
 const minOrderError = computed(() => {
-  const min = tenant.value?.deliveryMinOrder ?? 0
-  if (form.deliveryType === 'delivery' && min > 0 && cartStore.subtotal < min) {
+  if (form.deliveryType !== 'delivery') return null
+  const min = addressResult.value?.zone?.minOrder ?? tenant.value?.deliveryMinOrder ?? 0
+  if (min > 0 && cartStore.subtotal < min) {
     return `Минимальная сумма заказа: ${min} ₽`
   }
   return null
@@ -251,6 +345,8 @@ async function placeOrder() {
         items: cartStore.items.map(({ photo: _, ...item }) => item),
         deliveryType: form.deliveryType,
         address: form.deliveryType === 'delivery' ? form.address : null,
+        geoLat: form.geoLat,
+        geoLon: form.geoLon,
         comment: form.comment || null,
         promoCode: appliedPromo.value?.code ?? null,
         discountAmount: discountAmount.value,
@@ -635,6 +731,62 @@ async function placeOrder() {
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+}
+
+.address-field {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  margin-top: 4px;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.suggestion {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+
+  & + & {
+    border-top: 1px solid #f0f0f0;
+  }
+}
+
+.address-status {
+  font-size: 12px;
+  margin-top: 4px;
+
+  &.checking {
+    color: #999;
+  }
+
+  &.error {
+    color: #e53935;
+  }
+
+  &.ok {
+    color: #10b981;
   }
 }
 

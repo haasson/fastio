@@ -1,0 +1,356 @@
+<template>
+  <UiDrawer
+    :model-value="modelValue"
+    :title="branch ? branch.name : 'Новый филиал'"
+    :width="520"
+    :actions="drawerActions"
+    :on-confirm="onConfirm"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
+    <UiForm ref="formRef" class="branch-form">
+      <UiInput
+        v-model="form.name"
+        name="name"
+        label="Название *"
+        placeholder="Центральный"
+        :rules="[{ type: 'required', message: 'Введите название' }]"
+      />
+
+      <UiColorPicker v-model="form.color" label="Цвет филиала" :presets="BRANCH_COLORS" />
+
+      <div class="address-field">
+        <UiInput
+          v-model="form.address"
+          label="Адрес"
+          placeholder="ул. Ленина, 1"
+          @input="onAddressInput"
+          @focus="showSuggestions = true"
+          @blur="hideSuggestionsDelayed"
+        />
+        <div v-if="showSuggestions && dadataSuggestions.length" class="suggestions-dropdown">
+          <button
+            v-for="(s, i) in dadataSuggestions"
+            :key="i"
+            class="suggestion-item"
+            @mousedown.prevent="pickSuggestion(s)"
+          >
+            {{ s.value }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Координаты на миникарте -->
+      <div class="coords-block">
+        <UiText size="small" class="coords-label">Координаты на карте</UiText>
+        <div class="coords-map">
+          <YandexMap
+            :settings="miniMapSettings"
+            width="100%"
+            height="100%"
+          >
+            <YandexMapDefaultSchemeLayer />
+            <YandexMapDefaultFeaturesLayer />
+            <YandexMapMarker
+              v-if="form.latitude != null && form.longitude != null"
+              :settings="{ coordinates: [form.longitude!, form.latitude!] }"
+            >
+              <div class="coords-pin" />
+            </YandexMapMarker>
+            <YandexMapListener :settings="miniMapListenerSettings" />
+          </YandexMap>
+        </div>
+        <UiText v-if="form.latitude != null" size="tiny" class="coords-hint">
+          {{ form.latitude.toFixed(6) }}, {{ form.longitude?.toFixed(6) }}
+        </UiText>
+        <UiText v-else size="tiny" class="coords-hint">Кликните на карту, чтобы поставить точку</UiText>
+      </div>
+      <UiInput
+        v-model="form.phone"
+        label="Телефон"
+        placeholder="+7 (900) 000-00-00"
+        :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
+      />
+
+      <div class="active-row">
+        <UiText size="small">Филиал активен</UiText>
+        <UiSwitch v-model="form.isActive" />
+      </div>
+
+      <div class="override-block">
+        <UiSectionHeader title="Часы работы">
+          <template #right>
+            <div class="override-toggle">
+              <UiText size="tiny">Своё расписание</UiText>
+              <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
+            </div>
+          </template>
+        </UiSectionHeader>
+        <UiInput
+          v-if="useCustomHours"
+          v-model="form.workingHours"
+          label="Режим работы"
+          type="textarea"
+          :rows="2"
+          placeholder="Пн–Пт 10:00–22:00, Сб–Вс 11:00–21:00"
+        />
+        <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
+      </div>
+
+      <div class="override-block">
+        <UiSectionHeader title="Уведомления">
+          <template #right>
+            <div class="override-toggle">
+              <UiText size="tiny">Свои уведомления</UiText>
+              <UiSwitch :model-value="useCustomNotifications" @update:model-value="toggleCustomNotifications" />
+            </div>
+          </template>
+        </UiSectionHeader>
+        <template v-if="useCustomNotifications && form.notifications">
+          <UiInput
+            v-model="form.notifications.telegramChatId"
+            label="Telegram Chat ID"
+            placeholder="-100123456789"
+          />
+        </template>
+        <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
+      </div>
+    </UiForm>
+  </UiDrawer>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed, watch } from 'vue'
+import {
+  UiDrawer,
+  UiForm, UiInput, UiSwitch, UiText,
+} from '@fastio/ui'
+import {
+  YandexMap,
+  YandexMapDefaultSchemeLayer,
+  YandexMapDefaultFeaturesLayer,
+  YandexMapMarker,
+  YandexMapListener,
+} from 'vue-yandex-maps'
+import type { YandexMapListenerSettings } from 'vue-yandex-maps'
+import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import type { Branch, BranchFormData } from '@fastio/shared'
+import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import UiColorPicker from '~/components/ui/ColorPicker.vue'
+
+const BRANCH_COLORS = ['#FF5500', '#FFA500', '#00C853', '#2979FF', '#AA00FF', '#E91E63', '#795548']
+
+// ─── DaData address suggestions ─────────────────────────────────────────────
+
+const { suggestions: dadataSuggestions, search: searchDadata, clear: clearDadata, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
+
+const onAddressInput = () => {
+  showSuggestions.value = true
+  searchDadata(form.address ?? '')
+}
+
+const pickSuggestion = (s: DadataSuggestion) => {
+  form.address = s.value
+  showSuggestions.value = false
+  clearDadata()
+
+  if (s.data.geo_lat && s.data.geo_lon) {
+    form.latitude = parseFloat(s.data.geo_lat)
+    form.longitude = parseFloat(s.data.geo_lon)
+  }
+}
+
+const props = defineProps<{
+  modelValue: boolean
+  branch: Branch | null
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  'save': [data: BranchFormData]
+}>()
+
+const formRef = ref()
+const saving = ref(false)
+
+const drawerActions = computed(() => [
+  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+])
+
+const MOSCOW: [number, number] = [37.617617, 55.755864]
+
+const miniMapSettings = computed(() => {
+  const center = form.latitude != null && form.longitude != null
+    ? [form.longitude!, form.latitude!] as [number, number]
+    : MOSCOW
+
+  return { location: { center, zoom: 14 } }
+})
+
+const miniMapListenerSettings = computed((): YandexMapListenerSettings => ({
+  onClick: (_obj, event) => {
+    const [lng, lat] = event.coordinates
+
+    form.latitude = lat
+    form.longitude = lng
+  },
+}))
+
+const defaultForm = (): BranchFormData => ({
+  name: '',
+  color: BRANCH_COLORS[0],
+  address: null,
+  phone: null,
+  isActive: true,
+  workingHours: null,
+  deliveryMinOrder: null,
+  deliveryFee: null,
+  notifications: null,
+  latitude: null,
+  longitude: null,
+})
+
+const form = reactive<BranchFormData>(defaultForm())
+
+const useCustomHours = computed(() => form.workingHours !== null)
+const useCustomNotifications = computed(() => form.notifications !== null)
+
+const toggleCustomHours = (val: boolean) => {
+  form.workingHours = val ? '' : null
+}
+const toggleCustomNotifications = (val: boolean) => {
+  form.notifications = val ? { email: null, telegramChatId: null } : null
+}
+
+watch(() => props.modelValue, (val) => {
+  if (!val) return
+
+  if (props.branch) {
+    form.name = props.branch.name
+    form.color = props.branch.color
+    form.address = props.branch.address
+    form.phone = props.branch.phone
+    form.isActive = props.branch.isActive
+    form.workingHours = props.branch.workingHours ?? null
+    form.deliveryMinOrder = props.branch.deliveryMinOrder
+    form.deliveryFee = props.branch.deliveryFee
+    form.notifications = props.branch.notifications ? { ...props.branch.notifications } : null
+    form.latitude = props.branch.latitude
+    form.longitude = props.branch.longitude
+  } else {
+    Object.assign(form, defaultForm())
+  }
+})
+
+const onConfirm = async () => {
+  if (!formRef.value?.validate()) return false
+  saving.value = true
+  try {
+    emit('save', { ...form })
+  } finally {
+    saving.value = false
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.branch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0 12px;
+}
+
+.active-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.override-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.override-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inherit-hint {
+  color: var(--color-text-tertiary);
+}
+
+.address-field {
+  position: relative;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.suggestion-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover { background: var(--color-bg-hover); }
+
+  & + & { border-top: 1px solid var(--color-border-light); }
+}
+
+.coords-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coords-label {
+  font-weight: 500;
+}
+
+.coords-map {
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+}
+
+.coords-pin {
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary, #ff5500);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+}
+
+.coords-hint {
+  color: var(--color-text-hint);
+}
+</style>

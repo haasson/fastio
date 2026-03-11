@@ -1,4 +1,6 @@
-import { getServerSupabase } from '../utils/supabase'
+import { findDeliveryZone } from '@fastio/shared'
+import type { DeliveryZone } from '@fastio/shared'
+import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
 
 const VALID_DELIVERY_TYPES = ['delivery', 'pickup'] as const
 const VALID_PAYMENT_TYPES = ['cash', 'card', 'online'] as const
@@ -66,12 +68,50 @@ export default defineEventHandler(async (event) => {
   // Получаем данные тенанта для delivery_fee и delivery_min_order
   const { data: tenantData, error: tenantError } = await supabase
     .from('tenants')
-    .select('delivery_fee, delivery_min_order')
+    .select('delivery_fee, delivery_min_order, delivery_enabled')
     .eq('id', tenantId)
     .single()
 
   if (tenantError || !tenantData) {
     throw createError({ statusCode: 500, message: 'Не удалось получить данные ресторана' })
+  }
+
+  if (deliveryType === 'delivery' && !tenantData.delivery_enabled) {
+    throw createError({ statusCode: 400, message: 'Доставка отключена' })
+  }
+
+  // Загружаем филиалы и зоны доставки тенанта
+  const [{ data: branchRows }, { data: zoneRows }] = await Promise.all([
+    supabase.from('branches').select('id').eq('tenant_id', tenantId).eq('is_active', true).limit(2),
+    supabase.from('delivery_zones').select('*').eq('tenant_id', tenantId).eq('is_active', true).order('sort_order'),
+  ])
+
+  const hasZones = zoneRows && zoneRows.length > 0
+  let matchedZone: DeliveryZone | null = null
+  let orderBranchId: string | null = null
+
+  if (hasZones && deliveryType === 'delivery') {
+    const geoLat = Number(body.geoLat)
+    const geoLon = Number(body.geoLon)
+
+    if (Number.isNaN(geoLat) || Number.isNaN(geoLon)) {
+      throw createError({ statusCode: 400, message: 'Для доставки необходимо указать координаты адреса' })
+    }
+
+    const zones: DeliveryZone[] = zoneRows.map(mapDeliveryZoneRow)
+
+    matchedZone = findDeliveryZone([geoLon, geoLat], zones)
+
+    if (!matchedZone) {
+      throw createError({ statusCode: 400, message: 'Адрес находится вне зоны доставки' })
+    }
+
+    orderBranchId = matchedZone.branchId
+  }
+
+  // Если зон нет или это самовывоз — привязываем к единственному филиалу
+  if (!orderBranchId && branchRows?.length === 1) {
+    orderBranchId = branchRows[0].id as string
   }
 
   // Достаём реальные цены блюд из БД
@@ -176,14 +216,17 @@ export default defineEventHandler(async (event) => {
     0,
   )
 
-  // Delivery fee из тенанта
-  const deliveryFee = deliveryType === 'delivery' ? Number(tenantData.delivery_fee) : 0
+  // Delivery fee и min order: из зоны (если есть) или из тенанта (fallback)
+  const deliveryFee = deliveryType === 'delivery'
+    ? (matchedZone ? matchedZone.deliveryFee : Number(tenantData.delivery_fee))
+    : 0
 
-  // Проверяем минимальный заказ для доставки
-  if (deliveryType === 'delivery' && subtotal < Number(tenantData.delivery_min_order)) {
+  const minOrder = matchedZone ? matchedZone.minOrder : Number(tenantData.delivery_min_order)
+
+  if (deliveryType === 'delivery' && subtotal < minOrder) {
     throw createError({
       statusCode: 400,
-      message: `Минимальная сумма заказа для доставки: ${tenantData.delivery_min_order} ₽`,
+      message: `Минимальная сумма заказа для доставки: ${minOrder} ₽`,
     })
   }
 
@@ -207,6 +250,8 @@ export default defineEventHandler(async (event) => {
       total,
       status: 'new',
       payment_type: paymentType,
+      ...(orderBranchId && { branch_id: orderBranchId }),
+      ...(matchedZone && { delivery_zone_id: matchedZone.id }),
     })
     .select('id')
     .single()

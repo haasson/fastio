@@ -73,5 +73,6 @@ export type Order = {
   status: string
   paymentType: 'cash' | 'card' | 'online'
   branchId: string | null
+  deliveryZoneId: string | null
   createdAt: string
 }

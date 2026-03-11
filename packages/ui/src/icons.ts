@@ -42,6 +42,8 @@ import {
   ArchiveRestore,
   Send,
   Ban,
+  Maximize,
+  Minimize,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -90,6 +92,8 @@ export const iconRegistry = {
   archiveRestore: ArchiveRestore,
   send: Send,
   ban: Ban,
+  maximize: Maximize,
+  minimize: Minimize,
 } as const
 
 export type IconName = keyof typeof iconRegistry

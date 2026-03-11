@@ -22,25 +22,28 @@
           </div>
           <UiText v-if="branch.address" size="tiny" class="branch-address">{{ branch.address }}</UiText>
           <UiText v-if="branch.phone" size="tiny" class="branch-phone">{{ branch.phone }}</UiText>
+          <div v-if="deliveryEnabled && hasAnyZones && branchHasNoZones(branch.id)" class="branch-warning">
+            <span class="branch-warning-text">Нет зон доставки — доставка не работает.</span>
+            <NuxtLink to="/settings#delivery" class="branch-warning-link">Настроить зоны</NuxtLink>
+          </div>
         </div>
 
-        <UiSpace :size="4">
-          <UiButton
-            type="text"
-            size="medium"
-            icon="pencil"
-            title="Редактировать"
+        <div class="branch-actions">
+          <UiIcon
+            name="pencil"
+            :size="18"
+            class="branch-action"
+            title="Настройки"
             @click="openEdit(branch)"
           />
-          <UiButton
-            type="text"
-            size="medium"
-            icon="archive"
+          <UiIcon
+            name="archive"
+            :size="18"
+            class="branch-action danger"
             title="Архивировать"
-            :loading="archivingId === branch.id"
             @click="handleArchive(branch)"
           />
-        </UiSpace>
+        </div>
       </div>
     </template>
 
@@ -65,8 +68,8 @@
       </div>
     </template>
 
-    <BranchFormModal
-      v-model="modalOpen"
+    <BranchDrawer
+      v-model="drawerOpen"
       :branch="editingBranch"
       @save="handleSave"
     />
@@ -76,13 +79,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiText, UiTag, UiSpace, UiSkeleton, UiDivider, useConfirm } from '@fastio/ui'
+import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, useConfirm } from '@fastio/ui'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
-import BranchFormModal from './BranchFormModal.vue'
+import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
+import BranchDrawer from './BranchDrawer.vue'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
@@ -91,19 +95,24 @@ const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const { branches, archivedBranches, loading } = storeToRefs(branchStore)
 const { add, update, archive, restore } = branchStore
 const { confirm } = useConfirm()
+const { zones } = useAllDeliveryZones()
 
-const modalOpen = ref(false)
+const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? false)
+const hasAnyZones = computed(() => zones.value.length > 0)
+const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
+
+const drawerOpen = ref(false)
 const editingBranch = ref<Branch | null>(null)
 const archivingId = ref<string | null>(null)
 
 const openAdd = () => {
   editingBranch.value = null
-  modalOpen.value = true
+  drawerOpen.value = true
 }
 
 const openEdit = (branch: Branch) => {
   editingBranch.value = branch
-  modalOpen.value = true
+  drawerOpen.value = true
 }
 
 const handleSave = async (data: BranchFormData) => {
@@ -112,7 +121,7 @@ const handleSave = async (data: BranchFormData) => {
   } else {
     await add(data)
   }
-  modalOpen.value = false
+  drawerOpen.value = false
 }
 
 const handleArchive = async (branch: Branch) => {
@@ -139,7 +148,6 @@ const handleArchive = async (branch: Branch) => {
   })
 
   if (!confirmed) return
-
   if (branchStore.currentBranchId === branch.id) branchStore.setBranch(null)
   await archive(branch.id)
 }
@@ -151,7 +159,8 @@ const handleRestore = async (branch: Branch) => {
     confirmText: 'Восстановить',
   })
 
-  if (confirmed) await restore(branch.id)
+  if (!confirmed) return
+  await restore(branch.id)
 }
 </script>
 
@@ -195,5 +204,38 @@ const handleRestore = async (branch: Branch) => {
 .branch-address,
 .branch-phone {
   color: var(--color-text-hint);
+}
+
+.branch-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.branch-warning-text {
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+.branch-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.branch-action {
+  cursor: pointer;
+  color: var(--color-text-hint);
+
+  &:hover { color: var(--color-text); }
+  &.danger { color: var(--color-error); }
+}
+
+.branch-warning-link {
+  font-size: 12px;
+  color: var(--color-primary);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
 }
 </style>

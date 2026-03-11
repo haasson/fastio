@@ -23,21 +23,48 @@
   </div>
 
   <!-- Доставка -->
-  <div v-if="deliveryEnabled" class="block">
+  <div v-if="showDeliveryBlock" class="block">
     <div class="block-label">Доставка</div>
-    <div class="delivery-row">
-      <div :class="{ 'field-disabled': !perms.editDeliveryType }">
+    <UiAlert v-if="!deliveryEnabled && isDeliveryOrder" type="warning" size="small">
+      Доставка сейчас отключена, но данный заказ был принят до отключения доставки
+    </UiAlert>
+    <div class="delivery-first-row">
+      <div v-if="deliveryEnabled || isDeliveryOrder" :class="{ 'field-disabled': !perms.editDeliveryType }">
         <UiSegmentedControl v-model="form.deliveryType" :items="deliveryItems" size="medium" />
       </div>
+      <UiSelect
+        v-if="branchOptions.length > 1"
+        v-model:value="selectedBranchId"
+        :options="branchOptions"
+        label="Филиал"
+        placeholder="Выберите филиал"
+        name="branchId"
+        :rules="[{ type: 'required', message: 'Выберите филиал' }]"
+        class="branch-select"
+      />
+    </div>
+    <div v-if="form.deliveryType === 'delivery'" class="address-field">
       <UiInput
-        v-if="form.deliveryType === 'delivery'"
         v-model="form.address"
         name="address"
         label="Адрес"
         placeholder="ул. Пушкина, д. 10, кв. 5"
-        :rules="[validationRules.address.required]"
+        :rules="addressRules"
         :disabled="!perms.editAddress"
+        @input="onAddressInput"
+        @focus="showSuggestions = true"
+        @blur="hideSuggestionsDelayed"
       />
+      <div v-if="showSuggestions && dadataSuggestions.length" class="suggestions-dropdown">
+        <button
+          v-for="(s, i) in dadataSuggestions"
+          :key="i"
+          class="suggestion-item"
+          @mousedown.prevent="pickSuggestion(s)"
+        >
+          {{ s.value }}
+        </button>
+      </div>
     </div>
   </div>
 
@@ -62,7 +89,7 @@
         <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
         <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
       </div>
-      <div v-if="deliveryEnabled" class="total-line">
+      <div v-if="deliveryEnabled || isDeliveryOrder" class="total-line">
         <span class="total-key">Стоимость доставки</span>
         <UiInputNumber
           v-model="form.deliveryFee"
@@ -97,11 +124,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, validationRules } from '@fastio/ui'
-import type { Order } from '@fastio/shared'
+import { ref, computed } from 'vue'
+import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, validationRules } from '@fastio/ui'
+import type { Order, DeliveryZone } from '@fastio/shared'
+import { findDeliveryZone } from '@fastio/shared'
 import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
 import { useTenantStore } from '~/stores/tenant'
+import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 import OrderItemsSection from './OrderItemsSection.vue'
 
 type OrderFormData = {
@@ -126,6 +155,8 @@ type Permissions = {
   editPayment?: boolean
 }
 
+type BranchOption = { label: string; value: string }
+
 const props = withDefaults(defineProps<{
   form: OrderFormData
   tenantId: string
@@ -134,11 +165,74 @@ const props = withDefaults(defineProps<{
   permissions?: Permissions
   itemsError?: string
   commentEditable?: boolean
+  zones?: DeliveryZone[]
+  branchOptions?: BranchOption[]
+  branchId?: string | null
 }>(), {
   permissions: () => ({}),
   itemsError: '',
   commentEditable: false,
+  zones: () => [],
+  branchOptions: () => [],
+  branchId: null,
 })
+
+const emit = defineEmits<{
+  'zone-detected': [zone: DeliveryZone | null]
+  'update:branchId': [value: string | null]
+}>()
+
+const selectedBranchId = computed({
+  get: () => props.branchId,
+  set: (val) => emit('update:branchId', val),
+})
+
+// ─── DaData address suggestions ─────────────────────────────────────────────
+
+const { suggestions: dadataSuggestions, search: searchDadata, clear: clearDadata, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
+const addressVerified = ref(false)
+const detectedZone = ref<DeliveryZone | null>(null)
+
+const addressRules = computed(() => {
+  const rules = [validationRules.address.required]
+
+  if (props.zones.length > 0) {
+    rules.push({
+      type: 'custom' as const,
+      validator: () => addressVerified.value,
+      message: 'Выберите адрес из подсказок',
+    })
+    rules.push({
+      type: 'custom' as const,
+      validator: () => !addressVerified.value || detectedZone.value !== null,
+      message: 'Адрес вне зоны доставки',
+    })
+  }
+
+  return rules
+})
+
+const onAddressInput = () => {
+  showSuggestions.value = true
+  addressVerified.value = false
+  detectedZone.value = null
+  searchDadata(props.form.address ?? '')
+}
+
+const pickSuggestion = (s: DadataSuggestion) => {
+  props.form.address = s.value
+  showSuggestions.value = false
+  addressVerified.value = true
+  clearDadata()
+
+  if (s.data.geo_lat && s.data.geo_lon) {
+    const point: [number, number] = [parseFloat(s.data.geo_lon), parseFloat(s.data.geo_lat)]
+    const zone = findDeliveryZone(point, props.zones)
+
+    detectedZone.value = zone
+    emit('zone-detected', zone)
+  }
+}
 
 const perms = computed(() => ({
   editCustomer: props.permissions.editCustomer ?? true,
@@ -151,13 +245,16 @@ const perms = computed(() => ({
 
 const tenantStore = useTenantStore()
 const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? true)
+const isDeliveryOrder = computed(() => props.form.deliveryType === 'delivery')
+// Показываем блок если: доставка включена, или заказ уже с доставкой, или есть выбор филиала (для самовывоза)
+const showDeliveryBlock = computed(() => deliveryEnabled.value || isDeliveryOrder.value || props.branchOptions.length > 1)
 
 const deliveryItems = DELIVERY_OPTIONS
 const paymentOptions = PAYMENT_OPTIONS
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/ui/src/styles/mixins/media-queries' as mq;
+@use '@fastio/ui/styles/mixins/media-queries' as mq;
 
 .block {
   border: 1px dashed var(--color-border);
@@ -182,7 +279,7 @@ const paymentOptions = PAYMENT_OPTIONS
   gap: 10px;
 }
 
-.delivery-row {
+.delivery-first-row {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -190,14 +287,15 @@ const paymentOptions = PAYMENT_OPTIONS
   @include mq.mq-m {
     flex-direction: row;
     align-items: flex-end;
+  }
+}
 
-    > :first-child {
-      flex-shrink: 0;
-    }
+.branch-select {
+  width: 100%;
 
-    > :last-child {
-      flex: 1;
-    }
+  @include mq.mq-m {
+    width: 200px;
+    flex-shrink: 0;
   }
 }
 
@@ -279,5 +377,40 @@ const paymentOptions = PAYMENT_OPTIONS
 
 .payment-select {
   width: 180px;
+}
+
+.address-field {
+  position: relative;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.suggestion-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover { background: var(--color-bg-hover); }
+
+  & + & { border-top: 1px solid var(--color-border-light); }
 }
 </style>

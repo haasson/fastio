@@ -110,7 +110,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, useMessage } from '@fastio/ui'
-import { useDishModifiersEditor } from '~/composables/useDishModifiersEditor'
+import { useDishModifiersEditor } from '~/composables/menu/useDishModifiersEditor'
 
 const props = defineProps<{
   tenantId: string

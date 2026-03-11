@@ -11,6 +11,7 @@ export const mapBranch = (raw: Record<string, unknown>): Branch => {
     id: row.id,
     tenantId: row.tenant_id,
     name: row.name,
+    color: row.color,
     address: row.address,
     phone: row.phone,
     isActive: row.is_active,
@@ -18,6 +19,8 @@ export const mapBranch = (raw: Record<string, unknown>): Branch => {
     deliveryMinOrder: row.delivery_min_order,
     deliveryFee: row.delivery_fee,
     notifications: row.notifications,
+    latitude: row.latitude,
+    longitude: row.longitude,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     archivedAt: row.archived_at ?? null,
@@ -26,6 +29,7 @@ export const mapBranch = (raw: Record<string, unknown>): Branch => {
 
 const branchToDb = (data: BranchFormData) => ({
   name: data.name,
+  color: data.color,
   address: data.address,
   phone: data.phone,
   is_active: data.isActive,
@@ -33,6 +37,8 @@ const branchToDb = (data: BranchFormData) => ({
   delivery_min_order: data.deliveryMinOrder,
   delivery_fee: data.deliveryFee,
   notifications: data.notifications,
+  latitude: data.latitude,
+  longitude: data.longitude,
 })
 
 export const branchesApi = {
@@ -63,6 +69,7 @@ export const branchesApi = {
   async update(sb: SupabaseClient, id: string, data: Partial<BranchFormData>): Promise<Branch | null> {
     const payload = filterDefined({
       name: data.name,
+      color: data.color,
       address: data.address,
       phone: data.phone,
       is_active: data.isActive,
@@ -70,6 +77,8 @@ export const branchesApi = {
       delivery_min_order: data.deliveryMinOrder,
       delivery_fee: data.deliveryFee,
       notifications: data.notifications,
+      latitude: data.latitude,
+      longitude: data.longitude,
     }) as Partial<BranchRow>
 
     const result = await query(sb.from('branches').update(payload).eq('id', id).select().single())

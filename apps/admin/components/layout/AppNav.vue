@@ -28,7 +28,7 @@ import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/ui'
-import { usePermissions } from '~/composables/usePermissions'
+import { usePermissions } from '~/composables/auth/usePermissions'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 

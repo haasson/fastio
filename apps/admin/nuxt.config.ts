@@ -19,12 +19,14 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@vueuse/nuxt'],
 
-  css: ['~/assets/css/ui.scss'],
+  css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css'],
 
   runtimeConfig: {
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',
+      yandexMapsApiKey: '',
+      dadataApiKey: '',
     },
   },
 })

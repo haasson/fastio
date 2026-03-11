@@ -11,6 +11,9 @@ export type Branch = {
   deliveryMinOrder: number | null
   deliveryFee: number | null
   notifications: TenantNotifications | null
+  color: string
+  latitude: number | null
+  longitude: number | null
   createdAt: string
   updatedAt: string
   archivedAt: string | null

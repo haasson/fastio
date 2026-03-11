@@ -61,7 +61,7 @@ import { formatRelativeTime } from '~/utils/formatRelativeTime'
 import { FIELD_LABELS } from '~/config/order-events'
 import { COLORS } from '@fastio/ui'
 import { formatFieldValue, formatEventText } from '~/utils/format-order'
-import { useStatusColor } from '~/composables/useStatusColor'
+import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEvents } from '~/composables/data/useOrderEvents'
 
 const props = defineProps<{

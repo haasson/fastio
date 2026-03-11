@@ -1,0 +1,52 @@
+import { findDeliveryZone } from '@fastio/shared'
+import type { DeliveryZone } from '@fastio/shared'
+import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
+
+export default defineEventHandler(async (event) => {
+  const tenantId = event.context.tenantId as string | undefined
+  if (!tenantId) throw createError({ statusCode: 404 })
+
+  const body = await readBody(event)
+  const lat = Number(body.lat)
+  const lon = Number(body.lon)
+
+  if (Number.isNaN(lat) || Number.isNaN(lon)) {
+    throw createError({ statusCode: 400, message: 'lat и lon обязательны' })
+  }
+
+  const supabase = getServerSupabase()
+
+  const { data: rows, error } = await supabase
+    .from('delivery_zones')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .order('sort_order')
+
+  if (error) {
+    throw createError({ statusCode: 500, message: 'Ошибка загрузки зон доставки' })
+  }
+
+  // Если зон нет — возвращаем null, клиент использует tenant-level fee
+  if (!rows || rows.length === 0) {
+    return { zone: null }
+  }
+
+  const zones: DeliveryZone[] = rows.map(mapDeliveryZoneRow)
+
+  const zone = findDeliveryZone([lon, lat], zones)
+
+  if (!zone) {
+    return { zone: null, outsideZones: true }
+  }
+
+  return {
+    zone: {
+      id: zone.id,
+      branchId: zone.branchId,
+      deliveryFee: zone.deliveryFee,
+      minOrder: zone.minOrder,
+      freeDeliveryFrom: zone.freeDeliveryFrom,
+    },
+  }
+})

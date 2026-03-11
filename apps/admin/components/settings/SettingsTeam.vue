@@ -129,7 +129,7 @@ import {
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
 import { useTeam } from '~/composables/data/useTeam'
-import { usePermissions } from '~/composables/usePermissions'
+import { usePermissions } from '~/composables/auth/usePermissions'
 import { useBranchStore } from '~/stores/branch'
 import { roleOptions } from '~/config/team-roles'
 import { buildMemberColumns, buildInviteColumns } from './team-columns'

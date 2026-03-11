@@ -167,7 +167,7 @@ import { formatPrice } from '@fastio/shared'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDishes } from '~/composables/data/useDishes'
-import useDelayedLoading from '~/composables/useDelayedLoading'
+import useDelayedLoading from '~/composables/ui/useDelayedLoading'
 import { tagOptions } from '~/config/dish-tags'
 
 const props = defineProps<{

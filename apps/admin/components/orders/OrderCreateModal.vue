@@ -8,14 +8,16 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="content">
-
       <OrderFormFields
         :form="form"
         :tenant-id="tenantId"
         :subtotal="subtotal"
         :total="total"
         :items-error="itemsError"
+        :branch-options="branchOptions"
+        :branch-id="selectedBranchId"
         comment-editable
+        @update:branch-id="selectedBranchId = $event"
       />
     </UiForm>
 
@@ -29,6 +31,8 @@ import type { Order } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/stores/tenant'
 import OrderFormFields from './OrderFormFields.vue'
 
 const props = defineProps<{
@@ -44,6 +48,12 @@ const emit = defineEmits<{
 
 const api = useDatabase()
 const { statuses } = useOrderStatusesStore()
+const branchStore = useBranchStore()
+const tenantStore = useTenantStore()
+
+const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
+
+const selectedBranchId = ref<string | null>(props.branchId)
 
 const saving = ref(false)
 const formRef = ref<InstanceType<typeof UiForm> | null>(null)
@@ -73,12 +83,13 @@ watch(
     form.status = statuses.find((s) => s.groupType === 'new')?.id ?? statuses[0]?.id ?? ''
     form.customerName = ''
     form.customerPhone = ''
-    form.deliveryType = 'delivery'
+    form.deliveryType = tenantStore.tenant?.deliveryEnabled ? 'delivery' : 'pickup'
     form.address = ''
     form.items = []
     form.deliveryFee = 0
     form.comment = ''
     form.paymentType = 'cash'
+    selectedBranchId.value = props.branchId
     itemsError.value = ''
   },
 )
@@ -99,9 +110,13 @@ const onSave = async () => {
 
   saving.value = true
   try {
+    const branchId = branchOptions.value.length > 1
+      ? selectedBranchId.value
+      : branchStore.branches[0]?.id ?? null
+
     const created = await api.orders.create({
       tenantId: props.tenantId,
-      branchId: props.branchId,
+      branchId,
       customer: { name: form.customerName, phone: form.customerPhone },
       items: form.items,
       deliveryType: form.deliveryType,
@@ -121,7 +136,6 @@ const onSave = async () => {
     saving.value = false
   }
 }
-
 </script>
 
 <style scoped lang="scss">

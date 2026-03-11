@@ -41,6 +41,9 @@
               :subtotal="subtotal"
               :total="total"
               :permissions="can"
+              :branch-options="branchOptions"
+              :branch-id="selectedBranchId"
+              @update:branch-id="selectedBranchId = $event"
             />
 
             <!-- Комментарий клиента (readonly) -->
@@ -81,7 +84,8 @@ import { getItemUnitPrice } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { useStatusColor } from '~/composables/useStatusColor'
+import { useBranchStore } from '~/stores/branch'
+import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
 import OrderFormFields from './OrderFormFields.vue'
 import OrderNotesSection from './OrderNotesSection.vue'
@@ -101,7 +105,11 @@ const emit = defineEmits<{
 const api = useDatabase()
 const { logSaveEvents } = useOrderEventLogger()
 const { statuses } = useOrderStatusesStore()
+const branchStore = useBranchStore()
 const { getStatusColor } = useStatusColor()
+
+const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
+const selectedBranchId = ref<string | null>(null)
 
 const saving = ref(false)
 const notesRefreshKey = ref(0)
@@ -174,6 +182,7 @@ watch(
   (open) => {
     if (!open || !props.order) return
     Object.assign(form, buildForm(props.order))
+    selectedBranchId.value = props.order.branchId
     notesRefreshKey.value++
   },
 )
@@ -203,6 +212,7 @@ const onSave = async () => {
       total: total.value,
       status: form.status,
       paymentType: form.paymentType,
+      branchId: selectedBranchId.value,
     })
 
     if (updated) {
