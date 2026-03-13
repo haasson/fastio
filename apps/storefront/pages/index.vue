@@ -1,66 +1,75 @@
 <template>
   <div class="page-root">
-
-    <!-- Липкий блок: шапка + категории -->
-    <div ref="stickyRef" class="sticky-top">
-      <header class="header">
-        <div class="container header-inner">
-          <img v-if="tenant?.theme?.logoUrl" class="logo" :src="tenant.theme.logoUrl" :alt="tenant.name" />
-        <span v-else class="logo-fallback">{{ tenant?.name ?? 'Лого' }}</span>
-          <div class="venue-info">
-          <span class="venue-hours">{{ tenant?.workingHours }}</span>
-          <a class="venue-phone" :href="`tel:${tenant?.contacts?.phone}`">{{ tenant?.contacts?.phone }}</a>
-        </div>
-          <button class="cart-btn" aria-label="Корзина">
-          <ShoppingCart :size="22" :stroke-width="1.7" />
-        </button>
-        </div>
-      </header>
-
-      <nav class="category-nav">
-        <div class="container">
-          Категории меню
-        </div>
-      </nav>
+    <!-- Липкий хэдер -->
+    <div ref="headerRef" class="sticky-header">
+      <SiteHeader :tenant="tenant" :header="layout.header" />
     </div>
 
-    <!-- Хиро блок — занимает оставшееся место в экране -->
-    <div class="hero" :style="{ height: heroHeight }">
-      Хиро
+    <!-- Липкая панель категорий -->
+    <div
+      v-if="layout.sections.categoryBar.enabled"
+      class="sticky-category-bar"
+      :style="{ top: `${headerHeight}px` }"
+    >
+      <CategoryBar :overflow="layout.sections.categoryBar.overflow" />
     </div>
 
-    <!-- Карточки категорий -->
-    <div class="container menu-section">
-      <div class="category-grid">
-        <div class="category-card">Категория 1</div>
-        <div class="category-card">Категория 2</div>
-        <div class="category-card">Категория 3</div>
-        <div class="category-card">Категория 4</div>
-        <div class="category-card">Категория 5</div>
-        <div class="category-card">Категория 6</div>
-      </div>
-    </div>
+    <!-- Динамические секции -->
+    <template v-for="key in layout.sectionsOrder" :key="key">
+      <HeroSection
+        v-if="key === 'hero' && layout.sections.hero.enabled"
+        :hero="layout.sections.hero"
+        :hero-content="content.hero"
+        :sticky-height="stickyTotalHeight"
+      />
+      <BannersSection v-else-if="key === 'banners' && layout.sections.banners.enabled" />
+      <MenuSection
+        v-else-if="key === 'menu' && layout.sections.menu.enabled"
+        :default-view="layout.sections.menu.defaultView"
+      />
+      <GallerySection v-else-if="key === 'gallery' && layout.sections.gallery.enabled" />
+      <ReviewsSection v-else-if="key === 'reviews' && layout.sections.reviews.enabled" />
+    </template>
 
-    <!-- Футер -->
-    <footer class="footer">
-      <div class="container">
-        Футер
-      </div>
-    </footer>
-
+    <SiteFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Tenant } from '@fastio/shared'
-import { ShoppingCart } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { useElementSize } from '@vueuse/core'
+import type { Tenant } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, deepMerge } from '@fastio/shared'
+import SiteHeader from '~/components/sections/SiteHeader.vue'
+import CategoryBar from '~/components/sections/CategoryBar.vue'
+import HeroSection from '~/components/sections/HeroSection.vue'
+import BannersSection from '~/components/sections/BannersSection.vue'
+import MenuSection from '~/components/sections/MenuSection.vue'
+import GallerySection from '~/components/sections/GallerySection.vue'
+import ReviewsSection from '~/components/sections/ReviewsSection.vue'
+import SiteFooter from '~/components/sections/SiteFooter.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
-const stickyRef = useTemplateRef('stickyRef')
-const { height: stickyHeight } = useElementSize(stickyRef)
-const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
+type SiteLayout = ReturnType<typeof defaultSiteLayout>
+
+const layout = computed(() =>
+  deepMerge(defaultSiteLayout(), (tenant.value?.siteLayout ?? {}) as Partial<SiteLayout>)
+)
+
+type SiteContentType = ReturnType<typeof defaultSiteContent>
+
+const content = computed(() =>
+  deepMerge(defaultSiteContent(), (tenant.value?.siteContent ?? {}) as Partial<SiteContentType>)
+)
+
+const headerRef = useTemplateRef('headerRef')
+const { height: headerHeight } = useElementSize(headerRef)
+
+// Для Hero нужна высота липкого блока (хэдер + категории, если показана)
+const CATEGORY_BAR_HEIGHT = 44 // px — синхронизировано с высотой CategoryBar
+const categoryBarHeight = computed(() => layout.value.sections.categoryBar.enabled ? CATEGORY_BAR_HEIGHT : 0)
+const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.value)
 </script>
 
 <style scoped>
@@ -70,113 +79,14 @@ const heroHeight = computed(() => `calc(100vh - ${stickyHeight.value}px)`)
   min-height: 100vh;
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
-}
-
-/* Липкий контейнер */
-.sticky-top {
+.sticky-header {
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-/* Шапка */
-.header {
-  background: var(--color-bg);
-  padding: 12px 0;
-}
-
-.header-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-}
-
-.logo-fallback {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.venue-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.cart-btn {
-  color: var(--color-text);
-  padding: 6px;
-  border-radius: 8px;
-  transition: opacity 0.15s;
-
-  &:hover {
-    opacity: 0.7;
-  }
-}
-
-.venue-hours {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.venue-phone {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-/* Навигация по категориям */
-.category-nav {
-  background: var(--color-surface);
-  padding: 10px 0;
-}
-
-/* Хиро */
-.hero {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-}
-
-/* Категории */
-.menu-section {
-  padding: 32px 20px;
-}
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.category-card {
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  padding: 60px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Футер */
-.footer {
-  margin-top: auto;
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  padding: 24px 0;
+.sticky-category-bar {
+  position: sticky;
+  z-index: 99;
 }
 </style>

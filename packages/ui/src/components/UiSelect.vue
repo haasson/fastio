@@ -14,13 +14,10 @@
         :size="computedSize"
         class="select"
         :show-checkmark="false"
-        :max-tag-count="1"
-        :render-tag="renderTag"
-        :render-label="renderLabel"
+        :max-tag-count="isMultiple ? 'responsive' : 1"
         :status="hasError ? 'error' : undefined"
         :options="filteredOptions"
         v-bind="selectAttrs"
-        @click.stop="handleClick"
         @update:show="handleDropdownToggle"
       >
         <template #arrow>
@@ -34,7 +31,7 @@
             />
           </slot>
         </template>
-        <template v-if="isFilterable" #header>
+        <template v-if="props.filterable" #header>
           <ui-input
             ref="filterInputRef"
             v-model="filterQuery"
@@ -55,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref, useAttrs } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
 import { NSelect, type SelectOption } from 'naive-ui'
 import { UiIcon } from '@fastio/icons'
 import UiInput from './UiInput.vue'
@@ -64,7 +61,6 @@ import FormItem from './internal/FormItem.vue'
 import { useResponsiveSize } from '@fastio/kit'
 import type { ResponsiveSizeMap, Size } from '@fastio/kit'
 import type { ValidationRule } from '@fastio/kit'
-import UiCheckbox from './UiCheckbox.vue'
 
 export type UiSelectProps = {
   label?: string
@@ -100,7 +96,6 @@ const computedSize = useResponsiveSize({
 })
 
 const isMultiple = computed(() => 'multiple' in attrs)
-const isFilterable = computed(() => props.filterable)
 
 const iconSize = computed(() => {
   switch (computedSize.value) {
@@ -108,38 +103,6 @@ const iconSize = computed(() => {
     case 'large': return 40
     default: return 24
   }
-})
-
-const checkboxSize = computed(() => {
-  switch (computedSize.value) {
-    case 'tiny':
-    case 'small':
-      return 'medium'
-    default:
-      return 'large'
-  }
-})
-
-const optionsMap = computed(() => {
-  const object: Record<string | number, string> = {}
-  const options = (attrs.options as SelectOption[]) || []
-
-  options.forEach((option) => {
-    if (option.type === 'group' && Array.isArray(option.children)) {
-      option.children.forEach((child: SelectOption) => {
-        const value = child.value
-        const label = child.label
-
-        if (value !== undefined && label !== undefined) {
-          object[value] = typeof label === 'string' ? label : String(label)
-        }
-      })
-    } else if (option.value !== undefined && option.label !== undefined) {
-      object[option.value] = typeof option.label === 'string' ? option.label : String(option.label)
-    }
-  })
-
-  return object
 })
 
 const matchesQuery = (label: unknown, query: string) => {
@@ -175,58 +138,12 @@ const handleDropdownToggle = (show: boolean) => {
   if (show) {
     filterQuery.value = ''
 
-    if (isFilterable.value) {
+    if (props.filterable) {
       setTimeout(() => {
         filterInputRef.value?.$el?.querySelector('input')?.focus()
       }, 50)
     }
   }
-}
-
-const handleClick = () => {
-  // placeholder for future bottom sheet support
-}
-
-const renderTag = ({ option }: { option: SelectOption }) => {
-  if (!Array.isArray(selectedValues.value)) {
-    return h('span', option.label as string)
-  }
-
-  return selectedValues.value.map((el) => optionsMap.value[el]).join(', ')
-}
-
-const renderLabel = (option: SelectOption) => {
-  if (option.type === 'group') {
-    return h('span', option.label as string)
-  }
-
-  if (isMultiple.value) {
-    const isChecked = Array.isArray(selectedValues.value) && selectedValues.value.includes(option.value!)
-
-    return h(
-      'div',
-      {
-        style: {
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          width: '100%',
-        },
-      },
-      [
-        h(UiCheckbox, {
-          modelValue: isChecked,
-          size: checkboxSize.value as 'medium' | 'large',
-          style: {
-            pointerEvents: 'none',
-          },
-        }),
-        h('span', option.label as string),
-      ],
-    )
-  }
-
-  return h('span', option.label as string)
 }
 
 defineOptions({

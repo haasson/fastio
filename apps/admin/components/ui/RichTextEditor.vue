@@ -23,6 +23,14 @@
         <button
           type="button"
           class="tool"
+          :class="{ active: editor?.isActive('heading', { level: 1 }) }"
+          @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
+        >
+          H1
+        </button>
+        <button
+          type="button"
+          class="tool"
           :class="{ active: editor?.isActive('heading', { level: 2 }) }"
           @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
         >
@@ -36,6 +44,11 @@
         >
           H3
         </button>
+        <div class="sep" />
+        <select class="font-size-select" :value="activeFontSize" @change="setFontSize">
+          <option value="">Размер</option>
+          <option v-for="size in fontSizes" :key="size.value" :value="size.value">{{ size.label }}</option>
+        </select>
         <div class="sep" />
         <button
           type="button"
@@ -60,9 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { watch, onBeforeUnmount } from 'vue'
+import { computed, watch, onBeforeUnmount } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import { TextStyle, FontSize } from '@tiptap/extension-text-style'
 
 const props = defineProps<{
   modelValue: string
@@ -73,13 +87,40 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
+const fontSizes = [
+  { label: 'XS — 12px', value: '12px' },
+  { label: 'S — 14px', value: '14px' },
+  { label: 'M — 16px', value: '16px' },
+  { label: 'L — 20px', value: '20px' },
+  { label: 'XL — 24px', value: '24px' },
+  { label: 'XXL — 32px', value: '32px' },
+]
+
 const editor = useEditor({
   content: props.modelValue,
-  extensions: [StarterKit],
+  extensions: [StarterKit, TextStyle, FontSize],
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
   },
 })
+
+const activeFontSize = computed(() => {
+  if (!editor.value) return ''
+  const attrs = editor.value.getAttributes('textStyle')
+
+  return attrs.fontSize ?? ''
+})
+
+const setFontSize = (e: Event) => {
+  // eslint-disable-next-line no-undef
+  const val = (e.target as HTMLSelectElement).value
+
+  if (!val) {
+    editor.value?.chain().focus().unsetFontSize().run()
+  } else {
+    editor.value?.chain().focus().setFontSize(val).run()
+  }
+}
 
 watch(() => props.modelValue, (val) => {
   if (editor.value && editor.value.getHTML() !== val) {
@@ -91,8 +132,6 @@ onBeforeUnmount(() => editor.value?.destroy())
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/media-queries' as *;
-
 .editor-root {
   display: flex;
   flex-direction: column;
@@ -123,6 +162,7 @@ onBeforeUnmount(() => editor.value?.destroy())
   padding: 6px 8px;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
+  flex-wrap: wrap;
 }
 
 .tool {
@@ -151,6 +191,23 @@ onBeforeUnmount(() => editor.value?.destroy())
   }
 }
 
+.font-size-select {
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+
+  &:focus {
+    border-color: var(--color-primary);
+    color: var(--color-text);
+  }
+}
+
 .sep {
   width: 1px;
   height: 18px;
@@ -168,6 +225,12 @@ onBeforeUnmount(() => editor.value?.destroy())
   :deep(.ProseMirror) {
     outline: none;
     min-height: 120px;
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 14px 0 6px;
+    }
 
     h2 {
       font-size: 17px;

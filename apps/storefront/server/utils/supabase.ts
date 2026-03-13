@@ -18,12 +18,16 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     slug: row.slug as string,
     customDomain: row.custom_domain as string | null,
     theme: row.theme as Tenant['theme'],
+    siteLayout: row.site_layout as Tenant['siteLayout'],
+    siteContent: row.site_content as Tenant['siteContent'],
     contacts: row.contacts as Tenant['contacts'],
     workingHours: row.working_hours as Tenant['workingHours'],
     notifications: row.notifications as Tenant['notifications'],
     subscription: row.subscription as Tenant['subscription'],
+    deliveryEnabled: row.delivery_enabled as boolean,
     deliveryMinOrder: row.delivery_min_order as number,
     deliveryFee: row.delivery_fee as number,
+    deliveryDescription: row.delivery_description as string,
     createdAt: row.created_at as string,
   }
 }

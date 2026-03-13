@@ -172,22 +172,29 @@ const handleLogout = async () => {
   await navigateTo('/login')
 }
 
-const pageTitles: Record<string, string> = {
-  '/': 'Дашборд',
-  '/menu': 'Меню',
-  '/menu/modifiers': 'Модификаторы',
-  '/orders': 'Заказы',
-  '/promotions': 'Акции',
-  '/settings': 'Настройки',
-}
+const pageTitles: [string, string][] = [
+  ['/menu/modifiers', 'Модификаторы'],
+  ['/menu', 'Меню'],
+  ['/orders', 'Заказы'],
+  ['/promotions', 'Акции'],
+  ['/appearance', 'Оформление'],
+  ['/settings', 'Настройки'],
+  ['/', 'Дашборд'],
+]
 
-const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
+const currentPageTitle = computed(() => {
+  const entry = pageTitles.find(([path]) => route.path === path || route.path.startsWith(`${path}/`))
+
+  return entry?.[1] ?? ''
+})
 </script>
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .layout-root {
+  --topbar-height: 60px;
+  --content-padding: 24px;
   display: flex;
   min-height: 100vh;
   background: var(--color-bg-page);
@@ -367,7 +374,7 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 }
 
 .topbar {
-  height: 60px;
+  height: var(--topbar-height);
   background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -386,7 +393,7 @@ const currentPageTitle = computed(() => pageTitles[route.path] ?? '')
 
 .content {
   flex: 1;
-  padding: 24px;
+  padding: var(--content-padding);
 
   &.content-gate {
     display: flex;

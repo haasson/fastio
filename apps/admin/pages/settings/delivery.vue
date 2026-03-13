@@ -95,8 +95,8 @@ import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
 import { useZoneEditor } from '~/composables/delivery/useZoneEditor'
-import DeliveryZoneMap from './DeliveryZoneMap.vue'
-import DeliveryZonePanel from './DeliveryZonePanel.vue'
+import DeliveryZoneMap from '~/components/settings/DeliveryZoneMap.vue'
+import DeliveryZonePanel from '~/components/settings/DeliveryZonePanel.vue'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()

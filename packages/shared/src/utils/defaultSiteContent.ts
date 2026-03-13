@@ -1,0 +1,10 @@
+import type { SiteContent } from '../types/tenant'
+
+export const defaultSiteContent = (): SiteContent => ({
+  logo: null,
+  hero: {
+    bgUrl: null,
+    text: null,
+  },
+  banners: [],
+})

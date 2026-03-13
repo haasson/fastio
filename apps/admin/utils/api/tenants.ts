@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, deepMerge } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
@@ -14,7 +15,9 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     name: row.name,
     slug: row.slug,
     customDomain: row.custom_domain,
-    theme: row.theme,
+    theme: { ...defaultTheme(), ...row.theme },
+    siteLayout: deepMerge(defaultSiteLayout(), row.site_layout ?? {}),
+    siteContent: deepMerge(defaultSiteContent(), row.site_content ?? {}),
     contacts: row.contacts,
     workingHours: row.working_hours,
     notifications: row.notifications,
@@ -32,6 +35,8 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   slug: data.slug,
   custom_domain: data.customDomain,
   theme: data.theme,
+  site_layout: data.siteLayout,
+  site_content: data.siteContent,
   contacts: data.contacts,
   working_hours: data.workingHours,
   notifications: data.notifications,
@@ -53,12 +58,12 @@ export const tenantsApi = {
     await query(sb.from('tenants').update(tenantToDb(data)).eq('id', id))
   },
 
-  async uploadLogo(sb: SupabaseClient, tenantId: string, file: File): Promise<string> {
+  async uploadAsset(sb: SupabaseClient, tenantId: string, file: File, filename: string): Promise<string> {
     const isSvg = file.type === 'image/svg+xml'
     const blob = isSvg ? file : await optimizeImage(file)
     const ext = isSvg ? 'svg' : 'webp'
     const contentType = isSvg ? 'image/svg+xml' : 'image/webp'
-    const path = `${tenantId}/logo.${ext}`
+    const path = `${tenantId}/${filename}.${ext}`
 
     await query(sb.storage.from('tenant-assets').upload(path, blob, { contentType, upsert: true }))
 

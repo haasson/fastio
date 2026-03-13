@@ -2,6 +2,7 @@ import { defineNuxtRouteMiddleware, navigateTo } from '#imports'
 import { watch } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
+import { INVITE_PENDING_KEY } from '~/utils/constants'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return
@@ -24,7 +25,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Invite-flow: пока пароль не сохранён — держим юзера на /set-password
-  if (sessionStorage.getItem('fastio:invite-pending') && to.path !== '/set-password') {
+  if (sessionStorage.getItem(INVITE_PENDING_KEY) && to.path !== '/set-password') {
     return navigateTo('/set-password')
   }
 

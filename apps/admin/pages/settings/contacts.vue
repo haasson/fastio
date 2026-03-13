@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiText, UiRadioGroup, useMessage } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, UiRadioGroup, useMessage } from '@fastio/ui'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Tenant } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'

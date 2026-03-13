@@ -18,7 +18,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { definePageMeta } from '#imports'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 import OrderStatusList from '~/components/orders/OrderStatusList.vue'
 import OrderList from '~/components/orders/OrderList.vue'
@@ -26,8 +25,6 @@ import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useOrderCounts } from '~/composables/data/useOrderCounts'
-
-definePageMeta({ middleware: 'auth' })
 
 const { count: newOrderCount, reset: resetOrderCount } = useNewOrderCounter()
 

@@ -60,6 +60,7 @@ import { definePageMeta, useRoute, navigateTo } from '#imports'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
+import { INVITE_PENDING_KEY } from '~/utils/constants'
 
 definePageMeta({ layout: false })
 
@@ -97,7 +98,7 @@ const handleSubmit = async () => {
 
     if (session) {
       await api.functions.acceptInvite({ token: inviteToken })
-      sessionStorage.removeItem('fastio:invite-pending')
+      sessionStorage.removeItem(INVITE_PENDING_KEY)
       await navigateTo('/')
     } else {
       // Продакшн: ждём подтверждения email
@@ -118,7 +119,7 @@ const handleSubmit = async () => {
   if (updateError) {
     error.value = 'Не удалось сохранить. Попробуйте ещё раз'
   } else {
-    sessionStorage.removeItem('fastio:invite-pending')
+    sessionStorage.removeItem(INVITE_PENDING_KEY)
     await navigateTo('/')
   }
 

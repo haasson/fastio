@@ -64,11 +64,13 @@ import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, UiSwitch, useMessage 
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { Tenant } from '@fastio/shared'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
+import { useTenantStore } from '~/stores/tenant'
 
 const { blinkingCounter } = useNotificationPrefs()
 
+const tenantStore = useTenantStore()
+
 const props = defineProps<{ tenant: Tenant }>()
-const emit = defineEmits<{ save: [data: Partial<Tenant>] }>()
 
 const form = reactive({
   email: props.tenant.notifications?.email ?? '',
@@ -86,7 +88,7 @@ const { success } = useMessage()
 const handleSave = async () => {
   saving.value = true
   try {
-    await emit('save', {
+    await tenantStore.update({
       notifications: {
         email: form.email || null,
         telegramChatId: form.telegramChatId || null,

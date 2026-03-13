@@ -59,15 +59,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { definePageMeta } from '#imports'
 import { UiButton, UiText, UiSkeleton, UiSwitch, UiBadge, UiTag } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useModifierGroups } from '~/composables/data/useModifierGroups'
 import ModifierGroupFormModal from '~/components/menu/ModifierGroupFormModal.vue'
-
-definePageMeta({ middleware: 'auth' })
 
 const tenantStore = useTenantStore()
 

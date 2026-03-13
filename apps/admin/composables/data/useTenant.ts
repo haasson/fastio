@@ -77,6 +77,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     if (!tenant.value) return
 
     await api.tenants.update(tenant.value.id, data)
+    tenant.value = { ...tenant.value, ...data }
   }
 
   const dispose = () => {

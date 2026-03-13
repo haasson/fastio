@@ -1,6 +1,7 @@
 import { defineNuxtPlugin, useRuntimeConfig } from '#imports'
 import { createClient } from '@supabase/supabase-js'
 import { useAuthStore } from '~/stores/auth'
+import { INVITE_PENDING_KEY } from '~/utils/constants'
 
 export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()
@@ -8,7 +9,7 @@ export default defineNuxtPlugin(async () => {
   // Читаем хеш до createClient — Supabase может очистить его при инициализации.
   // sessionStorage надёжнее стора: не затрагивается Supabase и SSR-гидрацией.
   if (window.location.hash.includes('type=invite')) {
-    sessionStorage.setItem('fastio:invite-pending', '1')
+    sessionStorage.setItem(INVITE_PENDING_KEY, '1')
   }
 
   const supabase = createClient(

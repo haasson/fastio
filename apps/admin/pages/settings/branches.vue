@@ -24,7 +24,7 @@
           <UiText v-if="branch.phone" size="tiny" class="branch-phone">{{ branch.phone }}</UiText>
           <div v-if="deliveryEnabled && hasAnyZones && branchHasNoZones(branch.id)" class="branch-warning">
             <span class="branch-warning-text">Нет зон доставки — доставка не работает.</span>
-            <NuxtLink to="/settings#delivery" class="branch-warning-link">Настроить зоны</NuxtLink>
+            <NuxtLink to="/settings/delivery" class="branch-warning-link">Настроить зоны</NuxtLink>
           </div>
         </div>
 
@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
@@ -87,7 +87,7 @@ import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
-import BranchDrawer from './BranchDrawer.vue'
+import BranchDrawer from '~/components/settings/BranchDrawer.vue'
 import useDrawer from '~/composables/ui/useDrawer'
 
 const tenantStore = useTenantStore()
@@ -104,7 +104,6 @@ const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
 
 const { isOpen: drawerOpen, data: editingBranch, open: openBranchDrawer, close: closeBranchDrawer } = useDrawer<Branch>()
-const archivingId = ref<string | null>(null)
 
 const openAdd = () => openBranchDrawer(null)
 const openEdit = (branch: Branch) => openBranchDrawer(branch)
@@ -119,10 +118,7 @@ const handleSave = async (data: BranchFormData) => {
 }
 
 const handleArchive = async (branch: Branch) => {
-  archivingId.value = branch.id
   const hasActive = await api.branches.hasActiveOrders(branch.id, tenantId.value)
-
-  archivingId.value = null
 
   if (hasActive) {
     await confirm({

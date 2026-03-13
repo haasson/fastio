@@ -5,10 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { definePageMeta } from '#imports'
 import { UiTitle } from '@fastio/ui'
-
-definePageMeta({ middleware: 'auth' })
 </script>
 
 <style scoped lang="scss">

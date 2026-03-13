@@ -4,6 +4,7 @@ import type {
   TenantContacts,
   TenantNotifications,
   TenantSubscription,
+  SiteContent,
   OrderCustomer,
   OrderItem,
   OrderDeliveryType,
@@ -20,6 +21,8 @@ export type TenantRow = {
   slug: string
   custom_domain: string | null
   theme: TenantTheme
+  site_layout: Record<string, unknown>
+  site_content: SiteContent
   contacts: TenantContacts
   working_hours: string
   notifications: TenantNotifications

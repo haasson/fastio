@@ -1,12 +1,23 @@
 <template>
-  <div class="upload-root">
+  <div class="upload-root" :class="{ 'upload-root--compact': compact }">
     <!-- Preview state -->
     <div v-if="previewUrl" class="preview" @click="openPicker">
       <img :src="previewUrl" class="photo" alt="" />
       <div class="overlay">
-        <UiText size="small" color="white">Заменить</UiText>
+        <UiIcon
+          v-if="compact"
+          name="pencil"
+          :size="14"
+          color="white"
+        />
+        <UiText v-else size="small" color="white">Заменить</UiText>
       </div>
-      <button type="button" class="remove-btn" @click.stop="remove">
+      <button
+        v-if="!compact"
+        type="button"
+        class="remove-btn"
+        @click.stop="remove"
+      >
         <UiIcon name="close" :size="14" color="white" />
       </button>
     </div>
@@ -21,40 +32,41 @@
       @dragleave="dragging = false"
       @drop.prevent="onDrop"
     >
-      <UiIcon name="image" :size="32" color="var(--color-text-tertiary)" />
-      <UiText size="small" color="var(--color-text-secondary)">
+      <UiIcon name="plus" :size="compact ? 20 : 32" color="var(--color-text-tertiary)" />
+      <UiText v-if="!compact" size="small" color="var(--color-text-secondary)">
         Перетащите или нажмите для загрузки
       </UiText>
     </div>
 
-    <!-- URL input -->
-    <div v-if="!previewUrl" class="url-row">
-      <UiInput
-        v-model="urlInput"
-        placeholder="или вставьте ссылку на изображение"
-        :clearable="false"
-        @keydown.enter="loadFromUrl"
-      />
-      <UiButton
-        size="small"
-        type="primary"
-        :disabled="!urlInput.trim()"
-        :loading="urlLoading"
-        @click="loadFromUrl"
-      >
-        Загрузить
-      </UiButton>
-    </div>
-
-    <!-- URL error -->
-    <UiText v-if="urlError" size="tiny" color="var(--color-error)">
-      {{ urlError }}
-    </UiText>
+    <!-- URL input — only in default mode -->
+    <template v-if="!compact && !previewUrl">
+      <div class="url-row">
+        <UiInput
+          v-model="urlInput"
+          placeholder="или вставьте ссылку на изображение"
+          :clearable="false"
+          @keydown.enter="loadFromUrl"
+        />
+        <UiButton
+          size="small"
+          type="primary"
+          :disabled="!urlInput.trim()"
+          :loading="urlLoading"
+          @click="loadFromUrl"
+        >
+          Загрузить
+        </UiButton>
+      </div>
+      <UiText v-if="urlError" size="tiny" color="var(--color-error)">
+        {{ urlError }}
+      </UiText>
+    </template>
 
     <input
       ref="inputRef"
       type="file"
       accept="image/*"
+      :multiple="multiple"
       class="hidden-input"
       @change="onFileChange"
     />
@@ -68,6 +80,8 @@ import { useRuntimeConfig } from '#imports'
 
 const props = defineProps<{
   modelValue: string | null
+  compact?: boolean
+  multiple?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -92,20 +106,24 @@ const setFile = (file: File) => {
   emit('pending', file)
 }
 
-const onFileChange = (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
+const processFiles = (files: File[]) => {
+  const toProcess = props.multiple ? files : files.slice(0, 1)
 
-  if (!file) return
-  setFile(file)
+  toProcess.forEach(setFile)
+}
+
+const onFileChange = (e: Event) => {
+  const files = Array.from((e.target as HTMLInputElement).files ?? [])
+
+  processFiles(files)
   ;(e.target as HTMLInputElement).value = ''
 }
 
 const onDrop = (e: DragEvent) => {
   dragging.value = false
-  const file = e.dataTransfer?.files?.[0]
+  const files = Array.from(e.dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'))
 
-  if (!file || !file.type.startsWith('image/')) return
-  setFile(file)
+  processFiles(files)
 }
 
 const loadFromUrl = async () => {
@@ -130,7 +148,6 @@ const loadFromUrl = async () => {
     }
 
     const contentType = response.headers.get('content-type') ?? 'image/jpeg'
-
     const blob = await response.blob()
     const ext = contentType.split('/')[1]?.split(';')[0] ?? 'jpg'
     const file = new File([blob], `url-image.${ext}`, { type: contentType })
@@ -164,6 +181,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+
+  &--compact {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .zone {
@@ -177,6 +199,14 @@ onUnmounted(() => {
   gap: 8px;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
+
+  .upload-root--compact & {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+  }
 
   &:hover,
   &.dragging {
@@ -202,6 +232,12 @@ onUnmounted(() => {
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
+
+  .upload-root--compact & {
+    aspect-ratio: unset;
+    height: 100%;
+    border-radius: 0;
+  }
 }
 
 .photo {

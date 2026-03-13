@@ -1,10 +1,6 @@
 <template>
   <div class="menu-root">
-    <div v-if="!tenantStore.tenant && !tenantStore.loading" class="empty-state">
-      <p>Заведение не найдено. Обратитесь в поддержку.</p>
-    </div>
-
-    <template v-else-if="tenantStore.tenant">
+    <template v-if="tenantStore.tenant">
       <MenuCategoryList
         v-model="selectedCategoryId"
         :tenant-id="tenantId"
@@ -23,14 +19,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, shallowRef } from 'vue'
-import { definePageMeta } from '#imports'
 import type { Category } from '@fastio/shared'
 import MenuCategoryList from '~/components/menu/CategoryList.vue'
 import MenuDishList from '~/components/menu/DishList.vue'
 import { useTenantStore } from '~/stores/tenant'
 import useDishCounts from '~/composables/data/useDishCounts'
-
-definePageMeta({ middleware: 'auth' })
 
 const tenantStore = useTenantStore()
 
@@ -58,9 +51,4 @@ const onCategoriesLoaded = (cats: Category[]) => {
   height: 100%;
 }
 
-.empty-state {
-  padding: 40px;
-  text-align: center;
-  color: var(--color-text-secondary);
-}
 </style>
