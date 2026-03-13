@@ -19,6 +19,7 @@ export type OrderItem = {
   id?: string
   orderId?: string
   dishId: string | null
+  comboId: string | null
   dishName: string
   categoryName: string | null
   price: number

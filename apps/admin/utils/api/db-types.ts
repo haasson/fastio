@@ -90,6 +90,7 @@ export type ComboItemRow = {
   combo_id: string
   dish_id: string
   sort_order: number
+  modifier_option_ids: string[]
 }
 
 export type DishRow = {
@@ -126,6 +127,7 @@ export type OrderItemRow = {
   id: string
   order_id: string
   dish_id: string | null
+  combo_id: string | null
   dish_name: string
   category_name: string | null
   price: number

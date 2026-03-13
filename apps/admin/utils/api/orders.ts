@@ -50,6 +50,7 @@ const mapOrderItem = (row: OrderItemRow): OrderItem => ({
   id: row.id,
   orderId: row.order_id,
   dishId: row.dish_id,
+  comboId: row.combo_id,
   dishName: row.dish_name,
   categoryName: row.category_name,
   price: row.price,
@@ -106,6 +107,7 @@ const toOrderPayload = (data: OrderUpdateData): Partial<OrderRow> => filterDefin
 const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id'>[] => items.map((item, i) => ({
   order_id: orderId,
   dish_id: item.dishId,
+  combo_id: item.comboId ?? null,
   dish_name: item.dishName,
   category_name: item.categoryName ?? null,
   price: item.price,

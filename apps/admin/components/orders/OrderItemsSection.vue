@@ -70,12 +70,13 @@
       </UiButton>
     </div>
 
-    <OrderAddDishModal
+    <DishPickerModal
       :model-value="addDishModalOpen"
       :tenant-id="tenantId"
       :edit-item="editingItem"
-      @add="addDish"
-      @update="updateDishItem"
+      show-combos
+      show-ingredients
+      @select="onPickerSelect"
       @update:model-value="onAddDishModalClose"
     />
   </section>
@@ -86,7 +87,7 @@ import { computed } from 'vue'
 import { UiButton, UiIcon, UiTag } from '@fastio/ui'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
-import OrderAddDishModal from './OrderAddDishModal.vue'
+import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 import useDrawer from '~/composables/ui/useDrawer'
 
 const props = defineProps<{
@@ -101,8 +102,12 @@ const emit = defineEmits<{
 
 const { isOpen: addDishModalOpen, data: editingItemIndex, open: openAddDishModal, close: closeAddDishModal } = useDrawer<number>()
 
-const editingItem = computed(() => editingItemIndex.value !== null ? props.items[editingItemIndex.value!] : undefined,
-)
+const editingItem = computed(() => {
+  if (editingItemIndex.value === null) return undefined
+  const item = props.items[editingItemIndex.value!]
+
+  return { dishId: item.dishId, comboId: item.comboId, modifiers: item.modifiers, removedIngredients: item.removedIngredients }
+})
 
 const mutate = (fn: (items: OrderItem[]) => void) => {
   const copy = props.items.map((i) => ({ ...i }))
@@ -128,23 +133,32 @@ const onAddDishModalClose = (open: boolean) => {
   if (!open) closeAddDishModal()
 }
 
-const addDish = (item: OrderItem) => {
-  mutate((items) => {
-    const existing = items.find((i) => i.dishId === item.dishId)
+const onPickerSelect = (result: DishPickerResult) => {
+  const isEdit = editingItemIndex.value !== null
 
-    if (existing && !item.removedIngredients?.length) {
-      existing.quantity += 1
-    } else {
-      items.push({ ...item })
-    }
-  })
-  closeAddDishModal()
-}
+  const item: OrderItem = {
+    dishId: result.dishId,
+    comboId: result.comboId,
+    dishName: result.dishName,
+    categoryName: result.categoryName,
+    price: result.price,
+    quantity: isEdit ? props.items[editingItemIndex.value!].quantity : 1,
+    removedIngredients: result.removedIngredients,
+    modifiers: result.modifiers,
+  }
 
-const updateDishItem = (item: OrderItem) => {
-  if (editingItemIndex.value !== null) {
+  if (isEdit) {
     mutate((items) => {
       items[editingItemIndex.value!] = item
+    })
+  } else {
+    mutate((items) => {
+      const existing = item.dishId
+        ? items.find((i) => i.dishId === item.dishId && !item.removedIngredients?.length)
+        : undefined
+
+      if (existing) existing.quantity += 1
+      else items.push({ ...item })
     })
   }
   closeAddDishModal()

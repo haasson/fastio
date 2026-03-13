@@ -61,6 +61,11 @@ export type ComboItem = {
   order: number
 }
 
+export type ComboItemInput = {
+  dishId: string
+  modifierOptionIds: string[]
+}
+
 export type Combo = {
   id: string
   tenantId: string
@@ -81,5 +86,5 @@ export type ComboFormData = {
   photos: string[]
   tags: DishTag[]
   active: boolean
-  dishIds: string[]
+  items: ComboItemInput[]
 }

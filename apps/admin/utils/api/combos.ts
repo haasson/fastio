@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Combo, ComboFormData, ComboBranchSetting } from '@fastio/shared'
+import type { Combo, ComboFormData, ComboBranchSetting, ComboItemInput } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { ComboRow, ComboBranchSettingRow } from './db-types'
 import { optimizeImage } from '~/utils/imageOptimize'
@@ -22,6 +22,14 @@ export const mapCombo = (raw: Record<string, unknown>): Combo => {
 }
 
 export const combosApi = {
+  async listAllActive(sb: SupabaseClient, tenantId: string): Promise<Combo[]> {
+    const data = await query(
+      sb.from('combos').select('*').eq('tenant_id', tenantId).eq('active', true).order('sort_order'),
+    )
+
+    return (data ?? []).map(mapCombo)
+  },
+
   async list(sb: SupabaseClient, tenantId: string, categoryId: string): Promise<Combo[]> {
     const data = await query(
       sb.from('combos').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).order('sort_order'),
@@ -54,10 +62,15 @@ export const combosApi = {
 
     const combo = mapCombo(result)
 
-    if (data.dishIds.length > 0) {
+    if (data.items.length > 0) {
       await query(
         sb.from('combo_items').insert(
-          data.dishIds.map((dishId, i) => ({ combo_id: combo.id, dish_id: dishId, sort_order: i })),
+          data.items.map((item, i) => ({
+            combo_id: combo.id,
+            dish_id: item.dishId,
+            sort_order: i,
+            modifier_option_ids: item.modifierOptionIds,
+          })),
         ),
       )
     }
@@ -79,16 +92,23 @@ export const combosApi = {
 
     if (!result) return null
 
-    if (data.dishIds !== undefined) {
-      if (data.dishIds.length > 0) {
+    if (data.items !== undefined) {
+      if (data.items.length > 0) {
         await query(
           sb.from('combo_items').upsert(
-            data.dishIds.map((dishId, i) => ({ combo_id: id, dish_id: dishId, sort_order: i })),
+            data.items.map((item, i) => ({
+              combo_id: id,
+              dish_id: item.dishId,
+              sort_order: i,
+              modifier_option_ids: item.modifierOptionIds,
+            })),
             { onConflict: 'combo_id,dish_id' },
           ),
         )
+        const dishIds = data.items.map((item) => item.dishId)
+
         await query(
-          sb.from('combo_items').delete().eq('combo_id', id).not('dish_id', 'in', `(${data.dishIds.join(',')})`),
+          sb.from('combo_items').delete().eq('combo_id', id).not('dish_id', 'in', `(${dishIds.join(',')})`),
         )
       } else {
         await query(sb.from('combo_items').delete().eq('combo_id', id))
@@ -112,12 +132,15 @@ export const combosApi = {
     )
   },
 
-  async getDishIds(sb: SupabaseClient, comboId: string): Promise<string[]> {
+  async getItems(sb: SupabaseClient, comboId: string): Promise<ComboItemInput[]> {
     const data = await query(
-      sb.from('combo_items').select('dish_id').eq('combo_id', comboId).order('sort_order'),
+      sb.from('combo_items').select('dish_id, modifier_option_ids').eq('combo_id', comboId).order('sort_order'),
     )
 
-    return (data ?? []).map((row: Record<string, unknown>) => row.dish_id as string)
+    return (data ?? []).map((row: Record<string, unknown>) => ({
+      dishId: row.dish_id as string,
+      modifierOptionIds: (row.modifier_option_ids as string[] | null) ?? [],
+    }))
   },
 
   async countsByCategory(sb: SupabaseClient, tenantId: string): Promise<Record<string, number>> {

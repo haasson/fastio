@@ -27,10 +27,11 @@
 
       <UiCollapse :expanded-names="['composition']" class="sections">
         <ComboCompositionSection
-          v-model="form.dishIds"
+          v-model="form.items"
           :tenant-id="tenantId"
           :categories="categories"
           :refresh-key="refreshKey"
+          :combo-price="form.price"
         />
 
         <TagsSection v-model="form.tags" />
@@ -52,7 +53,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { UiDrawer, UiForm, UiCollapse } from '@fastio/ui'
-import type { Combo, DishTag, Category } from '@fastio/shared'
+import type { Combo, DishTag, Category, ComboItemInput } from '@fastio/shared'
 import type { ComboFormData } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
@@ -97,7 +98,7 @@ const defaultForm = () => ({
   price: null as number | null,
   tags: [] as DishTag[],
   active: true,
-  dishIds: [] as string[],
+  items: [] as ComboItemInput[],
 })
 
 const form = reactive(defaultForm())
@@ -120,7 +121,7 @@ watch(
       form.price = props.combo.price
       form.tags = [...props.combo.tags]
       form.active = props.combo.active
-      form.dishIds = await api.combos.getDishIds(props.combo.id)
+      form.items = await api.combos.getItems(props.combo.id)
     } else {
       originalPhotoUrl.value = null
       currentPhotoUrl.value = null
@@ -153,7 +154,7 @@ const onConfirm = async () => {
       photos,
       tags: form.tags,
       active: form.active,
-      dishIds: form.dishIds,
+      items: form.items,
     }
 
     if (props.combo) {
