@@ -29,7 +29,7 @@ export const mapDish = (raw: Record<string, unknown>): Dish => {
 export const dishesApi = {
   async listAllActive(sb: SupabaseClient, tenantId: string): Promise<Dish[]> {
     const data = await query(
-      sb.from('dishes').select('*').eq('tenant_id', tenantId).eq('active', true).order('name'),
+      sb.from('dishes').select('*').eq('tenant_id', tenantId).is('deleted_at', null).eq('active', true).order('name'),
     )
 
     return (data ?? []).map(mapDish)
@@ -37,7 +37,7 @@ export const dishesApi = {
 
   async listByTag(sb: SupabaseClient, tenantId: string, tag: string): Promise<Dish[]> {
     const [dishes, tagOrders] = await Promise.all([
-      query(sb.from('dishes').select('*').eq('tenant_id', tenantId).contains('tags', [tag])),
+      query(sb.from('dishes').select('*').eq('tenant_id', tenantId).is('deleted_at', null).contains('tags', [tag])),
       query(sb.from('dish_tag_orders').select('dish_id, sort_order').eq('tenant_id', tenantId).eq('tag', tag)),
     ])
 
@@ -65,7 +65,7 @@ export const dishesApi = {
   },
 
   async list(sb: SupabaseClient, tenantId: string, categoryId: string) {
-    const data = await query(sb.from('dishes').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).order('sort_order'))
+    const data = await query(sb.from('dishes').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).is('deleted_at', null).order('sort_order'))
 
     return (data ?? []).map(mapDish)
   },
@@ -108,7 +108,7 @@ export const dishesApi = {
   },
 
   async remove(sb: SupabaseClient, id: string) {
-    await query(sb.from('dishes').delete().eq('id', id))
+    await query(sb.from('dishes').update({ deleted_at: new Date().toISOString() }).eq('id', id))
   },
 
   async reorder(sb: SupabaseClient, items: { id: string; order: number }[]) {
@@ -120,7 +120,7 @@ export const dishesApi = {
   },
 
   async countsByTag(sb: SupabaseClient, tenantId: string): Promise<Record<string, number>> {
-    const data = await query(sb.from('dishes').select('tags').eq('tenant_id', tenantId).eq('active', true))
+    const data = await query(sb.from('dishes').select('tags').eq('tenant_id', tenantId).is('deleted_at', null).eq('active', true))
     const counts: Record<string, number> = {}
 
     ;(data ?? []).forEach((row: Record<string, unknown>) => {
@@ -133,7 +133,7 @@ export const dishesApi = {
   },
 
   async countsByCategory(sb: SupabaseClient, tenantId: string): Promise<Record<string, number>> {
-    const data = await query(sb.from('dishes').select('category_id').eq('tenant_id', tenantId))
+    const data = await query(sb.from('dishes').select('category_id').eq('tenant_id', tenantId).is('deleted_at', null))
     const counts: Record<string, number> = {}
 
     ;(data ?? []).forEach((row) => {

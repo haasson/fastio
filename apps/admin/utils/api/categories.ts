@@ -24,7 +24,7 @@ export const mapCategory = (raw: Record<string, unknown>): Category => {
 
 export const categoriesApi = {
   async list(sb: SupabaseClient, tenantId: string) {
-    const data = await query(sb.from('categories').select('*').eq('tenant_id', tenantId).order('sort_order'))
+    const data = await query(sb.from('categories').select('*').eq('tenant_id', tenantId).is('deleted_at', null).order('sort_order'))
 
     return (data ?? []).map(mapCategory)
   },
@@ -57,7 +57,7 @@ export const categoriesApi = {
   },
 
   async remove(sb: SupabaseClient, id: string) {
-    await query(sb.from('categories').delete().eq('id', id))
+    await query(sb.from('categories').update({ deleted_at: new Date().toISOString() }).eq('id', id))
   },
 
   async reorder(sb: SupabaseClient, items: { id: string; order: number }[]) {

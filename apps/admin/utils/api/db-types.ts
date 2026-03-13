@@ -68,6 +68,7 @@ export type CategoryRow = {
   active: boolean
   photo_url: string | null
   use_first_dish_photo: boolean
+  deleted_at: string | null
 }
 
 export type ComboRow = {
@@ -104,6 +105,7 @@ export type DishRow = {
   tags: DishTag[]
   active: boolean
   sort_order: number
+  deleted_at: string | null
 }
 
 export type DishBranchPriceRow = {
