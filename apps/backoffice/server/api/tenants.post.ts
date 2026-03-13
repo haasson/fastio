@@ -31,10 +31,10 @@ export default defineEventHandler(async (event) => {
     const config = useRuntimeConfig()
     const appUrl = config.public.supabaseUrl.includes('127.0.0.1')
       ? 'http://localhost:4710'
-      : 'https://app.fastio.ru'
+      : 'https://admin-fastio.vercel.app'
 
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${appUrl}/login`,
+      redirectTo: `${appUrl}/set-password`,
     })
 
     if (error) throw createError({ statusCode: 500, message: error.message })
