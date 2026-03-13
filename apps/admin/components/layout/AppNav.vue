@@ -48,7 +48,7 @@ const allNavItems: NavItem[] = [
   { to: '/menu/modifiers', icon: 'list', label: 'Модификаторы', visible: canManageMenu },
   { to: '/orders', icon: 'orders', label: 'Заказы', visible: canManageOrders },
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canManagePromotions },
-  { to: '/appearance', icon: 'palette', label: 'Оформление', visible: canViewSettings },
+  { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
 ]
 

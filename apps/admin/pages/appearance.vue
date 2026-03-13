@@ -1,7 +1,17 @@
 <template>
   <div class="appearance-root">
     <template v-if="tenantStore.tenant">
-      <UiTabs :model-value="activeTab" :tabs="tabs" @update:model-value="goToTab" />
+      <div class="tabs-row">
+        <UiTabs :model-value="activeTab" :tabs="tabs" @update:model-value="goToTab" />
+        <UiButton
+          type="primary"
+          :loading="saving"
+          :disabled="!isDirty"
+          @click="form.save()"
+        >
+          Сохранить
+        </UiButton>
+      </div>
 
       <div class="content-grid">
         <div class="main-col">
@@ -11,16 +21,6 @@
         </div>
 
         <div class="preview-col">
-          <div class="preview-actions">
-            <UiButton
-              type="primary"
-              :loading="saving"
-              :disabled="!isDirty"
-              @click="form.save()"
-            >
-              Сохранить
-            </UiButton>
-          </div>
           <AppearancePreview :layout="form.siteLayoutForm as SiteLayout" :content="form.contentForm" :theme="form.themeForm" />
         </div>
       </div>
@@ -89,6 +89,14 @@ useUnsavedGuard(isDirty)
   overflow: hidden;
 }
 
+.tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -110,23 +118,22 @@ useUnsavedGuard(isDirty)
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+
+    &::after {
+      content: '';
+      display: block;
+      height: 24px;
+    }
   }
 }
 
 .preview-col {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-self: start;
+  overflow-y: auto;
+  min-height: 0;
 
   :deep(.page-preview) {
     width: 280px;
     zoom: calc(360 / 280);
   }
-}
-
-.preview-actions {
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

@@ -13,7 +13,10 @@
           <div v-if="layout.header.showWorkingHours" class="ph-venue-line" />
           <div v-if="layout.header.showPhone" class="ph-venue-line ph-venue-line--bold" />
         </div>
-        <div class="ph-cart" />
+        <div class="ph-cart">
+          <UiIcon name="cart" :size="11" color="var(--color-text)" />
+          <span class="ph-cart-badge" />
+        </div>
       </div>
     </div>
 
@@ -61,7 +64,17 @@
       </div>
 
       <div v-else-if="key === 'menu'" class="preview-block preview-block--menu">
-        <div v-for="i in 6" :key="i" class="ph-menu-card" />
+        <div v-for="i in 6" :key="i" class="ph-menu-card">
+          <div class="ph-menu-card-photo" />
+          <div class="ph-menu-card-body">
+            <div class="ph-menu-card-title" />
+            <div class="ph-menu-card-subtitle" />
+            <div class="ph-menu-card-footer">
+              <div class="ph-menu-card-price" />
+              <div class="ph-menu-card-btn" />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-else-if="key === 'gallery'" class="preview-block preview-block--gallery">
@@ -98,18 +111,25 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { UiIcon } from '@fastio/icons'
 import type { SiteLayout, SiteContent, TenantTheme } from '@fastio/shared'
 import { featureLabel, paletteToCssVars } from '@fastio/shared'
 
 const props = defineProps<{ layout: SiteLayout; content: SiteContent; theme: TenantTheme }>()
 
+const btnRadiusMap: Record<string, string> = {
+  square: '1px',
+  rounded: '3px',
+  pill: '999px',
+}
+
 const themeVars = computed(() => {
   if (!props.theme.palette) return {}
   const vars = paletteToCssVars(props.theme.palette)
 
-  // Map to extra aliases used in preview styles
   vars['--color-bg-card'] = props.theme.palette.surface
   vars['--color-text-tertiary'] = props.theme.palette.textMuted
+  vars['--preview-btn-radius'] = btnRadiusMap[props.theme.buttonRadius] ?? '6px'
 
   return vars
 })
@@ -229,11 +249,22 @@ const heroContentStyle = computed(() => {
 }
 
 .ph-cart {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  background: var(--color-surface);
+  position: relative;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ph-cart-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  border: 1px solid var(--color-bg-card);
 }
 
 .preview-block--category-bar {
@@ -348,10 +379,63 @@ const heroContentStyle = computed(() => {
 }
 
 .ph-menu-card {
-  height: 50px;
   border-radius: 4px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ph-menu-card-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--color-border);
+}
+
+.ph-menu-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px;
+}
+
+.ph-menu-card-title {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-text);
+  opacity: 0.5;
+  width: 80%;
+}
+
+.ph-menu-card-subtitle {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-text);
+  opacity: 0.25;
+  width: 55%;
+}
+
+.ph-menu-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.ph-menu-card-price {
+  height: 5px;
+  width: 35%;
+  border-radius: 2px;
+  background: var(--color-text);
+  opacity: 0.5;
+}
+
+.ph-menu-card-btn {
+  height: 10px;
+  width: 32%;
+  border-radius: var(--preview-btn-radius, 3px);
+  background: var(--primary);
 }
 
 .preview-block--gallery {

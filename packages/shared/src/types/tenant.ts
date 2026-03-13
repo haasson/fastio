@@ -1,6 +1,6 @@
 import type { SectionKey, NavPageKey } from '../utils/siteFeatures'
 
-export type TenantThemePreset = 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon' | 'custom'
+export type TenantThemePreset = 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon' | 'ember' | 'garden' | 'midnight' | 'berry' | 'fiesta'
 
 export type ThemePalette = {
   primary: string
@@ -12,6 +12,13 @@ export type ThemePalette = {
   border: string
 }
 
+export type CustomTheme = {
+  id: string
+  name: string
+  basedOn: TenantThemePreset
+  palette: ThemePalette
+}
+
 export type TenantTheme = {
   primaryColor: string
   fontFamily: string
@@ -20,6 +27,8 @@ export type TenantTheme = {
   buttonRadius: 'square' | 'rounded' | 'pill'
   cardRadius: number
   cardShadow: 'none' | 'subtle' | 'medium'
+  customThemes: CustomTheme[]
+  activeCustomId: string | null
 }
 
 export type NavPage = NavPageKey

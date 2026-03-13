@@ -8,4 +8,6 @@ export const defaultTheme = (): TenantTheme => ({
   buttonRadius: 'rounded',
   cardRadius: 14,
   cardShadow: 'subtle',
+  customThemes: [],
+  activeCustomId: null,
 })

@@ -137,6 +137,71 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       border: '#fde047',
     },
   },
+  {
+    name: 'ember',
+    label: 'Ember',
+    palette: {
+      primary: '#E8622A',
+      bg: '#1A1410',
+      surface: '#261D17',
+      text: '#F5EBE0',
+      textSecondary: '#C9A882',
+      textMuted: '#7A6152',
+      border: '#3D2E24',
+    },
+  },
+  {
+    name: 'garden',
+    label: 'Garden',
+    palette: {
+      primary: '#3E8C4B',
+      bg: '#F7F4EF',
+      surface: '#FFFFFF',
+      text: '#1E2B1A',
+      textSecondary: '#4A5E44',
+      textMuted: '#9AAB8E',
+      border: '#DDE5D8',
+    },
+  },
+  {
+    name: 'midnight',
+    label: 'Midnight',
+    palette: {
+      primary: '#E8AC34',
+      bg: '#0E0F14',
+      surface: '#16171F',
+      text: '#EEEDF2',
+      textSecondary: '#9E9DAD',
+      textMuted: '#52505E',
+      border: '#24242F',
+    },
+  },
+  {
+    name: 'berry',
+    label: 'Berry',
+    palette: {
+      primary: '#C0324F',
+      bg: '#FDF5F7',
+      surface: '#FFFFFF',
+      text: '#2A1520',
+      textSecondary: '#6B3A4E',
+      textMuted: '#B8879A',
+      border: '#F0DCE3',
+    },
+  },
+  {
+    name: 'fiesta',
+    label: 'Fiesta',
+    palette: {
+      primary: '#E84545',
+      bg: '#FAF7F2',
+      surface: '#FFFFFF',
+      text: '#1C1814',
+      textSecondary: '#5C5248',
+      textMuted: '#A89E94',
+      border: '#EAE4DC',
+    },
+  },
 ]
 
 export const getPresetPalette = (name: string): ThemePalette | null =>
