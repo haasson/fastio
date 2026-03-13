@@ -1,75 +1,52 @@
 <template>
   <section class="section">
     <ul class="items-list">
-      <li v-for="(item, idx) in items" :key="`${item.dishId}-${idx}`" class="item-row">
-        <div class="item-body">
-          <div class="item-title-row">
-            <span v-if="item.categoryName" class="item-category">{{ item.categoryName }}</span>
-            <span class="item-name">{{ item.dishName }}</span>
-          </div>
-          <div v-if="item.modifiers?.length" class="item-mods">
-            <UiTag
-              v-for="mod in item.modifiers"
-              :key="mod.groupName + mod.optionName"
-              size="tiny"
-              secondary
-            >
-              {{ mod.optionName }}
-              <template v-if="mod.priceDelta > 0"> +{{ mod.priceDelta }}₽</template>
-            </UiTag>
-          </div>
-          <div v-if="item.removedIngredients?.length" class="item-mods">
-            <UiTag
-              v-for="ing in item.removedIngredients"
-              :key="ing"
-              size="tiny"
-              type="error"
-              secondary
-            >
-              <UiIcon name="minusRound" :size="11" class="mod-icon" />{{ ing }}
-            </UiTag>
-          </div>
-        </div>
-        <div class="item-controls">
-          <template v-if="!readonly">
-            <div class="qty-controls">
-              <UiButton
-                type="text"
-                size="small"
-                icon="minusRound"
-                @click="changeQty(idx, -1)"
-              />
-              <span class="qty-value">{{ item.quantity }}</span>
-              <UiButton
-                type="text"
-                size="small"
-                icon="plusRound"
-                @click="changeQty(idx, 1)"
-              />
-            </div>
-          </template>
-          <template v-else>
-            <span class="qty-value qty-readonly">× {{ item.quantity }}</span>
-          </template>
-          <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
-          <template v-if="!readonly">
+      <DishItemRow
+        v-for="(item, idx) in items"
+        :key="`${item.dishId}-${idx}`"
+        :name="item.dishName"
+        :category-name="item.categoryName"
+        :modifiers="item.modifiers.map((m) => ({ name: m.optionName, priceDelta: m.priceDelta }))"
+        :removed-ingredients="item.removedIngredients"
+      >
+        <template v-if="!readonly">
+          <div class="qty-controls">
             <UiButton
               type="text"
               size="small"
-              icon="pencil"
-              title="Изменить состав"
-              @click="openEditItem(idx)"
+              icon="minusRound"
+              @click="changeQty(idx, -1)"
             />
+            <span class="qty-value">{{ item.quantity }}</span>
             <UiButton
               type="text"
               size="small"
-              icon="close"
-              title="Удалить"
-              @click="removeItem(idx)"
+              icon="plusRound"
+              @click="changeQty(idx, 1)"
             />
-          </template>
-        </div>
-      </li>
+          </div>
+        </template>
+        <template v-else>
+          <span class="qty-value qty-readonly">× {{ item.quantity }}</span>
+        </template>
+        <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
+        <template v-if="!readonly">
+          <UiButton
+            type="text"
+            size="small"
+            icon="pencil"
+            title="Изменить состав"
+            @click="openEditItem(idx)"
+          />
+          <UiButton
+            type="text"
+            size="small"
+            icon="close"
+            title="Удалить"
+            @click="removeItem(idx)"
+          />
+        </template>
+      </DishItemRow>
     </ul>
 
     <div v-if="!readonly" class="add-dish-row">
@@ -97,10 +74,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiButton, UiIcon, UiTag } from '@fastio/ui'
+import { UiButton } from '@fastio/ui'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
+import DishItemRow from '~/components/ui/DishItemRow.vue'
 import useDrawer from '~/composables/ui/useDrawer'
 
 const props = defineProps<{
@@ -185,14 +163,6 @@ const onPickerSelect = (result: DishPickerResult) => {
   gap: 10px;
 }
 
-.section-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--color-text-secondary);
-}
-
 .items-list {
   list-style: none;
   display: flex;
@@ -200,72 +170,6 @@ const onPickerSelect = (result: DishPickerResult) => {
   border: 1px solid var(--color-border-light);
   border-radius: 10px;
   overflow: hidden;
-}
-
-.item-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--color-bg-card);
-
-  & + & {
-    border-top: 1px solid var(--color-border-light);
-  }
-}
-
-.item-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.item-title-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.item-category {
-  flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-subtle);
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.item-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.item-mods {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.mod-icon {
-  margin-right: 3px;
-  flex-shrink: 0;
-}
-
-.item-controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
 }
 
 .qty-controls {

@@ -6,48 +6,24 @@
       </div>
 
       <template v-else>
-        <!-- Карточки блюд -->
-        <div v-if="modelValue.length > 0" class="cards">
-          <div v-for="(item, i) in modelValue" :key="item.dishId || i" class="card">
+        <!-- Список блюд -->
+        <ul v-if="modelValue.length > 0" class="items-list">
+          <DishItemRow
+            v-for="(item, i) in modelValue"
+            :key="item.dishId || i"
+            :name="getDishName(item.dishId)"
+            :category-name="getCategoryName(item.dishId)"
+            :modifiers="getSelectedModifierTags(item)"
+          >
+            <span class="item-price">{{ getItemPrice(item) }} ₽</span>
             <UiButton
               type="text"
               size="small"
               icon="close"
-              class="remove"
               @click="removeItem(i)"
             />
-
-            <div class="card-body">
-              <div class="photo">
-                <img
-                  v-if="getPhoto(item.dishId)"
-                  :src="getPhoto(item.dishId)!"
-                  alt=""
-                  class="photo-img"
-                />
-                <div v-else class="photo-placeholder" />
-              </div>
-
-              <div class="info">
-                <div class="dish-name">{{ getDishName(item.dishId) }}</div>
-                <div class="dish-price">{{ getItemPrice(item) }} ₽</div>
-              </div>
-            </div>
-
-            <div v-if="getDishModifiers(item.dishId).length > 0" class="mods">
-              <div v-for="group in getDishModifiers(item.dishId)" :key="group.groupId" class="mod-row">
-                <span class="mod-label">{{ group.groupName }}</span>
-                <UiSelect
-                  :value="getSelectedOption(item, group)"
-                  size="small"
-                  :options="group.options.map((o) => ({ label: o.optionName, value: o.optionId }))"
-                  class="mod-select"
-                  @update:value="onModifierSelect(i, group, $event as string)"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+          </DishItemRow>
+        </ul>
 
         <!-- Добавление блюда -->
         <UiButton type="default" icon="plus" @click="showPicker = true">
@@ -85,12 +61,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiCollapseItem, UiSelect, UiButton, UiSkeleton } from '@fastio/ui'
+import { UiCollapseItem, UiButton, UiSkeleton } from '@fastio/ui'
+import DishItemRow from '~/components/ui/DishItemRow.vue'
 import type { Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 
-type DishInfo = { id: string; name: string; categoryId: string; price: number; photos: string[] }
+type DishInfo = { id: string; name: string; categoryId: string; price: number }
 
 const props = defineProps<{
   modelValue: ComboItemInput[]
@@ -113,8 +90,18 @@ const dishModifiers = ref<Record<string, DishModifierGroup[]>>({})
 const getDish = (dishId: string) => allDishes.value.find((d) => d.id === dishId)
 const getDishName = (dishId: string) => getDish(dishId)?.name ?? '—'
 const getDishPrice = (dishId: string) => getDish(dishId)?.price ?? 0
-const getPhoto = (dishId: string) => getDish(dishId)?.photos[0] ?? null
 const getDishModifiers = (dishId: string): DishModifierGroup[] => dishModifiers.value[dishId] ?? []
+
+const getCategoryName = (dishId: string) => {
+  const categoryId = getDish(dishId)?.categoryId
+
+  return props.categories.find((c) => c.id === categoryId)?.name ?? null
+}
+
+const getSelectedModifierTags = (item: ComboItemInput) => getDishModifiers(item.dishId)
+  .flatMap((g) => g.options)
+  .filter((o) => item.modifierOptionIds.includes(o.optionId))
+  .map((o) => ({ name: o.optionName, priceDelta: o.priceDelta }))
 
 // ─── Options ──────────────────────────────────────────────────────────────────
 
@@ -132,8 +119,7 @@ const getItemPrice = (item: ComboItemInput) => {
   return base + modifierDelta
 }
 
-const dishesTotal = computed(() => props.modelValue.reduce((sum, item) => sum + getItemPrice(item), 0),
-)
+const dishesTotal = computed(() => props.modelValue.reduce((sum, item) => sum + getItemPrice(item), 0))
 
 const discount = computed(() => {
   if (props.comboPrice === null || props.comboPrice <= 0) return null
@@ -165,9 +151,7 @@ const discountClass = computed(() => {
   return ''
 })
 
-// ─── Modifiers ────────────────────────────────────────────────────────────────
-
-const getSelectedOption = (item: ComboItemInput, group: DishModifierGroup): string | null => group.options.find((o) => item.modifierOptionIds.includes(o.optionId))?.optionId ?? null
+// ─── Add / Remove ─────────────────────────────────────────────────────────────
 
 const loadModifiers = async (dishId: string) => {
   if (!dishId || dishModifiers.value[dishId] !== undefined) return
@@ -175,19 +159,6 @@ const loadModifiers = async (dishId: string) => {
 
   dishModifiers.value = { ...dishModifiers.value, [dishId]: groups }
 }
-
-const onModifierSelect = (i: number, group: DishModifierGroup, optionId: string) => {
-  const updated = props.modelValue.map((item, idx) => {
-    if (idx !== i) return item
-    const others = item.modifierOptionIds.filter((id) => !group.options.some((o) => o.optionId === id))
-
-    return { ...item, modifierOptionIds: optionId ? [...others, optionId] : others }
-  })
-
-  emit('update:modelValue', updated)
-}
-
-// ─── Add / Remove ─────────────────────────────────────────────────────────────
 
 const onAddItem = async (result: DishPickerResult) => {
   if (!result.dishId) return
@@ -211,7 +182,7 @@ watch(
     loading.value = true
     const dishes = await api.dishes.listAllActive(props.tenantId)
 
-    allDishes.value = dishes.map((d) => ({ id: d.id, name: d.name, categoryId: d.categoryId, price: d.price, photos: d.photos }))
+    allDishes.value = dishes.map((d) => ({ id: d.id, name: d.name, categoryId: d.categoryId, price: d.price }))
     await Promise.all(props.modelValue.map((item) => (item.dishId ? loadModifiers(item.dishId) : Promise.resolve())))
     loading.value = false
   },
@@ -232,104 +203,23 @@ watch(
   gap: 8px;
 }
 
-// ─── Cards ────────────────────────────────────────────────────────────────────
+// ─── List ─────────────────────────────────────────────────────────────────────
 
-.cards {
+.items-list {
+  list-style: none;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.card {
-  position: relative;
-  padding: 12px;
-  background: var(--color-bg-page);
+  flex-direction: column;
+  border: 1px solid var(--color-border-light);
   border-radius: 10px;
-  width: fit-content;
-}
-
-.remove {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-}
-
-.card-body {
-  display: flex;
-  gap: 12px;
-  padding-right: 20px;
-}
-
-// ─── Photo ────────────────────────────────────────────────────────────────────
-
-.photo {
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
   overflow: hidden;
 }
 
-.photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.photo-placeholder {
-  width: 100%;
-  height: 100%;
-  background: var(--color-border, #e8e8e8);
-}
-
-// ─── Info ─────────────────────────────────────────────────────────────────────
-
-.info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dish-name {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-  white-space: nowrap;
-}
-
-.dish-price {
+.item-price {
   font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-// ─── Modifiers ────────────────────────────────────────────────────────────────
-
-.mods {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-border);
-}
-
-.mod-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mod-label {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
+  font-weight: 600;
+  color: var(--color-title);
   min-width: 60px;
-  flex-shrink: 0;
-}
-
-.mod-select {
-  width: 160px;
+  text-align: right;
   flex-shrink: 0;
 }
 
