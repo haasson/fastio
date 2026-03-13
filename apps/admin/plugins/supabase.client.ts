@@ -1,4 +1,4 @@
-import { defineNuxtPlugin, useRuntimeConfig } from '#imports'
+import { defineNuxtPlugin, navigateTo, useRuntimeConfig } from '#imports'
 import { createClient } from '@supabase/supabase-js'
 import { useAuthStore } from '~/stores/auth'
 import { INVITE_PENDING_KEY } from '~/utils/constants'
@@ -25,8 +25,11 @@ export default defineNuxtPlugin(async () => {
   authStore.setUser(session?.user ?? null)
 
   // Слушаем изменения состояния авторизации
-  supabase.auth.onAuthStateChange((_, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     authStore.setUser(session?.user ?? null)
+    if (event === 'SIGNED_OUT') {
+      navigateTo('/login')
+    }
   })
 
   return {
