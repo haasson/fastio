@@ -60,18 +60,12 @@
       size="medium"
     />
 
-    <OrderEditModal
-      v-model="editModalOpen"
-      :order="editingOrder"
-      :tenant-id="tenantId"
-      @saved="handleOrderSaved"
-    />
-
-    <OrderCreateModal
-      v-model="createModalOpen"
+    <OrderModal
+      v-model="modalOpen"
+      :order="modalOrder"
       :tenant-id="tenantId"
       :branch-id="branchId"
-      @created="handleOrderCreated"
+      @saved="handleOrderSaved"
     />
   </div>
 </template>
@@ -83,8 +77,7 @@ import { UiSegmentedControl, UiButton, UiPagination } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderRow from '~/components/orders/OrderRow.vue'
-import OrderEditModal from '~/components/orders/OrderEditModal.vue'
-import OrderCreateModal from '~/components/orders/OrderCreateModal.vue'
+import OrderModal from '~/components/orders/OrderModal.vue'
 import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import { useOrders } from '~/composables/data/useOrders'
@@ -128,15 +121,12 @@ const getBranchName = (branchId: string | null | undefined) => {
   return branchStore.branches.find((b) => b.id === branchId)?.name
 }
 
-const { isOpen: editModalOpen, data: editingOrder, open: openEditModal } = useDrawer<Order>()
-const { isOpen: createModalOpen, open: openCreateModal, close: closeCreateModal } = useDrawer()
+const { isOpen: modalOpen, data: modalOrder, open: openModal } = useDrawer<Order>()
+
+const openEditModal = (order: Order) => openModal(order)
+const openCreateModal = () => openModal()
 
 const handleOrderSaved = () => {
-  emit('ordersChanged')
-}
-
-const handleOrderCreated = () => {
-  closeCreateModal()
   emit('ordersChanged')
 }
 </script>

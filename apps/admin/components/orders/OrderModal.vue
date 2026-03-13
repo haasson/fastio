@@ -1,28 +1,26 @@
 <template>
   <UiDrawer
     :model-value="modelValue"
-    :title="`Заказ #${shortId}`"
+    :title="isEdit ? `Заказ #${shortId}` : 'Новый заказ'"
     :width="860"
     :actions="drawerActions"
     :on-confirm="onSave"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <div v-if="order" class="content">
-
+    <div class="content">
       <UiCollapse :expanded-names="['data']">
 
         <UiCollapseItem name="data" title="Заказ">
           <template #header-extra>
             <UiTag
-              v-if="currentStatus"
+              v-if="isEdit && currentStatus"
               size="tiny"
               :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
             >{{ currentStatus.name }}</UiTag>
           </template>
 
-          <div class="section-content">
-            <!-- Статус -->
-            <div v-if="statusMenuItems.length" class="status-row">
+          <UiForm ref="formRef" class="form">
+            <div v-if="isEdit && statusMenuItems.length" class="status-row">
               <UiMenuDropdown
                 :items="statusMenuItems"
                 trigger="click"
@@ -41,35 +39,37 @@
               :subtotal="subtotal"
               :total="total"
               :permissions="can"
+              :items-error="itemsError"
+              :comment-editable="!isEdit"
               :branch-options="branchOptions"
               :branch-id="selectedBranchId"
               @update:branch-id="selectedBranchId = $event"
             />
 
-            <!-- Комментарий клиента (readonly) -->
-            <div v-if="order.comment" class="comment-block">
+            <div v-if="isEdit && order?.comment" class="comment-block">
               <UiAlert size="small" type="info" icon="messageCircle">{{ order.comment }}</UiAlert>
             </div>
-          </div>
+          </UiForm>
         </UiCollapseItem>
 
-        <UiCollapseItem name="history" title="История">
-          <OrderEventsSection
-            :order-id="order.id"
-            :refresh-key="notesRefreshKey"
-          />
-        </UiCollapseItem>
+        <template v-if="isEdit">
+          <UiCollapseItem name="history" title="История">
+            <OrderEventsSection
+              :order-id="order!.id"
+              :refresh-key="notesRefreshKey"
+            />
+          </UiCollapseItem>
 
-        <UiCollapseItem name="notes" title="Заметки">
-          <OrderNotesSection
-            :order-id="order.id"
-            :tenant-id="tenantId"
-            :refresh-key="notesRefreshKey"
-          />
-        </UiCollapseItem>
+          <UiCollapseItem name="notes" title="Заметки">
+            <OrderNotesSection
+              :order-id="order!.id"
+              :tenant-id="tenantId"
+              :refresh-key="notesRefreshKey"
+            />
+          </UiCollapseItem>
+        </template>
 
       </UiCollapse>
-
     </div>
   </UiDrawer>
 </template>
@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  UiDrawer, UiCollapse, UiCollapseItem, UiMenuDropdown, UiAlert, UiTag, UiButton,
+  UiDrawer, UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
@@ -85,6 +85,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/stores/tenant'
 import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
 import OrderFormFields from './OrderFormFields.vue'
@@ -93,8 +94,9 @@ import OrderEventsSection from './OrderEventsSection.vue'
 
 const props = defineProps<{
   modelValue: boolean
-  order: Order | null
   tenantId: string
+  order: Order | null
+  branchId?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -106,26 +108,44 @@ const api = useDatabase()
 const { logSaveEvents } = useOrderEventLogger()
 const { statuses } = useOrderStatusesStore()
 const branchStore = useBranchStore()
+const tenantStore = useTenantStore()
 const { getStatusColor } = useStatusColor()
+
+const isEdit = computed(() => !!props.order)
+const shortId = computed(() => props.order?.id.slice(0, 6).toUpperCase() ?? '')
 
 const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
 const selectedBranchId = ref<string | null>(null)
 
 const saving = ref(false)
 const notesRefreshKey = ref(0)
+const itemsError = ref('')
+const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 
 const drawerActions = computed(() => [
   { text: 'Закрыть', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+  { text: isEdit.value ? 'Сохранить' : 'Создать', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
 ])
 
-const shortId = computed(() => props.order?.id.slice(0, 6).toUpperCase() ?? '')
+// ─── Status ───────────────────────────────────────────────────────────────────
 
 const currentStatus = computed(() => statuses.find((s) => s.id === form.status) ?? null)
-
 const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
 
+const statusMenuItems = computed(() => statuses
+  .filter((s) => s.id !== form.status)
+  .map((s) => ({
+    name: s.id,
+    label: s.name,
+    color: getStatusColor(s.id),
+  })),
+)
+
+// ─── Permissions ──────────────────────────────────────────────────────────────
+
 const can = computed(() => {
+  if (!isEdit.value) return {}
+
   const g = statusGroup.value
 
   return {
@@ -138,18 +158,9 @@ const can = computed(() => {
   }
 })
 
-const statusMenuItems = computed(() => statuses
-  .filter((s) => s.id !== form.status)
-  .map((s) => ({
-    name: s.id,
-    label: s.name,
-    color: getStatusColor(s.id),
-  })),
-)
-
 // ─── Form ─────────────────────────────────────────────────────────────────────
 
-const buildForm = (o: Order) => ({
+const buildEditForm = (o: Order) => ({
   status: o.status,
   customerName: o.customerName,
   customerPhone: o.customerPhone,
@@ -163,11 +174,11 @@ const buildForm = (o: Order) => ({
   paymentType: o.paymentType,
 })
 
-const form = reactive({
-  status: '',
+const buildCreateForm = () => ({
+  status: statuses.find((s) => s.groupType === 'new')?.id ?? statuses[0]?.id ?? '',
   customerName: '',
   customerPhone: '',
-  deliveryType: 'delivery' as Order['deliveryType'],
+  deliveryType: (tenantStore.tenant?.deliveryEnabled ? 'delivery' : 'pickup') as Order['deliveryType'],
   address: '',
   items: [] as Order['items'],
   discountAmount: 0,
@@ -177,48 +188,88 @@ const form = reactive({
   paymentType: 'cash' as Order['paymentType'],
 })
 
+const form = reactive(buildCreateForm())
+
 watch(
   () => props.modelValue,
   (open) => {
-    if (!open || !props.order) return
-    Object.assign(form, buildForm(props.order))
-    selectedBranchId.value = props.order.branchId
-    notesRefreshKey.value++
+    if (!open) return
+
+    if (props.order) {
+      Object.assign(form, buildEditForm(props.order))
+      selectedBranchId.value = props.order.branchId
+      notesRefreshKey.value++
+    } else {
+      Object.assign(form, buildCreateForm())
+      selectedBranchId.value = props.branchId ?? null
+      itemsError.value = ''
+    }
   },
 )
+
+watch(() => form.items, (items) => {
+  if (items.length) itemsError.value = ''
+})
 
 // ─── Computed totals ──────────────────────────────────────────────────────────
 
 const subtotal = computed(() => form.items.reduce((s, i) => s + getItemUnitPrice(i) * i.quantity, 0))
+const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.deliveryFee)
 
-const total = computed(() => subtotal.value - form.discountAmount + form.deliveryFee)
+const formPayload = computed(() => ({
+  customerName: form.customerName,
+  customerPhone: form.customerPhone,
+  items: form.items,
+  deliveryType: form.deliveryType,
+  address: form.address || null,
+  comment: form.comment || null,
+  discountAmount: form.discountAmount,
+  promoCode: form.promoCode || null,
+  subtotal: subtotal.value,
+  deliveryFee: form.deliveryFee,
+  total: total.value,
+  status: form.status,
+  paymentType: form.paymentType,
+  branchId: selectedBranchId.value,
+}))
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
 
 const onSave = async () => {
-  if (!props.order) return false
+  const formValid = formRef.value?.validate() ?? true
+
+  if (!isEdit.value) {
+    const hasItems = form.items.length > 0
+
+    if (!hasItems) itemsError.value = 'Добавьте хотя бы одно блюдо'
+    if (!formValid || !hasItems) return false
+  } else {
+    if (!formValid) return false
+  }
+
   saving.value = true
   try {
-    const updated = await api.orders.update(props.order.id, {
-      customerName: form.customerName,
-      customerPhone: form.customerPhone,
-      items: form.items,
-      deliveryType: form.deliveryType,
-      address: form.address || null,
-      comment: form.comment || null,
-      discountAmount: form.discountAmount,
-      promoCode: form.promoCode || null,
-      subtotal: subtotal.value,
-      deliveryFee: form.deliveryFee,
-      total: total.value,
-      status: form.status,
-      paymentType: form.paymentType,
-      branchId: selectedBranchId.value,
-    })
+    if (isEdit.value && props.order) {
+      const updated = await api.orders.update(props.order.id, formPayload.value)
 
-    if (updated) {
-      logSaveEvents(form, props.order!, statuses)
-      emit('saved', updated)
+      if (updated) {
+        logSaveEvents(form, props.order, statuses)
+        emit('saved', updated)
+      }
+    } else {
+      const branchId = branchOptions.value.length > 1
+        ? selectedBranchId.value
+        : branchStore.branches[0]?.id ?? null
+
+      const created = await api.orders.create({
+        tenantId: props.tenantId,
+        ...formPayload.value,
+        branchId,
+        promoCode: null,
+        discountAmount: 0,
+      })
+
+      if (created) emit('saved', created)
     }
   } finally {
     saving.value = false
@@ -232,11 +283,10 @@ const onSave = async () => {
   flex-direction: column;
 }
 
-.section-content {
+.form {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-top: 4px;
 }
 
 .status-row {
