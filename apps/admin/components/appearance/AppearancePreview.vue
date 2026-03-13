@@ -1,5 +1,5 @@
 <template>
-  <div class="page-preview">
+  <div class="page-preview" :style="themeVars">
     <!-- Шапка -->
     <div class="preview-block preview-block--header">
       <div class="ph-logo" />
@@ -98,10 +98,21 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SiteLayout, SiteContent } from '@fastio/shared'
-import { featureLabel } from '@fastio/shared'
+import type { SiteLayout, SiteContent, TenantTheme } from '@fastio/shared'
+import { featureLabel, paletteToCssVars } from '@fastio/shared'
 
-const props = defineProps<{ layout: SiteLayout; content: SiteContent }>()
+const props = defineProps<{ layout: SiteLayout; content: SiteContent; theme: TenantTheme }>()
+
+const themeVars = computed(() => {
+  if (!props.theme.palette) return {}
+  const vars = paletteToCssVars(props.theme.palette)
+
+  // Map to extra aliases used in preview styles
+  vars['--color-bg-card'] = props.theme.palette.surface
+  vars['--color-text-tertiary'] = props.theme.palette.textMuted
+
+  return vars
+})
 
 const heroBgStyle = computed(() => {
   const { bgType } = props.layout.sections.hero

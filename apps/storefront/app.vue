@@ -12,6 +12,7 @@
 
 <script setup lang="ts">
 import type { Tenant } from '@fastio/shared'
+import { paletteToCssVars } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import useTheme from '~/composables/useTheme'
 
@@ -35,6 +36,10 @@ useHead({
 const tenantOverrides = computed(() => {
   const t = tenant.value?.theme
   if (!t) return {}
+  if (t.palette) {
+    return { ...paletteToCssVars(t.palette), '--font-family': t.fontFamily }
+  }
+  // Fallback для старых данных без palette
   const result: Record<string, string> = {}
   if (t.primaryColor) result['--primary'] = t.primaryColor
   if (t.fontFamily) result['--font-family'] = t.fontFamily

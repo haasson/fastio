@@ -21,7 +21,7 @@
               Сохранить
             </UiButton>
           </div>
-          <AppearancePreview :layout="form.siteLayoutForm as SiteLayout" :content="form.contentForm" />
+          <AppearancePreview :layout="form.siteLayoutForm as SiteLayout" :content="form.contentForm" :theme="form.themeForm" />
         </div>
       </div>
     </template>

@@ -1,14 +1,24 @@
-import { reactive, ref, computed, watch, toRaw } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
 import type { InjectionKey, Ref } from 'vue'
 import type { Tenant, SiteLayout, SiteContent } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, defaultTheme, deepMerge } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, deepMerge, getPresetPalette } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useMessage } from '@fastio/ui'
 
 const initSiteLayout = (t: Tenant | null): SiteLayout => deepMerge(defaultSiteLayout(), (t?.siteLayout ?? {}) as Partial<SiteLayout>)
 
-const initTheme = (t: Tenant | null) => ({ ...defaultTheme(), ...t?.theme })
+const initTheme = (t: Tenant | null) => {
+  const theme = { ...defaultTheme(), ...t?.theme }
+
+  if (!theme.palette) {
+    const presetPalette = getPresetPalette(theme.preset)
+
+    theme.palette = presetPalette ? { ...presetPalette, primary: theme.primaryColor } : null
+  }
+
+  return theme
+}
 
 const initContent = (t: Tenant | null): SiteContent => deepMerge(defaultSiteContent(), (t?.siteContent ?? {}) as Partial<SiteContent>)
 
@@ -124,9 +134,9 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     try {
       await uploadPendingAssets(tenantStore.tenant.id)
       await tenantStore.update({
-        siteLayout: structuredClone(toRaw(siteLayoutForm)),
-        theme: structuredClone(toRaw(themeForm)),
-        siteContent: structuredClone(toRaw(contentForm)),
+        siteLayout: JSON.parse(JSON.stringify(siteLayoutForm)),
+        theme: JSON.parse(JSON.stringify(themeForm)),
+        siteContent: JSON.parse(JSON.stringify(contentForm)),
       })
       updateSnapshots()
       success('Сохранено')

@@ -1,11 +1,22 @@
 import type { SectionKey, NavPageKey } from '../utils/siteFeatures'
 
-export type TenantThemePreset = 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon'
+export type TenantThemePreset = 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon' | 'custom'
+
+export type ThemePalette = {
+  primary: string
+  bg: string
+  surface: string
+  text: string
+  textSecondary: string
+  textMuted: string
+  border: string
+}
 
 export type TenantTheme = {
   primaryColor: string
   fontFamily: string
   preset: TenantThemePreset
+  palette: ThemePalette | null
   buttonRadius: 'square' | 'rounded' | 'pill'
   cardRadius: number
   cardShadow: 'none' | 'subtle' | 'medium'
