@@ -25,7 +25,12 @@
       </div>
     </main>
 
-    <NModal v-model:show="modalOpen" preset="card" title="Создать тенант" style="width: 480px">
+    <NModal
+      v-model:show="modalOpen"
+      preset="card"
+      title="Создать тенант"
+      style="width: 480px"
+    >
       <NForm
         ref="formRef"
         :model="form"
@@ -57,7 +62,9 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, reactive } from 'vue'
+import { useFetch } from '#imports'
+import { $fetch } from 'ofetch'
+import { h, ref, reactive, computed } from 'vue'
 import {
   NDataTable, NTag, NButton, NModal, NForm, NFormItem, NInput,
   type DataTableColumns, type FormInst, type FormRules,
@@ -84,7 +91,7 @@ const columns: DataTableColumns<TenantRow> = [
   {
     title: 'Слаг',
     key: 'slug',
-    render: row => h(NTag, { size: 'small', bordered: false }, { default: () => row.slug }),
+    render: (row) => h(NTag, { size: 'small', bordered: false }, { default: () => row.slug }),
   },
   {
     title: 'Email владельца',
@@ -101,7 +108,7 @@ const columns: DataTableColumns<TenantRow> = [
     key: 'createdAt',
     width: 180,
     sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    render: row => new Date(row.createdAt).toLocaleDateString('ru-RU', {
+    render: (row) => new Date(row.createdAt).toLocaleDateString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -129,7 +136,6 @@ const rules: FormRules = {
   ],
 }
 
-
 async function submit() {
   try {
     await formRef.value?.validate()
@@ -150,6 +156,7 @@ async function submit() {
     await refresh()
   } catch (err: unknown) {
     const message = (err as { data?: { message?: string } })?.data?.message ?? 'Неизвестная ошибка'
+
     window.alert(`Ошибка: ${message}`)
   } finally {
     submitting.value = false

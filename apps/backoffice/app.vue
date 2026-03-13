@@ -5,6 +5,7 @@
 </template>
 
 <script setup lang="ts">
+import { useHead } from '#imports'
 import { NConfigProvider } from 'naive-ui'
 
 useHead({ link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }] })

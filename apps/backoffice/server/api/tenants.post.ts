@@ -1,3 +1,7 @@
+import { defineEventHandler, createError, readBody } from 'h3'
+import { useRuntimeConfig } from '#imports'
+import { getAdminClient } from '../utils/adminClient'
+
 type CreateTenantBody = {
   name: string
   slug: string
@@ -15,10 +19,11 @@ export default defineEventHandler(async (event) => {
 
   // 1. Ищем или создаём пользователя
   const { data: { users }, error: listError } = await supabase.auth.admin.listUsers()
+
   if (listError) throw createError({ statusCode: 500, message: listError.message })
 
   let userId: string
-  const existing = users.find(u => u.email === email)
+  const existing = users.find((u) => u.email === email)
 
   if (existing) {
     userId = existing.id
@@ -31,6 +36,7 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${appUrl}/login`,
     })
+
     if (error) throw createError({ statusCode: 500, message: error.message })
     userId = data.user.id
   }

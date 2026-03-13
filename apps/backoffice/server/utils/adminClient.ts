@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { createPrivateKey, createSign } from 'node:crypto'
+import { useRuntimeConfig } from '#imports'
 
 function buildEs256Jwt(jwkJson: string, supabaseUrl: string): string {
   const ecKey = JSON.parse(Buffer.from(jwkJson, 'base64').toString('utf8'))
@@ -14,6 +15,7 @@ function buildEs256Jwt(jwkJson: string, supabaseUrl: string): string {
   })).toString('base64url')
 
   const signer = createSign('SHA256')
+
   signer.update(`${header}.${payload}`)
   const sig = signer.sign({ key: privKey, dsaEncoding: 'ieee-p1363' }).toString('base64url')
 

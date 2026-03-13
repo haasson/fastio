@@ -39,6 +39,8 @@ export function mapCategory(row: Record<string, unknown>): Category {
     name: row.name as string,
     order: row.sort_order as number,
     active: row.active as boolean,
+    photoUrl: row.photo_url as string | null,
+    useFirstDishPhoto: row.use_first_dish_photo as boolean,
   }
 }
 

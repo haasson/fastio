@@ -71,7 +71,7 @@
         <Transition name="slide">
           <div v-if="panelVisible" class="zone-panel">
             <DeliveryZonePanel
-              :form="zoneForm"
+              :form="(zoneForm as ZoneForm)"
               :zone-id="selectedZoneId"
               :branch-options="branchOptions"
               :existing-zones="zones"
@@ -94,7 +94,7 @@ import { UiText, UiSkeleton, UiAlert, UiSwitch } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
-import { useZoneEditor } from '~/composables/delivery/useZoneEditor'
+import { useZoneEditor, type ZoneForm } from '~/composables/delivery/useZoneEditor'
 import DeliveryZoneMap from '~/components/settings/DeliveryZoneMap.vue'
 import DeliveryZonePanel from '~/components/settings/DeliveryZonePanel.vue'
 

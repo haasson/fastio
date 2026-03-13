@@ -236,7 +236,7 @@ const listenerSettings = computed((): YandexMapListenerSettings => ({
   onClick: (_obj, event) => {
     if (!props.drawing) return
 
-    const coords: [number, number] = event.coordinates
+    const coords: [number, number] = event.coordinates as [number, number]
 
     // Auto-close: if clicking near the first point and have enough points
     if (isNearFirstPoint(coords)) {
@@ -251,7 +251,7 @@ const listenerSettings = computed((): YandexMapListenerSettings => ({
   },
   onMouseMove: (_obj, event) => {
     if (!props.drawing) return
-    cursorCoords.value = event.coordinates
+    cursorCoords.value = event.coordinates as [number, number]
   },
 }))
 

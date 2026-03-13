@@ -68,7 +68,7 @@
 import { computed, inject } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiSelect, UiIcon } from '@fastio/ui'
-import { SECTION_KEYS, featureLabel, PAGE_KEYS } from '@fastio/shared'
+import { SECTION_KEYS, featureLabel, PAGE_KEYS, type SectionKey, type NavPageKey } from '@fastio/shared'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 
 const form = inject(AppearanceFormKey)!
@@ -76,12 +76,12 @@ const siteLayoutForm = form.siteLayoutForm
 
 const homeOrder = computed({
   get: () => siteLayoutForm.sectionsOrder,
-  set: (val: string[]) => { siteLayoutForm.sectionsOrder = val },
+  set: (val: string[]) => { siteLayoutForm.sectionsOrder = val as SectionKey[] },
 })
 
 const pagesOrder = computed({
   get: () => siteLayoutForm.pages ?? [],
-  set: (val: string[]) => { siteLayoutForm.pages = val },
+  set: (val: string[]) => { siteLayoutForm.pages = val as NavPageKey[] },
 })
 
 const availableForHome = computed(() => SECTION_KEYS
@@ -90,18 +90,18 @@ const availableForHome = computed(() => SECTION_KEYS
 )
 
 const availableForPages = computed(() => PAGE_KEYS
-  .filter((k) => !pagesOrder.value.includes(k))
+  .filter((k) => !pagesOrder.value.includes(k as NavPageKey))
   .map((k) => ({ value: k, label: featureLabel(k) })),
 )
 
-const addToHome = (key: string | number | null) => {
-  if (!key || typeof key !== 'string' || homeOrder.value.includes(key)) return
-  siteLayoutForm.sectionsOrder = [...siteLayoutForm.sectionsOrder, key]
+const addToHome = (key: string | number | (string | number)[] | null) => {
+  if (!key || typeof key !== 'string' || homeOrder.value.includes(key as SectionKey)) return
+  siteLayoutForm.sectionsOrder = [...siteLayoutForm.sectionsOrder, key as SectionKey]
 }
 
-const addToPages = (key: string | number | null) => {
-  if (!key || typeof key !== 'string' || pagesOrder.value.includes(key)) return
-  siteLayoutForm.pages = [...(siteLayoutForm.pages ?? []), key]
+const addToPages = (key: string | number | (string | number)[] | null) => {
+  if (!key || typeof key !== 'string' || pagesOrder.value.includes(key as NavPageKey)) return
+  siteLayoutForm.pages = [...(siteLayoutForm.pages ?? []), key as NavPageKey]
 }
 
 const removeFromHome = (key: string) => {

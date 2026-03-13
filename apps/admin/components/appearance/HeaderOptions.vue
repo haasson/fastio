@@ -31,7 +31,7 @@ import { computed, inject } from 'vue'
 import { UiCheckbox, UiSelect } from '@fastio/ui'
 import PhotoUpload from '~/components/ui/PhotoUpload.vue'
 import { NAV_PAGE_KEYS, featureLabel } from '@fastio/shared'
-import type { NavItem } from '@fastio/shared'
+import type { NavItem, NavPageKey } from '@fastio/shared'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 
 const form = inject(AppearanceFormKey)!
@@ -48,7 +48,7 @@ const selectedPages = computed({
   get: () => siteLayoutForm.header.navItems.map((i) => i.page),
   set: (pages: string[] | null) => {
     siteLayoutForm.header.navItems = (pages ?? []).map((page): NavItem => ({
-      page,
+      page: page as NavPageKey,
       placement: siteLayoutForm.header.navItems.find((i) => i.page === page)?.placement ?? 'page',
     }))
   },
