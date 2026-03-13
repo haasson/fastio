@@ -1,6 +1,6 @@
 import { type Ref } from 'vue'
 import type { Order } from '@fastio/shared'
-import { mapOrder } from '~/utils/api/orders'
+import { useDatabase } from '~/composables/data/useDatabase'
 import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 
 type Handler<T> = (payload: T) => void
@@ -32,10 +32,22 @@ export const orderEvents = {
  * Call ONCE in layout. Creates a single realtime channel for orders.
  */
 export function useOrdersChannel(tenantId: Ref<string | null>) {
+  const { orders } = useDatabase()
+
+  const fetchAndBroadcast = async (
+    row: Record<string, unknown>,
+    handlers: Set<Handler<Order>>,
+  ) => {
+    const id = (row as { id: string }).id
+    const order = await orders.getById(id)
+
+    if (order) handlers.forEach((h) => h(order))
+  }
+
   useRealtimeWatch('orders', tenantId, {
     column: 'tenant_id',
-    onInsert: (row) => insertHandlers.forEach((h) => h(mapOrder(row))),
-    onUpdate: (row) => updateHandlers.forEach((h) => h(mapOrder(row))),
+    onInsert: (row) => fetchAndBroadcast(row, insertHandlers),
+    onUpdate: (row) => fetchAndBroadcast(row, updateHandlers),
     onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
   })
 }

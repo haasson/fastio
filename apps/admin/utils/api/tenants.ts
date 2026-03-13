@@ -26,6 +26,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     deliveryMinOrder: row.delivery_min_order,
     deliveryFee: row.delivery_fee,
     deliveryDescription: row.delivery_description,
+    currency: row.currency,
     createdAt: row.created_at,
   }
 }

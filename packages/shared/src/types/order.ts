@@ -16,21 +16,19 @@ export type OrderStatus = {
 export type OrderStatusData = Partial<Pick<OrderStatus, 'name' | 'groupType' | 'quickActions'>>
 
 export type OrderItem = {
-  dishId: string
+  id?: string
+  orderId?: string
+  dishId: string | null
   dishName: string
-  categoryName?: string
+  categoryName: string | null
   price: number
   quantity: number
   removedIngredients: string[]
-  modifiers?: OrderItemModifier[]
+  modifiers: OrderItemModifier[]
+  sortOrder?: number
 }
 
 export type { OrderItemModifier } from './modifier'
-
-export type OrderCustomer = {
-  name: string
-  phone: string
-}
 
 export type OrderNote = {
   id: string
@@ -60,7 +58,9 @@ export type OrderEvent = {
 export type Order = {
   id: string
   tenantId: string
-  customer: OrderCustomer
+  customerName: string
+  customerPhone: string
+  customerEmail: string | null
   items: OrderItem[]
   deliveryType: OrderDeliveryType
   address: string | null

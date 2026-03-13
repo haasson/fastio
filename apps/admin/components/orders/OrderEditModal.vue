@@ -151,8 +151,8 @@ const statusMenuItems = computed(() => statuses
 
 const buildForm = (o: Order) => ({
   status: o.status,
-  customerName: o.customer.name,
-  customerPhone: o.customer.phone,
+  customerName: o.customerName,
+  customerPhone: o.customerPhone,
   deliveryType: o.deliveryType,
   address: o.address ?? '',
   items: o.items.map((i) => ({ ...i })),
@@ -200,7 +200,8 @@ const onSave = async () => {
   saving.value = true
   try {
     const updated = await api.orders.update(props.order.id, {
-      customer: { name: form.customerName, phone: form.customerPhone },
+      customerName: form.customerName,
+      customerPhone: form.customerPhone,
       items: form.items,
       deliveryType: form.deliveryType,
       address: form.address || null,

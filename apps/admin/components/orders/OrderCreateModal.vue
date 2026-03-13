@@ -117,7 +117,8 @@ const onSave = async () => {
     const created = await api.orders.create({
       tenantId: props.tenantId,
       branchId,
-      customer: { name: form.customerName, phone: form.customerPhone },
+      customerName: form.customerName,
+      customerPhone: form.customerPhone,
       items: form.items,
       deliveryType: form.deliveryType,
       address: form.address || null,

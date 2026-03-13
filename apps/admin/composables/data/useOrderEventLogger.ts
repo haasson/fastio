@@ -21,8 +21,8 @@ type FieldMapping = {
 }
 
 const FIELD_MAPPINGS: FieldMapping[] = [
-  { field: 'customer_name', formVal: (f) => f.customerName, orderVal: (o) => o.customer.name },
-  { field: 'customer_phone', formVal: (f) => f.customerPhone, orderVal: (o) => o.customer.phone },
+  { field: 'customer_name', formVal: (f) => f.customerName, orderVal: (o) => o.customerName },
+  { field: 'customer_phone', formVal: (f) => f.customerPhone, orderVal: (o) => o.customerPhone },
   { field: 'address', formVal: (f) => f.address || null, orderVal: (o) => o.address },
   { field: 'payment_type', formVal: (f) => f.paymentType, orderVal: (o) => o.paymentType },
   { field: 'delivery_fee', formVal: (f) => f.deliveryFee, orderVal: (o) => o.deliveryFee },

@@ -23,8 +23,8 @@
     </div>
 
     <div class="customer">
-      <span class="customer-name">{{ order.customer.name }}</span>
-      <span class="customer-phone">{{ order.customer.phone }}</span>
+      <span class="customer-name">{{ order.customerName }}</span>
+      <span class="customer-phone">{{ order.customerPhone }}</span>
     </div>
 
     <div class="items-summary">{{ itemsSummary }}</div>

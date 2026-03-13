@@ -5,10 +5,9 @@ import type {
   TenantNotifications,
   TenantSubscription,
   SiteContent,
-  OrderCustomer,
-  OrderItem,
   OrderDeliveryType,
   OrderStatusGroup,
+  OrderItemModifier,
   DishIngredient,
   DishNutrition,
   DishTag,
@@ -32,6 +31,7 @@ export type TenantRow = {
   delivery_min_order: number
   delivery_fee: number
   delivery_description: string
+  currency: string
   created_at: string
 }
 
@@ -122,11 +122,25 @@ export type ComboBranchSettingRow = {
   active: boolean | null
 }
 
+export type OrderItemRow = {
+  id: string
+  order_id: string
+  dish_id: string | null
+  dish_name: string
+  category_name: string | null
+  price: number
+  quantity: number
+  removed_ingredients: string[]
+  modifiers: OrderItemModifier[]
+  sort_order: number
+}
+
 export type OrderRow = {
   id: string
   tenant_id: string
-  customer: OrderCustomer
-  items: OrderItem[]
+  customer_name: string
+  customer_phone: string
+  customer_email: string | null
   delivery_type: OrderDeliveryType
   address: string | null
   comment: string | null
@@ -142,6 +156,7 @@ export type OrderRow = {
   idempotency_key: string | null
   created_at: string
   updated_at: string
+  order_items?: OrderItemRow[]
 }
 
 export type OrderStatusRow = {

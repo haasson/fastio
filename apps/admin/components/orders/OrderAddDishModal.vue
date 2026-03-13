@@ -239,7 +239,7 @@ const onConfirm = () => {
     .filter((i) => removed[i.name])
     .map((i) => i.name)
 
-  const categoryName = categories.value.find((c) => c.id === selectedDish.value!.categoryId)?.name
+  const categoryName = categories.value.find((c) => c.id === selectedDish.value!.categoryId)?.name ?? null
 
   // Build modifiers snapshot
   const modifiers: OrderItemModifier[] = []
@@ -264,7 +264,7 @@ const onConfirm = () => {
     price: selectedDish.value.price,
     quantity: props.editItem?.quantity ?? 1,
     removedIngredients,
-    ...(modifiers.length > 0 ? { modifiers } : {}),
+    modifiers,
   }
 
   if (props.editItem) {

@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
 
   const { data } = await supabase
     .from('orders')
-    .select('*')
+    .select('*, order_items(*)')
     .eq('id', id)
     .eq('tenant_id', tenantId)
     .maybeSingle()

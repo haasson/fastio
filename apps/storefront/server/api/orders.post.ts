@@ -170,7 +170,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Пересчитываем subtotal по реальным ценам + валидация модификаторов
-  const serverItems = body.items.map((item: { dishId: string; dishName: string; quantity: number; removedIngredients: string[]; modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[] }) => {
+  const serverItems = body.items.map((item: { dishId: string; dishName: string; categoryName?: string; quantity: number; removedIngredients: string[]; modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[] }) => {
     const dish = dishMap.get(item.dishId)!
     const basePrice = Number(dish.price)
 
@@ -212,6 +212,7 @@ export default defineEventHandler(async (event) => {
     return {
       dishId: item.dishId,
       dishName: item.dishName,
+      categoryName: item.categoryName ?? null,
       price: basePrice,
       quantity: item.quantity,
       removedIngredients: item.removedIngredients ?? [],
@@ -265,8 +266,9 @@ export default defineEventHandler(async (event) => {
     .from('orders')
     .insert({
       tenant_id: tenantId,
-      customer: body.customer,
-      items: serverItems,
+      customer_name: body.customer.name,
+      customer_phone: body.customer.phone,
+      customer_email: body.customer.email ?? null,
       delivery_type: deliveryType,
       address: body.address ?? null,
       comment: body.comment ?? null,
@@ -298,6 +300,26 @@ export default defineEventHandler(async (event) => {
     }
 
     throw createError({ statusCode: 500, message: error.message })
+  }
+
+  // Insert order items
+  if (data) {
+    const itemRows = serverItems.map((item: { dishId: string; dishName: string; categoryName?: string; price: number; quantity: number; removedIngredients: string[]; modifiers?: { groupName: string; optionName: string; priceDelta: number }[] }, i: number) => ({
+      order_id: data.id,
+      dish_id: item.dishId,
+      dish_name: item.dishName,
+      category_name: item.categoryName ?? null,
+      price: item.price,
+      quantity: item.quantity,
+      removed_ingredients: item.removedIngredients ?? [],
+      modifiers: item.modifiers ?? [],
+      sort_order: i,
+    }))
+
+    const { error: itemsError } = await supabase.from('order_items').insert(itemRows)
+    if (itemsError) {
+      console.error('[order_items insert]', itemsError)
+    }
   }
 
   // Инкрементируем счётчик использований промокода

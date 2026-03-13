@@ -30,8 +30,8 @@
 
     <!-- Клиент -->
     <div class="customer">
-      <span class="customer-name">{{ order.customer.name }}</span>
-      <a :href="`tel:${order.customer.phone}`">{{ order.customer.phone }}</a>
+      <span class="customer-name">{{ order.customerName }}</span>
+      <a :href="`tel:${order.customerPhone}`">{{ order.customerPhone }}</a>
     </div>
 
     <!-- Адрес -->
@@ -41,7 +41,7 @@
 
     <!-- Состав -->
     <ul class="items">
-      <li v-for="item in order.items" :key="item.dishId" class="item">
+      <li v-for="(item, i) in order.items" :key="item.id ?? i" class="item">
         <span class="item-name">{{ item.dishName }}</span>
         <span class="item-qty">× {{ item.quantity }}</span>
         <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>

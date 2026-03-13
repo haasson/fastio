@@ -28,6 +28,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     deliveryMinOrder: row.delivery_min_order as number,
     deliveryFee: row.delivery_fee as number,
     deliveryDescription: row.delivery_description as string,
+    currency: row.currency as string,
     createdAt: row.created_at as string,
   }
 }
@@ -66,8 +67,21 @@ export function mapOrder(row: Record<string, unknown>): Order {
   return {
     id: row.id as string,
     tenantId: row.tenant_id as string,
-    customer: row.customer as Order['customer'],
-    items: row.items as Order['items'],
+    customerName: row.customer_name as string,
+    customerPhone: row.customer_phone as string,
+    customerEmail: row.customer_email as string | null,
+    items: ((row.order_items ?? []) as Record<string, unknown>[]).map((item) => ({
+      id: item.id as string,
+      orderId: item.order_id as string,
+      dishId: item.dish_id as string | null,
+      dishName: item.dish_name as string,
+      categoryName: item.category_name as string | null,
+      price: item.price as number,
+      quantity: item.quantity as number,
+      removedIngredients: (item.removed_ingredients ?? []) as string[],
+      modifiers: (item.modifiers ?? []) as Order['items'][0]['modifiers'],
+      sortOrder: item.sort_order as number,
+    })),
     deliveryType: row.delivery_type as Order['deliveryType'],
     address: row.address as string | null,
     comment: row.comment as string | null,
@@ -81,6 +95,7 @@ export function mapOrder(row: Record<string, unknown>): Order {
     branchId: row.branch_id as string | null,
     deliveryZoneId: row.delivery_zone_id as string | null,
     createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
   }
 }
 

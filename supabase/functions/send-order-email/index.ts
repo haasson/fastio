@@ -17,6 +17,12 @@ Deno.serve(async (req) => {
   const order = payload.record
   const tenantId = order.tenant_id
 
+  const { data: orderItems } = await supabase
+    .from('order_items')
+    .select('dish_name, quantity, price')
+    .eq('order_id', order.id)
+    .order('sort_order')
+
   const { data: tenant } = await supabase
     .from('tenants')
     .select('notifications, name')
@@ -27,9 +33,9 @@ Deno.serve(async (req) => {
     return new Response('No email configured', { status: 200 })
   }
 
-  const items = order.items as Array<{ dishName: string; quantity: number; price: number }>
-  const itemsList = items
-    .map((item) => `${item.dishName} x${item.quantity} — ${item.price * item.quantity} ₽`)
+  const itemsList = (orderItems ?? [])
+    .map((item: { dish_name: string; quantity: number; price: number }) =>
+      `${item.dish_name} x${item.quantity} — ${Number(item.price) * item.quantity} ₽`)
     .join('\n')
 
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
@@ -45,7 +51,7 @@ Deno.serve(async (req) => {
       content: [{
         type: 'text/plain',
         value: [
-          `Заказ от: ${order.customer.name} (${order.customer.phone})`,
+          `Заказ от: ${order.customer_name} (${order.customer_phone})`,
           `Тип: ${order.delivery_type === 'delivery' ? 'Доставка' : 'Самовывоз'}`,
           order.address ? `Адрес: ${order.address}` : '',
           '',
