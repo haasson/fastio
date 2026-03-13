@@ -1,6 +1,5 @@
 <template>
   <section class="section">
-    <div class="section-label">Состав</div>
     <ul class="items-list">
       <li v-for="(item, idx) in items" :key="`${item.dishId}-${idx}`" class="item-row">
         <div class="item-body">
