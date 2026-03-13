@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { toRefs } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder } from '@fastio/ui'
@@ -182,8 +182,7 @@ const emit = defineEmits<{
   dishesChanged: []
 }>()
 
-const tenantIdRef = computed(() => props.tenantId)
-const categoryIdRef = computed(() => props.categoryId)
+const { tenantId: tenantIdRef, categoryId: categoryIdRef } = toRefs(props)
 
 const { dishes, loading: dishesLoading, add: rawAddDish, update: rawUpdateDish, remove: rawRemoveDish, toggleActive, reorder }
   = useDishes(tenantIdRef, categoryIdRef)

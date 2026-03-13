@@ -109,7 +109,15 @@ export type DishRow = {
 export type DishBranchPriceRow = {
   dish_id: string
   branch_id: string
-  price: number
+  price: number | null
+  active: boolean | null
+}
+
+export type ComboBranchSettingRow = {
+  combo_id: string
+  branch_id: string
+  price: number | null
+  active: boolean | null
 }
 
 export type OrderRow = {
@@ -129,7 +137,9 @@ export type OrderRow = {
   payment_type: 'cash' | 'card' | 'online'
   branch_id: string | null
   delivery_zone_id: string | null
+  idempotency_key: string | null
   created_at: string
+  updated_at: string
 }
 
 export type OrderStatusRow = {

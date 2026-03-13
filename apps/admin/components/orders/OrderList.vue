@@ -52,6 +52,14 @@
       </div>
     </template>
 
+    <UiPagination
+      v-if="total > pageSize"
+      v-model:page="page"
+      :item-count="total"
+      :page-size="pageSize"
+      size="medium"
+    />
+
     <OrderEditModal
       v-model="editModalOpen"
       :order="editingOrder"
@@ -69,9 +77,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
+import { computed, toRefs, reactive } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { UiSegmentedControl, UiButton } from '@fastio/ui'
+import { UiSegmentedControl, UiButton, UiPagination } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderRow from '~/components/orders/OrderRow.vue'
@@ -94,14 +102,12 @@ const emit = defineEmits<{
   ordersChanged: []
 }>()
 
-const tenantIdRef = computed(() => props.tenantId)
-const statusIdRef = computed(() => props.statusId)
-const branchIdRef = computed(() => props.branchId)
+const { tenantId: tenantIdRef, statusId: statusIdRef, branchId: branchIdRef } = toRefs(props)
 
 const branchStore = useBranchStore()
 const { statuses } = useOrderStatusesStore()
 
-const { orders, loading, updateStatus: updateOrderStatus } = useOrders(tenantIdRef, statusIdRef, branchIdRef, computed(() => statuses))
+const { orders, loading, updateStatus: updateOrderStatus, page, pageSize, total } = useOrders(tenantIdRef, statusIdRef, branchIdRef, computed(() => statuses))
 
 const orderView = useLocalStorage<'cards' | 'list'>('orders:view', 'cards')
 const updatingIds = reactive(new Set<string>())

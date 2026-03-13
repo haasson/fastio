@@ -1,6 +1,7 @@
 import { computed, ref, watch, onUnmounted, type Ref } from 'vue'
 import type { Order, OrderStatus } from '@fastio/shared'
 import type { OrderFilter } from '~/utils/api/orders'
+import { PAGE_SIZE } from '~/utils/api/orders'
 import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
@@ -17,9 +18,11 @@ export function useOrders(
   const tenantStore = useTenantStore()
   const _orders = ref<Order[]>([])
   const loading = ref(false)
+  const page = ref(1)
+  const total = ref(0)
 
-  // Stored ascending (oldest-first), reversed for display (newest-first)
-  const orders = computed(() => [..._orders.value].reverse())
+  // API возвращает newest-first — реверс не нужен
+  const orders = computed(() => _orders.value)
 
   const shouldInclude = (order: Order) => filter.value !== null
     && order.status === filter.value
@@ -28,23 +31,41 @@ export function useOrders(
   const fetchOrders = async () => {
     if (!tenantId.value || filter.value === null) {
       _orders.value = []
+      total.value = 0
 
       return
     }
     loading.value = true
     try {
-      _orders.value = await api.orders.list(tenantId.value, filter.value, branchId.value)
+      const result = await api.orders.list(tenantId.value, filter.value, branchId.value, page.value)
+
+      _orders.value = result.orders
+      total.value = result.total
     } finally {
       loading.value = false
     }
   }
 
-  watch([tenantId, filter, branchId], fetchOrders, { immediate: true })
+  // При смене фильтра/бранча сбрасываем на первую страницу
+  watch([tenantId, filter, branchId], () => {
+    if (page.value !== 1) {
+      page.value = 1 // watch(page) сам вызовет fetchOrders
+    } else {
+      fetchOrders()
+    }
+  }, { immediate: true })
+
+  // При смене страницы просто догружаем
+  watch(page, fetchOrders)
 
   // Subscribe to shared channel events
   const offInsert = orderEvents.onInsert((order) => {
     if (!shouldInclude(order)) return
-    if (!_orders.value.find((o) => o.id === order.id)) _orders.value.push(order)
+    // Добавляем в начало только на первой странице (newest-first)
+    if (page.value === 1 && !_orders.value.find((o) => o.id === order.id)) {
+      _orders.value.unshift(order)
+      total.value++
+    }
   })
 
   const offUpdate = orderEvents.onUpdate((order) => {
@@ -53,13 +74,17 @@ export function useOrders(
     if (idx === -1) return
     if (!shouldInclude(order)) {
       _orders.value.splice(idx, 1)
+      total.value = Math.max(0, total.value - 1)
     } else {
       _orders.value[idx] = order
     }
   })
 
   const offDelete = orderEvents.onDelete(({ id }) => {
+    const existed = _orders.value.some((o) => o.id === id)
+
     _orders.value = _orders.value.filter((o) => o.id !== id)
+    if (existed) total.value = Math.max(0, total.value - 1)
   })
 
   onUnmounted(() => {
@@ -98,10 +123,11 @@ export function useOrders(
     if (i === -1) return
     if (newStatusId !== filter.value) {
       _orders.value.splice(i, 1)
+      total.value = Math.max(0, total.value - 1)
     } else {
       _orders.value[i] = { ..._orders.value[i], status: newStatusId }
     }
   }
 
-  return { orders, loading, updateStatus }
+  return { orders, loading, updateStatus, page, pageSize: PAGE_SIZE, total }
 }

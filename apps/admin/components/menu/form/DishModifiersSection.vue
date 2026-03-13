@@ -108,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { toRefs } from 'vue'
 import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, useMessage } from '@fastio/ui'
 import { useDishModifiersEditor } from '~/composables/menu/useDishModifiersEditor'
 
@@ -121,10 +121,7 @@ const props = defineProps<{
 
 const { success } = useMessage()
 
-const tenantId = computed(() => props.tenantId)
-const categoryId = computed(() => props.categoryId)
-const dishId = computed(() => props.dishId)
-const refreshKey = computed(() => props.refreshKey)
+const { tenantId, categoryId, dishId, refreshKey } = toRefs(props)
 
 const {
   loading, availableGroups, attachedGroups, selectedGroupId, copyFromDishId, addMode,

@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, toRefs, reactive, watch } from 'vue'
 import { UiModal, UiButton, UiIcon, UiTag } from '@fastio/ui'
 import type { Dish, OrderItem, DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
@@ -146,7 +146,7 @@ const emit = defineEmits<{
   'update': [item: OrderItem]
 }>()
 
-const tenantIdRef = computed(() => props.tenantId)
+const { tenantId: tenantIdRef } = toRefs(props)
 const { loading, categories, allDishes, fetchData, getDishModifiers } = useOrderDishPicker(tenantIdRef)
 
 const selectedCategoryId = ref<string | null>(null)

@@ -33,6 +33,7 @@ export type DishModifierGroup = {
 }
 
 export type OrderItemModifier = {
+  optionId?: string
   groupName: string
   optionName: string
   priceDelta: number

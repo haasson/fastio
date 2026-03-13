@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { toRefs } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiSwitch, UiPhotoPlaceholder } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
@@ -110,8 +110,7 @@ const emit = defineEmits<{
   combosChanged: []
 }>()
 
-const tenantIdRef = computed(() => props.tenantId)
-const categoryIdRef = computed(() => props.categoryId)
+const { tenantId: tenantIdRef, categoryId: categoryIdRef } = toRefs(props)
 
 const { combos, loading: combosLoading, add: rawAddCombo, update: rawUpdateCombo, remove: rawRemoveCombo, toggleActive, reorder }
   = useCombos(tenantIdRef, categoryIdRef)

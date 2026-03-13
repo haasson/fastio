@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, toRefs, watch } from 'vue'
 import { UiSkeleton, UiTabs } from '@fastio/ui'
 import type { Category, CategoryType, SpecialCategoryType } from '@fastio/shared'
 import { SPECIAL_CATEGORY_TYPES } from '@fastio/shared'
@@ -60,14 +60,14 @@ const emit = defineEmits<{
   'categoriesLoaded': [cats: Category[]]
 }>()
 
-const tenantIdRef = computed(() => props.tenantId)
+const { tenantId: tenantIdRef } = toRefs(props)
 
 const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory, reorder: reorderCategories, updatePhoto: updateCategoryPhoto, removePhoto: removeCategoryPhoto }
   = useCategories(tenantIdRef)
 
 watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
 
-const dishCountByCategory = computed(() => props.dishCounts)
+const { dishCounts: dishCountByCategory } = toRefs(props)
 
 const existingSpecialTypes = computed<SpecialCategoryType[]>(() => categories.value
   .map((c) => c.type)

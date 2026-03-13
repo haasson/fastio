@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, toRefs, watch } from 'vue'
 import { UiTimeline, UiTimelineItem } from '@fastio/ui'
 import { COLORS } from '@fastio/kit'
 import type { OrderEvent, OrderItem } from '@fastio/shared'
@@ -71,7 +71,7 @@ const props = defineProps<{
 
 const { getStatusColor } = useStatusColor()
 
-const orderId = computed(() => props.orderId)
+const { orderId } = toRefs(props)
 const { events, loading, refresh } = useOrderEvents(orderId)
 const now = new Date()
 

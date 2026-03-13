@@ -75,4 +75,5 @@ export type Order = {
   branchId: string | null
   deliveryZoneId: string | null
   createdAt: string
+  updatedAt: string
 }

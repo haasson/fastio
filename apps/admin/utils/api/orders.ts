@@ -35,6 +35,7 @@ export type OrderCreateData = {
   total: number
   status: string
   paymentType: 'cash' | 'card' | 'online'
+  idempotencyKey?: string | null
 }
 
 export type OrderFilter = string | null
@@ -60,6 +61,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     branchId: row.branch_id,
     deliveryZoneId: row.delivery_zone_id,
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }
 }
 
@@ -79,22 +81,42 @@ const toOrderPayload = (data: OrderUpdateData): Partial<OrderRow> => filterDefin
   payment_type: data.paymentType,
 }) as Partial<OrderRow>
 
+export const PAGE_SIZE = 50
+
 export const ordersApi = {
-  async list(sb: SupabaseClient, tenantId: string, filter: string, branchId: string | null = null) {
+  async list(
+    sb: SupabaseClient,
+    tenantId: string,
+    filter: string,
+    branchId: string | null = null,
+    page = 1,
+  ) {
+    const from = (page - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
     let q = sb
       .from('orders')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('tenant_id', tenantId)
       .eq('status', filter)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
+      .range(from, to)
 
     if (branchId !== null) {
       q = q.eq('branch_id', branchId)
     }
 
-    const data = await query(q)
+    const { data, error, count } = await q
 
-    return (data ?? []).map(mapOrder)
+    if (error) {
+      console.error('[Supabase]', error.message, error)
+      throw new Error(error.message)
+    }
+
+    return {
+      orders: (data ?? []).map(mapOrder),
+      total: count ?? 0,
+    }
   },
 
   async update(sb: SupabaseClient, orderId: string, data: OrderUpdateData): Promise<Order | null> {
@@ -128,6 +150,7 @@ export const ordersApi = {
         ...toOrderPayload(data),
         tenant_id: data.tenantId,
         branch_id: data.branchId,
+        ...(data.idempotencyKey ? { idempotency_key: data.idempotencyKey } : {}),
       }).select().single(),
     )
 

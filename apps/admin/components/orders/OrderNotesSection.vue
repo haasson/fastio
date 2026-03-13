@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, toRefs, watch } from 'vue'
 import { UiInput, UiButton } from '@fastio/ui'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 import { useOrderNotes } from '~/composables/data/useOrderNotes'
@@ -51,8 +51,7 @@ const props = defineProps<{
   refreshKey: number
 }>()
 
-const orderId = computed(() => props.orderId)
-const tenantId = computed(() => props.tenantId)
+const { orderId, tenantId } = toRefs(props)
 const { notes, loading: notesLoading, fetch: fetchNotes, add: addNote } = useOrderNotes(orderId, tenantId)
 
 const addingNote = ref(false)

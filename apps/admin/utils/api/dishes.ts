@@ -153,23 +153,24 @@ export const dishesApi = {
     return (data ?? []).map((raw: Record<string, unknown>): DishBranchPrice => {
       const row = raw as DishBranchPriceRow
 
-      return { dishId: row.dish_id, branchId: row.branch_id, price: row.price }
+      return { dishId: row.dish_id, branchId: row.branch_id, price: row.price, active: row.active }
     })
   },
 
   async setBranchPrices(
     sb: SupabaseClient,
     dishId: string,
-    prices: { branchId: string; price: number }[],
+    prices: { branchId: string; price: number | null; active: boolean | null }[],
   ): Promise<void> {
-    // Delete all existing overrides for this dish first
     await query(sb.from('dish_branch_prices').delete().eq('dish_id', dishId))
 
-    if (prices.length === 0) return
+    const rows = prices.filter((p) => p.price != null || p.active === false)
+
+    if (rows.length === 0) return
 
     await query(
       sb.from('dish_branch_prices').insert(
-        prices.map((p) => ({ dish_id: dishId, branch_id: p.branchId, price: p.price })),
+        rows.map((p) => ({ dish_id: dishId, branch_id: p.branchId, price: p.price, active: p.active })),
       ),
     )
   },

@@ -126,9 +126,12 @@ export default defineEventHandler(async (event) => {
   }
 
   // Проверяем что все блюда существуют, принадлежат тенанту и активны
-  const dishMap = new Map(dishes!.map(d => [d.id as string, d]))
+  const dishMap = new Map((dishes ?? []).map(d => [d.id as string, d]))
 
   for (const item of body.items) {
+    if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+      throw createError({ statusCode: 400, message: `Некорректное количество для "${item.dishName}"` })
+    }
     const dish = dishMap.get(item.dishId)
     if (!dish) {
       throw createError({ statusCode: 400, message: `Блюдо ${item.dishId} не найдено` })
@@ -167,7 +170,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Пересчитываем subtotal по реальным ценам + валидация модификаторов
-  const serverItems = body.items.map((item: { dishId: string; dishName: string; quantity: number; removedIngredients: string[]; modifiers?: { groupName: string; optionName: string; priceDelta: number }[] }) => {
+  const serverItems = body.items.map((item: { dishId: string; dishName: string; quantity: number; removedIngredients: string[]; modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[] }) => {
     const dish = dishMap.get(item.dishId)!
     const basePrice = Number(dish.price)
 
@@ -177,26 +180,32 @@ export default defineEventHandler(async (event) => {
 
     if (item.modifiers && item.modifiers.length > 0) {
       for (const mod of item.modifiers) {
-        // Find matching option by groupName + optionName
-        let found = false
+        let validOpt: ValidOption | undefined
 
         if (dishValidOptions) {
-          for (const [, validOpt] of dishValidOptions) {
-            if (validOpt.groupName === mod.groupName && validOpt.optionName === mod.optionName) {
-              serverModifiers.push({
-                groupName: validOpt.groupName,
-                optionName: validOpt.optionName,
-                priceDelta: validOpt.priceDelta,
-              })
-              found = true
-              break
+          // Сначала матчим по optionId (надёжно), fallback — по именам (для старых клиентов)
+          if (mod.optionId) {
+            validOpt = dishValidOptions.get(mod.optionId)
+          }
+          if (!validOpt) {
+            for (const [, opt] of dishValidOptions) {
+              if (opt.groupName === mod.groupName && opt.optionName === mod.optionName) {
+                validOpt = opt
+                break
+              }
             }
           }
         }
 
-        if (!found) {
+        if (!validOpt) {
           throw createError({ statusCode: 400, message: `Модификатор "${mod.optionName}" недоступен для "${item.dishName}"` })
         }
+
+        serverModifiers.push({
+          groupName: validOpt.groupName,
+          optionName: validOpt.optionName,
+          priceDelta: validOpt.priceDelta,
+        })
       }
     }
 
@@ -230,9 +239,27 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // discountAmount — пока доверяем клиенту (TODO: серверная валидация промокодов)
-  const discountAmount = Math.max(0, Number(body.discountAmount) || 0)
+  // Серверная валидация промокода
+  let discountAmount = 0
+
+  if (body.promoCode) {
+    const { data: promoResult } = await supabase
+      .rpc('check_promo_code', { p_tenant_id: tenantId, p_code: body.promoCode })
+
+    if (promoResult?.valid) {
+      const raw = promoResult.discount_type === 'percent'
+        ? Math.round(subtotal * Number(promoResult.discount_value) / 100)
+        : Number(promoResult.discount_value)
+
+      discountAmount = Math.min(raw, subtotal)
+    }
+  }
+
   const total = subtotal - discountAmount + deliveryFee
+
+  const idempotencyKey = typeof body.idempotencyKey === 'string' && body.idempotencyKey.trim()
+    ? body.idempotencyKey.trim()
+    : null
 
   const { data, error } = await supabase
     .from('orders')
@@ -250,13 +277,36 @@ export default defineEventHandler(async (event) => {
       total,
       status: 'new',
       payment_type: paymentType,
+      ...(idempotencyKey && { idempotency_key: idempotencyKey }),
       ...(orderBranchId && { branch_id: orderBranchId }),
       ...(matchedZone && { delivery_zone_id: matchedZone.id }),
     })
     .select('id')
     .single()
 
-  if (error) throw createError({ statusCode: 500, message: error.message })
+  if (error) {
+    // Дубль — заказ с таким idempotency key уже существует
+    if (error.code === '23505' && idempotencyKey) {
+      const { data: existing } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('idempotency_key', idempotencyKey)
+        .eq('tenant_id', tenantId)
+        .single()
+
+      if (existing) return { id: existing.id }
+    }
+
+    throw createError({ statusCode: 500, message: error.message })
+  }
+
+  // Инкрементируем счётчик использований промокода
+  if (body.promoCode && discountAmount > 0) {
+    await supabase.rpc('increment_promo_code_usage', {
+      p_tenant_id: tenantId,
+      p_code: body.promoCode,
+    })
+  }
 
   return { id: data.id }
 })
