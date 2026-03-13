@@ -11,9 +11,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  title: string
-}>()
+defineProps<{ title: string }>()
 </script>
 
 <style scoped lang="scss">
@@ -23,19 +21,11 @@ defineProps<{
   justify-content: space-between;
   gap: 12px;
 }
-
-.left {
+.left, .right {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
-.right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .label {
   font-size: 12px;
   font-weight: 600;

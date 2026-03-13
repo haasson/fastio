@@ -164,9 +164,8 @@
 
 <script setup lang="ts">
 import { inject, ref, watch } from 'vue'
-import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiInput, UiButton, UiIcon, useMessage } from '@fastio/ui'
+import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiInput, UiButton, UiIcon, useMessage, UiSectionHeader } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import { themePresets, fontOptions } from '~/config/theme-presets'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 import { getPresetPalette } from '@fastio/shared'

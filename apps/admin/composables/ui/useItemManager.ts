@@ -1,0 +1,27 @@
+import { type Ref } from 'vue'
+import { useConfirm } from '@fastio/kit'
+import useDrawer from '~/composables/ui/useDrawer'
+import useDelayedLoading from '~/composables/ui/useDelayedLoading'
+
+type Options = {
+  loading: Ref<boolean>
+  remove: (id: string) => Promise<void>
+  confirmTitle: string
+  confirmText?: string
+  confirmType?: 'error' | 'warning'
+}
+
+export function useItemManager<T extends { id: string }>(options: Options) {
+  const { loading, remove, confirmTitle, confirmText = 'Удалить', confirmType = 'error' } = options
+  const { confirm } = useConfirm()
+  const { showSkeleton } = useDelayedLoading(loading)
+  const { isOpen: modalOpen, data: editingItem, open: openModal, close: closeModal } = useDrawer<T>()
+
+  const confirmDelete = async (id: string) => {
+    const ok = await confirm({ title: confirmTitle, confirmText, confirmType })
+
+    if (ok) await remove(id)
+  }
+
+  return { showSkeleton, modalOpen, editingItem, openModal, closeModal, confirmDelete }
+}

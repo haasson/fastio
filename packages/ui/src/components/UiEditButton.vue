@@ -3,21 +3,19 @@
     type="text"
     size="tiny"
     icon="pencil"
-    class="edit-btn-root"
+    class="edit-button-root"
     @click="$emit('click')"
   />
 </template>
 
 <script setup lang="ts">
-import { UiButton } from '@fastio/ui'
+import UiButton from './UiButton.vue'
 
-defineEmits<{
-  click: []
-}>()
+defineEmits<{ click: [] }>()
 </script>
 
 <style scoped lang="scss">
-.edit-btn-root {
+.edit-button-root {
   opacity: 0.4;
   transition: opacity 0.15s;
 

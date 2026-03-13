@@ -48,14 +48,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useNow } from '@vueuse/core'
+import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiTag } from '@fastio/ui'
-import type { Order, OrderStatus } from '@fastio/shared'
+import type { Order } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS } from '~/config/order-options'
-import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { useTenantStore } from '~/stores/tenant'
+import { useOrderCard } from '~/composables/ui/useOrderCard'
 
 const props = defineProps<{
   order: Order
@@ -68,41 +66,10 @@ const emit = defineEmits<{
   'open-edit': [order: Order]
 }>()
 
-const { statuses } = useOrderStatusesStore()
-const tenantStore = useTenantStore()
-const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? true)
+const { deliveryEnabled, shortId, currentStatus, quickActionStatuses, relativeTime }
+  = useOrderCard(toRef(props, 'order'))
 
-const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
-
-const currentStatus = computed(() => statuses.find((s) => s.id === props.order.status) ?? null,
-)
-
-const quickActionStatuses = computed(() => {
-  const current = statuses.find((s) => s.id === props.order.status)
-
-  if (!current?.quickActions?.length) return []
-
-  return current.quickActions
-    .map((id) => statuses.find((s) => s.id === id))
-    .filter(Boolean) as OrderStatus[]
-})
-
-const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} × ${i.quantity}`).join(', '),
-)
-
-const now = useNow({ interval: 30_000 })
-const relativeTime = computed(() => {
-  const diff = now.value.getTime() - new Date(props.order.createdAt).getTime()
-  const min = Math.floor(diff / 60_000)
-
-  if (min < 1) return 'только что'
-  if (min < 60) return `${min} мин`
-  const h = Math.floor(min / 60)
-
-  if (h < 24) return `${h} ч`
-
-  return new Date(props.order.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
-})
+const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} × ${i.quantity}`).join(', '))
 </script>
 
 <style scoped lang="scss">

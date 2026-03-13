@@ -22,7 +22,7 @@
     <div v-if="loading" class="state-msg">Загрузка…</div>
 
     <!-- Пусто -->
-    <UiAppEmpty v-else-if="orders.length === 0" icon="orders" text="Заказов пока нет" />
+    <UiEmpty v-else-if="orders.length === 0" icon="orders" text="Заказов пока нет" />
 
     <template v-else>
       <!-- Карточки -->
@@ -78,8 +78,7 @@ import type { Order } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderRow from '~/components/orders/OrderRow.vue'
 import OrderModal from '~/components/orders/OrderModal.vue'
-import UiAppEmpty from '~/components/ui/AppEmpty.vue'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import { UiEmpty, UiSectionHeader } from '@fastio/ui'
 import { useOrders } from '~/composables/data/useOrders'
 import { useBranchStore } from '~/stores/branch'
 import { useOrderStatusesStore } from '~/stores/order-statuses'

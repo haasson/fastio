@@ -122,7 +122,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import {
   UiDrawer,
-  UiForm, UiInput, UiSwitch, UiText,
+  UiForm, UiInput, UiSwitch, UiText, UiSectionHeader,
 } from '@fastio/ui'
 import {
   YandexMap,
@@ -132,7 +132,7 @@ import {
   YandexMapListener,
 } from 'vue-yandex-maps'
 import type { YandexMapListenerSettings } from 'vue-yandex-maps'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 import UiColorPicker from '~/components/ui/ColorPicker.vue'

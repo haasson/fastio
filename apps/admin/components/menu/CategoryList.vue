@@ -2,7 +2,7 @@
   <div class="categories-root">
     <UiSectionHeader title="Категории">
       <template #left>
-        <AppEditBtn @click="managerOpen = true" />
+        <UiEditButton @click="managerOpen = true" />
       </template>
     </UiSectionHeader>
 
@@ -40,11 +40,9 @@
 
 <script setup lang="ts">
 import { ref, computed, toRefs, watch } from 'vue'
-import { UiSkeleton, UiTabs } from '@fastio/ui'
+import { UiEditButton, UiSkeleton, UiTabs, UiSectionHeader } from '@fastio/ui'
 import type { Category, CategoryType, SpecialCategoryType } from '@fastio/shared'
 import { SPECIAL_CATEGORY_TYPES } from '@fastio/shared'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
-import AppEditBtn from '~/components/ui/AppEditBtn.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
 import { useCategories } from '~/composables/data/useCategories'

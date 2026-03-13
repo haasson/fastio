@@ -12,7 +12,7 @@
       <UiSkeleton v-if="loading" text :repeat="4" />
 
       <template v-else>
-        <UiAppEmpty v-if="dishes.length === 0" icon="dishes" :text="`Нет блюд с тегом «${tagLabel}»`" />
+        <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="`Нет блюд с тегом «${tagLabel}»`" />
 
         <VueDraggable
           v-else
@@ -66,12 +66,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiSkeleton, UiIcon, UiPhotoPlaceholder, UiAlert } from '@fastio/ui'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import { UiButton, UiSkeleton, UiIcon, UiPhotoPlaceholder, UiAlert, UiSectionHeader, UiEmpty } from '@fastio/ui'
 import type { Dish, Category, VirtualCategoryType } from '@fastio/shared'
 import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
 import type { DishFormData } from '~/utils/api/dishes'

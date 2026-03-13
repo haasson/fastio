@@ -29,7 +29,7 @@
             <UiSkeleton v-if="showSkeleton" text :repeat="6" />
 
             <template v-else-if="!dishesLoading">
-              <UiAppEmpty v-if="dishes.length === 0" icon="dishes" text="В этой категории пока нет блюд" />
+              <UiEmpty v-if="dishes.length === 0" icon="dishes" text="В этой категории пока нет блюд" />
 
               <template v-else>
                 <!-- Вид карточек -->
@@ -160,16 +160,12 @@
 import { toRefs } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder } from '@fastio/ui'
-import { useConfirm } from '@fastio/kit'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder, UiSectionHeader, UiEmpty } from '@fastio/ui'
 import type { Dish, Category } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDishes } from '~/composables/data/useDishes'
-import useDelayedLoading from '~/composables/ui/useDelayedLoading'
-import useDrawer from '~/composables/ui/useDrawer'
+import { useItemManager } from '~/composables/ui/useItemManager'
 import { tagOptions } from '~/config/dish-tags'
 
 const props = defineProps<{
@@ -205,23 +201,10 @@ const removeDish = async (...args: Parameters<typeof rawRemoveDish>) => {
   emit('dishesChanged')
 }
 
-const { showSkeleton } = useDelayedLoading(dishesLoading)
-
-const { confirm } = useConfirm()
-
 const dishView = useLocalStorage<'cards' | 'list'>('menu:dish-view', 'cards')
 
-const { isOpen: dishModalOpen, data: editingDish, open: openDishModal, close: closeDishModal } = useDrawer<Dish>()
-
-const confirmDeleteDish = async (id: string) => {
-  const ok = await confirm({
-    title: 'Удалить блюдо?',
-    confirmText: 'Удалить',
-    confirmType: 'error',
-  })
-
-  if (ok) await removeDish(id)
-}
+const { showSkeleton, modalOpen: dishModalOpen, editingItem: editingDish, openModal: openDishModal, closeModal: closeDishModal, confirmDelete: confirmDeleteDish }
+  = useItemManager<Dish>({ loading: dishesLoading, remove: removeDish, confirmTitle: 'Удалить блюдо?' })
 
 const reorderDishes = () => reorder(dishes.value)
 </script>

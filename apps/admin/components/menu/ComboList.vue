@@ -15,7 +15,7 @@
       <UiSkeleton v-if="showSkeleton" text :repeat="4" />
 
       <template v-else>
-        <UiAppEmpty v-if="combos.length === 0" icon="dishes" text="В этой категории пока нет комбо" />
+        <UiEmpty v-if="combos.length === 0" icon="dishes" text="В этой категории пока нет комбо" />
 
         <VueDraggable
           v-else
@@ -88,16 +88,12 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiSwitch, UiPhotoPlaceholder } from '@fastio/ui'
-import { useConfirm } from '@fastio/kit'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiSwitch, UiPhotoPlaceholder, UiSectionHeader, UiEmpty } from '@fastio/ui'
 import type { Combo, Category } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import UiAppEmpty from '~/components/ui/AppEmpty.vue'
 import MenuComboFormModal from '~/components/menu/ComboFormModal.vue'
 import { useCombos } from '~/composables/data/useCombos'
-import useDelayedLoading from '~/composables/ui/useDelayedLoading'
-import useDrawer from '~/composables/ui/useDrawer'
+import { useItemManager } from '~/composables/ui/useItemManager'
 import { tagOptions } from '~/config/dish-tags'
 
 const props = defineProps<{
@@ -133,21 +129,8 @@ const removeCombo = async (...args: Parameters<typeof rawRemoveCombo>) => {
   emit('combosChanged')
 }
 
-const { showSkeleton } = useDelayedLoading(combosLoading)
-
-const { confirm } = useConfirm()
-
-const { isOpen: comboModalOpen, data: editingCombo, open: openComboModal, close: closeComboModal } = useDrawer<Combo>()
-
-const confirmDeleteCombo = async (id: string) => {
-  const ok = await confirm({
-    title: 'Удалить комбо?',
-    confirmText: 'Удалить',
-    confirmType: 'error',
-  })
-
-  if (ok) await removeCombo(id)
-}
+const { showSkeleton, modalOpen: comboModalOpen, editingItem: editingCombo, openModal: openComboModal, closeModal: closeComboModal, confirmDelete: confirmDeleteCombo }
+  = useItemManager<Combo>({ loading: combosLoading, remove: removeCombo, confirmTitle: 'Удалить комбо?' })
 
 const reorderCombos = () => reorder(combos.value)
 </script>

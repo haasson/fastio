@@ -88,16 +88,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useNow } from '@vueuse/core'
+import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
-import type { Order, OrderStatus } from '@fastio/shared'
+import type { Order } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
-import { formatRelativeTime } from '~/utils/formatRelativeTime'
-import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { useTenantStore } from '~/stores/tenant'
+import { useOrderCard } from '~/composables/ui/useOrderCard'
 
 const props = defineProps<{
   order: Order
@@ -110,29 +107,10 @@ const emit = defineEmits<{
   'open-edit': [order: Order]
 }>()
 
-const { statuses } = useOrderStatusesStore()
-const tenantStore = useTenantStore()
-const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? true)
-
-const shortId = computed(() => props.order.id.slice(0, 6).toUpperCase())
-
-const currentStatus = computed(() => statuses.find((s) => s.id === props.order.status) ?? null,
-)
-
-const quickActionStatuses = computed(() => {
-  const current = statuses.find((s) => s.id === props.order.status)
-
-  if (!current?.quickActions?.length) return []
-
-  return current.quickActions
-    .map((id) => statuses.find((s) => s.id === id))
-    .filter(Boolean) as OrderStatus[]
-})
+const { deliveryEnabled, shortId, currentStatus, quickActionStatuses, relativeTime }
+  = useOrderCard(toRef(props, 'order'))
 
 const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')
-
-const now = useNow({ interval: 30_000 })
-const relativeTime = computed(() => formatRelativeTime(props.order.createdAt, now.value))
 </script>
 
 <style scoped lang="scss">

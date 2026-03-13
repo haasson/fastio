@@ -60,8 +60,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, UiSwitch, useMessage } from '@fastio/ui'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
+import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, UiSwitch, useMessage, UiSectionHeader } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'

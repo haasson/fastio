@@ -49,6 +49,11 @@ export type { UiMenuDropdownItem } from './components/UiMenuDropdown.vue'
 // Provider
 export { default as UiConfigProvider } from './components/UiConfigProvider.vue'
 
+// Layout components
+export { default as UiSectionHeader } from './components/UiSectionHeader.vue'
+export { default as UiEmpty } from './components/UiEmpty.vue'
+export { default as UiEditButton } from './components/UiEditButton.vue'
+
 // Utility components
 export { default as UiDataTable } from './components/UiDataTable.vue'
 export type { DataTableColumns, DataTableColumn } from 'naive-ui'

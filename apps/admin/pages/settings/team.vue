@@ -124,9 +124,8 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import {
   UiInput, UiSelect, UiButton, UiAlert, UiText, UiModal, UiCheckbox,
-  UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, useConfirm, useMessage,
+  UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, useConfirm, useMessage, UiSectionHeader,
 } from '@fastio/ui'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
 import { useTeam } from '~/composables/data/useTeam'
 import { usePermissions } from '~/composables/auth/usePermissions'

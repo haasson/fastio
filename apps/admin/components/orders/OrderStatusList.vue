@@ -2,7 +2,7 @@
   <div class="statuses-root">
     <UiSectionHeader title="Статусы">
       <template #left>
-        <AppEditBtn @click="managerOpen = true" />
+        <UiEditButton @click="managerOpen = true" />
       </template>
     </UiSectionHeader>
 
@@ -31,9 +31,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiTabs } from '@fastio/ui'
-import UiSectionHeader from '~/components/ui/SectionHeader.vue'
-import AppEditBtn from '~/components/ui/AppEditBtn.vue'
+import { UiEditButton, UiTabs, UiSectionHeader } from '@fastio/ui'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
