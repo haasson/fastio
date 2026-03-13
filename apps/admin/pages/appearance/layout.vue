@@ -27,9 +27,12 @@
                 <UiIcon name="grip" :size="14" />
               </span>
               <span class="item-label">{{ featureLabel(key) }}</span>
-              <button type="button" class="remove-btn" @click="removeFromHome(key)">
-                <UiIcon name="close" :size="14" />
-              </button>
+              <UiButton
+                type="text"
+                size="small"
+                icon="close"
+                @click="removeFromHome(key)"
+              />
             </div>
           </VueDraggable>
           <p v-if="homeOrder.length === 0" class="empty-hint">Добавьте секции для главной страницы</p>
@@ -52,9 +55,12 @@
         <div v-if="pagesOrder.length > 0" class="section-list">
           <div v-for="key in pagesOrder" :key="key" class="section-item">
             <span class="item-label">{{ featureLabel(key) }}</span>
-            <button type="button" class="remove-btn" @click="removeFromPages(key)">
-              <UiIcon name="close" :size="14" />
-            </button>
+            <UiButton
+              type="text"
+              size="small"
+              icon="close"
+              @click="removeFromPages(key)"
+            />
           </div>
         </div>
         <p v-else class="empty-hint">Выберите секции для отдельных страниц</p>
@@ -67,7 +73,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiSelect, UiIcon } from '@fastio/ui'
+import { UiSelect, UiIcon, UiButton } from '@fastio/ui'
 import { SECTION_KEYS, featureLabel, PAGE_KEYS, type SectionKey, type NavPageKey } from '@fastio/shared'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 
@@ -202,26 +208,6 @@ const removeFromPages = (key: string) => {
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text);
-}
-
-.remove-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--color-text-tertiary);
-  border-radius: 4px;
-  flex-shrink: 0;
-  padding: 0;
-
-  &:hover {
-    color: var(--color-text);
-    background: var(--color-bg-hover);
-  }
 }
 
 .empty-hint {

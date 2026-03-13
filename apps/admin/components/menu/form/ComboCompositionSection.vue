@@ -9,7 +9,13 @@
         <!-- Карточки блюд -->
         <div v-if="modelValue.length > 0" class="cards">
           <div v-for="(item, i) in modelValue" :key="item.dishId || i" class="card">
-            <button class="remove" type="button" @click="removeItem(i)">✕</button>
+            <UiButton
+              type="text"
+              size="small"
+              icon="close"
+              class="remove"
+              @click="removeItem(i)"
+            />
 
             <div class="card-body">
               <div class="photo">
@@ -246,24 +252,6 @@ watch(
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  border-radius: 4px;
-  padding: 0;
-  line-height: 1;
-
-  &:hover {
-    color: var(--color-text);
-    background: var(--color-bg-hover, rgba(0, 0, 0, 0.06));
-  }
 }
 
 .card-body {

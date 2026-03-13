@@ -33,13 +33,19 @@
         <div class="item-controls">
           <template v-if="!readonly">
             <div class="qty-controls">
-              <button class="qty-btn" @click="changeQty(idx, -1)">
-                <UiIcon name="minusRound" :size="16" />
-              </button>
+              <UiButton
+                type="text"
+                size="small"
+                icon="minusRound"
+                @click="changeQty(idx, -1)"
+              />
               <span class="qty-value">{{ item.quantity }}</span>
-              <button class="qty-btn" @click="changeQty(idx, 1)">
-                <UiIcon name="plusRound" :size="16" />
-              </button>
+              <UiButton
+                type="text"
+                size="small"
+                icon="plusRound"
+                @click="changeQty(idx, 1)"
+              />
             </div>
           </template>
           <template v-else>
@@ -47,12 +53,20 @@
           </template>
           <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
           <template v-if="!readonly">
-            <button class="edit-item-btn" title="Изменить состав" @click="openEditItem(idx)">
-              <UiIcon name="pencil" :size="13" />
-            </button>
-            <button class="remove-btn" title="Удалить" @click="removeItem(idx)">
-              <UiIcon name="close" :size="13" />
-            </button>
+            <UiButton
+              type="text"
+              size="small"
+              icon="pencil"
+              title="Изменить состав"
+              @click="openEditItem(idx)"
+            />
+            <UiButton
+              type="text"
+              size="small"
+              icon="close"
+              title="Удалить"
+              @click="removeItem(idx)"
+            />
           </template>
         </div>
       </li>
@@ -261,23 +275,6 @@ const onPickerSelect = (result: DishPickerResult) => {
   flex-shrink: 0;
 }
 
-.qty-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 2px;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  border-radius: 4px;
-  transition: color 0.12s;
-
-  &:hover {
-    color: var(--color-primary);
-  }
-}
-
 .qty-value {
   font-size: 13px;
   font-weight: 600;
@@ -297,31 +294,6 @@ const onPickerSelect = (result: DishPickerResult) => {
   min-width: 60px;
   text-align: right;
   flex-shrink: 0;
-}
-
-.edit-item-btn,
-.remove-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  border-radius: 6px;
-  transition: background 0.1s, color 0.1s;
-  flex-shrink: 0;
-}
-
-.edit-item-btn:hover {
-  background: var(--blue-50);
-  color: var(--blue-500);
-}
-
-.remove-btn:hover {
-  background: var(--red-50);
-  color: var(--red-500);
 }
 
 .add-dish-row {

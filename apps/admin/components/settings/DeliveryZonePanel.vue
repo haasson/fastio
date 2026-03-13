@@ -2,7 +2,12 @@
   <div class="zone-panel-root">
     <div class="zone-panel-header">
       <UiText size="medium" weight="bold">{{ zoneId ? 'Редактирование' : 'Новая зона' }}</UiText>
-      <button class="zone-panel-close" @click="$emit('close')">&#10005;</button>
+      <UiButton
+        type="text"
+        size="small"
+        icon="close"
+        @click="$emit('close')"
+      />
     </div>
 
     <UiForm ref="formRef" class="zone-form">
@@ -136,26 +141,6 @@ const onSave = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.zone-panel-close {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: none;
-  border-radius: 8px;
-  cursor: pointer;
-  color: var(--color-text-hint);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, color 0.15s;
-
-  &:hover {
-    background: var(--color-surface-hover);
-    color: var(--color-text);
-  }
 }
 
 .zone-form {
