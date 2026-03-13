@@ -35,6 +35,35 @@ export const dishesApi = {
     return (data ?? []).map(mapDish)
   },
 
+  async listByTag(sb: SupabaseClient, tenantId: string, tag: string): Promise<Dish[]> {
+    const [dishes, tagOrders] = await Promise.all([
+      query(sb.from('dishes').select('*').eq('tenant_id', tenantId).contains('tags', [tag])),
+      query(sb.from('dish_tag_orders').select('dish_id, sort_order').eq('tenant_id', tenantId).eq('tag', tag)),
+    ])
+
+    const orderMap = new Map<string, number>(
+      (tagOrders ?? []).map((r: Record<string, unknown>) => [r.dish_id as string, r.sort_order as number]),
+    )
+
+    return (dishes ?? [])
+      .map(mapDish)
+      .sort((a, b) => {
+        const oa = orderMap.has(a.id) ? orderMap.get(a.id)! : Infinity
+        const ob = orderMap.has(b.id) ? orderMap.get(b.id)! : Infinity
+
+        return oa !== ob ? oa - ob : a.name.localeCompare(b.name)
+      })
+  },
+
+  async reorderByTag(sb: SupabaseClient, tenantId: string, tag: string, items: { id: string; order: number }[]): Promise<void> {
+    await query(
+      sb.from('dish_tag_orders').upsert(
+        items.map(({ id, order }) => ({ tenant_id: tenantId, tag, dish_id: id, sort_order: order })),
+        { onConflict: 'tenant_id,tag,dish_id' },
+      ),
+    )
+  },
+
   async list(sb: SupabaseClient, tenantId: string, categoryId: string) {
     const data = await query(sb.from('dishes').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).order('sort_order'))
 
@@ -88,6 +117,19 @@ export const dishesApi = {
 
   async toggleActive(sb: SupabaseClient, id: string, active: boolean) {
     await query(sb.from('dishes').update({ active }).eq('id', id))
+  },
+
+  async countsByTag(sb: SupabaseClient, tenantId: string): Promise<Record<string, number>> {
+    const data = await query(sb.from('dishes').select('tags').eq('tenant_id', tenantId).eq('active', true))
+    const counts: Record<string, number> = {}
+
+    ;(data ?? []).forEach((row: Record<string, unknown>) => {
+      ((row.tags as string[]) ?? []).forEach((tag) => {
+        counts[tag] = (counts[tag] ?? 0) + 1
+      })
+    })
+
+    return counts
   },
 
   async countsByCategory(sb: SupabaseClient, tenantId: string): Promise<Record<string, number>> {

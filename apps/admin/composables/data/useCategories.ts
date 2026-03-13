@@ -1,5 +1,5 @@
 import { computed, type Ref } from 'vue'
-import type { Category, CategoryData } from '@fastio/shared'
+import type { Category, CategoryData, CategoryType } from '@fastio/shared'
 import { mapCategory } from '~/utils/api/categories'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -15,7 +15,7 @@ export const useCategories = (tenantId: Ref<string>) => {
     mapper: mapCategory,
   })
 
-  const add = async (name: string, extra?: { photoUrl?: string | null; useFirstDishPhoto?: boolean; color?: string | null }) => {
+  const add = async (name: string, extra?: { photoUrl?: string | null; useFirstDishPhoto?: boolean; color?: string | null; type?: CategoryType }) => {
     if (!tenantId.value) return
     const cat = await api.categories.add(tenantId.value, { name, order: categories.value.length, ...extra })
 

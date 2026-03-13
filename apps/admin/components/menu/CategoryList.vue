@@ -27,6 +27,7 @@
       mode="categories"
       :items="managerItems"
       :item-counts="dishCountByCategory"
+      :available-special-types="availableSpecialTypes"
       @add="handleAdd"
       @update="handleUpdate"
       @remove="handleRemove"
@@ -40,7 +41,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { UiSkeleton, UiTabs } from '@fastio/ui'
-import type { Category } from '@fastio/shared'
+import type { Category, CategoryType, SpecialCategoryType } from '@fastio/shared'
+import { SPECIAL_CATEGORY_TYPES } from '@fastio/shared'
 import UiSectionHeader from '~/components/ui/SectionHeader.vue'
 import AppEditBtn from '~/components/ui/AppEditBtn.vue'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
@@ -67,10 +69,19 @@ watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
 
 const dishCountByCategory = computed(() => props.dishCounts)
 
+const existingSpecialTypes = computed<SpecialCategoryType[]>(() => categories.value
+  .map((c) => c.type)
+  .filter((t): t is SpecialCategoryType => t !== 'regular'),
+)
+
+const availableSpecialTypes = computed<SpecialCategoryType[]>(() => SPECIAL_CATEGORY_TYPES.filter((t) => !existingSpecialTypes.value.includes(t)),
+)
+
 const categoryTabs = computed(() => categories.value.map((c) => ({
   value: c.id,
   label: c.name,
   count: dishCountByCategory.value[c.id] ?? 0,
+  ...(c.type !== 'regular' && { type: 'warning' as const }),
 })))
 
 const managerOpen = ref(false)
@@ -78,12 +89,13 @@ const managerOpen = ref(false)
 const managerItems = computed<ManagedItem[]>(() => categories.value.map((c) => ({
   id: c.id,
   name: c.name,
+  type: c.type,
   photoUrl: c.photoUrl,
 })),
 )
 
-const handleAdd = async (data: Partial<ManagedItem>) => {
-  await addCategory(data.name!)
+const handleAdd = async (data: Partial<ManagedItem> & { type?: CategoryType }) => {
+  await addCategory(data.name!, { type: data.type })
 }
 
 const handleUpdate = async (id: string, data: Partial<ManagedItem>) => {

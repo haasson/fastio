@@ -12,6 +12,7 @@ import type {
   DishIngredient,
   DishNutrition,
   DishTag,
+  CategoryType,
 } from '@fastio/shared'
 
 export type TenantRow = {
@@ -62,10 +63,32 @@ export type CategoryRow = {
   id: string
   tenant_id: string
   name: string
+  type: CategoryType
   sort_order: number
   active: boolean
   photo_url: string | null
   use_first_dish_photo: boolean
+}
+
+export type ComboRow = {
+  id: string
+  tenant_id: string
+  category_id: string
+  name: string
+  description: string
+  price: number
+  photos: string[]
+  tags: DishTag[]
+  active: boolean
+  sort_order: number
+  created_at: string
+}
+
+export type ComboItemRow = {
+  id: string
+  combo_id: string
+  dish_id: string
+  sort_order: number
 }
 
 export type DishRow = {

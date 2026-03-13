@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Tenant, Category, Dish, Order } from '@fastio/shared'
+import type { Tenant, Category, CategoryType, Dish, Order } from '@fastio/shared'
 import { mapDeliveryZoneRow } from '@fastio/shared'
 
 export function getServerSupabase() {
@@ -37,6 +37,7 @@ export function mapCategory(row: Record<string, unknown>): Category {
     id: row.id as string,
     tenantId: row.tenant_id as string,
     name: row.name as string,
+    type: (row.type as CategoryType) ?? 'regular',
     order: row.sort_order as number,
     active: row.active as boolean,
     photoUrl: row.photo_url as string | null,

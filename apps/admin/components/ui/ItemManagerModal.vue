@@ -19,15 +19,17 @@
 
       <VueDraggable
         v-model="localItems"
+        :group="{ name: 'categories-manager', put: true }"
         handle=".drag-handle"
         :animation="180"
         ghost-class="row-ghost"
-        @end="onReorder"
+        @update="onReorder"
+        @add="onPaletteAdd"
       >
         <div v-for="item in localItems" :key="item.id" class="item-row">
           <UiIcon name="grip" class="drag-handle" />
 
-          <div v-if="mode === 'categories'" class="photo-thumb" @click="openPhotoModal(item.id)">
+          <div v-if="mode === 'categories'" class="photo-thumb" @click="item.type && item.type !== 'regular' ? null : openPhotoModal(item.id)">
             <img v-if="photoPreview[item.id] || item.photoUrl" :src="photoPreview[item.id] ?? item.photoUrl!" alt="" />
             <UiPhotoPlaceholder v-else size="small" />
           </div>
@@ -35,6 +37,8 @@
           <input
             class="name-input"
             :value="item.name"
+            :readonly="!!(item.type && item.type !== 'regular')"
+            :class="{ readonly: item.type && item.type !== 'regular' }"
             @blur="onNameBlur(item, $event)"
             @keydown.enter="($event.target as HTMLInputElement).blur()"
           />
@@ -80,6 +84,28 @@
           />
         </div>
       </VueDraggable>
+
+      <!-- Special categories palette -->
+      <div v-if="mode === 'categories' && paletteItems.length > 0" class="palette-section">
+        <span class="palette-title">Специальные категории</span>
+        <span class="palette-label">Перетащите в список или нажмите</span>
+        <VueDraggable
+          v-model="paletteItems"
+          :group="{ name: 'categories-manager', pull: 'clone', put: false }"
+          :sort="false"
+          class="palette"
+        >
+          <div
+            v-for="item in paletteItems"
+            :key="item.id"
+            class="palette-item"
+            @click="onPaletteClick(item)"
+          >
+            <UiIcon name="grip" class="palette-grip" />
+            <span class="palette-name">{{ item.label }}</span>
+          </div>
+        </VueDraggable>
+      </div>
     </div>
   </UiModal>
 
@@ -104,16 +130,25 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiModal, UiButton, UiIcon, UiSelect, UiPhotoPlaceholder } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
-import type { OrderStatusGroup } from '@fastio/shared'
+import type { OrderStatusGroup, SpecialCategoryType, CategoryType } from '@fastio/shared'
+import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
 import { STATUS_GROUP_LABELS } from '~/config/order-status-groups'
 import PhotoUpload from '~/components/ui/PhotoUpload.vue'
 
 export type ManagedItem = {
   id: string
   name: string
+  type?: CategoryType
   groupType?: OrderStatusGroup
   quickActions?: string[]
   photoUrl?: string | null
+}
+
+type PaletteItem = {
+  id: string
+  _palette: true
+  type: SpecialCategoryType
+  label: string
 }
 
 const props = defineProps<{
@@ -124,6 +159,7 @@ const props = defineProps<{
   items: ManagedItem[]
   mode: 'statuses' | 'categories'
   itemCounts?: Record<string, number>
+  availableSpecialTypes?: SpecialCategoryType[]
 }>()
 
 const emit = defineEmits<{
@@ -138,6 +174,29 @@ const emit = defineEmits<{
 
 const localItems = ref<ManagedItem[]>([])
 const photoPreview = ref<Record<string, string>>({})
+
+// Special type palette — computed from available types, but needs to be a ref for VueDraggable
+const paletteItems = computed<PaletteItem[]>(() => (props.availableSpecialTypes ?? []).map((type) => ({
+  id: `_palette_${type}`,
+  _palette: true as const,
+  type,
+  label: CATEGORY_TYPE_LABELS[type],
+})),
+)
+
+const onPaletteAdd = () => {
+  const idx = localItems.value.findIndex((i) => (i as unknown as PaletteItem)._palette)
+
+  if (idx === -1) return
+  const item = localItems.value[idx] as unknown as PaletteItem
+
+  localItems.value.splice(idx, 1)
+  emit('add', { name: item.label, type: item.type })
+}
+
+const onPaletteClick = (item: PaletteItem) => {
+  emit('add', { name: item.label, type: item.type })
+}
 
 // Photo modal state
 const photoModalOpen = ref(false)
@@ -202,6 +261,7 @@ const groupOptions = (Object.keys(STATUS_GROUP_LABELS) as OrderStatusGroup[]).ma
 const { confirm } = useConfirm()
 
 const onNameBlur = (item: ManagedItem, event: Event) => {
+  if (item.type && item.type !== 'regular') return
   const newName = (event.target as HTMLInputElement).value.trim()
 
   if (!newName || newName === item.name) return
@@ -258,7 +318,6 @@ const onAdd = () => {
 const confirmRemove = async (item: ManagedItem) => {
   const count = props.itemCounts?.[item.id] ?? 0
   const hasChildren = count > 0
-
   const childLabel = props.mode === 'statuses' ? 'заказов' : 'блюд'
 
   const ok = await confirm({
@@ -321,9 +380,13 @@ const confirmRemove = async (item: ManagedItem) => {
   outline: none;
   font-family: inherit;
 
-  &:focus {
+  &:focus:not(.readonly) {
     border-color: var(--color-primary);
-    background: var(--color-bg-primary, #fff);
+  }
+
+  &.readonly {
+    cursor: default;
+    color: var(--color-text-secondary);
   }
 }
 
@@ -366,5 +429,63 @@ const confirmRemove = async (item: ManagedItem) => {
 .add-btn {
   width: 100%;
   margin-bottom: 8px;
+}
+
+// Palette
+.palette-section {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.palette-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.palette-label {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-border);
+  cursor: grab;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-primary);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.palette-grip {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.palette-name {
+  font-size: 14px;
+  color: var(--color-text-secondary);
 }
 </style>

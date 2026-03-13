@@ -172,7 +172,7 @@ const props = defineProps<{
   categoryId: string
   categories: Category[]
   dish: Dish | null
-  addDish: (data: DishFormData) => Promise<Dish | null | void>
+  addDish?: (data: DishFormData) => Promise<Dish | null | void>
   updateDish: (id: string, data: Partial<DishFormData>) => Promise<void>
 }>()
 
@@ -337,7 +337,7 @@ const onConfirm = async () => {
       }
 
       await saveDishModifiers(props.dish.id, modifiersRef.value?.getModifiers() ?? [])
-    } else {
+    } else if (props.addDish) {
       const newDish = await props.addDish(data)
 
       if (newDish) {

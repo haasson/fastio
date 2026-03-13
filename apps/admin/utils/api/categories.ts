@@ -1,11 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Category, CategoryData } from '@fastio/shared'
+import type { Category, CategoryData, CategoryType } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { CategoryRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
 import { optimizeImage } from '~/utils/imageOptimize'
 
-type CategoryAddPayload = Required<Pick<CategoryData, 'name' | 'order'>> & CategoryData
+type CategoryAddPayload = Required<Pick<CategoryData, 'name' | 'order'>> & CategoryData & { type?: CategoryType }
 
 export const mapCategory = (raw: Record<string, unknown>): Category => {
   const row = raw as CategoryRow
@@ -14,6 +14,7 @@ export const mapCategory = (raw: Record<string, unknown>): Category => {
     id: row.id,
     tenantId: row.tenant_id,
     name: row.name,
+    type: row.type ?? 'regular',
     order: row.sort_order,
     active: row.active,
     photoUrl: row.photo_url,
@@ -32,6 +33,7 @@ export const categoriesApi = {
     const data = await query(sb.from('categories').insert({
       tenant_id: tenantId,
       name: payload.name,
+      type: payload.type ?? 'regular',
       sort_order: payload.order,
       active: true,
       ...filterDefined({ photo_url: payload.photoUrl, use_first_dish_photo: payload.useFirstDishPhoto }),
