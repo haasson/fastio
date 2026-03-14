@@ -27,6 +27,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     deliveryFee: row.delivery_fee,
     deliveryDescription: row.delivery_description,
     currency: row.currency,
+    timezone: row.timezone,
     createdAt: row.created_at,
   }
 }
@@ -46,6 +47,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   delivery_min_order: data.deliveryMinOrder,
   delivery_fee: data.deliveryFee,
   delivery_description: data.deliveryDescription,
+  timezone: data.timezone,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {

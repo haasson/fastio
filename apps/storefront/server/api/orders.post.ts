@@ -240,20 +240,45 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Серверная валидация промокода
+  // Серверная валидация промокода и автоматических акций — применяется лучшая скидка
   let discountAmount = 0
+  let appliedPromoCode: string | null = body.promoCode ?? null
 
-  if (body.promoCode) {
-    const { data: promoResult } = await supabase
-      .rpc('check_promo_code', { p_tenant_id: tenantId, p_code: body.promoCode, p_subtotal: subtotal })
+  // Промокод + автоматические акции — все три запроса параллельно
+  const [{ data: promoResult }, { data: bestPromo }, { data: freeItemPromo }] = await Promise.all([
+    body.promoCode
+      ? supabase.rpc('check_promo_code', { p_tenant_id: tenantId, p_code: body.promoCode, p_subtotal: subtotal })
+      : Promise.resolve({ data: null }),
+    supabase.rpc('get_best_promotion', { p_tenant_id: tenantId, p_subtotal: subtotal }),
+    supabase.rpc('get_free_item_promotion', { p_tenant_id: tenantId, p_subtotal: subtotal }),
+  ])
 
-    if (promoResult?.valid) {
-      const raw = promoResult.discount_type === 'percent'
-        ? Math.round(subtotal * Number(promoResult.discount_value) / 100)
-        : Number(promoResult.discount_value)
+  let promoCodeDiscount = 0
+  if (promoResult?.valid) {
+    const raw = promoResult.discount_type === 'percent'
+      ? Math.round(subtotal * Number(promoResult.discount_value) / 100)
+      : Number(promoResult.discount_value)
 
-      discountAmount = Math.min(raw, subtotal)
-    }
+    promoCodeDiscount = Math.min(raw, subtotal)
+  }
+
+  // Автоматические акции
+  let promotionDiscount = 0
+  let appliedPromotionId: string | null = null
+
+  if (bestPromo) {
+    promotionDiscount = Number(bestPromo.discount_amount)
+    appliedPromotionId = bestPromo.promotion_id as string
+  }
+
+  // Лучшая скидка побеждает
+  if (promotionDiscount > promoCodeDiscount) {
+    discountAmount = promotionDiscount
+    appliedPromoCode = null // промокод не применён — акция выгоднее
+  }
+  else {
+    discountAmount = promoCodeDiscount
+    appliedPromotionId = null
   }
 
   const total = subtotal - discountAmount + deliveryFee
@@ -272,7 +297,8 @@ export default defineEventHandler(async (event) => {
       delivery_type: deliveryType,
       address: body.address ?? null,
       comment: body.comment ?? null,
-      promo_code: body.promoCode ?? null,
+      promo_code: appliedPromoCode,
+      ...(appliedPromotionId && { promotion_id: appliedPromotionId }),
       discount_amount: discountAmount,
       subtotal,
       delivery_fee: deliveryFee,
@@ -320,13 +346,31 @@ export default defineEventHandler(async (event) => {
     if (itemsError) {
       console.error('[order_items insert]', itemsError)
     }
+
+    // Бесплатное блюдо (акция типа free_item)
+    if (freeItemPromo) {
+      const { error: freeItemError } = await supabase.from('order_items').insert({
+        order_id: data.id,
+        dish_id: freeItemPromo.free_dish_id as string,
+        dish_name: freeItemPromo.dish_name as string,
+        category_name: null,
+        price: 0,
+        quantity: 1,
+        removed_ingredients: [],
+        modifiers: [],
+        sort_order: serverItems.length,
+      })
+      if (freeItemError) {
+        console.error('[free_item insert]', freeItemError)
+      }
+    }
   }
 
-  // Инкрементируем счётчик использований промокода
-  if (body.promoCode && discountAmount > 0) {
+  // Инкрементируем счётчик использований промокода (только если он победил)
+  if (appliedPromoCode && discountAmount > 0) {
     await supabase.rpc('increment_promo_code_usage', {
       p_tenant_id: tenantId,
-      p_code: body.promoCode,
+      p_code: appliedPromoCode,
     })
   }
 

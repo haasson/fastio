@@ -128,5 +128,6 @@ export type Tenant = {
   deliveryFee: number
   deliveryDescription: string
   currency: string
+  timezone: string
   createdAt: string
 }

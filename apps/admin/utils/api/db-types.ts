@@ -32,6 +32,7 @@ export type TenantRow = {
   delivery_fee: number
   delivery_description: string
   currency: string
+  timezone: string
   created_at: string
 }
 

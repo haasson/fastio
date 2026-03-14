@@ -68,6 +68,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiDatepicker } from '@fastio/ui'
 import type { PromoCode, PromoCodeFormData } from '@fastio/shared'
+import { isoToTs, tsToIso } from '~/utils/formatDate'
 
 const props = defineProps<{
   modelValue: boolean
@@ -109,10 +110,6 @@ const defaultForm = (): FormState => ({
 })
 
 const form = reactive(defaultForm())
-
-const isoToTs = (iso: string | null): number | null => iso ? new Date(iso).getTime() : null
-
-const tsToIso = (ts: number | null): string | null => ts ? new Date(ts).toISOString() : null
 
 watch(
   () => props.modelValue,

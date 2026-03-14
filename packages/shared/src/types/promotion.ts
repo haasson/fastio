@@ -1,17 +1,42 @@
+import type { OrderItemModifier } from './modifier'
+
 export type DiscountType = 'percent' | 'fixed'
+
+export type PromotionType = 'min_order' | 'happy_hour' | 'weekday' | 'first_order' | 'free_item'
+
+export type PromotionConditions = {
+  minOrderAmount?: number
+  timeFrom?: string    // "HH:MM"
+  timeTo?: string      // "HH:MM"
+  weekdays?: number[]  // 1=Mon, 7=Sun
+  freeDishId?: string
+  freeDishName?: string              // денормализованное имя для отображения
+  freeDishCategoryName?: string      // денормализованная категория для отображения
+  freeDishModifiers?: OrderItemModifier[]
+}
 
 export type Promotion = {
   id: string
   tenantId: string
   title: string
-  description: string
-  bannerUrl: string | null
+  type: PromotionType
   discountType: DiscountType
   discountValue: number
+  conditions: PromotionConditions
   activeFrom: string | null
   activeTo: string | null
   active: boolean
-  branchIds: string[]
+}
+
+export type PromotionFormData = {
+  title: string
+  type: PromotionType
+  discountType: DiscountType
+  discountValue: number
+  conditions: PromotionConditions
+  activeFrom: string | null
+  activeTo: string | null
+  active: boolean
 }
 
 export type PromoCode = {
