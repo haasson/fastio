@@ -37,7 +37,7 @@ const baseOverrides = {
     errorColorHover: COLORS.RED_600,
     errorColorPressed: COLORS.RED_700,
     // fontWeightStrong: '700',
-    // borderRadius: '12px',
+    borderRadius: '8px',
     // fontSizeTiny: '14px',
     // fontSizeSmall: '14px',
     // fontSizeMedium: '14px',
@@ -52,6 +52,7 @@ const baseOverrides = {
     colorSegment: COLORS.BLUE_50,
   },
   Tag: {
+    borderRadius: '8px',
     // border: `2px solid ${COLORS.GREY_200}`,
     // borderPrimary: `2px solid ${COLORS.PRIMARY}`,
     // borderSuccess: `2px solid ${COLORS.SUCCESS}`,
