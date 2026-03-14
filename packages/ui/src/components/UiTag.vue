@@ -23,7 +23,7 @@
       :size="computedSize"
       @click="$emit('close', $event)"
     >
-      <ui-icon name="crossRound" :size="24" />
+      <ui-icon name="close" :size="iconSize" />
     </ui-button>
   </n-tag>
 </template>
@@ -103,12 +103,14 @@ const tagClasses = computed(() => {
 const iconSize = computed(() => {
   switch (computedSize.value) {
     case 'tiny':
+      return 10
     case 'small':
-      return 16
+      return 12
     case 'medium':
+      return 16
     case 'large':
     default:
-      return 24
+      return 20
   }
 })
 </script>
@@ -124,7 +126,11 @@ const iconSize = computed(() => {
 }
 
 .tag-close {
-  margin-left: 4px;
+  margin-left: 2px;
+  padding: 0 !important;
+  min-width: unset !important;
+  height: unset !important;
+  line-height: 1 !important;
 }
 
 .tag--hoverable {

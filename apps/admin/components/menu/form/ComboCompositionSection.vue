@@ -26,7 +26,7 @@
         </ul>
 
         <!-- Добавление блюда -->
-        <UiButton type="default" icon="plus" @click="showPicker = true">
+        <UiButton type="primary" icon="plus" @click="showPicker = true">
           Добавить блюдо
         </UiButton>
 

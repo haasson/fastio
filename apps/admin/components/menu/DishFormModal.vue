@@ -39,6 +39,16 @@
           :refresh-key="refreshKey"
         />
 
+        <AddonsSection
+          ref="addonsRef"
+          :tenant-id="tenantId"
+          :dish-id="dish?.id ?? null"
+          :refresh-key="refreshKey"
+          :all-addons="allAddons"
+          :presets="presets"
+          :loading="addonsLoading"
+        />
+
         <IngredientsSection ref="ingredientsRef" />
 
         <NutritionSection ref="nutritionRef" />
@@ -64,9 +74,11 @@ import type { Dish, DishTag, Category } from '@fastio/shared'
 import type { DishFormData } from '~/utils/api/dishes'
 import { useBranchStore } from '~/stores/branch'
 import { useDishSave } from '~/composables/data/useDishSave'
+import { useAddons } from '~/composables/data/useAddons'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
 import TagsSection from '~/components/menu/form/TagsSection.vue'
 import DishModifiersSection from '~/components/menu/form/DishModifiersSection.vue'
+import AddonsSection from '~/components/menu/form/AddonsSection.vue'
 import IngredientsSection from '~/components/menu/form/IngredientsSection.vue'
 import NutritionSection from '~/components/menu/form/NutritionSection.vue'
 import SettingsSection from '~/components/menu/form/SettingsSection.vue'
@@ -87,13 +99,15 @@ const emit = defineEmits<{
 }>()
 
 const { tenantId: tenantIdRef } = toRefs(props)
-const { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers } = useDishSave(tenantIdRef)
+const { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()
+const { addons: allAddons, loading: addonsLoading, presets, loadPresets } = useAddons(tenantIdRef)
 const branches = computed(() => branchStore.branches)
 
 const formRef = ref()
 const settingsRef = ref<InstanceType<typeof SettingsSection> | null>(null)
 const modifiersRef = ref<InstanceType<typeof DishModifiersSection> | null>(null)
+const addonsRef = ref<InstanceType<typeof AddonsSection> | null>(null)
 const ingredientsRef = ref<InstanceType<typeof IngredientsSection> | null>(null)
 const nutritionRef = ref<InstanceType<typeof NutritionSection> | null>(null)
 const refreshKey = ref(0)
@@ -144,7 +158,7 @@ watch(
 
 watch(
   () => props.modelValue,
-  (val) => {
+  async (val) => {
     if (!val) return
 
     photoKey.value++
@@ -158,6 +172,8 @@ watch(
     nutritionRef.value?.init(props.dish?.nutrition ?? null)
 
     if (!props.dish) Object.assign(form, defaultForm())
+
+    await loadPresets()
   },
 )
 
@@ -188,6 +204,7 @@ const onConfirm = async () => {
       await props.updateDish(props.dish.id, data)
       await saveBranchPrices(props.dish.id, (settingsRef.value?.getSettings() ?? []).map((s) => ({ ...s, dishId: props.dish!.id })))
       await saveDishModifiers(props.dish.id, modifiersRef.value?.getModifiers() ?? [])
+      await saveDishAddons(props.dish.id, addonsRef.value?.getAddonIds() ?? [])
     } else if (props.addDish) {
       const newDish = await props.addDish(data)
 
@@ -199,6 +216,10 @@ const onConfirm = async () => {
         const modifiers = modifiersRef.value?.getModifiers() ?? []
 
         if (modifiers.length > 0) await saveDishModifiers(newDish.id, modifiers)
+
+        const addonIds = addonsRef.value?.getAddonIds() ?? []
+
+        if (addonIds.length > 0) await saveDishAddons(newDish.id, addonIds)
       }
     }
 

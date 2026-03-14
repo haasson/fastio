@@ -8,6 +8,7 @@
         :category-name="item.categoryName"
         :modifiers="item.modifiers.map((m) => ({ name: m.optionName, priceDelta: m.priceDelta }))"
         :removed-ingredients="item.removedIngredients"
+        :addons="item.addons?.map((a) => ({ name: a.addonName, price: a.price }))"
       >
         <template v-if="!readonly">
           <div class="qty-controls">
@@ -41,7 +42,7 @@
 
     <div v-if="!readonly" class="add-dish-row">
       <UiButton
-        type="default"
+        type="primary"
         size="small"
         icon="plus"
         @click="openAddDishModal()"
@@ -64,6 +65,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { UiButton } from '@fastio/ui'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
@@ -87,7 +89,7 @@ const editingItem = computed(() => {
   if (editingItemIndex.value === null) return undefined
   const item = props.items[editingItemIndex.value!]
 
-  return { dishId: item.dishId, comboId: item.comboId, modifiers: item.modifiers, removedIngredients: item.removedIngredients }
+  return { dishId: item.dishId, comboId: item.comboId, modifiers: item.modifiers, removedIngredients: item.removedIngredients, addons: item.addons }
 })
 
 const mutate = (fn: (items: OrderItem[]) => void) => {
@@ -114,6 +116,13 @@ const onAddDishModalClose = (open: boolean) => {
   if (!open) closeAddDishModal()
 }
 
+const itemKey = (i: OrderItem) => [
+  i.dishId ?? i.comboId,
+  (i.modifiers ?? []).map((m) => m.optionName).sort().join('|'),
+  (i.removedIngredients ?? []).sort().join('|'),
+  (i.addons ?? []).map((a) => a.addonId).sort().join('|'),
+].join('::')
+
 const onPickerSelect = (result: DishPickerResult) => {
   const isEdit = editingItemIndex.value !== null
 
@@ -126,6 +135,7 @@ const onPickerSelect = (result: DishPickerResult) => {
     quantity: isEdit ? props.items[editingItemIndex.value!].quantity : 1,
     removedIngredients: result.removedIngredients,
     modifiers: result.modifiers,
+    addons: result.addons,
   }
 
   if (isEdit) {
@@ -134,9 +144,8 @@ const onPickerSelect = (result: DishPickerResult) => {
     })
   } else {
     mutate((items) => {
-      const existing = item.dishId
-        ? items.find((i) => i.dishId === item.dishId && !item.removedIngredients?.length)
-        : undefined
+      const key = itemKey(item)
+      const existing = item.dishId ? items.find((i) => itemKey(i) === key) : undefined
 
       if (existing) existing.quantity += 1
       else items.push({ ...item })

@@ -49,11 +49,18 @@ defineEmits<{
 .actions-block-root {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 
-  &.size-tiny,
   &.size-small {
-    gap: 4px;
+    gap: 8px;
+  }
+
+  &.size-medium {
+    gap: 12px;
+  }
+
+  &.size-large {
+    gap: 16px;
   }
 }
 </style>

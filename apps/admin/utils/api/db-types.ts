@@ -8,6 +8,7 @@ import type {
   OrderDeliveryType,
   OrderStatusGroup,
   OrderItemModifier,
+  OrderItemAddon,
   DishIngredient,
   DishNutrition,
   DishTag,
@@ -135,6 +136,7 @@ export type OrderItemRow = {
   quantity: number
   removed_ingredients: string[]
   modifiers: OrderItemModifier[]
+  addons: OrderItemAddon[]
   sort_order: number
 }
 

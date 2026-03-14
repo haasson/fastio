@@ -131,6 +131,23 @@
       </template>
 
       <div v-else-if="showIngredients" class="state-hint">Ингредиенты не заданы</div>
+
+      <template v-if="dishAddons.length">
+        <div class="section-label">Добавки</div>
+        <div class="addon-list">
+          <UiCheckbox
+            v-for="addon in dishAddons"
+            :key="addon.id"
+            :model-value="selectedAddonIds.has(addon.id)"
+            @update:model-value="selectedAddonIds.has(addon.id) ? selectedAddonIds.delete(addon.id) : selectedAddonIds.add(addon.id)"
+          >
+            {{ addon.name }}
+            <span class="addon-price">+{{ addon.price }} ₽</span>
+            <span v-if="addon.weight" class="addon-weight">{{ addon.weight }} г</span>
+            <span v-if="!addon.active" class="addon-unavailable">недоступно</span>
+          </UiCheckbox>
+        </div>
+      </template>
     </div>
 
     <template #footer>
@@ -156,8 +173,9 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, toRef, watch } from 'vue'
-import { UiModal, UiButton, UiIcon, UiTag } from '@fastio/ui'
-import type { Combo, Dish, DishModifierGroup, OrderItemModifier } from '@fastio/shared'
+import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox } from '@fastio/ui'
+import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
+import type { Addon } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
 
 export type DishPickerResult = {
@@ -169,6 +187,7 @@ export type DishPickerResult = {
   modifierOptionIds: string[]
   modifiers: OrderItemModifier[]
   removedIngredients: string[]
+  addons: OrderItemAddon[]
 }
 
 type EditItem = {
@@ -176,6 +195,7 @@ type EditItem = {
   comboId?: string | null
   modifiers?: { groupName: string; optionName: string }[]
   removedIngredients?: string[]
+  addons?: OrderItemAddon[]
 }
 
 const props = defineProps<{
@@ -192,7 +212,7 @@ const emit = defineEmits<{
   'select': [result: DishPickerResult]
 }>()
 
-const { loading, categories, allDishes, allCombos, fetchData, getDishModifiers } = useOrderDishPicker(toRef(props, 'tenantId'))
+const { loading, categories, allDishes, allCombos, fetchData, getDishModifiers, getDishAddons, listAddons } = useOrderDishPicker(toRef(props, 'tenantId'))
 
 const step = ref<'pick' | 'customize'>('pick')
 const selectedCatId = ref<string | null>(null)
@@ -200,6 +220,8 @@ const selectedDish = ref<Dish | null>(null)
 const modifierGroups = ref<DishModifierGroup[]>([])
 const selectedModifiers = reactive<Record<string, string>>({})
 const removed = reactive<Record<string, boolean>>({})
+const dishAddons = ref<Addon[]>([])
+const selectedAddonIds = reactive<Set<string>>(new Set())
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 
@@ -256,7 +278,17 @@ watch(
 
 const prefillDish = async (dish: Dish) => {
   selectedDish.value = dish
-  modifierGroups.value = await getDishModifiers(dish.id)
+  const [groups, addonIds, allAddons] = await Promise.all([
+    getDishModifiers(dish.id),
+    getDishAddons(dish.id),
+    listAddons(),
+  ])
+
+  modifierGroups.value = groups
+  const orderAddonIds = new Set(props.editItem?.addons?.map((a) => a.addonId) ?? [])
+
+  dishAddons.value = allAddons.filter((a) => addonIds.includes(a.id) && (a.active || orderAddonIds.has(a.id)))
+  selectedAddonIds.clear()
 
   for (const group of modifierGroups.value) {
     const def = group.options.find((o) => o.isDefault) ?? group.options[0]
@@ -280,6 +312,10 @@ const prefillDish = async (dish: Dish) => {
     removed[ing] = true
   })
 
+  if (props.editItem?.addons?.length) {
+    props.editItem.addons.forEach((a) => selectedAddonIds.add(a.addonId))
+  }
+
   step.value = 'customize'
 }
 
@@ -289,7 +325,16 @@ const selectDish = async (dish: Dish) => {
   selectedDish.value = dish
   Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
   Object.keys(removed).forEach((k) => delete removed[k])
-  modifierGroups.value = await getDishModifiers(dish.id)
+  selectedAddonIds.clear()
+
+  const [groups, addonIds, allAddons] = await Promise.all([
+    getDishModifiers(dish.id),
+    getDishAddons(dish.id),
+    listAddons(),
+  ])
+
+  modifierGroups.value = groups
+  dishAddons.value = allAddons.filter((a) => addonIds.includes(a.id) && a.active)
 
   for (const group of modifierGroups.value) {
     const def = group.options.find((o) => o.isDefault) ?? group.options[0]
@@ -297,7 +342,7 @@ const selectDish = async (dish: Dish) => {
     if (def) selectedModifiers[group.groupId] = def.optionId
   }
 
-  if (props.showIngredients || modifierGroups.value.length > 0) {
+  if (props.showIngredients || modifierGroups.value.length > 0 || dishAddons.value.length > 0) {
     step.value = 'customize'
   } else {
     onConfirm()
@@ -334,6 +379,14 @@ const onConfirm = () => {
 
   const categoryName = categories.value.find((c) => c.id === selectedDish.value!.categoryId)?.name ?? null
 
+  const addons: OrderItemAddon[] = dishAddons.value
+    .filter((a) => selectedAddonIds.has(a.id))
+    .map((a) => {
+      const original = props.editItem?.addons?.find((oa) => oa.addonId === a.id)
+
+      return { addonId: a.id, addonName: a.name, price: original?.price ?? a.price }
+    })
+
   emit('select', {
     dishId: selectedDish.value.id,
     comboId: null,
@@ -343,6 +396,7 @@ const onConfirm = () => {
     modifierOptionIds,
     modifiers,
     removedIngredients,
+    addons,
   })
   emit('update:modelValue', false)
 }
@@ -561,6 +615,32 @@ const onConfirm = () => {
 .state-hint {
   font-size: 13px;
   color: var(--color-text-tertiary);
+}
+
+.addon-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.addon-price {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.addon-weight {
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.addon-unavailable {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  font-style: italic;
 }
 
 // ── Footer ───────────────────────────────────────────────────────────────────

@@ -57,6 +57,7 @@ const mapOrderItem = (row: OrderItemRow): OrderItem => ({
   quantity: row.quantity,
   removedIngredients: row.removed_ingredients ?? [],
   modifiers: row.modifiers ?? [],
+  addons: row.addons ?? [],
   sortOrder: row.sort_order,
 })
 
@@ -114,6 +115,7 @@ const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id
   quantity: item.quantity,
   removed_ingredients: item.removedIngredients,
   modifiers: item.modifiers ?? [],
+  addons: item.addons ?? [],
   sort_order: i,
 }))
 

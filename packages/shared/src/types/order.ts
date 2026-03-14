@@ -1,5 +1,11 @@
 import type { OrderItemModifier } from './modifier'
 
+export type OrderItemAddon = {
+  addonId: string
+  addonName: string
+  price: number
+}
+
 export type OrderDeliveryType = 'delivery' | 'pickup'
 
 export type OrderStatusGroup = 'new' | 'in_progress' | 'completed' | 'cancelled'
@@ -26,10 +32,12 @@ export type OrderItem = {
   quantity: number
   removedIngredients: string[]
   modifiers: OrderItemModifier[]
+  addons: OrderItemAddon[]
   sortOrder?: number
 }
 
 export type { OrderItemModifier } from './modifier'
+export type { OrderItemAddon }
 
 export type OrderNote = {
   id: string

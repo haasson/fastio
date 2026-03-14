@@ -13,5 +13,7 @@ export const useDishSave = (tenantId: Ref<string>) => {
 
   const saveDishModifiers = (dishId: string, modifiers: DishModifierGroup[]) => api.dishes.setDishModifiers(dishId, modifiers)
 
-  return { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers }
+  const saveDishAddons = (dishId: string, addonIds: string[]) => api.addons.setDishAddons(dishId, addonIds)
+
+  return { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers, saveDishAddons }
 }

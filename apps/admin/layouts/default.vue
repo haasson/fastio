@@ -174,6 +174,7 @@ const handleLogout = async () => {
 
 const pageTitles: [string, string][] = [
   ['/menu/modifiers', 'Модификаторы'],
+  ['/menu/addons', 'Добавки'],
   ['/menu', 'Меню'],
   ['/orders', 'Заказы'],
   ['/promotions', 'Акции'],

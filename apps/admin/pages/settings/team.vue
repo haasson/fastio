@@ -65,45 +65,12 @@
       <UiText v-else size="small">Пока нет участников</UiText>
     </div>
 
-    <!-- Edit modal -->
-    <UiModal
-      v-if="editingMember"
-      :model-value="true"
-      title="Редактировать участника"
-      :width="400"
-      :loading="savingEdit"
-      :actions="[
-        { text: 'Отмена', type: 'default', actionType: 'decline' },
-        { text: 'Сохранить', type: 'primary', actionType: 'confirm' },
-      ]"
-      :on-confirm="saveEdit"
-      @update:model-value="editingMember = null"
-    >
-      <div class="edit-modal">
-        <UiSelect
-          v-model:value="editForm.role"
-          label="Роль"
-          :options="roleOptions"
-        />
-        <template v-if="branches.length > 0 && editForm.role !== 'admin' && editForm.role !== 'owner'">
-          <UiRadioGroup
-            v-model="editBranchMode"
-            label="Доступ к филиалам"
-            :options="branchAccessOptions"
-          />
-          <div v-if="editBranchMode === 'selected'" class="branch-checkboxes">
-            <UiCheckbox
-              v-for="branch in branches"
-              :key="branch.id"
-              :model-value="editForm.branchIds.includes(branch.id)"
-              @update:model-value="toggleEditBranch(branch.id, $event)"
-            >
-              {{ branch.name }}
-            </UiCheckbox>
-          </div>
-        </template>
-      </div>
-    </UiModal>
+    <TeamMemberEditModal
+      v-model="showEditModal"
+      :member="editingMember"
+      :branches="branches"
+      @saved="load"
+    />
 
     <!-- Pending инвайты -->
     <div v-if="invitations.length">
@@ -121,19 +88,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import {
-  UiInput, UiSelect, UiButton, UiAlert, UiText, UiModal, UiCheckbox,
-  UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, useConfirm, useMessage, UiSectionHeader,
+  UiInput, UiSelect, UiButton, UiAlert, UiText,
+  UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, UiCheckbox, useConfirm, useMessage, UiSectionHeader,
 } from '@fastio/ui'
 import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
+import TeamMemberEditModal from '~/components/settings/TeamMemberEditModal.vue'
 import { useTeam } from '~/composables/data/useTeam'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useBranchStore } from '~/stores/branch'
 import { roleOptions } from '~/config/team-roles'
 import { buildMemberColumns, buildInviteColumns } from '~/columns/team'
 
-const { members, invitations, loading: teamLoading, load, invite, updateRoleAndBranches, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
+const { members, invitations, loading: teamLoading, load, invite, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
 const { canManageTeam } = usePermissions()
 const { confirm } = useConfirm()
 const message = useMessage()
@@ -166,42 +134,12 @@ const toggleInviteBranch = (id: string, checked: boolean) => {
 }
 
 // Edit modal
+const showEditModal = ref(false)
 const editingMember = ref<TenantMember | null>(null)
-const editForm = reactive({ role: '' as TenantRole, branchIds: [] as string[] })
-const editBranchMode = ref<'all' | 'selected'>('all')
-const savingEdit = ref(false)
-
-watch(editBranchMode, (mode) => {
-  if (mode === 'all') editForm.branchIds = []
-})
 
 const openEdit = (member: TenantMember) => {
   editingMember.value = member
-  editForm.role = member.role
-  editForm.branchIds = [...(member.branchIds ?? [])]
-  editBranchMode.value = editForm.branchIds.length > 0 ? 'selected' : 'all'
-}
-
-const toggleEditBranch = (id: string, checked: boolean) => {
-  if (checked) {
-    if (!editForm.branchIds.includes(id)) editForm.branchIds.push(id)
-  } else {
-    editForm.branchIds = editForm.branchIds.filter((b) => b !== id)
-  }
-}
-
-const saveEdit = async () => {
-  if (!editingMember.value) return
-  savingEdit.value = true
-  try {
-    const branchIds = editBranchMode.value === 'all' ? [] : editForm.branchIds
-
-    await updateRoleAndBranches(editingMember.value.id, editForm.role, branchIds)
-    await load()
-    editingMember.value = null
-  } finally {
-    savingEdit.value = false
-  }
+  showEditModal.value = true
 }
 
 const isBlocked = (member: TenantMember) => !!member.blockedUntil && new Date(member.blockedUntil) > new Date()
@@ -350,11 +288,5 @@ onMounted(() => load())
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.edit-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 </style>

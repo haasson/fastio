@@ -27,6 +27,18 @@
           <UiIcon name="minusRound" :size="11" class="tag-icon" />{{ ing }}
         </UiTag>
       </div>
+      <div v-if="addons?.length" class="tags">
+        <UiTag
+          v-for="addon in addons"
+          :key="addon.name"
+          size="tiny"
+          type="primary"
+          empty
+          round
+        >
+          {{ addon.name }} +{{ addon.price }}₽
+        </UiTag>
+      </div>
     </div>
     <div class="controls">
       <slot />
@@ -38,12 +50,14 @@
 import { UiTag, UiIcon } from '@fastio/ui'
 
 type ModifierTag = { name: string; priceDelta: number }
+type AddonTag = { name: string; price: number }
 
 defineProps<{
   name: string
   categoryName?: string | null
   modifiers?: ModifierTag[]
   removedIngredients?: string[]
+  addons?: AddonTag[]
 }>()
 </script>
 
