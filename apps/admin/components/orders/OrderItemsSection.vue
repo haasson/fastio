@@ -30,22 +30,12 @@
           <span class="qty-value qty-readonly">× {{ item.quantity }}</span>
         </template>
         <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
-        <template v-if="!readonly">
-          <UiButton
-            type="text"
-            size="small"
-            icon="pencil"
-            title="Изменить состав"
-            @click="openEditItem(idx)"
-          />
-          <UiButton
-            type="text"
-            size="small"
-            icon="close"
-            title="Удалить"
-            @click="removeItem(idx)"
-          />
-        </template>
+        <AppActionsBlock
+          v-if="!readonly"
+          size="small"
+          @edit="openEditItem(idx)"
+          @delete="removeItem(idx)"
+        />
       </DishItemRow>
     </ul>
 
@@ -74,7 +64,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiButton } from '@fastio/ui'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'

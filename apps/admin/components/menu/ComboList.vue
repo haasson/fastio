@@ -50,22 +50,10 @@
                   :model-value="combo.active"
                   @update:model-value="toggleActive(combo.id, $event)"
                 />
-                <div class="card-btns">
-                  <UiButton
-                    type="text"
-                    size="medium"
-                    icon="pencil"
-                    title="Редактировать"
-                    @click="openComboModal(combo)"
-                  />
-                  <UiButton
-                    type="text"
-                    size="medium"
-                    icon="trash"
-                    title="Удалить"
-                    @click="confirmDeleteCombo(combo.id)"
-                  />
-                </div>
+                <AppActionsBlock
+                  @edit="openComboModal(combo)"
+                  @delete="confirmDeleteCombo(combo.id)"
+                />
               </div>
             </UiSpace>
           </UiCard>
@@ -89,6 +77,7 @@
 import { toRefs } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiSwitch, UiPhotoPlaceholder, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { Combo, Category } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import MenuComboFormModal from '~/components/menu/ComboFormModal.vue'
@@ -220,8 +209,4 @@ const reorderCombos = () => reorder(combos.value)
   justify-content: space-between;
 }
 
-.card-btns {
-  display: flex;
-  gap: 8px;
-}
 </style>

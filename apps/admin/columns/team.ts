@@ -1,6 +1,7 @@
 import { h, type ComputedRef } from 'vue'
-import { UiTag, UiText, UiButton, UiSpace } from '@fastio/ui'
+import { UiTag, UiText, UiButton } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { TenantRole, TenantMember, TenantInvitation, Branch } from '@fastio/shared'
 import { roleLabels, roleTagTypes } from '~/config/team-roles'
 import { formatDate } from '~/utils/formatDate'
@@ -75,11 +76,9 @@ export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<Te
 
         const blocked = isBlocked(row)
 
-        return h(UiSpace, { size: 8 }, () => [
-          h(UiButton, { type: 'text', size: 'medium', icon: 'pencil', iconBg: '#3b82f6', onClick: () => onEdit(row) }),
-          h(UiButton, { type: 'text', size: 'medium', icon: blocked ? 'checkRound' : 'ban', iconBg: blocked ? '#22c55e' : '#f59e0b', onClick: () => onBlock(row) }),
-          h(UiButton, { type: 'text', size: 'medium', icon: 'trash', iconBg: '#ef4444', onClick: () => onRemove(row) }),
-        ])
+        return h(AppActionsBlock, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
+          default: () => h(UiButton, { type: 'text', size: 'medium', icon: blocked ? 'checkRound' : 'ban', iconBg: blocked ? 'var(--color-success)' : 'var(--color-warning)', onClick: () => onBlock(row) }),
+        })
       },
     },
   ]
@@ -138,10 +137,9 @@ export const buildInviteColumns = (deps: InviteColumnsDeps): DataTableColumns<Te
       render: (row) => {
         if (!canManageTeam.value) return null
 
-        return h(UiSpace, { size: 8 }, () => [
-          h(UiButton, { type: 'text', size: 'medium', icon: 'send', iconBg: '#3b82f6', onClick: () => onResend(row) }),
-          h(UiButton, { type: 'text', size: 'medium', icon: 'trash', iconBg: '#ef4444', onClick: () => onCancel(row) }),
-        ])
+        return h(AppActionsBlock, { showEdit: false, onDelete: () => onCancel(row) }, {
+          default: () => h(UiButton, { type: 'text', size: 'medium', icon: 'send', iconBg: 'var(--color-primary)', onClick: () => onResend(row) }),
+        })
       },
     },
   ]

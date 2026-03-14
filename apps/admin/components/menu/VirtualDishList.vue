@@ -37,13 +37,7 @@
             <span class="list-name">{{ dish.name }}</span>
             <span class="list-price">{{ formatPrice(dish.price) }}</span>
             <div class="list-actions">
-              <UiButton
-                type="text"
-                size="medium"
-                icon="pencil"
-                title="Редактировать"
-                @click="openDishModal(dish)"
-              />
+              <AppActionsBlock :show-delete="false" @edit="openDishModal(dish)" />
             </div>
           </div>
         </VueDraggable>
@@ -66,7 +60,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiSkeleton, UiIcon, UiPhotoPlaceholder, UiAlert, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import { UiSkeleton, UiIcon, UiPhotoPlaceholder, UiAlert, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { Dish, Category, VirtualCategoryType } from '@fastio/shared'
 import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'

@@ -66,22 +66,10 @@
                           :model-value="dish.active"
                           @update:model-value="toggleActive(dish.id, $event)"
                         />
-                        <div class="card-btns">
-                          <UiButton
-                            type="text"
-                            size="medium"
-                            icon="pencil"
-                            title="Редактировать"
-                            @click="openDishModal(dish)"
-                          />
-                          <UiButton
-                            type="text"
-                            size="medium"
-                            icon="trash"
-                            title="Удалить"
-                            @click="confirmDeleteDish(dish.id)"
-                          />
-                        </div>
+                        <AppActionsBlock
+                          @edit="openDishModal(dish)"
+                          @delete="confirmDeleteDish(dish.id)"
+                        />
                       </div>
                     </UiSpace>
                   </UiCard>
@@ -118,19 +106,9 @@
                         :model-value="dish.active"
                         @update:model-value="toggleActive(dish.id, $event)"
                       />
-                      <UiButton
-                        type="text"
-                        size="medium"
-                        icon="pencil"
-                        title="Редактировать"
-                        @click="openDishModal(dish)"
-                      />
-                      <UiButton
-                        type="text"
-                        size="medium"
-                        icon="trash"
-                        title="Удалить"
-                        @click="confirmDeleteDish(dish.id)"
+                      <AppActionsBlock
+                        @edit="openDishModal(dish)"
+                        @delete="confirmDeleteDish(dish.id)"
                       />
                     </div>
                   </div>
@@ -161,6 +139,7 @@ import { toRefs } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { Dish, Category } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
@@ -325,11 +304,6 @@ const reorderDishes = () => reorder(dishes.value)
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.card-btns {
-  display: flex;
-  gap: 8px;
 }
 
 // List view

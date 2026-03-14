@@ -1,6 +1,7 @@
 import { h } from 'vue'
-import { UiTag, UiText, UiButton, UiSpace, UiSwitch } from '@fastio/ui'
+import { UiTag, UiText, UiSwitch } from '@fastio/ui'
 import type { DataTableColumn } from '@fastio/ui'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import { formatDateShort } from '~/utils/formatDate'
 import { effectivePromoStatus, PROMO_STATUS_FILTER_OPTIONS } from '~/utils/promoStatus'
 
@@ -53,10 +54,8 @@ export const buildPromoActionsColumn = <T extends PromoLike>(deps: ActionsDeps<T
     title: '',
     key: 'actions',
     width: 120,
-    render: (row) => h(UiSpace, { size: 8 }, () => [
-      h(UiSwitch, { 'modelValue': row.active, 'onUpdate:modelValue': (v: boolean) => onToggle(row.id, v) }),
-      h(UiButton, { type: 'text', size: 'medium', icon: 'pencil', iconBg: '#3b82f6', onClick: () => onEdit(row) }),
-      h(UiButton, { type: 'text', size: 'medium', icon: 'trash', iconBg: '#ef4444', onClick: () => onRemove(row) }),
-    ]),
+    render: (row) => h(AppActionsBlock, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
+      prepend: () => h(UiSwitch, { 'modelValue': row.active, 'onUpdate:modelValue': (v: boolean) => onToggle(row.id, v) }),
+    }),
   }
 }
