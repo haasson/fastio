@@ -140,7 +140,29 @@
 
     <div class="divider" />
 
-    <UiSelect v-model:value="themeForm.fontFamily" :options="fontOptions" label="Шрифт" />
+    <div class="field">
+      <UiSelect
+        v-model:value="themeForm.fontFamily"
+        :options="fontOptions"
+        label="Шрифт текста"
+        filterable
+      />
+      <div v-if="fontPreviewStyle" class="font-preview" :style="fontPreviewStyle">
+        Быстрая лиса прыгает — The quick brown fox
+      </div>
+    </div>
+
+    <div class="field">
+      <UiSelect
+        v-model:value="themeForm.headingFontFamily"
+        :options="fontOptions"
+        label="Шрифт заголовков"
+        filterable
+      />
+      <div v-if="headingFontPreviewStyle" class="font-preview font-preview--heading" :style="headingFontPreviewStyle">
+        Быстрая лиса прыгает — The quick brown fox
+      </div>
+    </div>
 
     <div class="field">
       <label class="label">Стиль кнопок</label>
@@ -163,10 +185,11 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ref, watch } from 'vue'
+import { computed, inject, onUnmounted, ref, watch } from 'vue'
 import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiInput, UiButton, UiIcon, useMessage, UiSectionHeader } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import { themePresets, fontOptions } from '~/config/theme-presets'
+import { isGoogleFontValue, fontFamilyCSS, googleFontUrl } from '~/config/google-fonts'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 import { getPresetPalette } from '@fastio/shared'
 import type { TenantThemePreset, ThemePalette, CustomTheme } from '@fastio/shared'
@@ -175,6 +198,45 @@ const form = inject(AppearanceFormKey)!
 const themeForm = form.themeForm
 const presets = themePresets
 const { warning } = useMessage()
+
+// ─── font preview ─────────────────────────────────────────────────────────────
+
+const loadedFonts = new Set<string>()
+const loadedLinks: ReturnType<typeof document.createElement>[] = []
+
+const fontPreviewStyle = computed(() => {
+  const value = themeForm.fontFamily
+
+  if (!value || !isGoogleFontValue(value)) return null
+
+  return { fontFamily: fontFamilyCSS(value) }
+})
+
+const headingFontPreviewStyle = computed(() => {
+  const value = themeForm.headingFontFamily
+
+  if (!value || !isGoogleFontValue(value)) return null
+
+  return { fontFamily: fontFamilyCSS(value) }
+})
+
+const loadGoogleFont = (value: string) => {
+  if (!value || !isGoogleFontValue(value) || loadedFonts.has(value)) return
+  loadedFonts.add(value)
+  const link = document.createElement('link')
+
+  link.rel = 'stylesheet'
+  link.href = googleFontUrl(value)
+  document.head.appendChild(link)
+  loadedLinks.push(link)
+}
+
+onUnmounted(() => {
+  loadedLinks.forEach((link) => link.remove())
+})
+
+watch(() => themeForm.fontFamily, loadGoogleFont, { immediate: true })
+watch(() => themeForm.headingFontFamily, loadGoogleFont, { immediate: true })
 
 // ─── editor state ────────────────────────────────────────────────────────────
 
@@ -599,6 +661,20 @@ const cardShadowOptions = [
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.font-preview {
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-card);
+
+  &--heading {
+    font-size: 20px;
+    font-weight: 700;
+  }
 }
 
 .divider {

@@ -2,7 +2,8 @@ import type { TenantTheme } from '../types/tenant'
 
 export const defaultTheme = (): TenantTheme => ({
   primaryColor: '#ff6b35',
-  fontFamily: 'inter',
+  fontFamily: 'system',
+  headingFontFamily: 'system',
   preset: 'fresh',
   palette: null,
   buttonRadius: 'rounded',

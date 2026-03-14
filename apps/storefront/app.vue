@@ -15,6 +15,7 @@ import type { Tenant } from '@fastio/shared'
 import { paletteToCssVars } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import useTheme from '~/composables/useTheme'
+import { isGoogleFontValue, fontFamilyCSS, googleFontUrl } from '~/utils/google-fonts'
 
 // Восстанавливаем корзину из localStorage
 const cartStore = useCartStore()
@@ -26,24 +27,36 @@ const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
 
+const googleFontLink = computed(() => {
+  const theme = tenant.value?.theme
+  if (!theme) return []
+  const links = []
+  if (theme.fontFamily && isGoogleFontValue(theme.fontFamily))
+    links.push({ rel: 'stylesheet', href: googleFontUrl(theme.fontFamily) })
+  if (theme.headingFontFamily && isGoogleFontValue(theme.headingFontFamily) && theme.headingFontFamily !== theme.fontFamily)
+    links.push({ rel: 'stylesheet', href: googleFontUrl(theme.headingFontFamily) })
+  return links
+})
+
 useHead({
   titleTemplate: (title) => title ? `${title} — ${tenant.value?.name ?? ''}` : (tenant.value?.name ?? ''),
   meta: [
     { name: 'description', content: `Заказать еду онлайн — ${tenant.value?.name}` },
   ],
+  link: googleFontLink,
 })
 
 const tenantOverrides = computed(() => {
   const t = tenant.value?.theme
   if (!t) return {}
+  const fontVar = t.fontFamily ? { '--font-family': fontFamilyCSS(t.fontFamily) } : {}
   if (t.palette) {
-    return { ...paletteToCssVars(t.palette), '--font-family': t.fontFamily }
+    return { ...paletteToCssVars(t.palette), ...fontVar }
   }
   // Fallback для старых данных без palette
   const result: Record<string, string> = {}
   if (t.primaryColor) result['--primary'] = t.primaryColor
-  if (t.fontFamily) result['--font-family'] = t.fontFamily
-  return result
+  return { ...result, ...fontVar }
 })
 
 const { currentTheme, themes, themeStyle, randomize, setTheme } = useTheme(tenantOverrides)

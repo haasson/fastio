@@ -22,6 +22,7 @@ export type CustomTheme = {
 export type TenantTheme = {
   primaryColor: string
   fontFamily: string
+  headingFontFamily: string
   preset: TenantThemePreset
   palette: ThemePalette | null
   buttonRadius: 'square' | 'rounded' | 'pill'
