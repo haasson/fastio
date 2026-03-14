@@ -16,6 +16,7 @@ import { modifiersApi } from '~/utils/api/modifiers'
 import { realtimeApi } from '~/utils/api/realtime'
 import { deliveryZonesApi } from '~/utils/api/delivery-zones'
 import { combosApi } from '~/utils/api/combos'
+import { promoCodesApi } from '~/utils/api/promo-codes'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
@@ -51,5 +52,6 @@ export const useDatabase = () => {
     modifiers: bindAll(modifiersApi, sb),
     deliveryZones: bindAll(deliveryZonesApi, sb),
     combos: bindAll(combosApi, sb),
+    promoCodes: bindAll(promoCodesApi, sb),
   }
 }

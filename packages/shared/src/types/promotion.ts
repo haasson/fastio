@@ -22,6 +22,18 @@ export type PromoCode = {
   discountValue: number
   usageLimit: number | null
   usedCount: number
+  minOrderAmount: number | null
+  activeFrom: string | null
+  activeTo: string | null
+  active: boolean
+}
+
+export type PromoCodeFormData = {
+  code: string
+  discountType: DiscountType
+  discountValue: number
+  usageLimit: number | null
+  minOrderAmount: number | null
   activeFrom: string | null
   activeTo: string | null
   active: boolean

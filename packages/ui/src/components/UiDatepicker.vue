@@ -17,7 +17,7 @@
       month-format="LLLL"
       calendar-header-month-format="LLLL"
       :year-range="[2000, currentYear + 10]"
-      :to="false"
+
       :actions="null"
       input-readonly
       clearable

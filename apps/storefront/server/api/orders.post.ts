@@ -245,7 +245,7 @@ export default defineEventHandler(async (event) => {
 
   if (body.promoCode) {
     const { data: promoResult } = await supabase
-      .rpc('check_promo_code', { p_tenant_id: tenantId, p_code: body.promoCode })
+      .rpc('check_promo_code', { p_tenant_id: tenantId, p_code: body.promoCode, p_subtotal: subtotal })
 
     if (promoResult?.valid) {
       const raw = promoResult.discount_type === 'percent'
