@@ -117,7 +117,6 @@ defineProps<{
 }
 
 .tag-icon {
-  margin-right: 3px;
   flex-shrink: 0;
 }
 

@@ -119,6 +119,7 @@ const iconSize = computed(() => {
 :deep(.n-tag__content) {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
 }
 
 :deep(.n-tag__border) {
