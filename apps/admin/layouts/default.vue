@@ -356,6 +356,7 @@ const currentPageTitle = computed(() => {
 
 .main {
   flex: 1;
+  min-width: 0;
   margin-left: 0;
   display: flex;
   flex-direction: column;
@@ -393,6 +394,8 @@ const currentPageTitle = computed(() => {
 
 .content {
   flex: 1;
+  min-width: 0;
+  overflow-x: auto;
   padding: var(--content-padding);
 
   &.content-gate {

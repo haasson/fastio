@@ -7,7 +7,6 @@ import { formatDate } from '~/utils/formatDate'
 
 const roleLabel = (role: TenantRole) => roleLabels[role]
 const roleTagType = (role: TenantRole) => roleTagTypes[role]
-
 const isBlocked = (row: TenantMember) => !!row.blockedUntil && new Date(row.blockedUntil) > new Date()
 
 type MemberColumnsDeps = {
@@ -21,7 +20,23 @@ type MemberColumnsDeps = {
 export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<TenantMember> => {
   const { branches, canManageTeam, onEdit, onBlock, onRemove } = deps
 
-  const cols: DataTableColumns<TenantMember> = [
+  const branchesCol: DataTableColumns<TenantMember>[number] = {
+    title: 'Филиалы',
+    key: 'branches',
+    render: (row) => {
+      if (!row.branchIds?.length)
+        return h(UiText, { size: 'tiny', style: 'color: var(--color-text-secondary)' }, () => 'Все')
+
+      const names = branches.value
+        .filter((b) => row.branchIds.includes(b.id))
+        .map((b) => b.name)
+        .join(', ')
+
+      return h(UiText, { size: 'tiny' }, () => names)
+    },
+  }
+
+  return [
     {
       title: 'Участник',
       key: 'member',
@@ -44,11 +59,12 @@ export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<Te
         ? h(UiTag, { type: 'error', size: 'small' }, () => 'Заблокирован')
         : h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
     },
+    ...(branches.value.length > 0 ? [branchesCol] : []),
     {
       title: 'Добавлен',
       key: 'createdAt',
       width: 130,
-      render: (row) => h(UiText, { size: 'tiny', class: 'hint-cell' }, () => formatDate(row.createdAt)),
+      render: (row) => h(UiText, { size: 'tiny', style: 'color: var(--color-text-secondary)' }, () => formatDate(row.createdAt)),
     },
     {
       title: 'Действия',
@@ -57,34 +73,16 @@ export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<Te
       render: (row) => {
         if (row.role === 'owner' || !canManageTeam.value) return null
 
+        const blocked = isBlocked(row)
+
         return h(UiSpace, { size: 8 }, () => [
           h(UiButton, { type: 'text', size: 'medium', icon: 'pencil', iconBg: '#3b82f6', onClick: () => onEdit(row) }),
-          h(UiButton, { type: 'text', size: 'medium', icon: isBlocked(row) ? 'checkRound' : 'ban', iconBg: isBlocked(row) ? '#22c55e' : '#f59e0b', onClick: () => onBlock(row) }),
+          h(UiButton, { type: 'text', size: 'medium', icon: blocked ? 'checkRound' : 'ban', iconBg: blocked ? '#22c55e' : '#f59e0b', onClick: () => onBlock(row) }),
           h(UiButton, { type: 'text', size: 'medium', icon: 'trash', iconBg: '#ef4444', onClick: () => onRemove(row) }),
         ])
       },
     },
   ]
-
-  if (branches.value.length > 0) {
-    cols.splice(2, 0, {
-      title: 'Филиалы',
-      key: 'branches',
-      render: (row) => {
-        if (!row.branchIds?.length)
-          return h(UiText, { size: 'tiny', class: 'hint-cell' }, () => 'Все')
-
-        const names = branches.value
-          .filter((b) => row.branchIds.includes(b.id))
-          .map((b) => b.name)
-          .join(', ')
-
-        return h(UiText, { size: 'tiny' }, () => names)
-      },
-    })
-  }
-
-  return cols
 }
 
 type InviteColumnsDeps = {
@@ -97,7 +95,23 @@ type InviteColumnsDeps = {
 export const buildInviteColumns = (deps: InviteColumnsDeps): DataTableColumns<TenantInvitation> => {
   const { branches, canManageTeam, onResend, onCancel } = deps
 
-  const cols: DataTableColumns<TenantInvitation> = [
+  const branchesCol: DataTableColumns<TenantInvitation>[number] = {
+    title: 'Филиалы',
+    key: 'branches',
+    render: (row) => {
+      if (!row.branchIds?.length)
+        return h(UiText, { size: 'tiny', style: 'color: var(--color-text-secondary)' }, () => 'Все')
+
+      const names = branches.value
+        .filter((b) => row.branchIds.includes(b.id))
+        .map((b) => b.name)
+        .join(', ')
+
+      return h(UiText, { size: 'tiny' }, () => names)
+    },
+  }
+
+  return [
     {
       title: 'Участник',
       key: 'email',
@@ -110,6 +124,7 @@ export const buildInviteColumns = (deps: InviteColumnsDeps): DataTableColumns<Te
       width: 120,
       render: (row) => h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
     },
+    ...(branches.value.length > 0 ? [branchesCol] : []),
     {
       title: 'Истекает',
       key: 'expiresAt',
@@ -130,24 +145,4 @@ export const buildInviteColumns = (deps: InviteColumnsDeps): DataTableColumns<Te
       },
     },
   ]
-
-  if (branches.value.length > 0) {
-    cols.splice(2, 0, {
-      title: 'Филиалы',
-      key: 'branches',
-      render: (row) => {
-        if (!row.branchIds?.length)
-          return h(UiText, { size: 'tiny', class: 'hint-cell' }, () => 'Все')
-
-        const names = branches.value
-          .filter((b) => row.branchIds.includes(b.id))
-          .map((b) => b.name)
-          .join(', ')
-
-        return h(UiText, { size: 'tiny' }, () => names)
-      },
-    })
-  }
-
-  return cols
 }

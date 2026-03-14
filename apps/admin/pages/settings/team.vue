@@ -131,7 +131,7 @@ import { useTeam } from '~/composables/data/useTeam'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useBranchStore } from '~/stores/branch'
 import { roleOptions } from '~/config/team-roles'
-import { buildMemberColumns, buildInviteColumns } from '~/components/settings/team-columns'
+import { buildMemberColumns, buildInviteColumns } from '~/columns/team'
 
 const { members, invitations, loading: teamLoading, load, invite, updateRoleAndBranches, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
 const { canManageTeam } = usePermissions()
