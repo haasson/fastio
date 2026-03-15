@@ -8,7 +8,7 @@
         name="customerName"
         label="Имя"
         placeholder="Иван Иванов"
-        :rules="[validationRules.name.required]"
+        :rules="[]"
         :disabled="!perms.editCustomer"
       />
       <UiInput
@@ -135,7 +135,7 @@ import { useDadataSuggestions, type DadataSuggestion } from '~/composables/deliv
 import OrderItemsSection from './OrderItemsSection.vue'
 
 type OrderFormData = {
-  customerName: string
+  customerName: string | null
   customerPhone: string
   deliveryType: Order['deliveryType']
   address: string

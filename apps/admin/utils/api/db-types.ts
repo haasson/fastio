@@ -143,7 +143,7 @@ export type OrderItemRow = {
 export type OrderRow = {
   id: string
   tenant_id: string
-  customer_name: string
+  customer_name: string | null
   customer_phone: string
   customer_email: string | null
   delivery_type: OrderDeliveryType

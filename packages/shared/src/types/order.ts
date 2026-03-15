@@ -67,7 +67,7 @@ export type OrderEvent = {
 export type Order = {
   id: string
   tenantId: string
-  customerName: string
+  customerName: string | null
   customerPhone: string
   customerEmail: string | null
   items: OrderItem[]

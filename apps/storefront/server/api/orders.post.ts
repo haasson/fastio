@@ -46,8 +46,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   // Валидация базовых полей
-  if (!body.customer?.name || !body.customer?.phone) {
-    throw createError({ statusCode: 400, message: 'Имя и телефон обязательны' })
+  if (!body.customer?.phone) {
+    throw createError({ statusCode: 400, message: 'Телефон обязателен' })
   }
   if (!body.items?.length) {
     throw createError({ statusCode: 400, message: 'Корзина пуста' })

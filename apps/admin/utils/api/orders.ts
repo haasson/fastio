@@ -28,7 +28,7 @@ export type OrderUpdateData = {
 export type OrderCreateData = {
   tenantId: string
   branchId: string | null
-  customerName: string
+  customerName: string | null
   customerPhone: string
   customerEmail?: string | null
   items: OrderItem[]
