@@ -40,6 +40,7 @@
         placeholder="Выберите филиал"
         name="branchId"
         :rules="[{ type: 'required', message: 'Выберите филиал' }]"
+        :disabled="!perms.editBranch"
         class="branch-select"
       />
     </div>
@@ -154,6 +155,7 @@ type Permissions = {
   editItems?: boolean
   editDeliveryFee?: boolean
   editPayment?: boolean
+  editBranch?: boolean
 }
 
 type BranchOption = { label: string; value: string }
@@ -242,6 +244,7 @@ const perms = computed(() => ({
   editItems: props.permissions.editItems ?? true,
   editDeliveryFee: props.permissions.editDeliveryFee ?? true,
   editPayment: props.permissions.editPayment ?? true,
+  editBranch: props.permissions.editBranch ?? true,
 }))
 
 const tenantStore = useTenantStore()

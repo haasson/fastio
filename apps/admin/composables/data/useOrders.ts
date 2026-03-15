@@ -179,7 +179,7 @@ export function useOrders(
         orderId,
         tenantId: tenantId.value,
         actorId: authStore.user.id,
-        actorName: authStore.user.email ?? null,
+        actorName: authStore.user.user_metadata?.full_name || authStore.user.email || null,
         actorRole: tenantStore.currentRole ?? null,
         eventType: 'status_changed',
         meta: {

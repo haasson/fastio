@@ -9,5 +9,5 @@ export const formatRelativeTime = (isoDate: string, now: Date): string => {
 
   if (h < 24) return `${h} ч назад`
 
-  return new Date(isoDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+  return new Date(isoDate).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }

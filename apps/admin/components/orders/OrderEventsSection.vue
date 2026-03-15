@@ -26,6 +26,7 @@
               v-for="(change, i) in itemsChanges(event)"
               :key="i"
               class="event-text"
+              :class="{ 'event-text-block': change.type === 'customized' }"
             >
               <span class="item-badge" :class="change.type">{{ change.badge }}</span>
               <span class="item-name">{{ change.name }}</span>
@@ -33,6 +34,28 @@
                 <span class="field-old">{{ change.oldQty }} шт.</span>
                 <span class="field-arrow">→</span>
                 <span class="field-new">{{ change.newQty }} шт.</span>
+              </template>
+              <template v-else-if="change.type === 'customized'">
+                <div class="customized-details">
+                  <div v-for="(d, j) in change.details" :key="j" class="detail-line">
+                    <template v-if="d.kind === 'modifier'">
+                      <span class="detail-label">{{ d.groupName }}:</span>
+                      <span class="field-old">{{ d.from }}</span>
+                      <span class="field-arrow">→</span>
+                      <span class="field-new">{{ d.to }}</span>
+                    </template>
+                    <template v-else-if="d.kind === 'ingredient'">
+                      <span class="detail-sign" :class="d.removed ? 'neg' : 'pos'">{{ d.removed ? '−' : '+' }}</span>
+                      <span class="detail-label">ингредиент:</span>
+                      <span :class="d.removed ? 'field-old' : 'field-new'">{{ d.name }}</span>
+                    </template>
+                    <template v-else-if="d.kind === 'addon'">
+                      <span class="detail-sign" :class="d.added ? 'pos' : 'neg'">{{ d.added ? '+' : '−' }}</span>
+                      <span class="detail-label">добавка:</span>
+                      <span :class="d.added ? 'field-new' : 'field-old'">{{ d.name }}</span>
+                    </template>
+                  </div>
+                </div>
               </template>
               <template v-else>
                 <span class="item-qty">× {{ change.qty }}</span>
@@ -102,9 +125,15 @@ const fieldChanges = (event: OrderEvent): FieldChange[] => {
   }))
 }
 
+type CustomizedDetail
+  = | { kind: 'modifier'; groupName: string; from: string; to: string }
+    | { kind: 'ingredient'; name: string; removed: boolean }
+    | { kind: 'addon'; name: string; added: boolean }
+
 type ItemChange
   = | { type: 'added' | 'removed'; badge: string; name: string; qty: number }
     | { type: 'modified'; badge: string; name: string; oldQty: number; newQty: number }
+    | { type: 'customized'; badge: string; name: string; details: CustomizedDetail[] }
 
 const itemsChanges = (event: OrderEvent): ItemChange[] => {
   const before = (event.meta.before ?? []) as OrderItem[]
@@ -119,6 +148,43 @@ const itemsChanges = (event: OrderEvent): ItemChange[] => {
       result.push({ type: 'removed', badge: '−', name: item.dishName, qty: item.quantity })
     } else if (found.quantity !== item.quantity) {
       result.push({ type: 'modified', badge: '±', name: item.dishName, oldQty: item.quantity, newQty: found.quantity })
+    } else {
+      const details: CustomizedDetail[] = []
+
+      // Модификаторы
+      for (const mod of item.modifiers ?? []) {
+        const newMod = (found.modifiers ?? []).find((m) => m.groupName === mod.groupName)
+
+        if (newMod && newMod.optionName !== mod.optionName) {
+          details.push({ kind: 'modifier', groupName: mod.groupName, from: mod.optionName, to: newMod.optionName })
+        }
+      }
+
+      // Убранные ингредиенты
+      const oldRemoved = new Set(item.removedIngredients ?? [])
+      const newRemoved = new Set(found.removedIngredients ?? [])
+
+      for (const ing of newRemoved) {
+        if (!oldRemoved.has(ing)) details.push({ kind: 'ingredient', name: ing, removed: true })
+      }
+      for (const ing of oldRemoved) {
+        if (!newRemoved.has(ing)) details.push({ kind: 'ingredient', name: ing, removed: false })
+      }
+
+      // Добавки
+      const oldAddonIds = new Set((item.addons ?? []).map((a) => a.addonId))
+      const newAddonIds = new Set((found.addons ?? []).map((a) => a.addonId))
+
+      for (const addon of found.addons ?? []) {
+        if (!oldAddonIds.has(addon.addonId)) details.push({ kind: 'addon', name: addon.addonName, added: true })
+      }
+      for (const addon of item.addons ?? []) {
+        if (!newAddonIds.has(addon.addonId)) details.push({ kind: 'addon', name: addon.addonName, added: false })
+      }
+
+      if (details.length > 0) {
+        result.push({ type: 'customized', badge: '±', name: item.dishName, details })
+      }
     }
   }
 
@@ -164,7 +230,7 @@ watch(() => props.refreshKey, refresh)
 
   &.added { color: var(--green-500); }
   &.removed { color: var(--red-500); }
-  &.modified { color: var(--orange-400); }
+  &.modified, &.customized { color: var(--orange-400); }
 }
 
 .item-name {
@@ -194,6 +260,41 @@ watch(() => props.refreshKey, refresh)
 .field-new {
   color: var(--color-text);
   font-weight: 500;
+}
+
+.event-text-block {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.customized-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 1px;
+}
+
+.detail-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.detail-sign {
+  font-weight: 700;
+  font-size: 11px;
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+
+  &.pos { color: var(--green-500); }
+  &.neg { color: var(--red-500); }
 }
 
 .event-meta {

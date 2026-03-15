@@ -111,14 +111,14 @@
 
       <template v-if="showIngredients && removableIngredients.length">
         <div class="section-label">
-          Состав <span class="section-hint">— нажмите, чтобы убрать</span>
+          Состав <span class="section-hint">— нажмите, чтобы убрать или вернуть</span>
         </div>
         <div class="pills">
           <UiTag
             v-for="ing in removableIngredients"
             :key="ing.name"
             size="small"
-            :type="removed[ing.name] ? 'default' : 'success'"
+            :type="removed[ing.name] ? 'error' : 'success'"
             secondary
             hoverable
             round
@@ -142,7 +142,7 @@
             @update:model-value="selectedAddonIds.has(addon.id) ? selectedAddonIds.delete(addon.id) : selectedAddonIds.add(addon.id)"
           >
             {{ addon.name }}
-            <span class="addon-price">+{{ addon.price }} ₽</span>
+            <span class="addon-price" :class="{ 'addon-price-active': selectedAddonIds.has(addon.id) }">+{{ addon.price }} ₽</span>
             <span v-if="addon.weight" class="addon-weight">{{ addon.weight }} г</span>
             <span v-if="!addon.active" class="addon-unavailable">недоступно</span>
           </UiCheckbox>
@@ -628,6 +628,10 @@ const onConfirm = () => {
   font-size: 12px;
   font-weight: 600;
   color: var(--color-primary);
+
+  &.addon-price-active {
+    color: var(--color-success);
+  }
 }
 
 .addon-weight {

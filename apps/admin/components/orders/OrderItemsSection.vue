@@ -9,6 +9,7 @@
         :modifiers="item.modifiers.map((m) => ({ name: m.optionName, priceDelta: m.priceDelta }))"
         :removed-ingredients="item.removedIngredients"
         :addons="item.addons?.map((a) => ({ name: a.addonName, price: a.price }))"
+        :price="item.price"
       >
         <template v-if="!readonly">
           <div class="qty-controls">
@@ -31,6 +32,7 @@
           <span class="qty-value qty-readonly">× {{ item.quantity }}</span>
         </template>
         <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
+
         <AppActionsBlock
           v-if="!readonly"
           size="small"
@@ -66,12 +68,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiButton } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
+import { getItemUnitPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { OrderItem } from '@fastio/shared'
-import { getItemUnitPrice } from '@fastio/shared'
+
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 import useDrawer from '~/composables/ui/useDrawer'
+
+const { confirm } = useConfirm()
 
 const props = defineProps<{
   items: OrderItem[]
@@ -99,16 +105,25 @@ const mutate = (fn: (items: OrderItem[]) => void) => {
   emit('update:items', copy)
 }
 
-const changeQty = (idx: number, delta: number) => {
-  mutate((items) => {
-    const next = items[idx].quantity + delta
+const changeQty = async (idx: number, delta: number) => {
+  const next = props.items[idx].quantity + delta
 
-    if (next <= 0) items.splice(idx, 1)
-    else items[idx] = { ...items[idx], quantity: next }
-  })
+  if (next <= 0) {
+    const ok = await confirm({ title: 'Удалить блюдо?', confirmText: 'Удалить', confirmType: 'error' })
+
+    if (ok) mutate((items) => items.splice(idx, 1))
+  } else {
+    mutate((items) => {
+      items[idx] = { ...items[idx], quantity: next }
+    })
+  }
 }
 
-const removeItem = (idx: number) => mutate((items) => items.splice(idx, 1))
+const removeItem = async (idx: number) => {
+  const ok = await confirm({ title: 'Удалить блюдо?', confirmText: 'Удалить', confirmType: 'error' })
+
+  if (ok) mutate((items) => items.splice(idx, 1))
+}
 
 const openEditItem = (idx: number) => openAddDishModal(idx)
 
@@ -191,8 +206,8 @@ const onPickerSelect = (result: DishPickerResult) => {
 }
 
 .item-price {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--color-title);
   min-width: 60px;
   text-align: right;

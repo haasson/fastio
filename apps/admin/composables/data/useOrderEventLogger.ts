@@ -1,4 +1,5 @@
 import type { Order, OrderStatus } from '@fastio/shared'
+import { normalizePhone } from '@fastio/shared'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -22,7 +23,7 @@ type FieldMapping = {
 
 const FIELD_MAPPINGS: FieldMapping[] = [
   { field: 'customer_name', formVal: (f) => f.customerName, orderVal: (o) => o.customerName },
-  { field: 'customer_phone', formVal: (f) => f.customerPhone, orderVal: (o) => o.customerPhone },
+  { field: 'customer_phone', formVal: (f) => normalizePhone(f.customerPhone), orderVal: (o) => o.customerPhone },
   { field: 'address', formVal: (f) => f.address || null, orderVal: (o) => o.address },
   { field: 'payment_type', formVal: (f) => f.paymentType, orderVal: (o) => o.paymentType },
   { field: 'delivery_fee', formVal: (f) => f.deliveryFee, orderVal: (o) => o.deliveryFee },
@@ -41,7 +42,7 @@ export const useOrderEventLogger = () => {
       orderId: order.id,
       tenantId: order.tenantId,
       actorId: authStore.user.id,
-      actorName: authStore.user.email ?? null,
+      actorName: authStore.user.user_metadata?.full_name || authStore.user.email || null,
       actorRole: tenantStore.currentRole ?? null,
     }
 

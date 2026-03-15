@@ -11,16 +11,14 @@
       <UiCollapse :expanded-names="['data']">
 
         <UiCollapseItem name="data" title="Заказ">
-          <template #header-extra>
-            <UiTag
-              v-if="isEdit && currentStatus"
-              size="tiny"
-              :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
-            >{{ currentStatus.name }}</UiTag>
-          </template>
-
           <UiForm ref="formRef" class="form">
             <div v-if="isEdit && statusMenuItems.length" class="status-row">
+              <UiTag
+                v-if="currentStatus"
+                size="medium"
+                round
+                :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
+              >{{ currentStatus.name }}</UiTag>
               <UiMenuDropdown
                 :items="statusMenuItems"
                 trigger="click"
@@ -155,6 +153,7 @@ const can = computed(() => {
     editItems: g === 'new',
     editDeliveryFee: g === 'new' || g === 'in_progress',
     editPayment: g === 'new' || g === 'in_progress',
+    editBranch: g === 'new',
   }
 })
 
