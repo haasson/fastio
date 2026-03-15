@@ -17,6 +17,7 @@ export const defaultSiteLayout = (): SiteLayout => ({
       overlayOpacity: 0.4,
       contentPosition: 5,
       contentAlign: 'left',
+      gradientId: 'diag-bp',
     },
     banners: { enabled: false, displayMode: 'single', autoplay: false, autoplayInterval: 4 },
     menu: { enabled: true, defaultView: 'categories' },

@@ -65,11 +65,12 @@ export type SiteLayout = {
     hero: {
       enabled: boolean
       size: 'fullscreen' | 'content'
-      bgType: 'none' | 'image' | 'video'
+      bgType: 'none' | 'image' | 'video' | 'gradient'
       overlayColor: string
       overlayOpacity: number
       contentPosition: number
       contentAlign: 'left' | 'center' | 'right'
+      gradientId: string
     }
     banners: {
       enabled: boolean

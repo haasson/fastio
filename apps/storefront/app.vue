@@ -50,13 +50,14 @@ const tenantOverrides = computed(() => {
   const t = tenant.value?.theme
   if (!t) return {}
   const fontVar = t.fontFamily ? { '--font-family': fontFamilyCSS(t.fontFamily) } : {}
+  const headingFontVar = t.headingFontFamily ? { '--heading-font-family': fontFamilyCSS(t.headingFontFamily) } : {}
   if (t.palette) {
-    return { ...paletteToCssVars(t.palette), ...fontVar }
+    return { ...paletteToCssVars(t.palette), ...fontVar, ...headingFontVar }
   }
   // Fallback для старых данных без palette
   const result: Record<string, string> = {}
   if (t.primaryColor) result['--primary'] = t.primaryColor
-  return { ...result, ...fontVar }
+  return { ...result, ...fontVar, ...headingFontVar }
 })
 
 const { currentTheme, themes, themeStyle, randomize, setTheme } = useTheme(tenantOverrides)
@@ -145,8 +146,15 @@ watch(() => tenant.value?.theme?.preset, preset => {
 }
 
 body {
-  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   -webkit-font-smoothing: antialiased;
+}
+
+.app-root {
+  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--heading-font-family, var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif));
+  }
 }
 
 a {

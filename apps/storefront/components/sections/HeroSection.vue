@@ -1,7 +1,9 @@
 <template>
   <div class="hero-root" :class="`hero--${hero.size}`" :style="heroStyle">
-    <div v-if="hero.bgType !== 'none' && heroContent?.bgUrl" class="bg" :style="bgStyle" />
-    <div v-if="hero.bgType !== 'none' && heroContent?.bgUrl" class="overlay" :style="overlayStyle" />
+    <div v-if="hero.bgType === 'image' && heroContent?.bgUrl" class="bg" :style="bgStyle" />
+    <div v-if="hero.bgType === 'image' && heroContent?.bgUrl" class="overlay" :style="overlayStyle" />
+    <div v-if="hero.bgType === 'gradient'" class="gradient" :style="gradientStyle" />
+    <div v-if="hero.bgType === 'gradient'" class="overlay" :style="overlayStyle" />
     <div class="content" :style="contentStyle" v-html="safeContent" />
   </div>
 </template>
@@ -9,6 +11,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import DOMPurify from 'dompurify'
+import { getHeroGradient, heroContentPositionStyle } from '@fastio/shared'
 import type { SiteLayout, SiteContent } from '@fastio/shared'
 
 const props = defineProps<{
@@ -35,32 +38,20 @@ const bgStyle = computed(() => ({
   backgroundImage: `url('${props.heroContent?.bgUrl}')`,
 }))
 
+const gradientStyle = computed(() => {
+  const gradient = getHeroGradient(props.hero.gradientId ?? 'diag-bp')
+  return { background: gradient?.css ?? '' }
+})
+
 const overlayStyle = computed(() => ({
   background: props.hero.overlayColor,
   opacity: props.hero.overlayOpacity,
 }))
 
-// contentPosition 1–9: rows (top/mid/bot), cols (left/center/right)
-const alignMap: Record<number, string> = {
-  1: 'start', 2: 'start', 3: 'start',
-  4: 'center', 5: 'center', 6: 'center',
-  7: 'end', 8: 'end', 9: 'end',
-}
-const justifyMap: Record<number, string> = {
-  1: 'start', 2: 'center', 3: 'end',
-  4: 'start', 5: 'center', 6: 'end',
-  7: 'start', 8: 'center', 9: 'end',
-}
-
-const contentStyle = computed(() => {
-  const pos = props.hero.contentPosition ?? 5
-
-  return {
-    alignItems: alignMap[pos],
-    justifyContent: justifyMap[pos],
-    textAlign: props.hero.contentAlign ?? 'left',
-  }
-})
+const contentStyle = computed(() => ({
+  ...heroContentPositionStyle(props.hero.contentPosition ?? 5),
+  textAlign: props.hero.contentAlign ?? 'left',
+}))
 </script>
 
 <style scoped>
@@ -75,6 +66,11 @@ const contentStyle = computed(() => {
   inset: 0;
   background-size: cover;
   background-position: center;
+}
+
+.gradient {
+  position: absolute;
+  inset: 0;
 }
 
 .overlay {

@@ -27,13 +27,14 @@
         <div class="field">
           <label class="label">Фон</label>
           <UiRadioGroup v-model="form.bgType" :options="bgTypeOptions" />
-          <div v-if="form.bgType !== 'none'" class="photo-wrap">
+          <div v-if="form.bgType === 'image'" class="photo-wrap">
             <PhotoUpload
               :model-value="heroContent.bgUrl"
               @update:model-value="heroContent.bgUrl = $event ?? null"
               @pending="props.onPendingHeroBg"
             />
           </div>
+          <GradientPicker v-if="form.bgType === 'gradient'" v-model="form.gradientId" :palette="palette" />
         </div>
 
         <div class="field">
@@ -58,12 +59,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, nextTick } from 'vue'
+import { reactive, watch, nextTick, inject, computed } from 'vue'
 import { UiSegmentedControl, UiRadioGroup } from '@fastio/ui'
 import ContentPositionPicker from './ContentPositionPicker.vue'
+import GradientPicker from './GradientPicker.vue'
 import PhotoUpload from '~/components/ui/PhotoUpload.vue'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 import type { SiteLayout, SiteContent } from '@fastio/shared'
+import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 
 type HeroConfig = SiteLayout['sections']['hero']
 
@@ -75,6 +78,9 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:modelValue': [value: HeroConfig] }>()
 
 const heroContent = props.heroContent
+
+const appearanceForm = inject(AppearanceFormKey)
+const palette = computed(() => appearanceForm?.themeForm.palette ?? null)
 
 const sizeOptions = [
   { value: 'fullscreen', label: 'На весь экран' },
@@ -90,6 +96,7 @@ const alignOptions = [
 const bgTypeOptions = [
   { value: 'none', label: 'Без фона' },
   { value: 'image', label: 'Изображение' },
+  { value: 'gradient', label: 'Градиент' },
 ]
 
 const form = reactive<HeroConfig>({ ...props.modelValue })

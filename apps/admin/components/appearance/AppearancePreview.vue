@@ -113,7 +113,7 @@
 import { computed } from 'vue'
 import { UiIcon } from '@fastio/icons'
 import type { SiteLayout, SiteContent, TenantTheme } from '@fastio/shared'
-import { featureLabel, paletteToCssVars } from '@fastio/shared'
+import { featureLabel, paletteToCssVars, getHeroGradient, heroContentPositionStyle } from '@fastio/shared'
 
 const props = defineProps<{ layout: SiteLayout; content: SiteContent; theme: TenantTheme }>()
 
@@ -135,8 +135,14 @@ const themeVars = computed(() => {
 })
 
 const heroBgStyle = computed(() => {
-  const { bgType } = props.layout.sections.hero
+  const { bgType, gradientId } = props.layout.sections.hero
   const bgUrl = props.content.hero.bgUrl
+
+  if (bgType === 'gradient') {
+    const gradient = getHeroGradient(gradientId ?? 'diag-bp')
+
+    return gradient ? { background: gradient.css } : {}
+  }
 
   if (bgType !== 'none' && bgUrl) {
     return { backgroundImage: `url(${bgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -156,22 +162,8 @@ const heroOverlayStyle = computed(() => ({
   opacity: props.layout.sections.hero.overlayOpacity,
 }))
 
-const alignMap: Record<number, string> = {
-  1: 'flex-start', 2: 'flex-start', 3: 'flex-start',
-  4: 'center', 5: 'center', 6: 'center',
-  7: 'flex-end', 8: 'flex-end', 9: 'flex-end',
-}
-const justifyMap: Record<number, string> = {
-  1: 'flex-start', 2: 'center', 3: 'flex-end',
-  4: 'flex-start', 5: 'center', 6: 'flex-end',
-  7: 'flex-start', 8: 'center', 9: 'flex-end',
-}
-
-const heroContentStyle = computed(() => {
-  const pos = props.layout.sections.hero.contentPosition ?? 5
-
-  return { alignItems: alignMap[pos] ?? 'center', justifyContent: justifyMap[pos] ?? 'center' }
-})
+const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.sections.hero.contentPosition ?? 5),
+)
 </script>
 
 <style scoped lang="scss">
