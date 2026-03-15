@@ -17,10 +17,12 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { UiTabs, UiCard } from '@fastio/ui'
 import { usePermissions } from '~/composables/auth/usePermissions'
+import { usePlanFeatures } from '~/composables/plan/usePlanFeatures'
 import { useTenantStore } from '~/stores/tenant'
 
 const tenantStore = useTenantStore()
 const { canManageTeam } = usePermissions()
+const { canUseDelivery, canUseBranchSettings } = usePlanFeatures()
 
 onMounted(() => tenantStore.init())
 
@@ -29,10 +31,10 @@ const router = useRouter()
 
 const settingsTabs = computed(() => [
   { value: 'contacts', label: 'Контакты', icon: 'mapPin' as const },
-  { value: 'delivery', label: 'Доставка', icon: 'bike' as const },
+  ...(canUseDelivery.value ? [{ value: 'delivery', label: 'Доставка', icon: 'bike' as const }] : []),
   { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
   ...(canManageTeam.value ? [{ value: 'team', label: 'Команда', icon: 'users' as const }] : []),
-  ...(canManageTeam.value ? [{ value: 'branches', label: 'Филиалы', icon: 'mapPin' as const }] : []),
+  ...(canManageTeam.value && canUseBranchSettings.value ? [{ value: 'branches', label: 'Филиалы', icon: 'mapPin' as const }] : []),
 ])
 
 const activeTab = computed(() => {

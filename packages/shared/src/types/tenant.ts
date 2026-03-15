@@ -107,10 +107,12 @@ export type TenantNotifications = {
 
 export type TenantSubscription = {
   status: 'trial' | 'active' | 'suspended' | 'cancelled'
-  plan: 'basic' | 'pro'
+  plan: 'start' | 'business' | 'pro'
   trialEndsAt: string | null
   renewsAt: string | null
 }
+
+export type BusinessType = 'food' | 'retail' | 'services'
 
 export type Tenant = {
   id: string
@@ -118,6 +120,7 @@ export type Tenant = {
   slug: string
   customDomain: string | null
   ownerId: string
+  businessType: BusinessType | null
   theme: TenantTheme
   siteLayout: SiteLayout
   siteContent: SiteContent

@@ -68,6 +68,8 @@
         <slot v-else />
       </main>
     </div>
+
+    <BusinessTypeModal :model-value="showOnboarding" />
   </div>
 </template>
 
@@ -83,6 +85,8 @@ import { useConfirm } from '@fastio/kit'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
 import BranchSetupGate from '~/components/layout/BranchSetupGate.vue'
+import BusinessTypeModal from '~/components/onboarding/BusinessTypeModal.vue'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
 import { useAuthStore } from '~/stores/auth'
@@ -108,6 +112,9 @@ useOrderAlertHandler()
 
 const showBranchGate = computed(() => !tenantStore.loading && !branchStore.loading && !!tenantStore.tenant && !branchStore.hasBranches,
 )
+const showOnboarding = computed(() => !tenantStore.loading && !!tenantStore.tenant && tenantStore.tenant.businessType === null)
+
+const { menuLabel } = useTenantLabels()
 
 const displayName = computed(() => {
   const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || ''
@@ -172,18 +179,17 @@ const handleLogout = async () => {
   await navigateTo('/login')
 }
 
-const pageTitles: [string, string][] = [
-  ['/menu/modifiers', 'Модификаторы'],
-  ['/menu/addons', 'Добавки'],
-  ['/menu', 'Меню'],
-  ['/orders', 'Заказы'],
-  ['/promotions', 'Акции'],
-  ['/appearance', 'Оформление'],
-  ['/settings', 'Настройки'],
-  ['/', 'Дашборд'],
-]
-
 const currentPageTitle = computed(() => {
+  const pageTitles: [string, string][] = [
+    ['/menu/modifiers', 'Модификаторы'],
+    ['/menu/addons', 'Добавки'],
+    ['/menu', menuLabel.value],
+    ['/orders', 'Заказы'],
+    ['/promotions', 'Акции'],
+    ['/appearance', 'Оформление'],
+    ['/settings', 'Настройки'],
+    ['/', 'Дашборд'],
+  ]
   const entry = pageTitles.find(([path]) => route.path === path || route.path.startsWith(`${path}/`))
 
   return entry?.[1] ?? ''

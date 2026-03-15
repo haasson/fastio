@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
       notifications: { email, telegramChatId: null },
       subscription: {
         status: 'trial',
-        plan: 'basic',
+        plan: 'start',
         trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         renewsAt: null,
       },

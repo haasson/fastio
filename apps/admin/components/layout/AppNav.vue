@@ -9,7 +9,7 @@
       @click="emit('navigate')"
     >
       <UiIcon :name="item.icon" :size="18" />
-      <span>{{ item.label }}</span>
+      <span>{{ typeof item.label === 'string' ? item.label : item.label.value }}</span>
       <UiCounter
         v-if="item.to === '/orders' && showOrdersBadge"
         :value="newOrderCount"
@@ -29,26 +29,31 @@ import type { ComputedRef } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import { usePermissions } from '~/composables/auth/usePermissions'
+import { usePlanFeatures } from '~/composables/plan/usePlanFeatures'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 
 defineProps<{ collapsed?: boolean }>()
 
-type NavItem = { to: string; icon: IconName; label: string; visible?: ComputedRef<boolean> }
+type NavItem = { to: string; icon: IconName; label: string | ComputedRef<string>; visible?: ComputedRef<boolean> }
 
 const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings } = usePermissions()
+const { canUsePromotions } = usePlanFeatures()
+const { menuLabel } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 
 const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.value > 0)
+const canSeePromotions = computed(() => canManagePromotions.value && canUsePromotions.value)
 
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
-  { to: '/menu', icon: 'dishes', label: 'Меню', visible: canManageMenu },
+  { to: '/menu', icon: 'dishes', label: menuLabel, visible: canManageMenu },
   { to: '/menu/modifiers', icon: 'list', label: 'Модификаторы', visible: canManageMenu },
   { to: '/menu/addons', icon: 'plusRound', label: 'Добавки', visible: canManageMenu },
   { to: '/orders', icon: 'orders', label: 'Заказы', visible: canManageOrders },
-  { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canManagePromotions },
+  { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
 ]
