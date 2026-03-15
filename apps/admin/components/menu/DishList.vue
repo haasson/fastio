@@ -7,11 +7,23 @@
     <template v-else>
       <UiSectionHeader title="Блюда">
         <template #left>
-          <UiSegmentedControl
-            v-model="dishView"
-            :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Список', value: 'list' }]"
-            size="medium"
-          />
+          <div class="header-left">
+            <UiSegmentedControl
+              v-model="dishView"
+              :items="VIEW_ITEMS"
+              size="medium"
+            />
+            <template v-if="dishView === 'table'">
+              <UiDivider vertical />
+              <UiInput
+                v-model:value="searchQuery"
+                placeholder="Поиск по названию…"
+                clearable
+                size="medium"
+                class="search"
+              />
+            </template>
+          </div>
         </template>
         <template #right>
           <UiButton
@@ -23,18 +35,19 @@
         </template>
       </UiSectionHeader>
 
-      <div class="grid-wrap">
+      <div class="content-wrap">
         <Transition name="dishes-fade" mode="out-in">
-          <div :key="categoryId ?? ''" class="grid-inner">
+          <div :key="`${categoryId}-${dishView}`" class="content-inner">
             <UiSkeleton v-if="showSkeleton" text :repeat="6" />
 
             <template v-else-if="!dishesLoading">
               <UiEmpty v-if="dishes.length === 0" icon="dishes" text="В этой категории пока нет блюд" />
 
               <template v-else>
-                <!-- Вид карточек -->
+
+                <!-- Карточки с DnD -->
                 <VueDraggable
-                  v-show="dishView === 'cards'"
+                  v-if="dishView === 'cards'"
                   v-model="dishes"
                   class="cards-grid"
                   :animation="180"
@@ -53,14 +66,18 @@
                         <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" />
                         <UiPhotoPlaceholder v-else size="medium" />
                       </div>
-
                       <span class="dish-name">{{ dish.name }}</span>
-
                       <UiSpace :size="4" align="center">
                         <span class="dish-price">{{ formatPrice(dish.price) }}</span>
-                        <UiTag v-for="tag in dish.tags" :key="tag" size="tiny">{{ tagOptions[tag] }}</UiTag>
+                        <UiTag
+                          v-for="tag in dish.tags"
+                          :key="tag"
+                          size="tiny"
+                          type="primary"
+                          empty
+                          round
+                        >{{ tagOptions[tag] }}</UiTag>
                       </UiSpace>
-
                       <div class="card-actions">
                         <UiSwitch
                           :model-value="dish.active"
@@ -75,44 +92,49 @@
                   </UiCard>
                 </VueDraggable>
 
-                <!-- Вид списка -->
+                <!-- Таблица -->
+                <template v-else-if="dishView === 'table'">
+                  <UiEmpty
+                    v-if="filteredDishes.length === 0"
+                    icon="dishes"
+                    text="Ничего не найдено"
+                  />
+                  <UiDataTable
+                    v-else
+                    :columns="tableColumns"
+                    :data="filteredDishes"
+                    :row-key="(row) => row.id"
+                    :bordered="false"
+                    size="small"
+                  />
+                </template>
+
+                <!-- Порядок: чистый DnD -->
                 <VueDraggable
-                  v-show="dishView === 'list'"
+                  v-else-if="dishView === 'order'"
                   v-model="dishes"
-                  class="dish-list"
+                  class="order-list"
                   handle=".drag-handle"
                   :animation="180"
-                  ghost-class="list-row-ghost"
+                  ghost-class="order-row-ghost"
                   @end="reorderDishes"
                 >
                   <div
                     v-for="dish in dishes"
                     :key="dish.id"
-                    class="list-row"
+                    class="order-row"
                     :class="{ inactive: !dish.active }"
                   >
                     <UiIcon name="grip" class="drag-handle" />
-                    <div class="list-photo">
+                    <div class="order-photo">
                       <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" />
                       <UiPhotoPlaceholder v-else size="small" />
                     </div>
-                    <span class="list-name">{{ dish.name }}</span>
-                    <div class="list-tags">
-                      <UiTag v-for="tag in dish.tags" :key="tag" size="tiny">{{ tagOptions[tag] }}</UiTag>
-                    </div>
-                    <span class="list-price">{{ formatPrice(dish.price) }}</span>
-                    <div class="list-actions">
-                      <UiSwitch
-                        :model-value="dish.active"
-                        @update:model-value="toggleActive(dish.id, $event)"
-                      />
-                      <AppActionsBlock
-                        @edit="openDishModal(dish)"
-                        @delete="confirmDeleteDish(dish.id)"
-                      />
-                    </div>
+                    <span class="order-name">{{ dish.name }}</span>
+                    <span class="order-price">{{ formatPrice(dish.price) }}</span>
                   </div>
                 </VueDraggable>
+
               </template>
             </template>
           </div>
@@ -138,12 +160,17 @@
 import { toRefs } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiIcon, UiSwitch, UiSegmentedControl, UiPhotoPlaceholder, UiSectionHeader, UiEmpty } from '@fastio/ui'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import {
+  UiButton, UiCard, UiDataTable, UiDivider, UiEmpty, UiIcon, UiInput,
+  UiPhotoPlaceholder, UiSectionHeader, UiSegmentedControl, UiSkeleton,
+  UiSpace, UiSwitch, UiTag,
+} from '@fastio/ui'
 import type { Dish, Category } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDishes } from '~/composables/data/useDishes'
+import { useDishTable } from '~/composables/ui/useDishTable'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import { tagOptions } from '~/config/dish-tags'
 
@@ -180,16 +207,27 @@ const removeDish = async (...args: Parameters<typeof rawRemoveDish>) => {
   emit('dishesChanged')
 }
 
-const dishView = useLocalStorage<'cards' | 'list'>('menu:dish-view', 'cards')
+const VIEW_ITEMS = [
+  { label: 'Карточки', value: 'cards' },
+  { label: 'Таблица', value: 'table' },
+  { label: 'Порядок', value: 'order' },
+]
+
+const dishView = useLocalStorage<'cards' | 'table' | 'order'>('menu:dish-view', 'cards')
 
 const { showSkeleton, modalOpen: dishModalOpen, editingItem: editingDish, openModal: openDishModal, closeModal: closeDishModal, confirmDelete: confirmDeleteDish }
   = useItemManager<Dish>({ loading: dishesLoading, remove: removeDish, confirmTitle: 'Удалить блюдо?' })
 
 const reorderDishes = () => reorder(dishes.value)
+
+const { searchQuery, filteredDishes, tableColumns } = useDishTable(dishes, {
+  onEdit: openDishModal,
+  onDelete: confirmDeleteDish,
+  onToggleActive: toggleActive,
+})
 </script>
 
 <style scoped lang="scss">
-
 .dishes-root {
   display: flex;
   flex-direction: column;
@@ -207,19 +245,23 @@ const reorderDishes = () => reorder(dishes.value)
   font-size: 15px;
 }
 
-.header-actions {
+.header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.grid-wrap {
+.search {
+  width: 220px;
+}
+
+.content-wrap {
   overflow-y: auto;
   flex: 1;
   padding-top: 2px;
 }
 
-.grid-inner {
+.content-inner {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -235,7 +277,7 @@ const reorderDishes = () => reorder(dishes.value)
   opacity: 0;
 }
 
-// Cards view
+// Карточки
 .card-ghost {
   opacity: 0.35;
 }
@@ -257,13 +299,8 @@ const reorderDishes = () => reorder(dishes.value)
 .dish-card {
   cursor: grab;
 
-  &:active {
-    cursor: grabbing;
-  }
-
-  &.inactive {
-    opacity: 0.5;
-  }
+  &:active { cursor: grabbing; }
+  &.inactive { opacity: 0.5; }
 }
 
 .card-photo {
@@ -306,18 +343,18 @@ const reorderDishes = () => reorder(dishes.value)
   justify-content: space-between;
 }
 
-// List view
-.dish-list {
+// Порядок
+.order-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.list-row-ghost {
+.order-row-ghost {
   opacity: 0.35;
 }
 
-.list-row {
+.order-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -326,10 +363,7 @@ const reorderDishes = () => reorder(dishes.value)
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
 
-  &.inactive {
-    opacity: 0.5;
-  }
-
+  &.inactive { opacity: 0.5; }
 }
 
 .drag-handle {
@@ -339,12 +373,10 @@ const reorderDishes = () => reorder(dishes.value)
   width: 16px;
   height: 16px;
 
-  &:active {
-    cursor: grabbing;
-  }
+  &:active { cursor: grabbing; }
 }
 
-.list-photo {
+.order-photo {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -362,7 +394,7 @@ const reorderDishes = () => reorder(dishes.value)
   }
 }
 
-.list-name {
+.order-name {
   flex: 1;
   font-size: 13px;
   font-weight: 600;
@@ -373,24 +405,11 @@ const reorderDishes = () => reorder(dishes.value)
   text-overflow: ellipsis;
 }
 
-.list-tags {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.list-price {
+.order-price {
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-primary);
   white-space: nowrap;
-}
-
-.list-actions {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 </style>

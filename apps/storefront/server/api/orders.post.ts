@@ -1,4 +1,4 @@
-import { findDeliveryZone } from '@fastio/shared'
+import { findDeliveryZone, normalizePhone } from '@fastio/shared'
 import type { DeliveryZone } from '@fastio/shared'
 import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
 
@@ -292,7 +292,7 @@ export default defineEventHandler(async (event) => {
     .insert({
       tenant_id: tenantId,
       customer_name: body.customer.name,
-      customer_phone: body.customer.phone,
+      customer_phone: normalizePhone(body.customer.phone),
       customer_email: body.customer.email ?? null,
       delivery_type: deliveryType,
       address: body.address ?? null,

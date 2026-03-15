@@ -80,7 +80,7 @@ import {
   UiDrawer, UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, normalizePhone } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
@@ -163,7 +163,7 @@ const can = computed(() => {
 const buildEditForm = (o: Order) => ({
   status: o.status,
   customerName: o.customerName,
-  customerPhone: o.customerPhone,
+  customerPhone: formatPhone(o.customerPhone),
   deliveryType: o.deliveryType,
   address: o.address ?? '',
   items: o.items.map((i) => ({ ...i })),
@@ -218,7 +218,7 @@ const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.
 
 const formPayload = computed(() => ({
   customerName: form.customerName,
-  customerPhone: form.customerPhone,
+  customerPhone: normalizePhone(form.customerPhone),
   items: form.items,
   deliveryType: form.deliveryType,
   address: form.address || null,

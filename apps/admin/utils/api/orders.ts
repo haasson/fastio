@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Order, OrderItem, OrderDeliveryType } from '@fastio/shared'
+import { normalizePhone } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { OrderRow, OrderItemRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
@@ -119,29 +120,75 @@ const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id
   sort_order: i,
 }))
 
-export const PAGE_SIZE = 50
+export const DEFAULT_PAGE_SIZE = 10
+
+const SORTABLE_COLUMNS = new Set(['created_at', 'total'])
+
+export type OrderListOptions = {
+  branchId?: string | null
+  filterBranchIds?: string[]
+  page?: number
+  pageSize?: number
+  search?: string
+  deliveryTypes?: string[]
+  paymentTypes?: string[]
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
+}
 
 export const ordersApi = {
   async list(
     sb: SupabaseClient,
     tenantId: string,
     filter: string,
-    branchId: string | null = null,
-    page = 1,
+    options: OrderListOptions = {},
   ) {
-    const from = (page - 1) * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
+    const {
+      branchId = null,
+      filterBranchIds = [],
+      page = 1,
+      pageSize = DEFAULT_PAGE_SIZE,
+      search,
+      deliveryTypes = [],
+      paymentTypes = [],
+      sortBy = 'created_at',
+      sortDir = 'desc',
+    } = options
+
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
+
+    const safeSort = SORTABLE_COLUMNS.has(sortBy) ? sortBy : 'created_at'
 
     let q = sb
       .from('orders')
       .select(ORDER_SELECT, { count: 'exact' })
       .eq('tenant_id', tenantId)
       .eq('status', filter)
-      .order('created_at', { ascending: false })
+      .order(safeSort, { ascending: sortDir === 'asc' })
       .range(from, to)
 
-    if (branchId !== null) {
+    if (filterBranchIds.length > 0) {
+      q = q.in('branch_id', filterBranchIds)
+    } else if (branchId !== null) {
       q = q.eq('branch_id', branchId)
+    }
+
+    if (search) {
+      const phoneDigits = normalizePhone(search)
+      const phonePart = phoneDigits.length >= 3
+        ? `customer_phone.ilike.%${phoneDigits}%`
+        : `customer_phone.ilike.%${search}%`
+
+      q = q.or(`customer_name.ilike.%${search}%,${phonePart}`)
+    }
+
+    if (deliveryTypes.length > 0) {
+      q = q.in('delivery_type', deliveryTypes)
+    }
+
+    if (paymentTypes.length > 0) {
+      q = q.in('payment_type', paymentTypes)
     }
 
     const { data, error, count } = await q

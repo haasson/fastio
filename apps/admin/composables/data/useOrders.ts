@@ -1,17 +1,28 @@
 import { computed, ref, watch, onUnmounted, type Ref } from 'vue'
+import { watchDebounced } from '@vueuse/core'
 import type { Order, OrderStatus } from '@fastio/shared'
 import type { OrderFilter } from '~/utils/api/orders'
-import { PAGE_SIZE } from '~/utils/api/orders'
 import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 
+export type UseOrdersOptions = {
+  branchId?: Ref<string | null>
+  statuses?: Ref<OrderStatus[]>
+  search?: Ref<string>
+  deliveryTypes?: Ref<string[]>
+  paymentTypes?: Ref<string[]>
+  filterBranchIds?: Ref<string[]>
+  sortBy?: Ref<string>
+  sortDir?: Ref<'asc' | 'desc'>
+  pageSize?: Ref<number>
+}
+
 export function useOrders(
   tenantId: Ref<string>,
   filter: Ref<OrderFilter>,
-  branchId: Ref<string | null> = ref(null),
-  statuses: Ref<OrderStatus[]> = ref([]),
+  options: UseOrdersOptions = {},
 ) {
   const api = useDatabase()
   const authStore = useAuthStore()
@@ -20,13 +31,26 @@ export function useOrders(
   const loading = ref(false)
   const page = ref(1)
   const total = ref(0)
+  const pendingUpdate = ref(false)
 
-  // API возвращает newest-first — реверс не нужен
+  const statuses = options.statuses ?? ref([])
+
   const orders = computed(() => _orders.value)
 
-  const shouldInclude = (order: Order) => filter.value !== null
-    && order.status === filter.value
-    && (branchId.value === null || order.branchId === branchId.value)
+  const shouldInclude = (order: Order) => {
+    if (filter.value === null) return false
+    if (order.status !== filter.value) return false
+    const branchId = options.branchId?.value ?? null
+
+    if (branchId !== null && order.branchId !== branchId) return false
+
+    return true
+  }
+
+  const hasActiveFilters = () => (options.search?.value ?? '') !== ''
+    || (options.deliveryTypes?.value ?? []).length > 0
+    || (options.paymentTypes?.value ?? []).length > 0
+    || (options.filterBranchIds?.value ?? []).length > 0
 
   const fetchOrders = async () => {
     if (!tenantId.value || filter.value === null) {
@@ -37,7 +61,17 @@ export function useOrders(
     }
     loading.value = true
     try {
-      const result = await api.orders.list(tenantId.value, filter.value, branchId.value, page.value)
+      const result = await api.orders.list(tenantId.value, filter.value, {
+        branchId: options.branchId?.value ?? null,
+        filterBranchIds: options.filterBranchIds?.value ?? [],
+        page: page.value,
+        pageSize: options.pageSize?.value,
+        search: options.search?.value,
+        deliveryTypes: options.deliveryTypes?.value ?? [],
+        paymentTypes: options.paymentTypes?.value ?? [],
+        sortBy: options.sortBy?.value ?? 'created_at',
+        sortDir: options.sortDir?.value ?? 'desc',
+      })
 
       _orders.value = result.orders
       total.value = result.total
@@ -46,22 +80,60 @@ export function useOrders(
     }
   }
 
-  // При смене фильтра/бранча сбрасываем на первую страницу
-  watch([tenantId, filter, branchId], () => {
-    if (page.value !== 1) {
-      page.value = 1 // watch(page) сам вызовет fetchOrders
-    } else {
-      fetchOrders()
-    }
-  }, { immediate: true })
+  // Основные фильтры — немедленно
+  watch(
+    [tenantId, filter, () => options.branchId?.value ?? null],
+    () => {
+      pendingUpdate.value = false
+      if (page.value !== 1) page.value = 1
+      else fetchOrders()
+    },
+    { immediate: true },
+  )
 
-  // При смене страницы просто догружаем
+  // Колоночные фильтры + сортировка — немедленно
+  watch(
+    [
+      () => (options.deliveryTypes?.value ?? []).join(','),
+      () => (options.paymentTypes?.value ?? []).join(','),
+      () => (options.filterBranchIds?.value ?? []).join(','),
+      () => options.sortBy?.value ?? 'created_at',
+      () => options.sortDir?.value ?? 'desc',
+    ],
+    () => {
+      if (page.value !== 1) page.value = 1
+      else fetchOrders()
+    },
+  )
+
+  // Поиск — с дебаунсом
+  watchDebounced(
+    () => options.search?.value ?? '',
+    () => {
+      pendingUpdate.value = false
+      if (page.value !== 1) page.value = 1
+      else fetchOrders()
+    },
+    { debounce: 400 },
+  )
+
   watch(page, fetchOrders)
 
-  // Subscribe to shared channel events
+  // Размер страницы — сбрасываем на первую и перезапрашиваем
+  if (options.pageSize) {
+    watch(options.pageSize, () => {
+      if (page.value !== 1) page.value = 1
+      else fetchOrders()
+    })
+  }
+
   const offInsert = orderEvents.onInsert((order) => {
     if (!shouldInclude(order)) return
-    // Добавляем в начало только на первой странице (newest-first)
+    if (hasActiveFilters()) {
+      pendingUpdate.value = true
+
+      return
+    }
     if (page.value === 1 && !_orders.value.find((o) => o.id === order.id)) {
       _orders.value.unshift(order)
       total.value++
@@ -99,7 +171,6 @@ export function useOrders(
 
     await api.orders.updateStatus(orderId, newStatusId)
 
-    // Log event (fire-and-forget)
     if (authStore.user && oldStatusId) {
       const oldStatus = statuses.value.find((s) => s.id === oldStatusId)
       const newStatus = statuses.value.find((s) => s.id === newStatusId)
@@ -129,5 +200,10 @@ export function useOrders(
     }
   }
 
-  return { orders, loading, updateStatus, page, pageSize: PAGE_SIZE, total }
+  const refresh = () => {
+    pendingUpdate.value = false
+    fetchOrders()
+  }
+
+  return { orders, loading, updateStatus, page, total, pendingUpdate, refresh }
 }

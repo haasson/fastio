@@ -24,7 +24,7 @@
 
     <div class="customer">
       <span class="customer-name">{{ order.customerName }}</span>
-      <span class="customer-phone">{{ order.customerPhone }}</span>
+      <span class="customer-phone">{{ formatPhone(order.customerPhone) }}</span>
     </div>
 
     <div class="items-summary">{{ itemsSummary }}</div>
@@ -51,6 +51,7 @@
 import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
+import { formatPhone } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS } from '~/config/order-options'
 import { useOrderCard } from '~/composables/ui/useOrderCard'

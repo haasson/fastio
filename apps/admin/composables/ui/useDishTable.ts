@@ -1,0 +1,77 @@
+import { computed, ref, h, type Ref } from 'vue'
+import { UiPhotoPlaceholder, UiText, UiTag, UiSwitch } from '@fastio/ui'
+import type { DataTableColumns } from '@fastio/ui'
+import type { Dish, DishTag } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import { tagOptions } from '~/config/dish-tags'
+
+type Actions = {
+  onEdit: (dish: Dish) => void
+  onDelete: (id: string) => void
+  onToggleActive: (id: string, active: boolean) => void
+}
+
+const TAG_FILTER_OPTIONS = Object.entries(tagOptions).map(([value, label]) => ({ label, value }))
+
+export function useDishTable(dishes: Ref<Dish[]>, actions: Actions) {
+  const searchQuery = ref('')
+
+  const filteredDishes = computed(() => {
+    const q = searchQuery.value.trim().toLowerCase()
+
+    if (!q) return dishes.value
+
+    return dishes.value.filter((d) => d.name.toLowerCase().includes(q))
+  })
+
+  const tableColumns = computed<DataTableColumns<Dish>>(() => [
+    {
+      title: '',
+      key: 'photo',
+      width: 56,
+      render: (row) => row.photos[0]
+        ? h('img', { src: row.photos[0], alt: row.name, style: 'width:40px;height:40px;border-radius:8px;object-fit:cover;display:block' })
+        : h(UiPhotoPlaceholder, { size: 'small' }),
+    },
+    {
+      title: 'Название',
+      key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (row) => h(UiText, { size: 'small', style: 'font-weight: 600' }, () => row.name),
+    },
+    {
+      title: 'Цена',
+      key: 'price',
+      width: 100,
+      sorter: (a, b) => a.price - b.price,
+      render: (row) => h(UiText, { size: 'small', style: 'font-weight: 700; color: var(--color-primary)' }, () => formatPrice(row.price)),
+    },
+    {
+      title: 'Теги',
+      key: 'tags',
+      width: 200,
+      filterOptions: TAG_FILTER_OPTIONS,
+      filter: (value, row) => row.tags.includes(value as DishTag),
+      render: (row) => h('div', { style: 'display:flex;gap:4px;flex-wrap:wrap' },
+        row.tags.map((tag) => h(UiTag, { key: tag, size: 'tiny', type: 'primary', empty: true, round: true }, () => tagOptions[tag])),
+      ),
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 110,
+      render: (row) => h(AppActionsBlock, {
+        onEdit: () => actions.onEdit(row),
+        onDelete: () => actions.onDelete(row.id),
+      }, {
+        prepend: () => h(UiSwitch, {
+          'modelValue': row.active,
+          'onUpdate:modelValue': (v: boolean) => actions.onToggleActive(row.id, v),
+        }),
+      }),
+    },
+  ])
+
+  return { searchQuery, filteredDishes, tableColumns }
+}

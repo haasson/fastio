@@ -31,7 +31,7 @@
     <!-- Клиент -->
     <div class="customer">
       <span class="customer-name">{{ order.customerName }}</span>
-      <a :href="`tel:${order.customerPhone}`">{{ order.customerPhone }}</a>
+      <a :href="`tel:${order.customerPhone}`">{{ formatPhone(order.customerPhone) }}</a>
     </div>
 
     <!-- Адрес -->
@@ -91,7 +91,7 @@
 import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { useOrderCard } from '~/composables/ui/useOrderCard'
