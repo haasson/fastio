@@ -85,7 +85,7 @@
           :key="order.id"
           :order="order"
           :updating="updatingIds.has(order.id)"
-          :branch-name="branchId === null ? getBranchName(order.branchId) : undefined"
+          :branch-name="branchId === null && branchStore.branches.length > 1 ? getBranchName(order.branchId) : undefined"
           @status-change="handleStatusChange"
           @open-edit="openEditModal"
         />
@@ -107,7 +107,7 @@
     </template>
 
     <UiPagination
-      v-if="total > 10"
+      v-if="total > pageSize"
       v-model:page="page"
       :item-count="total"
       :page-size="pageSize"
@@ -210,6 +210,7 @@ const {
 const updatingIds = reactive(new Set<string>())
 
 const tableData = computed(() => {
+  // reactive Set не тригерит computed при add/delete без явного обращения к .size
   void updatingIds.size
 
   return orders.value
@@ -285,7 +286,9 @@ const exportCsv = () => {
 
   a.href = url
   a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
   a.click()
+  document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
 

@@ -7,46 +7,61 @@
   >
     <!-- Шапка -->
     <div class="header">
-      <div class="header-left">
+      <div class="header-top">
         <span class="number">#{{ shortId }}</span>
         <UiTag
           v-if="currentStatus"
           size="small"
+          round
           :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
         >{{ currentStatus.name }}</UiTag>
         <UiTag
           v-if="deliveryEnabled"
           size="small"
+          :type="order.deliveryType === 'delivery' ? 'primary' : 'success'"
+          empty
+          round
           :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
         >
           {{ DELIVERY_TYPE_LABELS[order.deliveryType] }}
         </UiTag>
-        <UiTag v-if="branchName" size="tiny">{{ branchName }}</UiTag>
+        <span class="time" :title="absoluteTime">{{ relativeTime }}</span>
       </div>
-      <div class="header-right">
-        <span class="time">{{ relativeTime }}</span>
+      <div v-if="branchName" class="header-tags">
+        <UiTag
+          size="small"
+          type="primary"
+          empty
+          round
+          icon="mapPin"
+        >{{ branchName }}</UiTag>
       </div>
     </div>
 
     <!-- Клиент -->
     <div class="customer">
-      <span class="customer-name">{{ order.customerName }}</span>
-      <a :href="`tel:${order.customerPhone}`">{{ formatPhone(order.customerPhone) }}</a>
+      <span class="customer-name">{{ order.customerName || 'Гость' }}</span>
+      <a :href="`tel:${order.customerPhone}`" @click.stop>{{ formatPhone(order.customerPhone) }}</a>
     </div>
 
     <!-- Адрес -->
     <div v-if="deliveryEnabled && order.deliveryType === 'delivery' && order.address" class="address">
-      <UiIcon name="mapPin" :size="14" /> {{ order.address }}
+      <UiIcon name="mapPin" :size="14" />
+      <span class="address-text">{{ order.address }}</span>
     </div>
 
     <!-- Состав -->
-    <ul class="items">
-      <li v-for="(item, i) in order.items" :key="item.id ?? i" class="item">
-        <span class="item-name">{{ item.dishName }}</span>
-        <span class="item-qty">× {{ item.quantity }}</span>
-        <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
-      </li>
-    </ul>
+    <div class="items-section">
+      <span class="items-label">Состав · {{ order.items.length }} поз.</span>
+      <ul class="items">
+        <li v-for="(item, i) in visibleItems" :key="item.id ?? i" class="item">
+          <span class="item-name">{{ item.dishName }}</span>
+          <span class="item-qty">× {{ item.quantity }}</span>
+          <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
+        </li>
+        <li v-if="hiddenItemsCount > 0" class="item-more">+{{ hiddenItemsCount }} ещё</li>
+      </ul>
+    </div>
 
     <!-- Промокод / скидка -->
     <div v-if="order.discountAmount > 0" class="discount">
@@ -63,18 +78,18 @@
       <div class="total-row">
         <span class="total-label">Итого</span>
         <span class="total">{{ order.total }} ₽</span>
-        <span class="payment-type">
-          <UiIcon :name="paymentIcon" :size="13" />
-          {{ PAYMENT_TYPE_LABELS[order.paymentType] }}
-        </span>
       </div>
-
+      <span class="payment-type">
+        <UiIcon :name="paymentIcon" :size="13" />
+        {{ PAYMENT_TYPE_LABELS[order.paymentType] }}
+      </span>
     </div>
 
     <div v-if="quickActionStatuses.length" class="actions" @click.stop>
       <UiButton
         v-for="target in quickActionStatuses"
         :key="target.id"
+        class="action-btn"
         :type="STATUS_GROUP_TAG_TYPES[target.groupType]"
         ghost
         size="small"
@@ -111,6 +126,16 @@ const { deliveryEnabled, shortId, currentStatus, quickActionStatuses, relativeTi
   = useOrderCard(toRef(props, 'order'))
 
 const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')
+
+const MAX_ITEMS = 3
+const visibleItems = computed(() => props.order.items.slice(0, MAX_ITEMS))
+const hiddenItemsCount = computed(() => Math.max(0, props.order.items.length - MAX_ITEMS))
+
+const absoluteTime = computed(() => {
+  const d = new Date(props.order.createdAt)
+
+  return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+})
 </script>
 
 <style scoped lang="scss">
@@ -120,17 +145,25 @@ const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 
 
 .header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.header-left,
-.header-right {
+.header-top {
   display: flex;
   align-items: center;
   gap: 8px;
+
+  .time {
+    margin-left: auto;
+  }
+}
+
+.header-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .number {
@@ -143,6 +176,7 @@ const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 
 .time {
   font-size: 12px;
   color: var(--color-text-secondary);
+  cursor: default;
 }
 
 .customer {
@@ -163,6 +197,27 @@ const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 
   display: flex;
   align-items: center;
   gap: 4px;
+  overflow: hidden;
+}
+
+.address-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.items-section {
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.items-label {
+  font-size: 11px;
+  color: var(--color-text-hint);
 }
 
 .items {
@@ -170,9 +225,6 @@ const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 8px 0;
-  border-top: 1px solid var(--color-border-light);
-  border-bottom: 1px solid var(--color-border-light);
 }
 
 .item {
@@ -196,17 +248,30 @@ const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 
   font-size: 13px;
   font-weight: 600;
   color: var(--color-title);
-  min-width: 56px;
+  min-width: 70px;
   text-align: right;
+}
+
+.item-more {
+  font-size: 12px;
+  color: var(--color-text-hint);
 }
 
 .discount,
 .comment {
   font-size: 12px;
-  color: var(--color-text-hint);
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.discount {
+  color: var(--color-text-hint);
+}
+
+.comment {
+  color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 .footer {
@@ -214,7 +279,6 @@ const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  flex-wrap: wrap;
   margin-top: 2px;
 }
 
@@ -247,9 +311,9 @@ const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 
   display: flex;
   gap: 6px;
   width: 100%;
+}
 
-  :deep(.n-button) {
-    flex: 1;
-  }
+:deep(.action-btn) {
+  flex: 1;
 }
 </style>
