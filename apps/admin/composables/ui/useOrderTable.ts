@@ -1,6 +1,6 @@
 import { computed, h, type Ref } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { UiTag, UiText, UiButton } from '@fastio/ui'
+import { UiTag, UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { formatPhone } from '@fastio/shared'
@@ -13,7 +13,6 @@ type Branch = { id: string; name: string }
 
 type UseOrderTableOptions = {
   statuses: OrderStatus[]
-  updatingIds: Set<string>
   sortBy: Ref<string>
   sortDir: Ref<'asc' | 'desc'>
   filterDeliveryTypes: Ref<string[]>
@@ -22,7 +21,6 @@ type UseOrderTableOptions = {
   branchId: Ref<string | null>
   branches: Branch[]
   onEdit: (order: Order) => void
-  onStatusChange: (id: string, statusId: string) => void
   getBranchName: (id: string | null | undefined) => string | undefined
 }
 
@@ -54,7 +52,6 @@ const PAYMENT_FILTER_OPTIONS = [
 export function useOrderTable(options: UseOrderTableOptions) {
   const {
     statuses,
-    updatingIds,
     sortBy,
     sortDir,
     filterDeliveryTypes,
@@ -63,7 +60,6 @@ export function useOrderTable(options: UseOrderTableOptions) {
     branchId,
     branches,
     onEdit,
-    onStatusChange,
     getBranchName,
   } = options
 
@@ -109,7 +105,16 @@ export function useOrderTable(options: UseOrderTableOptions) {
           const groupType = statuses.find((s) => s.id === row.status)?.groupType
           const tagType = groupType ? STATUS_GROUP_TAG_TYPES[groupType] : 'default'
 
-          return h(UiTag, { type: tagType, size: 'small', round: true }, () => `#${row.id.slice(0, 6).toUpperCase()}`)
+          return h(UiTag, {
+            type: tagType,
+            size: 'small',
+            round: true,
+            style: 'cursor: pointer',
+            onClick: (e: MouseEvent) => {
+              e.stopPropagation()
+              onEdit(row)
+            },
+          }, () => `#${row.id.slice(0, 6).toUpperCase()}`)
         },
       },
       ...isVisible('customerName')
@@ -201,34 +206,11 @@ export function useOrderTable(options: UseOrderTableOptions) {
         title: '',
         key: 'actions',
         minWidth: 56,
-        render: (row) => {
-          const currentStatus = statuses.find((s) => s.id === row.status)
-          const quickActions = (currentStatus?.quickActions ?? [])
-            .map((id) => statuses.find((s) => s.id === id))
-            .filter(Boolean) as OrderStatus[]
-
-          return h(AppActionsBlock, {
-            showDelete: false,
-            size: 'small',
-            onEdit: (e: Event) => {
-              e.stopPropagation()
-              onEdit(row)
-            },
-          }, {
-            prepend: () => quickActions.map((target) => h(UiButton, {
-              key: target.id,
-              type: STATUS_GROUP_TAG_TYPES[target.groupType],
-              ghost: true,
-              size: 'tiny',
-              disabled: updatingIds.has(row.id),
-              onClick: (e: Event) => {
-                e.stopPropagation()
-                onStatusChange(row.id, target.id)
-              },
-            }, () => target.name),
-            ),
-          })
-        },
+        render: (row) => h(AppActionsBlock, {
+          showDelete: false,
+          size: 'small',
+          onEdit: () => onEdit(row),
+        }),
       },
     ]
   })

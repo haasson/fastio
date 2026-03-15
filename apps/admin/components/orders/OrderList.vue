@@ -314,7 +314,6 @@ const handleFiltersChange = (filterState: Record<string, (string | number)[] | n
 
 const { columns, visibleColumns, columnMenuItems, toggleColumn } = useOrderTable({
   statuses,
-  updatingIds,
   sortBy,
   sortDir,
   filterDeliveryTypes,
@@ -323,7 +322,6 @@ const { columns, visibleColumns, columnMenuItems, toggleColumn } = useOrderTable
   branchId: branchIdRef,
   branches: branchStore.branches,
   onEdit: openEditModal,
-  onStatusChange: handleStatusChange,
   getBranchName,
 })
 </script>
