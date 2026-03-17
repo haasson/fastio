@@ -1,26 +1,162 @@
 <template>
-  <footer class="footer-root">
-    <div class="container">
-      <!-- Футер -->
+  <SfSection as="footer" class="footer-root">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="brand-name">{{ tenant?.name }}</span>
+      </div>
+
+      <div v-if="hasSocials" class="footer-links">
+        <a
+          v-if="tenant?.contacts?.instagram"
+          :href="`https://instagram.com/${tenant.contacts.instagram}`"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="social-link"
+          aria-label="Instagram"
+        >
+          <Instagram :size="20" />
+        </a>
+        <a
+          v-if="tenant?.contacts?.telegram"
+          :href="`https://t.me/${tenant.contacts.telegram}`"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="social-link"
+          aria-label="Telegram"
+        >
+          <Send :size="20" />
+        </a>
+        <a
+          v-if="tenant?.contacts?.vk"
+          :href="`https://vk.com/${tenant.contacts.vk}`"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="social-link"
+          aria-label="ВКонтакте"
+        >
+          VK
+        </a>
+        <a
+          v-if="tenant?.contacts?.whatsapp"
+          :href="`https://wa.me/${tenant.contacts.whatsapp}`"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="social-link"
+          aria-label="WhatsApp"
+        >
+          WA
+        </a>
+      </div>
+
+      <div v-if="tenant?.contacts?.phone || tenant?.workingHours" class="footer-contacts">
+        <SfText v-if="tenant?.contacts?.phone" variant="body-sm">
+          {{ tenant.contacts.phone }}
+        </SfText>
+        <SfText v-if="tenant?.workingHours" variant="body-sm" color="muted">
+          {{ tenant.workingHours }}
+        </SfText>
+      </div>
     </div>
-  </footer>
+
+    <SfDivider />
+
+    <div class="footer-bottom">
+      <SfText variant="caption" color="muted" align="center">
+        &copy; {{ year }} {{ tenant?.name }}. Сделано на FastIO
+      </SfText>
+    </div>
+  </SfSection>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useNuxtData } from 'nuxt/app'
+import type { Tenant } from '@fastio/shared'
+import { Instagram, Send } from 'lucide-vue-next'
+import SfSection from '~/components/sf/layout/SfSection.vue'
+import SfText from '~/components/sf/typography/SfText.vue'
+import SfDivider from '~/components/sf/base/SfDivider.vue'
+
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+const year = computed(() => new Date().getFullYear())
+
+const hasSocials = computed(() => {
+  const c = tenant.value?.contacts
+  return !!(c?.instagram || c?.telegram || c?.vk || c?.whatsapp)
+})
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .footer-root {
-  margin-top: auto;
   background: var(--color-surface);
-  color: var(--color-text-secondary);
-  padding: 24px 0;
+  padding-block: 40px;
+
+  @include lg {
+    padding-block: 64px;
+  }
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @include md {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px;
+  }
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.footer-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  @include md {
+    margin-left: auto;
+    align-items: flex-end;
+  }
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: center;
 }
 </style>

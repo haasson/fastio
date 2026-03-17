@@ -1,6 +1,6 @@
 <template>
-  <header class="header-root">
-    <div class="container header-inner">
+  <SfSection as="header" class="header-root">
+    <div class="header-inner">
       <img v-if="tenant?.siteContent?.logo" class="logo" :src="tenant.siteContent.logo" :alt="tenant.name" />
       <span v-else class="logo-fallback">{{ tenant?.name ?? '' }}</span>
 
@@ -23,18 +23,20 @@
           </a>
         </div>
 
-        <button class="cart-btn" aria-label="Корзина">
-          <ShoppingCart :size="22" :stroke-width="1.7" />
-        </button>
+        <SfIconButton aria-label="Корзина">
+          <ShoppingCart :size="20" :stroke-width="1.7" />
+        </SfIconButton>
       </div>
     </div>
-  </header>
+  </SfSection>
 </template>
 
 <script setup lang="ts">
 import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
+import SfSection from '~/components/sf/layout/SfSection.vue'
+import SfIconButton from '~/components/sf/base/SfIconButton.vue'
 
 defineProps<{
   tenant: Tenant | null
@@ -42,17 +44,12 @@ defineProps<{
 }>()
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .header-root {
   background: var(--color-bg);
-  padding: 12px 0;
-}
-
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
+  padding-block: 12px;
 }
 
 .header-inner {
@@ -117,16 +114,5 @@ defineProps<{
   font-weight: 600;
   color: var(--color-text);
   text-decoration: none;
-}
-
-.cart-btn {
-  color: var(--color-text);
-  padding: 6px;
-  border-radius: 8px;
-  transition: opacity 0.15s;
-
-  &:hover {
-    opacity: 0.7;
-  }
 }
 </style>

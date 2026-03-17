@@ -19,7 +19,12 @@
 
         <div class="field">
           <label class="label">Текст</label>
-          <RichTextEditor :model-value="heroContent.text ?? ''" @update:model-value="heroContent.text = $event" />
+          <RichTextEditor
+            :model-value="heroContent.text ?? ''"
+            :colors="paletteColors"
+            :heading-levels="[1]"
+            @update:model-value="heroContent.text = $event"
+          />
         </div>
       </div>
 
@@ -31,7 +36,7 @@
             <PhotoUpload
               :model-value="heroContent.bgUrl"
               @update:model-value="heroContent.bgUrl = $event ?? null"
-              @pending="props.onPendingHeroBg"
+              @pending="onPendingHeroBg"
             />
           </div>
           <GradientPicker v-if="form.bgType === 'gradient'" v-model="form.gradientId" :palette="palette" />
@@ -59,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, nextTick, inject, computed } from 'vue'
+import { reactive, watch, nextTick, inject, computed, toRefs } from 'vue'
 import { UiSegmentedControl, UiRadioGroup } from '@fastio/ui'
 import ContentPositionPicker from './ContentPositionPicker.vue'
 import GradientPicker from './GradientPicker.vue'
@@ -77,10 +82,26 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: HeroConfig] }>()
 
-const heroContent = props.heroContent
+const { heroContent, onPendingHeroBg } = toRefs(props)
 
 const appearanceForm = inject(AppearanceFormKey)
 const palette = computed(() => appearanceForm?.themeForm.palette ?? null)
+
+const paletteColors = computed(() => {
+  const p = palette.value
+
+  if (!p) return ['#ffffff', '#000000']
+
+  return [
+    '#ffffff',
+    '#000000',
+    p.primary,
+    p.text,
+    p.textSecondary,
+    p.bg,
+    p.surface,
+  ].filter(Boolean) as string[]
+})
 
 const sizeOptions = [
   { value: 'fullscreen', label: 'На весь экран' },

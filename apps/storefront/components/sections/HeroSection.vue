@@ -4,7 +4,11 @@
     <div v-if="hero.bgType === 'image' && heroContent?.bgUrl" class="overlay" :style="overlayStyle" />
     <div v-if="hero.bgType === 'gradient'" class="gradient" :style="gradientStyle" />
     <div v-if="hero.bgType === 'gradient'" class="overlay" :style="overlayStyle" />
-    <div class="content" :style="contentStyle" v-html="safeContent" />
+    <div class="content-wrap">
+      <div class="content" :style="contentStyle">
+        <div class="content-inner" v-html="safeContent" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -54,7 +58,9 @@ const contentStyle = computed(() => ({
 }))
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .hero-root {
   position: relative;
   overflow: hidden;
@@ -79,15 +85,68 @@ const contentStyle = computed(() => ({
   pointer-events: none;
 }
 
-.content {
+.content-wrap {
   position: relative;
   z-index: 1;
   width: 100%;
   height: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  box-sizing: border-box;
+
+  @include md {
+    padding-inline: 32px;
+  }
+
+  @include lg {
+    padding-inline: 48px;
+  }
+}
+
+.content {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 32px 20px;
-  max-width: 1100px;
-  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.content-inner {
+  zoom: 0.55;
+
+  @include md { zoom: 0.75; }
+  @include lg { zoom: 1; }
+
+  :deep(h1), :deep(h2), :deep(h3), :deep(h4), :deep(h5), :deep(h6) {
+    margin: 0 0 12px;
+    font-family: var(--heading-font-family, var(--font-family, inherit));
+    color: var(--color-text);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  :deep(p) {
+    margin: 0 0 8px;
+    font-family: var(--font-family, inherit);
+    line-height: 1.6;
+    font-weight: 400;
+    color: var(--color-text);
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  :deep(ul), :deep(ol) {
+    padding-left: 20px;
+    margin: 0 0 8px;
+    font-family: var(--font-family, inherit);
+    line-height: 1.6;
+    color: var(--color-text);
+  }
+
+  :deep(ul) { list-style: disc; }
+  :deep(ol) { list-style: decimal; }
+  :deep(strong) { font-weight: 700; }
+  :deep(em) { font-style: italic; }
 }
 </style>

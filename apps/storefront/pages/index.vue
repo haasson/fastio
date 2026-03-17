@@ -32,11 +32,13 @@
     </template>
 
     <SiteFooter />
+    <SfCartFab @click="navigateTo('/cart')" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
+import { useNuxtData, useAsyncData, useRequestFetch, useRoute, navigateTo } from 'nuxt/app'
 import { useElementSize } from '@vueuse/core'
 import type { Tenant } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, deepMerge } from '@fastio/shared'
@@ -48,8 +50,14 @@ import MenuSection from '~/components/sections/MenuSection.vue'
 import GallerySection from '~/components/sections/GallerySection.vue'
 import ReviewsSection from '~/components/sections/ReviewsSection.vue'
 import SiteFooter from '~/components/sections/SiteFooter.vue'
+import SfCartFab from '~/components/sf/domain/SfCartFab.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+const rfetch = useRequestFetch()
+const route = useRoute()
+const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
+await useAsyncData('menu', () => rfetch('/api/menu', slugQuery))
 
 type SiteLayout = ReturnType<typeof defaultSiteLayout>
 

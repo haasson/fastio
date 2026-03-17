@@ -11,6 +11,10 @@ export default defineNuxtConfig({
 
   ssr: true,
 
+  css: ['~/assets/styles/main.scss'],
+
+  components: false,
+
   modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt'],
 
   runtimeConfig: {

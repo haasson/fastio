@@ -1,23 +1,33 @@
 <template>
-  <section class="reviews-root">
-    <div class="container">
-      <!-- Отзывы — в разработке -->
+  <SfSection class="reviews-root">
+    <SfHeading as="h2">Отзывы</SfHeading>
+    <div class="reviews-content">
+      <SfEmptyState title="Отзывов пока нет" description="Будьте первым, кто оставит отзыв">
+        <MessageCircle :size="48" />
+      </SfEmptyState>
     </div>
-  </section>
+  </SfSection>
 </template>
 
 <script setup lang="ts">
+import { MessageCircle } from 'lucide-vue-next'
+import SfSection from '~/components/sf/layout/SfSection.vue'
+import SfHeading from '~/components/sf/typography/SfHeading.vue'
+import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .reviews-root {
-  padding: 16px 0;
+  padding-block: 64px;
+
+  @include lg {
+    padding-block: 96px;
+  }
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
+.reviews-content {
+  margin-top: 32px;
 }
 </style>

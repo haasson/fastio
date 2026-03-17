@@ -1,23 +1,28 @@
 <template>
-  <section class="banners-root">
-    <div class="container">
-      <!-- Баннеры — в разработке -->
+  <SfSection class="banners-root">
+    <div class="banner-placeholder">
+      <SfSkeleton variant="rect" height="200px" :rounded="true" />
     </div>
-  </section>
+  </SfSection>
 </template>
 
 <script setup lang="ts">
+import SfSection from '~/components/sf/layout/SfSection.vue'
+import SfSkeleton from '~/components/sf/base/SfSkeleton.vue'
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .banners-root {
-  padding: 16px 0;
+  padding-block: 40px;
+
+  @include lg {
+    padding-block: 64px;
+  }
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
+.banner-placeholder {
   width: 100%;
 }
 </style>

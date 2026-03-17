@@ -1,23 +1,34 @@
 <template>
-  <section class="gallery-root">
-    <div class="container">
-      <!-- Галерея — в разработке -->
+  <SfSection class="gallery-root">
+    <SfHeading as="h2">Галерея</SfHeading>
+    <div class="gallery-content">
+      <SfEmptyState title="Галерея пуста" description="Фотографии появятся здесь">
+        <Image :size="48" />
+      </SfEmptyState>
     </div>
-  </section>
+  </SfSection>
 </template>
 
 <script setup lang="ts">
+import { Image } from 'lucide-vue-next'
+import SfSection from '~/components/sf/layout/SfSection.vue'
+import SfHeading from '~/components/sf/typography/SfHeading.vue'
+import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .gallery-root {
-  padding: 16px 0;
+  background: var(--color-surface);
+  padding-block: 64px;
+
+  @include lg {
+    padding-block: 96px;
+  }
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
+.gallery-content {
+  margin-top: 32px;
 }
 </style>

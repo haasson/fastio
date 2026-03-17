@@ -38,11 +38,11 @@
       >
         <div class="ph-hero-overlay" :style="heroOverlayStyle" />
         <div class="ph-hero-inner" :style="heroContentStyle">
-          <div class="ph-hero-text" :style="{ alignItems: heroTextAlign }">
-            <div class="ph-text-line ph-text-line--title" />
-            <div class="ph-text-line" />
-            <div class="ph-text-line ph-text-line--short" />
-          </div>
+          <div
+            class="ph-hero-text"
+            :style="{ textAlign: props.layout.sections.hero.contentAlign ?? 'left' }"
+            v-html="content.hero.text"
+          />
         </div>
       </div>
 
@@ -306,27 +306,10 @@ const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.se
 }
 
 .ph-hero-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 70%;
-}
-
-.ph-text-line {
-  width: 100%;
-  height: 5px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.5);
-
-  &--title {
-    height: 8px;
-    background: rgba(255, 255, 255, 0.75);
-    width: 80%;
-  }
-
-  &--short {
-    width: 50%;
-  }
+  max-width: 80%;
+  color: var(--color-text);
+  zoom: 0.28;
+  transform-origin: top left;
 }
 
 .ph-section-title {
