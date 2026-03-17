@@ -83,44 +83,34 @@ const variantClass = computed(() => `variant-${props.variant}`)
 
 // ─── Variants ────────────────────────────────────────────────────────────────
 .variant-body {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.6;
   font-weight: 400;
-
-  @include lg { font-size: 18px; }
 }
 
 .variant-body-sm {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.6;
   font-weight: 400;
-
-  @include lg { font-size: 16px; line-height: 1.6; }
 }
 
 .variant-caption {
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.5;
   font-weight: 400;
-
-  @include lg { font-size: 14px; line-height: 1.5; }
 }
 
 .variant-label {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.4;
   font-weight: 500;
-
-  @include lg { font-size: 16px; }
 }
 
 .variant-overline {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.3;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-
-  @include lg { font-size: 14px; }
 }
 </style>

@@ -1,18 +1,20 @@
 <template>
   <SfSection as="header" class="header-root" style="--section-spacing: 12px">
     <div class="header-inner">
-      <img v-if="tenant?.siteContent?.logo" class="logo" :src="tenant.siteContent.logo" :alt="tenant.name" />
-      <span v-else class="logo-fallback">{{ tenant?.name ?? '' }}</span>
+      <NuxtLink :to="{ path: '/', query: route.query }" class="logo-link">
+        <img v-if="tenant?.siteContent?.logo" class="logo" :src="tenant.siteContent.logo" :alt="tenant.name" />
+        <span v-else class="logo-fallback">{{ tenant?.name ?? '' }}</span>
+      </NuxtLink>
 
       <nav v-if="header.showNav" class="nav">
-        <a
-          v-for="item in header.navItems"
-          :key="item.page"
+        <NuxtLink
+          v-for="link in navLinks"
+          :key="link.page"
           class="nav-link"
-          :href="item.placement === 'page' ? `/${item.page}` : `#${item.page}`"
+          :to="link.to"
         >
-          {{ featureLabel(item.page) }}
-        </a>
+          {{ link.label }}
+        </NuxtLink>
       </nav>
 
       <div class="right">
@@ -44,16 +46,16 @@
   <Teleport to="body">
     <Transition name="mobile-menu">
       <div v-if="menuOpen" class="mobile-menu" @click.self="menuOpen = false">
-        <nav v-if="header.showNav && header.navItems.length" class="mobile-nav">
-          <a
-            v-for="item in header.navItems"
-            :key="item.page"
+        <nav v-if="header.showNav && navLinks.length" class="mobile-nav">
+          <NuxtLink
+            v-for="link in navLinks"
+            :key="link.page"
             class="mobile-nav-link"
-            :href="item.placement === 'page' ? `/${item.page}` : `#${item.page}`"
+            :to="link.to"
             @click="menuOpen = false"
           >
-            {{ featureLabel(item.page) }}
-          </a>
+            {{ link.label }}
+          </NuxtLink>
         </nav>
 
         <div v-if="header.showPhone || header.showWorkingHours" class="mobile-venue">
@@ -68,17 +70,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted, computed } from 'vue'
+import { useRoute } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
 import SfSection from '~/components/sf/layout/SfSection.vue'
 import SfIconButton from '~/components/sf/base/SfIconButton.vue'
 
-defineProps<{
+const props = defineProps<{
   tenant: Tenant | null
   header: SiteLayout['header']
 }>()
+
+const route = useRoute()
+
+const navLinks = computed(() =>
+  props.header.navItems.map((item) => ({
+    page: item.page,
+    label: featureLabel(item.page),
+    to: item.placement === 'page'
+      ? { path: `/${item.page}`, query: route.query }
+      : `#${item.page}`,
+  })),
+)
 
 const menuOpen = ref(false)
 
@@ -106,11 +121,16 @@ onUnmounted(() => {
   gap: 16px;
 }
 
+.logo-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
 .logo {
   height: 36px;
   width: auto;
   object-fit: contain;
-  flex-shrink: 0;
 }
 
 .logo-fallback {
@@ -122,14 +142,15 @@ onUnmounted(() => {
 
 .nav {
   display: none;
-  gap: 20px;
+  justify-content: center;
+  gap: 24px;
   flex: 1;
 
   @include md { display: flex; }
 }
 
 .nav-link {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--color-text-secondary);
   text-decoration: none;
