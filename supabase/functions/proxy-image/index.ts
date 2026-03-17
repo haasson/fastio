@@ -20,7 +20,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ImageProxy/1.0)' },
+    })
 
     if (!response.ok) {
       return new Response(JSON.stringify({ error: 'Failed to fetch image' }), {
