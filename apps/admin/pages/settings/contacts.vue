@@ -46,6 +46,7 @@
       <UiInput v-model="form.vk" label="ВКонтакте" placeholder="vk.com/vasya_pizza" />
       <UiInput v-model="form.telegram" label="Telegram" placeholder="@vasya_pizza" />
       <UiInput v-model="form.whatsapp" label="WhatsApp" placeholder="+7 (999) 000-00-00" />
+      <UiInput v-model="form.max" label="MAX" placeholder="@vasya_pizza" />
     </div>
 
     <div class="footer">
@@ -78,6 +79,7 @@ const buildForm = (t: Tenant) => ({
   vk: t.contacts?.vk ?? '',
   telegram: t.contacts?.telegram ?? '',
   whatsapp: t.contacts?.whatsapp ?? '',
+  max: t.contacts?.max ?? '',
   workingHours: t.workingHours ?? '',
 })
 
@@ -102,6 +104,7 @@ const handleSave = async () => {
         vk: form.vk || null,
         telegram: form.telegram || null,
         whatsapp: form.whatsapp || null,
+        max: form.max || null,
       },
       workingHours: form.workingHours,
     })

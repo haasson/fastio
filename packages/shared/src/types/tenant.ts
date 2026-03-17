@@ -1,6 +1,13 @@
 import type { SectionKey, NavPageKey } from '../utils/siteFeatures'
 
-export type TenantThemePreset = 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon' | 'ember' | 'garden' | 'midnight' | 'berry' | 'fiesta'
+export type TenantThemePreset =
+  | 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon' | 'ember' | 'garden' | 'midnight' | 'berry' | 'fiesta'
+  | 'breeze' | 'lavender' | 'matcha' | 'latte' | 'frost' | 'peach'
+  | 'graphite' | 'obsidian' | 'velvet' | 'matrix' | 'dusk' | 'nordic'
+  | 'candy' | 'sunshine' | 'bubble' | 'tropical' | 'jellybean' | 'melon'
+  | 'chalk' | 'sage' | 'teal' | 'plum' | 'sky' | 'moss' | 'blush' | 'indigo' | 'copper' | 'spruce'
+  | 'espresso' | 'navy' | 'burgundy' | 'abyss' | 'pitch' | 'storm' | 'aubergine' | 'forge' | 'pine' | 'night'
+  | 'neon-mint' | 'lollipop' | 'popsicle' | 'bubblegum' | 'mango' | 'cotton' | 'gummy' | 'festival' | 'dragonfly' | 'sorbet'
 
 export type ThemePalette = {
   primary: string
@@ -98,6 +105,7 @@ export type TenantContacts = {
   vk: string | null
   telegram: string | null
   whatsapp: string | null
+  max: string | null
 }
 
 export type TenantNotifications = {

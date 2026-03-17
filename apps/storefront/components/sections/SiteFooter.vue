@@ -2,7 +2,7 @@
   <SfSection as="footer" class="footer-root">
     <div class="footer-inner">
       <div class="footer-brand">
-        <span class="brand-name">{{ tenant?.name }}</span>
+        <SfText variant="body" as="span" class="brand-name">{{ tenant?.name }}</SfText>
       </div>
 
       <div v-if="hasSocials" class="footer-links">
@@ -34,7 +34,7 @@
           class="social-link"
           aria-label="ВКонтакте"
         >
-          VK
+          <SfIconVk :size="20" />
         </a>
         <a
           v-if="tenant?.contacts?.whatsapp"
@@ -44,7 +44,17 @@
           class="social-link"
           aria-label="WhatsApp"
         >
-          WA
+          <SfIconWhatsapp :size="20" />
+        </a>
+        <a
+          v-if="tenant?.contacts?.max"
+          :href="`https://max.ru/j/${tenant.contacts.max}`"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="social-link"
+          aria-label="MAX"
+        >
+          <SfIconMax :size="20" />
         </a>
       </div>
 
@@ -73,6 +83,9 @@ import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
 import { Instagram, Send } from 'lucide-vue-next'
+import SfIconVk from '~/components/sf/icons/SfIconVk.vue'
+import SfIconWhatsapp from '~/components/sf/icons/SfIconWhatsapp.vue'
+import SfIconMax from '~/components/sf/icons/SfIconMax.vue'
 import SfSection from '~/components/sf/layout/SfSection.vue'
 import SfText from '~/components/sf/typography/SfText.vue'
 import SfDivider from '~/components/sf/base/SfDivider.vue'
@@ -83,7 +96,7 @@ const year = computed(() => new Date().getFullYear())
 
 const hasSocials = computed(() => {
   const c = tenant.value?.contacts
-  return !!(c?.instagram || c?.telegram || c?.vk || c?.whatsapp)
+  return !!(c?.instagram || c?.telegram || c?.vk || c?.whatsapp || c?.max)
 })
 </script>
 
@@ -92,11 +105,6 @@ const hasSocials = computed(() => {
 
 .footer-root {
   background: var(--color-surface);
-  padding-block: 40px;
-
-  @include lg {
-    padding-block: 64px;
-  }
 }
 
 .footer-inner {
@@ -118,9 +126,7 @@ const hasSocials = computed(() => {
 }
 
 .brand-name {
-  font-size: 16px;
   font-weight: 700;
-  color: var(--color-text);
 }
 
 .footer-links {

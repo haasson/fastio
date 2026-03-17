@@ -1,0 +1,58 @@
+// Derived tokens — поверх базовых CSS vars тенанта.
+// Базовые vars (--primary, --color-bg, --color-surface, etc.)
+// задаются useTheme через inline style на .app-root.
+// Здесь — только defaults и производные.
+
+:root {
+  // Fallback defaults (перекрываются useTheme при загрузке)
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --primary: #ff6b35;
+  --on-primary: #ffffff;
+  --color-bg: #ffffff;
+  --color-surface: #f5f5f5;
+  --color-text: #111111;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+  --color-border: #e0e0e0;
+
+  // Semantic colors
+  --color-error: #ef4444;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+
+  // Derived от --primary
+  --primary-hover: color-mix(in srgb, var(--primary) 82%, #000);
+  --primary-subtle: color-mix(in srgb, var(--primary) 12%, transparent);
+  --primary-subtle-hover: color-mix(in srgb, var(--primary) 22%, transparent);
+
+  // Derived от --color-surface / --color-text
+  --surface-hover: color-mix(in srgb, var(--color-surface) 88%, var(--color-text));
+  --border-hover: color-mix(in srgb, var(--color-border) 60%, var(--color-text));
+
+  // Radius (defaults, перекрываются useTheme из tenant.theme)
+  --radius-btn: 8px;
+  --radius-card: 14px;
+
+  // Shadows (defaults, перекрываются useTheme)
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card-md: 0 4px 16px rgba(0, 0, 0, 0.10), 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  // Section spacing
+  --section-spacing: 24px;
+
+  // Z-index scale
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+@media (min-width: 768px) {
+  :root { --section-spacing: 32px; }
+}
+
+@media (min-width: 1280px) {
+  :root { --section-spacing: 48px; }
+}

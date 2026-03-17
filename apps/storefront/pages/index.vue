@@ -8,6 +8,7 @@
     <!-- Липкая панель категорий -->
     <div
       v-if="layout.sections.categoryBar.enabled"
+      ref="categoryBarRef"
       class="sticky-category-bar"
       :style="{ top: `${headerHeight}px` }"
     >
@@ -74,9 +75,8 @@ const content = computed(() =>
 const headerRef = useTemplateRef('headerRef')
 const { height: headerHeight } = useElementSize(headerRef)
 
-// Для Hero нужна высота липкого блока (хэдер + категории, если показана)
-const CATEGORY_BAR_HEIGHT = 44 // px — синхронизировано с высотой CategoryBar
-const categoryBarHeight = computed(() => layout.value.sections.categoryBar.enabled ? CATEGORY_BAR_HEIGHT : 0)
+const categoryBarRef = useTemplateRef('categoryBarRef')
+const { height: categoryBarHeight } = useElementSize(categoryBarRef)
 const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.value)
 </script>
 
@@ -90,7 +90,7 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 .sticky-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
 }
 
 .sticky-category-bar {
