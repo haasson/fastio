@@ -19,13 +19,7 @@ import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
 
-.reviews-root {
-  padding-block: 64px;
-
-  @include lg {
-    padding-block: 96px;
-  }
-}
+.reviews-root {}
 
 .reviews-content {
   margin-top: 32px;

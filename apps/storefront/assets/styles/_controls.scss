@@ -1,0 +1,8 @@
+@use '~/assets/styles/mixins' as *;
+
+.size-small  { --ctrl-h: 36px; --ctrl-px: 14px; --ctrl-fs: 14px; --ctrl-gap: 6px;  --ctrl-icon: 16px; }
+.size-medium { --ctrl-h: 44px; --ctrl-px: 20px; --ctrl-fs: 16px; --ctrl-gap: 8px;  --ctrl-icon: 18px; }
+.size-large  { --ctrl-h: 52px; --ctrl-px: 28px; --ctrl-fs: 18px; --ctrl-gap: 10px; --ctrl-icon: 20px; }
+
+.size-small.is-responsive  { @include lg { --ctrl-h: 44px; --ctrl-px: 20px; --ctrl-fs: 16px; --ctrl-gap: 8px;  --ctrl-icon: 18px; } }
+.size-medium.is-responsive { @include lg { --ctrl-h: 52px; --ctrl-px: 28px; --ctrl-fs: 18px; --ctrl-gap: 10px; --ctrl-icon: 20px; } }

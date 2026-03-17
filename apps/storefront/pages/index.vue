@@ -7,12 +7,12 @@
 
     <!-- Липкая панель категорий -->
     <div
-      v-if="layout.sections.categoryBar.enabled"
+      v-if="layout.sectionsOrder.includes('categoryBar')"
       ref="categoryBarRef"
       class="sticky-category-bar"
       :style="{ top: `${headerHeight}px` }"
     >
-      <CategoryBar :overflow="layout.sections.categoryBar.overflow" />
+      <CategoryBar :overflow="layout.sections.categoryBar.overflow" :sticky-offset="stickyTotalHeight" />
     </div>
 
     <!-- Динамические секции -->

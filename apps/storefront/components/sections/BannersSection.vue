@@ -14,13 +14,7 @@ import SfSkeleton from '~/components/sf/base/SfSkeleton.vue'
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
 
-.banners-root {
-  padding-block: 40px;
-
-  @include lg {
-    padding-block: 64px;
-  }
-}
+.banners-root {}
 
 .banner-placeholder {
   width: 100%;

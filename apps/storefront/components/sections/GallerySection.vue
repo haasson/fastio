@@ -21,11 +21,6 @@ import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 
 .gallery-root {
   background: var(--color-surface);
-  padding-block: 64px;
-
-  @include lg {
-    padding-block: 96px;
-  }
 }
 
 .gallery-content {
