@@ -122,6 +122,14 @@ export type TenantSubscription = {
 
 export type BusinessType = 'food' | 'retail' | 'services'
 
+export type TenantSeo = {
+  metaTitle: string | null
+  metaDescription: string | null
+  ogImage: string | null
+  favicon: string | null
+  robots: 'index' | 'noindex'
+}
+
 export type Tenant = {
   id: string
   name: string
@@ -142,5 +150,6 @@ export type Tenant = {
   deliveryDescription: string
   currency: string
   timezone: string
+  seo: TenantSeo
   createdAt: string
 }

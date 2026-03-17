@@ -38,13 +38,35 @@ const googleFontLink = computed(() => {
   return links
 })
 
-useHead({
-  titleTemplate: (title) => title ? `${title} — ${tenant.value?.name ?? ''}` : (tenant.value?.name ?? ''),
-  meta: [
-    { name: 'description', content: `Заказать еду онлайн — ${tenant.value?.name}` },
-  ],
-  link: googleFontLink,
+const faviconLink = computed(() => {
+  const favicon = tenant.value?.seo?.favicon
+  if (!favicon) return []
+  return [
+    { rel: 'icon', type: 'image/png', href: favicon, key: 'favicon' },
+    { rel: 'apple-touch-icon', href: favicon },
+  ]
 })
+
+useHead(computed(() => {
+  const t = tenant.value
+  const seo = t?.seo
+  const title = seo?.metaTitle || t?.name || ''
+  const description = seo?.metaDescription || ''
+  const ogImage = seo?.ogImage || t?.siteContent?.logo || ''
+
+  return {
+    titleTemplate: (pageTitle) => pageTitle ? `${pageTitle} — ${title}` : title,
+    meta: [
+      { name: 'description', content: description },
+      { name: 'robots', content: seo?.robots === 'noindex' ? 'noindex,nofollow' : 'index,follow' },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      ...(ogImage ? [{ property: 'og:image', content: ogImage }] : []),
+      { property: 'og:type', content: 'website' },
+    ],
+    link: [...googleFontLink.value, ...faviconLink.value],
+  }
+}))
 
 const RADIUS_MAP: Record<string, string> = { square: '4px', rounded: '8px', pill: '9999px' }
 const SHADOW_MAP: Record<string, string> = {

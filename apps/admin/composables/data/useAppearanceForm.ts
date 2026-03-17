@@ -1,7 +1,7 @@
 import { reactive, ref, computed, watch } from 'vue'
 import type { InjectionKey, Ref } from 'vue'
-import type { Tenant, SiteLayout, SiteContent } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, defaultTheme, deepMerge, getPresetPalette } from '@fastio/shared'
+import type { Tenant, SiteLayout, SiteContent, TenantSeo } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, getPresetPalette } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useMessage } from '@fastio/ui'
@@ -22,6 +22,8 @@ const initTheme = (t: Tenant | null) => {
 
 const initContent = (t: Tenant | null): SiteContent => deepMerge(defaultSiteContent(), (t?.siteContent ?? {}) as Partial<SiteContent>)
 
+const initSeo = (t: Tenant | null): TenantSeo => ({ ...defaultSeo(), ...(t?.seo ?? {}) })
+
 export type AppearanceFormContext = ReturnType<typeof useAppearanceForm>
 export const AppearanceFormKey: InjectionKey<AppearanceFormContext> = Symbol('appearance:form')
 
@@ -33,22 +35,29 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
   const siteLayoutForm = reactive(initSiteLayout(tenant.value))
   const themeForm = reactive(initTheme(tenant.value))
   const contentForm = reactive(initContent(tenant.value))
+  const seoForm = reactive(initSeo(tenant.value))
 
   const pendingLogoFile = ref<File | null>(null)
   const pendingHeroBgFile = ref<File | null>(null)
   const pendingBannerFiles = ref<Map<string, File>>(new Map())
+  const pendingFaviconFile = ref<File | null>(null)
+  const pendingOgImageFile = ref<File | null>(null)
   let originalHeroBgUrl: string | null = null
 
   const savedSiteLayoutSnapshot = ref(JSON.stringify(siteLayoutForm))
   const savedThemeSnapshot = ref(JSON.stringify(themeForm))
   const savedContentSnapshot = ref(JSON.stringify(contentForm))
+  const savedSeoSnapshot = ref(JSON.stringify(seoForm))
 
   const isDirty = computed(() => JSON.stringify(siteLayoutForm) !== savedSiteLayoutSnapshot.value
     || JSON.stringify(themeForm) !== savedThemeSnapshot.value
     || JSON.stringify(contentForm) !== savedContentSnapshot.value
+    || JSON.stringify(seoForm) !== savedSeoSnapshot.value
     || !!pendingLogoFile.value
     || !!pendingHeroBgFile.value
-    || pendingBannerFiles.value.size > 0,
+    || pendingBannerFiles.value.size > 0
+    || !!pendingFaviconFile.value
+    || !!pendingOgImageFile.value,
   )
 
   watch(tenant, (t) => {
@@ -56,6 +65,7 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     Object.assign(siteLayoutForm, initSiteLayout(t))
     Object.assign(themeForm, initTheme(t))
     Object.assign(contentForm, initContent(t))
+    Object.assign(seoForm, initSeo(t))
     updateSnapshots()
   })
 
@@ -84,6 +94,14 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
 
   const setPendingLogo = (file: File | null) => {
     pendingLogoFile.value = file
+  }
+
+  const setPendingFavicon = (file: File | null) => {
+    pendingFaviconFile.value = file
+  }
+
+  const setPendingOgImage = (file: File | null) => {
+    pendingOgImageFile.value = file
   }
 
   const uploadPendingAssets = async (tenantId: string) => {
@@ -118,12 +136,21 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
       }
       pendingBannerFiles.value.clear()
     }
+    if (pendingFaviconFile.value) {
+      seoForm.favicon = await db.tenants.uploadAsset(tenantId, pendingFaviconFile.value, 'favicon')
+      pendingFaviconFile.value = null
+    }
+    if (pendingOgImageFile.value) {
+      seoForm.ogImage = await db.tenants.uploadAsset(tenantId, pendingOgImageFile.value, 'og-image')
+      pendingOgImageFile.value = null
+    }
   }
 
   const updateSnapshots = () => {
     savedSiteLayoutSnapshot.value = JSON.stringify(siteLayoutForm)
     savedThemeSnapshot.value = JSON.stringify(themeForm)
     savedContentSnapshot.value = JSON.stringify(contentForm)
+    savedSeoSnapshot.value = JSON.stringify(seoForm)
   }
 
   const saving = ref(false)
@@ -137,6 +164,7 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
         siteLayout: JSON.parse(JSON.stringify(siteLayoutForm)),
         theme: JSON.parse(JSON.stringify(themeForm)),
         siteContent: JSON.parse(JSON.stringify(contentForm)),
+        seo: JSON.parse(JSON.stringify(seoForm)),
       })
       updateSnapshots()
       success('Сохранено')
@@ -152,8 +180,11 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     siteLayoutForm,
     themeForm,
     contentForm,
+    seoForm,
     pendingLogoFile,
     setPendingLogo,
+    setPendingFavicon,
+    setPendingOgImage,
     isDirty,
     saving,
     save,

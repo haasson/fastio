@@ -46,6 +46,7 @@ const tabs = [
   { value: 'layout', label: 'Лейаут', icon: 'layoutGrid' as const },
   { value: 'sections', label: 'Секции', icon: 'image' as const },
   { value: 'theme', label: 'Оформление', icon: 'palette' as const },
+  { value: 'seo', label: 'SEO', icon: 'search' as const },
 ]
 
 // --- store & data ---
@@ -66,6 +67,7 @@ const router = useRouter()
 const activeTab = computed(() => {
   if (route.path.endsWith('/theme')) return 'theme'
   if (route.path.endsWith('/sections')) return 'sections'
+  if (route.path.endsWith('/seo')) return 'seo'
 
   return 'layout'
 })

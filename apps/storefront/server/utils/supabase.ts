@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Tenant, Category, CategoryType, Dish, Order } from '@fastio/shared'
-import { mapDeliveryZoneRow } from '@fastio/shared'
+import { mapDeliveryZoneRow, defaultSeo } from '@fastio/shared'
 
 export function getServerSupabase() {
   const config = useRuntimeConfig()
@@ -27,8 +27,11 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     deliveryEnabled: row.delivery_enabled as boolean,
     deliveryMinOrder: row.delivery_min_order as number,
     deliveryFee: row.delivery_fee as number,
+    businessType: (row.business_type ?? null) as Tenant['businessType'],
     deliveryDescription: row.delivery_description as string,
     currency: row.currency as string,
+    timezone: row.timezone as string,
+    seo: { ...defaultSeo(), ...(row.seo as object ?? {}) },
     createdAt: row.created_at as string,
   }
 }

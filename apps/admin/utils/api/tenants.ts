@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, defaultTheme, deepMerge } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
@@ -29,6 +29,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     deliveryDescription: row.delivery_description,
     currency: row.currency,
     timezone: row.timezone,
+    seo: { ...defaultSeo(), ...row.seo },
     createdAt: row.created_at,
   }
 }
@@ -50,6 +51,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   delivery_fee: data.deliveryFee,
   delivery_description: data.deliveryDescription,
   timezone: data.timezone,
+  seo: data.seo,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {

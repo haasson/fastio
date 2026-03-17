@@ -4,6 +4,7 @@ import type {
   TenantContacts,
   TenantNotifications,
   TenantSubscription,
+  TenantSeo,
   BusinessType,
   SiteContent,
   OrderDeliveryType,
@@ -36,6 +37,7 @@ export type TenantRow = {
   delivery_description: string
   currency: string
   timezone: string
+  seo: TenantSeo
   created_at: string
 }
 

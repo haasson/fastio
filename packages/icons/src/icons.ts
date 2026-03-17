@@ -6,6 +6,7 @@ import {
   CheckCircle,
   AlertCircle,
   ChevronDown,
+  ChevronLeft,
   ChevronsLeft,
   PlusCircle,
   MinusCircle,
@@ -45,6 +46,7 @@ import {
   Maximize,
   Minimize,
   ShoppingCart,
+  Search,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -55,6 +57,7 @@ export const iconRegistry = {
   warningRound: AlertCircle,
   checkRound: CheckCircle,
   chevronRound: ChevronDown,
+  chevronLeft: ChevronLeft,
   collapse: ChevronsLeft,
   plusRound: PlusCircle,
   minusRound: MinusCircle,
@@ -96,6 +99,7 @@ export const iconRegistry = {
   maximize: Maximize,
   minimize: Minimize,
   cart: ShoppingCart,
+  search: Search,
 } as const
 
 export type IconName = keyof typeof iconRegistry
