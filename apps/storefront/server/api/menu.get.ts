@@ -1,5 +1,5 @@
 import type { DishModifierGroup, DishModifierOption } from '@fastio/shared'
-import { getServerSupabase, mapCategory, mapDish } from '../utils/supabase'
+import { getServerSupabase, mapCategory, mapCombo, mapDish } from '../utils/supabase'
 
 type GroupBindingRow = {
   dish_id: string
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
   const supabase = getServerSupabase()
 
-  const [{ data: categoriesData }, { data: dishesData }] = await Promise.all([
+  const [{ data: categoriesData }, { data: dishesData }, { data: combosData }] = await Promise.all([
     supabase
       .from('categories')
       .select('*')
@@ -32,6 +32,12 @@ export default defineEventHandler(async (event) => {
       .order('sort_order'),
     supabase
       .from('dishes')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('active', true)
+      .order('sort_order'),
+    supabase
+      .from('combos')
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('active', true)
@@ -61,6 +67,8 @@ export default defineEventHandler(async (event) => {
     // Build options map: dishId -> groupId -> options[]
     const optionsMap = new Map<string, Map<string, DishModifierOption[]>>()
 
+    // Supabase infers a complex nested type for relational selects that doesn't match our local types.
+    // Safe to cast here: the select() columns exactly match OptionBindingRow fields.
     for (const row of (optionBindings ?? []) as unknown as OptionBindingRow[]) {
       const dishId = row.dish_id
       const groupId = row.modifier_options.group_id
@@ -81,6 +89,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Build groups per dish
+    // Same reasoning: select() columns match GroupBindingRow exactly.
     for (const row of (groupBindings ?? []) as unknown as GroupBindingRow[]) {
       const dishId = row.dish_id
       const groupId = row.group_id
@@ -105,6 +114,7 @@ export default defineEventHandler(async (event) => {
   return {
     categories: (categoriesData ?? []).map(mapCategory),
     dishes,
+    combos: (combosData ?? []).map(mapCombo),
     dishModifiers,
   }
 })

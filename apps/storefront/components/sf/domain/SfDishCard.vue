@@ -1,8 +1,11 @@
 <template>
-  <SfCard :image="dish.photos[0]" :image-alt="dish.name" class="dish-card-root">
-    <template v-if="dish.tags.length" #image>
-      <img :src="dish.photos[0]" :alt="dish.name" loading="lazy" />
-      <div class="dish-tags">
+  <SfCard :image-alt="dish.name" class="dish-card-root">
+    <template #image>
+      <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" />
+      <div v-else class="dish-placeholder">
+        <UtensilsCrossed :size="32" />
+      </div>
+      <div v-if="dish.tags.length" class="dish-tags">
         <span
           v-for="tag in dish.tags"
           :key="tag"
@@ -38,26 +41,18 @@
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue'
-import { Plus, Flame, Leaf, Sparkles, Star, Zap, type LucideIcon } from 'lucide-vue-next'
-import { getDishTagConfig } from '@fastio/shared'
+import { Plus, UtensilsCrossed, Flame, Leaf, Sparkles, Star, Zap, type LucideIcon } from 'lucide-vue-next'
+import { getDishTagConfig, type Dish } from '@fastio/shared'
 import SfCard from '~/components/sf/layout/SfCard.vue'
 import SfText from '~/components/sf/typography/SfText.vue'
 import SfButton from '~/components/sf/base/SfButton.vue'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
-import { useCartStore } from '~/stores/cart'
-
-type DishProp = {
-  id: string
-  name: string
-  description: string
-  price: number
-  photos: string[]
-  tags: string[]
-}
+import { useCartStore, type CartItem } from '~/stores/cart'
 
 type Props = {
-  dish: DishProp
+  dish: Dish
+  comboId?: string
   currency?: string
 }
 
@@ -65,10 +60,18 @@ const props = withDefaults(defineProps<Props>(), { currency: '₽' })
 const emit = defineEmits<{ add: [] }>()
 const cart = useCartStore()
 
-const cartCount = computed(() =>
-  cart.items.filter(i => i.dishId === props.dish.id).reduce((s, i) => s + i.quantity, 0)
+const itemPred = computed(() =>
+  props.comboId
+    ? (i: CartItem) => i.comboId === props.comboId
+    : (i: CartItem) => i.dishId === props.dish.id,
 )
-const firstCartIndex = computed(() => cart.items.findIndex(i => i.dishId === props.dish.id))
+
+const cartCount = computed(() =>
+  cart.items.filter(itemPred.value).reduce((s, i) => s + i.quantity, 0),
+)
+const firstCartIndex = computed(() =>
+  cart.items.findIndex(itemPred.value),
+)
 
 function onIncrement() { if (firstCartIndex.value !== -1) cart.increment(firstCartIndex.value) }
 function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCartIndex.value) }
@@ -90,6 +93,16 @@ function getTagIcon(tag: string): Component | null {
   width: 100%;
 
   @include md { max-width: none; margin-inline: 0; }
+}
+
+.dish-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-border);
+  color: var(--color-text-muted);
 }
 
 .dish-tags {

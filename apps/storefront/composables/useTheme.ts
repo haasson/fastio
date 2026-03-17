@@ -1,4 +1,5 @@
-import { type Ref } from 'vue'
+import { computed, type Ref } from 'vue'
+import { useState } from '#app'
 import { THEME_PRESETS, paletteToCssVars } from '@fastio/shared'
 
 type Theme = {
@@ -14,7 +15,7 @@ const hexToOnColor = (hex: string): string => {
     const s = c / 255
     return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
   })
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.25 ? '#000000' : '#ffffff'
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.35 ? '#000000' : '#ffffff'
 }
 
 const themes: Theme[] = THEME_PRESETS.map(p => ({
