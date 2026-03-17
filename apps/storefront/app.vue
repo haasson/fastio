@@ -16,6 +16,7 @@ import { useCartStore } from '~/stores/cart'
 import useTheme from '~/composables/useTheme'
 import { isGoogleFontValue, fontFamilyCSS, googleFontUrl } from '~/utils/google-fonts'
 import SfToastProvider from '~/components/sf/overlay/SfToastProvider.vue'
+import { useAnalytics } from '~/composables/useAnalytics'
 
 // Восстанавливаем корзину из localStorage
 const cartStore = useCartStore()
@@ -46,6 +47,8 @@ const faviconLink = computed(() => {
     { rel: 'apple-touch-icon', href: favicon },
   ]
 })
+
+useAnalytics(() => tenant.value?.seo)
 
 useHead(computed(() => {
   const t = tenant.value

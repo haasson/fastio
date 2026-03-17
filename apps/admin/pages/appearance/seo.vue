@@ -88,6 +88,34 @@
         />
       </div>
     </div>
+
+    <div class="divider" />
+
+    <!-- Аналитика -->
+    <div class="group">
+      <div class="label">Аналитика</div>
+      <div class="field">
+        <div class="field-label">
+          <span class="label">Google Analytics</span>
+        </div>
+        <UiInput
+          v-model:value="seoForm.googleAnalyticsId"
+          placeholder="G-XXXXXXXXXX"
+        />
+        <span class="hint">Идентификатор Google Analytics 4. Найти можно в настройках GA → Потоки данных</span>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <span class="label">Яндекс.Метрика</span>
+        </div>
+        <UiInput
+          v-model:value="seoForm.yandexMetrikaId"
+          placeholder="12345678"
+        />
+        <span class="hint">Номер счётчика Яндекс.Метрики. Найти можно на metrika.yandex.ru в списке счётчиков</span>
+      </div>
+    </div>
   </div>
 </template>
 

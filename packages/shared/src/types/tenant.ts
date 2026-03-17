@@ -128,6 +128,8 @@ export type TenantSeo = {
   ogImage: string | null
   favicon: string | null
   robots: 'index' | 'noindex'
+  googleAnalyticsId: string | null
+  yandexMetrikaId: string | null
 }
 
 export type Tenant = {

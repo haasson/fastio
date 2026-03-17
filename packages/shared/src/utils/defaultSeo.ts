@@ -6,4 +6,6 @@ export const defaultSeo = (): TenantSeo => ({
   ogImage: null,
   favicon: null,
   robots: 'index',
+  googleAnalyticsId: null,
+  yandexMetrikaId: null,
 })

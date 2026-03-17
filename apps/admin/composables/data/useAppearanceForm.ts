@@ -155,16 +155,47 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
 
   const saving = ref(false)
 
+  const sanitizeSeo = (): TenantSeo => {
+    const seo: TenantSeo = JSON.parse(JSON.stringify(seoForm))
+    const errors: string[] = []
+
+    const ga = seo.googleAnalyticsId?.trim() || null
+
+    if (ga && !/^G-[A-Z0-9]{4,15}$/i.test(ga)) {
+      errors.push('Google Analytics ID — неверный формат, ожидается G-XXXXXXXXXX')
+      seo.googleAnalyticsId = null
+    } else {
+      seo.googleAnalyticsId = ga
+    }
+
+    const ym = seo.yandexMetrikaId?.trim() || null
+
+    if (ym && !/^\d{5,12}$/.test(ym)) {
+      errors.push('Яндекс.Метрика — неверный номер счётчика, ожидается число из 5–12 цифр')
+      seo.yandexMetrikaId = null
+    } else {
+      seo.yandexMetrikaId = ym
+    }
+
+    if (errors.length) {
+      showError(`Аналитика не сохранена: ${errors.join('; ')}`)
+    }
+
+    return seo
+  }
+
   const save = async () => {
     if (!tenantStore.tenant) return
     saving.value = true
     try {
       await uploadPendingAssets(tenantStore.tenant.id)
+      const seo = sanitizeSeo()
+
       await tenantStore.update({
         siteLayout: JSON.parse(JSON.stringify(siteLayoutForm)),
         theme: JSON.parse(JSON.stringify(themeForm)),
         siteContent: JSON.parse(JSON.stringify(contentForm)),
-        seo: JSON.parse(JSON.stringify(seoForm)),
+        seo,
       })
       updateSnapshots()
       success('Сохранено')
