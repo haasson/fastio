@@ -64,10 +64,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-const maxWidth = computed(() => {
-  const map: Record<string, string> = { sm: '400px', md: '560px', lg: '720px' }
-  return map[props.size]
-})
+const sizeMap: Record<string, string> = { sm: '400px', md: '560px', lg: '720px' }
+const maxWidth = computed(() => sizeMap[props.size])
 
 function onOpenChange(value: boolean) {
   emit('update:modelValue', value)
@@ -112,7 +110,7 @@ function onOpenChange(value: boolean) {
   font-family: var(--font-family);
 
   @include md {
-    width: auto;
+    width: 100%;
   }
 
   &[data-state='open'] { animation: dialog-in 0.2s ease; }
