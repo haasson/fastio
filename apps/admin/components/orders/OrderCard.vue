@@ -16,14 +16,13 @@
           :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
         >{{ currentStatus.name }}</UiTag>
         <UiTag
-          v-if="deliveryEnabled"
           size="small"
           :type="order.deliveryType === 'delivery' ? 'primary' : 'success'"
           empty
           round
-          :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
+          :icon="(DELIVERY_TYPE_ICONS[order.deliveryType] as IconName | undefined)"
         >
-          {{ DELIVERY_TYPE_LABELS[order.deliveryType] }}
+          {{ order.tableName ?? DELIVERY_TYPE_LABELS[order.deliveryType] }}
         </UiTag>
         <span class="time" :title="absoluteTime">{{ relativeTime }}</span>
       </div>
@@ -45,7 +44,7 @@
     </div>
 
     <!-- Адрес -->
-    <div v-if="deliveryEnabled && order.deliveryType === 'delivery' && order.address" class="address">
+    <div v-if="order.deliveryType === 'delivery' && order.address" class="address">
       <UiIcon name="mapPin" :size="14" />
       <span class="address-text">{{ order.address }}</span>
     </div>
@@ -108,7 +107,8 @@ import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { getItemUnitPrice, formatPhone } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-status-groups'
-import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
+import type { IconName } from '@fastio/icons'
+import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { useOrderCard } from '~/composables/ui/useOrderCard'
 
 const props = defineProps<{
@@ -122,7 +122,7 @@ const emit = defineEmits<{
   'open-edit': [order: Order]
 }>()
 
-const { deliveryEnabled, shortId, currentStatus, quickActionStatuses, relativeTime }
+const { shortId, currentStatus, quickActionStatuses, relativeTime }
   = useOrderCard(toRef(props, 'order'))
 
 const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')

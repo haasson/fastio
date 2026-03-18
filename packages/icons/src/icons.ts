@@ -47,6 +47,10 @@ import {
   Minimize,
   ShoppingCart,
   Search,
+  Puzzle,
+  QrCode,
+  ChefHat,
+  Table2,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -100,6 +104,10 @@ export const iconRegistry = {
   minimize: Minimize,
   cart: ShoppingCart,
   search: Search,
+  puzzle: Puzzle,
+  qrCode: QrCode,
+  chefHat: ChefHat,
+  tableIcon: Table2,
 } as const
 
 export type IconName = keyof typeof iconRegistry

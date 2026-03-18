@@ -79,11 +79,13 @@ import {
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { getItemUnitPrice, formatPhone, normalizePhone } from '@fastio/shared'
+import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
+import { useModules } from '~/composables/plan/useModules'
 import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
 import OrderFormFields from './OrderFormFields.vue'
@@ -95,6 +97,8 @@ const props = defineProps<{
   tenantId: string
   order: Order | null
   branchId?: string | null
+  tableId?: string | null
+  tableName?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -104,9 +108,10 @@ const emit = defineEmits<{
 
 const api = useDatabase()
 const { logSaveEvents } = useOrderEventLogger()
-const { statuses } = useOrderStatusesStore()
+const { statuses } = storeToRefs(useOrderStatusesStore())
 const branchStore = useBranchStore()
 const tenantStore = useTenantStore()
+const modules = useModules()
 const { getStatusColor } = useStatusColor()
 
 const isEdit = computed(() => !!props.order)
@@ -127,10 +132,10 @@ const drawerActions = computed(() => [
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 
-const currentStatus = computed(() => statuses.find((s) => s.id === form.status) ?? null)
+const currentStatus = computed(() => statuses.value.find((s) => s.id === form.status) ?? null)
 const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
 
-const statusMenuItems = computed(() => statuses
+const statusMenuItems = computed(() => statuses.value
   .filter((s) => s.id !== form.status)
   .map((s) => ({
     name: s.id,
@@ -174,10 +179,10 @@ const buildEditForm = (o: Order) => ({
 })
 
 const buildCreateForm = () => ({
-  status: statuses.find((s) => s.groupType === 'new')?.id ?? statuses[0]?.id ?? '',
+  status: statuses.value.find((s) => s.groupType === 'new')?.id ?? statuses.value[0]?.id ?? '',
   customerName: '',
   customerPhone: '',
-  deliveryType: (tenantStore.tenant?.deliveryEnabled ? 'delivery' : 'pickup') as Order['deliveryType'],
+  deliveryType: (props.tableId ? 'dine_in' : modules.delivery.value.active ? 'delivery' : 'pickup') as Order['deliveryType'],
   address: '',
   items: [] as Order['items'],
   discountAmount: 0,
@@ -252,7 +257,7 @@ const onSave = async () => {
       const updated = await api.orders.update(props.order.id, formPayload.value)
 
       if (updated) {
-        logSaveEvents(form, props.order, statuses)
+        logSaveEvents(form, props.order, statuses.value)
         emit('saved', updated)
       }
     } else {
@@ -266,6 +271,8 @@ const onSave = async () => {
         branchId,
         promoCode: null,
         discountAmount: 0,
+        tableId: props.tableId ?? null,
+        tableName: props.tableName ?? null,
       })
 
       if (created) emit('saved', created)

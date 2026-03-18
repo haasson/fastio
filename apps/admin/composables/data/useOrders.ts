@@ -12,6 +12,7 @@ export type UseOrdersOptions = {
   statuses?: Ref<OrderStatus[]>
   search?: Ref<string>
   deliveryTypes?: Ref<string[]>
+  excludeDeliveryTypes?: string[]
   paymentTypes?: Ref<string[]>
   filterBranchIds?: Ref<string[]>
   sortBy?: Ref<string>
@@ -43,6 +44,7 @@ export function useOrders(
     const branchId = options.branchId?.value ?? null
 
     if (branchId !== null && order.branchId !== branchId) return false
+    if (options.excludeDeliveryTypes?.includes(order.deliveryType)) return false
 
     return true
   }
@@ -68,6 +70,7 @@ export function useOrders(
         pageSize: options.pageSize?.value,
         search: options.search?.value,
         deliveryTypes: options.deliveryTypes?.value ?? [],
+        excludeDeliveryTypes: options.excludeDeliveryTypes ?? [],
         paymentTypes: options.paymentTypes?.value ?? [],
         sortBy: options.sortBy?.value ?? 'created_at',
         sortDir: options.sortDir?.value ?? 'desc',

@@ -1,4 +1,4 @@
-import { type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 import type { Order } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
@@ -9,6 +9,8 @@ type Handler<T> = (payload: T) => void
 const insertHandlers = new Set<Handler<Order>>()
 const updateHandlers = new Set<Handler<Order>>()
 const deleteHandlers = new Set<Handler<{ id: string }>>()
+
+export const realtimeConnected = ref(false)
 
 export const orderEvents = {
   onInsert(handler: Handler<Order>) {
@@ -44,10 +46,14 @@ export function useOrdersChannel(tenantId: Ref<string | null>) {
     if (order) handlers.forEach((h) => h(order))
   }
 
-  useRealtimeWatch('orders', tenantId, {
+  const { isConnected } = useRealtimeWatch('orders', tenantId, {
     column: 'tenant_id',
     onInsert: (row) => fetchAndBroadcast(row, insertHandlers),
     onUpdate: (row) => fetchAndBroadcast(row, updateHandlers),
     onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
   })
+
+  watch(isConnected, (v) => {
+    realtimeConnected.value = v
+  }, { immediate: true })
 }

@@ -4,6 +4,7 @@ type TableHandlers = {
   onInsert?: (payload: { new: Record<string, unknown> }) => void
   onUpdate?: (payload: { new: Record<string, unknown> }) => void
   onDelete?: (payload: { old: Record<string, unknown> }) => void
+  onStatus?: (connected: boolean) => void
 }
 
 export const realtimeApi = {
@@ -30,6 +31,8 @@ export const realtimeApi = {
     if (handlers.onUpdate) ch = ch.on('postgres_changes', { event: 'UPDATE', schema: 'public', table, filter }, handlers.onUpdate)
     if (handlers.onDelete) ch = ch.on('postgres_changes', { event: 'DELETE', schema: 'public', table }, handlers.onDelete)
 
-    return ch.subscribe()
+    return ch.subscribe((status) => {
+      handlers.onStatus?.(status === 'SUBSCRIBED')
+    })
   },
 }

@@ -3,8 +3,6 @@
     <div class="form">
       <UiSectionHeader title="Настройки доставки" />
 
-      <UiCheckbox v-model:checked="form.deliveryEnabled" label="Принимать заказы на доставку" />
-
       <div class="row">
         <div class="field">
           <UiInputNumber
@@ -42,7 +40,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiButton, UiInputNumber, UiCheckbox, useMessage, UiSectionHeader } from '@fastio/ui'
+import { UiForm, UiButton, UiInputNumber, useMessage, UiSectionHeader } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
@@ -52,7 +50,6 @@ const props = defineProps<{ tenant: Tenant }>()
 const tenantStore = useTenantStore()
 
 const buildForm = (t: Tenant) => ({
-  deliveryEnabled: t.deliveryEnabled ?? true,
   deliveryMinOrder: (t.deliveryMinOrder ?? null) as number | null,
   deliveryFee: (t.deliveryFee ?? null) as number | null,
   deliveryDescription: t.deliveryDescription ?? '',
@@ -68,7 +65,7 @@ const { success } = useMessage()
 const handleSave = async () => {
   saving.value = true
   try {
-    await tenantStore.update({ deliveryEnabled: form.deliveryEnabled, deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0, deliveryDescription: form.deliveryDescription })
+    await tenantStore.update({ deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0, deliveryDescription: form.deliveryDescription })
     success('Сохранено')
   } finally {
     saving.value = false

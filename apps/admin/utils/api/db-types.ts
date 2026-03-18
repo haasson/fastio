@@ -4,6 +4,7 @@ import type {
   TenantContacts,
   TenantNotifications,
   TenantSubscription,
+  TenantModules,
   TenantSeo,
   BusinessType,
   SiteContent,
@@ -31,7 +32,7 @@ export type TenantRow = {
   working_hours: string
   notifications: TenantNotifications
   subscription: TenantSubscription
-  delivery_enabled: boolean
+  modules: TenantModules
   delivery_min_order: number
   delivery_fee: number
   delivery_description: string
@@ -144,6 +145,26 @@ export type OrderItemRow = {
   sort_order: number
 }
 
+export type TableRow = {
+  id: string
+  tenant_id: string
+  name: string
+  is_open: boolean
+  is_active: boolean
+  opened_at: string | null
+  created_at: string
+  capacity: number | null
+  tags: string[]
+  position_x: number | null
+  position_y: number | null
+  shape: string
+  table_width: number
+  table_height: number
+  rotation: number
+  color: string | null
+  notes: string | null
+}
+
 export type OrderRow = {
   id: string
   tenant_id: string
@@ -162,6 +183,8 @@ export type OrderRow = {
   payment_type: 'cash' | 'card' | 'online'
   branch_id: string | null
   delivery_zone_id: string | null
+  table_id: string | null
+  table_name: string | null
   idempotency_key: string | null
   created_at: string
   updated_at: string
@@ -175,6 +198,7 @@ export type OrderStatusRow = {
   group_type: OrderStatusGroup
   position: number
   quick_actions: string[] | null
+  kitchen_visible: boolean
 }
 
 export type OrderNoteRow = {
@@ -198,6 +222,24 @@ export type OrderEventRow = {
   event_type: string
   meta: Record<string, unknown>
   created_at: string
+}
+
+export type TableCallTypeRow = {
+  id: string
+  tenant_id: string
+  name: string
+  sort_order: number
+  created_at: string
+}
+
+export type TableCallRow = {
+  id: string
+  tenant_id: string
+  table_id: string
+  call_type_id: string | null
+  call_type_name: string
+  created_at: string
+  resolved_at: string | null
 }
 
 export type BranchRow = {

@@ -16,6 +16,7 @@ const stylisticConfig = stylistic.configs.customize({
 
 const vueGlobals = {
   MouseEvent: 'readonly',
+  PointerEvent: 'readonly',
   Event: 'readonly',
   KeyboardEvent: 'readonly',
   FocusEvent: 'readonly',

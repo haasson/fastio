@@ -1,11 +1,5 @@
 <template>
   <div class="zones-root">
-    <!-- Delivery toggle -->
-    <div class="delivery-toggle">
-      <UiSwitch :model-value="deliveryEnabled" @update:model-value="toggleDelivery" />
-      <UiText size="small">Принимать заказы на доставку</UiText>
-    </div>
-
     <template v-if="deliveryEnabled">
       <!-- Top bar: hint + zone tiles -->
       <div class="zones-topbar">
@@ -90,23 +84,21 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiText, UiSkeleton, UiAlert, UiSwitch } from '@fastio/ui'
+import { UiSkeleton, UiAlert } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
 import { useZoneEditor, type ZoneForm } from '~/composables/delivery/useZoneEditor'
+import { useModules } from '~/composables/plan/useModules'
 import DeliveryZoneMap from '~/components/settings/DeliveryZoneMap.vue'
 import DeliveryZonePanel from '~/components/settings/DeliveryZonePanel.vue'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const { zones, loading: zonesLoading, add: addZone, update: updateZone, remove: removeZone } = useAllDeliveryZones()
+const modules = useModules()
 
-const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? false)
-
-const toggleDelivery = async (val: boolean) => {
-  await tenantStore.update({ deliveryEnabled: val })
-}
+const deliveryEnabled = computed(() => modules.delivery.value.enabled)
 
 const branches = computed(() => branchStore.branches)
 
@@ -178,15 +170,6 @@ const handleZoneRemove = async () => {
 .zones-root {
   display: flex;
   flex-direction: column;
-}
-
-.delivery-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border-light);
-  flex-shrink: 0;
 }
 
 // Top bar

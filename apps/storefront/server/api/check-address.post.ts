@@ -1,10 +1,15 @@
 import { findDeliveryZone } from '@fastio/shared'
-import type { DeliveryZone } from '@fastio/shared'
+import type { DeliveryZone, Tenant } from '@fastio/shared'
 import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
 
 export default defineEventHandler(async (event) => {
   const tenantId = event.context.tenantId as string | undefined
   if (!tenantId) throw createError({ statusCode: 404 })
+
+  const tenant = event.context.tenant as Tenant | undefined
+  if (tenant && !tenant.modules?.delivery) {
+    throw createError({ statusCode: 400, message: 'Доставка отключена' })
+  }
 
   const body = await readBody(event)
   const lat = Number(body.lat)

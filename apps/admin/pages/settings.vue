@@ -17,25 +17,30 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { UiTabs, UiCard } from '@fastio/ui'
 import { usePermissions } from '~/composables/auth/usePermissions'
-import { usePlanFeatures } from '~/composables/plan/usePlanFeatures'
+import { useModules } from '~/composables/plan/useModules'
 import { useTenantStore } from '~/stores/tenant'
 
 const tenantStore = useTenantStore()
 const { canManageTeam } = usePermissions()
-const { canUseDelivery, canUseBranchSettings } = usePlanFeatures()
+const modules = useModules()
 
 onMounted(() => tenantStore.init())
 
 const route = useRoute()
 const router = useRouter()
 
-const settingsTabs = computed(() => [
-  { value: 'contacts', label: 'Контакты', icon: 'mapPin' as const },
-  ...(canUseDelivery.value ? [{ value: 'delivery', label: 'Доставка', icon: 'bike' as const }] : []),
-  { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
-  ...(canManageTeam.value ? [{ value: 'team', label: 'Команда', icon: 'users' as const }] : []),
-  ...(canManageTeam.value && canUseBranchSettings.value ? [{ value: 'branches', label: 'Филиалы', icon: 'mapPin' as const }] : []),
-])
+const settingsTabs = computed(() => {
+  const branches = modules.branches.value
+
+  return [
+    { value: 'contacts', label: 'Контакты', icon: 'mapPin' as const },
+    ...(modules.delivery.value.active ? [{ value: 'delivery', label: 'Доставка', icon: 'bike' as const }] : []),
+    { value: 'modules', label: 'Модули', icon: 'puzzle' as const },
+    { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
+    ...(canManageTeam.value ? [{ value: 'team', label: 'Команда', icon: 'users' as const }] : []),
+    ...(canManageTeam.value && (branches.active || branches.locked) ? [{ value: 'branches', label: 'Филиалы', icon: 'mapPin' as const }] : []),
+  ]
+})
 
 const activeTab = computed(() => {
   const seg = route.path.split('/').at(-1) ?? ''

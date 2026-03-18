@@ -47,7 +47,7 @@ watch(statuses, (list) => {
   }
 }, { immediate: true })
 
-const { counts: orderCounts, fetchCounts } = useOrderCounts(tenantId, branchId)
+const { counts: orderCounts, fetchCounts } = useOrderCounts(tenantId, branchId, { excludeDeliveryTypes: ['dine_in'] })
 
 watch(newOrderCount, fetchCounts)
 </script>

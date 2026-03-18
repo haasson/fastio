@@ -76,9 +76,11 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { UiSelect, UiIcon, UiButton } from '@fastio/ui'
 import { SECTION_KEYS, featureLabel, PAGE_KEYS, type SectionKey, type NavPageKey } from '@fastio/shared'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
+import { useModules } from '~/composables/plan/useModules'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
+const modules = useModules()
 
 const homeOrder = computed({
   get: () => siteLayoutForm.sectionsOrder,
@@ -90,13 +92,15 @@ const pagesOrder = computed({
   set: (val: string[]) => { siteLayoutForm.pages = val as NavPageKey[] },
 })
 
+const isModuleSection = (k: string) => k === 'delivery' ? modules.delivery.value.enabled : true
+
 const availableForHome = computed(() => SECTION_KEYS
-  .filter((k) => !homeOrder.value.includes(k))
+  .filter((k) => !homeOrder.value.includes(k) && isModuleSection(k))
   .map((k) => ({ value: k, label: featureLabel(k) })),
 )
 
 const availableForPages = computed(() => PAGE_KEYS
-  .filter((k) => !pagesOrder.value.includes(k as NavPageKey))
+  .filter((k) => !pagesOrder.value.includes(k as NavPageKey) && isModuleSection(k))
   .map((k) => ({ value: k, label: featureLabel(k) })),
 )
 

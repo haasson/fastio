@@ -19,6 +19,8 @@ import { combosApi } from '~/utils/api/combos'
 import { promoCodesApi } from '~/utils/api/promo-codes'
 import { promotionsApi } from '~/utils/api/promotions'
 import { addonsApi } from '~/utils/api/addons'
+import { tablesApi } from '~/utils/api/tables'
+import { tableCallTypesApi, tableCallsApi } from '~/utils/api/table-calls'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
@@ -57,5 +59,8 @@ export const useDatabase = () => {
     promoCodes: bindAll(promoCodesApi, sb),
     promotions: bindAll(promotionsApi, sb),
     addons: bindAll(addonsApi, sb),
+    tables: bindAll(tablesApi, sb),
+    tableCallTypes: bindAll(tableCallTypesApi, sb),
+    tableCalls: bindAll(tableCallsApi, sb),
   }
 }

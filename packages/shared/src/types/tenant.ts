@@ -122,6 +122,19 @@ export type TenantSubscription = {
 
 export type BusinessType = 'food' | 'retail' | 'services'
 
+export type TenantModules = {
+  delivery: boolean
+  pickup: boolean
+  modifiers: boolean
+  addons: boolean
+  promotions: boolean
+  combos: boolean
+  branches: boolean
+  customRoles: boolean
+  dineIn: boolean
+  kitchen: boolean
+}
+
 export type TenantSeo = {
   metaTitle: string | null
   metaDescription: string | null
@@ -146,7 +159,7 @@ export type Tenant = {
   workingHours: string
   notifications: TenantNotifications
   subscription: TenantSubscription
-  deliveryEnabled: boolean
+  modules: TenantModules
   deliveryMinOrder: number
   deliveryFee: number
   deliveryDescription: string

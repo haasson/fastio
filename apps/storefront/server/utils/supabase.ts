@@ -24,7 +24,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     workingHours: row.working_hours as Tenant['workingHours'],
     notifications: row.notifications as Tenant['notifications'],
     subscription: row.subscription as Tenant['subscription'],
-    deliveryEnabled: row.delivery_enabled as boolean,
+    modules: row.modules as Tenant['modules'],
     deliveryMinOrder: row.delivery_min_order as number,
     deliveryFee: row.delivery_fee as number,
     businessType: (row.business_type ?? null) as Tenant['businessType'],
@@ -112,6 +112,8 @@ export function mapOrder(row: Record<string, unknown>): Order {
     paymentType: row.payment_type as Order['paymentType'],
     branchId: row.branch_id as string | null,
     deliveryZoneId: row.delivery_zone_id as string | null,
+    tableId: row.table_id as string | null,
+    tableName: row.table_name as string | null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }

@@ -29,8 +29,8 @@ import type { ComputedRef } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import { usePermissions } from '~/composables/auth/usePermissions'
-import { usePlanFeatures } from '~/composables/plan/usePlanFeatures'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useModules } from '~/composables/plan/useModules'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 
@@ -39,20 +39,27 @@ defineProps<{ collapsed?: boolean }>()
 type NavItem = { to: string; icon: IconName; label: string | ComputedRef<string>; visible?: ComputedRef<boolean> }
 
 const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings } = usePermissions()
-const { canUsePromotions } = usePlanFeatures()
+const modules = useModules()
 const { menuLabel } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 
 const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.value > 0)
-const canSeePromotions = computed(() => canManagePromotions.value && canUsePromotions.value)
+const canSeePromotions = computed(() => canManagePromotions.value && modules.promotions.value.enabled)
+const canSeeModifiers = computed(() => canManageMenu.value && modules.modifiers.value.enabled)
+const canSeeAddons = computed(() => canManageMenu.value && modules.addons.value.enabled)
+const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.value.enabled || modules.pickup.value.enabled))
+const canSeeKitchen = computed(() => canManageOrders.value && modules.kitchen.value.enabled)
+const canSeeTables = computed(() => canViewSettings.value && modules.dineIn.value.enabled)
 
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
   { to: '/menu', icon: 'dishes', label: menuLabel, visible: canManageMenu },
-  { to: '/menu/modifiers', icon: 'list', label: 'Модификаторы', visible: canManageMenu },
-  { to: '/menu/addons', icon: 'plusRound', label: 'Добавки', visible: canManageMenu },
-  { to: '/orders', icon: 'orders', label: 'Заказы', visible: canManageOrders },
+  { to: '/menu/modifiers', icon: 'list', label: 'Модификаторы', visible: canSeeModifiers },
+  { to: '/menu/addons', icon: 'plusRound', label: 'Добавки', visible: canSeeAddons },
+  { to: '/orders', icon: 'orders', label: 'Заказы', visible: canSeeOrders },
+  { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: canSeeKitchen },
+  { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },

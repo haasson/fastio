@@ -6,7 +6,7 @@ export type OrderItemAddon = {
   price: number
 }
 
-export type OrderDeliveryType = 'delivery' | 'pickup'
+export type OrderDeliveryType = 'delivery' | 'pickup' | 'dine_in'
 
 export type OrderStatusGroup = 'new' | 'in_progress' | 'completed' | 'cancelled'
 
@@ -17,9 +17,10 @@ export type OrderStatus = {
   groupType: OrderStatusGroup
   position: number
   quickActions: string[]
+  kitchenVisible: boolean
 }
 
-export type OrderStatusData = Partial<Pick<OrderStatus, 'name' | 'groupType' | 'quickActions'>>
+export type OrderStatusData = Partial<Pick<OrderStatus, 'name' | 'groupType' | 'quickActions' | 'kitchenVisible'>>
 
 export type OrderItem = {
   id?: string
@@ -83,6 +84,8 @@ export type Order = {
   paymentType: 'cash' | 'card' | 'online'
   branchId: string | null
   deliveryZoneId: string | null
+  tableId: string | null
+  tableName: string | null
   createdAt: string
   updatedAt: string
 }

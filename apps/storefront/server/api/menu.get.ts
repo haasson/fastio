@@ -1,4 +1,4 @@
-import type { DishModifierGroup, DishModifierOption } from '@fastio/shared'
+import type { DishModifierGroup, DishModifierOption, Tenant } from '@fastio/shared'
 import { getServerSupabase, mapCategory, mapCombo, mapDish } from '../utils/supabase'
 
 type GroupBindingRow = {
@@ -21,6 +21,11 @@ export default defineEventHandler(async (event) => {
   const tenantId = event.context.tenantId as string | undefined
   if (!tenantId) throw createError({ statusCode: 404 })
 
+  const tenantModules = (event.context.tenant as Tenant | undefined)?.modules
+  const modifiersEnabled = tenantModules?.modifiers ?? true
+  const addonsEnabled = tenantModules?.addons ?? true
+  const combosEnabled = tenantModules?.combos ?? true
+
   const supabase = getServerSupabase()
 
   const [{ data: categoriesData }, { data: dishesData }, { data: combosData }] = await Promise.all([
@@ -36,12 +41,14 @@ export default defineEventHandler(async (event) => {
       .eq('tenant_id', tenantId)
       .eq('active', true)
       .order('sort_order'),
-    supabase
-      .from('combos')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('active', true)
-      .order('sort_order'),
+    combosEnabled
+      ? supabase
+          .from('combos')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .eq('active', true)
+          .order('sort_order')
+      : Promise.resolve({ data: [] }),
   ])
 
   const dishes = (dishesData ?? []).map(mapDish)
@@ -97,10 +104,17 @@ export default defineEventHandler(async (event) => {
 
       if (!dishModifiers[dishId]) dishModifiers[dishId] = []
 
-      const options = (optionsMap.get(dishId)?.get(groupId) ?? []).map((o) => ({
+      let options = (optionsMap.get(dishId)?.get(groupId) ?? []).map((o) => ({
         ...o,
         groupName,
       }))
+
+      // Если модуль отключён — оставляем только дефолтную опцию (для отображения и расчёта цены)
+      if (!modifiersEnabled) {
+        const defaultOpt = options.find((o) => o.isDefault)
+        if (!defaultOpt) continue
+        options = [defaultOpt]
+      }
 
       dishModifiers[dishId].push({
         groupId,
@@ -115,7 +129,7 @@ export default defineEventHandler(async (event) => {
   type ClientAddon = { id: string; name: string; weight: number | null; price: number; order: number }
   const dishAddons: Record<string, ClientAddon[]> = {}
 
-  if (dishIds.length > 0) {
+  if (dishIds.length > 0 && addonsEnabled) {
     type AddonBindingRow = {
       dish_id: string
       addon_id: string

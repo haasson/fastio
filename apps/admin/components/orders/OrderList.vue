@@ -137,6 +137,7 @@ import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderModal from '~/components/orders/OrderModal.vue'
 import { useOrders } from '~/composables/data/useOrders'
 import { DEFAULT_PAGE_SIZE } from '~/utils/api/orders'
+import { storeToRefs } from 'pinia'
 import { useBranchStore } from '~/stores/branch'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import useDrawer from '~/composables/ui/useDrawer'
@@ -156,7 +157,7 @@ const emit = defineEmits<{
 const { tenantId: tenantIdRef, statusId: statusIdRef, branchId: branchIdRef } = toRefs(props)
 
 const branchStore = useBranchStore()
-const { statuses } = useOrderStatusesStore()
+const { statuses } = storeToRefs(useOrderStatusesStore())
 
 const searchInput = ref('')
 const orderView = useLocalStorage<'cards' | 'list'>('orders:view', 'cards')
@@ -197,9 +198,10 @@ const {
   refresh,
 } = useOrders(tenantIdRef, statusIdRef, {
   branchId: branchIdRef,
-  statuses: computed(() => statuses),
+  statuses: computed(() => statuses.value),
   search: searchInput,
   deliveryTypes: filterDeliveryTypes,
+  excludeDeliveryTypes: ['dine_in'],
   paymentTypes: filterPaymentTypes,
   filterBranchIds,
   sortBy,
@@ -248,7 +250,7 @@ watch(
 // Bulk смена статуса
 const bulkStatusId = ref<string | null>(null)
 const bulkUpdating = ref(false)
-const statusOptions = computed(() => statuses.map((s) => ({ label: s.name, value: s.id })))
+const statusOptions = computed(() => statuses.value.map((s) => ({ label: s.name, value: s.id })))
 
 const applyBulkStatus = async () => {
   if (!bulkStatusId.value) return
@@ -313,7 +315,7 @@ const handleFiltersChange = (filterState: Record<string, (string | number)[] | n
 }
 
 const { columns, visibleColumns, columnMenuItems, toggleColumn } = useOrderTable({
-  statuses,
+  statuses: statuses.value,
   sortBy,
   sortDir,
   filterDeliveryTypes,

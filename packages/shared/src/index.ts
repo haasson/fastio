@@ -1,5 +1,6 @@
 export * from './types/tenant'
 export * from './types/branch'
+export * from './types/table'
 export * from './types/delivery-zone'
 export * from './types/menu'
 export * from './types/order'

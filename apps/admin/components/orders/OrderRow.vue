@@ -13,11 +13,10 @@
         :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
       >{{ currentStatus.name }}</UiTag>
       <UiTag
-        v-if="deliveryEnabled"
         size="tiny"
-        :icon="order.deliveryType === 'delivery' ? 'bike' : undefined"
+        :icon="(DELIVERY_TYPE_ICONS[order.deliveryType] as IconName | undefined)"
       >
-        {{ DELIVERY_TYPE_LABELS[order.deliveryType] }}
+        {{ order.tableName ?? DELIVERY_TYPE_LABELS[order.deliveryType] }}
       </UiTag>
       <UiTag v-if="branchName" size="tiny">{{ branchName }}</UiTag>
     </div>
@@ -53,7 +52,8 @@ import { UiButton, UiCard, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { formatPhone } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
-import { DELIVERY_TYPE_LABELS } from '~/config/order-options'
+import type { IconName } from '@fastio/icons'
+import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/order-options'
 import { useOrderCard } from '~/composables/ui/useOrderCard'
 
 const props = defineProps<{
@@ -67,7 +67,7 @@ const emit = defineEmits<{
   'open-edit': [order: Order]
 }>()
 
-const { deliveryEnabled, shortId, currentStatus, quickActionStatuses, relativeTime }
+const { shortId, currentStatus, quickActionStatuses, relativeTime }
   = useOrderCard(toRef(props, 'order'))
 
 const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} × ${i.quantity}`).join(', '))

@@ -1,4 +1,4 @@
-import { watch, onUnmounted, getCurrentInstance, type Ref } from 'vue'
+import { ref, watch, onUnmounted, getCurrentInstance, type Ref } from 'vue'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useDatabase } from '~/composables/data/useDatabase'
 
@@ -15,9 +15,12 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
   const column = handlers.column ?? 'id'
   let channel: RealtimeChannel | null = null
 
+  const isConnected = ref(false)
+
   const dispose = () => {
     channel?.unsubscribe()
     channel = null
+    isConnected.value = false
   }
 
   const setup = async (value: string) => {
@@ -26,6 +29,7 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
       ...(handlers.onInsert && { onInsert: ({ new: row }) => handlers.onInsert!(row) }),
       ...(handlers.onUpdate && { onUpdate: ({ new: row }) => handlers.onUpdate!(row) }),
       ...(handlers.onDelete && { onDelete: ({ old: row }) => handlers.onDelete!(row) }),
+      onStatus: (connected) => { isConnected.value = connected },
     })
   }
 
@@ -36,5 +40,5 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
 
   if (getCurrentInstance()) onUnmounted(dispose)
 
-  return { dispose }
+  return { dispose, isConnected }
 }

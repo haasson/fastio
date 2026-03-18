@@ -42,6 +42,8 @@ export type OrderCreateData = {
   total: number
   status: string
   paymentType: 'cash' | 'card' | 'online'
+  tableId?: string | null
+  tableName?: string | null
   idempotencyKey?: string | null
 }
 
@@ -84,6 +86,8 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     paymentType: row.payment_type,
     branchId: row.branch_id,
     deliveryZoneId: row.delivery_zone_id,
+    tableId: row.table_id,
+    tableName: row.table_name,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -130,7 +134,9 @@ export type OrderListOptions = {
   page?: number
   pageSize?: number
   search?: string
+  statusIds?: string[]
   deliveryTypes?: string[]
+  excludeDeliveryTypes?: string[]
   paymentTypes?: string[]
   sortBy?: string
   sortDir?: 'asc' | 'desc'
@@ -140,7 +146,7 @@ export const ordersApi = {
   async list(
     sb: SupabaseClient,
     tenantId: string,
-    filter: string,
+    filter: string | null,
     options: OrderListOptions = {},
   ) {
     const {
@@ -149,7 +155,9 @@ export const ordersApi = {
       page = 1,
       pageSize = DEFAULT_PAGE_SIZE,
       search,
+      statusIds = [],
       deliveryTypes = [],
+      excludeDeliveryTypes = [],
       paymentTypes = [],
       sortBy = 'created_at',
       sortDir = 'desc',
@@ -164,9 +172,14 @@ export const ordersApi = {
       .from('orders')
       .select(ORDER_SELECT, { count: 'exact' })
       .eq('tenant_id', tenantId)
-      .eq('status', filter)
       .order(safeSort, { ascending: sortDir === 'asc' })
       .range(from, to)
+
+    if (statusIds.length > 0) {
+      q = q.in('status', statusIds)
+    } else if (filter) {
+      q = q.eq('status', filter)
+    }
 
     if (filterBranchIds.length > 0) {
       q = q.in('branch_id', filterBranchIds)
@@ -185,6 +198,8 @@ export const ordersApi = {
 
     if (deliveryTypes.length > 0) {
       q = q.in('delivery_type', deliveryTypes)
+    } else if (excludeDeliveryTypes.length > 0) {
+      q = q.not('delivery_type', 'in', `(${excludeDeliveryTypes.join(',')})`)
     }
 
     if (paymentTypes.length > 0) {
@@ -227,10 +242,13 @@ export const ordersApi = {
     return result ? mapOrder(result) : null
   },
 
-  async counts(sb: SupabaseClient, tenantId: string, branchId: string | null = null) {
+  async counts(sb: SupabaseClient, tenantId: string, branchId: string | null = null, excludeDeliveryTypes: string[] = []) {
     let q = sb.from('orders').select('status').eq('tenant_id', tenantId)
 
     if (branchId !== null) q = q.eq('branch_id', branchId)
+    if (excludeDeliveryTypes.length > 0) {
+      q = q.not('delivery_type', 'in', `(${excludeDeliveryTypes.join(',')})`)
+    }
     const data = await query(q)
 
     return (data ?? []).reduce<Record<string, number>>((acc, row) => {
@@ -252,6 +270,7 @@ export const ordersApi = {
         ...toOrderPayload(data),
         tenant_id: data.tenantId,
         branch_id: data.branchId,
+        ...(data.tableId ? { table_id: data.tableId, table_name: data.tableName ?? null } : {}),
         ...(data.idempotencyKey ? { idempotency_key: data.idempotencyKey } : {}),
       }).select().single(),
     )

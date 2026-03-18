@@ -131,7 +131,7 @@ import { validationRules } from '@fastio/kit'
 import type { Order, DeliveryZone } from '@fastio/shared'
 import { findDeliveryZone } from '@fastio/shared'
 import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
-import { useTenantStore } from '~/stores/tenant'
+import { useModules } from '~/composables/plan/useModules'
 import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 import OrderItemsSection from './OrderItemsSection.vue'
 
@@ -247,8 +247,8 @@ const perms = computed(() => ({
   editBranch: props.permissions.editBranch ?? true,
 }))
 
-const tenantStore = useTenantStore()
-const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? true)
+const modules = useModules()
+const deliveryEnabled = computed(() => modules.delivery.value.active)
 const isDeliveryOrder = computed(() => props.form.deliveryType === 'delivery')
 // Показываем блок если: доставка включена, или заказ уже с доставкой, или есть выбор филиала (для самовывоза)
 const showDeliveryBlock = computed(() => deliveryEnabled.value || isDeliveryOrder.value || props.branchOptions.length > 1)

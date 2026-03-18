@@ -2,14 +2,16 @@
   <UiModal
     :model-value="modelValue"
     :title="modalTitle"
-    :width="480"
+    :width="680"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <!-- ── Шаг 1: выбор ─────────────────────────────────────────────────── -->
     <div v-if="step === 'pick'" class="pick-content">
       <div v-if="loading" class="state">Загрузка…</div>
       <template v-else>
-        <div class="cats">
+        <UiInput v-model="searchQuery" placeholder="Поиск блюда…" clearable />
+
+        <div v-if="!searchQuery" class="cats">
           <button
             v-if="showCombos && allCombos.length"
             class="cat"
@@ -30,7 +32,29 @@
         </div>
 
         <div class="list">
-          <template v-if="selectedCatId === 'combos'">
+          <template v-if="searchQuery">
+            <div v-if="!searchResults.length" class="state">Ничего не найдено</div>
+            <button
+              v-for="dish in searchResults"
+              :key="dish.id"
+              class="item"
+              @click="selectDish(dish)"
+            >
+              <div class="item-photo">
+                <img
+                  v-if="dish.photos[0]"
+                  :src="dish.photos[0]"
+                  :alt="dish.name"
+                  class="item-img"
+                />
+                <div v-else class="item-no-photo" />
+              </div>
+              <span class="item-name">{{ dish.name }}</span>
+              <span class="item-price">{{ dish.price }} ₽</span>
+              <UiIcon name="chevronRight" :size="14" class="item-arrow" />
+            </button>
+          </template>
+          <template v-else-if="selectedCatId === 'combos'">
             <button
               v-for="combo in allCombos"
               :key="combo.id"
@@ -173,7 +197,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, toRef, watch } from 'vue'
-import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox } from '@fastio/ui'
+import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput } from '@fastio/ui'
 import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import type { Addon } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
@@ -216,6 +240,7 @@ const { loading, categories, allDishes, allCombos, fetchData, getDishModifiers, 
 
 const step = ref<'pick' | 'customize'>('pick')
 const selectedCatId = ref<string | null>(null)
+const searchQuery = ref('')
 const selectedDish = ref<Dish | null>(null)
 const modifierGroups = ref<DishModifierGroup[]>([])
 const selectedModifiers = reactive<Record<string, string>>({})
@@ -235,6 +260,14 @@ const availableCategories = computed(() => categories.value.filter(
 const currentDishes = computed(() => allDishes.value.filter((d) => d.categoryId === selectedCatId.value && !excluded.value.has(d.id)),
 )
 
+const searchResults = computed(() => {
+  const q = searchQuery.value.toLowerCase().trim()
+
+  if (!q) return []
+
+  return allDishes.value.filter((d) => !excluded.value.has(d.id) && d.name.toLowerCase().includes(q))
+})
+
 const removableIngredients = computed(() => selectedDish.value?.ingredients.filter((i) => i.removable) ?? [])
 
 const modalTitle = computed(() => {
@@ -252,6 +285,7 @@ watch(
     if (!open) return
 
     step.value = 'pick'
+    searchQuery.value = ''
     selectedDish.value = null
     modifierGroups.value = []
     Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
@@ -409,7 +443,7 @@ const onConfirm = () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 300px;
+  min-height: 400px;
 }
 
 .state {
@@ -452,15 +486,15 @@ const onConfirm = () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 360px;
+  max-height: 460px;
   overflow-y: auto;
 }
 
 .item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 12px;
+  padding: 10px 12px;
   border-radius: 10px;
   background: transparent;
   border: 1px solid transparent;
@@ -477,8 +511,8 @@ const onConfirm = () => {
 
 .item-photo {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 8px;
   overflow: hidden;
   background: var(--color-bg-page);
@@ -499,7 +533,7 @@ const onConfirm = () => {
 
 .item-name {
   flex: 1;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-title);
   min-width: 0;
@@ -509,7 +543,7 @@ const onConfirm = () => {
 }
 
 .item-price {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-primary);
   white-space: nowrap;

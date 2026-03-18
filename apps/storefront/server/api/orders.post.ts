@@ -2,7 +2,7 @@ import { findDeliveryZone, normalizePhone } from '@fastio/shared'
 import type { DeliveryZone } from '@fastio/shared'
 import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
 
-const VALID_DELIVERY_TYPES = ['delivery', 'pickup'] as const
+const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in'] as const
 const VALID_PAYMENT_TYPES = ['cash', 'card', 'online'] as const
 
 // --- In-memory rate limiter по IP ---
@@ -68,7 +68,7 @@ export default defineEventHandler(async (event) => {
   // Получаем данные тенанта для delivery_fee и delivery_min_order
   const { data: tenantData, error: tenantError } = await supabase
     .from('tenants')
-    .select('delivery_fee, delivery_min_order, delivery_enabled')
+    .select('delivery_fee, delivery_min_order, modules')
     .eq('id', tenantId)
     .single()
 
@@ -76,8 +76,34 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Не удалось получить данные ресторана' })
   }
 
-  if (deliveryType === 'delivery' && !tenantData.delivery_enabled) {
+  if (deliveryType === 'delivery' && !tenantData.modules?.delivery) {
     throw createError({ statusCode: 400, message: 'Доставка отключена' })
+  }
+  if (deliveryType === 'pickup' && !tenantData.modules?.pickup) {
+    throw createError({ statusCode: 400, message: 'Самовывоз отключён' })
+  }
+  if (deliveryType === 'dine_in' && !tenantData.modules?.dineIn) {
+    throw createError({ statusCode: 400, message: 'Заказ со стола недоступен' })
+  }
+
+  // Валидация стола для dine_in
+  let tableRecord: { id: string; name: string } | null = null
+  if (deliveryType === 'dine_in') {
+    const tableId = body.tableId as string | undefined
+    if (!tableId) throw createError({ statusCode: 400, message: 'Не указан стол' })
+
+    const { data: tableData } = await supabase
+      .from('tables')
+      .select('id, name, is_open')
+      .eq('id', tableId)
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .single()
+
+    if (!tableData) throw createError({ statusCode: 404, message: 'Стол не найден' })
+    if (!tableData.is_open) throw createError({ statusCode: 400, message: 'Стол сейчас не обслуживается' })
+
+    tableRecord = { id: tableData.id, name: tableData.name }
   }
 
   // Загружаем филиалы и зоны доставки тенанта
@@ -114,12 +140,15 @@ export default defineEventHandler(async (event) => {
     orderBranchId = branchRows[0].id as string
   }
 
-  // Достаём реальные цены блюд из БД
+  // Достаём реальные цены блюд и модификаторы параллельно
   const dishIds = body.items.map((item: { dishId: string }) => item.dishId)
-  const { data: dishes, error: dishesError } = await supabase
-    .from('dishes')
-    .select('id, price, active, tenant_id')
-    .in('id', dishIds)
+  const [{ data: dishes, error: dishesError }, { data: allDishOptions }] = await Promise.all([
+    supabase.from('dishes').select('id, price, active, tenant_id').in('id', dishIds),
+    supabase
+      .from('dish_modifier_options')
+      .select('dish_id, option_id, price_delta, modifier_options(id, name, group_id, modifier_groups(name))')
+      .in('dish_id', dishIds),
+  ])
 
   if (dishesError) {
     throw createError({ statusCode: 500, message: 'Не удалось получить данные блюд' })
@@ -143,12 +172,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: `Блюдо "${item.dishName}" временно недоступно` })
     }
   }
-
-  // Загружаем модификаторы для валидации
-  const { data: allDishOptions } = await supabase
-    .from('dish_modifier_options')
-    .select('dish_id, option_id, price_delta, modifier_options(id, name, group_id, modifier_groups(name))')
-    .in('dish_id', dishIds)
 
   // Индексируем: dishId -> optionId -> { priceDelta, groupName, optionName }
   type ValidOption = { priceDelta: number; groupName: string; optionName: string }
@@ -308,6 +331,7 @@ export default defineEventHandler(async (event) => {
       ...(idempotencyKey && { idempotency_key: idempotencyKey }),
       ...(orderBranchId && { branch_id: orderBranchId }),
       ...(matchedZone && { delivery_zone_id: matchedZone.id }),
+      ...(tableRecord && { table_id: tableRecord.id, table_name: tableRecord.name }),
     })
     .select('id')
     .single()

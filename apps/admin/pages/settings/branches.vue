@@ -1,7 +1,11 @@
 <template>
   <div class="branches-root">
+    <UiAlert v-if="branchesModule.locked" type="warning" icon="mapPin">
+      Управление филиалами недоступно на вашем тарифе. Обновите тариф, чтобы добавлять и настраивать точки.
+    </UiAlert>
+
     <UiSectionHeader title="Филиалы">
-      <template #right>
+      <template v-if="branchesModule.active && !branchesModule.locked" #right>
         <UiButton
           type="primary"
           icon="plus"
@@ -79,11 +83,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, UiSectionHeader } from '@fastio/ui'
+import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, UiSectionHeader, UiAlert } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
+import { useModules } from '~/composables/plan/useModules'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
 import BranchDrawer from '~/components/settings/BranchDrawer.vue'
@@ -97,8 +102,10 @@ const { branches, archivedBranches, loading } = storeToRefs(branchStore)
 const { add, update, archive, restore } = branchStore
 const { confirm } = useConfirm()
 const { zones } = useAllDeliveryZones()
+const modules = useModules()
 
-const deliveryEnabled = computed(() => tenantStore.tenant?.deliveryEnabled ?? false)
+const deliveryEnabled = computed(() => modules.delivery.value.enabled)
+const branchesModule = modules.branches
 const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
 

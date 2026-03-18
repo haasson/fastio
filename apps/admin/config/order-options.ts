@@ -9,6 +9,13 @@ export const PAYMENT_TYPE_LABELS: Record<string, string> = {
 export const DELIVERY_TYPE_LABELS: Record<string, string> = {
   delivery: 'Доставка',
   pickup: 'Самовывоз',
+  dine_in: 'Со стола',
+}
+
+export const DELIVERY_TYPE_ICONS: Record<string, string> = {
+  delivery: 'bike',
+  pickup: 'cart',
+  dine_in: 'tableIcon',
 }
 
 export const PAYMENT_OPTIONS = [

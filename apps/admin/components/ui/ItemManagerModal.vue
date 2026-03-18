@@ -76,6 +76,16 @@
           />
 
           <UiButton
+            v-if="mode === 'statuses' && showKitchenToggle"
+            :type="item.kitchenVisible ? 'primary' : 'default'"
+            size="tiny"
+            icon="chefHat"
+            class="kitchen-btn"
+            :title="item.kitchenVisible ? 'Видно на кухне' : 'Скрыто от кухни'"
+            @click="onKitchenToggle(item)"
+          />
+
+          <UiButton
             type="text"
             size="tiny"
             icon="trash"
@@ -141,6 +151,7 @@ export type ManagedItem = {
   type?: CategoryType
   groupType?: OrderStatusGroup
   quickActions?: string[]
+  kitchenVisible?: boolean
   photoUrl?: string | null
 }
 
@@ -160,6 +171,7 @@ const props = defineProps<{
   mode: 'statuses' | 'categories'
   itemCounts?: Record<string, number>
   availableSpecialTypes?: SpecialCategoryType[]
+  showKitchenToggle?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -288,6 +300,11 @@ const getQuickActionOptions = (currentId: string, slotIndex: number) => {
     }))
 }
 
+const onKitchenToggle = (item: ManagedItem) => {
+  item.kitchenVisible = !item.kitchenVisible
+  emit('update', item.id, { kitchenVisible: item.kitchenVisible })
+}
+
 const onQuickActionChange = (item: ManagedItem, slotIndex: number, value: string | null) => {
   const actions = [...(item.quickActions ?? [])]
 
@@ -398,6 +415,10 @@ const confirmRemove = async (item: ManagedItem) => {
 .action-select {
   flex-shrink: 0;
   width: 130px;
+}
+
+.kitchen-btn {
+  flex-shrink: 0;
 }
 
 .delete-btn {

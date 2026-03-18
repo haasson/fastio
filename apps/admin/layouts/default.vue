@@ -78,7 +78,10 @@ import { ref, computed, inject, type Ref } from 'vue'
 import { useRoute, navigateTo } from '#imports'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
+import { useTableCallsChannel } from '~/composables/data/useTableCallsChannel'
 import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
+import { useTableCallAlertHandler } from '~/composables/data/useTableCallAlertHandler'
+import { requestNotificationPermission } from '~/composables/data/useAlerts'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
@@ -109,6 +112,13 @@ const branchStore = useBranchStore()
 // Уведомления о новых заказах
 useOrdersChannel(computed(() => tenantStore.currentTenantId))
 useOrderAlertHandler()
+
+// Вызовы официанта
+useTableCallsChannel(computed(() => tenantStore.currentTenantId))
+useTableCallAlertHandler()
+
+// Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
+requestNotificationPermission()
 
 const showBranchGate = computed(() => !tenantStore.loading && !branchStore.loading && !!tenantStore.tenant && !branchStore.hasBranches,
 )
@@ -185,6 +195,8 @@ const currentPageTitle = computed(() => {
     ['/menu/addons', 'Добавки'],
     ['/menu', menuLabel.value],
     ['/orders', 'Заказы'],
+    ['/kitchen', 'Кухня'],
+    ['/tables', 'Столы'],
     ['/promotions', 'Акции'],
     ['/appearance', 'Оформление'],
     ['/settings', 'Настройки'],
