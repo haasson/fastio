@@ -18,6 +18,7 @@
                 :dish="combo"
                 :combo-id="combo.id"
                 @add="addComboToCart(combo)"
+                @card-click="openComboModal(combo)"
               />
             </template>
             <template v-else>
@@ -25,7 +26,9 @@
                 v-for="dish in dishesByCategory[category.id] ?? []"
                 :key="dish.id"
                 :dish="dish"
-                @add="addToCart(dish)"
+                :has-modifiers="hasModifiers(dish)"
+                @add="handleAddButton(dish)"
+                @card-click="handleCardClick(dish)"
               />
             </template>
           </div>
@@ -79,6 +82,7 @@
                 :dish="combo"
                 :combo-id="combo.id"
                 @add="addComboToCart(combo)"
+                @card-click="openComboModal(combo)"
               />
             </template>
             <template v-else>
@@ -86,13 +90,23 @@
                 v-for="dish in dishesByCategory[selectedCategoryId] ?? []"
                 :key="dish.id"
                 :dish="dish"
-                @add="addToCart(dish)"
+                :has-modifiers="hasModifiers(dish)"
+                @add="handleAddButton(dish)"
+                @card-click="handleCardClick(dish)"
               />
             </template>
           </div>
         </div>
       </div>
     </template>
+    <DishModal
+      v-if="modalItem"
+      v-model="modalOpen"
+      :item="modalItem"
+      :modifiers="modalModifiers"
+      :addons="modalAddons"
+      @add="handleModalAdd"
+    />
   </SfSection>
 </template>
 
@@ -100,14 +114,16 @@
 import { computed, ref } from 'vue'
 import { UtensilsCrossed, ChevronLeft } from 'lucide-vue-next'
 import type { Dish, Combo } from '@fastio/shared'
-import { useCartStore } from '~/stores/cart'
-import { useMenuStore } from '~/stores/menu'
+import { useCartStore, type CartItem } from '~/stores/cart'
+import { useMenuStore, type ClientAddon } from '~/stores/menu'
+import type { ModalItem } from '~/composables/useDishCustomization'
 import SfSection from '~/components/sf/layout/SfSection.vue'
 import SfCard from '~/components/sf/layout/SfCard.vue'
 import SfHeading from '~/components/sf/typography/SfHeading.vue'
 import SfText from '~/components/sf/typography/SfText.vue'
 import SfDishCard from '~/components/sf/domain/SfDishCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
+import DishModal from '~/components/sf/domain/DishModal.vue'
 
 defineProps<{
   defaultView: 'categories' | 'dishes'
@@ -131,6 +147,83 @@ const categoryPhotos = computed<Record<string, string | null>>(() =>
       ?? (cat.useFirstDishPhoto ? dishesByCategory.value[cat.id]?.[0]?.photos[0] ?? null : null)
     return acc
   }, {} as Record<string, string | null>)
+)
+
+// Modal state
+const modalOpen = ref(false)
+const modalItem = ref<ModalItem | null>(null)
+
+function hasModifiers(dish: Dish): boolean {
+  return (menuStore.dishModifiers[dish.id]?.length ?? 0) > 0
+}
+
+function openModal(item: ModalItem) {
+  modalItem.value = item
+  modalOpen.value = true
+}
+
+function findCategoryName(dishOrComboId: string): string | null {
+  for (const cat of categories.value) {
+    const dishes = dishesByCategory.value[cat.id]
+    if (dishes?.some(d => d.id === dishOrComboId)) return cat.name
+    const combos = combosByCategory.value[cat.id]
+    if (combos?.some(c => c.id === dishOrComboId)) return cat.name
+  }
+  return null
+}
+
+function openDishModal(dish: Dish) {
+  openModal({
+    id: dish.id,
+    name: dish.name,
+    description: dish.description,
+    price: dish.price,
+    photos: dish.photos,
+    categoryName: findCategoryName(dish.id),
+    ingredients: dish.ingredients,
+    nutrition: dish.nutrition,
+  })
+}
+
+function openComboModal(combo: Combo) {
+  openModal({
+    id: combo.id,
+    name: combo.name,
+    description: combo.description,
+    price: combo.price,
+    photos: combo.photos,
+    categoryName: findCategoryName(combo.id),
+    comboId: combo.id,
+    comboItems: menuStore.comboItems[combo.id] ?? [],
+  })
+}
+
+function handleAddButton(dish: Dish) {
+  if (hasModifiers(dish)) {
+    openDishModal(dish)
+  } else {
+    addToCart(dish)
+  }
+}
+
+function handleCardClick(dish: Dish) {
+  openDishModal(dish)
+}
+
+function handleModalAdd(item: CartItem) {
+  cart.add(item)
+}
+
+const modalModifiers = computed(() =>
+  modalItem.value && !modalItem.value.comboId
+    ? (menuStore.dishModifiers[modalItem.value.id] ?? [])
+    : [],
+)
+
+const modalAddons = computed<ClientAddon[]>(() =>
+  modalItem.value && !modalItem.value.comboId
+    ? (menuStore.dishAddons[modalItem.value.id] ?? [])
+    : [],
 )
 
 function addToCart(dish: Dish) {

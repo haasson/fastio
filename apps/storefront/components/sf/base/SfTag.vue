@@ -6,6 +6,7 @@
       `tag-${size}`,
       {
         'is-active': active,
+        'is-removed': removed,
         'is-disabled': disabled,
         'is-responsive': responsive,
       },
@@ -21,6 +22,7 @@
 <script setup lang="ts">
 type Props = {
   active?: boolean
+  removed?: boolean
   disabled?: boolean
   size?: 'small' | 'medium'
   responsive?: boolean
@@ -29,6 +31,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   active: false,
+  removed: false,
   disabled: false,
   size: 'medium',
   responsive: false,
@@ -41,6 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   cursor: pointer;
   font-weight: 400;
   white-space: nowrap;
@@ -64,6 +68,12 @@ const props = withDefaults(defineProps<Props>(), {
     background: var(--primary-subtle);
     color: var(--primary);
     border-color: var(--primary);
+  }
+
+  &.is-removed {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+    background: var(--surface-hover);
   }
 
   &.is-disabled {

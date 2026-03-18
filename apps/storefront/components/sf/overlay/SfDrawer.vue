@@ -7,16 +7,19 @@
         <DrawerContent class="drawer-bottom" :style="bottomSizeStyle">
           <div class="handle" />
 
-          <div v-if="title || closable" class="header">
+          <div v-if="title || closable || $slots['header-action']" class="header">
             <DrawerTitle v-if="title" class="title">{{ title }}</DrawerTitle>
             <DrawerTitle v-else class="visually-hidden">Диалоговое окно</DrawerTitle>
+            <slot name="header-action" />
             <button v-if="closable" class="close-btn" aria-label="Закрыть" @click="emit('update:modelValue', false)">
               <X :size="18" />
             </button>
           </div>
           <DrawerTitle v-else class="visually-hidden">Диалоговое окно</DrawerTitle>
 
-          <slot />
+          <div class="scroll-area">
+            <slot />
+          </div>
 
           <div v-if="$slots.footer" class="footer">
             <slot name="footer" />
@@ -91,7 +94,7 @@ const emit = defineEmits<{
 const effectiveSide = computed(() => props.side ?? 'bottom')
 
 const bottomSizeStyle = computed(() => {
-  const map: Record<string, string> = { sm: '40vh', md: '60vh', lg: '80vh', full: '100vh' }
+  const map: Record<string, string> = { sm: '40vh', md: '60vh', lg: '90vh', full: '100vh' }
   return { maxHeight: map[props.size] }
 })
 
@@ -123,9 +126,17 @@ const rightSizeStyle = computed(() => {
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   z-index: var(--z-modal, 400);
   max-height: 90vh;
-  overflow-y: auto;
   outline: none;
   font-family: var(--font-family);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .drawer-right {
@@ -175,7 +186,7 @@ const rightSizeStyle = computed(() => {
   font-weight: 600;
   color: var(--color-text);
   margin: 0;
-  font-family: var(--font-family);
+  font-family: var(--heading-font-family, var(--font-family));
 }
 
 .close-btn {

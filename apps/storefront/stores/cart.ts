@@ -17,7 +17,8 @@ export const useCartStore = defineStore('cart', () => {
       (i) =>
         i.dishId === item.dishId &&
         JSON.stringify(i.removedIngredients) === JSON.stringify(item.removedIngredients) &&
-        JSON.stringify(i.modifiers ?? []) === JSON.stringify(item.modifiers ?? []),
+        JSON.stringify(i.modifiers ?? []) === JSON.stringify(item.modifiers ?? []) &&
+        JSON.stringify(i.addons ?? []) === JSON.stringify(item.addons ?? []),
     )
     if (existing) {
       existing.quantity += item.quantity

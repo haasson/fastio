@@ -3,6 +3,7 @@
     class="price-tag-root"
     :class="[`size-${size}`, { 'is-responsive': responsive }]"
   >
+    <span v-if="prefix" class="price-prefix">{{ prefix }}</span>
     <span class="price-main">{{ price }} {{ currency }}</span>
     <span v-if="oldPrice" class="price-old">{{ oldPrice }} {{ currency }}</span>
   </span>
@@ -11,6 +12,7 @@
 type Props = {
   price: number
   oldPrice?: number
+  prefix?: string
   currency?: string
   size?: 'small' | 'medium' | 'large'
   responsive?: boolean
@@ -29,6 +31,11 @@ const props = withDefaults(defineProps<Props>(), {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
+}
+
+.price-prefix {
+  font-weight: 400;
+  color: var(--color-text-muted);
 }
 
 .price-main {

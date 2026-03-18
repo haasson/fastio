@@ -111,10 +111,95 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Load addon bindings for all dishes in batch
+  type ClientAddon = { id: string; name: string; weight: number | null; price: number; order: number }
+  const dishAddons: Record<string, ClientAddon[]> = {}
+
+  if (dishIds.length > 0) {
+    type AddonBindingRow = {
+      dish_id: string
+      addon_id: string
+      sort_order: number
+      addons: { id: string; name: string; weight: number | null; price: number }
+    }
+
+    const { data: addonBindings } = await supabase
+      .from('dish_addons')
+      .select('dish_id, addon_id, sort_order, addons(id, name, weight, price)')
+      .in('dish_id', dishIds)
+      .order('sort_order')
+      .returns<AddonBindingRow[]>()
+
+    for (const row of addonBindings ?? []) {
+      if (!dishAddons[row.dish_id]) dishAddons[row.dish_id] = []
+      dishAddons[row.dish_id].push({
+        id: row.addons.id,
+        name: row.addons.name,
+        weight: row.addons.weight,
+        price: row.addons.price,
+        order: row.sort_order,
+      })
+    }
+  }
+
+  // Load combo items (composition) in batch
+  const combos = (combosData ?? []).map(mapCombo)
+  const comboIds = combos.map((c) => c.id)
+  const comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]> = {}
+
+  if (comboIds.length > 0) {
+    type ComboItemRow = {
+      combo_id: string
+      sort_order: number
+      modifier_option_ids: string[]
+      dishes: { name: string; photos: string[] }
+    }
+
+    const { data: itemRows } = await supabase
+      .from('combo_items')
+      .select('combo_id, sort_order, modifier_option_ids, dishes(name, photos)')
+      .in('combo_id', comboIds)
+      .order('sort_order')
+      .returns<ComboItemRow[]>()
+
+    // Collect all modifier option IDs to resolve names
+    const allOptionIds = new Set<string>()
+    for (const row of itemRows ?? []) {
+      for (const id of row.modifier_option_ids ?? []) allOptionIds.add(id)
+    }
+
+    // Resolve option names in one query
+    const optionNames: Record<string, string> = {}
+    if (allOptionIds.size > 0) {
+      const { data: optData } = await supabase
+        .from('modifier_options')
+        .select('id, name')
+        .in('id', [...allOptionIds])
+
+      for (const o of optData ?? []) {
+        optionNames[o.id] = o.name
+      }
+    }
+
+    for (const row of itemRows ?? []) {
+      if (!comboItems[row.combo_id]) comboItems[row.combo_id] = []
+      const modNames = (row.modifier_option_ids ?? [])
+        .map((id) => optionNames[id])
+        .filter(Boolean)
+      comboItems[row.combo_id].push({
+        name: row.dishes.name,
+        photo: row.dishes.photos?.[0] ?? null,
+        modifier: modNames.length > 0 ? modNames.join(', ') : null,
+      })
+    }
+  }
+
   return {
     categories: (categoriesData ?? []).map(mapCategory),
     dishes,
-    combos: (combosData ?? []).map(mapCombo),
+    combos,
     dishModifiers,
+    dishAddons,
+    comboItems,
   }
 })

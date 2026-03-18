@@ -3,11 +3,21 @@ import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import type { Category, Dish, Combo, DishModifierGroup } from '@fastio/shared'
 
+export type ClientAddon = {
+  id: string
+  name: string
+  weight: number | null
+  price: number
+  order: number
+}
+
 type MenuData = {
   categories: Category[]
   dishes: Dish[]
   combos: Combo[]
   dishModifiers: Record<string, DishModifierGroup[]>
+  dishAddons: Record<string, ClientAddon[]>
+  comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]>
 }
 
 export const useMenuStore = defineStore('menu', () => {
@@ -17,6 +27,8 @@ export const useMenuStore = defineStore('menu', () => {
   const allCombos = computed(() => menu.value?.combos ?? [])
   const allCategories = computed(() => menu.value?.categories ?? [])
   const dishModifiers = computed(() => menu.value?.dishModifiers ?? {})
+  const dishAddons = computed(() => menu.value?.dishAddons ?? {})
+  const comboItems = computed(() => menu.value?.comboItems ?? {})
 
   const dishesByCategory = computed<Record<string, Dish[]>>(() => {
     const byId = allDishes.value.reduce<Record<string, Dish[]>>((acc, dish) => {
@@ -50,5 +62,5 @@ export const useMenuStore = defineStore('menu', () => {
     }),
   )
 
-  return { allDishes, allCombos, dishModifiers, dishesByCategory, combosByCategory, visibleCategories }
+  return { allDishes, allCombos, dishModifiers, dishAddons, comboItems, dishesByCategory, combosByCategory, visibleCategories }
 })

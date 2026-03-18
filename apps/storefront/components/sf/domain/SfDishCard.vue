@@ -1,5 +1,5 @@
 <template>
-  <SfCard :image-alt="dish.name" class="dish-card-root">
+  <SfCard :image-alt="dish.name" class="dish-card-root" @click="emit('cardClick')">
     <template #image>
       <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" />
       <div v-else class="dish-placeholder">
@@ -21,8 +21,8 @@
     <div class="dish-body">
       <SfText as="h3" variant="body-sm" class="dish-name">{{ dish.name }}</SfText>
       <SfText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</SfText>
-      <div class="dish-footer">
-        <SfPriceTag :price="dish.price" :currency="currency" />
+      <div class="dish-footer" @click.stop>
+        <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
         <SfStepper
           v-if="cartCount > 0"
           :model-value="cartCount"
@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue'
 import { Plus, UtensilsCrossed, Flame, Leaf, Sparkles, Star, Zap, type LucideIcon } from 'lucide-vue-next'
-import { getDishTagConfig, type Dish } from '@fastio/shared'
+import { getDishTagConfig, type Dish, type Combo } from '@fastio/shared'
 import SfCard from '~/components/sf/layout/SfCard.vue'
 import SfText from '~/components/sf/typography/SfText.vue'
 import SfButton from '~/components/sf/base/SfButton.vue'
@@ -51,13 +51,14 @@ import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { useCartStore, type CartItem } from '~/stores/cart'
 
 type Props = {
-  dish: Dish
+  dish: Dish | Combo
   comboId?: string
+  hasModifiers?: boolean
   currency?: string
 }
 
 const props = withDefaults(defineProps<Props>(), { currency: '₽' })
-const emit = defineEmits<{ add: [] }>()
+const emit = defineEmits<{ add: []; cardClick: [] }>()
 const cart = useCartStore()
 
 const itemPred = computed(() =>
@@ -91,6 +92,7 @@ function getTagIcon(tag: string): Component | null {
   max-width: 400px;
   margin-inline: auto;
   width: 100%;
+  cursor: pointer;
 
   @include md { max-width: none; margin-inline: 0; }
 }
