@@ -227,12 +227,12 @@ const handleZoneRemove = async () => {
   white-space: nowrap;
 
   &:hover {
-    background: var(--color-surface-hover);
+    background: var(--color-bg-hover);
   }
 
   &.active {
     border-color: var(--color-primary);
-    background: var(--color-primary-bg);
+    background: var(--color-primary-light);
   }
 }
 

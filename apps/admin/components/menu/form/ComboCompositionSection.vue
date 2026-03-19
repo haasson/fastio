@@ -241,12 +241,12 @@ watch(
   font-size: 13px;
 
   &.is-saving .total-value {
-    color: var(--color-success, #18a058);
+    color: var(--color-success);
     font-weight: 600;
   }
 
   &.is-markup .total-value {
-    color: var(--color-warning, #f0a020);
+    color: var(--color-warning);
     font-weight: 600;
   }
 }

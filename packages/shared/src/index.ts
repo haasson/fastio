@@ -1,4 +1,5 @@
 export * from './types/tenant'
+export * from './types/billing'
 export * from './types/branch'
 export * from './types/table'
 export * from './types/delivery-zone'

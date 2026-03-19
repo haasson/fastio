@@ -178,7 +178,7 @@ const submitNewType = () => {
 }
 
 .call-icon {
-  color: var(--color-warning, #f0a020);
+  color: var(--color-warning);
   flex-shrink: 0;
 }
 

@@ -11,6 +11,7 @@ export const usePermissions = () => {
   const canEditSettings = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'admin'))
   const canViewSettings = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'manager'))
   const canManageTeam = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'admin'))
+  const canManageBilling = computed(() => !!tenantStore.currentRole && hasMinRole(tenantStore.currentRole, 'admin'))
   const canDeleteTenant = computed(() => tenantStore.currentRole === 'owner')
 
   return {
@@ -20,6 +21,7 @@ export const usePermissions = () => {
     canEditSettings,
     canViewSettings,
     canManageTeam,
+    canManageBilling,
     canDeleteTenant,
   }
 }

@@ -31,6 +31,7 @@ export type TenantRow = {
   contacts: TenantContacts
   working_hours: string
   notifications: TenantNotifications
+  balance: number
   subscription: TenantSubscription
   modules: TenantModules
   delivery_min_order: number

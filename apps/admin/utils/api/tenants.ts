@@ -22,6 +22,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     contacts: row.contacts,
     workingHours: row.working_hours,
     notifications: row.notifications,
+    balance: row.balance ?? 0,
     subscription: row.subscription,
     modules: row.modules,
     deliveryMinOrder: row.delivery_min_order,
@@ -34,6 +35,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
   }
 }
 
+// subscription/balance managed exclusively by billing functions (see trg_prevent_billing_self_update)
 const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) => filterDefined({
   name: data.name,
   slug: data.slug,
@@ -45,7 +47,6 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   contacts: data.contacts,
   working_hours: data.workingHours,
   notifications: data.notifications,
-  subscription: data.subscription,
   modules: data.modules,
   delivery_min_order: data.deliveryMinOrder,
   delivery_fee: data.deliveryFee,

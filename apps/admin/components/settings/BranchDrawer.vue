@@ -343,7 +343,7 @@ const onConfirm = async () => {
 .coords-pin {
   width: 14px;
   height: 14px;
-  background: var(--color-primary, #ff5500);
+  background: var(--color-primary);
   border: 2px solid #fff;
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);

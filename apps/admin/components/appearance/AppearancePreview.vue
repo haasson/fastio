@@ -111,7 +111,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiIcon } from '@fastio/icons'
+import { UiIcon } from '@fastio/ui'
 import type { SiteLayout, SiteContent, TenantTheme } from '@fastio/shared'
 import { featureLabel, paletteToCssVars, getHeroGradient, heroContentPositionStyle } from '@fastio/shared'
 

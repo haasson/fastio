@@ -2,6 +2,8 @@ import { ref, computed, type Ref } from 'vue'
 import type { Tenant, TenantRole } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
+import { usePlans } from '~/composables/plan/usePlans'
+import { useModuleConfigs } from '~/composables/plan/useModules'
 
 type MembershipWithTenant = {
   id: string
@@ -31,12 +33,20 @@ export const useTenant = (userId: Ref<string | null>) => {
 
   const hasMultipleTenants = computed(() => memberships.value.length > 1)
 
+  let lastFetchAt = 0
+
   const fetchTenant = async () => {
     if (!currentTenantId.value) return
     tenant.value = await api.tenants.getById(currentTenantId.value)
+    lastFetchAt = Date.now()
   }
 
-  useRealtimeWatch('tenants', currentTenantId, { onUpdate: () => fetchTenant() })
+  useRealtimeWatch('tenants', currentTenantId, {
+    onUpdate: () => {
+      if (Date.now() - lastFetchAt < 2000) return
+      fetchTenant()
+    },
+  })
 
   const init = async () => {
     if (!userId.value) return
@@ -58,7 +68,10 @@ export const useTenant = (userId: Ref<string | null>) => {
 
     currentTenantId.value = savedExists ? savedId : memberships.value[0].tenantId
 
-    await fetchTenant()
+    const { load: loadPlans } = usePlans()
+    const { load: loadConfigs } = useModuleConfigs()
+
+    await Promise.all([fetchTenant(), loadPlans(), loadConfigs()])
     loading.value = false
   }
 
@@ -73,11 +86,19 @@ export const useTenant = (userId: Ref<string | null>) => {
     loading.value = false
   }
 
-  const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) => {
+  const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt' | 'subscription' | 'balance'>>) => {
     if (!tenant.value) return
 
-    await api.tenants.update(tenant.value.id, data)
+    const snapshot = tenant.value
+
     tenant.value = { ...tenant.value, ...data }
+
+    try {
+      await api.tenants.update(snapshot.id, data)
+    } catch {
+      tenant.value = snapshot
+      throw new Error('Не удалось сохранить изменения')
+    }
   }
 
   const dispose = () => {

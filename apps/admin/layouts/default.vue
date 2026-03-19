@@ -23,19 +23,13 @@
             @update:value="handleBranchChange"
           />
 
-          <div class="user-row">
+          <NuxtLink to="/account" class="account-link" @click="sidebarOpen = false">
+            <UiIcon name="users" :size="18" />
             <div class="user-names">
               <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
               <UiText size="tiny" class="user-name">{{ displayName }}</UiText>
             </div>
-            <UiButton
-              type="text"
-              size="small"
-              icon="logOut"
-              class="logout-btn"
-              @click="handleLogout"
-            />
-          </div>
+          </NuxtLink>
         </div>
 
         <button class="collapse-btn" @click="collapsed = !collapsed">
@@ -49,6 +43,8 @@
 
     <!-- Main -->
     <div class="main">
+      <PastDueBanner />
+
       <header class="topbar">
         <div class="burger-wrap">
           <UiAppBurger :open="sidebarOpen" @click="sidebarOpen = !sidebarOpen" />
@@ -76,7 +72,6 @@
 <script setup lang="ts">
 import { ref, computed, inject, type Ref } from 'vue'
 import { useRoute, navigateTo } from '#imports'
-import { useDatabase } from '~/composables/data/useDatabase'
 import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
 import { useTableCallsChannel } from '~/composables/data/useTableCallsChannel'
 import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
@@ -84,11 +79,11 @@ import { useTableCallAlertHandler } from '~/composables/data/useTableCallAlertHa
 import { requestNotificationPermission } from '~/composables/data/useAlerts'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon } from '@fastio/ui'
-import { useConfirm } from '@fastio/kit'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
 import BranchSetupGate from '~/components/layout/BranchSetupGate.vue'
 import BusinessTypeModal from '~/components/onboarding/BusinessTypeModal.vue'
+import PastDueBanner from '~/components/layout/PastDueBanner.vue'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
@@ -98,8 +93,6 @@ import { useBranchStore } from '~/stores/branch'
 import { roleLabels } from '~/config/team-roles'
 
 const route = useRoute()
-const api = useDatabase()
-const { confirm } = useConfirm()
 const sidebarOpen = ref(false)
 const collapsed = useLocalStorage('sidebar-collapsed', false)
 
@@ -173,22 +166,6 @@ const handleBranchChange = (val: string | number | (string | number)[] | null) =
   branchStore.setBranch(strVal === '' ? null : strVal)
 }
 
-// Logout
-const handleLogout = async () => {
-  const confirmed = await confirm({
-    title: 'Выйти из аккаунта?',
-    message: 'Вы будете перенаправлены на страницу входа',
-    confirmText: 'Выйти',
-    confirmType: 'error',
-  })
-
-  if (!confirmed) return
-
-  tenantStore.dispose()
-  await api.auth.signOut()
-  await navigateTo('/login')
-}
-
 const currentPageTitle = computed(() => {
   const pageTitles: [string, string][] = [
     ['/menu/modifiers', 'Модификаторы'],
@@ -200,6 +177,7 @@ const currentPageTitle = computed(() => {
     ['/promotions', 'Акции'],
     ['/appearance', 'Оформление'],
     ['/settings', 'Настройки'],
+    ['/account', 'Личный кабинет'],
     ['/', 'Дашборд'],
   ]
   const entry = pageTitles.find(([path]) => route.path === path || route.path.startsWith(`${path}/`))
@@ -309,10 +287,21 @@ const currentPageTitle = computed(() => {
   width: 100%;
 }
 
-.user-row {
+.account-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--grey-400);
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+
+  &:hover, &.router-link-active {
+    background: var(--grey-800);
+    color: var(--grey-50);
+  }
 }
 
 .user-names {
@@ -335,15 +324,6 @@ const currentPageTitle = computed(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.logout-btn {
-  flex-shrink: 0;
-  color: var(--grey-500);
-
-  &:hover {
-    color: var(--grey-300);
-  }
 }
 
 .sidebar-collapsed {

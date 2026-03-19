@@ -1,27 +1,22 @@
-import { createClient } from '@supabase/supabase-js'
 import { defineEventHandler, createError } from 'h3'
-import { useRuntimeConfig } from '#imports'
+import { getAdminClient } from '../utils/adminClient'
 
 type TenantRow = {
   id: string
   name: string
   slug: string
   ownerEmail: string
+  plan: string
+  balance: number
   branchCount: number
   createdAt: string
 }
 
 export default defineEventHandler(async (): Promise<TenantRow[]> => {
-  const config = useRuntimeConfig()
-
-  const supabase = createClient(
-    config.public.supabaseUrl,
-    config.supabaseServiceKey,
-    { auth: { persistSession: false } },
-  )
+  const supabase = getAdminClient()
 
   const [tenantsResult, branchesResult] = await Promise.all([
-    supabase.from('tenants').select('id, name, slug, created_at, owner_id'),
+    supabase.from('tenants').select('id, name, slug, created_at, owner_id, subscription, balance'),
     supabase.from('branches').select('tenant_id'),
   ])
 
@@ -51,6 +46,8 @@ export default defineEventHandler(async (): Promise<TenantRow[]> => {
     name: tenant.name,
     slug: tenant.slug,
     ownerEmail: emailByUserId.get(tenant.owner_id) ?? '—',
+    plan: (tenant.subscription as { plan?: string })?.plan ?? 'start',
+    balance: tenant.balance ?? 0,
     branchCount: branchCountByTenant.get(tenant.id) ?? 0,
     createdAt: tenant.created_at,
   }))

@@ -381,11 +381,11 @@ const { columns, visibleColumns, columnMenuItems, toggleColumn } = useOrderTable
 
 .pending-banner {
   padding: 10px 16px;
-  background: var(--color-warning-subtle, oklch(97% 0.04 85));
-  border: 1px solid var(--color-warning, oklch(75% 0.15 85));
+  background: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
   border-radius: 8px;
   font-size: 13px;
-  color: var(--color-text-primary);
+  color: var(--color-text);
   cursor: pointer;
   text-align: center;
 

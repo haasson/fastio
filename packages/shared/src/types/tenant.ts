@@ -114,10 +114,13 @@ export type TenantNotifications = {
 }
 
 export type TenantSubscription = {
-  status: 'trial' | 'active' | 'suspended' | 'cancelled'
-  plan: 'start' | 'business' | 'pro'
+  status: 'trial' | 'active' | 'past_due' | 'suspended' | 'cancelled'
+  plan: string
   trialEndsAt: string | null
   renewsAt: string | null
+  pastDueAt: string | null
+  priceOverride: number | null
+  gracePeriodDays: number | null
 }
 
 export type BusinessType = 'food' | 'retail' | 'services'
@@ -158,6 +161,7 @@ export type Tenant = {
   contacts: TenantContacts
   workingHours: string
   notifications: TenantNotifications
+  balance: number
   subscription: TenantSubscription
   modules: TenantModules
   deliveryMinOrder: number

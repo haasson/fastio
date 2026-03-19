@@ -23,6 +23,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     contacts: row.contacts as Tenant['contacts'],
     workingHours: row.working_hours as Tenant['workingHours'],
     notifications: row.notifications as Tenant['notifications'],
+    balance: (row.balance as number) ?? 0,
     subscription: row.subscription as Tenant['subscription'],
     modules: row.modules as Tenant['modules'],
     deliveryMinOrder: row.delivery_min_order as number,

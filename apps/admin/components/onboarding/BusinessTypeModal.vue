@@ -133,7 +133,7 @@ const select = async (type: BusinessType) => {
 
 .option-title {
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-text);
 }
 
 .option-desc {

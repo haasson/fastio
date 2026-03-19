@@ -11,7 +11,6 @@
           :icon="mod.icon"
           :active="mod.state.active"
           :locked="false"
-          :disabled="saving"
           @toggle="toggle(mod.key, $event)"
         />
       </div>
@@ -29,7 +28,7 @@
           :icon="mod.icon"
           :active="mod.state.active"
           :locked="true"
-          :plan-label="PLAN_LABELS[mod.requiredPlan]"
+          :plan-label="getPlanLabel(mod.requiredPlan)"
         />
       </div>
     </template>
@@ -37,12 +36,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { UiSectionHeader, UiDivider, useMessage } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useModules, PLAN_LABELS } from '~/composables/plan/useModules'
-import { MODULE_CONFIGS, type ModuleKey } from '~/config/modules'
+import { useModules, useModuleConfigs } from '~/composables/plan/useModules'
+import { usePlans } from '~/composables/plan/usePlans'
+import type { ModuleKey } from '~/config/modules'
 import { useDatabase } from '~/composables/data/useDatabase'
 import ModuleCard from '~/components/settings/ModuleCard.vue'
 
@@ -50,10 +50,14 @@ const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const api = useDatabase()
 const modules = useModules()
-const saving = ref(false)
+const { configs } = useModuleConfigs()
+const { getPlanLabel } = usePlans()
 const { warning } = useMessage()
 
-const moduleList = computed(() => MODULE_CONFIGS.map((cfg) => ({ ...cfg, state: modules[cfg.key].value })),
+const moduleList = computed(() => configs.value.map((cfg) => ({
+  ...cfg,
+  state: modules[cfg.key].value,
+})),
 )
 
 const availableModules = computed(() => moduleList.value.filter((m) => !m.state.locked))
@@ -79,14 +83,9 @@ const toggle = async (key: ModuleKey, val: boolean) => {
     }
   }
 
-  saving.value = true
-  try {
-    await tenantStore.update({
-      modules: { ...tenantStore.tenant.modules, [key]: val },
-    })
-  } finally {
-    saving.value = false
-  }
+  await tenantStore.update({
+    modules: { ...tenantStore.tenant.modules, [key]: val },
+  }).catch(() => warning('Не удалось сохранить изменения'))
 }
 </script>
 

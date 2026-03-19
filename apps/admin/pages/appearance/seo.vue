@@ -166,21 +166,21 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 
 .counter {
   font-size: 12px;
-  color: var(--color-text-muted);
+  color: var(--color-text-hint);
   flex-shrink: 0;
 
   &.warn {
-    color: var(--color-warning, #f59e0b);
+    color: var(--color-warning);
   }
 
   &.over {
-    color: var(--color-error, #ef4444);
+    color: var(--color-error);
   }
 }
 
 .hint {
   font-size: 12px;
-  color: var(--color-text-muted);
+  color: var(--color-text-hint);
   line-height: 1.4;
 }
 
@@ -216,7 +216,7 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 
 .favicon-desc {
   font-size: 12px;
-  color: var(--color-text-muted);
+  color: var(--color-text-hint);
   line-height: 1.4;
   margin: 0;
 }

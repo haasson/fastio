@@ -107,7 +107,7 @@ const visibleItems = computed(() => {
   }
 
   &--calling {
-    border-color: var(--color-warning, #f0a020);
+    border-color: var(--color-warning);
   }
 }
 
@@ -149,9 +149,9 @@ const visibleItems = computed(() => {
   flex-direction: column;
   gap: 4px;
   padding: 6px 8px;
-  background: var(--color-warning-subtle, rgba(240, 160, 32, 0.1));
+  background: var(--color-warning-light);
   border-radius: 6px;
-  border: 1px solid var(--color-warning, #f0a020);
+  border: 1px solid var(--color-warning);
 }
 
 .call-item {
@@ -161,7 +161,7 @@ const visibleItems = computed(() => {
 }
 
 .call-icon {
-  color: var(--color-warning, #f0a020);
+  color: var(--color-warning);
   flex-shrink: 0;
 }
 

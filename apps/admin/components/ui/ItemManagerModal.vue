@@ -393,7 +393,7 @@ const confirmRemove = async (item: ManagedItem) => {
   font-size: 14px;
   padding: 4px 8px;
   border-radius: 6px;
-  color: var(--color-text-primary);
+  color: var(--color-text);
   outline: none;
   font-family: inherit;
 
@@ -465,7 +465,7 @@ const confirmRemove = async (item: ManagedItem) => {
 .palette-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-text);
 }
 
 .palette-label {

@@ -48,5 +48,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (!tenantStore.loading && tenantStore.memberships.length === 0 && to.path !== '/no-access') {
       return navigateTo('/no-access')
     }
+
+    // Suspended: только /account/* и /suspended доступны
+    if (tenantStore.tenant?.subscription?.status === 'suspended') {
+      const isAllowed = to.path === '/suspended'
+        || to.path.startsWith('/account')
+
+      if (!isAllowed) {
+        return navigateTo('/suspended')
+      }
+    }
   }
 })

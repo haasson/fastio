@@ -22,13 +22,23 @@ function buildEs256Jwt(jwkJson: string, supabaseUrl: string): string {
   return `${header}.${payload}.${sig}`
 }
 
+let cached: { client: ReturnType<typeof createClient>; expiresAt: number } | null = null
+
 export function getAdminClient() {
+  if (cached && Date.now() < cached.expiresAt) return cached.client
+
   const config = useRuntimeConfig()
   const supabaseUrl = config.public.supabaseUrl
+  const isJwt = !!config.supabaseJwtPrivateKey
 
-  const token = config.supabaseJwtPrivateKey
+  const token = isJwt
     ? buildEs256Jwt(config.supabaseJwtPrivateKey, supabaseUrl)
     : config.supabaseServiceKey
 
-  return createClient(supabaseUrl, token, { auth: { persistSession: false } })
+  const client = createClient(supabaseUrl, token, { auth: { persistSession: false } })
+  const expiresAt = isJwt ? Date.now() + 55 * 60 * 1000 : Infinity
+
+  cached = { client, expiresAt }
+
+  return client
 }

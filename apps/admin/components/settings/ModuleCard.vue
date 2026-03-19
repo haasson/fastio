@@ -61,7 +61,7 @@ defineEmits<{ toggle: [value: boolean] }>()
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: var(--color-primary-bg);
+  background: var(--color-primary-light);
   color: var(--color-primary);
   flex-shrink: 0;
 

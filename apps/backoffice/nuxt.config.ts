@@ -6,6 +6,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     supabaseServiceKey: '', // NUXT_SUPABASE_SERVICE_KEY
     supabaseJwtPrivateKey: '', // NUXT_SUPABASE_JWT_PRIVATE_KEY — только local dev
+    backofficeUser: '', // NUXT_BACKOFFICE_USER
+    backofficePass: '', // NUXT_BACKOFFICE_PASS
     public: {
       supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL
     },

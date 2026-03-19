@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
   if (byDomain) {
     event.context.tenantId = byDomain.id
     event.context.tenant = mapTenant(byDomain)
+    checkSuspended(event.context.tenant)
     return
   }
 
@@ -32,6 +33,7 @@ export default defineEventHandler(async (event) => {
   if (bySlug) {
     event.context.tenantId = bySlug.id
     event.context.tenant = mapTenant(bySlug)
+    checkSuspended(event.context.tenant)
     return
   }
 
@@ -47,9 +49,16 @@ export default defineEventHandler(async (event) => {
     if (byQuerySlug) {
       event.context.tenantId = byQuerySlug.id
       event.context.tenant = mapTenant(byQuerySlug)
+      checkSuspended(event.context.tenant)
       return
     }
   }
 
   throw createError({ statusCode: 404, message: 'Tenant not found' })
 })
+
+function checkSuspended(tenant: ReturnType<typeof mapTenant>) {
+  if (tenant.subscription?.status === 'suspended') {
+    throw createError({ statusCode: 503, message: 'Заведение временно недоступно' })
+  }
+}
