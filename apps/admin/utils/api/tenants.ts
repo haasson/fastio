@@ -1,10 +1,24 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Tenant } from '@fastio/shared'
+import type { Tenant, KitchenConfig } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
 import { optimizeImage } from '~/utils/imageOptimize'
+
+const DEFAULT_KITCHEN_CONFIG: KitchenConfig = {
+  sourceStatusId: null,
+  completedStatusMap: { delivery: null, pickup: null, dine_in: null },
+}
+
+const parseKitchenConfig = (raw: KitchenConfig): KitchenConfig => ({
+  sourceStatusId: raw?.sourceStatusId ?? DEFAULT_KITCHEN_CONFIG.sourceStatusId,
+  completedStatusMap: {
+    delivery: raw?.completedStatusMap?.delivery ?? null,
+    pickup: raw?.completedStatusMap?.pickup ?? null,
+    dine_in: raw?.completedStatusMap?.dine_in ?? null,
+  },
+})
 
 const mapTenant = (raw: Record<string, unknown>): Tenant => {
   const row = raw as TenantRow
@@ -31,6 +45,8 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     currency: row.currency,
     timezone: row.timezone,
     seo: { ...defaultSeo(), ...row.seo },
+    kitchenUrgencyMinutes: row.kitchen_urgency_minutes ?? 15,
+    kitchenConfig: parseKitchenConfig(row.kitchen_config),
     createdAt: row.created_at,
   }
 }
@@ -53,6 +69,8 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   delivery_description: data.deliveryDescription,
   timezone: data.timezone,
   seo: data.seo,
+  kitchen_config: data.kitchenConfig,
+  kitchen_urgency_minutes: data.kitchenUrgencyMinutes,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {

@@ -1,5 +1,5 @@
 <template>
-  <UiCard size="small" class="table-card" :class="{ 'table-card--open': table.isOpen, 'table-card--calling': calls.length > 0 }">
+  <UiCard size="small" class="table-card" :class="{ 'table-card--open': table.isOpen, 'table-card--calling': calls.length > 0, 'table-card--ready': readyDishes?.length }">
     <div class="card-header">
       <div class="card-title">
         <UiIcon name="tableIcon" :size="18" class="card-icon" />
@@ -28,8 +28,21 @@
       <UiText size="tiny" class="card-opened">Открыт {{ openedAgo }}</UiText>
 
       <div v-if="session?.items.length" class="card-items">
-        <div v-for="item in visibleItems" :key="item.dishName" class="card-item">
+        <div
+          v-for="item in visibleItems"
+          :key="item.dishName"
+          class="card-item"
+          :class="kitchenStatusClass(item.dishName)"
+        >
           <span class="item-name">{{ item.dishName }}</span>
+          <UiTag
+            v-if="kitchenStatusLabel(item.dishName)"
+            size="small"
+            :type="kitchenStatusTag(item.dishName)"
+            round
+          >
+            {{ kitchenStatusLabel(item.dishName) }}
+          </UiTag>
           <span class="item-price">{{ item.price }} × {{ item.quantity }}</span>
           <span class="item-total">{{ item.price * item.quantity }} ₽</span>
         </div>
@@ -41,6 +54,13 @@
       <div class="card-stats">
         <span class="stat-orders">{{ session?.count ?? 0 }} заказов</span>
         <span class="stat-sum">{{ session?.sum ?? 0 }} ₽</span>
+      </div>
+
+      <div v-if="readyDishes?.length" class="ready-dishes">
+        <div v-for="dish in readyDishes" :key="dish.id" class="ready-item">
+          <span class="ready-name">{{ dish.dishName }}</span>
+          <UiButton size="small" type="success" @click="$emit('mark-served', dish.id)">Забрал</UiButton>
+        </div>
       </div>
 
       <div class="card-btns">
@@ -64,8 +84,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiCard, UiButton, UiIcon, UiText } from '@fastio/ui'
-import type { Table, TableCall } from '@fastio/shared'
+import { UiCard, UiButton, UiIcon, UiText, UiTag } from '@fastio/ui'
+import type { Table, TableCall, KitchenQueueItem, KitchenQueueStatus } from '@fastio/shared'
 import type { TableSession } from '~/utils/api/tables'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 
@@ -73,6 +93,8 @@ const props = defineProps<{
   table: Table
   session?: TableSession
   calls: TableCall[]
+  kitchenDishes?: KitchenQueueItem[]
+  readyDishes?: KitchenQueueItem[]
 }>()
 
 defineEmits<{
@@ -80,6 +102,7 @@ defineEmits<{
   'checkout': []
   'toggle-open': []
   'resolve-call': [id: string]
+  'mark-served': [dishId: string]
 }>()
 
 const now = useNow({ interval: 30_000 })
@@ -94,6 +117,58 @@ const visibleItems = computed(() => {
 
   return expanded.value ? items : items.slice(0, PREVIEW)
 })
+
+// Kitchen status per dish name — pick the "best" status from queue items
+const kitchenStatusByDish = computed(() => {
+  const map = new Map<string, KitchenQueueStatus>()
+
+  if (!props.kitchenDishes?.length) return map
+
+  const priority: Record<KitchenQueueStatus, number> = { done: 3, in_progress: 2, queued: 1, served: 0 }
+
+  for (const item of props.kitchenDishes) {
+    const current = map.get(item.dishName)
+
+    if (!current || priority[item.status] > priority[current]) {
+      map.set(item.dishName, item.status)
+    }
+  }
+
+  return map
+})
+
+const KITCHEN_LABELS: Partial<Record<KitchenQueueStatus, string>> = {
+  queued: 'В очереди',
+  in_progress: 'Готовится',
+  done: 'Готово',
+}
+
+const KITCHEN_TAG_TYPES: Partial<Record<KitchenQueueStatus, 'default' | 'warning' | 'success'>> = {
+  queued: 'default',
+  in_progress: 'warning',
+  done: 'success',
+}
+
+const kitchenStatusLabel = (dishName: string) => {
+  const status = kitchenStatusByDish.value.get(dishName)
+
+  return status ? KITCHEN_LABELS[status] ?? null : null
+}
+
+const kitchenStatusTag = (dishName: string) => {
+  const status = kitchenStatusByDish.value.get(dishName)
+
+  return status ? KITCHEN_TAG_TYPES[status] ?? 'default' : 'default'
+}
+
+const kitchenStatusClass = (dishName: string) => {
+  const status = kitchenStatusByDish.value.get(dishName)
+
+  if (status === 'done') return 'card-item--ready'
+  if (status === 'in_progress') return 'card-item--cooking'
+
+  return ''
+}
 </script>
 
 <style scoped lang="scss">
@@ -199,6 +274,16 @@ const visibleItems = computed(() => {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 2px 4px;
+  border-radius: 4px;
+
+  &--cooking {
+    background: var(--color-warning-light);
+  }
+
+  &--ready {
+    background: var(--color-success-light);
+  }
 }
 
 .item-name {
@@ -249,6 +334,37 @@ const visibleItems = computed(() => {
   font-size: 16px;
   font-weight: 700;
   color: var(--color-title);
+}
+
+.ready-dishes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--color-success-light);
+  border-radius: 6px;
+  border: 1px solid var(--color-success);
+}
+
+.ready-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ready-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-title);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-card--ready {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 1px var(--color-success);
 }
 
 .card-btns {

@@ -4,6 +4,10 @@
 
     <!-- ── Столы ──────────────────────────────────────────── -->
     <template v-if="activeTab === 'tables'">
+      <UiTag v-if="totalReadyCount > 0" type="success" round>
+        {{ totalReadyCount }} {{ totalReadyCount === 1 ? 'блюдо готово' : 'блюд готово' }} к подаче
+      </UiTag>
+
       <UiSkeleton v-if="loading" :repeat="6" />
 
       <template v-else-if="openTables.length || closedTables.length">
@@ -16,9 +20,12 @@
               :table="table"
               :session="tableSums[table.id]"
               :calls="callsByTable[table.id] ?? []"
+              :kitchen-dishes="kitchenDishes[table.id] ?? []"
+              :ready-dishes="readyDishes[table.id] ?? []"
               @add-dish="addDish(table)"
               @checkout="checkout(table)"
               @resolve-call="onCallResolved"
+              @mark-served="onMarkServed"
             />
           </div>
         </template>
@@ -79,8 +86,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { UiEmpty, UiSkeleton, UiSectionHeader, UiTabs, useMessage } from '@fastio/ui'
-import type { Table, TableCallType, TableCall, OrderItem } from '@fastio/shared'
+import { UiEmpty, UiSkeleton, UiSectionHeader, UiTabs, UiTag, useMessage } from '@fastio/ui'
+import type { Table, TableCallType, TableCall, OrderItem, KitchenQueueItem } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -88,6 +95,7 @@ import { useTenantStore } from '~/stores/tenant'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { tableCallEvents } from '~/composables/data/useTableCallsChannel'
+import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 import TablesCanvas from '~/components/tables/TablesCanvas.vue'
 import TableCard from '~/components/tables/TableCard.vue'
@@ -122,6 +130,21 @@ const loading = ref(false)
 const globalTags = ref<string[]>([])
 const callTypes = ref<TableCallType[]>([])
 const activeCalls = ref<TableCall[]>([])
+const kitchenDishes = ref<Record<string, KitchenQueueItem[]>>({})
+
+const readyDishes = computed(() => {
+  const map: Record<string, KitchenQueueItem[]> = {}
+
+  for (const [tableId, items] of Object.entries(kitchenDishes.value)) {
+    const ready = items.filter((i) => i.status === 'done')
+
+    if (ready.length) map[tableId] = ready
+  }
+
+  return map
+})
+
+const totalReadyCount = computed(() => Object.values(readyDishes.value).reduce((sum, items) => sum + items.length, 0))
 
 const openTables = computed(() => tables.value
   .filter((t) => t.isOpen)
@@ -154,6 +177,7 @@ const load = async (id: string) => {
     callTypes.value = types
     activeCalls.value = calls
     tableSums.value = await api.tables.loadSums(loadedTables, cancelledStatusIds.value)
+    await loadKitchenDishes(id, loadedTables)
   } finally {
     loading.value = false
   }
@@ -182,6 +206,85 @@ const unsubCallUpdate = tableCallEvents.onUpdate((call) => {
   }
 })
 
+// ── Kitchen dishes (queue) ───────────────────────────────────
+
+const buildKitchenDishesMap = (items: (KitchenQueueItem & { tableId: string })[]) => {
+  const map: Record<string, KitchenQueueItem[]> = {}
+
+  for (const item of items) {
+    ;(map[item.tableId] ??= []).push(item)
+  }
+
+  return map
+}
+
+const reloadKitchenDishes = async () => {
+  const tid = tenantId.value
+
+  if (!tid) return
+
+  const openTableIds = tables.value.filter((t) => t.isOpen).map((t) => t.id)
+
+  if (!openTableIds.length) {
+    kitchenDishes.value = {}
+
+    return
+  }
+
+  const items = await api.kitchenQueue.listActiveForTable(tid, openTableIds)
+
+  kitchenDishes.value = buildKitchenDishesMap(items)
+}
+
+const loadKitchenDishes = async (tid: string, loadedTables: Table[]) => {
+  const openTableIds = loadedTables.filter((t) => t.isOpen).map((t) => t.id)
+
+  if (!openTableIds.length) {
+    kitchenDishes.value = {}
+
+    return
+  }
+
+  const items = await api.kitchenQueue.listActiveForTable(tid, openTableIds)
+
+  kitchenDishes.value = buildKitchenDishesMap(items)
+}
+
+const onMarkServed = async (dishId: string) => {
+  // Optimistic removal
+  for (const [tableId, items] of Object.entries(kitchenDishes.value)) {
+    const idx = items.findIndex((i) => i.id === dishId)
+
+    if (idx !== -1) {
+      items.splice(idx, 1)
+      if (!items.length) delete kitchenDishes.value[tableId]
+      break
+    }
+  }
+
+  await api.kitchenQueue.markServed(dishId)
+}
+
+// ── Realtime: kitchen queue ──────────────────────────────────
+const unsubKqInsert = kitchenQueueEvents.onInsert((item) => {
+  if (item.deliveryType === 'dine_in' && item.status !== 'served') {
+    reloadKitchenDishes()
+  }
+})
+
+const unsubKqUpdate = kitchenQueueEvents.onUpdate((item) => {
+  if (item.deliveryType === 'dine_in') {
+    if (item.status === 'served') {
+      for (const [tableId, items] of Object.entries(kitchenDishes.value)) {
+        kitchenDishes.value[tableId] = items.filter((i) => i.id !== item.id)
+        if (!kitchenDishes.value[tableId].length) delete kitchenDishes.value[tableId]
+      }
+    } else {
+      reloadKitchenDishes()
+    }
+  }
+})
+
 // ── Realtime: orders (update sums on any change) ───────────
 const reloadTableSums = (tableId: string) => {
   const table = tables.value.find((t) => t.id === tableId)
@@ -203,6 +306,8 @@ const unsubOrderUpdate = orderEvents.onUpdate((order) => {
 onUnmounted(() => {
   unsubCallInsert()
   unsubCallUpdate()
+  unsubKqInsert()
+  unsubKqUpdate()
   unsubOrderInsert()
   unsubOrderUpdate()
 })
@@ -265,6 +370,8 @@ const onDishPicked = async (result: DishPickerResult) => {
     removedIngredients: result.removedIngredients,
     modifiers: result.modifiers,
     addons: result.addons,
+    completedAt: null,
+    comboItems: null,
   }
 
   await api.orders.create({

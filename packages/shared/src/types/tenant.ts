@@ -1,4 +1,5 @@
 import type { SectionKey, NavPageKey } from '../utils/siteFeatures'
+import type { KitchenConfig } from './kitchen'
 
 export type TenantThemePreset =
   | 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon' | 'ember' | 'garden' | 'midnight' | 'berry' | 'fiesta'
@@ -170,5 +171,7 @@ export type Tenant = {
   currency: string
   timezone: string
   seo: TenantSeo
+  kitchenUrgencyMinutes: number
+  kitchenConfig: KitchenConfig
   createdAt: string
 }

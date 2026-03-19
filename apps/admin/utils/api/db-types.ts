@@ -16,6 +16,8 @@ import type {
   DishNutrition,
   DishTag,
   CategoryType,
+  KitchenQueueStatus,
+  KitchenConfig,
 } from '@fastio/shared'
 
 export type TenantRow = {
@@ -40,6 +42,8 @@ export type TenantRow = {
   currency: string
   timezone: string
   seo: TenantSeo
+  kitchen_urgency_minutes: number
+  kitchen_config: KitchenConfig
   created_at: string
 }
 
@@ -144,6 +148,8 @@ export type OrderItemRow = {
   modifiers: OrderItemModifier[]
   addons: OrderItemAddon[]
   sort_order: number
+  completed_at: string | null
+  combo_items: { dishName: string }[] | null
 }
 
 export type TableRow = {
@@ -241,6 +247,28 @@ export type TableCallRow = {
   call_type_name: string
   created_at: string
   resolved_at: string | null
+}
+
+export type KitchenQueueRow = {
+  id: string
+  tenant_id: string
+  order_id: string
+  order_item_id: string
+  dish_name: string
+  dish_id: string | null
+  combo_id: string | null
+  combo_name: string | null
+  category_name: string | null
+  modifiers: OrderItemModifier[]
+  addons: OrderItemAddon[]
+  removed_ingredients: string[]
+  delivery_type: OrderDeliveryType
+  status: KitchenQueueStatus
+  assigned_to: string | null
+  assigned_at: string | null
+  completed_at: string | null
+  served_at: string | null
+  created_at: string
 }
 
 export type BranchRow = {

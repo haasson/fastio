@@ -157,6 +157,28 @@ export default defineEventHandler(async (event) => {
   // Проверяем что все блюда существуют, принадлежат тенанту и активны
   const dishMap = new Map((dishes ?? []).map(d => [d.id as string, d]))
 
+  // Fetch combo items for combo orders
+  const comboIds = body.items
+    .filter((item: { comboId?: string }) => item.comboId)
+    .map((item: { comboId: string }) => item.comboId)
+
+  const comboItemsMap = new Map<string, { dishName: string }[]>()
+
+  if (comboIds.length > 0) {
+    const { data: comboItemRows } = await supabase
+      .from('combo_items')
+      .select('combo_id, dishes(name)')
+      .in('combo_id', comboIds)
+      .order('sort_order')
+
+    if (comboItemRows) {
+      for (const row of comboItemRows as { combo_id: string; dishes: { name: string } }[]) {
+        if (!comboItemsMap.has(row.combo_id)) comboItemsMap.set(row.combo_id, [])
+        comboItemsMap.get(row.combo_id)!.push({ dishName: row.dishes.name })
+      }
+    }
+  }
+
   for (const item of body.items) {
     if (!Number.isInteger(item.quantity) || item.quantity < 1) {
       throw createError({ statusCode: 400, message: `Некорректное количество для "${item.dishName}"` })
@@ -193,7 +215,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Пересчитываем subtotal по реальным ценам + валидация модификаторов
-  const serverItems = body.items.map((item: { dishId: string; dishName: string; categoryName?: string; quantity: number; removedIngredients: string[]; modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[] }) => {
+  const serverItems = body.items.map((item: { dishId: string; comboId?: string; dishName: string; categoryName?: string; quantity: number; removedIngredients: string[]; modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[] }) => {
     const dish = dishMap.get(item.dishId)!
     const basePrice = Number(dish.price)
 
@@ -234,6 +256,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       dishId: item.dishId,
+      comboId: item.comboId,
       dishName: item.dishName,
       categoryName: item.categoryName ?? null,
       price: basePrice,
@@ -354,9 +377,11 @@ export default defineEventHandler(async (event) => {
 
   // Insert order items
   if (data) {
-    const itemRows = serverItems.map((item: { dishId: string; dishName: string; categoryName?: string; price: number; quantity: number; removedIngredients: string[]; modifiers?: { groupName: string; optionName: string; priceDelta: number }[] }, i: number) => ({
+    const itemRows = serverItems.map((item: { dishId: string; comboId?: string; dishName: string; categoryName?: string; price: number; quantity: number; removedIngredients: string[]; modifiers?: { groupName: string; optionName: string; priceDelta: number }[] }, i: number) => ({
       order_id: data.id,
       dish_id: item.dishId,
+      combo_id: item.comboId ?? null,
+      combo_items: item.comboId ? (comboItemsMap.get(item.comboId) ?? null) : null,
       dish_name: item.dishName,
       category_name: item.categoryName ?? null,
       price: item.price,

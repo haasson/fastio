@@ -151,6 +151,8 @@ const onPickerSelect = (result: DishPickerResult) => {
     removedIngredients: result.removedIngredients,
     modifiers: result.modifiers,
     addons: result.addons,
+    completedAt: null,
+    comboItems: null,
   }
 
   if (isEdit) {

@@ -35,6 +35,8 @@ export type OrderItem = {
   modifiers: OrderItemModifier[]
   addons: OrderItemAddon[]
   sortOrder?: number
+  completedAt: string | null
+  comboItems: { dishName: string }[] | null
 }
 
 export type { OrderItemModifier } from './modifier'
@@ -51,7 +53,7 @@ export type OrderNote = {
   createdAt: string
 }
 
-export type OrderEventType = 'order_created' | 'status_changed' | 'items_updated' | 'field_updated'
+export type OrderEventType = 'order_created' | 'status_changed' | 'items_updated' | 'field_updated' | 'kitchen_claimed' | 'kitchen_completed' | 'kitchen_returned'
 
 export type OrderEvent = {
   id: string

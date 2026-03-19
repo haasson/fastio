@@ -74,6 +74,7 @@ import { ref, computed, inject, type Ref } from 'vue'
 import { useRoute, navigateTo } from '#imports'
 import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
 import { useTableCallsChannel } from '~/composables/data/useTableCallsChannel'
+import { useKitchenQueueChannel } from '~/composables/data/useKitchenQueueChannel'
 import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
 import { useTableCallAlertHandler } from '~/composables/data/useTableCallAlertHandler'
 import { requestNotificationPermission } from '~/composables/data/useAlerts'
@@ -109,6 +110,9 @@ useOrderAlertHandler()
 // Вызовы официанта
 useTableCallsChannel(computed(() => tenantStore.currentTenantId))
 useTableCallAlertHandler()
+
+// Кухонная очередь
+useKitchenQueueChannel(computed(() => tenantStore.currentTenantId))
 
 // Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
 requestNotificationPermission()

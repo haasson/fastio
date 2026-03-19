@@ -62,6 +62,8 @@ const mapOrderItem = (row: OrderItemRow): OrderItem => ({
   modifiers: row.modifiers ?? [],
   addons: row.addons ?? [],
   sortOrder: row.sort_order,
+  completedAt: row.completed_at ?? null,
+  comboItems: row.combo_items ?? null,
 })
 
 export const mapOrder = (raw: Record<string, unknown>): Order => {
@@ -122,6 +124,8 @@ const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id
   modifiers: item.modifiers ?? [],
   addons: item.addons ?? [],
   sort_order: i,
+  completed_at: item.completedAt ?? null,
+  combo_items: item.comboItems ?? null,
 }))
 
 export const DEFAULT_PAGE_SIZE = 10
