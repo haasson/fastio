@@ -1,6 +1,6 @@
 <template>
   <!-- Mobile: bottom drawer -->
-  <SfDrawer
+  <FsDrawer
     v-if="isMobile"
     :model-value="modelValue"
     size="lg"
@@ -30,10 +30,10 @@
 
       <DishModalFooter v-model="quantity" :total-price="totalPrice" :currency="custCurrency" :mode="mode" @confirm="onConfirm" />
     </div>
-  </SfDrawer>
+  </FsDrawer>
 
   <!-- Desktop: centered dialog -->
-  <SfDialog
+  <FsDialog
     v-else
     :model-value="modelValue"
     size="md"
@@ -51,10 +51,10 @@
           loading="lazy"
         />
         <div class="dialog-info">
-          <SfHeading as="h3">{{ item.name }}</SfHeading>
-          <SfText v-if="item.description" variant="body-sm" color="secondary" class="dialog-desc">
+          <FsHeading as="h3">{{ item.name }}</FsHeading>
+          <FsText v-if="item.description" variant="body-sm" color="secondary" class="dialog-desc">
             {{ item.description }}
-          </SfText>
+          </FsText>
           <DishNutrition v-if="item.nutrition" :nutrition="item.nutrition" size="md" />
         </div>
       </div>
@@ -78,7 +78,7 @@
 
       <DishModalFooter v-model="quantity" :total-price="totalPrice" :currency="custCurrency" :mode="mode" @confirm="onConfirm" />
     </div>
-  </SfDialog>
+  </FsDialog>
 </template>
 
 <script setup lang="ts">
@@ -86,10 +86,7 @@ import type { DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import type { ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
-import SfDrawer from '~/components/sf/overlay/SfDrawer.vue'
-import SfDialog from '~/components/sf/overlay/SfDialog.vue'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfText from '~/components/sf/typography/SfText.vue'
+import { FsDrawer, FsDialog, FsHeading, FsText } from '@fastio/public-ui'
 import DishCustomization from '~/components/sf/domain/DishCustomization.vue'
 import DishNutrition from '~/components/sf/domain/DishNutrition.vue'
 import DishModalFooter from '~/components/sf/domain/DishModalFooter.vue'

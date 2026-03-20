@@ -1,10 +1,10 @@
 <template>
   <div class="chips-root">
-    <SfText variant="body-sm" class="chips-title">{{ title }}</SfText>
+    <FsText variant="body-sm" class="chips-title">{{ title }}</FsText>
     <div class="chips-list">
       <!-- Toggle mode: items start active, clicking "removes" them -->
       <template v-if="mode === 'toggle'">
-        <SfTag
+        <FsTag
           v-for="item in items"
           :key="item.id"
           size="small"
@@ -12,12 +12,12 @@
           @click="onToggle(item.id)"
         >
           {{ item.label }}
-        </SfTag>
+        </FsTag>
       </template>
 
       <!-- Radio mode: one selected -->
       <template v-else-if="mode === 'radio'">
-        <SfTag
+        <FsTag
           v-for="item in items"
           :key="item.id"
           as="label"
@@ -36,12 +36,12 @@
           <span v-if="item.priceDelta && item.priceDelta > 0" class="chip-price">
             +{{ item.priceDelta }} {{ currency }}
           </span>
-        </SfTag>
+        </FsTag>
       </template>
 
       <!-- Checkbox mode: multiple selected -->
       <template v-else>
-        <SfTag
+        <FsTag
           v-for="item in items"
           :key="item.id"
           as="label"
@@ -58,15 +58,14 @@
           <span v-if="item.priceDelta && item.priceDelta > 0" class="chip-price">
             +{{ item.priceDelta }} {{ currency }}
           </span>
-        </SfTag>
+        </FsTag>
       </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import SfText from '~/components/sf/typography/SfText.vue'
-import SfTag from '~/components/sf/base/SfTag.vue'
+import { FsText, FsTag } from '@fastio/public-ui'
 
 type ChipItem = {
   id: string

@@ -1,20 +1,19 @@
 <template>
   <nav class="category-bar-root">
-    <SfSection style="--section-spacing: 0">
-      <SfScrollNav
+    <FsSection style="--section-spacing: 0">
+      <FsScrollNav
         :items="navItems"
         :model-value="activeId"
         :overflow="overflow"
         @update:model-value="onSelect"
       />
-    </SfSection>
+    </FsSection>
   </nav>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfScrollNav from '~/components/sf/nav/SfScrollNav.vue'
+import { FsSection, FsScrollNav } from '@fastio/public-ui'
 import { useMenuStore } from '~/stores/menu'
 
 const props = defineProps<{

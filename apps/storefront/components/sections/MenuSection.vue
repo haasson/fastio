@@ -1,5 +1,5 @@
 <template>
-  <SfSection class="menu-root">
+  <FsSection class="menu-root">
     <!-- Режим: список блюд по категориям -->
     <template v-if="defaultView === 'dishes'">
       <div v-if="categories.length" class="menu-content">
@@ -9,7 +9,7 @@
           :key="category.id"
           class="category-block"
         >
-          <SfHeading as="h3" class="category-title">{{ category.name }}</SfHeading>
+          <FsHeading as="h3" class="category-title">{{ category.name }}</FsHeading>
           <div class="menu-grid">
             <template v-if="category.type === 'combo'">
               <SfDishCard
@@ -45,7 +45,7 @@
       <div v-if="!selectedCategoryId">
         <div v-if="categories.length" class="menu-content">
           <div class="categories-grid">
-            <SfCard
+            <FsCard
               v-for="category in categories"
               :key="category.id"
               as="button"
@@ -58,8 +58,8 @@
                   <UtensilsCrossed :size="32" />
                 </div>
               </template>
-              <SfText as="span" variant="body-sm" class="category-name">{{ category.name }}</SfText>
-            </SfCard>
+              <FsText as="span" variant="body-sm" class="category-name">{{ category.name }}</FsText>
+            </FsCard>
           </div>
         </div>
         <SfEmptyState v-else title="Меню пока пусто" description="Блюда появятся здесь после добавления в меню">
@@ -107,7 +107,7 @@
       :addons="modalAddons"
       @add="handleModalAdd"
     />
-  </SfSection>
+  </FsSection>
 </template>
 
 <script setup lang="ts">
@@ -117,10 +117,7 @@ import type { Dish, Combo } from '@fastio/shared'
 import { useCartStore, type CartItem } from '~/stores/cart'
 import { useMenuStore, type ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfCard from '~/components/sf/layout/SfCard.vue'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfText from '~/components/sf/typography/SfText.vue'
+import { FsSection, FsCard, FsHeading, FsText } from '@fastio/public-ui'
 import SfDishCard from '~/components/sf/domain/SfDishCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'

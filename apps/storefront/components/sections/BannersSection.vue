@@ -1,14 +1,13 @@
 <template>
-  <SfSection class="banners-root">
+  <FsSection class="banners-root">
     <div class="banner-placeholder">
-      <SfSkeleton variant="rect" height="200px" :rounded="true" />
+      <FsSkeleton variant="rect" height="200px" :rounded="true" />
     </div>
-  </SfSection>
+  </FsSection>
 </template>
 
 <script setup lang="ts">
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfSkeleton from '~/components/sf/base/SfSkeleton.vue'
+import { FsSection, FsSkeleton } from '@fastio/public-ui'
 </script>
 
 <style scoped lang="scss">

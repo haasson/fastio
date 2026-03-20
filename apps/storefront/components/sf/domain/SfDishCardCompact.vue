@@ -1,5 +1,5 @@
 <template>
-  <SfCard
+  <FsCard
     :image-alt="dish.name"
     :horizontal="true"
     image-size="80px"
@@ -23,20 +23,19 @@
           size="small"
           @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
         />
-        <SfButton v-else variant="primary" size="small" @click="emit('add')">
+        <FsButton v-else variant="primary" size="small" @click="emit('add')">
           <Plus :size="16" />
-        </SfButton>
+        </FsButton>
       </div>
     </div>
-  </SfCard>
+  </FsCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Plus, UtensilsCrossed } from 'lucide-vue-next'
 import { type Dish } from '@fastio/shared'
-import SfCard from '~/components/sf/layout/SfCard.vue'
-import SfButton from '~/components/sf/base/SfButton.vue'
+import { FsCard, FsButton } from '@fastio/public-ui'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { useCartStore, type CartItem } from '~/stores/cart'

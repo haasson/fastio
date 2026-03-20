@@ -1,18 +1,17 @@
 <template>
-  <SfSection class="gallery-root">
-    <SfHeading as="h2">Галерея</SfHeading>
+  <FsSection class="gallery-root">
+    <FsHeading as="h2">Галерея</FsHeading>
     <div class="gallery-content">
       <SfEmptyState title="Галерея пуста" description="Фотографии появятся здесь">
         <Image :size="48" />
       </SfEmptyState>
     </div>
-  </SfSection>
+  </FsSection>
 </template>
 
 <script setup lang="ts">
 import { Image } from 'lucide-vue-next'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
+import { FsSection, FsHeading } from '@fastio/public-ui'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 </script>
 

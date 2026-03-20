@@ -1,8 +1,8 @@
 <template>
-  <SfSection as="footer" class="footer-root">
+  <FsSection as="footer" class="footer-root">
     <div class="footer-inner">
       <div class="footer-brand">
-        <SfText variant="body" as="span" class="brand-name">{{ tenant?.name }}</SfText>
+        <FsText variant="body" as="span" class="brand-name">{{ tenant?.name }}</FsText>
       </div>
 
       <div v-if="hasSocials" class="footer-links">
@@ -59,23 +59,23 @@
       </div>
 
       <div v-if="tenant?.contacts?.phone || tenant?.workingHours" class="footer-contacts">
-        <SfText v-if="tenant?.contacts?.phone" variant="body-sm">
+        <FsText v-if="tenant?.contacts?.phone" variant="body-sm">
           {{ tenant.contacts.phone }}
-        </SfText>
-        <SfText v-if="tenant?.workingHours" variant="body-sm" color="muted">
+        </FsText>
+        <FsText v-if="tenant?.workingHours" variant="body-sm" color="muted">
           {{ tenant.workingHours }}
-        </SfText>
+        </FsText>
       </div>
     </div>
 
-    <SfDivider />
+    <FsDivider />
 
     <div class="footer-bottom">
-      <SfText variant="caption" color="muted" align="center">
+      <FsText variant="caption" color="muted" align="center">
         &copy; {{ year }} {{ tenant?.name }}. Сделано на FastIO
-      </SfText>
+      </FsText>
     </div>
-  </SfSection>
+  </FsSection>
 </template>
 
 <script setup lang="ts">
@@ -86,9 +86,7 @@ import { Instagram, Send } from 'lucide-vue-next'
 import SfIconVk from '~/components/sf/icons/SfIconVk.vue'
 import SfIconWhatsapp from '~/components/sf/icons/SfIconWhatsapp.vue'
 import SfIconMax from '~/components/sf/icons/SfIconMax.vue'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfText from '~/components/sf/typography/SfText.vue'
-import SfDivider from '~/components/sf/base/SfDivider.vue'
+import { FsSection, FsText, FsDivider } from '@fastio/public-ui'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 

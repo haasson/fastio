@@ -1,0 +1,23 @@
+{
+  "name": "@fastio/landing",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@fastio/public-ui": "workspace:*",
+    "@fastio/styles": "workspace:*",
+    "lucide-vue-next": "^0.575.0",
+    "nuxt": "^3.15.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^0.7.5",
+    "sass": "^1.80.7",
+    "typescript": "^5.7.2"
+  }
+}

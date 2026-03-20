@@ -29,7 +29,7 @@
         </div>
 
         <div v-if="!confirmingDelete" class="item-btns">
-          <SfIconButton
+          <FsIconButton
             v-if="canEdit"
             aria-label="Редактировать"
             variant="ghost"
@@ -37,8 +37,8 @@
             @click="emit('edit', index)"
           >
             <Pencil :size="16" />
-          </SfIconButton>
-          <SfIconButton
+          </FsIconButton>
+          <FsIconButton
             aria-label="Удалить"
             variant="ghost"
             size="small"
@@ -46,7 +46,7 @@
             @click="startConfirmDelete"
           >
             <Trash2 :size="16" />
-          </SfIconButton>
+          </FsIconButton>
         </div>
 
         <div v-else class="delete-confirm">
@@ -65,7 +65,7 @@ import { Pencil, Trash2, UtensilsCrossed } from 'lucide-vue-next'
 import { getItemUnitPrice } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
-import SfIconButton from '~/components/sf/base/SfIconButton.vue'
+import { FsIconButton } from '@fastio/public-ui'
 
 type Props = {
   item: CartItem

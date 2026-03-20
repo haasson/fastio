@@ -5,7 +5,7 @@
         <ChevronLeft :size="18" />
         {{ backLabel }}
       </NuxtLink>
-      <SfHeading as="h3"><slot name="heading" /></SfHeading>
+      <FsHeading as="h3"><slot name="heading" /></FsHeading>
     </div>
     <slot />
   </div>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components'
 import { ChevronLeft } from 'lucide-vue-next'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
+import { FsHeading } from '@fastio/public-ui'
 
 type Props = {
   backTo: string

@@ -9,6 +9,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@fastio/public-ui": "workspace:*",
     "@fastio/shared": "workspace:*",
     "@iconify/vue": "^5.0.0",
     "@pinia/nuxt": "^0.11.3",

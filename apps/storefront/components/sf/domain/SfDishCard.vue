@@ -1,5 +1,5 @@
 <template>
-  <SfCard :image-alt="dish.name" class="dish-card-root" @click="emit('cardClick')">
+  <FsCard :image-alt="dish.name" class="dish-card-root" @click="emit('cardClick')">
     <template #image>
       <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" />
       <div v-else class="dish-placeholder">
@@ -19,8 +19,8 @@
     </template>
 
     <div class="dish-body">
-      <SfText as="h3" variant="body-sm" class="dish-name">{{ dish.name }}</SfText>
-      <SfText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</SfText>
+      <FsText as="h3" variant="body-sm" class="dish-name">{{ dish.name }}</FsText>
+      <FsText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</FsText>
       <div class="dish-footer" @click.stop>
         <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
         <SfStepper
@@ -30,22 +30,20 @@
           size="small"
           @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
         />
-        <SfButton v-else variant="primary" size="small" :responsive="true" @click="emit('add')">
+        <FsButton v-else variant="primary" size="small" :responsive="true" @click="emit('add')">
           <Plus :size="16" />
           Добавить
-        </SfButton>
+        </FsButton>
       </div>
     </div>
-  </SfCard>
+  </FsCard>
 </template>
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue'
 import { Plus, UtensilsCrossed, Flame, Leaf, Sparkles, Star, Zap, type LucideIcon } from 'lucide-vue-next'
 import { getDishTagConfig, type Dish, type Combo } from '@fastio/shared'
-import SfCard from '~/components/sf/layout/SfCard.vue'
-import SfText from '~/components/sf/typography/SfText.vue'
-import SfButton from '~/components/sf/base/SfButton.vue'
+import { FsCard, FsText, FsButton } from '@fastio/public-ui'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { useCartStore, type CartItem } from '~/stores/cart'

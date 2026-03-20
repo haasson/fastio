@@ -1,6 +1,6 @@
 <template>
   <PageShell>
-    <SfSection>
+    <FsSection>
       <StorePageLayout back-to="/cart" back-label="Корзина">
         <template #heading>Оформление</template>
 
@@ -37,13 +37,13 @@
 
             <!-- Customer data -->
             <section class="form-section">
-              <SfHeading as="h6" class="section-title">Ваши данные</SfHeading>
+              <FsHeading as="h6" class="section-title">Ваши данные</FsHeading>
               <div class="fields-stack">
-                <SfField label="Имя">
-                  <SfInput v-model="checkout.form.customerName" placeholder="Иван" autocomplete="given-name" />
-                </SfField>
-                <SfField label="Телефон" required :error="phoneError">
-                  <SfInput
+                <FsField label="Имя">
+                  <FsInput v-model="checkout.form.customerName" placeholder="Иван" autocomplete="given-name" />
+                </FsField>
+                <FsField label="Телефон" required :error="phoneError">
+                  <FsInput
                     v-model="checkout.form.customerPhone"
                     type="tel"
                     placeholder="+7 (999) 123-45-67"
@@ -51,17 +51,17 @@
                     mask="+7 (###) ###-##-##"
                     :error="!!phoneError"
                   />
-                </SfField>
-                <SfField label="Комментарий к заказу">
-                  <SfTextarea v-model="checkout.form.comment" placeholder="Домофон, этаж, пожелания..." :rows="2" resize="none" />
-                </SfField>
+                </FsField>
+                <FsField label="Комментарий к заказу">
+                  <FsTextarea v-model="checkout.form.comment" placeholder="Домофон, этаж, пожелания..." :rows="2" resize="none" />
+                </FsField>
               </div>
             </section>
 
             <!-- Payment -->
             <section class="form-section">
-              <SfHeading as="h6" class="section-title">Оплата</SfHeading>
-              <SfRadioGroup v-model="checkout.form.paymentType" :options="paymentOptions" orientation="vertical" />
+              <FsHeading as="h6" class="section-title">Оплата</FsHeading>
+              <FsRadioGroup v-model="checkout.form.paymentType" :options="paymentOptions" orientation="vertical" />
             </section>
 
             <CheckoutPromoSection :currency="currency" />
@@ -75,7 +75,7 @@
           />
         </div>
       </StorePageLayout>
-    </SfSection>
+    </FsSection>
   </PageShell>
 </template>
 
@@ -89,12 +89,7 @@ import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfInput from '~/components/sf/form/SfInput.vue'
-import SfTextarea from '~/components/sf/form/SfTextarea.vue'
-import SfField from '~/components/sf/form/SfField.vue'
-import SfRadioGroup from '~/components/sf/form/SfRadioGroup.vue'
+import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup } from '@fastio/public-ui'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CheckoutAddressSection from '~/components/checkout/CheckoutAddressSection.vue'
 import CheckoutPromoSection from '~/components/checkout/CheckoutPromoSection.vue'

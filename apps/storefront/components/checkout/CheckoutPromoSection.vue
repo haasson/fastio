@@ -1,11 +1,11 @@
 <template>
   <section class="form-section">
-    <SfHeading as="h6" class="section-title">Промокод</SfHeading>
+    <FsHeading as="h6" class="section-title">Промокод</FsHeading>
     <div class="promo-row">
-      <SfInput v-model="checkout.form.promoCode" placeholder="PROMO2025" class="promo-input" />
-      <SfButton variant="outline" :loading="loading" @click="checkPromo">
+      <FsInput v-model="checkout.form.promoCode" placeholder="PROMO2025" class="promo-input" />
+      <FsButton variant="outline" :loading="loading" @click="checkPromo">
         Применить
-      </SfButton>
+      </FsButton>
     </div>
     <div v-if="checkout.promoResult" class="promo-result">
       <template v-if="checkout.promoResult.valid">
@@ -25,9 +25,7 @@ import { ref, computed } from 'vue'
 import { Check, X } from 'lucide-vue-next'
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfInput from '~/components/sf/form/SfInput.vue'
-import SfButton from '~/components/sf/base/SfButton.vue'
+import { FsHeading, FsInput, FsButton } from '@fastio/public-ui'
 
 type Props = {
   currency: string

@@ -1,13 +1,13 @@
 <template>
   <PageShell>
-    <SfSection>
+    <FsSection>
       <StorePageLayout back-to="/" back-label="Меню">
         <template #heading>
           Корзина<span v-if="cart.count" class="cart-count"> ({{ cart.count }})</span>
         </template>
 
         <div v-if="!cart.restored" class="cart-loading">
-          <SfSpinner size="large" />
+          <FsSpinner size="large" />
         </div>
 
         <SfEmptyState
@@ -18,7 +18,7 @@
         >
           <ShoppingCart />
           <template #action>
-            <SfButton @click="navigateTo('/')">В меню</SfButton>
+            <FsButton @click="navigateTo('/')">В меню</FsButton>
           </template>
         </SfEmptyState>
 
@@ -38,21 +38,21 @@
           </div>
 
           <div class="cart-sidebar">
-            <SfCard class="summary-card">
+            <FsCard class="summary-card">
               <div class="summary-body">
                 <div class="summary-row">
                   <span class="summary-label">Итого</span>
                   <span class="summary-total">{{ cart.subtotal }} {{ currency }}</span>
                 </div>
-                <SfButton size="large" class="checkout-btn" @click="navigateTo('/checkout')">
+                <FsButton size="large" class="checkout-btn" @click="navigateTo('/checkout')">
                   Перейти к оформлению
-                </SfButton>
+                </FsButton>
               </div>
-            </SfCard>
+            </FsCard>
           </div>
         </div>
       </StorePageLayout>
-    </SfSection>
+    </FsSection>
 
     <DishModal
       v-if="editState.item"
@@ -80,11 +80,8 @@ import { useCartStore } from '~/stores/cart'
 import { useCartEdit } from '~/composables/useCartEdit'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfButton from '~/components/sf/base/SfButton.vue'
-import SfSpinner from '~/components/sf/base/SfSpinner.vue'
+import { FsSection, FsButton, FsSpinner, FsCard } from '@fastio/public-ui'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
-import SfCard from '~/components/sf/layout/SfCard.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CartItem from '~/components/cart/CartItem.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'

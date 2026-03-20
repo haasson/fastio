@@ -2,7 +2,7 @@
   <PageShell>
     <div class="order-root">
       <div v-if="pending && !order" class="order-loading">
-        <SfSpinner size="large" />
+        <FsSpinner size="large" />
         Загружаем заказ...
       </div>
 
@@ -10,7 +10,7 @@
         <SfEmptyState title="Заказ не найден" description="Возможно, ссылка устарела">
           <SearchX />
           <template #action>
-            <SfButton @click="navigateTo('/')">На главную</SfButton>
+            <FsButton @click="navigateTo('/')">На главную</FsButton>
           </template>
         </SfEmptyState>
       </div>
@@ -19,10 +19,10 @@
         <!-- Header -->
         <div class="order-header">
           <div class="success-icon"><CircleCheck :size="32" /></div>
-          <SfHeading as="h3" class="order-title">Заказ принят!</SfHeading>
-          <SfText as="p" variant="body-sm" color="secondary" class="order-subtitle">
+          <FsHeading as="h3" class="order-title">Заказ принят!</FsHeading>
+          <FsText as="p" variant="body-sm" color="secondary" class="order-subtitle">
             Ожидайте звонка для подтверждения
-          </SfText>
+          </FsText>
           <div class="order-meta">
             <span class="order-id">Заказ #{{ order.id.slice(0, 8) }}</span>
             <SfOrderStatus :group="statusGroup" :label="order.statusName ?? undefined" />
@@ -30,13 +30,13 @@
         </div>
 
         <!-- Order details card -->
-        <SfCard class="order-card">
+        <FsCard class="order-card">
           <div class="order-card-body">
-          <SfHeading as="h6">Ваш заказ</SfHeading>
+          <FsHeading as="h6">Ваш заказ</FsHeading>
 
           <SfOrderItemsList :items="order.items" :currency="currency" />
 
-          <SfDivider spacing="none" />
+          <FsDivider spacing="none" />
 
           <SfOrderTotals
             :subtotal="order.subtotal"
@@ -46,10 +46,10 @@
             :currency="currency"
           />
           </div>
-        </SfCard>
+        </FsCard>
 
         <!-- Delivery info -->
-        <SfCard>
+        <FsCard>
           <div class="order-info">
             <div v-if="order.address" class="info-row">
               <span class="info-label">Адрес</span>
@@ -64,11 +64,11 @@
               <span class="info-value">{{ paymentLabel }}</span>
             </div>
           </div>
-        </SfCard>
+        </FsCard>
 
-        <SfButton variant="secondary" size="large" class="back-btn" @click="navigateTo('/')">
+        <FsButton variant="secondary" size="large" class="back-btn" @click="navigateTo('/')">
           Вернуться в меню
-        </SfButton>
+        </FsButton>
       </div>
     </div>
   </PageShell>
@@ -81,16 +81,11 @@ import { SearchX, CircleCheck } from 'lucide-vue-next'
 import type { Order } from '@fastio/shared'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfButton from '~/components/sf/base/SfButton.vue'
-import SfCard from '~/components/sf/layout/SfCard.vue'
-import SfText from '~/components/sf/typography/SfText.vue'
+import { FsHeading, FsButton, FsCard, FsText, FsDivider, FsSpinner } from '@fastio/public-ui'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import SfOrderStatus from '~/components/sf/domain/SfOrderStatus.vue'
 import SfOrderTotals from '~/components/sf/domain/SfOrderTotals.vue'
 import SfOrderItemsList from '~/components/sf/domain/SfOrderItemsList.vue'
-import SfDivider from '~/components/sf/base/SfDivider.vue'
-import SfSpinner from '~/components/sf/base/SfSpinner.vue'
 
 const route = useRoute()
 const currency = useCurrency()
@@ -205,7 +200,7 @@ const paymentLabel = computed(() => {
   font-family: monospace;
 }
 
-// Card (SfCard handles border/bg/radius)
+// Card (FsCard handles border/bg/radius)
 .order-card-body {
   padding: 20px;
   display: flex;

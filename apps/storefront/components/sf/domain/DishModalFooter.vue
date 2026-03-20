@@ -1,15 +1,15 @@
 <template>
   <div class="footer">
     <SfStepper v-model="qty" :min="1" :max="99" />
-    <SfButton variant="primary" class="add-btn" @click="emit('confirm')">
+    <FsButton variant="primary" class="add-btn" @click="emit('confirm')">
       {{ confirmLabel }} за {{ totalPrice }} {{ currency }}
-    </SfButton>
+    </FsButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
-import SfButton from '~/components/sf/base/SfButton.vue'
+import { FsButton } from '@fastio/public-ui'
 
 type Props = {
   modelValue: number

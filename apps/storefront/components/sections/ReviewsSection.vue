@@ -1,18 +1,17 @@
 <template>
-  <SfSection class="reviews-root">
-    <SfHeading as="h2">Отзывы</SfHeading>
+  <FsSection class="reviews-root">
+    <FsHeading as="h2">Отзывы</FsHeading>
     <div class="reviews-content">
       <SfEmptyState title="Отзывов пока нет" description="Будьте первым, кто оставит отзыв">
         <MessageCircle :size="48" />
       </SfEmptyState>
     </div>
-  </SfSection>
+  </FsSection>
 </template>
 
 <script setup lang="ts">
 import { MessageCircle } from 'lucide-vue-next'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
+import { FsSection, FsHeading } from '@fastio/public-ui'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 </script>
 

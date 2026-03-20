@@ -2,7 +2,7 @@
   <div class="body-root">
     <!-- Combo composition -->
     <div v-if="comboItems?.length" class="combo-composition">
-      <SfText variant="body-sm" class="section-title">Состав</SfText>
+      <FsText variant="body-sm" class="section-title">Состав</FsText>
       <div class="combo-items">
         <div v-for="(ci, idx) in comboItems" :key="idx" class="combo-item">
           <img v-if="ci.photo" :src="ci.photo" :alt="ci.name" class="combo-item-photo" />
@@ -57,7 +57,7 @@ import { UtensilsCrossed } from 'lucide-vue-next'
 import type { DishModifierGroup, DishIngredient } from '@fastio/shared'
 import type { ClientAddon } from '~/stores/menu'
 import type { ComboItemInfo } from '~/composables/useDishCustomization'
-import SfText from '~/components/sf/typography/SfText.vue'
+import { FsText } from '@fastio/public-ui'
 import DishChips from '~/components/sf/domain/DishChips.vue'
 
 type Props = {

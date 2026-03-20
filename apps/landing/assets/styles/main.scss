@@ -1,0 +1,49 @@
+@use 'landing-tokens';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+// Size classes for FsButton etc.
+.size-small  { --ctrl-h: 36px; --ctrl-px: 14px; --ctrl-fs: 14px; --ctrl-gap: 6px;  --ctrl-icon: 16px; }
+.size-medium { --ctrl-h: 44px; --ctrl-px: 20px; --ctrl-fs: 16px; --ctrl-gap: 8px;  --ctrl-icon: 18px; }
+.size-large  { --ctrl-h: 52px; --ctrl-px: 28px; --ctrl-fs: 18px; --ctrl-gap: 10px; --ctrl-icon: 20px; }
+
+@media (min-width: 1280px) {
+  .size-small.is-responsive  { --ctrl-h: 44px; --ctrl-px: 20px; --ctrl-fs: 16px; --ctrl-gap: 8px;  --ctrl-icon: 18px; }
+  .size-medium.is-responsive { --ctrl-h: 52px; --ctrl-px: 28px; --ctrl-fs: 18px; --ctrl-gap: 10px; --ctrl-icon: 20px; }
+}
+
+// Font imports
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@400;500;600;700;800&display=swap');

@@ -1,0 +1,69 @@
+:root {
+  // Landing-specific palette
+  --ln-black: #0f0e0d;
+  --ln-white: #fafaf8;
+  --ln-cream: #f5f3ee;
+  --ln-accent: #e55a25;
+  --ln-accent-light: #fff4ed;
+  --ln-muted: #7a7670;
+  --ln-border: #e2dfd8;
+
+  // Override primary to orange for landing
+  --primary: var(--ln-accent);
+  --primary-hover: #cc4e1f;
+  --primary-subtle: var(--ln-accent-light);
+  --primary-subtle-hover: #ffe8d6;
+  --on-primary: #ffffff;
+
+  // Surface & text
+  --color-bg: var(--ln-white);
+  --color-surface: #ffffff;
+  --color-text: var(--ln-black);
+  --color-text-secondary: #4a4744;
+  --color-text-muted: var(--ln-muted);
+  --color-border: var(--ln-border);
+  --surface-hover: #f0ede8;
+  --border-hover: #c8c4bc;
+
+  // Semantic
+  --color-error: #ef4444;
+  --color-success: #10b981;
+
+  // Shape
+  --radius-btn: 10px;
+  --radius-card: 12px;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-card-md: 0 4px 20px rgba(0, 0, 0, 0.10);
+
+  // Spacing
+  --section-spacing: 48px;
+
+  // Typography
+  --font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --heading-font-family: 'Unbounded', sans-serif;
+
+  // Control sizes
+  --ctrl-h: 44px;
+  --ctrl-px: 20px;
+  --ctrl-fs: 16px;
+  --ctrl-gap: 8px;
+  --ctrl-icon: 18px;
+
+  // Z-index
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --section-spacing: 64px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --section-spacing: 80px;
+  }
+}

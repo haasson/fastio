@@ -1,5 +1,5 @@
 <template>
-  <SfSection as="header" class="header-root" style="--section-spacing: 12px">
+  <FsSection as="header" class="header-root" style="--section-spacing: 12px">
     <div class="header-inner">
       <NuxtLink :to="{ path: '/', query: route.query }" class="logo-link">
         <img v-if="tenant?.siteContent?.logo" class="logo" :src="tenant.siteContent.logo" :alt="tenant.name" />
@@ -25,9 +25,9 @@
           </a>
         </div>
 
-        <SfIconButton aria-label="Корзина">
+        <FsIconButton aria-label="Корзина">
           <ShoppingCart :size="20" :stroke-width="1.7" />
-        </SfIconButton>
+        </FsIconButton>
 
         <button
           class="burger"
@@ -41,7 +41,7 @@
         </button>
       </div>
     </div>
-  </SfSection>
+  </FsSection>
 
   <Teleport to="body">
     <Transition name="mobile-menu">
@@ -75,8 +75,7 @@ import { useRoute } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
-import SfSection from '~/components/sf/layout/SfSection.vue'
-import SfIconButton from '~/components/sf/base/SfIconButton.vue'
+import { FsSection, FsIconButton } from '@fastio/public-ui'
 
 const props = defineProps<{
   tenant: Tenant | null

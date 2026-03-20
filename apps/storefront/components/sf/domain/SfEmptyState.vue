@@ -6,15 +6,15 @@
     <div class="empty-icon">
       <slot />
     </div>
-    <SfText as="p" variant="body-sm" color="secondary" class="empty-title">{{ title }}</SfText>
-    <SfText v-if="description" as="p" variant="caption" color="muted" class="empty-desc">{{ description }}</SfText>
+    <FsText as="p" variant="body-sm" color="secondary" class="empty-title">{{ title }}</FsText>
+    <FsText v-if="description" as="p" variant="caption" color="muted" class="empty-desc">{{ description }}</FsText>
     <div v-if="$slots.action" class="empty-action">
       <slot name="action" />
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import SfText from '~/components/sf/typography/SfText.vue'
+import { FsText } from '@fastio/public-ui'
 
 type Props = {
   title: string

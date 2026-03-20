@@ -1,10 +1,10 @@
 <template>
   <div class="checkout-sidebar">
-    <SfCard class="sidebar-card">
+    <FsCard class="sidebar-card">
       <div class="sidebar-body">
-        <SfHeading as="h6" class="sidebar-title">Ваш заказ</SfHeading>
+        <FsHeading as="h6" class="sidebar-title">Ваш заказ</FsHeading>
         <SfOrderItemsList :items="cart.items" :currency="currency" />
-        <SfDivider spacing="none" />
+        <FsDivider spacing="none" />
         <CheckoutSummary
           :subtotal="cart.subtotal"
           :delivery-fee="checkout.deliveryFee"
@@ -16,17 +16,15 @@
           @submit="emit('submit')"
         />
       </div>
-    </SfCard>
+    </FsCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfCard from '~/components/sf/layout/SfCard.vue'
+import { FsHeading, FsCard, FsDivider } from '@fastio/public-ui'
 import SfOrderItemsList from '~/components/sf/domain/SfOrderItemsList.vue'
-import SfDivider from '~/components/sf/base/SfDivider.vue'
 import CheckoutSummary from '~/components/checkout/CheckoutSummary.vue'
 
 type Props = {

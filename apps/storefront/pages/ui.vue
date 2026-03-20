@@ -11,386 +11,386 @@
 
       <!-- ─── Buttons ─────────────────────────────────────────────────────── -->
       <section id="buttons" class="section-root">
-        <h2 class="section-title">SfButton</h2>
+        <h2 class="section-title">FsButton</h2>
 
         <div class="demo-group">
           <p class="demo-label">Variants</p>
           <div class="row">
-            <SfButton variant="primary">Primary</SfButton>
-            <SfButton variant="secondary">Secondary</SfButton>
-            <SfButton variant="ghost">Ghost</SfButton>
-            <SfButton variant="outline">Outline</SfButton>
-            <SfButton variant="destructive">Destructive</SfButton>
+            <FsButton variant="primary">Primary</FsButton>
+            <FsButton variant="secondary">Secondary</FsButton>
+            <FsButton variant="ghost">Ghost</FsButton>
+            <FsButton variant="outline">Outline</FsButton>
+            <FsButton variant="destructive">Destructive</FsButton>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Sizes</p>
           <div class="row wrap">
-            <SfButton size="small">Small</SfButton>
-            <SfButton size="medium">Medium</SfButton>
-            <SfButton size="large">Large</SfButton>
+            <FsButton size="small">Small</FsButton>
+            <FsButton size="medium">Medium</FsButton>
+            <FsButton size="large">Large</FsButton>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">States</p>
           <div class="row wrap">
-            <SfButton :loading="true">Loading</SfButton>
-            <SfButton :disabled="true">Disabled</SfButton>
-            <SfButton variant="secondary" :loading="true">Loading</SfButton>
-            <SfButton variant="outline" :disabled="true">Disabled</SfButton>
+            <FsButton :loading="true">Loading</FsButton>
+            <FsButton :disabled="true">Disabled</FsButton>
+            <FsButton variant="secondary" :loading="true">Loading</FsButton>
+            <FsButton variant="outline" :disabled="true">Disabled</FsButton>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">As link</p>
           <div class="row">
-            <SfButton as="a" href="#buttons">Link button</SfButton>
+            <FsButton as="a" href="#buttons">Link button</FsButton>
           </div>
         </div>
       </section>
 
       <!-- ─── Icon Buttons ────────────────────────────────────────────────── -->
       <section id="icon-buttons" class="section-root">
-        <h2 class="section-title">SfIconButton</h2>
+        <h2 class="section-title">FsIconButton</h2>
 
         <div class="demo-group">
           <p class="demo-label">Variants</p>
           <div class="row">
-            <SfIconButton variant="primary" aria-label="primary"><Heart /></SfIconButton>
-            <SfIconButton variant="secondary" aria-label="secondary"><Heart /></SfIconButton>
-            <SfIconButton variant="ghost" aria-label="ghost"><Heart /></SfIconButton>
-            <SfIconButton variant="outline" aria-label="outline"><Heart /></SfIconButton>
+            <FsIconButton variant="primary" aria-label="primary"><Heart /></FsIconButton>
+            <FsIconButton variant="secondary" aria-label="secondary"><Heart /></FsIconButton>
+            <FsIconButton variant="ghost" aria-label="ghost"><Heart /></FsIconButton>
+            <FsIconButton variant="outline" aria-label="outline"><Heart /></FsIconButton>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Sizes</p>
           <div class="row">
-            <SfIconButton size="small" aria-label="small"><Heart /></SfIconButton>
-            <SfIconButton size="medium" aria-label="medium"><Heart /></SfIconButton>
-            <SfIconButton size="large" aria-label="large"><Heart /></SfIconButton>
+            <FsIconButton size="small" aria-label="small"><Heart /></FsIconButton>
+            <FsIconButton size="medium" aria-label="medium"><Heart /></FsIconButton>
+            <FsIconButton size="large" aria-label="large"><Heart /></FsIconButton>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">States</p>
           <div class="row">
-            <SfIconButton :loading="true" aria-label="loading"><Heart /></SfIconButton>
-            <SfIconButton :disabled="true" aria-label="disabled"><Heart /></SfIconButton>
+            <FsIconButton :loading="true" aria-label="loading"><Heart /></FsIconButton>
+            <FsIconButton :disabled="true" aria-label="disabled"><Heart /></FsIconButton>
           </div>
         </div>
       </section>
 
       <!-- ─── Input ───────────────────────────────────────────────────────── -->
       <section id="inputs" class="section-root">
-        <h2 class="section-title">SfInput</h2>
+        <h2 class="section-title">FsInput</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sizes</p>
           <div class="col">
-            <SfInput v-model="inputVal" size="small" placeholder="Small input" />
-            <SfInput v-model="inputVal" size="medium" placeholder="Medium input" />
-            <SfInput v-model="inputVal" size="large" placeholder="Large input" />
+            <FsInput v-model="inputVal" size="small" placeholder="Small input" />
+            <FsInput v-model="inputVal" size="medium" placeholder="Medium input" />
+            <FsInput v-model="inputVal" size="large" placeholder="Large input" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">States</p>
           <div class="col">
-            <SfInput v-model="inputVal" placeholder="Normal" />
-            <SfInput v-model="inputVal" :error="true" placeholder="Error state" />
-            <SfInput v-model="inputVal" :disabled="true" placeholder="Disabled" />
-            <SfInput v-model="inputVal" :readonly="true" model-value="Readonly value" />
+            <FsInput v-model="inputVal" placeholder="Normal" />
+            <FsInput v-model="inputVal" :error="true" placeholder="Error state" />
+            <FsInput v-model="inputVal" :disabled="true" placeholder="Disabled" />
+            <FsInput v-model="inputVal" :readonly="true" model-value="Readonly value" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">With prefix</p>
           <div class="col">
-            <SfInput v-model="inputVal" prefix="https://" placeholder="domain.ru" />
-            <SfInput v-model="inputVal" size="small" prefix="₽" placeholder="Сумма" />
+            <FsInput v-model="inputVal" prefix="https://" placeholder="domain.ru" />
+            <FsInput v-model="inputVal" size="small" prefix="₽" placeholder="Сумма" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Number — кастомные кнопки ±</p>
           <div class="col">
-            <SfInput v-model="numA" type="number" size="small" />
-            <SfInput v-model="numA" type="number" size="medium" />
-            <SfInput v-model="numA" type="number" size="large" />
+            <FsInput v-model="numA" type="number" size="small" />
+            <FsInput v-model="numA" type="number" size="medium" />
+            <FsInput v-model="numA" type="number" size="large" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Number — min / max / step</p>
           <div class="col">
-            <SfInput v-model="numB" type="number" :min="0" :max="10" />
-            <SfInput v-model="numC" type="number" :min="0" :max="100" :step="5" />
-            <SfInput v-model="numA" type="number" :error="true" />
-            <SfInput v-model="numA" type="number" :disabled="true" />
+            <FsInput v-model="numB" type="number" :min="0" :max="10" />
+            <FsInput v-model="numC" type="number" :min="0" :max="100" :step="5" />
+            <FsInput v-model="numA" type="number" :error="true" />
+            <FsInput v-model="numA" type="number" :disabled="true" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Other types</p>
           <div class="col">
-            <SfInput v-model="inputVal" type="email" placeholder="Email" />
-            <SfInput v-model="inputVal" type="password" placeholder="Password" />
+            <FsInput v-model="inputVal" type="email" placeholder="Email" />
+            <FsInput v-model="inputVal" type="password" placeholder="Password" />
           </div>
         </div>
       </section>
 
       <!-- ─── Select ──────────────────────────────────────────────────────── -->
       <section id="selects" class="section-root">
-        <h2 class="section-title">SfSelect</h2>
+        <h2 class="section-title">FsSelect</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sizes</p>
           <div class="col">
-            <SfSelect v-model="selectVal" size="small" :options="selectOptions" placeholder="Small select" />
-            <SfSelect v-model="selectVal" size="medium" :options="selectOptions" placeholder="Medium select" />
-            <SfSelect v-model="selectVal" size="large" :options="selectOptions" placeholder="Large select" />
+            <FsSelect v-model="selectVal" size="small" :options="selectOptions" placeholder="Small select" />
+            <FsSelect v-model="selectVal" size="medium" :options="selectOptions" placeholder="Medium select" />
+            <FsSelect v-model="selectVal" size="large" :options="selectOptions" placeholder="Large select" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">States</p>
           <div class="col">
-            <SfSelect v-model="selectVal" :options="selectOptions" placeholder="Normal" />
-            <SfSelect v-model="selectVal" :options="selectOptions" :error="true" placeholder="Error state" />
-            <SfSelect v-model="selectVal" :options="selectOptions" :disabled="true" placeholder="Disabled" />
+            <FsSelect v-model="selectVal" :options="selectOptions" placeholder="Normal" />
+            <FsSelect v-model="selectVal" :options="selectOptions" :error="true" placeholder="Error state" />
+            <FsSelect v-model="selectVal" :options="selectOptions" :disabled="true" placeholder="Disabled" />
           </div>
         </div>
       </section>
 
       <!-- ─── Textarea ────────────────────────────────────────────────────── -->
       <section id="textarea" class="section-root">
-        <h2 class="section-title">SfTextarea</h2>
+        <h2 class="section-title">FsTextarea</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sizes</p>
           <div class="col">
-            <SfTextarea v-model="textareaVal" size="small" placeholder="Small textarea" />
-            <SfTextarea v-model="textareaVal" size="medium" placeholder="Medium textarea" />
+            <FsTextarea v-model="textareaVal" size="small" placeholder="Small textarea" />
+            <FsTextarea v-model="textareaVal" size="medium" placeholder="Medium textarea" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">States</p>
           <div class="col">
-            <SfTextarea v-model="textareaVal" placeholder="Normal" />
-            <SfTextarea v-model="textareaVal" :error="true" placeholder="Error state" />
-            <SfTextarea v-model="textareaVal" :disabled="true" placeholder="Disabled" />
-            <SfTextarea v-model="textareaVal" resize="none" placeholder="No resize" />
+            <FsTextarea v-model="textareaVal" placeholder="Normal" />
+            <FsTextarea v-model="textareaVal" :error="true" placeholder="Error state" />
+            <FsTextarea v-model="textareaVal" :disabled="true" placeholder="Disabled" />
+            <FsTextarea v-model="textareaVal" resize="none" placeholder="No resize" />
           </div>
         </div>
       </section>
 
       <!-- ─── Checkbox ────────────────────────────────────────────────────── -->
       <section id="checkbox" class="section-root">
-        <h2 class="section-title">SfCheckbox</h2>
+        <h2 class="section-title">FsCheckbox</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sizes & states</p>
           <div class="col">
-            <SfCheckbox v-model="checkA" size="sm" label="Small unchecked" />
-            <SfCheckbox v-model="checkB" size="sm" label="Small checked" />
-            <SfCheckbox v-model="checkC" size="md" label="Medium unchecked" />
-            <SfCheckbox v-model="checkD" size="md" label="Medium checked" />
-            <SfCheckbox v-model="checkC" size="md" label="Disabled" :disabled="true" />
-            <SfCheckbox v-model="checkD" size="md" label="Disabled checked" :disabled="true" />
+            <FsCheckbox v-model="checkA" size="sm" label="Small unchecked" />
+            <FsCheckbox v-model="checkB" size="sm" label="Small checked" />
+            <FsCheckbox v-model="checkC" size="md" label="Medium unchecked" />
+            <FsCheckbox v-model="checkD" size="md" label="Medium checked" />
+            <FsCheckbox v-model="checkC" size="md" label="Disabled" :disabled="true" />
+            <FsCheckbox v-model="checkD" size="md" label="Disabled checked" :disabled="true" />
           </div>
         </div>
       </section>
 
       <!-- ─── Switch ──────────────────────────────────────────────────────── -->
       <section id="switch" class="section-root">
-        <h2 class="section-title">SfSwitch</h2>
+        <h2 class="section-title">FsSwitch</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sizes & states</p>
           <div class="col">
-            <SfSwitch v-model="switchA" size="sm" label="Small off" />
-            <SfSwitch v-model="switchB" size="sm" label="Small on" />
-            <SfSwitch v-model="switchC" size="md" label="Medium off" />
-            <SfSwitch v-model="switchD" size="md" label="Medium on" />
-            <SfSwitch v-model="switchC" size="md" label="Disabled" :disabled="true" />
-            <SfSwitch v-model="switchD" size="md" label="Disabled on" :disabled="true" />
+            <FsSwitch v-model="switchA" size="sm" label="Small off" />
+            <FsSwitch v-model="switchB" size="sm" label="Small on" />
+            <FsSwitch v-model="switchC" size="md" label="Medium off" />
+            <FsSwitch v-model="switchD" size="md" label="Medium on" />
+            <FsSwitch v-model="switchC" size="md" label="Disabled" :disabled="true" />
+            <FsSwitch v-model="switchD" size="md" label="Disabled on" :disabled="true" />
           </div>
         </div>
       </section>
 
       <!-- ─── RadioGroup ──────────────────────────────────────────────────── -->
       <section id="radio" class="section-root">
-        <h2 class="section-title">SfRadioGroup</h2>
+        <h2 class="section-title">FsRadioGroup</h2>
 
         <div class="demo-group">
           <p class="demo-label">Vertical (default)</p>
-          <SfRadioGroup v-model="radioVal" :options="radioOptions" />
+          <FsRadioGroup v-model="radioVal" :options="radioOptions" />
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Horizontal</p>
-          <SfRadioGroup v-model="radioVal" :options="radioOptions" orientation="horizontal" />
+          <FsRadioGroup v-model="radioVal" :options="radioOptions" orientation="horizontal" />
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Small size</p>
-          <SfRadioGroup v-model="radioVal" :options="radioOptions" size="sm" />
+          <FsRadioGroup v-model="radioVal" :options="radioOptions" size="sm" />
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Disabled</p>
-          <SfRadioGroup v-model="radioVal" :options="radioOptions" :disabled="true" />
+          <FsRadioGroup v-model="radioVal" :options="radioOptions" :disabled="true" />
         </div>
       </section>
 
       <!-- ─── Field ───────────────────────────────────────────────────────── -->
       <section id="field" class="section-root">
-        <h2 class="section-title">SfField</h2>
+        <h2 class="section-title">FsField</h2>
 
         <div class="demo-group">
           <div class="col">
-            <SfField label="Нормальное поле">
-              <SfInput v-model="inputVal" placeholder="Введите значение" />
-            </SfField>
-            <SfField label="С подсказкой" hint="Это вспомогательный текст">
-              <SfInput v-model="inputVal" placeholder="Введите значение" />
-            </SfField>
-            <SfField label="С ошибкой" error="Это поле обязательно для заполнения">
-              <SfInput v-model="inputVal" :error="true" placeholder="Введите значение" />
-            </SfField>
-            <SfField label="Обязательное" :required="true" hint="Помечено звёздочкой">
-              <SfSelect v-model="selectVal" :options="selectOptions" />
-            </SfField>
+            <FsField label="Нормальное поле">
+              <FsInput v-model="inputVal" placeholder="Введите значение" />
+            </FsField>
+            <FsField label="С подсказкой" hint="Это вспомогательный текст">
+              <FsInput v-model="inputVal" placeholder="Введите значение" />
+            </FsField>
+            <FsField label="С ошибкой" error="Это поле обязательно для заполнения">
+              <FsInput v-model="inputVal" :error="true" placeholder="Введите значение" />
+            </FsField>
+            <FsField label="Обязательное" :required="true" hint="Помечено звёздочкой">
+              <FsSelect v-model="selectVal" :options="selectOptions" />
+            </FsField>
           </div>
         </div>
       </section>
 
       <!-- ─── Badge ───────────────────────────────────────────────────────── -->
       <section id="badge" class="section-root">
-        <h2 class="section-title">SfBadge</h2>
+        <h2 class="section-title">FsBadge</h2>
 
         <div class="demo-group">
           <p class="demo-label">Variants</p>
           <div class="row wrap">
-            <SfBadge variant="default">Default</SfBadge>
-            <SfBadge variant="primary">Primary</SfBadge>
-            <SfBadge variant="success">Success</SfBadge>
-            <SfBadge variant="warning">Warning</SfBadge>
-            <SfBadge variant="error">Error</SfBadge>
-            <SfBadge variant="info">Info</SfBadge>
+            <FsBadge variant="default">Default</FsBadge>
+            <FsBadge variant="primary">Primary</FsBadge>
+            <FsBadge variant="success">Success</FsBadge>
+            <FsBadge variant="warning">Warning</FsBadge>
+            <FsBadge variant="error">Error</FsBadge>
+            <FsBadge variant="info">Info</FsBadge>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Sizes</p>
           <div class="row wrap">
-            <SfBadge size="small" variant="primary">Small</SfBadge>
-            <SfBadge size="medium" variant="primary">Medium</SfBadge>
+            <FsBadge size="small" variant="primary">Small</FsBadge>
+            <FsBadge size="medium" variant="primary">Medium</FsBadge>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Dot mode</p>
           <div class="row wrap">
-            <SfBadge :dot="true" variant="primary" />
-            <SfBadge :dot="true" variant="success" />
-            <SfBadge :dot="true" variant="warning" />
-            <SfBadge :dot="true" variant="error" />
+            <FsBadge :dot="true" variant="primary" />
+            <FsBadge :dot="true" variant="success" />
+            <FsBadge :dot="true" variant="warning" />
+            <FsBadge :dot="true" variant="error" />
           </div>
         </div>
       </section>
 
       <!-- ─── Tag ─────────────────────────────────────────────────────────── -->
       <section id="tag" class="section-root">
-        <h2 class="section-title">SfTag</h2>
+        <h2 class="section-title">FsTag</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sizes & states</p>
           <div class="row wrap">
-            <SfTag size="small">Small</SfTag>
-            <SfTag size="medium">Medium</SfTag>
-            <SfTag size="medium" :active="true">Active</SfTag>
-            <SfTag size="medium" :disabled="true">Disabled</SfTag>
+            <FsTag size="small">Small</FsTag>
+            <FsTag size="medium">Medium</FsTag>
+            <FsTag size="medium" :active="true">Active</FsTag>
+            <FsTag size="medium" :disabled="true">Disabled</FsTag>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Toggleable group</p>
           <div class="row wrap">
-            <SfTag
+            <FsTag
               v-for="t in tagOptions"
               :key="t"
               :active="activeTag === t"
               @click="activeTag = t"
-            >{{ t }}</SfTag>
+            >{{ t }}</FsTag>
           </div>
         </div>
       </section>
 
       <!-- ─── Spinner ─────────────────────────────────────────────────────── -->
       <section id="spinner" class="section-root">
-        <h2 class="section-title">SfSpinner</h2>
+        <h2 class="section-title">FsSpinner</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sizes</p>
           <div class="row">
-            <SfSpinner size="small" />
-            <SfSpinner size="medium" />
-            <SfSpinner size="large" />
+            <FsSpinner size="small" />
+            <FsSpinner size="medium" />
+            <FsSpinner size="large" />
           </div>
         </div>
       </section>
 
       <!-- ─── Skeleton ────────────────────────────────────────────────────── -->
       <section id="skeleton" class="section-root">
-        <h2 class="section-title">SfSkeleton</h2>
+        <h2 class="section-title">FsSkeleton</h2>
 
         <div class="demo-group">
           <p class="demo-label">Variants</p>
           <div class="col">
-            <SfSkeleton variant="line" width="80%" />
-            <SfSkeleton variant="line" width="60%" />
-            <SfSkeleton variant="line" width="90%" />
+            <FsSkeleton variant="line" width="80%" />
+            <FsSkeleton variant="line" width="60%" />
+            <FsSkeleton variant="line" width="90%" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Circle</p>
           <div class="row">
-            <SfSkeleton variant="circle" width="40px" />
-            <SfSkeleton variant="circle" width="56px" />
-            <SfSkeleton variant="circle" width="72px" />
+            <FsSkeleton variant="circle" width="40px" />
+            <FsSkeleton variant="circle" width="56px" />
+            <FsSkeleton variant="circle" width="72px" />
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Rect (card-like)</p>
           <div class="row">
-            <SfSkeleton variant="rect" width="160px" height="120px" :rounded="true" />
-            <SfSkeleton variant="rect" width="160px" height="120px" :rounded="true" />
+            <FsSkeleton variant="rect" width="160px" height="120px" :rounded="true" />
+            <FsSkeleton variant="rect" width="160px" height="120px" :rounded="true" />
           </div>
         </div>
       </section>
 
       <!-- ─── Divider ─────────────────────────────────────────────────────── -->
       <section id="divider" class="section-root">
-        <h2 class="section-title">SfDivider</h2>
+        <h2 class="section-title">FsDivider</h2>
 
         <div class="demo-group">
           <p class="demo-label">Horizontal / spacings</p>
           <div class="col" style="max-width: 400px">
             <span class="demo-text">Выше</span>
-            <SfDivider spacing="none" />
+            <FsDivider spacing="none" />
             <span class="demo-text">spacing: none</span>
-            <SfDivider spacing="sm" />
+            <FsDivider spacing="sm" />
             <span class="demo-text">spacing: sm</span>
-            <SfDivider spacing="md" />
+            <FsDivider spacing="md" />
             <span class="demo-text">spacing: md</span>
-            <SfDivider spacing="lg" />
+            <FsDivider spacing="lg" />
             <span class="demo-text">spacing: lg</span>
           </div>
         </div>
@@ -399,9 +399,9 @@
           <p class="demo-label">Vertical</p>
           <div class="row" style="height: 48px; align-items: stretch">
             <span class="demo-text">Left</span>
-            <SfDivider orientation="vertical" spacing="md" />
+            <FsDivider orientation="vertical" spacing="md" />
             <span class="demo-text">Middle</span>
-            <SfDivider orientation="vertical" spacing="md" />
+            <FsDivider orientation="vertical" spacing="md" />
             <span class="demo-text">Right</span>
           </div>
         </div>
@@ -409,212 +409,212 @@
 
       <!-- ─── Typography Headings ─────────────────────────────────────────── -->
       <section id="headings" class="section-root">
-        <h2 class="section-title">SfHeading</h2>
+        <h2 class="section-title">FsHeading</h2>
 
         <div class="demo-group">
           <div class="col">
-            <SfHeading as="h1">H1 — Заголовок страницы</SfHeading>
-            <SfHeading as="h2">H2 — Заголовок секции</SfHeading>
-            <SfHeading as="h3">H3 — Подзаголовок</SfHeading>
-            <SfHeading as="h4">H4 — Небольшой заголовок</SfHeading>
-            <SfHeading as="h5">H5 — Мелкий заголовок</SfHeading>
+            <FsHeading as="h1">H1 — Заголовок страницы</FsHeading>
+            <FsHeading as="h2">H2 — Заголовок секции</FsHeading>
+            <FsHeading as="h3">H3 — Подзаголовок</FsHeading>
+            <FsHeading as="h4">H4 — Небольшой заголовок</FsHeading>
+            <FsHeading as="h5">H5 — Мелкий заголовок</FsHeading>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Colors</p>
           <div class="col">
-            <SfHeading color="default">Default color</SfHeading>
-            <SfHeading color="primary">Primary color</SfHeading>
-            <SfHeading color="muted">Muted color</SfHeading>
+            <FsHeading color="default">Default color</FsHeading>
+            <FsHeading color="primary">Primary color</FsHeading>
+            <FsHeading color="muted">Muted color</FsHeading>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Align</p>
           <div class="col">
-            <SfHeading align="left">Left align</SfHeading>
-            <SfHeading align="center">Center align</SfHeading>
-            <SfHeading align="right">Right align</SfHeading>
+            <FsHeading align="left">Left align</FsHeading>
+            <FsHeading align="center">Center align</FsHeading>
+            <FsHeading align="right">Right align</FsHeading>
           </div>
         </div>
       </section>
 
       <!-- ─── Typography Text ─────────────────────────────────────────────── -->
       <section id="text" class="section-root">
-        <h2 class="section-title">SfText</h2>
+        <h2 class="section-title">FsText</h2>
 
         <div class="demo-group">
           <p class="demo-label">Variants</p>
           <div class="col">
-            <SfText variant="body">body — Основной текст страницы, 16px. Используется для длинных описаний.</SfText>
-            <SfText variant="body-sm">body-sm — Вторичный текст, 14px. Подписи, описания.</SfText>
-            <SfText variant="caption">caption — Мелкий текст, 12px. Метки, дата/время.</SfText>
-            <SfText variant="label">label — Текст для меток, 14px/500. Кнопки, теги.</SfText>
-            <SfText variant="overline">overline — ЗАГОЛОВОК СЕКЦИИ, 11px uppercase</SfText>
+            <FsText variant="body">body — Основной текст страницы, 16px. Используется для длинных описаний.</FsText>
+            <FsText variant="body-sm">body-sm — Вторичный текст, 14px. Подписи, описания.</FsText>
+            <FsText variant="caption">caption — Мелкий текст, 12px. Метки, дата/время.</FsText>
+            <FsText variant="label">label — Текст для меток, 14px/500. Кнопки, теги.</FsText>
+            <FsText variant="overline">overline — ЗАГОЛОВОК СЕКЦИИ, 11px uppercase</FsText>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Colors</p>
           <div class="col">
-            <SfText color="default">default color</SfText>
-            <SfText color="secondary">secondary color</SfText>
-            <SfText color="muted">muted color</SfText>
-            <SfText color="primary">primary color</SfText>
-            <SfText color="error">error color</SfText>
-            <SfText color="success">success color</SfText>
+            <FsText color="default">default color</FsText>
+            <FsText color="secondary">secondary color</FsText>
+            <FsText color="muted">muted color</FsText>
+            <FsText color="primary">primary color</FsText>
+            <FsText color="error">error color</FsText>
+            <FsText color="success">success color</FsText>
           </div>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Truncate & clamp</p>
           <div class="col" style="max-width: 300px">
-            <SfText :truncate="true">Очень длинный текст который обрезается в одну строку без переноса</SfText>
-            <SfText :lines="2">Очень длинный текст который обрезается ровно после второй строки и не позволяет тексту занимать больше места чем нужно</SfText>
+            <FsText :truncate="true">Очень длинный текст который обрезается в одну строку без переноса</FsText>
+            <FsText :lines="2">Очень длинный текст который обрезается ровно после второй строки и не позволяет тексту занимать больше места чем нужно</FsText>
           </div>
         </div>
       </section>
 
       <!-- ─── Tabs ─────────────────────────────────────────────────────────── -->
       <section id="tabs" class="section-root">
-        <h2 class="section-title">SfTabs</h2>
+        <h2 class="section-title">FsTabs</h2>
 
         <div class="demo-group">
           <p class="demo-label">Line variant (md)</p>
-          <SfTabs v-model="tabLine" :tabs="tabItems">
-            <template #menu><SfText color="muted">Содержимое вкладки Меню</SfText></template>
-            <template #about><SfText color="muted">Содержимое вкладки О нас</SfText></template>
-            <template #contacts><SfText color="muted">Содержимое вкладки Контакты</SfText></template>
-          </SfTabs>
+          <FsTabs v-model="tabLine" :tabs="tabItems">
+            <template #menu><FsText color="muted">Содержимое вкладки Меню</FsText></template>
+            <template #about><FsText color="muted">Содержимое вкладки О нас</FsText></template>
+            <template #contacts><FsText color="muted">Содержимое вкладки Контакты</FsText></template>
+          </FsTabs>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Pill variant (md)</p>
-          <SfTabs v-model="tabPill" :tabs="tabItems" variant="pill">
-            <template #menu><SfText color="muted">Содержимое вкладки Меню</SfText></template>
-            <template #about><SfText color="muted">Содержимое вкладки О нас</SfText></template>
-            <template #contacts><SfText color="muted">Содержимое вкладки Контакты</SfText></template>
-          </SfTabs>
+          <FsTabs v-model="tabPill" :tabs="tabItems" variant="pill">
+            <template #menu><FsText color="muted">Содержимое вкладки Меню</FsText></template>
+            <template #about><FsText color="muted">Содержимое вкладки О нас</FsText></template>
+            <template #contacts><FsText color="muted">Содержимое вкладки Контакты</FsText></template>
+          </FsTabs>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Small size</p>
-          <SfTabs v-model="tabSm" :tabs="tabItems" size="sm">
-            <template #menu><SfText color="muted">Меню</SfText></template>
-            <template #about><SfText color="muted">О нас</SfText></template>
-            <template #contacts><SfText color="muted">Контакты</SfText></template>
-          </SfTabs>
+          <FsTabs v-model="tabSm" :tabs="tabItems" size="sm">
+            <template #menu><FsText color="muted">Меню</FsText></template>
+            <template #about><FsText color="muted">О нас</FsText></template>
+            <template #contacts><FsText color="muted">Контакты</FsText></template>
+          </FsTabs>
         </div>
 
         <div class="demo-group">
           <p class="demo-label">Full width</p>
-          <SfTabs v-model="tabFull" :tabs="tabItemsBadge" :full-width="true" variant="pill">
-            <template #new><SfText color="muted">Новые заказы</SfText></template>
-            <template #active><SfText color="muted">Активные заказы</SfText></template>
-            <template #done><SfText color="muted">Выполненные</SfText></template>
-          </SfTabs>
+          <FsTabs v-model="tabFull" :tabs="tabItemsBadge" :full-width="true" variant="pill">
+            <template #new><FsText color="muted">Новые заказы</FsText></template>
+            <template #active><FsText color="muted">Активные заказы</FsText></template>
+            <template #done><FsText color="muted">Выполненные</FsText></template>
+          </FsTabs>
         </div>
       </section>
 
       <!-- ─── Tooltip ──────────────────────────────────────────────────────── -->
       <section id="tooltip" class="section-root">
-        <h2 class="section-title">SfTooltip</h2>
+        <h2 class="section-title">FsTooltip</h2>
 
         <div class="demo-group">
           <p class="demo-label">Sides (hover over buttons)</p>
           <div class="row wrap">
-            <SfTooltip content="Tooltip сверху" side="top">
-              <SfButton variant="secondary" size="small">Top</SfButton>
-            </SfTooltip>
-            <SfTooltip content="Tooltip снизу" side="bottom">
-              <SfButton variant="secondary" size="small">Bottom</SfButton>
-            </SfTooltip>
-            <SfTooltip content="Tooltip слева" side="left">
-              <SfButton variant="secondary" size="small">Left</SfButton>
-            </SfTooltip>
-            <SfTooltip content="Tooltip справа" side="right">
-              <SfButton variant="secondary" size="small">Right</SfButton>
-            </SfTooltip>
+            <FsTooltip content="Tooltip сверху" side="top">
+              <FsButton variant="secondary" size="small">Top</FsButton>
+            </FsTooltip>
+            <FsTooltip content="Tooltip снизу" side="bottom">
+              <FsButton variant="secondary" size="small">Bottom</FsButton>
+            </FsTooltip>
+            <FsTooltip content="Tooltip слева" side="left">
+              <FsButton variant="secondary" size="small">Left</FsButton>
+            </FsTooltip>
+            <FsTooltip content="Tooltip справа" side="right">
+              <FsButton variant="secondary" size="small">Right</FsButton>
+            </FsTooltip>
           </div>
         </div>
       </section>
 
       <!-- ─── Dialog ───────────────────────────────────────────────────────── -->
       <section id="dialog" class="section-root">
-        <h2 class="section-title">SfDialog</h2>
+        <h2 class="section-title">FsDialog</h2>
 
         <div class="demo-group">
           <div class="row wrap">
-            <SfButton variant="secondary" @click="dialogSm = true">Open sm</SfButton>
-            <SfButton variant="secondary" @click="dialogMd = true">Open md</SfButton>
-            <SfButton variant="secondary" @click="dialogLg = true">Open lg</SfButton>
+            <FsButton variant="secondary" @click="dialogSm = true">Open sm</FsButton>
+            <FsButton variant="secondary" @click="dialogMd = true">Open md</FsButton>
+            <FsButton variant="secondary" @click="dialogLg = true">Open lg</FsButton>
           </div>
         </div>
 
-        <SfDialog v-model="dialogSm" title="Маленький диалог" description="sm — максимум 400px." size="sm">
-          <SfText color="muted">Содержимое диалога sm.</SfText>
+        <FsDialog v-model="dialogSm" title="Маленький диалог" description="sm — максимум 400px." size="sm">
+          <FsText color="muted">Содержимое диалога sm.</FsText>
           <template #footer>
-            <SfButton variant="secondary" size="small" @click="dialogSm = false">Отмена</SfButton>
-            <SfButton size="small" @click="dialogSm = false">Ок</SfButton>
+            <FsButton variant="secondary" size="small" @click="dialogSm = false">Отмена</FsButton>
+            <FsButton size="small" @click="dialogSm = false">Ок</FsButton>
           </template>
-        </SfDialog>
+        </FsDialog>
 
-        <SfDialog v-model="dialogMd" title="Средний диалог" description="md — максимум 560px." size="md">
-          <SfText color="muted">Содержимое диалога md. Подходит для большинства случаев.</SfText>
+        <FsDialog v-model="dialogMd" title="Средний диалог" description="md — максимум 560px." size="md">
+          <FsText color="muted">Содержимое диалога md. Подходит для большинства случаев.</FsText>
           <template #footer>
-            <SfButton variant="secondary" @click="dialogMd = false">Отмена</SfButton>
-            <SfButton @click="dialogMd = false">Сохранить</SfButton>
+            <FsButton variant="secondary" @click="dialogMd = false">Отмена</FsButton>
+            <FsButton @click="dialogMd = false">Сохранить</FsButton>
           </template>
-        </SfDialog>
+        </FsDialog>
 
-        <SfDialog v-model="dialogLg" title="Большой диалог" description="lg — максимум 720px. Для форм и сложного контента." size="lg">
+        <FsDialog v-model="dialogLg" title="Большой диалог" description="lg — максимум 720px. Для форм и сложного контента." size="lg">
           <div class="col">
-            <SfField label="Имя" hint="Введите ваше имя">
-              <SfInput v-model="inputVal" placeholder="Иван Иванов" />
-            </SfField>
-            <SfField label="Email">
-              <SfInput v-model="inputVal" type="email" placeholder="ivan@mail.ru" />
-            </SfField>
+            <FsField label="Имя" hint="Введите ваше имя">
+              <FsInput v-model="inputVal" placeholder="Иван Иванов" />
+            </FsField>
+            <FsField label="Email">
+              <FsInput v-model="inputVal" type="email" placeholder="ivan@mail.ru" />
+            </FsField>
           </div>
           <template #footer>
-            <SfButton variant="secondary" @click="dialogLg = false">Отмена</SfButton>
-            <SfButton @click="dialogLg = false">Сохранить</SfButton>
+            <FsButton variant="secondary" @click="dialogLg = false">Отмена</FsButton>
+            <FsButton @click="dialogLg = false">Сохранить</FsButton>
           </template>
-        </SfDialog>
+        </FsDialog>
       </section>
 
       <!-- ─── Drawer ───────────────────────────────────────────────────────── -->
       <section id="drawer" class="section-root">
-        <h2 class="section-title">SfDrawer</h2>
+        <h2 class="section-title">FsDrawer</h2>
 
         <div class="demo-group">
           <div class="row wrap">
-            <SfButton variant="secondary" @click="drawerBottom = true">Bottom (default)</SfButton>
-            <SfButton variant="secondary" @click="drawerRight = true">Right</SfButton>
+            <FsButton variant="secondary" @click="drawerBottom = true">Bottom (default)</FsButton>
+            <FsButton variant="secondary" @click="drawerRight = true">Right</FsButton>
           </div>
         </div>
 
-        <SfDrawer v-model="drawerBottom" title="Bottom drawer" side="bottom" size="md">
-          <SfText color="muted">Снизу выезжает на мобилке.</SfText>
+        <FsDrawer v-model="drawerBottom" title="Bottom drawer" side="bottom" size="md">
+          <FsText color="muted">Снизу выезжает на мобилке.</FsText>
           <template #footer>
-            <SfButton @click="drawerBottom = false">Готово</SfButton>
+            <FsButton @click="drawerBottom = false">Готово</FsButton>
           </template>
-        </SfDrawer>
+        </FsDrawer>
 
-        <SfDrawer v-model="drawerRight" title="Right drawer" side="right" size="md">
+        <FsDrawer v-model="drawerRight" title="Right drawer" side="right" size="md">
           <div class="col">
-            <SfText color="muted">Боковое меню или панель фильтров.</SfText>
-            <SfDivider spacing="md" />
-            <SfField label="Фильтр">
-              <SfSelect v-model="selectVal" :options="selectOptions" />
-            </SfField>
+            <FsText color="muted">Боковое меню или панель фильтров.</FsText>
+            <FsDivider spacing="md" />
+            <FsField label="Фильтр">
+              <FsSelect v-model="selectVal" :options="selectOptions" />
+            </FsField>
           </div>
           <template #footer>
-            <SfButton variant="secondary" @click="drawerRight = false">Сбросить</SfButton>
-            <SfButton @click="drawerRight = false">Применить</SfButton>
+            <FsButton variant="secondary" @click="drawerRight = false">Сбросить</FsButton>
+            <FsButton @click="drawerRight = false">Применить</FsButton>
           </template>
-        </SfDrawer>
+        </FsDrawer>
       </section>
 
       <!-- ─── Toast ────────────────────────────────────────────────────────── -->
@@ -623,10 +623,10 @@
 
         <div class="demo-group">
           <div class="row wrap">
-            <SfButton variant="secondary" @click="toast.show({ title: 'Информация', description: 'Что-то произошло.' })">Default</SfButton>
-            <SfButton variant="secondary" @click="toast.success('Сохранено', 'Данные успешно обновлены')">Success</SfButton>
-            <SfButton variant="secondary" @click="toast.error('Ошибка', 'Не удалось сохранить данные')">Error</SfButton>
-            <SfButton variant="secondary" @click="toast.warning('Внимание', 'Проверьте введённые данные')">Warning</SfButton>
+            <FsButton variant="secondary" @click="toast.show({ title: 'Информация', description: 'Что-то произошло.' })">Default</FsButton>
+            <FsButton variant="secondary" @click="toast.success('Сохранено', 'Данные успешно обновлены')">Success</FsButton>
+            <FsButton variant="secondary" @click="toast.error('Ошибка', 'Не удалось сохранить данные')">Error</FsButton>
+            <FsButton variant="secondary" @click="toast.warning('Внимание', 'Проверьте введённые данные')">Warning</FsButton>
           </div>
         </div>
       </section>
@@ -704,7 +704,7 @@
           <p class="demo-label">With min/max</p>
           <div class="row">
             <SfStepper v-model="stepperCapped" :min="1" :max="5" />
-            <SfText variant="caption" color="muted">min=1 max=5, текущее: {{ stepperCapped }}</SfText>
+            <FsText variant="caption" color="muted">min=1 max=5, текущее: {{ stepperCapped }}</FsText>
           </div>
         </div>
       </section>
@@ -720,7 +720,7 @@
               <SfEmptyState title="Пусто (sm)" description="Здесь пока ничего нет." size="sm">
                 <ShoppingBag />
                 <template #action>
-                  <SfButton size="small">Действие</SfButton>
+                  <FsButton size="small">Действие</FsButton>
                 </template>
               </SfEmptyState>
             </div>
@@ -728,7 +728,7 @@
               <SfEmptyState title="Пусто (md)" description="Здесь пока ничего нет. Добавьте первый элемент." size="md">
                 <ShoppingBag />
                 <template #action>
-                  <SfButton>Добавить</SfButton>
+                  <FsButton>Добавить</FsButton>
                 </template>
               </SfEmptyState>
             </div>
@@ -743,26 +743,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Heart, ShoppingBag } from 'lucide-vue-next'
-import SfButton from '~/components/sf/base/SfButton.vue'
-import SfIconButton from '~/components/sf/base/SfIconButton.vue'
-import SfBadge from '~/components/sf/base/SfBadge.vue'
-import SfTag from '~/components/sf/base/SfTag.vue'
-import SfSpinner from '~/components/sf/base/SfSpinner.vue'
-import SfSkeleton from '~/components/sf/base/SfSkeleton.vue'
-import SfDivider from '~/components/sf/base/SfDivider.vue'
-import SfInput from '~/components/sf/form/SfInput.vue'
-import SfSelect from '~/components/sf/form/SfSelect.vue'
-import SfTextarea from '~/components/sf/form/SfTextarea.vue'
-import SfCheckbox from '~/components/sf/form/SfCheckbox.vue'
-import SfSwitch from '~/components/sf/form/SfSwitch.vue'
-import SfRadioGroup from '~/components/sf/form/SfRadioGroup.vue'
-import SfField from '~/components/sf/form/SfField.vue'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfText from '~/components/sf/typography/SfText.vue'
-import SfTabs from '~/components/sf/nav/SfTabs.vue'
-import SfTooltip from '~/components/sf/overlay/SfTooltip.vue'
-import SfDialog from '~/components/sf/overlay/SfDialog.vue'
-import SfDrawer from '~/components/sf/overlay/SfDrawer.vue'
+import {
+  FsButton, FsIconButton, FsBadge, FsTag, FsSpinner, FsSkeleton, FsDivider,
+  FsInput, FsSelect, FsTextarea, FsCheckbox, FsSwitch, FsRadioGroup, FsField,
+  FsHeading, FsText, FsTabs, FsTooltip, FsDialog, FsDrawer,
+} from '@fastio/public-ui'
 import SfOrderStatus from '~/components/sf/domain/SfOrderStatus.vue'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'

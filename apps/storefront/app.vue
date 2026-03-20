@@ -2,7 +2,7 @@
   <div class="app-root">
     <NuxtPage />
     <ClientOnly>
-      <SfToastProvider />
+      <FsToastProvider :toasts="toasts" :on-dismiss="dismiss" />
     </ClientOnly>
   </div>
 </template>
@@ -15,8 +15,11 @@ import { paletteToCssVars } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import useTheme from '~/composables/useTheme'
 import { isGoogleFontValue, fontFamilyCSS, googleFontUrl } from '~/utils/google-fonts'
-import SfToastProvider from '~/components/sf/overlay/SfToastProvider.vue'
+import { FsToastProvider } from '@fastio/public-ui'
+import { useToast } from '~/composables/useToast'
 import { useAnalytics } from '~/composables/useAnalytics'
+
+const { toasts, dismiss } = useToast()
 
 // Восстанавливаем корзину из localStorage
 const cartStore = useCartStore()

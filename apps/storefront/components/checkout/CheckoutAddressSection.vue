@@ -1,10 +1,10 @@
 <template>
   <section class="form-section">
-    <SfHeading as="h6" class="section-title">Адрес доставки</SfHeading>
+    <FsHeading as="h6" class="section-title">Адрес доставки</FsHeading>
 
     <div class="address-field-wrap">
       <div class="address-input-wrap">
-        <SfInput
+        <FsInput
           :model-value="checkout.form.address"
           placeholder="Начните вводить адрес..."
           :error="!!addressError"
@@ -12,7 +12,7 @@
           @focus="showSuggestions = true"
           @blur="hideSuggestionsDelayed(); addressTouched = true"
         />
-        <SfIconButton
+        <FsIconButton
           v-if="checkout.form.address"
           aria-label="Очистить адрес"
           variant="ghost"
@@ -21,9 +21,9 @@
           @click="checkout.clearAddress()"
         >
           <X :size="14" />
-        </SfIconButton>
+        </FsIconButton>
 
-        <SfDropdownList
+        <FsDropdownList
           v-if="showSuggestions"
           :items="suggestionItems"
           @select="onSuggestionSelect"
@@ -33,20 +33,20 @@
       <p v-if="addressError" class="field-error">{{ addressError }}</p>
 
       <template v-if="!addressError">
-        <SfAlert v-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
+        <FsAlert v-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
           Доставка:
           <strong v-if="zoneFee === 0">бесплатно</strong>
           <strong v-else>{{ zoneFee }} {{ currency }}</strong>
           <span v-if="checkout.deliveryZone.freeDeliveryFrom && zoneFee > 0" class="zone-hint">
             (бесплатно от {{ checkout.deliveryZone.freeDeliveryFrom }} {{ currency }})
           </span>
-        </SfAlert>
-        <SfAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
+        </FsAlert>
+        <FsAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
           Адрес вне зоны доставки
-        </SfAlert>
-        <SfAlert v-else-if="addressCheckLoading" type="muted">
+        </FsAlert>
+        <FsAlert v-else-if="addressCheckLoading" type="muted">
           Проверяем адрес...
-        </SfAlert>
+        </FsAlert>
       </template>
     </div>
   </section>
@@ -59,11 +59,7 @@ import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'
 import type { DadataSuggestion } from '~/composables/useDadataSuggestions'
 import { useDadataSuggestions } from '~/composables/useDadataSuggestions'
-import SfHeading from '~/components/sf/typography/SfHeading.vue'
-import SfInput from '~/components/sf/form/SfInput.vue'
-import SfIconButton from '~/components/sf/base/SfIconButton.vue'
-import SfDropdownList from '~/components/sf/base/SfDropdownList.vue'
-import SfAlert from '~/components/sf/base/SfAlert.vue'
+import { FsHeading, FsInput, FsIconButton, FsAlert, FsDropdownList } from '@fastio/public-ui'
 
 type Props = {
   currency: string

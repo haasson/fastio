@@ -8,14 +8,14 @@
       :currency="currency"
     />
     <p v-if="error" class="submit-error">{{ error }}</p>
-    <SfButton size="large" class="submit-btn" :loading="loading" @click="emit('submit')">
+    <FsButton size="large" class="submit-btn" :loading="loading" @click="emit('submit')">
       Оформить заказ
-    </SfButton>
+    </FsButton>
   </div>
 </template>
 
 <script setup lang="ts">
-import SfButton from '~/components/sf/base/SfButton.vue'
+import { FsButton } from '@fastio/public-ui'
 import SfOrderTotals from '~/components/sf/domain/SfOrderTotals.vue'
 
 type Props = {
