@@ -11,6 +11,7 @@
     <input
       class="number-input"
       type="number"
+      v-bind="$attrs"
       :value="modelValue"
       :min="min"
       :max="max"
@@ -34,6 +35,7 @@
     <input
       class="input-root has-prefix"
       :class="[`size-${size}`, { 'is-responsive': responsive, 'is-error': error }]"
+      v-bind="$attrs"
       :type="type"
       :value="modelValue"
       :placeholder="placeholder"
@@ -48,6 +50,8 @@
     v-else
     class="input-root"
     :class="[`size-${size}`, { 'is-responsive': responsive, 'is-error': error }]"
+    v-bind="$attrs"
+    v-maska="mask"
     :type="type"
     :value="modelValue"
     :placeholder="placeholder"
@@ -59,6 +63,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Minus, Plus } from 'lucide-vue-next'
+import { vMaska } from 'maska/vue'
 
 type Props = {
   modelValue?: string | number
@@ -73,6 +78,7 @@ type Props = {
   min?: number
   max?: number
   step?: number
+  mask?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -84,6 +90,8 @@ const props = withDefaults(defineProps<Props>(), {
   error: false,
   step: 1,
 })
+
+defineOptions({ inheritAttrs: false })
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | number]

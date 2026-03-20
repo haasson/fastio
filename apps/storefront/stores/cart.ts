@@ -2,10 +2,11 @@ import { defineStore } from 'pinia'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 
-export type CartItem = OrderItem & { photo: string | null }
+export type CartItem = OrderItem & { photo: string | null; _key?: string }
 
 export const useCartStore = defineStore('cart', () => {
   const items = ref<CartItem[]>([])
+  const restored = ref(false)
 
   const count = computed(() => items.value.reduce((s, i) => s + i.quantity, 0))
   const subtotal = computed(() =>
@@ -23,7 +24,7 @@ export const useCartStore = defineStore('cart', () => {
     if (existing) {
       existing.quantity += item.quantity
     } else {
-      items.value.push({ ...item })
+      items.value.push({ ...item, _key: crypto.randomUUID() })
     }
     persist()
   }
@@ -47,6 +48,20 @@ export const useCartStore = defineStore('cart', () => {
     persist()
   }
 
+  function replace(index: number, item: CartItem) {
+    items.value[index] = { ...item, _key: items.value[index]._key }
+    persist()
+  }
+
+  function setQuantity(index: number, quantity: number) {
+    if (quantity <= 0) {
+      items.value.splice(index, 1)
+    } else {
+      items.value[index].quantity = quantity
+    }
+    persist()
+  }
+
   function clear() {
     items.value = []
     persist()
@@ -66,13 +81,16 @@ export const useCartStore = defineStore('cart', () => {
           items.value = (JSON.parse(raw) as CartItem[]).map((item) => ({
             ...item,
             modifiers: item.modifiers ?? [],
+            _key: item._key ?? crypto.randomUUID(),
           }))
         }
       } catch {
         items.value = []
+      } finally {
+        restored.value = true
       }
     }
   }
 
-  return { items, count, subtotal, add, increment, decrement, remove, clear, restore }
+  return { items, count, subtotal, restored, add, increment, decrement, remove, replace, setQuantity, clear, restore }
 })

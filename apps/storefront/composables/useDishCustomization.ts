@@ -27,25 +27,45 @@ type UseDishCustomizationProps = {
   modifiers: DishModifierGroup[]
   addons: ClientAddon[]
   currency?: string
+  initialQuantity?: number
+  initialRemovedIngredients?: string[]
+  initialModifiers?: OrderItemModifier[]
+  initialAddonIds?: string[]
 }
 
 export function useDishCustomization(props: UseDishCustomizationProps) {
   const currency = props.currency ?? '₽'
 
   // --- State ---
-  const quantity = ref(1)
-  const removedSet = ref(new Set<string>())
+  const quantity = ref(props.initialQuantity ?? 1)
+  const removedSet = ref(new Set<string>(props.initialRemovedIngredients ?? []))
 
   // modifiers: groupId → selected optionId
   const selectedModifiers = reactive<Record<string, string>>({})
 
-  // Init default modifiers
+  // Init modifiers: prefer initialModifiers, fall back to defaults
   for (const group of props.modifiers) {
-    const defaultOpt = group.options.find((o) => o.isDefault) ?? group.options[0]
-    if (defaultOpt) selectedModifiers[group.groupId] = defaultOpt.optionId
+    let matchedOptionId: string | undefined
+
+    if (props.initialModifiers?.length) {
+      const initMod = props.initialModifiers.find((m) => m.groupName === group.groupName)
+      if (initMod) {
+        const option = group.options.find(
+          (o) => (initMod.optionId && o.optionId === initMod.optionId) || o.optionName === initMod.optionName,
+        )
+        if (option) matchedOptionId = option.optionId
+      }
+    }
+
+    if (!matchedOptionId) {
+      const defaultOpt = group.options.find((o) => o.isDefault) ?? group.options[0]
+      if (defaultOpt) matchedOptionId = defaultOpt.optionId
+    }
+
+    if (matchedOptionId) selectedModifiers[group.groupId] = matchedOptionId
   }
 
-  const selectedAddonIds = ref(new Set<string>())
+  const selectedAddonIds = ref(new Set<string>(props.initialAddonIds ?? []))
 
   // --- Computed ---
 

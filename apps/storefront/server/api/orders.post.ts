@@ -1,37 +1,12 @@
 import { findDeliveryZone, normalizePhone } from '@fastio/shared'
 import type { DeliveryZone } from '@fastio/shared'
 import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
+import { createRateLimiter } from '../utils/rateLimit'
 
 const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in'] as const
 const VALID_PAYMENT_TYPES = ['cash', 'card', 'online'] as const
 
-// --- In-memory rate limiter по IP ---
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT_MAX = 5
-const RATE_LIMIT_WINDOW_MS = 60_000
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return true
-  }
-
-  if (entry.count >= RATE_LIMIT_MAX) return false
-
-  entry.count++
-  return true
-}
-
-// Периодическая очистка устаревших записей
-setInterval(() => {
-  const now = Date.now()
-  for (const [ip, entry] of rateLimitMap) {
-    if (now > entry.resetAt) rateLimitMap.delete(ip)
-  }
-}, RATE_LIMIT_WINDOW_MS)
+const orderRateLimiter = createRateLimiter(5, 60_000)
 
 export default defineEventHandler(async (event) => {
   const tenantId = event.context.tenantId as string | undefined
@@ -39,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   // Rate limiting
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
-  if (!checkRateLimit(ip)) {
+  if (!orderRateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }
 
@@ -65,16 +40,17 @@ export default defineEventHandler(async (event) => {
 
   const supabase = getServerSupabase()
 
-  // Получаем данные тенанта для delivery_fee и delivery_min_order
-  const { data: tenantData, error: tenantError } = await supabase
-    .from('tenants')
-    .select('delivery_fee, delivery_min_order, modules')
-    .eq('id', tenantId)
-    .single()
+  // Получаем данные тенанта и начальный статус заказа параллельно
+  const [{ data: tenantData, error: tenantError }, { data: initialStatusData }] = await Promise.all([
+    supabase.from('tenants').select('delivery_fee, delivery_min_order, modules').eq('id', tenantId).single(),
+    supabase.from('order_statuses').select('id').eq('tenant_id', tenantId).eq('group_type', 'new').order('position').limit(1).single(),
+  ])
 
   if (tenantError || !tenantData) {
     throw createError({ statusCode: 500, message: 'Не удалось получить данные ресторана' })
   }
+
+  const initialStatus = initialStatusData!.id
 
   if (deliveryType === 'delivery' && !tenantData.modules?.delivery) {
     throw createError({ statusCode: 400, message: 'Доставка отключена' })
@@ -273,8 +249,13 @@ export default defineEventHandler(async (event) => {
   )
 
   // Delivery fee и min order: из зоны (если есть) или из тенанта (fallback)
+  // freeDeliveryFrom: если сумма >= порога — доставка бесплатна
+  const zoneDeliveryFee = matchedZone
+    ? (matchedZone.freeDeliveryFrom > 0 && subtotal >= matchedZone.freeDeliveryFrom ? 0 : matchedZone.deliveryFee)
+    : null
+
   const deliveryFee = deliveryType === 'delivery'
-    ? (matchedZone ? matchedZone.deliveryFee : Number(tenantData.delivery_fee))
+    ? (zoneDeliveryFee !== null ? zoneDeliveryFee : Number(tenantData.delivery_fee))
     : 0
 
   const minOrder = matchedZone ? matchedZone.minOrder : Number(tenantData.delivery_min_order)
@@ -349,7 +330,7 @@ export default defineEventHandler(async (event) => {
       subtotal,
       delivery_fee: deliveryFee,
       total,
-      status: 'new',
+      status: initialStatus,
       payment_type: paymentType,
       ...(idempotencyKey && { idempotency_key: idempotencyKey }),
       ...(orderBranchId && { branch_id: orderBranchId }),

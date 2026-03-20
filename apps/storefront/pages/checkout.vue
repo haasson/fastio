@@ -1,0 +1,300 @@
+<template>
+  <PageShell>
+    <SfSection>
+      <StorePageLayout back-to="/cart" back-label="Корзина">
+        <template #heading>Оформление</template>
+
+        <div class="checkout-layout">
+          <div class="checkout-form">
+
+            <!-- Delivery type (only if both enabled) -->
+            <section v-if="showDeliveryTabs" class="form-section">
+              <div class="delivery-tabs">
+                <button
+                  type="button"
+                  class="delivery-tab"
+                  :class="{ active: checkout.form.deliveryType === 'delivery' }"
+                  @click="setDeliveryType('delivery')"
+                >
+                  <Truck :size="16" /> Доставка
+                </button>
+                <button
+                  type="button"
+                  class="delivery-tab"
+                  :class="{ active: checkout.form.deliveryType === 'pickup' }"
+                  @click="setDeliveryType('pickup')"
+                >
+                  <PersonStanding :size="16" /> Самовывоз
+                </button>
+              </div>
+            </section>
+
+            <CheckoutAddressSection
+              v-if="checkout.form.deliveryType === 'delivery'"
+              ref="addressRef"
+              :currency="currency"
+            />
+
+            <!-- Customer data -->
+            <section class="form-section">
+              <SfHeading as="h6" class="section-title">Ваши данные</SfHeading>
+              <div class="fields-stack">
+                <SfField label="Имя">
+                  <SfInput v-model="checkout.form.customerName" placeholder="Иван" autocomplete="given-name" />
+                </SfField>
+                <SfField label="Телефон" required :error="phoneError">
+                  <SfInput
+                    v-model="checkout.form.customerPhone"
+                    type="tel"
+                    placeholder="+7 (999) 123-45-67"
+                    autocomplete="tel"
+                    mask="+7 (###) ###-##-##"
+                    :error="!!phoneError"
+                  />
+                </SfField>
+                <SfField label="Комментарий к заказу">
+                  <SfTextarea v-model="checkout.form.comment" placeholder="Домофон, этаж, пожелания..." :rows="2" resize="none" />
+                </SfField>
+              </div>
+            </section>
+
+            <!-- Payment -->
+            <section class="form-section">
+              <SfHeading as="h6" class="section-title">Оплата</SfHeading>
+              <SfRadioGroup v-model="checkout.form.paymentType" :options="paymentOptions" orientation="vertical" />
+            </section>
+
+            <CheckoutPromoSection :currency="currency" />
+          </div>
+
+          <CheckoutSidebar
+            :currency="currency"
+            :error="submitError"
+            :loading="submitting"
+            @submit="submitOrder"
+          />
+        </div>
+      </StorePageLayout>
+    </SfSection>
+  </PageShell>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useNuxtData, navigateTo } from 'nuxt/app'
+import { Truck, PersonStanding } from 'lucide-vue-next'
+import type { Tenant } from '@fastio/shared'
+import { useCartStore } from '~/stores/cart'
+import { useCheckoutStore } from '~/stores/checkout'
+import { useCurrency } from '~/composables/useCurrency'
+import PageShell from '~/components/sections/PageShell.vue'
+import SfSection from '~/components/sf/layout/SfSection.vue'
+import SfHeading from '~/components/sf/typography/SfHeading.vue'
+import SfInput from '~/components/sf/form/SfInput.vue'
+import SfTextarea from '~/components/sf/form/SfTextarea.vue'
+import SfField from '~/components/sf/form/SfField.vue'
+import SfRadioGroup from '~/components/sf/form/SfRadioGroup.vue'
+import StorePageLayout from '~/components/layout/StorePageLayout.vue'
+import CheckoutAddressSection from '~/components/checkout/CheckoutAddressSection.vue'
+import CheckoutPromoSection from '~/components/checkout/CheckoutPromoSection.vue'
+import CheckoutSidebar from '~/components/checkout/CheckoutSidebar.vue'
+
+
+const cart = useCartStore()
+const checkout = useCheckoutStore()
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+const currency = useCurrency()
+const { deliveryFee, discountAmount, orderTotal } = storeToRefs(checkout)
+
+const showDeliveryTabs = computed(() => {
+  const m = tenant.value?.modules
+  return !!m?.delivery && !!m?.pickup
+})
+
+const paymentOptions = [
+  { value: 'card', label: 'Картой при получении' },
+  { value: 'cash', label: 'Наличными' },
+]
+
+function setDeliveryType(type: 'delivery' | 'pickup') {
+  checkout.form.deliveryType = type
+  if (type === 'pickup') {
+    checkout.deliveryZone = null
+    checkout.outsideZones = false
+  }
+}
+
+// Phone validation
+const phoneError = ref('')
+watch(() => checkout.form.customerPhone, () => { phoneError.value = '' })
+
+// Address validation
+const addressRef = ref<InstanceType<typeof CheckoutAddressSection> | null>(null)
+
+function validate(): boolean {
+  phoneError.value = ''
+
+  const phoneDigits = checkout.form.customerPhone.replace(/\D/g, '')
+  if (!phoneDigits) { phoneError.value = 'Телефон обязателен'; return false }
+  if (phoneDigits.length < 11) { phoneError.value = 'Введите номер полностью'; return false }
+
+  if (checkout.form.deliveryType === 'delivery') {
+    if (!addressRef.value?.isValid()) return false
+    if (checkout.outsideZones) return false
+    if (checkout.hasZones && !checkout.deliveryZone) return false
+  }
+
+  return true
+}
+
+// Submit
+const submitting = ref(false)
+const submitError = ref('')
+const idempotencyKey = ref('')
+
+onMounted(async () => {
+  checkout.restore()
+  cart.restore()
+
+  if (cart.items.length === 0) {
+    await navigateTo('/cart')
+    return
+  }
+
+  idempotencyKey.value = crypto.randomUUID()
+
+  const m = tenant.value?.modules
+  if (m && !m.delivery && m.pickup) checkout.form.deliveryType = 'pickup'
+  else if (m && m.delivery && !m.pickup) checkout.form.deliveryType = 'delivery'
+})
+
+async function submitOrder() {
+  if (!validate()) return
+  if (cart.items.length === 0) return
+
+  submitting.value = true
+  submitError.value = ''
+
+  try {
+    const body: Record<string, unknown> = {
+      customer: {
+        name: checkout.form.customerName || undefined,
+        phone: checkout.form.customerPhone,
+      },
+      items: cart.items.map((item) => ({
+        dishId: item.dishId,
+        comboId: item.comboId,
+        dishName: item.dishName,
+        categoryName: item.categoryName,
+        price: item.price,
+        quantity: item.quantity,
+        removedIngredients: item.removedIngredients ?? [],
+        modifiers: item.modifiers ?? [],
+        addons: item.addons ?? [],
+      })),
+      deliveryType: checkout.form.deliveryType,
+      comment: checkout.form.comment || undefined,
+      paymentType: checkout.form.paymentType,
+      idempotencyKey: idempotencyKey.value,
+    }
+
+    if (checkout.form.deliveryType === 'delivery') {
+      body.address = checkout.form.address
+      if (checkout.form.addressCoords) {
+        body.geoLat = checkout.form.addressCoords.lat
+        body.geoLon = checkout.form.addressCoords.lon
+      }
+    }
+
+    if (checkout.promoResult?.valid && checkout.form.promoCode) {
+      body.promoCode = checkout.form.promoCode.trim()
+    }
+
+    const result = await $fetch<{ id: string }>('/api/orders', { method: 'POST', body })
+
+    cart.clear()
+    await navigateTo(`/order/${result.id}`)
+  } catch (err: unknown) {
+    const fetchErr = err as { data?: { message?: string } }
+    submitError.value = fetchErr?.data?.message ?? 'Не удалось оформить заказ. Попробуйте ещё раз.'
+  } finally {
+    submitting.value = false
+  }
+}
+</script>
+
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include md {
+    grid-template-columns: 1fr 380px;
+    align-items: start;
+  }
+}
+
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-section {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border);
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.section-title {
+  margin: 0 0 16px;
+}
+
+.delivery-tabs {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  overflow: hidden;
+}
+
+.delivery-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: background 0.15s, color 0.15s;
+
+  &.active {
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+
+  &:not(.active):hover {
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+}
+
+.fields-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+</style>

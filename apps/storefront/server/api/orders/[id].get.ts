@@ -16,5 +16,16 @@ export default defineEventHandler(async (event) => {
 
   if (!data) throw createError({ statusCode: 404, message: 'Заказ не найден' })
 
-  return mapOrder(data)
+  // status — text column (UUID or legacy string), no FK — separate lookup
+  let statusInfo: { group_type: string; name: string } | null = null
+  if (data.status) {
+    const { data: statusRow } = await supabase
+      .from('order_statuses')
+      .select('group_type, name')
+      .eq('id', data.status)
+      .maybeSingle()
+    statusInfo = statusRow
+  }
+
+  return mapOrder({ ...data, _statusInfo: statusInfo })
 })

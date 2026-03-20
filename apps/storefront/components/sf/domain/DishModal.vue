@@ -28,12 +28,7 @@
         @update:selected-addon-ids="selectedAddonIds = new Set($event)"
       />
 
-      <div class="footer">
-        <SfStepper v-model="quantity" :min="1" :max="99" />
-        <SfButton variant="primary" class="add-btn" @click="onAdd">
-          Добавить за {{ totalPrice }} {{ custCurrency }}
-        </SfButton>
-      </div>
+      <DishModalFooter v-model="quantity" :total-price="totalPrice" :currency="custCurrency" :mode="mode" @confirm="onConfirm" />
     </div>
   </SfDrawer>
 
@@ -81,30 +76,23 @@
         />
       </div>
 
-      <!-- Footer: stepper + add button -->
-      <div class="footer">
-        <SfStepper v-model="quantity" :min="1" :max="99" />
-        <SfButton variant="primary" class="add-btn" @click="onAdd">
-          Добавить за {{ totalPrice }} {{ custCurrency }}
-        </SfButton>
-      </div>
+      <DishModalFooter v-model="quantity" :total-price="totalPrice" :currency="custCurrency" :mode="mode" @confirm="onConfirm" />
     </div>
   </SfDialog>
 </template>
 
 <script setup lang="ts">
-import type { DishModifierGroup } from '@fastio/shared'
+import type { DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import type { ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
 import SfDrawer from '~/components/sf/overlay/SfDrawer.vue'
 import SfDialog from '~/components/sf/overlay/SfDialog.vue'
-import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import SfHeading from '~/components/sf/typography/SfHeading.vue'
 import SfText from '~/components/sf/typography/SfText.vue'
-import SfButton from '~/components/sf/base/SfButton.vue'
 import DishCustomization from '~/components/sf/domain/DishCustomization.vue'
 import DishNutrition from '~/components/sf/domain/DishNutrition.vue'
+import DishModalFooter from '~/components/sf/domain/DishModalFooter.vue'
 import { useIsMobile } from '~/composables/useIsMobile'
 import { useDishCustomization } from '~/composables/useDishCustomization'
 
@@ -114,12 +102,18 @@ type Props = {
   modifiers: DishModifierGroup[]
   addons: ClientAddon[]
   currency?: string
+  mode?: 'add' | 'edit'
+  initialQuantity?: number
+  initialRemovedIngredients?: string[]
+  initialModifiers?: OrderItemModifier[]
+  initialAddonIds?: string[]
 }
 
-const props = withDefaults(defineProps<Props>(), { currency: '₽' })
+const props = withDefaults(defineProps<Props>(), { currency: '₽', mode: 'add' })
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'add': [item: CartItem]
+  'edit': [item: CartItem]
 }>()
 
 const isMobile = useIsMobile()
@@ -139,10 +133,19 @@ const {
   modifiers: props.modifiers,
   addons: props.addons,
   currency: props.currency,
+  initialQuantity: props.initialQuantity,
+  initialRemovedIngredients: props.initialRemovedIngredients,
+  initialModifiers: props.initialModifiers,
+  initialAddonIds: props.initialAddonIds,
 })
 
-function onAdd() {
-  emit('add', buildCartItem())
+function onConfirm() {
+  const item = buildCartItem()
+  if (props.mode === 'edit') {
+    emit('edit', item)
+  } else {
+    emit('add', item)
+  }
   emit('update:modelValue', false)
 }
 </script>
@@ -151,19 +154,6 @@ function onAdd() {
 @use '~/assets/styles/mixins' as *;
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
-
-.footer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
-  flex-shrink: 0;
-}
-
-.add-btn {
-  flex: 1;
-}
 
 // ─── Mobile drawer content ───────────────────────────────────────────────────
 

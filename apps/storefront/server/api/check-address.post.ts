@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const lat = Number(body.lat)
   const lon = Number(body.lon)
+  const subtotal = Number(body.subtotal ?? 0)
 
   if (Number.isNaN(lat) || Number.isNaN(lon)) {
     throw createError({ statusCode: 400, message: 'lat и lon обязательны' })
@@ -52,6 +53,7 @@ export default defineEventHandler(async (event) => {
       deliveryFee: zone.deliveryFee,
       minOrder: zone.minOrder,
       freeDeliveryFrom: zone.freeDeliveryFrom,
+      effectiveDeliveryFee: zone.freeDeliveryFrom && zone.freeDeliveryFrom > 0 && subtotal >= zone.freeDeliveryFrom ? 0 : zone.deliveryFee,
     },
   }
 })

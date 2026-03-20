@@ -83,6 +83,8 @@ export type Order = {
   deliveryFee: number
   total: number
   status: string
+  statusGroup: OrderStatusGroup | null
+  statusName: string | null
   paymentType: 'cash' | 'card' | 'online'
   branchId: string | null
   deliveryZoneId: string | null

@@ -38,7 +38,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // Dev fallback: ?slug=demo-pizza
-  const querySlug = getQuery(event).slug as string | undefined
+  const querySlug = import.meta.dev
+    ? (getQuery(event).slug as string | undefined)
+    : undefined
   if (querySlug) {
     const { data: byQuerySlug } = await supabase
       .from('tenants')
