@@ -29,53 +29,40 @@
           <ShoppingCart :size="20" :stroke-width="1.7" />
         </FsIconButton>
 
-        <button
-          class="burger"
-          :class="{ 'burger--active': menuOpen }"
-          :aria-label="menuOpen ? 'Закрыть' : 'Меню'"
-          @click="menuOpen = !menuOpen"
-        >
-          <span class="burger-line" />
-          <span class="burger-line" />
-          <span class="burger-line" />
-        </button>
+        <FsBurger v-model="menuOpen" style="--burger-color: var(--primary)" />
       </div>
     </div>
   </FsSection>
 
-  <Teleport to="body">
-    <Transition name="mobile-menu">
-      <div v-if="menuOpen" class="mobile-menu" @click.self="menuOpen = false">
-        <nav v-if="header.showNav && navLinks.length" class="mobile-nav">
-          <NuxtLink
-            v-for="link in navLinks"
-            :key="link.page"
-            class="mobile-nav-link"
-            :to="link.to"
-            @click="menuOpen = false"
-          >
-            {{ link.label }}
-          </NuxtLink>
-        </nav>
+  <FsMobileMenu v-model="menuOpen">
+    <nav v-if="header.showNav && navLinks.length" class="mobile-nav">
+      <NuxtLink
+        v-for="link in navLinks"
+        :key="link.page"
+        class="mobile-nav-link"
+        :to="link.to"
+        @click="menuOpen = false"
+      >
+        {{ link.label }}
+      </NuxtLink>
+    </nav>
 
-        <div v-if="header.showPhone || header.showWorkingHours" class="mobile-venue">
-          <a v-if="header.showPhone" class="mobile-phone" :href="`tel:${tenant?.contacts?.phone}`">
-            {{ tenant?.contacts?.phone }}
-          </a>
-          <span v-if="header.showWorkingHours" class="mobile-hours">{{ tenant?.workingHours }}</span>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+    <div v-if="header.showPhone || header.showWorkingHours" class="mobile-venue">
+      <a v-if="header.showPhone" class="mobile-phone" :href="`tel:${tenant?.contacts?.phone}`">
+        {{ tenant?.contacts?.phone }}
+      </a>
+      <span v-if="header.showWorkingHours" class="mobile-hours">{{ tenant?.workingHours }}</span>
+    </div>
+  </FsMobileMenu>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
-import { FsSection, FsIconButton } from '@fastio/public-ui'
+import { FsSection, FsIconButton, FsBurger, FsMobileMenu } from '@fastio/public-ui'
 
 const props = defineProps<{
   tenant: Tenant | null
@@ -95,16 +82,6 @@ const navLinks = computed(() =>
 )
 
 const menuOpen = ref(false)
-
-watch(menuOpen, (open) => {
-  if (import.meta.client) {
-    document.body.style.overflow = open ? 'hidden' : ''
-  }
-})
-
-onUnmounted(() => {
-  if (import.meta.client) document.body.style.overflow = ''
-})
 </script>
 
 <style scoped lang="scss">
@@ -186,54 +163,7 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
-// ─── Burger ───────────────────────────────────────────────────────────────────
-
-.burger {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  flex-shrink: 0;
-
-  @include md { display: none; }
-}
-
-.burger-line {
-  width: 22px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--primary);
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.burger--active {
-  .burger-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .burger-line:nth-child(2) { opacity: 0; }
-  .burger-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-}
-
-// ─── Mobile menu ─────────────────────────────────────────────────────────────
-
-.mobile-menu {
-  position: fixed;
-  inset: 0;
-  z-index: 150;
-  background: var(--color-bg);
-  display: flex;
-  flex-direction: column;
-  padding: 80px 24px 40px;
-  overflow-y: auto;
-  font-family: var(--font-family);
-
-  @include md { display: none; }
-}
+// ─── Mobile menu content ────────────────────────────────────────────────────
 
 .mobile-nav {
   display: flex;
@@ -275,18 +205,5 @@ onUnmounted(() => {
   font-family: inherit;
   font-size: 14px;
   color: var(--color-text-secondary);
-}
-
-// ─── Transition ───────────────────────────────────────────────────────────────
-
-.mobile-menu-enter-active,
-.mobile-menu-leave-active {
-  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.mobile-menu-enter-from,
-.mobile-menu-leave-to {
-  opacity: 0;
-  transform: translateY(-16px);
 }
 </style>

@@ -2,7 +2,7 @@
   <section id="hero" class="hero-root">
     <div class="container">
       <div class="hero-text">
-        <span class="label">Конструктор сайта для малого бизнеса</span>
+        <span class="label">Конструктор сайта для бизнеса</span>
 
         <h1 class="title">Сайт с&nbsp;<em>онлайн&#8209;заказами</em> для&nbsp;любого бизнеса</h1>
 
@@ -13,7 +13,7 @@
 
         <div class="actions">
           <FsButton size="large" variant="primary" class="btn-primary">Попробовать бесплатно</FsButton>
-          <FsButton size="large" variant="ghost" class="btn-ghost">Смотреть демо →</FsButton>
+          <FsButton size="large" variant="outline" class="btn-outline">Смотреть демо →</FsButton>
         </div>
       </div>
 
@@ -92,8 +92,12 @@ import { FsButton, FsText } from '@fastio/public-ui'
 <style scoped lang="scss">
 .hero-root {
   background: var(--ln-cream);
-  padding: 80px 32px;
+  padding: 48px 16px;
   display: flex;
+
+  @media (min-width: 480px) {
+    padding: 64px 24px;
+  }
 
   @media (min-width: 768px) {
     padding: 100px 32px;
@@ -110,7 +114,7 @@ import { FsButton, FsText } from '@fastio/public-ui'
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 40px;
 
   @media (min-width: 1100px) {
@@ -163,14 +167,19 @@ import { FsButton, FsText } from '@fastio/public-ui'
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: 800;
-  font-size: 32px;
-  line-height: 1.15;
+  font-size: 24px;
+  line-height: 1.2;
   color: var(--ln-black);
   max-width: 600px;
 
   em {
     color: var(--ln-accent);
     font-style: normal;
+  }
+
+  @media (min-width: 480px) {
+    font-size: 32px;
+    line-height: 1.15;
   }
 
   @media (min-width: 1100px) {
@@ -220,16 +229,12 @@ import { FsButton, FsText } from '@fastio/public-ui'
   }
 }
 
-.btn-ghost {
-  --primary: transparent;
-  --on-primary: var(--ln-black);
-  --primary-hover: transparent;
-  border: none;
-  box-shadow: none;
-  padding-left: 4px;
+.btn-outline {
+  color: var(--ln-black);
+  border-color: var(--color-border);
 
   &:hover {
-    opacity: 0.7;
+    border-color: var(--ln-black);
   }
 }
 

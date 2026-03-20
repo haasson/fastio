@@ -3,41 +3,48 @@
     <div class="container">
       <a href="/" class="logo"><span>Fast</span><span class="logo-accent">io</span></a>
 
-      <nav class="nav" :class="{ open: menuOpen }">
+      <nav class="nav">
         <a
           v-for="link in navLinks"
           :key="link.href"
           :href="link.href"
           class="nav-link"
-          @click="closeMenu"
         >
           {{ link.label }}
         </a>
-        <FsButton variant="primary" class="nav-cta cta-black" @click="closeMenu">
-          Попробовать бесплатно
-        </FsButton>
       </nav>
 
       <FsButton variant="primary" class="cta-desktop cta-black">
         Попробовать бесплатно
       </FsButton>
 
-      <button
-        class="burger"
-        :aria-label="menuOpen ? 'Закрыть меню' : 'Открыть меню'"
-        @click="menuOpen = !menuOpen"
-      >
-        <X v-if="menuOpen" :size="24" />
-        <Menu v-else :size="24" />
-      </button>
+      <FsBurger v-model="menuOpen" style="--burger-color: var(--ln-black)" />
     </div>
   </header>
+
+  <FsMobileMenu v-model="menuOpen" style="--mobile-menu-bg: var(--ln-white)">
+    <nav class="mobile-nav">
+      <a
+        v-for="link in navLinks"
+        :key="link.href"
+        :href="link.href"
+        class="mobile-nav-link"
+        @click="menuOpen = false"
+      >
+        {{ link.label }}
+      </a>
+    </nav>
+    <div class="mobile-bottom">
+      <FsButton variant="primary" size="large" class="cta-black" @click="menuOpen = false">
+        Попробовать бесплатно
+      </FsButton>
+    </div>
+  </FsMobileMenu>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { FsButton } from '@fastio/public-ui'
-import { Menu, X } from 'lucide-vue-next'
+import { FsButton, FsBurger, FsMobileMenu } from '@fastio/public-ui'
 
 type NavLink = {
   label: string
@@ -58,10 +65,6 @@ function onScroll() {
   scrolled.value = window.scrollY > 10
 }
 
-function closeMenu() {
-  menuOpen.value = false
-}
-
 onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
@@ -76,7 +79,7 @@ onUnmounted(() => {
 .header-root {
   position: sticky;
   top: 0;
-  z-index: var(--z-sticky);
+  z-index: var(--z-sticky, 100);
   background: transparent;
   transition: background 0.25s, box-shadow 0.25s;
 
@@ -93,7 +96,11 @@ onUnmounted(() => {
   height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+
+  @media (min-width: 768px) {
+    padding: 0 24px;
+  }
 }
 
 .logo {
@@ -103,6 +110,7 @@ onUnmounted(() => {
   color: var(--ln-black);
   text-decoration: none;
   flex-shrink: 0;
+  margin-right: auto;
 }
 
 .logo-accent {
@@ -111,17 +119,10 @@ onUnmounted(() => {
 
 .nav {
   display: none;
-  flex-direction: column;
-  position: absolute;
-  top: 64px;
-  left: 0;
-  right: 0;
-  background: var(--ln-white);
-  padding: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  gap: 8px;
+  gap: 4px;
+  align-items: center;
 
-  &.open {
+  @media (min-width: 768px) {
     display: flex;
   }
 }
@@ -132,7 +133,7 @@ onUnmounted(() => {
   font-family: var(--font-family);
   font-size: 14px;
   font-weight: 400;
-  padding: 10px 8px;
+  padding: 8px 12px;
   border-radius: var(--radius-btn);
   transition: color 0.15s;
 
@@ -152,57 +153,42 @@ onUnmounted(() => {
   }
 }
 
-.nav-cta {
-  display: flex;
-  margin-top: 8px;
-}
-
 .cta-desktop {
   display: none;
-}
+  flex-shrink: 0;
 
-.burger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text);
-  padding: 4px;
-}
-
-@media (min-width: 768px) {
-  .container {
-    padding: 0 24px;
-  }
-
-  .nav {
-    display: flex;
-    flex-direction: row;
-    position: static;
-    background: transparent;
-    padding: 0;
-    box-shadow: none;
-    gap: 4px;
-    align-items: center;
-  }
-
-  .nav-link {
-    padding: 8px 12px;
-  }
-
-  .nav-cta {
-    display: none;
-  }
-
-  .cta-desktop {
+  @media (min-width: 768px) {
     display: inline-flex;
-    flex-shrink: 0;
   }
+}
 
-  .burger {
-    display: none;
+// ─── Mobile menu content ────────────────────────────────────────────────────
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-nav-link {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+  transition: color 0.15s;
+
+  &:first-child { border-top: 1px solid var(--color-border); }
+  &:hover { color: var(--ln-accent); }
+}
+
+.mobile-bottom {
+  margin-top: auto;
+  padding-top: 32px;
+
+  :deep(button) {
+    width: 100%;
   }
 }
 </style>

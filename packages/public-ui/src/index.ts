@@ -22,6 +22,8 @@ export { default as FsSection } from './components/layout/FsSection.vue'
 // Nav
 export { default as FsTabs } from './components/nav/FsTabs.vue'
 export { default as FsScrollNav } from './components/nav/FsScrollNav.vue'
+export { default as FsBurger } from './components/nav/FsBurger.vue'
+export { default as FsMobileMenu } from './components/nav/FsMobileMenu.vue'
 
 // Form
 export { default as FsInput } from './components/form/FsInput.vue'
