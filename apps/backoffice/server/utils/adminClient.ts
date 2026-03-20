@@ -33,7 +33,7 @@ export function getAdminClient() {
 
   const token = isJwt
     ? buildEs256Jwt(config.supabaseJwtPrivateKey, supabaseUrl)
-    : config.supabaseServiceKey
+    : config.supabaseServiceRoleKey
 
   const client = createClient(supabaseUrl, token, { auth: { persistSession: false } })
   const expiresAt = isJwt ? Date.now() + 55 * 60 * 1000 : Infinity

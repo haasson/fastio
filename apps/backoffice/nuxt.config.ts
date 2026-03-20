@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   ssr: false,
   imports: { autoImport: false },
   runtimeConfig: {
-    supabaseServiceKey: '', // NUXT_SUPABASE_SERVICE_KEY
+    supabaseServiceRoleKey: '', // NUXT_SUPABASE_SERVICE_ROLE_KEY
     supabaseJwtPrivateKey: '', // NUXT_SUPABASE_JWT_PRIVATE_KEY — только local dev
     backofficeUser: '', // NUXT_BACKOFFICE_USER
     backofficePass: '', // NUXT_BACKOFFICE_PASS
