@@ -35,11 +35,12 @@ export const kitchenQueueApi = {
       sb.from('kitchen_queue')
         .select('*')
         .eq('tenant_id', tenantId)
-        .in('status', ['queued', 'in_progress'])
+        .in('status', ['queued', 'in_progress', 'cancelled'])
         .order('created_at', { ascending: true }),
     )
 
-    return (data ?? []).map(mapKitchenQueueItem)
+    // Cancelled without assignee (was in queue) — no need to show
+    return (data ?? []).map(mapKitchenQueueItem).filter((i) => !(i.status === 'cancelled' && !i.assignedTo))
   },
 
   async listForAssembly(sb: SupabaseClient, tenantId: string): Promise<KitchenQueueItem[]> {
@@ -102,6 +103,29 @@ export const kitchenQueueApi = {
       sb.from('kitchen_queue')
         .update({ status: 'served', served_at: new Date().toISOString() })
         .eq('id', id),
+    )
+  },
+
+  async cancelForOrders(sb: SupabaseClient, orderIds: string[]): Promise<void> {
+    if (!orderIds.length) return
+
+    await query(
+      sb.from('kitchen_queue')
+        .update({ status: 'cancelled' })
+        .in('order_id', orderIds)
+        .in('status', ['queued', 'in_progress']),
+    )
+  },
+
+  async serveAllForOrders(sb: SupabaseClient, orderIds: string[]): Promise<void> {
+    if (!orderIds.length) return
+    const now = new Date().toISOString()
+
+    await query(
+      sb.from('kitchen_queue')
+        .update({ status: 'served', served_at: now })
+        .in('order_id', orderIds)
+        .in('status', ['queued', 'in_progress', 'done']),
     )
   },
 }

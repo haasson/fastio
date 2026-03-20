@@ -10,7 +10,9 @@ import { alertNewOrder } from '~/composables/data/useAlerts'
 export function useOrderAlertHandler() {
   const { increment } = useNewOrderCounter()
 
-  const off = orderEvents.onInsert(() => {
+  const off = orderEvents.onInsert((order) => {
+    if (order.deliveryType === 'dine_in') return
+
     increment()
     alertNewOrder()
   })

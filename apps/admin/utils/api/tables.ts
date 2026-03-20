@@ -1,12 +1,22 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Table, TableFormData, TableShape } from '@fastio/shared'
+import type { Table, TableFormData, TableShape, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
+import { orderItemKey } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TableRow } from './db-types'
+
+export type TableSessionItem = {
+  dishName: string
+  quantity: number
+  price: number
+  modifiers: OrderItemModifier[]
+  addons: OrderItemAddon[]
+  removedIngredients: string[]
+}
 
 export type TableSession = {
   sum: number
   count: number
-  items: { dishName: string; quantity: number; price: number }[]
+  items: TableSessionItem[]
 }
 
 const mapTable = (raw: Record<string, unknown>): Table => {
@@ -106,7 +116,7 @@ export const tablesApi = {
     const earliestOpenedAt = openTables.map((t) => t.openedAt!).sort()[0]
 
     let q = sb.from('orders')
-      .select('table_id, total, created_at, order_items(dish_name, quantity, price)')
+      .select('table_id, total, created_at, order_items(dish_name, quantity, price, modifiers, addons, removed_ingredients)')
       .in('table_id', tableIds)
       .gte('created_at', earliestOpenedAt)
 
@@ -114,15 +124,28 @@ export const tablesApi = {
       q = q.not('status', 'in', `(${cancelledStatusIds.join(',')})`)
     }
 
+    type RawItem = {
+      dish_name: string
+      quantity: number
+      price: number
+      modifiers: OrderItemModifier[]
+      addons: OrderItemAddon[]
+      removed_ingredients: string[]
+    }
+
     type OrderWithItems = {
       table_id: string
       total: number
       created_at: string
-      order_items: { dish_name: string; quantity: number; price: number }[]
+      order_items: RawItem[]
     }
 
     const data = await query(q)
     const result: Record<string, TableSession> = {}
+
+    const itemKey = (item: RawItem) => `${item.dish_name}::${orderItemKey(item.modifiers ?? [], item.addons ?? [], item.removed_ingredients ?? [])}`
+
+    const itemKeyMaps = new Map<string, Map<string, TableSessionItem>>()
 
     for (const order of (data ?? []) as OrderWithItems[]) {
       const table = openTables.find((t) => t.id === order.table_id)
@@ -133,11 +156,28 @@ export const tablesApi = {
       result[order.table_id].sum += order.total
       result[order.table_id].count++
 
-      for (const item of order.order_items ?? []) {
-        const existing = result[order.table_id].items.find((i) => i.dishName === item.dish_name)
+      if (!itemKeyMaps.has(order.table_id)) itemKeyMaps.set(order.table_id, new Map())
+      const keyMap = itemKeyMaps.get(order.table_id)!
 
-        if (existing) existing.quantity += item.quantity
-        else result[order.table_id].items.push({ dishName: item.dish_name, quantity: item.quantity, price: item.price })
+      for (const item of order.order_items ?? []) {
+        const key = itemKey(item)
+        const existing = keyMap.get(key)
+
+        if (existing) {
+          existing.quantity += item.quantity
+        } else {
+          const newItem: TableSessionItem = {
+            dishName: item.dish_name,
+            quantity: item.quantity,
+            price: item.price,
+            modifiers: item.modifiers ?? [],
+            addons: item.addons ?? [],
+            removedIngredients: item.removed_ingredients ?? [],
+          }
+
+          keyMap.set(key, newItem)
+          result[order.table_id].items.push(newItem)
+        }
       }
     }
 

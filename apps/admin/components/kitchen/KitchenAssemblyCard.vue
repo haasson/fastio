@@ -48,6 +48,7 @@ const STATUS_LABELS: Record<KitchenQueueStatus, string> = {
   in_progress: 'Готовится',
   done: 'Готово',
   served: 'Подано',
+  cancelled: 'Отменено',
 }
 
 const doneCount = computed(() => props.items.filter((i) => i.status === 'done' || i.status === 'served').length)
@@ -59,6 +60,7 @@ const deliveryTagType = computed(() => props.deliveryType === 'delivery' ? 'prim
 const statusTagType = (status: KitchenQueueStatus) => {
   if (status === 'done' || status === 'served') return 'success' as const
   if (status === 'in_progress') return 'warning' as const
+  if (status === 'cancelled') return 'error' as const
 
   return 'default' as const
 }

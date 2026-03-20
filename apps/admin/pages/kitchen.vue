@@ -56,7 +56,7 @@ const offInsert = kitchenQueueEvents.onInsert((item: KitchenQueueItem) => {
 })
 
 const offUpdate = kitchenQueueEvents.onUpdate((item: KitchenQueueItem) => {
-  if (item.status === 'done' || item.status === 'served') itemCount.value = Math.max(0, itemCount.value - 1)
+  if (item.status === 'done' || item.status === 'served' || item.status === 'cancelled') itemCount.value = Math.max(0, itemCount.value - 1)
 })
 
 const offDelete = kitchenQueueEvents.onDelete(() => {

@@ -29,7 +29,7 @@ const currentOptions = ref<ConfirmOptions>({ title: '' })
 const useConfirm = () => {
   const { open } = useModals()
 
-  const confirm = async (options: ConfirmOptions): Promise<boolean> => {
+  const confirm = async (options: ConfirmOptions): Promise<boolean | null> => {
     currentOptions.value = { ...DEFAULT_OPTIONS, ...options }
     return open('__confirm__')
   }

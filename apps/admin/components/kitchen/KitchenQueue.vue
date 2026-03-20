@@ -4,7 +4,7 @@
       <UiSkeleton :repeat="6" />
     </div>
 
-    <template v-else-if="allActiveItems.length">
+    <template v-else-if="hasActiveItems">
       <div class="queue-layout">
         <!-- Queue (narrow left panel) -->
         <div class="panel queue-panel">
@@ -49,6 +49,21 @@
           </div>
 
           <div class="panel-scroll">
+            <div v-if="cancelledOnBoard.length" class="cancelled-list">
+              <UiCard
+                v-for="item in cancelledOnBoard"
+                :key="item.id"
+                size="small"
+                class="cancelled-card"
+              >
+                <div class="cancelled-row">
+                  <span class="cancelled-label">Отменено</span>
+                  <span class="cancelled-name">{{ item.dishName }}</span>
+                  <UiButton size="small" type="default" @click="dismissCancelled(item)">Ок</UiButton>
+                </div>
+              </UiCard>
+            </div>
+
             <div v-if="myItems.length" class="work-grid">
               <KitchenWorkCard
                 v-for="item in myItems"
@@ -62,7 +77,7 @@
                 @unclaim="unclaimDish(item)"
               />
             </div>
-            <UiEmpty v-else icon="chefHat" text="Возьмите блюдо из очереди" />
+            <UiEmpty v-else-if="!cancelledOnBoard.length" icon="chefHat" text="Возьмите блюдо из очереди" />
           </div>
         </div>
       </div>
@@ -80,7 +95,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted, reactive } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiSkeleton, UiButton, UiEmpty, UiSectionHeader } from '@fastio/ui'
+import { UiSkeleton, UiButton, UiEmpty, UiSectionHeader, UiCard } from '@fastio/ui'
 import type { KitchenQueueItem as KitchenQueueItemType, OrderEvent } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
@@ -109,9 +124,10 @@ const hasMultipleDeliveryTypes = computed(() => {
   return active.length > 1
 })
 
-const allActiveItems = computed(() => items.value.filter((i) => i.status === 'queued' || i.status === 'in_progress'))
 const queueItems = computed(() => items.value.filter((i) => i.status === 'queued'))
 const myItems = computed(() => items.value.filter((i) => i.status === 'in_progress' && i.assignedTo === currentUserId.value))
+const cancelledOnBoard = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo === currentUserId.value))
+const hasActiveItems = computed(() => queueItems.value.length > 0 || myItems.value.length > 0 || cancelledOnBoard.value.length > 0)
 
 // --- Category filter ---
 
@@ -235,6 +251,11 @@ const unclaimDish = async (qItem: KitchenQueueItemType) => {
   logKitchenEvent(qItem.orderId, 'kitchen_returned', { dishName: qItem.dishName, queueItemId: qItem.id })
 }
 
+const dismissCancelled = async (qItem: KitchenQueueItemType) => {
+  items.value = items.value.filter((i) => i.id !== qItem.id)
+  await api.kitchenQueue.unclaim(qItem.id)
+}
+
 // --- Realtime ---
 
 const offInsert = kitchenQueueEvents.onInsert((item) => {
@@ -246,7 +267,14 @@ const offInsert = kitchenQueueEvents.onInsert((item) => {
 })
 
 const offUpdate = kitchenQueueEvents.onUpdate((item) => {
-  if (item.status === 'queued' || item.status === 'in_progress') {
+  // Cancelled without assignee (was in queue) — just remove
+  if (item.status === 'cancelled' && !item.assignedTo) {
+    items.value = items.value.filter((i) => i.id !== item.id)
+
+    return
+  }
+
+  if (item.status === 'queued' || item.status === 'in_progress' || item.status === 'cancelled') {
     const idx = items.value.findIndex((i) => i.id === item.id)
 
     if (idx !== -1) items.value[idx] = item
@@ -361,6 +389,44 @@ onUnmounted(() => {
     border-color: var(--color-primary);
     color: #fff;
   }
+}
+
+// ── Cancelled ──
+
+.cancelled-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cancelled-card {
+  border: 1.5px solid var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.cancelled-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancelled-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-error);
+  flex-shrink: 0;
+}
+
+.cancelled-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-title);
+  text-decoration: line-through;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // ── Work panel ──

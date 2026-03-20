@@ -17,13 +17,13 @@ const state = shallowReactive<ModalManagerState>({
 const configState = shallowReactive<Record<string, ModalConfig | undefined>>({})
 
 const createController = (): ModalController => {
-  let resolver: (value: boolean) => void
+  let resolver: (value: boolean | null) => void
 
   const isShown = ref(false)
 
   const open = () => {
     isShown.value = true
-    return new Promise<boolean>((resolve) => {
+    return new Promise<boolean | null>((resolve) => {
       resolver = resolve
     })
   }
@@ -31,8 +31,9 @@ const createController = (): ModalController => {
   const close = () => { isShown.value = false }
   const decline = () => { close(); resolver(false) }
   const confirm = () => { close(); resolver(true) }
+  const dismiss = () => { close(); resolver(null) }
 
-  return { isShown, open, close, decline, confirm }
+  return { isShown, open, close, decline, confirm, dismiss }
 }
 
 const register = (name: string, controller: ModalController): void => {
@@ -46,7 +47,7 @@ const unregister = (name: string): void => {
   state.modals.delete(name)
 }
 
-const open = async (name: string, config?: ModalConfig): Promise<boolean> => {
+const open = async (name: string, config?: ModalConfig): Promise<boolean | null> => {
   const instance = state.modals.get(name)
 
   if (!instance) {

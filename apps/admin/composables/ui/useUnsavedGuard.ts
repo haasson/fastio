@@ -15,7 +15,7 @@ export const useUnsavedGuard = (isDirty: Ref<boolean>) => {
       cancelText: 'Остаться',
     })
 
-    return ok
+    return ok === true
   })
 
   const onBeforeUnload = (e: BeforeUnloadEvent) => {

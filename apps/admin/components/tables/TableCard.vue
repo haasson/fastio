@@ -28,27 +28,38 @@
       <UiText size="tiny" class="card-opened">Открыт {{ openedAgo }}</UiText>
 
       <div v-if="session?.items.length" class="card-items">
-        <div
-          v-for="item in visibleItems"
-          :key="item.dishName"
-          class="card-item"
-          :class="kitchenStatusClass(item.dishName)"
-        >
-          <span class="item-name">{{ item.dishName }}</span>
-          <UiTag
-            v-if="kitchenStatusLabel(item.dishName)"
-            size="small"
-            :type="kitchenStatusTag(item.dishName)"
-            round
-          >
-            {{ kitchenStatusLabel(item.dishName) }}
-          </UiTag>
-          <span class="item-price">{{ item.price }} × {{ item.quantity }}</span>
-          <span class="item-total">{{ item.price * item.quantity }} ₽</span>
+        <div v-for="item in visibleItems" :key="`${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`" class="card-item-wrap">
+          <div class="card-item">
+            <span class="item-name">{{ item.dishName }}</span>
+            <span class="item-price">{{ item.price }} × {{ item.quantity }}</span>
+            <span class="item-total">{{ item.price * item.quantity }} ₽</span>
+            <UiButton
+              size="small"
+              type="text"
+              icon="close"
+              class="item-remove"
+              @click="$emit('remove-dish', item)"
+            />
+          </div>
+          <div v-if="hasCustomizations(item)" class="item-extras">
+            <span v-for="mod in item.modifiers" :key="mod.optionName" class="extra">{{ mod.optionName }}</span>
+            <span v-for="addon in item.addons" :key="addon.addonName" class="extra extra--addon">+ {{ addon.addonName }}</span>
+            <span v-for="ing in item.removedIngredients" :key="ing" class="extra extra--removed">− {{ ing }}</span>
+          </div>
         </div>
         <button v-if="session.items.length > PREVIEW" class="expand-btn" @click="expanded = !expanded">
           {{ expanded ? 'Свернуть' : `+${session.items.length - PREVIEW} ещё` }}
         </button>
+      </div>
+
+      <div v-if="kitchenProgress.length" class="cooking-block">
+        <div class="cooking-header">Готовятся</div>
+        <div v-for="item in kitchenProgress" :key="item.key" class="cooking-row">
+          <span class="cooking-dot" :class="item.dotClass" />
+          <span class="cooking-name">{{ item.dishName }}</span>
+          <span class="cooking-qty">×{{ item.count }}</span>
+          <span class="cooking-price">{{ item.totalPrice }} ₽</span>
+        </div>
       </div>
 
       <div class="card-stats">
@@ -84,9 +95,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiCard, UiButton, UiIcon, UiText, UiTag } from '@fastio/ui'
-import type { Table, TableCall, KitchenQueueItem, KitchenQueueStatus } from '@fastio/shared'
-import type { TableSession } from '~/utils/api/tables'
+import { UiCard, UiButton, UiIcon, UiText } from '@fastio/ui'
+import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
+import { orderItemKey } from '@fastio/shared'
+import type { TableSession, TableSessionItem } from '~/utils/api/tables'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 
 const props = defineProps<{
@@ -103,6 +115,7 @@ defineEmits<{
   'toggle-open': []
   'resolve-call': [id: string]
   'mark-served': [dishId: string]
+  'remove-dish': [item: TableSessionItem]
 }>()
 
 const now = useNow({ interval: 30_000 })
@@ -118,57 +131,49 @@ const visibleItems = computed(() => {
   return expanded.value ? items : items.slice(0, PREVIEW)
 })
 
-// Kitchen status per dish name — pick the "best" status from queue items
-const kitchenStatusByDish = computed(() => {
-  const map = new Map<string, KitchenQueueStatus>()
+const hasCustomizations = (item: TableSessionItem) => item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
 
-  if (!props.kitchenDishes?.length) return map
+// Kitchen progress — flat list grouped by dishName+status, with dot color and price
+type KitchenProgressRow = { key: string; dishName: string; count: number; dotClass: string; totalPrice: number }
 
-  const priority: Record<KitchenQueueStatus, number> = { done: 3, in_progress: 2, queued: 1, served: 0 }
+const kitchenProgress = computed<KitchenProgressRow[]>(() => {
+  if (!props.kitchenDishes?.length) return []
 
-  for (const item of props.kitchenDishes) {
-    const current = map.get(item.dishName)
+  // Build price lookup keyed by dishName + customization fingerprint
+  const priceMap = new Map<string, number>()
 
-    if (!current || priority[item.status] > priority[current]) {
-      map.set(item.dishName, item.status)
-    }
+  for (const item of props.session?.items ?? []) {
+    const fp = orderItemKey(item.modifiers, item.addons, item.removedIngredients)
+
+    priceMap.set(`${item.dishName}::${fp}`, item.price)
   }
 
-  return map
+  const map = new Map<string, KitchenProgressRow>()
+
+  for (const item of props.kitchenDishes) {
+    if (item.status !== 'queued' && item.status !== 'in_progress') continue
+
+    const fp = orderItemKey(item.modifiers, item.addons, item.removedIngredients)
+    const key = `${item.dishName}::${fp}::${item.status}`
+    let row = map.get(key)
+
+    if (!row) {
+      row = {
+        key,
+        dishName: item.dishName,
+        count: 0,
+        dotClass: item.status === 'in_progress' ? 'dot--cooking' : 'dot--queued',
+        totalPrice: 0,
+      }
+      map.set(key, row)
+    }
+
+    row.count++
+    row.totalPrice = row.count * (priceMap.get(`${item.dishName}::${fp}`) ?? 0)
+  }
+
+  return [...map.values()]
 })
-
-const KITCHEN_LABELS: Partial<Record<KitchenQueueStatus, string>> = {
-  queued: 'В очереди',
-  in_progress: 'Готовится',
-  done: 'Готово',
-}
-
-const KITCHEN_TAG_TYPES: Partial<Record<KitchenQueueStatus, 'default' | 'warning' | 'success'>> = {
-  queued: 'default',
-  in_progress: 'warning',
-  done: 'success',
-}
-
-const kitchenStatusLabel = (dishName: string) => {
-  const status = kitchenStatusByDish.value.get(dishName)
-
-  return status ? KITCHEN_LABELS[status] ?? null : null
-}
-
-const kitchenStatusTag = (dishName: string) => {
-  const status = kitchenStatusByDish.value.get(dishName)
-
-  return status ? KITCHEN_TAG_TYPES[status] ?? 'default' : 'default'
-}
-
-const kitchenStatusClass = (dishName: string) => {
-  const status = kitchenStatusByDish.value.get(dishName)
-
-  if (status === 'done') return 'card-item--ready'
-  if (status === 'in_progress') return 'card-item--cooking'
-
-  return ''
-}
 </script>
 
 <style scoped lang="scss">
@@ -270,20 +275,92 @@ const kitchenStatusClass = (dishName: string) => {
   border-bottom: 1px solid var(--color-border);
 }
 
+.card-item-wrap + .card-item-wrap {
+  border-top: 1px dashed var(--color-border);
+  padding-top: 3px;
+}
+
 .card-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 4px;
-  border-radius: 4px;
 
-  &--cooking {
-    background: var(--color-warning-light);
+  .item-remove {
+    flex-shrink: 0;
+    color: var(--color-text-hint);
   }
+}
 
-  &--ready {
-    background: var(--color-success-light);
-  }
+.item-extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding-left: 2px;
+}
+
+.extra {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+
+  &--addon { color: var(--color-primary); }
+  &--removed { color: var(--color-error); }
+}
+
+.cooking-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+}
+
+.cooking-header {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-hint);
+}
+
+.cooking-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cooking-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.dot--queued { background: var(--color-primary); }
+  &.dot--cooking { background: var(--color-warning); }
+}
+
+.cooking-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-title);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cooking-qty {
+  font-size: 12px;
+  color: var(--color-text-hint);
+  flex-shrink: 0;
+}
+
+.cooking-price {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-title);
+  flex-shrink: 0;
 }
 
 .item-name {

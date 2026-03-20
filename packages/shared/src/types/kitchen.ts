@@ -1,7 +1,7 @@
 import type { OrderItemModifier } from './modifier'
 import type { OrderItemAddon, OrderDeliveryType } from './order'
 
-export type KitchenQueueStatus = 'queued' | 'in_progress' | 'done' | 'served'
+export type KitchenQueueStatus = 'queued' | 'in_progress' | 'done' | 'served' | 'cancelled'
 
 export type KitchenQueueItem = {
   id: string

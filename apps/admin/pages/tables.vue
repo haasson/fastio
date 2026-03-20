@@ -26,6 +26,7 @@
               @checkout="checkout(table)"
               @resolve-call="onCallResolved"
               @mark-served="onMarkServed"
+              @remove-dish="(item) => onRemoveDish(table, item)"
             />
           </div>
         </template>
@@ -88,6 +89,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiEmpty, UiSkeleton, UiSectionHeader, UiTabs, UiTag, useMessage } from '@fastio/ui'
 import type { Table, TableCallType, TableCall, OrderItem, KitchenQueueItem } from '@fastio/shared'
+import { pluralize } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -100,7 +102,7 @@ import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPi
 import TablesCanvas from '~/components/tables/TablesCanvas.vue'
 import TableCard from '~/components/tables/TableCard.vue'
 import TableCallSettings from '~/components/tables/TableCallSettings.vue'
-import type { TableSession } from '~/utils/api/tables'
+import type { TableSession, TableSessionItem } from '~/utils/api/tables'
 
 const TABS = [
   { value: 'tables', label: 'Столы' },
@@ -285,6 +287,30 @@ const unsubKqUpdate = kitchenQueueEvents.onUpdate((item) => {
   }
 })
 
+// ── Remove dish from check ───────────────────────────────────
+const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
+  const ok = await confirm({
+    title: 'Удалить блюдо?',
+    message: `«${sessionItem.dishName}» будет удалено из чека`,
+    confirmText: 'Удалить',
+    confirmType: 'error',
+  })
+
+  if (ok !== true) return
+
+  const item = await api.orders.findTableItem(table.id, sessionItem, cancelledStatusIds.value)
+
+  if (!item) {
+    warning('Блюдо не найдено')
+
+    return
+  }
+
+  await api.orders.removeItem(item.id, item.orderId)
+  reloadTableSums(table.id)
+  reloadKitchenDishes()
+}
+
 // ── Realtime: orders (update sums on any change) ───────────
 const reloadTableSums = (tableId: string) => {
   const table = tables.value.find((t) => t.id === tableId)
@@ -326,14 +352,42 @@ const toggleOpen = async (table: Table) => {
 
 const checkout = async (table: Table) => {
   const sum = tableSums.value[table.id]?.sum
-  const ok = await confirm({
-    title: `Расчёт: ${table.name}`,
-    message: `Стол будет закрыт${sum ? ` · ${sum} ₽` : ''}. Все заказы останутся в истории.`,
-    confirmText: 'Закрыть стол',
-    confirmType: 'warning',
-  })
+  const activeKitchen = (kitchenDishes.value[table.id] ?? []).filter((i) => i.status === 'queued' || i.status === 'in_progress')
+  const count = activeKitchen.length
 
-  if (ok) await toggleOpen(table)
+  if (count) {
+    // Active kitchen items — three outcomes: cancel cooking, mark served, or abort (X)
+    const orderIds = [...new Set(activeKitchen.map((i) => i.orderId))]
+
+    const result = await confirm({
+      title: `На кухне ещё ${count} ${pluralize(count, 'блюдо', 'блюда', 'блюд')}`,
+      message: `Стол будет закрыт${sum ? ` · ${sum} ₽` : ''}. Что делать с блюдами?`,
+      confirmText: 'Отменить готовку',
+      confirmType: 'error',
+      cancelText: 'Всё подано',
+      cancelType: 'success',
+      reverseActions: true,
+    })
+
+    if (result === null) return
+
+    if (result) {
+      await api.kitchenQueue.cancelForOrders(orderIds)
+    } else {
+      await api.kitchenQueue.serveAllForOrders(orderIds)
+    }
+  } else {
+    const ok = await confirm({
+      title: `Расчёт: ${table.name}`,
+      message: `Стол будет закрыт${sum ? ` · ${sum} ₽` : ''}. Все заказы останутся в истории.`,
+      confirmText: 'Закрыть стол',
+      confirmType: 'warning',
+    })
+
+    if (!ok) return
+  }
+
+  await toggleOpen(table)
 }
 
 // ── Add dish ──────────────────────────────────────────────
@@ -360,12 +414,16 @@ const onDishPicked = async (result: DishPickerResult) => {
 
   dishPickerOpen.value = false
 
+  const modifiersDelta = (result.modifiers ?? []).reduce((sum, m) => sum + (m.priceDelta ?? 0), 0)
+  const addonsDelta = (result.addons ?? []).reduce((sum, a) => sum + (a.price ?? 0), 0)
+  const totalPrice = result.price + modifiersDelta + addonsDelta
+
   const item: OrderItem = {
     dishId: result.dishId,
     comboId: result.comboId ?? null,
     dishName: result.dishName,
     categoryName: result.categoryName,
-    price: result.price,
+    price: totalPrice,
     quantity: 1,
     removedIngredients: result.removedIngredients,
     modifiers: result.modifiers,
@@ -385,9 +443,9 @@ const onDishPicked = async (result: DishPickerResult) => {
     comment: null,
     promoCode: null,
     discountAmount: 0,
-    subtotal: result.price,
+    subtotal: totalPrice,
     deliveryFee: 0,
-    total: result.price,
+    total: totalPrice,
     status: newStatusId,
     paymentType: 'cash',
     tableId: table.id,

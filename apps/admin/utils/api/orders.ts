@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Order, OrderItem, OrderDeliveryType } from '@fastio/shared'
-import { normalizePhone } from '@fastio/shared'
+import type { Order, OrderItem, OrderDeliveryType, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
+import { normalizePhone, orderItemKey } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { OrderRow, OrderItemRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
@@ -262,6 +262,62 @@ export const ordersApi = {
 
       return acc
     }, {})
+  },
+
+  async listIdsForTable(sb: SupabaseClient, tableId: string, excludeStatusIds: string[]): Promise<string[]> {
+    let q = sb.from('orders').select('id').eq('table_id', tableId)
+
+    if (excludeStatusIds.length) {
+      q = q.not('status', 'in', `(${excludeStatusIds.join(',')})`)
+    }
+
+    const data = await query(q)
+
+    return (data ?? []).map((row) => (row as { id: string }).id)
+  },
+
+  async findTableItem(
+    sb: SupabaseClient,
+    tableId: string,
+    match: { dishName: string; modifiers: OrderItemModifier[]; addons: OrderItemAddon[]; removedIngredients: string[] },
+    excludeStatusIds: string[],
+  ): Promise<{ id: string; orderId: string } | null> {
+    let q = sb
+      .from('order_items')
+      .select('id, order_id, modifiers, addons, removed_ingredients, orders!inner(table_id, status)')
+      .eq('dish_name', match.dishName)
+      .eq('orders.table_id', tableId)
+
+    if (excludeStatusIds.length) {
+      q = q.not('orders.status', 'in', `(${excludeStatusIds.join(',')})`)
+    }
+
+    const data = await query(q)
+
+    type Row = { id: string; order_id: string; modifiers: OrderItemModifier[]; addons: OrderItemAddon[]; removed_ingredients: string[] }
+
+    const targetKey = orderItemKey(match.modifiers, match.addons, match.removedIngredients)
+    const row = (data ?? []).find((r) => {
+      const item = r as Row
+
+      return orderItemKey(item.modifiers ?? [], item.addons ?? [], item.removed_ingredients ?? []) === targetKey
+    }) as Row | undefined
+
+    return row ? { id: row.id, orderId: row.order_id } : null
+  },
+
+  async removeItem(sb: SupabaseClient, orderItemId: string, orderId: string): Promise<void> {
+    // Delete order_item (kitchen_queue cascades via ON DELETE CASCADE)
+    await query(sb.from('order_items').delete().eq('id', orderItemId))
+
+    // If order has no items left, delete it
+    const remaining = await query(
+      sb.from('order_items').select('id').eq('order_id', orderId).limit(1),
+    )
+
+    if (!remaining?.length) {
+      await query(sb.from('orders').delete().eq('id', orderId))
+    }
   },
 
   async updateStatus(sb: SupabaseClient, orderId: string, status: string) {

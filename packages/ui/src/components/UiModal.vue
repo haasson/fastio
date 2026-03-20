@@ -175,7 +175,7 @@ const close = () => {
   if (isVModel.value) {
     emit('update:modelValue', false)
   } else {
-    modalController.decline()
+    modalController.dismiss()
   }
 }
 
