@@ -25,7 +25,7 @@ export default defineEventHandler(async (): Promise<TenantRow[]> => {
 
   const ownerIds = tenantsResult.data.map((t) => t.owner_id)
 
-  const { data: userEmails, error: usersError } = await supabase.rpc('get_user_emails', { user_ids: ownerIds })
+  const { data: userEmails, error: usersError } = await supabase.rpc('get_user_emails_admin', { user_ids: ownerIds })
 
   if (usersError) throw createError({ statusCode: 500, message: usersError.message })
 

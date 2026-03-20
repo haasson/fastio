@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   if (!tenant) throw createError({ statusCode: 404, message: 'Tenant not found' })
 
   // Owner email
-  const { data: emails } = await supabase.rpc('get_user_emails', { user_ids: [tenant.owner_id] })
+  const { data: emails } = await supabase.rpc('get_user_emails_admin', { user_ids: [tenant.owner_id] })
   const ownerEmail = emails?.[0]?.email ?? '—'
 
   // Transactions
