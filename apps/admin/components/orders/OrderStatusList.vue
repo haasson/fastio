@@ -7,6 +7,7 @@
     </UiSectionHeader>
 
     <UiTabs
+      variant="pill"
       :model-value="modelValue ?? ''"
       :tabs="statusTabs"
       @update:model-value="$emit('update:modelValue', String($event))"

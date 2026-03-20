@@ -46,8 +46,6 @@ const { count: newOrderCount } = useNewOrderCounter()
 
 const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.value > 0)
 const canSeePromotions = computed(() => canManagePromotions.value && modules.promotions.value.enabled)
-const canSeeModifiers = computed(() => canManageMenu.value && modules.modifiers.value.enabled)
-const canSeeAddons = computed(() => canManageMenu.value && modules.addons.value.enabled)
 const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.value.enabled || modules.pickup.value.enabled))
 const canSeeKitchen = computed(() => canManageOrders.value && modules.kitchen.value.enabled)
 const canSeeTables = computed(() => canViewSettings.value && modules.dineIn.value.enabled)
@@ -55,8 +53,6 @@ const canSeeTables = computed(() => canViewSettings.value && modules.dineIn.valu
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
   { to: '/menu', icon: 'dishes', label: menuLabel, visible: canManageMenu },
-  { to: '/menu/modifiers', icon: 'list', label: 'Модификаторы', visible: canSeeModifiers },
-  { to: '/menu/addons', icon: 'plusRound', label: 'Добавки', visible: canSeeAddons },
   { to: '/orders', icon: 'orders', label: 'Заказы', visible: canSeeOrders },
   { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: canSeeKitchen },
   { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },

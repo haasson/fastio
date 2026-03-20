@@ -1,5 +1,5 @@
 <template>
-  <div class="modifiers-root">
+  <div class="modifiers-tab-root">
     <div class="header">
       <UiButton type="primary" icon="plus" @click="openAdd">
         Добавить группу
@@ -58,19 +58,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { UiButton, UiText, UiSkeleton, UiSwitch, UiBadge, UiTag } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
 import { useModifierGroups } from '~/composables/data/useModifierGroups'
 import ModifierGroupFormModal from '~/components/menu/ModifierGroupFormModal.vue'
 
-const tenantStore = useTenantStore()
+const props = defineProps<{ tenantId: string }>()
 
-onMounted(() => tenantStore.init())
-
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const tenantId = computed(() => props.tenantId)
 const { groups, loading, add, update, remove, toggleActive } = useModifierGroups(tenantId)
 
 const showModal = ref(false)
@@ -110,13 +107,10 @@ const handleRemove = async (group: ModifierGroup) => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/media-queries' as *;
-
-.modifiers-root {
+.modifiers-tab-root {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 0;
 }
 
 .header {

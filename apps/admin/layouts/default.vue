@@ -172,8 +172,6 @@ const handleBranchChange = (val: string | number | (string | number)[] | null) =
 
 const currentPageTitle = computed(() => {
   const pageTitles: [string, string][] = [
-    ['/menu/modifiers', 'Модификаторы'],
-    ['/menu/addons', 'Добавки'],
     ['/menu', menuLabel.value],
     ['/orders', 'Заказы'],
     ['/kitchen', 'Кухня'],

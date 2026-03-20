@@ -1,7 +1,7 @@
 <template>
-  <div class="addons-root">
+  <div class="addons-tab-root">
     <div class="toolbar">
-      <UiTabs v-model="activeTab" :tabs="tabs" />
+      <UiTabs v-model="activeTab" variant="pill" :tabs="tabs" />
       <UiButton type="primary" icon="plus" @click="openAdd">
         {{ activeTab === 'addons' ? 'Добавка' : 'Пресет' }}
       </UiButton>
@@ -80,24 +80,20 @@ import { ref, computed, onMounted } from 'vue'
 import { UiButton, UiSkeleton, UiTabs, UiDataTable, UiInput, UiEmpty, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Addon, AddonPreset } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
 import { useAddons } from '~/composables/data/useAddons'
 import { buildAddonColumns, buildAddonPresetColumns } from '~/columns/addons'
 import AddonFormModal from '~/components/menu/AddonFormModal.vue'
 import AddonPresetFormModal from '~/components/menu/AddonPresetFormModal.vue'
 
-const tenantStore = useTenantStore()
+const props = defineProps<{ tenantId: string }>()
 
-onMounted(async () => {
-  await tenantStore.init()
-  await loadPresets()
-})
-
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const tenantId = computed(() => props.tenantId)
 const {
   addons, loading, presets, presetsLoading, loadPresets,
   remove, toggleActive, removePreset,
 } = useAddons(tenantId)
+
+onMounted(loadPresets)
 
 const { confirm } = useConfirm()
 const message = useMessage()
@@ -107,8 +103,6 @@ const tabs = [
   { value: 'presets', label: 'Пресеты' },
 ]
 const activeTab = ref('addons')
-
-// ---- Поиск ----
 
 const addonSearch = ref('')
 const presetSearch = ref('')
@@ -125,8 +119,6 @@ const filteredPresets = computed(() => {
   return q ? presets.value.filter((p) => p.name.toLowerCase().includes(q)) : presets.value
 })
 
-// ---- Модалки ----
-
 const showAddonModal = ref(false)
 const editingAddon = ref<Addon | null>(null)
 
@@ -142,8 +134,6 @@ const openAdd = () => {
     showPresetModal.value = true
   }
 }
-
-// ---- Колонки ----
 
 const addonById = (id: string) => addons.value.find((a) => a.id === id)
 
@@ -201,7 +191,7 @@ const presetColumns = buildAddonPresetColumns({
 </script>
 
 <style scoped lang="scss">
-.addons-root {
+.addons-tab-root {
   display: flex;
   flex-direction: column;
   gap: 16px;

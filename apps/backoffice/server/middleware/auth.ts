@@ -31,6 +31,7 @@ export default defineEventHandler((event) => {
   const [user, pass] = decoded.split(':')
 
   if (user !== expectedUser || pass !== expectedPass) {
-    throw createError({ statusCode: 403, message: 'Invalid credentials' })
+    setHeader(event, 'WWW-Authenticate', 'Basic realm="Backoffice"')
+    throw createError({ statusCode: 401, message: 'Invalid credentials' })
   }
 })

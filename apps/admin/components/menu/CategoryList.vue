@@ -15,6 +15,7 @@
 
     <UiTabs
       v-else
+      variant="pill"
       :model-value="modelValue ?? ''"
       :tabs="categoryTabs"
       @update:model-value="$emit('update:modelValue', String($event))"
