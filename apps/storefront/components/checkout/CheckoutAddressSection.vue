@@ -2,6 +2,19 @@
   <section class="form-section">
     <FsHeading as="h6" class="section-title">Адрес доставки</FsHeading>
 
+    <div v-if="isAuthenticated && addresses.length > 0" class="saved-addresses">
+      <button
+        v-for="addr in addresses"
+        :key="addr.id"
+        class="saved-addr"
+        :class="{ active: selectedAddressId === addr.id }"
+        @click="selectSavedAddress(addr)"
+      >
+        <span class="addr-label">{{ addr.label || 'Адрес' }}</span>
+        <span class="addr-text">{{ addr.address }}</span>
+      </button>
+    </div>
+
     <div class="address-field-wrap">
       <div class="address-input-wrap">
         <FsInput
@@ -14,7 +27,7 @@
         />
         <FsIconButton
           v-if="checkout.form.address"
-          aria-label="Очистить адрес"
+          ariaLabel="Очистить адрес"
           variant="ghost"
           size="small"
           class="address-clear"
@@ -53,10 +66,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Check, X } from 'lucide-vue-next'
+import { storeToRefs } from 'pinia'
+import type { CustomerAddress } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'
+import { useAuthStore } from '~/stores/auth'
+import { useAddressesStore } from '~/stores/addresses'
 import type { DadataSuggestion } from '~/composables/useDadataSuggestions'
 import { useDadataSuggestions } from '~/composables/useDadataSuggestions'
 import { FsHeading, FsInput, FsIconButton, FsAlert, FsDropdownList } from '@fastio/public-ui'
@@ -69,6 +86,28 @@ defineProps<Props>()
 
 const checkout = useCheckoutStore()
 const cart = useCartStore()
+const authStore = useAuthStore()
+const addressesStore = useAddressesStore()
+const { isAuthenticated } = storeToRefs(authStore)
+const { addresses } = storeToRefs(addressesStore)
+const selectedAddressId = ref<string | null>(null)
+
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    await addressesStore.fetch()
+  }
+})
+
+function selectSavedAddress(addr: CustomerAddress) {
+  selectedAddressId.value = addr.id
+  checkout.form.address = addr.address
+  if (addr.coordinates) {
+    checkout.form.addressCoords = { lat: addr.coordinates.lat, lon: addr.coordinates.lng }
+    addressVerified.value = true
+    addressTouched.value = true
+    checkAddress(addr.coordinates.lat, addr.coordinates.lng)
+  }
+}
 const { suggestions, search, showSuggestions, hideSuggestionsDelayed, clear: clearSuggestions } = useDadataSuggestions()
 
 const addressVerified = ref(false)
@@ -88,7 +127,7 @@ function onSuggestionSelect(item: { value: string; [key: string]: unknown }) {
 const addressError = computed(() => {
   if (!addressTouched.value) return ''
   if (!checkout.form.address.trim()) return 'Укажите адрес доставки'
-  if (!addressVerified.value) return 'Выберите адрес из списка с номером дома'
+  if (!addressVerified.value) return 'Выберите адрес из списка'
   return ''
 })
 
@@ -107,7 +146,7 @@ async function selectAddress(suggestion: DadataSuggestion) {
   checkout.form.address = suggestion.value
   showSuggestions.value = false
   clearSuggestions()
-  addressVerified.value = !!suggestion.data.house
+  addressVerified.value = true
   addressTouched.value = true
 
   const lat = parseFloat(suggestion.data.geo_lat ?? '')
@@ -208,5 +247,40 @@ defineExpose({
   font-size: 12px;
   color: var(--color-error);
   margin: 0;
+}
+
+.saved-addresses {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.saved-addr {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  font: inherit;
+  background: none;
+
+  &.active {
+    border-color: var(--primary);
+  }
+}
+
+.addr-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.addr-text {
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }
 </style>
