@@ -38,7 +38,7 @@ export function useDadataSuggestions() {
 
   function search(query: string) {
     if (timer) clearTimeout(timer)
-    timer = setTimeout(() => fetchSuggestions(query), 500)
+    timer = setTimeout(() => fetchSuggestions(query), 300)
   }
 
   const showSuggestions = ref(false)
