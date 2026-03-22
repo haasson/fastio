@@ -88,7 +88,7 @@ function onSuggestionSelect(item: { value: string; [key: string]: unknown }) {
 const addressError = computed(() => {
   if (!addressTouched.value) return ''
   if (!checkout.form.address.trim()) return 'Укажите адрес доставки'
-  if (!addressVerified.value) return 'Выберите адрес из списка с номером дома'
+  if (!addressVerified.value) return 'Выберите адрес из списка'
   return ''
 })
 
@@ -107,7 +107,7 @@ async function selectAddress(suggestion: DadataSuggestion) {
   checkout.form.address = suggestion.value
   showSuggestions.value = false
   clearSuggestions()
-  addressVerified.value = !!suggestion.data.house
+  addressVerified.value = true
   addressTouched.value = true
 
   const lat = parseFloat(suggestion.data.geo_lat ?? '')
