@@ -2,5 +2,6 @@
   "framework": "nuxtjs",
   "buildCommand": "pnpm run build",
   "outputDirectory": ".vercel/output",
-  "installCommand": "cd ../.. && pnpm install"
+  "installCommand": "cd ../.. && pnpm install",
+  "regions": ["fra1"]
 }

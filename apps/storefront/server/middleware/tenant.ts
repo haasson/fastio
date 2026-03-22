@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   if (url.pathname.startsWith('/_nuxt') || url.pathname.startsWith('/__nuxt')) return
 
   const supabase = getServerSupabase()
-  const host = getRequestHost(event)
+  const host = getRequestHeader(event, 'x-forwarded-host') || getRequestHost(event)
   const domain = host.split(':')[0]
   const slug = domain.split('.')[0]
 
