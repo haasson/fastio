@@ -6,12 +6,6 @@ export default defineEventHandler(async (event) => {
 
   const supabase = getServerSupabase()
   const host = getRequestHeader(event, 'x-original-host') || getRequestHost(event)
-  // eslint-disable-next-line no-console
-  console.log('host:', host)
-  // eslint-disable-next-line no-console
-  console.log('x-forwarded-host:', getRequestHeader(event, 'x-forwarded-host'))
-  // eslint-disable-next-line no-console
-  console.log('original host:', getRequestHost(event))
   const domain = host.split(':')[0]
   const slug = domain.split('.')[0]
 
