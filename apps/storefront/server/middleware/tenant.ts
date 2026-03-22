@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   if (url.pathname.startsWith('/_nuxt') || url.pathname.startsWith('/__nuxt')) return
 
   const supabase = getServerSupabase()
-  const host = getRequestHeader(event, 'x-forwarded-host') || getRequestHost(event)
+  const host = getRequestHeader(event, 'x-original-host') || getRequestHost(event)
   // eslint-disable-next-line no-console
   console.log('host:', host)
   // eslint-disable-next-line no-console
