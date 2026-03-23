@@ -18,6 +18,7 @@ import type {
   CategoryType,
   KitchenQueueStatus,
   KitchenConfig,
+  OrderNumberConfig,
 } from '@fastio/shared'
 
 export type TenantRow = {
@@ -44,6 +45,7 @@ export type TenantRow = {
   seo: TenantSeo
   kitchen_urgency_minutes: number
   kitchen_config: KitchenConfig
+  order_number_config: OrderNumberConfig | null
   created_at: string
 }
 
@@ -193,6 +195,7 @@ export type OrderRow = {
   table_id: string | null
   table_name: string | null
   idempotency_key: string | null
+  order_number: string | null
   created_at: string
   updated_at: string
   order_items?: OrderItemRow[]
@@ -285,6 +288,7 @@ export type BranchRow = {
   notifications: TenantNotifications | null
   latitude: number | null
   longitude: number | null
+  order_number_prefix: string | null
   created_at: string
   updated_at: string
   archived_at: string | null

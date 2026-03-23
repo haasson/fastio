@@ -90,6 +90,7 @@ export type Order = {
   deliveryZoneId: string | null
   tableId: string | null
   tableName: string | null
+  orderNumber: string | null
   createdAt: string
   updatedAt: string
 }

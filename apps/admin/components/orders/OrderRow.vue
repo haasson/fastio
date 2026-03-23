@@ -6,7 +6,7 @@
     @click="emit('open-edit', order)"
   >
     <div class="left">
-      <span class="number">#{{ shortId }}</span>
+      <span class="number">{{ order.orderNumber }}</span>
       <UiTag
         v-if="currentStatus"
         size="tiny"
@@ -67,7 +67,7 @@ const emit = defineEmits<{
   'open-edit': [order: Order]
 }>()
 
-const { shortId, currentStatus, quickActionStatuses, relativeTime }
+const { currentStatus, quickActionStatuses, relativeTime }
   = useOrderCard(toRef(props, 'order'))
 
 const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} × ${i.quantity}`).join(', '))

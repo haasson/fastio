@@ -21,6 +21,7 @@ export const mapBranch = (raw: Record<string, unknown>): Branch => {
     notifications: row.notifications,
     latitude: row.latitude,
     longitude: row.longitude,
+    orderNumberPrefix: row.order_number_prefix ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     archivedAt: row.archived_at ?? null,
@@ -39,6 +40,7 @@ const branchToDb = (data: BranchFormData) => ({
   notifications: data.notifications,
   latitude: data.latitude,
   longitude: data.longitude,
+  order_number_prefix: data.orderNumberPrefix ?? null,
 })
 
 export const branchesApi = {
@@ -79,6 +81,7 @@ export const branchesApi = {
       notifications: data.notifications,
       latitude: data.latitude,
       longitude: data.longitude,
+      order_number_prefix: data.orderNumberPrefix,
     }) as Partial<BranchRow>
 
     const result = await query(sb.from('branches').update(payload).eq('id', id).select().single())

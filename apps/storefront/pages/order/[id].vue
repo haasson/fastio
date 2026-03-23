@@ -26,13 +26,13 @@
             </FsText>
           </template>
           <template v-else>
-            <FsHeading as="h3" class="order-title">Заказ #{{ order.id.slice(0, 8) }}</FsHeading>
+            <FsHeading as="h3" class="order-title">Заказ #{{ order.orderNumber }}</FsHeading>
             <FsText as="p" variant="body-sm" color="secondary" class="order-subtitle">
               {{ formatDate(order.createdAt) }}
             </FsText>
           </template>
           <div class="order-meta">
-            <span v-if="isFresh" class="order-id">Заказ #{{ order.id.slice(0, 8) }}</span>
+            <span v-if="isFresh" class="order-id">Заказ #{{ order.orderNumber }}</span>
             <SfOrderStatus :group="statusGroup" />
           </div>
         </div>

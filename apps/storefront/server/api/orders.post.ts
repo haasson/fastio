@@ -368,7 +368,7 @@ export default defineEventHandler(async (event) => {
       ...(tableRecord && { table_id: tableRecord.id, table_name: tableRecord.name }),
       ...(customerId && { customer_id: customerId }),
     })
-    .select('id')
+    .select('id, order_number')
     .single()
 
   if (error) {
@@ -376,12 +376,12 @@ export default defineEventHandler(async (event) => {
     if (error.code === '23505' && idempotencyKey) {
       const { data: existing } = await supabase
         .from('orders')
-        .select('id')
+        .select('id, order_number')
         .eq('idempotency_key', idempotencyKey)
         .eq('tenant_id', tenantId)
         .single()
 
-      if (existing) return { id: existing.id }
+      if (existing) return { id: existing.id, orderNumber: existing.order_number ?? null }
     }
 
     throw createError({ statusCode: 500, message: error.message })
@@ -435,5 +435,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { id: data.id }
+  return { id: data.id, orderNumber: data.order_number ?? null }
 })

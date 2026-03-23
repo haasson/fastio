@@ -1,7 +1,7 @@
 <template>
   <UiDrawer
     :model-value="modelValue"
-    :title="isEdit ? `Заказ #${shortId}` : 'Новый заказ'"
+    :title="isEdit ? `Заказ #${props.order?.orderNumber}` : 'Новый заказ'"
     :width="860"
     :actions="drawerActions"
     :on-confirm="onSave"
@@ -115,7 +115,6 @@ const modules = useModules()
 const { getStatusColor } = useStatusColor()
 
 const isEdit = computed(() => !!props.order)
-const shortId = computed(() => props.order?.id.slice(0, 6).toUpperCase() ?? '')
 
 const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
 const selectedBranchId = ref<string | null>(null)

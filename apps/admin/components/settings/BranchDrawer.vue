@@ -71,6 +71,14 @@
         :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
       />
 
+      <UiInput
+        v-model="form.orderNumberPrefix"
+        label="Префикс номера заказа"
+        placeholder="MSK"
+        :disabled="prefixLocked"
+        :hint="prefixLocked ? 'Включите нумерацию «По филиалам» в настройках' : undefined"
+      />
+
       <div class="active-row">
         <UiText size="small">Филиал активен</UiText>
         <UiSwitch v-model="form.isActive" />
@@ -134,10 +142,14 @@ import {
 import type { YandexMapListenerSettings } from 'vue-yandex-maps'
 
 import type { Branch, BranchFormData } from '@fastio/shared'
+import { useTenantStore } from '~/stores/tenant'
 import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 import UiColorPicker from '~/components/ui/ColorPicker.vue'
 
 const BRANCH_COLORS = ['#FF5500', '#FFA500', '#00C853', '#2979FF', '#AA00FF', '#E91E63', '#795548']
+
+const tenantStore = useTenantStore()
+const prefixLocked = computed(() => tenantStore.tenant?.orderNumberConfig?.scope !== 'per_branch')
 
 // ─── DaData address suggestions ─────────────────────────────────────────────
 
@@ -208,6 +220,7 @@ const defaultForm = (): BranchFormData => ({
   notifications: null,
   latitude: null,
   longitude: null,
+  orderNumberPrefix: null,
 })
 
 const form = reactive<BranchFormData>(defaultForm())
@@ -237,6 +250,7 @@ watch(() => props.modelValue, (val) => {
     form.notifications = props.branch.notifications ? { ...props.branch.notifications } : null
     form.latitude = props.branch.latitude
     form.longitude = props.branch.longitude
+    form.orderNumberPrefix = props.branch.orderNumberPrefix ?? null
   } else {
     Object.assign(form, defaultForm())
   }

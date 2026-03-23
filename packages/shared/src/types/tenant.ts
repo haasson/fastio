@@ -139,6 +139,21 @@ export type TenantModules = {
   kitchen: boolean
 }
 
+export type OrderNumberFormat = 'counter' | 'prefix_counter' | 'date_counter' | 'prefix_date_counter'
+export type OrderNumberScope = 'global' | 'per_branch'
+export type OrderNumberDateFormat = 'DDMM' | 'DDMMYY' | 'YYYYMMDD'
+export type OrderNumberResetPeriod = 'never' | 'daily'
+
+export type OrderNumberConfig = {
+  format: OrderNumberFormat
+  scope: OrderNumberScope
+  prefix: string
+  dateFormat: OrderNumberDateFormat
+  resetPeriod: OrderNumberResetPeriod
+  padLength: number
+  startFrom: number
+}
+
 export type TenantSeo = {
   metaTitle: string | null
   metaDescription: string | null
@@ -173,5 +188,6 @@ export type Tenant = {
   seo: TenantSeo
   kitchenUrgencyMinutes: number
   kitchenConfig: KitchenConfig
+  orderNumberConfig: OrderNumberConfig | null
   createdAt: string
 }

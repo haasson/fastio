@@ -90,6 +90,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     deliveryZoneId: row.delivery_zone_id,
     tableId: row.table_id,
     tableName: row.table_name,
+    orderNumber: row.order_number ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }

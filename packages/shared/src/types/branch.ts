@@ -14,6 +14,7 @@ export type Branch = {
   color: string
   latitude: number | null
   longitude: number | null
+  orderNumberPrefix: string | null
   createdAt: string
   updatedAt: string
   archivedAt: string | null

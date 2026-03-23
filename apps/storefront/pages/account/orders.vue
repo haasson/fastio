@@ -26,7 +26,10 @@
             <FsCard v-for="order in orders" :key="order.id" class="order-card" @click="goToOrder(order.id)">
               <div class="order-inner">
                 <div class="order-left">
-                  <span class="order-total">{{ order.total }} {{ currency }}</span>
+                  <div class="order-header">
+                    <span class="order-number">#{{ order.orderNumber }}</span>
+                    <span class="order-total">{{ order.total }} {{ currency }}</span>
+                  </div>
                   <span class="order-meta">{{ formatDate(order.createdAt) }} · {{ order.items.length }} {{ itemsLabel(order.items.length) }}</span>
                 </div>
                 <div class="order-right">
@@ -171,6 +174,19 @@ function itemsLabel(n: number) {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+}
+
+.order-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.order-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-family: monospace;
 }
 
 .order-total {

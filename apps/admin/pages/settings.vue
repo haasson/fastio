@@ -39,6 +39,7 @@ const settingsTabs = computed(() => {
     { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
     ...(canManageTeam.value ? [{ value: 'team', label: 'Команда', icon: 'users' as const }] : []),
     ...(canManageTeam.value && (branches.active || branches.locked) ? [{ value: 'branches', label: 'Филиалы', icon: 'mapPin' as const }] : []),
+    ...(canManageTeam.value ? [{ value: 'order-number', label: 'Нумерация', icon: 'hash' as const }] : []),
   ]
 })
 

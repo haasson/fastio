@@ -8,7 +8,7 @@
     <!-- Шапка -->
     <div class="header">
       <div class="header-top">
-        <span class="number">#{{ shortId }}</span>
+        <span class="number">{{ order.orderNumber }}</span>
         <UiTag
           v-if="currentStatus"
           size="small"
@@ -122,7 +122,7 @@ const emit = defineEmits<{
   'open-edit': [order: Order]
 }>()
 
-const { shortId, currentStatus, quickActionStatuses, relativeTime }
+const { currentStatus, quickActionStatuses, relativeTime }
   = useOrderCard(toRef(props, 'order'))
 
 const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')

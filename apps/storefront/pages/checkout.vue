@@ -252,7 +252,7 @@ async function submitOrder() {
       }
     }
 
-    const result = await $fetch<{ id: string }>('/api/orders', { method: 'POST', body, headers })
+    const result = await $fetch<{ id: string; orderNumber: string | null }>('/api/orders', { method: 'POST', body, headers })
 
     cart.clear()
     await navigateTo(`/order/${result.id}`)
