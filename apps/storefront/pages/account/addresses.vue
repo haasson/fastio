@@ -122,6 +122,8 @@ async function onSave(data: Record<string, unknown>) {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .addresses-root {
   max-width: 600px;
   margin: 0 auto;
@@ -154,11 +156,11 @@ async function onSave(data: Record<string, unknown>) {
 }
 
 .addr-text {
-  font-size: 14px;
+  @include text-caption;
 }
 
 .addr-details {
-  font-size: 13px;
+  @include text-xs;
   color: var(--color-text-secondary);
   display: flex;
   gap: 12px;

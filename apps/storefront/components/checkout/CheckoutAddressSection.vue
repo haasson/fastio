@@ -222,6 +222,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .address-section {
   padding: 20px 0;
   border-bottom: 1px solid var(--color-border);
@@ -275,13 +277,13 @@ defineExpose({
 }
 
 .addr-main {
-  font-size: 14px;
+  @include text-caption;
   color: var(--color-text);
   line-height: 1.4;
 }
 
 .addr-lbl {
-  font-size: 11px;
+  @include text-micro;
   color: var(--color-text-secondary);
 }
 
@@ -289,7 +291,7 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   padding: 7px 6px;
-  font-size: 13px;
+  @include text-xs;
   color: var(--primary);
   background: none;
   border: none;
@@ -310,7 +312,7 @@ defineExpose({
 .addr-back-btn {
   display: inline-flex;
   align-items: center;
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-secondary);
   background: none;
   border: none;
@@ -326,7 +328,7 @@ defineExpose({
 }
 
 .field-error {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-error);
   margin: 4px 0 0;
 }

@@ -106,6 +106,8 @@ function onRadio(id: string) {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .chips-root {
   display: flex;
   flex-direction: column;
@@ -124,7 +126,7 @@ function onRadio(id: string) {
 }
 
 .chip-price {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-muted);
 }
 

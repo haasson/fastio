@@ -10,6 +10,7 @@
         Убрать: {{ item.removedIngredients.join(', ') }}
       </p>
       <p v-if="addonsSummary(item)" class="item-detail">{{ addonsSummary(item) }}</p>
+      <p v-if="item.status === 'pending'" class="item-detail item-pending">Ожидает подтверждения</p>
     </div>
   </div>
 </template>
@@ -35,16 +36,14 @@ function addonsSummary(item: OrderItem) {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .order-items-root {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  @include flex-col(12px);
 }
 
 .order-item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  @include flex-col(3px);
 }
 
 .item-main {
@@ -52,14 +51,13 @@ function addonsSummary(item: OrderItem) {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  font-size: 14px;
+  @include text-caption;
 }
 
 .item-name {
   color: var(--color-text);
   font-weight: 500;
-  flex: 1;
-  min-width: 0;
+  @include flex-fill;
 }
 
 .item-price {
@@ -69,12 +67,17 @@ function addonsSummary(item: OrderItem) {
 }
 
 .item-detail {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-secondary);
   margin: 0;
 }
 
 .item-removed {
   color: var(--color-text-muted);
+}
+
+.item-pending {
+  color: var(--color-warning);
+  font-weight: 500;
 }
 </style>

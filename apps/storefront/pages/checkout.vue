@@ -312,8 +312,7 @@ async function submitOrder() {
   justify-content: center;
   gap: 6px;
   padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
+  @include text-caption(500);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -347,7 +346,7 @@ async function submitOrder() {
 .info-row {
   display: flex;
   gap: 8px;
-  font-size: 14px;
+  @include text-caption;
 }
 
 .info-label {

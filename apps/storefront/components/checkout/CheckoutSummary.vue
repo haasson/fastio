@@ -39,6 +39,8 @@ const emit = defineEmits<{
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .checkout-summary-root {
   display: flex;
   flex-direction: column;
@@ -50,7 +52,7 @@ const emit = defineEmits<{
 }
 
 .submit-error {
-  font-size: 13px;
+  @include text-xs;
   color: var(--color-error, #ef4444);
   margin: 0;
 }

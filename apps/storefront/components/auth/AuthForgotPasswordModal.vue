@@ -54,6 +54,8 @@ async function onSubmit() {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .forgot-root {
   display: flex;
   flex-direction: column;
@@ -61,7 +63,7 @@ async function onSubmit() {
 }
 
 .link {
-  font-size: 14px;
+  @include text-caption;
   color: var(--primary);
   cursor: pointer;
   background: none;

@@ -104,11 +104,11 @@ function increment() {
   .stepper-btn {
     width: 28px;
     height: 28px;
-    font-size: 13px;
+    @include text-xs;
   }
   .stepper-value {
     min-width: 28px;
-    font-size: 13px;
+    @include text-xs;
   }
 }
 
@@ -116,11 +116,11 @@ function increment() {
   .stepper-btn {
     width: 36px;
     height: 36px;
-    font-size: 15px;
+    @include text-body-sm;
   }
   .stepper-value {
     min-width: 36px;
-    font-size: 15px;
+    @include text-body-sm;
   }
 }
 
@@ -128,11 +128,11 @@ function increment() {
   .stepper-btn {
     width: 44px;
     height: 44px;
-    font-size: 17px;
+    @include text-body;
   }
   .stepper-value {
     min-width: 44px;
-    font-size: 17px;
+    @include text-body;
   }
 }
 
@@ -142,11 +142,11 @@ function increment() {
     .stepper-btn {
       width: 36px;
       height: 36px;
-      font-size: 15px;
+      @include text-body-sm;
     }
     .stepper-value {
       min-width: 36px;
-      font-size: 15px;
+      @include text-body-sm;
     }
   }
 }

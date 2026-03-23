@@ -99,6 +99,8 @@ const addonChips = computed(() =>
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .body-root {
   display: flex;
   flex-direction: column;
@@ -150,13 +152,13 @@ const addonChips = computed(() =>
 }
 
 .combo-item-name {
-  font-size: 14px;
+  @include text-caption;
   line-height: 1.3;
   color: var(--color-text);
 }
 
 .combo-item-mod {
   color: var(--color-text-muted);
-  font-size: 13px;
+  @include text-xs;
 }
 </style>

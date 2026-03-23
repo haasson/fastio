@@ -51,20 +51,19 @@ const props = withDefaults(defineProps<Props>(), {
 // Sizes
 .size-small {
   .price-main {
-    font-size: 14px;
-    font-weight: 600;
+    @include text-caption(600);
   }
   .price-old {
-    font-size: 12px;
+    @include text-xs;
   }
 }
 
 .size-medium {
   .price-main {
-    font-size: 18px;
+    @include text-body;
   }
   .price-old {
-    font-size: 16px;
+    @include text-body-sm;
   }
 }
 
@@ -81,11 +80,10 @@ const props = withDefaults(defineProps<Props>(), {
 .size-small.is-responsive {
   @include lg {
     .price-main {
-      font-size: 18px;
-      font-weight: 700;
+      @include text-body(700);
     }
     .price-old {
-      font-size: 16px;
+      @include text-body-sm;
     }
   }
 }

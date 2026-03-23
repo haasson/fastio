@@ -90,6 +90,7 @@ import { FsButton, FsText } from '@fastio/public-ui'
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .hero-root {
   background: var(--ln-cream);
   padding: 48px 16px;
@@ -129,12 +130,10 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .hero-text {
-  display: flex;
-  flex-direction: column;
+  @include flex-col;
+  @include flex-fill;
   align-items: center;
   text-align: center;
-  flex: 1;
-  min-width: 0;
 
   @media (min-width: 1100px) {
     align-items: flex-start;
@@ -143,11 +142,8 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  @include flex-row(8px);
+  @include text-xs(600);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ln-accent);
@@ -202,10 +198,8 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .actions {
+  @include flex-col(12px);
   margin-top: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   width: 100%;
 
   @media (min-width: 480px) {
@@ -241,9 +235,8 @@ import { FsButton, FsText } from '@fastio/public-ui'
 /* Mockup */
 
 .hero-mockup {
+  @include flex-fill;
   display: none;
-  flex: 1;
-  min-width: 0;
 
   @media (min-width: 1100px) {
     display: block;
@@ -263,16 +256,13 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .browser-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  @include flex-row(12px);
   padding: 10px 14px;
   background: var(--ln-black);
 }
 
 .browser-dots {
-  display: flex;
-  gap: 6px;
+  @include flex-row(6px);
 }
 
 .dot {
@@ -291,7 +281,7 @@ import { FsButton, FsText } from '@fastio/public-ui'
   background: rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 4px 12px;
-  font-size: 11px;
+  @include text-micro;
   color: rgba(255, 255, 255, 0.6);
 }
 
@@ -305,12 +295,10 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .mock-sidebar {
+  @include flex-col(4px);
   width: 120px;
   background: #1a1a1a;
   padding: 14px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   flex-shrink: 0;
 
   @media (min-width: 1280px) {
@@ -320,9 +308,7 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  @include flex-row(8px);
   padding: 7px 8px;
   border-radius: 8px;
   cursor: default;
@@ -345,7 +331,7 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .sidebar-label {
-  font-size: 12px;
+  @include text-xs;
   color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
 
@@ -366,21 +352,19 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .mock-header {
-  font-size: 11px;
-  font-weight: 700;
+  @include text-micro(700);
   letter-spacing: 0.06em;
   color: var(--ln-black);
   margin-bottom: 14px;
 
   @media (min-width: 1280px) {
-    font-size: 12px;
+    @include text-xs(700);
     margin-bottom: 18px;
   }
 }
 
 .mock-stats {
-  display: flex;
-  gap: 10px;
+  @include flex-row(10px);
 
   @media (min-width: 1280px) {
     gap: 14px;
@@ -388,14 +372,12 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .stat-card {
+  @include flex-col(4px);
+  @include flex-fill;
   background: var(--ln-white);
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
 
   @media (min-width: 1280px) {
     padding: 14px 16px;
@@ -403,31 +385,28 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .stat-title {
-  font-size: 11px;
+  @include text-micro;
   color: #888;
 
   @media (min-width: 1280px) {
-    font-size: 12px;
+    @include text-xs;
   }
 }
 
 .stat-value {
-  font-size: 13px;
-  font-weight: 700;
+  @include text-xs(700);
   color: var(--ln-black);
 }
 
 /* Floating cards */
 
 .floating-card {
+  @include flex-col(4px);
   position: absolute;
   background: var(--ln-white);
   border-radius: 12px;
   box-shadow: var(--shadow-card);
   padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   white-space: nowrap;
 }
 
@@ -442,14 +421,12 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .floating-title {
-  font-size: 12px;
-  font-weight: 600;
+  @include text-xs(600);
   color: var(--ln-black);
 }
 
 .floating-badge {
-  font-size: 11px;
-  font-weight: 600;
+  @include text-micro(600);
 
   &.green {
     color: #22c55e;

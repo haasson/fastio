@@ -84,6 +84,7 @@ const steps: Step[] = [
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .how-root {
   background: var(--ln-black);
   color: var(--ln-white);
@@ -98,11 +99,10 @@ const steps: Step[] = [
 
 .label {
   display: block;
-  font-size: 13px;
+  @include text-xs(600);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ln-accent);
-  font-weight: 600;
   margin: 0 0 16px;
 
   &::before {
@@ -126,7 +126,7 @@ const steps: Step[] = [
 }
 
 .subtitle {
-  font-size: 16px;
+  @include text-body-sm;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.55);
   margin: 0 0 48px;
@@ -192,7 +192,7 @@ const steps: Step[] = [
 }
 
 .editor-section-label {
-  font-size: 9px;
+  @include text-micro;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: rgba(255, 255, 255, 0.4);
@@ -229,7 +229,7 @@ const steps: Step[] = [
 }
 
 .block-item {
-  font-size: 11px;
+  @include text-micro;
   padding: 6px 8px;
   border-radius: 4px;
   color: rgba(255, 255, 255, 0.7);
@@ -257,8 +257,7 @@ const steps: Step[] = [
 
 .preview-logo {
   font-family: var(--heading-font-family);
-  font-weight: 700;
-  font-size: 13px;
+  @include text-xs(700);
   color: var(--ln-black);
 }
 
@@ -306,8 +305,7 @@ const steps: Step[] = [
   border-radius: 50%;
   background: var(--ln-accent);
   color: var(--ln-white);
-  font-size: 15px;
-  font-weight: 700;
+  @include text-body-sm(700);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -323,13 +321,12 @@ const steps: Step[] = [
 }
 
 .step-title {
-  font-weight: 600;
-  font-size: 16px;
+  @include text-body-sm(600);
   color: var(--ln-white);
 }
 
 .step-desc {
-  font-size: 14px;
+  @include text-caption;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.5);
 }

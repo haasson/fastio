@@ -76,26 +76,23 @@ const features: Feature[] = [
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .features-root {
   background: var(--ln-white, #fff);
   padding: var(--section-spacing, 64px) 0;
 }
 
 .container {
+  @include flex-col;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
-  display: flex;
-  flex-direction: column;
   align-items: center;
 }
 
 .label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  @include flex-row(8px);
+  @include text-xs(600);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ln-accent);
@@ -130,9 +127,7 @@ const features: Feature[] = [
 }
 
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include flex-col(8px);
   padding: 20px;
   border-radius: 8px;
   background: var(--ln-cream, #f9f8f6);

@@ -98,8 +98,7 @@ function getTagIcon(tag: string): Component | null {
 .dish-placeholder {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
+  @include flex-row;
   justify-content: center;
   background: var(--color-border);
   color: var(--color-text-muted);
@@ -119,8 +118,7 @@ function getTagIcon(tag: string): Component | null {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
+  @include text-xs(600);
   padding: 4px 8px;
   border-radius: 999px;
   background: var(--color-surface);
@@ -130,9 +128,7 @@ function getTagIcon(tag: string): Component | null {
 
 .dish-body {
   padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include flex-col(8px);
   flex: 1;
 }
 
@@ -148,10 +144,7 @@ function getTagIcon(tag: string): Component | null {
 
 .dish-footer {
   margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  @include flex-between(8px);
   min-height: 36px;
 
   @include lg { min-height: 44px; }

@@ -68,8 +68,8 @@ const props = withDefaults(defineProps<Props>(), {
   }
 
   .empty-title {
-    font-size: 16px;
-    @include lg { font-size: 18px; }
+    @include text-body-sm;
+    @include lg { @include text-body; }
   }
 }
 

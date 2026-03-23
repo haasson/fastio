@@ -141,7 +141,7 @@ onMounted(() => {
 }
 
 .summary-label {
-  font-size: 15px;
+  @include text-body-sm;
   color: var(--color-text-secondary);
 }
 

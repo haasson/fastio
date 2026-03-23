@@ -76,6 +76,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .header-root {
   position: sticky;
   top: 0;
@@ -131,8 +132,7 @@ onUnmounted(() => {
   color: var(--color-text);
   text-decoration: none;
   font-family: var(--font-family);
-  font-size: 14px;
-  font-weight: 400;
+  @include text-caption(400);
   padding: 8px 12px;
   border-radius: var(--radius-btn);
   transition: color 0.15s;
@@ -171,8 +171,7 @@ onUnmounted(() => {
 
 .mobile-nav-link {
   display: block;
-  font-size: 18px;
-  font-weight: 600;
+  @include text-body(600);
   color: var(--color-text);
   text-decoration: none;
   padding: 14px 0;

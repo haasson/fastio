@@ -51,12 +51,12 @@ const displayLabel = computed(() => props.label ?? defaultLabels[props.group])
 
 // Sizes
 .size-sm {
-  font-size: 11px;
+  @include text-micro;
   padding: 3px 8px;
 }
 
 .size-md {
-  font-size: 12px;
+  @include text-xs;
   padding: 4px 10px;
 }
 

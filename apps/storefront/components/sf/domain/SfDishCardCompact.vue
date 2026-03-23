@@ -73,8 +73,7 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
 .compact-placeholder {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
+  @include flex-row;
   justify-content: center;
   background: var(--color-border);
   color: var(--color-text-muted);
@@ -91,37 +90,27 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
 
 .compact-body {
   padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include flex-col(4px);
 }
 
 .compact-name {
-  font-size: 14px;
-  font-weight: 600;
+  @include text-caption(600);
   color: var(--color-text);
   line-height: 1.3;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include truncate;
 }
 
 .compact-desc {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-muted);
   line-height: 1.4;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include truncate;
 }
 
 .compact-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  @include flex-between(8px);
   margin-top: 4px;
 }
 </style>

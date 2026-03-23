@@ -42,8 +42,7 @@ const visible = computed(() => cart.count > 0)
   color: var(--on-primary);
   border-radius: 999px;
   box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 40%, transparent);
-  font-weight: 600;
-  font-size: 15px;
+  @include text-body-sm(600);
   white-space: nowrap;
   cursor: pointer;
   border: none;
@@ -67,8 +66,7 @@ const visible = computed(() => cart.count > 0)
   background: var(--on-primary);
   color: var(--primary);
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
+  @include text-xs(700);
 }
 
 .fab-label {

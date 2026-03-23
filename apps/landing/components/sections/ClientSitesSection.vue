@@ -71,6 +71,7 @@ const sites: ClientSite[] = [
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .clients-root {
   background: var(--ln-white, #fff);
   padding: var(--section-spacing, 64px) 0;
@@ -89,8 +90,7 @@ const sites: ClientSite[] = [
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  @include text-xs(600);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ln-accent);
@@ -201,7 +201,7 @@ const sites: ClientSite[] = [
 
 .card-link {
   font-family: var(--font-family);
-  font-size: 14px;
+  @include text-caption;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   transition: color 0.2s;

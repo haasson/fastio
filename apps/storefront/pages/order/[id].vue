@@ -170,7 +170,7 @@ const paymentLabel = computed(() => {
   gap: 16px;
   padding: 64px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  @include text-caption;
 }
 
 .order-not-found {
@@ -216,7 +216,7 @@ const paymentLabel = computed(() => {
 }
 
 .order-id {
-  font-size: 13px;
+  @include text-xs;
   color: var(--color-text-muted);
   font-family: monospace;
 }
@@ -239,7 +239,7 @@ const paymentLabel = computed(() => {
 .info-row {
   display: flex;
   gap: 12px;
-  font-size: 14px;
+  @include text-caption;
 }
 
 .info-label {

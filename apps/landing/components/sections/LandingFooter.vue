@@ -22,6 +22,7 @@ const year = new Date().getFullYear()
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .footer-root {
   background: var(--ln-white);
   color: var(--ln-black);
@@ -36,15 +37,11 @@ const year = new Date().getFullYear()
 }
 
 .top {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  @include flex-col(20px);
 }
 
 .left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  @include flex-row(16px);
 }
 
 .logo {
@@ -62,20 +59,18 @@ const year = new Date().getFullYear()
 }
 
 .copy {
-  font-size: 14px;
+  @include text-caption;
   color: var(--color-text-muted);
 }
 
 .right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  @include flex-row(20px);
 }
 
 .link {
   color: var(--color-text-muted);
   text-decoration: none;
-  font-size: 14px;
+  @include text-caption;
   transition: color 0.15s;
 
   &:hover {
@@ -89,9 +84,7 @@ const year = new Date().getFullYear()
   }
 
   .top {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    @include flex-between;
   }
 }
 </style>

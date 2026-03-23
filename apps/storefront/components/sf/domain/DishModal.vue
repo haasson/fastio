@@ -104,15 +104,11 @@ function onConfirm() {
 @use '~/assets/styles/mixins' as *;
 
 .content-root {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  @include flex-col(16px);
 }
 
 .dish-header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include flex-col(8px);
 
   @include md {
     flex-direction: row;
@@ -135,9 +131,7 @@ function onConfirm() {
 }
 
 .info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include flex-col(4px);
   min-width: 0;
 }
 </style>

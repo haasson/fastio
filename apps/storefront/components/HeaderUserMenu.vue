@@ -87,8 +87,7 @@ async function onLogout() {
   border-radius: 50%;
   background: var(--primary);
   color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  @include text-xs(700);
   font-family: inherit;
   border: none;
   cursor: pointer;
@@ -126,7 +125,7 @@ async function onLogout() {
   width: 100%;
   text-align: left;
   padding: 10px 16px;
-  font-size: 14px;
+  @include text-caption;
   font-family: inherit;
   color: var(--color-text);
   background: none;

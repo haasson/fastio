@@ -24,8 +24,10 @@ const { state, onConfirm, onCancel } = useConfirm()
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .message {
-  font-size: 14px;
+  @include text-caption;
   color: var(--color-text-secondary);
   margin: 0;
 }

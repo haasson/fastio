@@ -133,8 +133,7 @@ const menuOpen = ref(false)
 }
 
 .logo-fallback {
-  font-size: 18px;
-  font-weight: 700;
+  @include text-body(700);
   color: var(--color-text);
   flex-shrink: 0;
 }
@@ -149,8 +148,7 @@ const menuOpen = ref(false)
 }
 
 .nav-link {
-  font-size: 16px;
-  font-weight: 500;
+  @include text-body-sm(500);
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: color 0.15s;
@@ -175,13 +173,12 @@ const menuOpen = ref(false)
 }
 
 .venue-hours {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-secondary);
 }
 
 .venue-phone {
-  font-size: 14px;
-  font-weight: 600;
+  @include text-caption(600);
   color: var(--color-text);
   text-decoration: none;
 }
@@ -196,8 +193,7 @@ const menuOpen = ref(false)
 }
 
 .mm-nav-link {
-  font-size: 18px;
-  font-weight: 600;
+  @include text-body(600);
   color: var(--color-text);
   text-decoration: none;
   padding: 14px 0;
@@ -225,14 +221,13 @@ const menuOpen = ref(false)
 }
 
 .mm-venue-phone {
-  font-size: 15px;
-  font-weight: 600;
+  @include text-body-sm(600);
   color: var(--color-text);
   text-decoration: none;
 }
 
 .mm-venue-hours {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-secondary);
 }
 

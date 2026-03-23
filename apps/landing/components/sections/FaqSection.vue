@@ -70,6 +70,7 @@ function toggle(index: number) {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .faq-root {
   padding: var(--section-spacing) 0;
   background: var(--ln-white);
@@ -91,28 +92,20 @@ function toggle(index: number) {
 }
 
 .question {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between(16px);
   width: 100%;
   padding: 20px 0;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
+  @include text-body-sm(600);
   color: var(--color-text);
   text-align: left;
-  gap: 16px;
   font-family: var(--heading-font-family);
   line-height: 1.4;
 
   &:hover {
     color: var(--primary);
-  }
-
-  @media (min-width: 768px) {
-    font-size: 15px;
   }
 }
 

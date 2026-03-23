@@ -61,12 +61,14 @@ async function onSubmit() {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .links {
   text-align: center;
 }
 
 .link {
-  font-size: 14px;
+  @include text-caption;
   color: var(--primary);
   cursor: pointer;
   background: none;

@@ -107,9 +107,7 @@ const hasSocials = computed(() => {
 }
 
 .footer-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  @include flex-col(24px);
 
   @include md {
     flex-direction: row;
@@ -119,9 +117,7 @@ const hasSocials = computed(() => {
 }
 
 .footer-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include flex-col(4px);
 }
 
 .brand-name {
@@ -129,9 +125,7 @@ const hasSocials = computed(() => {
 }
 
 .footer-links {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  @include flex-row(12px);
 }
 
 .social-link {
@@ -140,8 +134,7 @@ const hasSocials = computed(() => {
   justify-content: center;
   color: var(--color-text-secondary);
   text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
+  @include text-xs(600);
   transition: color 0.15s;
 
   &:hover {
@@ -150,9 +143,7 @@ const hasSocials = computed(() => {
 }
 
 .footer-contacts {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include flex-col(4px);
 
   @include md {
     margin-left: auto;

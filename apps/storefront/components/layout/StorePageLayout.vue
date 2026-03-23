@@ -46,7 +46,7 @@ defineProps<Props>()
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
+  @include text-caption;
   color: var(--color-text-muted);
   text-decoration: none;
   transition: color 0.15s;

@@ -54,6 +54,8 @@ function onLogin() {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .user-card-root {
   background: var(--color-bg-secondary);
   border-radius: var(--radius-card, 14px);
@@ -61,9 +63,7 @@ function onLogin() {
 }
 
 .head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  @include flex-row(10px);
   margin-bottom: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--color-border);
@@ -75,33 +75,25 @@ function onLogin() {
   border-radius: 50%;
   background: var(--primary);
   color: var(--on-primary, #fff);
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
+  @include text-caption(700);
+  @include flex-row;
   justify-content: center;
   flex-shrink: 0;
 }
 
 .name {
-  font-size: 14px;
-  font-weight: 600;
+  @include text-caption(600);
   color: var(--color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include truncate;
 }
 
 .nav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  @include flex-col(2px);
 }
 
 .nav-link {
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 500;
+  @include text-body-sm(500);
   color: var(--color-text);
   text-decoration: none;
   background: none;
@@ -123,12 +115,9 @@ function onLogin() {
 }
 
 .login-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  @include flex-row(8px);
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
+  @include text-body-sm(600);
   color: var(--primary);
   background: none;
   border: none;

@@ -94,6 +94,7 @@ const plans: Plan[] = [
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .pricing-root {
   padding: var(--section-spacing) 0;
   background: var(--ln-white);
@@ -109,11 +110,10 @@ const plans: Plan[] = [
 }
 
 .label {
-  font-size: 13px;
+  @include text-xs(600);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ln-accent);
-  font-weight: 600;
   margin: 0 0 16px;
 
   &::before {
@@ -139,7 +139,7 @@ const plans: Plan[] = [
 .subtitle {
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 16px;
+  @include text-body-sm;
   margin: 0 0 48px;
   max-width: 500px;
 }
@@ -214,18 +214,16 @@ const plans: Plan[] = [
   align-self: flex-start;
   background: var(--ln-accent);
   color: white;
-  font-size: 12px;
-  font-weight: 600;
+  @include text-xs(600);
   padding: 4px 12px;
   border-radius: 20px;
   margin: 0 0 16px;
 }
 
 .plan-name {
-  font-size: 13px;
+  @include text-xs(600);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-weight: 600;
   color: var(--color-text-muted);
   margin: 0 0 12px;
 }
@@ -243,7 +241,7 @@ const plans: Plan[] = [
 }
 
 .period {
-  font-size: 14px;
+  @include text-caption;
   color: var(--color-text-muted);
   margin: 0 0 28px;
 }
@@ -263,7 +261,7 @@ const plans: Plan[] = [
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  @include text-caption;
   color: var(--color-text);
   line-height: 1.4;
 }
@@ -277,8 +275,7 @@ const plans: Plan[] = [
   width: 100%;
   height: var(--ctrl-h);
   padding: 0 var(--ctrl-px);
-  font-size: 15px;
-  font-weight: 500;
+  @include text-body-sm(500);
   font-family: var(--font-family);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-btn);
@@ -304,7 +301,7 @@ const plans: Plan[] = [
 
 .note {
   padding: 12px 28px 16px;
-  font-size: 13px;
+  @include text-xs;
   color: var(--color-text-muted);
   text-align: center;
 }

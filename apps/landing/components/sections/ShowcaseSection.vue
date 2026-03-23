@@ -112,6 +112,7 @@ const tabs = [
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
 .showcase-root {
   padding: var(--section-spacing) 16px;
   background: var(--color-surface);
@@ -132,7 +133,7 @@ const tabs = [
 
 .subtitle {
   color: var(--color-text-secondary);
-  font-size: 16px;
+  @include text-body-sm;
   margin: 0 0 32px;
 }
 
@@ -144,15 +145,13 @@ const tabs = [
 }
 
 .tab {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  @include flex-row(6px);
   padding: 10px 20px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-btn);
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 14px;
+  @include text-caption;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
@@ -177,9 +176,7 @@ const tabs = [
 }
 
 .browser-frame {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  @include flex-row(12px);
   padding: 12px 16px;
   background: var(--ln-cream);
   border-bottom: 1px solid var(--color-border);
@@ -202,7 +199,7 @@ const tabs = [
   padding: 6px 12px;
   background: var(--color-surface);
   border-radius: 6px;
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-muted);
   text-align: left;
 }
@@ -235,7 +232,7 @@ const tabs = [
   padding: 6px 16px;
   border-radius: 20px;
   background: var(--ln-cream);
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-muted);
 
   &.active {
@@ -262,10 +259,8 @@ const tabs = [
 }
 
 .mock-info {
+  @include flex-col(4px);
   padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .mock-line {
@@ -298,16 +293,12 @@ const tabs = [
 
 // Cart mock
 .mock-cart-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  @include flex-col(12px);
   margin: 0 0 16px;
 }
 
 .mock-cart-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  @include flex-row(12px);
   padding: 10px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-btn);
@@ -322,16 +313,12 @@ const tabs = [
 }
 
 .mock-cart-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include flex-col(4px);
+  @include flex-fill;
 }
 
 .mock-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  @include flex-between;
   padding: 12px 0;
   border-top: 1px solid var(--color-border);
   margin: 0 0 12px;
@@ -351,21 +338,17 @@ const tabs = [
 }
 
 .mock-sidebar {
+  @include flex-col(10px);
   width: 140px;
   padding: 12px;
   background: var(--ln-cream);
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   flex-shrink: 0;
 }
 
 .mock-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  @include flex-col(16px);
+  @include flex-fill;
 }
 
 .mock-stats {
@@ -375,24 +358,18 @@ const tabs = [
 }
 
 .mock-stat-card {
+  @include flex-col(6px);
   padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .mock-table {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include flex-col(8px);
 }
 
 .mock-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  @include flex-row(12px);
   padding: 8px 12px;
   border-bottom: 1px solid var(--color-border);
 }
@@ -411,7 +388,7 @@ const tabs = [
   }
 
   .subtitle {
-    font-size: 18px;
+    @include text-body;
   }
 
   .mock-grid {

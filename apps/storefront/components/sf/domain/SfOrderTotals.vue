@@ -20,16 +20,16 @@ defineProps<Props>()
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .order-totals-root {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include flex-col(8px);
 }
 
 .totals-row {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  @include text-caption;
   color: var(--color-text-secondary);
 }
 
@@ -39,8 +39,7 @@ defineProps<Props>()
 }
 
 .totals-total {
-  font-size: 16px;
-  font-weight: 700;
+  @include text-body-sm(700);
   color: var(--color-text);
   padding-top: 8px;
   border-top: 1px solid var(--color-border);

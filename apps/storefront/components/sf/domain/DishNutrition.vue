@@ -26,6 +26,8 @@ withDefaults(defineProps<Props>(), { size: 'sm' })
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .nutrition-root {
   display: flex;
   gap: 8px;
@@ -38,12 +40,10 @@ withDefaults(defineProps<Props>(), { size: 'sm' })
 }
 
 .size-sm {
-  font-size: 11px;
-  line-height: 1.2;
+  @include text-micro;
 }
 
 .size-md {
-  font-size: 13px;
-  line-height: 1.3;
+  @include text-xs;
 }
 </style>

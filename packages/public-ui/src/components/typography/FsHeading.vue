@@ -3,6 +3,7 @@
     :is="as"
     class="heading-root"
     :class="[`align-${align}`, `color-${color}`]"
+    :style="weight ? { fontWeight: weight } : undefined"
   >
     <slot />
   </component>
@@ -12,9 +13,10 @@ type Props = {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   align?: 'left' | 'center' | 'right'
   color?: 'default' | 'primary' | 'muted'
+  weight?: 400 | 500 | 600 | 700 | 800
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   as: 'h2',
   align: 'left',
   color: 'default',

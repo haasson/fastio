@@ -153,19 +153,15 @@ async function onDeleteClick() {
 .item-placeholder {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
+  @include flex-row;
   justify-content: center;
   color: var(--color-text-muted);
   opacity: 0.4;
 }
 
 .item-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include flex-fill;
+  @include flex-col(4px);
 }
 
 .item-top {
@@ -176,60 +172,52 @@ async function onDeleteClick() {
 }
 
 .item-name {
-  font-weight: 600;
-  font-size: 14px;
+  @include text-caption(600);
   color: var(--color-text);
   line-height: 1.3;
 
   @include md {
-    font-size: 15px;
+    @include text-body-sm;
   }
 }
 
 .item-price {
-  font-weight: 700;
-  font-size: 15px;
+  @include text-body-sm(700);
   color: var(--color-text);
   flex-shrink: 0;
 }
 
 .item-mods {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
 }
 
 .item-removed {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-muted);
   line-height: 1.4;
   margin: 0;
 }
 
 .item-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  @include flex-between(8px);
   margin-top: 4px;
 }
 
 .item-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  @include flex-row(10px);
 }
 
 .unit-price {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .item-btns {
-  display: flex;
-  gap: 2px;
+  @include flex-row(2px);
 }
 
 .btn-danger {

@@ -15,12 +15,14 @@
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
-type TextVariant = 'body' | 'body-sm' | 'caption' | 'label' | 'overline'
+type TextVariant = 'body' | 'body-sm' | 'caption' | 'xs' | 'label' | 'overline'
 type TextColor = 'default' | 'secondary' | 'muted' | 'primary' | 'error' | 'success'
+type TextWeight = 400 | 500 | 600 | 700 | 800
 
 type Props = {
   as?: string
   variant?: TextVariant
+  weight?: TextWeight
   responsive?: boolean
   color?: TextColor
   align?: 'left' | 'center' | 'right'
@@ -39,15 +41,20 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const clampStyle = computed(() => {
-  if (props.lines > 0) {
-    return {
-      display: '-webkit-box',
-      '-webkit-box-orient': 'vertical',
-      '-webkit-line-clamp': String(props.lines),
-      overflow: 'hidden',
-    }
+  const styles: Record<string, string> = {}
+
+  if (props.weight) {
+    styles['fontWeight'] = String(props.weight)
   }
-  return {}
+
+  if (props.lines > 0) {
+    styles['display'] = '-webkit-box'
+    styles['-webkit-box-orient'] = 'vertical'
+    styles['-webkit-line-clamp'] = String(props.lines)
+    styles['overflow'] = 'hidden'
+  }
+
+  return Object.keys(styles).length ? styles : {}
 })
 
 // Преобразуем variant в CSS-класс (body-sm → variant-body-sm)
@@ -82,9 +89,15 @@ const variantClass = computed(() => `variant-${props.variant}`)
 }
 
 // ─── Variants ────────────────────────────────────────────────────────────────
-.variant-body {
-  font-size: 18px;
-  line-height: 1.6;
+.variant-xs {
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.variant-caption {
+  font-size: 14px;
+  line-height: 1.5;
   font-weight: 400;
 }
 
@@ -94,9 +107,9 @@ const variantClass = computed(() => `variant-${props.variant}`)
   font-weight: 400;
 }
 
-.variant-caption {
-  font-size: 14px;
-  line-height: 1.5;
+.variant-body {
+  font-size: 18px;
+  line-height: 1.6;
   font-weight: 400;
 }
 

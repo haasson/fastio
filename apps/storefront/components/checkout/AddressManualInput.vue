@@ -184,6 +184,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .address-field-wrap {
   display: flex;
   flex-direction: column;
@@ -219,7 +221,7 @@ defineExpose({
 }
 
 .field-error {
-  font-size: 12px;
+  @include text-xs;
   color: var(--color-error);
   margin: 0;
 }

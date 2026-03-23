@@ -60,6 +60,8 @@ async function onSubmit() {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .login-root {
   // gap handled by FsForm
 }
@@ -71,7 +73,7 @@ async function onSubmit() {
 }
 
 .link {
-  font-size: 14px;
+  @include text-caption;
   color: var(--primary);
   cursor: pointer;
   background: none;

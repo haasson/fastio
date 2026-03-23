@@ -18,6 +18,7 @@ export { default as FsDropdownList } from './components/base/FsDropdownList.vue'
 // Layout
 export { default as FsCard } from './components/layout/FsCard.vue'
 export { default as FsSection } from './components/layout/FsSection.vue'
+export { default as FsStack } from './components/layout/FsStack.vue'
 
 // Nav
 export { default as FsTabs } from './components/nav/FsTabs.vue'

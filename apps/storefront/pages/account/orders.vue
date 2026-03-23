@@ -146,15 +146,15 @@ function itemsLabel(n: number) {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .orders-root {
   max-width: 600px;
   margin: 0 auto;
 }
 
 .orders-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  @include flex-col(12px);
 }
 
 .order-card {
@@ -162,17 +162,12 @@ function itemsLabel(n: number) {
 }
 
 .order-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  @include flex-between(12px);
   padding: 16px;
 }
 
 .order-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include flex-col(4px);
   min-width: 0;
 }
 
@@ -183,27 +178,23 @@ function itemsLabel(n: number) {
 }
 
 .order-number {
-  font-size: 13px;
-  font-weight: 600;
+  @include text-xs(600);
   color: var(--color-text-muted);
   font-family: monospace;
 }
 
 .order-total {
-  font-size: 16px;
-  font-weight: 700;
+  @include text-body-sm(700);
   color: var(--color-text);
 }
 
 .order-meta {
-  font-size: 13px;
+  @include text-xs;
   color: var(--color-text-muted);
 }
 
 .order-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  @include flex-row(8px);
   flex-shrink: 0;
 }
 

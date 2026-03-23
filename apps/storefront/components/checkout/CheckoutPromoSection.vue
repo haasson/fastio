@@ -63,6 +63,8 @@ async function checkPromo() {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .form-section {
   padding: 20px 0;
   border-bottom: 1px solid var(--color-border);
@@ -85,7 +87,7 @@ async function checkPromo() {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  @include text-xs;
   margin-top: 8px;
 }
 
