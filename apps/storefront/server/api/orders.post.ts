@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   // Валидация базовых полей
-  if (!body.customer?.phone) {
+  if (body.deliveryType !== 'dine_in' && !body.customer?.phone) {
     throw createError({ statusCode: 400, message: 'Телефон обязателен' })
   }
   if (!body.items?.length) {
@@ -350,9 +350,9 @@ export default defineEventHandler(async (event) => {
     .from('orders')
     .insert({
       tenant_id: tenantId,
-      customer_name: body.customer.name,
-      customer_phone: normalizePhone(body.customer.phone),
-      customer_email: body.customer.email ?? null,
+      customer_name: body.customer?.name ?? null,
+      customer_phone: body.customer?.phone ? normalizePhone(body.customer.phone) : null,
+      customer_email: body.customer?.email ?? null,
       delivery_type: deliveryType,
       address: body.address ?? null,
       comment: body.comment ?? null,

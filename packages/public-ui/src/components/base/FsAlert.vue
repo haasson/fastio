@@ -1,7 +1,7 @@
 <template>
   <div class="fs-alert-root" :class="`type-${type}`">
     <component :is="icon" v-if="icon" :size="14" class="alert-icon" />
-    <span><slot /></span>
+    <slot />
   </div>
 </template>
 
@@ -28,23 +28,23 @@ withDefaults(defineProps<Props>(), {
   border-radius: var(--radius-btn);
 
   &.type-success {
-    background: color-mix(in srgb, var(--color-success) 10%, transparent);
-    color: color-mix(in srgb, var(--color-success) 80%, #000);
+    background: var(--color-success);
+    color: #fff;
   }
 
   &.type-error {
-    background: color-mix(in srgb, var(--color-error) 10%, transparent);
-    color: color-mix(in srgb, var(--color-error) 80%, #000);
+    background: var(--color-error);
+    color: #fff;
   }
 
   &.type-warning {
-    background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-    color: color-mix(in srgb, var(--color-warning) 80%, #000);
+    background: var(--color-warning);
+    color: #fff;
   }
 
   &.type-info {
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    color: var(--primary);
+    background: var(--primary);
+    color: var(--on-primary);
   }
 
   &.type-muted {

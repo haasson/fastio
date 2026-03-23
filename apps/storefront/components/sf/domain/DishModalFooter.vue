@@ -15,7 +15,7 @@ type Props = {
   modelValue: number
   totalPrice: string
   currency: string
-  mode?: 'add' | 'edit'
+  mode?: 'add' | 'edit' | 'order'
 }
 
 const props = withDefaults(defineProps<Props>(), { mode: 'add' })
@@ -30,7 +30,11 @@ const qty = computed({
   set: (v) => emit('update:modelValue', v),
 })
 
-const confirmLabel = computed(() => props.mode === 'edit' ? 'Сохранить' : 'Добавить')
+const confirmLabel = computed(() => {
+  if (props.mode === 'edit') return 'Сохранить'
+  if (props.mode === 'order') return 'Заказать'
+  return 'Добавить'
+})
 </script>
 
 <style scoped lang="scss">

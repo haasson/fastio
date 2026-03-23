@@ -24,7 +24,7 @@
       <div class="dish-footer" @click.stop>
         <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
         <SfStepper
-          v-if="cartCount > 0"
+          v-if="cartCount > 0 && !hideStepper"
           :model-value="cartCount"
           :min="0"
           size="small"
@@ -53,6 +53,7 @@ type Props = {
   comboId?: string
   hasModifiers?: boolean
   currency?: string
+  hideStepper?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), { currency: '₽' })

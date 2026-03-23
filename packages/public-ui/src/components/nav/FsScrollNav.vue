@@ -168,12 +168,12 @@ watch(() => props.modelValue, (id) => {
 }
 
 .fade-left {
-  left: 0;
+  left: -1px;
   background: linear-gradient(to right, var(--color-surface), transparent);
 }
 
 .fade-right {
-  right: 0;
+  right: -1px;
   background: linear-gradient(to left, var(--color-surface), transparent);
 }
 

@@ -79,7 +79,7 @@ type Props = {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: 'md',
+  size: 'lg',
   closable: true,
   closeOnOverlay: true,
 })

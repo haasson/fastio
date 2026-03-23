@@ -75,7 +75,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'md',
-  drawerSize: 'md',
+  drawerSize: 'lg',
   closable: true,
   closeOnOverlay: true,
 })

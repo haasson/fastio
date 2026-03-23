@@ -58,7 +58,7 @@ type Props = {
   modifiers: DishModifierGroup[]
   addons: ClientAddon[]
   currency?: string
-  mode?: 'add' | 'edit'
+  mode?: 'add' | 'edit' | 'order'
   initialQuantity?: number
   initialRemovedIngredients?: string[]
   initialModifiers?: OrderItemModifier[]

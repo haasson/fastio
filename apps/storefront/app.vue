@@ -1,6 +1,8 @@
 <template>
   <div class="app-root">
-    <NuxtPage />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
     <ClientOnly>
       <FsToastProvider :toasts="toasts" :on-dismiss="dismiss" />
       <AuthLoginModal />

@@ -1,15 +1,46 @@
 <template>
   <FsSection class="menu-root">
-    <!-- Режим: список блюд по категориям -->
-    <template v-if="defaultView === 'dishes'">
+    <!-- Режим categories: сетка карточек категорий -->
+    <template v-if="defaultView === 'categories' && !selectedCategoryId">
       <div v-if="categories.length" class="menu-content">
+        <div class="categories-grid">
+          <FsCard
+            v-for="category in categories"
+            :key="category.id"
+            as="button"
+            :image="categoryPhotos[category.id] ?? undefined"
+            :image-alt="category.name"
+            @click="selectedCategoryId = category.id"
+          >
+            <template v-if="!categoryPhotos[category.id]" #image>
+              <div class="category-placeholder">
+                <UtensilsCrossed :size="32" />
+              </div>
+            </template>
+            <FsText as="span" variant="body-sm" class="category-name">{{ category.name }}</FsText>
+          </FsCard>
+        </div>
+      </div>
+      <SfEmptyState v-else title="Меню пока пусто" description="Блюда появятся здесь после добавления в меню">
+        <UtensilsCrossed :size="48" />
+      </SfEmptyState>
+    </template>
+
+    <!-- Список блюд (общий для обоих режимов) -->
+    <template v-else>
+      <button v-if="selectedCategoryId" class="back-btn" @click="selectedCategoryId = null">
+        <ChevronLeft :size="18" />
+        {{ selectedCategory?.name }}
+      </button>
+
+      <div v-if="displayCategories.length" class="menu-content">
         <div
-          v-for="category in categories"
+          v-for="category in displayCategories"
           :id="`category-${category.id}`"
           :key="category.id"
           class="category-block"
         >
-          <FsHeading as="h3" class="category-title">{{ category.name }}</FsHeading>
+          <FsHeading v-if="!selectedCategoryId" as="h3" class="category-title">{{ category.name }}</FsHeading>
           <div class="menu-grid">
             <template v-if="category.type === 'combo'">
               <SfDishCard
@@ -17,6 +48,7 @@
                 :key="combo.id"
                 :dish="combo"
                 :combo-id="combo.id"
+                :hide-stepper="tableMode"
                 @add="addComboToCart(combo)"
                 @card-click="openComboModal(combo)"
               />
@@ -27,6 +59,7 @@
                 :key="dish.id"
                 :dish="dish"
                 :has-modifiers="hasModifiers(dish)"
+                :hide-stepper="tableMode"
                 @add="handleAddButton(dish)"
                 @card-click="handleCardClick(dish)"
               />
@@ -39,72 +72,13 @@
       </SfEmptyState>
     </template>
 
-    <!-- Режим: карточки категорий → провал внутрь -->
-    <template v-else>
-      <!-- Список категорий -->
-      <div v-if="!selectedCategoryId">
-        <div v-if="categories.length" class="menu-content">
-          <div class="categories-grid">
-            <FsCard
-              v-for="category in categories"
-              :key="category.id"
-              as="button"
-              :image="categoryPhotos[category.id] ?? undefined"
-              :image-alt="category.name"
-              @click="selectedCategoryId = category.id"
-            >
-              <template v-if="!categoryPhotos[category.id]" #image>
-                <div class="category-placeholder">
-                  <UtensilsCrossed :size="32" />
-                </div>
-              </template>
-              <FsText as="span" variant="body-sm" class="category-name">{{ category.name }}</FsText>
-            </FsCard>
-          </div>
-        </div>
-        <SfEmptyState v-else title="Меню пока пусто" description="Блюда появятся здесь после добавления в меню">
-          <UtensilsCrossed :size="48" />
-        </SfEmptyState>
-      </div>
-
-      <!-- Блюда выбранной категории -->
-      <div v-else>
-        <button class="back-btn" @click="selectedCategoryId = null">
-          <ChevronLeft :size="18" />
-          {{ selectedCategory?.name }}
-        </button>
-        <div class="menu-content">
-          <div class="menu-grid">
-            <template v-if="selectedCategory?.type === 'combo'">
-              <SfDishCard
-                v-for="combo in combosByCategory[selectedCategoryId] ?? []"
-                :key="combo.id"
-                :dish="combo"
-                :combo-id="combo.id"
-                @add="addComboToCart(combo)"
-                @card-click="openComboModal(combo)"
-              />
-            </template>
-            <template v-else>
-              <SfDishCard
-                v-for="dish in dishesByCategory[selectedCategoryId] ?? []"
-                :key="dish.id"
-                :dish="dish"
-                :has-modifiers="hasModifiers(dish)"
-                @add="handleAddButton(dish)"
-                @card-click="handleCardClick(dish)"
-              />
-            </template>
-          </div>
-        </div>
-      </div>
-    </template>
     <DishModal
       v-if="modalItem"
       v-model="modalOpen"
       :item="modalItem"
       :modifiers="modalModifiers"
       :addons="modalAddons"
+      :mode="tableMode ? 'order' : 'add'"
       @add="handleModalAdd"
     />
   </FsSection>
@@ -122,8 +96,13 @@ import SfDishCard from '~/components/sf/domain/SfDishCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'
 
-defineProps<{
+const props = defineProps<{
   defaultView: 'categories' | 'dishes'
+  tableMode?: boolean
+}>()
+
+const emit = defineEmits<{
+  tableOrder: [item: CartItem]
 }>()
 
 const menuStore = useMenuStore()
@@ -136,6 +115,13 @@ const combosByCategory = computed(() => menuStore.combosByCategory)
 
 const selectedCategory = computed(() =>
   categories.value.find(c => c.id === selectedCategoryId.value) ?? null
+)
+
+// В режиме dishes — все категории, в режиме categories — только выбранная
+const displayCategories = computed(() =>
+  selectedCategoryId.value
+    ? categories.value.filter(c => c.id === selectedCategoryId.value)
+    : categories.value
 )
 
 const categoryPhotos = computed<Record<string, string | null>>(() =>
@@ -208,7 +194,11 @@ function handleCardClick(dish: Dish) {
 }
 
 function handleModalAdd(item: CartItem) {
-  cart.add(item)
+  if (props.tableMode) {
+    emit('tableOrder', item)
+  } else {
+    cart.add(item)
+  }
 }
 
 const modalModifiers = computed(() =>
@@ -224,7 +214,7 @@ const modalAddons = computed<ClientAddon[]>(() =>
 )
 
 function addToCart(dish: Dish) {
-  cart.add({
+  const item: CartItem = {
     dishId: dish.id,
     comboId: null,
     dishName: dish.name,
@@ -235,11 +225,16 @@ function addToCart(dish: Dish) {
     removedIngredients: [],
     addons: [],
     photo: dish.photos[0] ?? null,
-  })
+  }
+  if (props.tableMode) {
+    emit('tableOrder', item)
+  } else {
+    cart.add(item)
+  }
 }
 
 function addComboToCart(combo: Combo) {
-  cart.add({
+  const item: CartItem = {
     dishId: null,
     comboId: combo.id,
     dishName: combo.name,
@@ -250,7 +245,12 @@ function addComboToCart(combo: Combo) {
     removedIngredients: [],
     addons: [],
     photo: combo.photos[0] ?? null,
-  })
+  }
+  if (props.tableMode) {
+    emit('tableOrder', item)
+  } else {
+    cart.add(item)
+  }
 }
 </script>
 
@@ -314,9 +314,7 @@ function addComboToCart(combo: Combo) {
 
 // Кнопка назад
 .back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  @include flex-row(4px);
   background: none;
   border: none;
   cursor: pointer;
