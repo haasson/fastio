@@ -152,6 +152,9 @@ export type OrderItemRow = {
   sort_order: number
   completed_at: string | null
   combo_items: { dishName: string }[] | null
+  added_by: string | null
+  confirmed_by: string | null
+  status: 'pending' | 'confirmed'
 }
 
 export type TableRow = {
@@ -196,6 +199,7 @@ export type OrderRow = {
   table_name: string | null
   idempotency_key: string | null
   order_number: string | null
+  accepted_by: string | null
   created_at: string
   updated_at: string
   order_items?: OrderItemRow[]
@@ -271,6 +275,7 @@ export type KitchenQueueRow = {
   assigned_at: string | null
   completed_at: string | null
   served_at: string | null
+  served_by: string | null
   created_at: string
 }
 

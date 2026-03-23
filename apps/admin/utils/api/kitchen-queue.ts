@@ -25,6 +25,7 @@ export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueI
     assignedAt: row.assigned_at,
     completedAt: row.completed_at,
     servedAt: row.served_at,
+    servedBy: row.served_by ?? null,
     createdAt: row.created_at,
   }
 }
@@ -48,6 +49,7 @@ export const kitchenQueueApi = {
       sb.from('kitchen_queue')
         .select('*')
         .eq('tenant_id', tenantId)
+        .neq('delivery_type', 'dine_in')
         .in('status', ['queued', 'in_progress', 'done'])
         .order('created_at', { ascending: true }),
     )
@@ -98,10 +100,10 @@ export const kitchenQueueApi = {
     )
   },
 
-  async markServed(sb: SupabaseClient, id: string): Promise<void> {
+  async markServed(sb: SupabaseClient, id: string, userId: string): Promise<void> {
     await query(
       sb.from('kitchen_queue')
-        .update({ status: 'served', served_at: new Date().toISOString() })
+        .update({ status: 'served', served_at: new Date().toISOString(), served_by: userId })
         .eq('id', id),
     )
   },
@@ -117,13 +119,13 @@ export const kitchenQueueApi = {
     )
   },
 
-  async serveAllForOrders(sb: SupabaseClient, orderIds: string[]): Promise<void> {
+  async serveAllForOrders(sb: SupabaseClient, orderIds: string[], userId: string): Promise<void> {
     if (!orderIds.length) return
     const now = new Date().toISOString()
 
     await query(
       sb.from('kitchen_queue')
-        .update({ status: 'served', served_at: now })
+        .update({ status: 'served', served_at: now, served_by: userId })
         .in('order_id', orderIds)
         .in('status', ['queued', 'in_progress', 'done']),
     )

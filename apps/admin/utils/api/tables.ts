@@ -5,12 +5,14 @@ import { query } from '~/utils/query'
 import type { TableRow } from './db-types'
 
 export type TableSessionItem = {
+  id: string | null
   dishName: string
   quantity: number
   price: number
   modifiers: OrderItemModifier[]
   addons: OrderItemAddon[]
   removedIngredients: string[]
+  status: 'pending' | 'confirmed'
 }
 
 export type TableSession = {
@@ -116,7 +118,7 @@ export const tablesApi = {
     const earliestOpenedAt = openTables.map((t) => t.openedAt!).sort()[0]
 
     let q = sb.from('orders')
-      .select('table_id, total, created_at, order_items(dish_name, quantity, price, modifiers, addons, removed_ingredients)')
+      .select('table_id, total, created_at, order_items(id, dish_name, quantity, price, modifiers, addons, removed_ingredients, status)')
       .in('table_id', tableIds)
       .gte('created_at', earliestOpenedAt)
 
@@ -125,12 +127,14 @@ export const tablesApi = {
     }
 
     type RawItem = {
+      id: string
       dish_name: string
       quantity: number
       price: number
       modifiers: OrderItemModifier[]
       addons: OrderItemAddon[]
       removed_ingredients: string[]
+      status: 'pending' | 'confirmed'
     }
 
     type OrderWithItems = {
@@ -160,23 +164,41 @@ export const tablesApi = {
       const keyMap = itemKeyMaps.get(order.table_id)!
 
       for (const item of order.order_items ?? []) {
-        const key = itemKey(item)
-        const existing = keyMap.get(key)
-
-        if (existing) {
-          existing.quantity += item.quantity
-        } else {
-          const newItem: TableSessionItem = {
+        if (item.status === 'pending') {
+          // Pending items stay individual so they can be confirmed/rejected
+          const pendingItem: TableSessionItem = {
+            id: item.id,
             dishName: item.dish_name,
             quantity: item.quantity,
             price: item.price,
             modifiers: item.modifiers ?? [],
             addons: item.addons ?? [],
             removedIngredients: item.removed_ingredients ?? [],
+            status: 'pending',
           }
 
-          keyMap.set(key, newItem)
-          result[order.table_id].items.push(newItem)
+          result[order.table_id].items.push(pendingItem)
+        } else {
+          const key = itemKey(item)
+          const existing = keyMap.get(key)
+
+          if (existing) {
+            existing.quantity += item.quantity
+          } else {
+            const newItem: TableSessionItem = {
+              id: null,
+              dishName: item.dish_name,
+              quantity: item.quantity,
+              price: item.price,
+              modifiers: item.modifiers ?? [],
+              addons: item.addons ?? [],
+              removedIngredients: item.removed_ingredients ?? [],
+              status: 'confirmed',
+            }
+
+            keyMap.set(key, newItem)
+            result[order.table_id].items.push(newItem)
+          }
         }
       }
     }

@@ -27,13 +27,20 @@
         <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
       </div>
     </div>
+
+    <UiButton
+      v-if="allDone"
+      type="success"
+      size="small"
+      @click="$emit('assembled')"
+    >Собрано</UiButton>
   </UiCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { KitchenQueueItem, KitchenQueueStatus } from '@fastio/shared'
-import { UiCard, UiTag } from '@fastio/ui'
+import { UiCard, UiTag, UiButton } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/order-options'
 
@@ -42,6 +49,8 @@ const props = defineProps<{
   deliveryType: string
   items: KitchenQueueItem[]
 }>()
+
+defineEmits<{ assembled: [] }>()
 
 const STATUS_LABELS: Record<KitchenQueueStatus, string> = {
   queued: 'В очереди',

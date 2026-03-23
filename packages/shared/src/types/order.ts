@@ -22,6 +22,8 @@ export type OrderStatus = {
 
 export type OrderStatusData = Partial<Pick<OrderStatus, 'name' | 'groupType' | 'quickActions' | 'kitchenVisible'>>
 
+export type OrderItemStatus = 'pending' | 'confirmed'
+
 export type OrderItem = {
   id?: string
   orderId?: string
@@ -37,6 +39,9 @@ export type OrderItem = {
   sortOrder?: number
   completedAt: string | null
   comboItems: { dishName: string }[] | null
+  addedBy: string | null
+  confirmedBy: string | null
+  status: OrderItemStatus
 }
 
 export type { OrderItemModifier } from './modifier'
@@ -91,6 +96,7 @@ export type Order = {
   tableId: string | null
   tableName: string | null
   orderNumber: string | null
+  acceptedBy: string | null
   createdAt: string
   updatedAt: string
 }

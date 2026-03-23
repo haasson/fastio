@@ -192,7 +192,7 @@
           >
             <UiIcon name="tableIcon" :size="16" class="ct-icon" />
             <span class="ct-name">{{ table.name }}</span>
-            <span v-if="table.capacity" class="ct-cap">{{ table.capacity }} м</span>
+            <span v-if="table.capacity" class="ct-cap"><UiIcon name="users" :size="11" /> {{ table.capacity }}</span>
           </div>
         </div>
       </div>
@@ -669,6 +669,9 @@ const createCustom = async () => {
 }
 
 .ct-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   font-size: 9px;
   color: var(--color-text-hint);
 }

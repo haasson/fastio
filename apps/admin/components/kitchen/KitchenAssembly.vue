@@ -13,6 +13,7 @@
         :order-id="group.orderId"
         :delivery-type="group.deliveryType"
         :items="group.items"
+        @assembled="onAssembled(group.orderId)"
       />
     </div>
 
@@ -26,11 +27,13 @@ import { UiCard, UiSkeleton, UiEmpty } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
+import { useAuthStore } from '~/stores/auth'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import KitchenAssemblyCard from '~/components/kitchen/KitchenAssemblyCard.vue'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()
+const authStore = useAuthStore()
 
 const loading = ref(false)
 const items = ref<KitchenQueueItem[]>([])
@@ -87,9 +90,33 @@ watch(() => tenantStore.tenant?.id, (id) => {
   if (id) load()
 }, { immediate: true })
 
+const tryAutoAdvance = async (updatedItem: KitchenQueueItem) => {
+  if (updatedItem.status !== 'done') return
+
+  const orderItems = items.value.filter((i) => i.orderId === updatedItem.orderId)
+  const allDone = orderItems.length > 0 && orderItems.every((i) => i.status === 'done' || i.status === 'served')
+
+  if (!allDone) return
+
+  const deliveryType = updatedItem.deliveryType as 'delivery' | 'pickup'
+  const targetStatusId = tenantStore.tenant?.kitchenConfig?.completedStatusMap?.[deliveryType]
+
+  if (targetStatusId) {
+    await Promise.all([
+      api.orders.updateStatus(updatedItem.orderId, targetStatusId),
+      api.kitchenQueue.serveAllForOrders([updatedItem.orderId], authStore.user!.id),
+    ])
+  }
+}
+
+const onAssembled = async (orderId: string) => {
+  await api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id)
+}
+
 // --- Realtime ---
 
 const offInsert = kitchenQueueEvents.onInsert((item) => {
+  if (item.deliveryType === 'dine_in') return
   if (item.status !== 'served') {
     if (!items.value.some((i) => i.id === item.id)) {
       items.value.push(item)
@@ -98,6 +125,7 @@ const offInsert = kitchenQueueEvents.onInsert((item) => {
 })
 
 const offUpdate = kitchenQueueEvents.onUpdate((item) => {
+  if (item.deliveryType === 'dine_in') return
   if (item.status === 'served') {
     items.value = items.value.filter((i) => i.id !== item.id)
   } else {
@@ -105,6 +133,8 @@ const offUpdate = kitchenQueueEvents.onUpdate((item) => {
 
     if (idx !== -1) items.value[idx] = item
     else items.value.push(item)
+
+    tryAutoAdvance(item).catch(console.error)
   }
 })
 

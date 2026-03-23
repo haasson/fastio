@@ -22,6 +22,7 @@ export type KitchenQueueItem = {
   assignedAt: string | null
   completedAt: string | null
   servedAt: string | null
+  servedBy: string | null
   createdAt: string
 }
 

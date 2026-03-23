@@ -5,7 +5,8 @@
         <UiIcon name="tableIcon" :size="18" class="card-icon" />
         <UiText size="medium" class="card-name">{{ table.name }}</UiText>
       </div>
-      <span v-if="table.capacity" class="card-cap">{{ table.capacity }}p</span>
+      <UiTag v-if="pendingCount > 0" type="warning" size="small">{{ pendingCount }} ожидают</UiTag>
+      <span v-if="table.capacity" class="card-cap"><UiIcon name="users" :size="12" /> {{ table.capacity }}</span>
     </div>
 
     <!-- Calls indicator -->
@@ -28,18 +29,42 @@
       <UiText size="tiny" class="card-opened">Открыт {{ openedAgo }}</UiText>
 
       <div v-if="session?.items.length" class="card-items">
-        <div v-for="item in visibleItems" :key="`${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`" class="card-item-wrap">
+        <div
+          v-for="item in visibleItems"
+          :key="item.id ?? `${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`"
+          class="card-item-wrap"
+          :class="{ 'card-item-wrap--pending': item.status === 'pending' }"
+        >
           <div class="card-item">
             <span class="item-name">{{ item.dishName }}</span>
-            <span class="item-price">{{ item.price }} × {{ item.quantity }}</span>
-            <span class="item-total">{{ item.price * item.quantity }} ₽</span>
-            <UiButton
-              size="small"
-              type="text"
-              icon="close"
-              class="item-remove"
-              @click="$emit('remove-dish', item)"
-            />
+            <template v-if="item.status === 'pending'">
+              <UiTag type="warning" size="small" class="item-pending-tag">Ожидает</UiTag>
+              <UiButton
+                size="small"
+                type="text"
+                icon="check"
+                class="item-confirm"
+                @click="$emit('confirm-item', item.id!)"
+              />
+              <UiButton
+                size="small"
+                type="text"
+                icon="close"
+                class="item-reject"
+                @click="$emit('reject-item', item.id!)"
+              />
+            </template>
+            <template v-else>
+              <span class="item-price">{{ item.price }} × {{ item.quantity }}</span>
+              <span class="item-total">{{ item.price * item.quantity }} ₽</span>
+              <UiButton
+                size="small"
+                type="text"
+                icon="close"
+                class="item-remove"
+                @click="$emit('remove-dish', item)"
+              />
+            </template>
           </div>
           <div v-if="hasCustomizations(item)" class="item-extras">
             <span v-for="mod in item.modifiers" :key="mod.optionName" class="extra">{{ mod.optionName }}</span>
@@ -52,6 +77,16 @@
         </button>
       </div>
 
+      <UiButton
+        v-if="pendingCount > 0"
+        size="small"
+        type="warning"
+        full-width
+        @click="$emit('confirm-all')"
+      >
+        Подтвердить все ({{ pendingCount }})
+      </UiButton>
+
       <div v-if="kitchenProgress.length" class="cooking-block">
         <div class="cooking-header">Готовятся</div>
         <div v-for="item in kitchenProgress" :key="item.key" class="cooking-row">
@@ -63,7 +98,7 @@
       </div>
 
       <div class="card-stats">
-        <span class="stat-orders">{{ session?.count ?? 0 }} заказов</span>
+        <span class="stat-orders">{{ session?.count ?? 0 }} {{ pluralize(session?.count ?? 0, 'заказ', 'заказа', 'заказов') }}</span>
         <span class="stat-sum">{{ session?.sum ?? 0 }} ₽</span>
       </div>
 
@@ -95,9 +130,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiCard, UiButton, UiIcon, UiText } from '@fastio/ui'
+import { UiCard, UiButton, UiIcon, UiText, UiTag } from '@fastio/ui'
 import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
-import { orderItemKey } from '@fastio/shared'
+import { orderItemKey, pluralize } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
 import { formatRelativeTime } from '~/utils/formatRelativeTime'
 
@@ -116,6 +151,9 @@ defineEmits<{
   'resolve-call': [id: string]
   'mark-served': [dishId: string]
   'remove-dish': [item: TableSessionItem]
+  'confirm-item': [itemId: string]
+  'reject-item': [itemId: string]
+  'confirm-all': []
 }>()
 
 const now = useNow({ interval: 30_000 })
@@ -130,6 +168,8 @@ const visibleItems = computed(() => {
 
   return expanded.value ? items : items.slice(0, PREVIEW)
 })
+
+const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i.status === 'pending').length)
 
 const hasCustomizations = (item: TableSessionItem) => item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
 
@@ -216,6 +256,9 @@ const kitchenProgress = computed<KitchenProgressRow[]>(() => {
 }
 
 .card-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-size: 11px;
   color: var(--color-text-hint);
   background: var(--color-bg-subtle);
@@ -280,6 +323,12 @@ const kitchenProgress = computed<KitchenProgressRow[]>(() => {
   padding-top: 3px;
 }
 
+.card-item-wrap--pending {
+  background: var(--color-warning-light);
+  border-radius: 4px;
+  padding: 3px 4px;
+}
+
 .card-item {
   display: flex;
   align-items: center;
@@ -288,6 +337,20 @@ const kitchenProgress = computed<KitchenProgressRow[]>(() => {
   .item-remove {
     flex-shrink: 0;
     color: var(--color-text-hint);
+  }
+
+  .item-confirm {
+    flex-shrink: 0;
+    color: var(--color-success);
+  }
+
+  .item-reject {
+    flex-shrink: 0;
+    color: var(--color-error);
+  }
+
+  .item-pending-tag {
+    flex-shrink: 0;
   }
 }
 

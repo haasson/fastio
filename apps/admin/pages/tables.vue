@@ -27,6 +27,9 @@
               @resolve-call="onCallResolved"
               @mark-served="onMarkServed"
               @remove-dish="(item) => onRemoveDish(table, item)"
+              @confirm-item="(itemId) => onConfirmItem(itemId, table.id)"
+              @reject-item="(itemId) => onRejectItem(itemId, table.id)"
+              @confirm-all="onConfirmAllItems(table.id)"
             />
           </div>
         </template>
@@ -94,6 +97,7 @@ import { useConfirm } from '@fastio/kit'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
+import { useAuthStore } from '~/stores/auth'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { tableCallEvents } from '~/composables/data/useTableCallsChannel'
@@ -112,7 +116,9 @@ const TABS = [
 
 const api = useDatabase()
 const tenantStore = useTenantStore()
+const authStore = useAuthStore()
 const orderStatusesStore = useOrderStatusesStore()
+const userId = computed(() => authStore.user?.id ?? null)
 const { statuses } = storeToRefs(orderStatusesStore)
 const { success, warning } = useMessage()
 const { confirm } = useConfirm()
@@ -264,7 +270,7 @@ const onMarkServed = async (dishId: string) => {
     }
   }
 
-  await api.kitchenQueue.markServed(dishId)
+  await api.kitchenQueue.markServed(dishId, userId.value!)
 }
 
 // ── Realtime: kitchen queue ──────────────────────────────────
@@ -352,12 +358,15 @@ const toggleOpen = async (table: Table) => {
 
 const checkout = async (table: Table) => {
   const sum = tableSums.value[table.id]?.sum
-  const activeKitchen = (kitchenDishes.value[table.id] ?? []).filter((i) => i.status === 'queued' || i.status === 'in_progress')
+  const allKitchenItems = kitchenDishes.value[table.id] ?? []
+  const activeKitchen = allKitchenItems.filter((i) => i.status === 'queued' || i.status === 'in_progress')
+  const doneKitchen = allKitchenItems.filter((i) => i.status === 'done')
   const count = activeKitchen.length
 
   if (count) {
     // Active kitchen items — three outcomes: cancel cooking, mark served, or abort (X)
-    const orderIds = [...new Set(activeKitchen.map((i) => i.orderId))]
+    // Include done items' order IDs too so they get cleaned up either way
+    const orderIds = [...new Set(allKitchenItems.map((i) => i.orderId))]
 
     const result = await confirm({
       title: `На кухне ещё ${count} ${pluralize(count, 'блюдо', 'блюда', 'блюд')}`,
@@ -373,8 +382,14 @@ const checkout = async (table: Table) => {
 
     if (result) {
       await api.kitchenQueue.cancelForOrders(orderIds)
+      // cancelForOrders only touches queued/in_progress — done items still need to be served
+      if (doneKitchen.length) {
+        const doneOrderIds = [...new Set(doneKitchen.map((i) => i.orderId))]
+
+        await api.kitchenQueue.serveAllForOrders(doneOrderIds, userId.value!)
+      }
     } else {
-      await api.kitchenQueue.serveAllForOrders(orderIds)
+      await api.kitchenQueue.serveAllForOrders(orderIds, userId.value!)
     }
   } else {
     const ok = await confirm({
@@ -385,6 +400,13 @@ const checkout = async (table: Table) => {
     })
 
     if (!ok) return
+
+    // Mark any lingering done items as served so they don't haunt the next session
+    if (doneKitchen.length) {
+      const doneOrderIds = [...new Set(doneKitchen.map((i) => i.orderId))]
+
+      await api.kitchenQueue.serveAllForOrders(doneOrderIds, userId.value!)
+    }
   }
 
   await toggleOpen(table)
@@ -430,6 +452,9 @@ const onDishPicked = async (result: DishPickerResult) => {
     addons: result.addons,
     completedAt: null,
     comboItems: null,
+    addedBy: userId.value,
+    confirmedBy: userId.value,
+    status: 'confirmed' as const,
   }
 
   await api.orders.create({
@@ -451,6 +476,26 @@ const onDishPicked = async (result: DishPickerResult) => {
     tableId: table.id,
     tableName: table.name,
   })
+}
+
+// ── Confirm / Reject pending items ────────────────────────
+const onConfirmItem = async (itemId: string, tableId: string) => {
+  if (!userId.value) return
+  await api.orders.confirmItem(itemId, userId.value)
+  reloadTableSums(tableId)
+  reloadKitchenDishes()
+}
+
+const onRejectItem = async (itemId: string, tableId: string) => {
+  await api.orders.rejectItem(itemId)
+  reloadTableSums(tableId)
+}
+
+const onConfirmAllItems = async (tableId: string) => {
+  if (!userId.value) return
+  await api.orders.confirmAllPendingItems(tableId, userId.value, cancelledStatusIds.value)
+  reloadTableSums(tableId)
+  reloadKitchenDishes()
 }
 
 // ── Canvas mutations ──────────────────────────────────────

@@ -64,6 +64,9 @@ const mapOrderItem = (row: OrderItemRow): OrderItem => ({
   sortOrder: row.sort_order,
   completedAt: row.completed_at ?? null,
   comboItems: row.combo_items ?? null,
+  addedBy: row.added_by ?? null,
+  confirmedBy: row.confirmed_by ?? null,
+  status: row.status ?? 'confirmed',
 })
 
 export const mapOrder = (raw: Record<string, unknown>): Order => {
@@ -85,12 +88,15 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     deliveryFee: row.delivery_fee,
     total: row.total,
     status: row.status,
+    statusGroup: (raw as Record<string, unknown>).statusGroup as Order['statusGroup'] ?? null,
+    statusName: (raw as Record<string, unknown>).statusName as string ?? null,
     paymentType: row.payment_type,
     branchId: row.branch_id,
     deliveryZoneId: row.delivery_zone_id,
     tableId: row.table_id,
     tableName: row.table_name,
     orderNumber: row.order_number ?? null,
+    acceptedBy: row.accepted_by ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -127,6 +133,9 @@ const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id
   sort_order: i,
   completed_at: item.completedAt ?? null,
   combo_items: item.comboItems ?? null,
+  added_by: item.addedBy ?? null,
+  confirmed_by: item.confirmedBy ?? null,
+  status: item.status ?? 'confirmed',
 }))
 
 export const DEFAULT_PAGE_SIZE = 10
@@ -358,5 +367,44 @@ export const ordersApi = {
     )
 
     return result ? mapOrder(result) : null
+  },
+
+  async confirmItem(sb: SupabaseClient, itemId: string, userId: string): Promise<void> {
+    await query(
+      sb.from('order_items')
+        .update({ status: 'confirmed', confirmed_by: userId })
+        .eq('id', itemId)
+        .eq('status', 'pending'),
+    )
+  },
+
+  async rejectItem(sb: SupabaseClient, itemId: string): Promise<void> {
+    await query(
+      sb.from('order_items')
+        .delete()
+        .eq('id', itemId)
+        .eq('status', 'pending'),
+    )
+  },
+
+  async confirmAllPendingItems(sb: SupabaseClient, tableId: string, userId: string, cancelledStatusIds: string[]): Promise<void> {
+    let q = sb.from('orders').select('id').eq('table_id', tableId)
+
+    if (cancelledStatusIds.length) {
+      q = q.not('status', 'in', `(${cancelledStatusIds.join(',')})`)
+    }
+
+    const orders = await query(q)
+
+    if (!orders?.length) return
+
+    const orderIds = orders.map((o: { id: string }) => o.id)
+
+    await query(
+      sb.from('order_items')
+        .update({ status: 'confirmed', confirmed_by: userId })
+        .eq('status', 'pending')
+        .in('order_id', orderIds),
+    )
   },
 }

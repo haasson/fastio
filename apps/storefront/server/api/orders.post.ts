@@ -42,12 +42,14 @@ export default defineEventHandler(async (event) => {
 
   // Try to get authenticated customer (optional — guest orders still work)
   let customerId: string | null = null
+  let authUserId: string | null = null
   const authHeader = getRequestHeader(event, 'authorization')
   if (authHeader) {
     try {
       const authClient = getAuthSupabase(authHeader)
       const { data: { user } } = await authClient.auth.getUser()
       if (user) {
+        authUserId = user.id
         const { data: customerData } = await supabase
           .from('customers')
           .select('id')
@@ -401,6 +403,8 @@ export default defineEventHandler(async (event) => {
       removed_ingredients: item.removedIngredients ?? [],
       modifiers: item.modifiers ?? [],
       sort_order: i,
+      status: deliveryType === 'dine_in' ? 'pending' : 'confirmed',
+      added_by: authUserId,
     }))
 
     const { error: itemsError } = await supabase.from('order_items').insert(itemRows)

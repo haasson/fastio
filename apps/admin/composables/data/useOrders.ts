@@ -174,9 +174,17 @@ export function useOrders(
 
     await api.orders.updateStatus(orderId, newStatusId)
 
+    // Clean up kitchen queue when order reaches a terminal state
+    const newStatus = statuses.value.find((s) => s.id === newStatusId)
+
+    if (newStatus?.groupType === 'cancelled') {
+      api.kitchenQueue.cancelForOrders([orderId]).catch(console.error)
+    } else if (newStatus?.groupType === 'completed') {
+      api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id).catch(console.error)
+    }
+
     if (authStore.user && oldStatusId) {
       const oldStatus = statuses.value.find((s) => s.id === oldStatusId)
-      const newStatus = statuses.value.find((s) => s.id === newStatusId)
 
       api.orderEvents.add({
         orderId,
