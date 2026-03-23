@@ -56,4 +56,17 @@ export const validationRules = {
       message: 'Укажите адрес',
     } as ValidationRule,
   },
+
+  password: {
+    required: {
+      type: 'required',
+      message: 'Введите пароль',
+    } as ValidationRule,
+
+    minLength: {
+      type: 'minLength',
+      min: 6,
+      message: 'Минимум 6 символов',
+    } as ValidationRule,
+  },
 }

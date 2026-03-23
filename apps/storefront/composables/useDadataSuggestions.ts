@@ -60,5 +60,5 @@ export function useDadataSuggestions() {
     })
   }
 
-  return { suggestions, loading, search, clear, showSuggestions, hideSuggestionsDelayed }
+  return { suggestions, loading, search, fetchSuggestions, clear, showSuggestions, hideSuggestionsDelayed }
 }

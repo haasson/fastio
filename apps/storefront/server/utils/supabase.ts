@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Tenant, Category, CategoryType, Dish, Combo, Order } from '@fastio/shared'
+import type { Tenant, Category, CategoryType, Dish, Combo, Order, Customer, CustomerAddress } from '@fastio/shared'
 import { mapDeliveryZoneRow, defaultSeo } from '@fastio/shared'
 
 export function getServerSupabase() {
@@ -8,6 +8,13 @@ export function getServerSupabase() {
     config.public.supabaseUrl,
     config.supabaseServiceRoleKey,
   )
+}
+
+export function getAuthSupabase(authHeader: string) {
+  const config = useRuntimeConfig()
+  return createClient(config.public.supabaseUrl, config.public.supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  })
 }
 
 export function mapTenant(row: Record<string, unknown>): Tenant {
@@ -119,6 +126,51 @@ export function mapOrder(row: Record<string, unknown>): Order {
     tableName: row.table_name as string | null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
+  }
+}
+
+export function mapCustomer(row: Record<string, unknown>): Customer {
+  return {
+    id: row.id as string,
+    tenantId: row.tenant_id as string,
+    authUserId: row.auth_user_id as string,
+    name: row.name as string | null,
+    phone: row.phone as string | null,
+    email: row.email as string | null,
+    avatarUrl: row.avatar_url as string | null,
+    createdAt: row.created_at as string,
+  }
+}
+
+export function mapCustomerAddress(row: Record<string, unknown>): CustomerAddress {
+  const coords = row.coordinates as string | null
+  // Supabase returns point as "(lng,lat)" string
+  let lat = 0
+  let lng = 0
+  if (coords) {
+    const match = coords.match(/\(([^,]+),([^)]+)\)/)
+    if (match) {
+      const parsedLng = parseFloat(match[1])
+      const parsedLat = parseFloat(match[2])
+      if (!Number.isNaN(parsedLng) && !Number.isNaN(parsedLat)) {
+        lng = parsedLng
+        lat = parsedLat
+      }
+    }
+  }
+
+  return {
+    id: row.id as string,
+    customerId: row.customer_id as string,
+    label: row.label as string,
+    address: row.address as string,
+    coordinates: { lat, lng },
+    entrance: row.entrance as string | null,
+    floor: row.floor as string | null,
+    apartment: row.apartment as string | null,
+    intercom: row.intercom as string | null,
+    comment: row.comment as string | null,
+    createdAt: row.created_at as string,
   }
 }
 

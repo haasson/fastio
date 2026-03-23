@@ -1,8 +1,15 @@
 <template>
   <div class="order-items-root">
     <div v-for="item in items" :key="item.id ?? item.dishName" class="order-item">
-      <span class="item-name">{{ item.dishName }} × {{ item.quantity }}</span>
-      <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} {{ currency }}</span>
+      <div class="item-main">
+        <span class="item-name">{{ item.dishName }} × {{ item.quantity }}</span>
+        <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} {{ currency }}</span>
+      </div>
+      <p v-if="modifiersSummary(item)" class="item-detail">{{ modifiersSummary(item) }}</p>
+      <p v-if="item.removedIngredients?.length" class="item-detail item-removed">
+        Убрать: {{ item.removedIngredients.join(', ') }}
+      </p>
+      <p v-if="addonsSummary(item)" class="item-detail">{{ addonsSummary(item) }}</p>
     </div>
   </div>
 </template>
@@ -17,35 +24,57 @@ type Props = {
 }
 
 defineProps<Props>()
+
+function modifiersSummary(item: OrderItem) {
+  return item.modifiers?.map((m) => m.optionName).join(' · ') ?? ''
+}
+
+function addonsSummary(item: OrderItem) {
+  return item.addons?.map((a) => `+ ${a.addonName}`).join(' · ') ?? ''
+}
 </script>
 
 <style scoped lang="scss">
 .order-items-root {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .order-item {
   display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.item-main {
+  display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .item-name {
-  color: var(--color-text-secondary);
+  color: var(--color-text);
+  font-weight: 500;
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .item-price {
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 600;
   flex-shrink: 0;
+}
+
+.item-detail {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.item-removed {
+  color: var(--color-text-muted);
 }
 </style>

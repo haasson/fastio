@@ -7,13 +7,10 @@
         <DrawerContent class="drawer-bottom" :style="bottomSizeStyle">
           <div class="handle" />
 
-          <div v-if="title || closable || $slots['header-action']" class="header">
+          <div v-if="title || $slots['header-action']" class="header">
             <DrawerTitle v-if="title" class="title">{{ title }}</DrawerTitle>
             <DrawerTitle v-else class="visually-hidden">Диалоговое окно</DrawerTitle>
             <slot name="header-action" />
-            <button v-if="closable" class="close-btn" aria-label="Закрыть" @click="emit('update:modelValue', false)">
-              <X :size="18" />
-            </button>
           </div>
           <DrawerTitle v-else class="visually-hidden">Диалоговое окно</DrawerTitle>
 

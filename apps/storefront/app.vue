@@ -3,6 +3,10 @@
     <NuxtPage />
     <ClientOnly>
       <FsToastProvider :toasts="toasts" :on-dismiss="dismiss" />
+      <AuthLoginModal />
+      <AuthRegisterModal />
+      <AuthForgotPasswordModal />
+      <ConfirmDialog />
     </ClientOnly>
   </div>
 </template>
@@ -13,9 +17,14 @@ import { useRoute, useAsyncData, useHead, useRequestFetch } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
 import { paletteToCssVars } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
+import { useAuthStore } from '~/stores/auth'
+import AuthLoginModal from '~/components/auth/AuthLoginModal.vue'
+import AuthRegisterModal from '~/components/auth/AuthRegisterModal.vue'
+import AuthForgotPasswordModal from '~/components/auth/AuthForgotPasswordModal.vue'
 import useTheme from '~/composables/useTheme'
 import { isGoogleFontValue, fontFamilyCSS, googleFontUrl } from '~/utils/google-fonts'
 import { FsToastProvider } from '@fastio/public-ui'
+import ConfirmDialog from '~/components/ConfirmDialog.vue'
 import { useToast } from '~/composables/useToast'
 import { useAnalytics } from '~/composables/useAnalytics'
 
@@ -23,7 +32,11 @@ const { toasts, dismiss } = useToast()
 
 // Восстанавливаем корзину из localStorage
 const cartStore = useCartStore()
-onMounted(() => cartStore.restore())
+const authStore = useAuthStore()
+onMounted(() => {
+  cartStore.restore()
+  authStore.init()
+})
 
 // Применяем тему тенанта как CSS-переменные
 const route = useRoute()
@@ -121,6 +134,17 @@ useHead(computed(() => ({
   background: var(--color-bg);
   color: var(--color-text);
   transition: background 0.3s, color 0.3s;
+}
+
+:root {
+  --z-sticky: 100;
+  --z-mobile-menu: 200;
+  --z-header: 300;
+  --header-height: 56px;
+
+  @media (min-width: 768px) {
+    --header-height: 64px;
+  }
 }
 
 

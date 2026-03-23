@@ -28,7 +28,7 @@
           />
         </div>
 
-        <div v-if="!confirmingDelete" class="item-btns">
+        <div class="item-btns">
           <FsIconButton
             v-if="canEdit"
             aria-label="Редактировать"
@@ -43,16 +43,10 @@
             variant="ghost"
             size="small"
             class="btn-danger"
-            @click="startConfirmDelete"
+            @click="onDeleteClick"
           >
             <Trash2 :size="16" />
           </FsIconButton>
-        </div>
-
-        <div v-else class="delete-confirm">
-          <span class="delete-label">Удалить?</span>
-          <button type="button" class="confirm-btn confirm-yes" @click="confirmDelete">Да</button>
-          <button type="button" class="confirm-btn confirm-no" @click="cancelConfirmDelete">Нет</button>
         </div>
       </div>
     </div>
@@ -60,12 +54,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
+import { computed } from 'vue'
 import { Pencil, Trash2, UtensilsCrossed } from 'lucide-vue-next'
 import { getItemUnitPrice } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { FsIconButton } from '@fastio/public-ui'
+import { useConfirm } from '~/composables/useConfirm'
 
 type Props = {
   item: CartItem
@@ -102,36 +97,23 @@ const modifiersSummary = computed(() => {
 const removedSummary = computed(() => {
   if (!props.item.removedIngredients?.length) return ''
   const names = props.item.removedIngredients.map((s) => s.toLowerCase()).join(', ')
-  return `без ${names}`
+  return `Убрать: ${names}`
 })
 
 function onQtyChange(newVal: number) {
   emit('change', props.index, newVal)
 }
 
-// Delete confirmation
-const confirmingDelete = ref(false)
-let cancelTimer: ReturnType<typeof setTimeout> | null = null
+const { confirm } = useConfirm()
 
-function startConfirmDelete() {
-  confirmingDelete.value = true
-  cancelTimer = setTimeout(() => { confirmingDelete.value = false }, 4000)
+async function onDeleteClick() {
+  const ok = await confirm(`Убрать «${props.item.dishName}» из корзины?`, {
+    title: 'Удалить товар?',
+    confirmLabel: 'Удалить',
+    danger: true,
+  })
+  if (ok) emit('remove', props.index)
 }
-
-function confirmDelete() {
-  if (cancelTimer) clearTimeout(cancelTimer)
-  confirmingDelete.value = false
-  emit('remove', props.index)
-}
-
-function cancelConfirmDelete() {
-  if (cancelTimer) clearTimeout(cancelTimer)
-  confirmingDelete.value = false
-}
-
-onUnmounted(() => {
-  if (cancelTimer) clearTimeout(cancelTimer)
-})
 </script>
 
 <style scoped lang="scss">
@@ -259,50 +241,4 @@ onUnmounted(() => {
   }
 }
 
-// Delete confirmation
-.delete-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  animation: fade-in 0.15s ease;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; transform: translateX(4px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.delete-label {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.confirm-btn {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-btn);
-  border: none;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.confirm-yes {
-  background: var(--color-error, #ef4444);
-  color: #fff;
-
-  &:hover {
-    background: color-mix(in srgb, var(--color-error, #ef4444) 82%, #000);
-  }
-}
-
-.confirm-no {
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-
-  &:hover {
-    background: var(--surface-hover);
-  }
-}
 </style>

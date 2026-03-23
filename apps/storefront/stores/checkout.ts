@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
+import { useAuthStore } from '~/stores/auth'
 
 type PromoResult = {
   valid: boolean
@@ -27,6 +28,10 @@ type CheckoutForm = {
   paymentType: 'cash' | 'card'
   address: string
   addressCoords: { lat: number; lon: number } | null
+  entrance: string
+  floor: string
+  apartment: string
+  intercom: string
   promoCode: string
 }
 
@@ -38,36 +43,20 @@ const FORM_DEFAULTS: CheckoutForm = {
   paymentType: 'card',
   address: '',
   addressCoords: null,
+  entrance: '',
+  floor: '',
+  apartment: '',
+  intercom: '',
   promoCode: '',
 }
 
 export const useCheckoutStore = defineStore('checkout', () => {
   const form = reactive<CheckoutForm>({ ...FORM_DEFAULTS })
 
-  // Runtime (not persisted)
   const promoResult = ref<PromoResult | null>(null)
   const deliveryZone = ref<CheckoutDeliveryZone | null>(null)
   const outsideZones = ref(false)
   const hasZones = ref(false)
-
-  function persist() {
-    if (import.meta.client) {
-      localStorage.setItem('checkout', JSON.stringify(form))
-    }
-  }
-
-  function restore() {
-    if (import.meta.client) {
-      try {
-        const raw = localStorage.getItem('checkout')
-        if (raw) {
-          Object.assign(form, JSON.parse(raw))
-        }
-      } catch {
-        // ignore
-      }
-    }
-  }
 
   function clearPromo() {
     promoResult.value = null
@@ -77,12 +66,14 @@ export const useCheckoutStore = defineStore('checkout', () => {
   function clearAddress() {
     form.address = ''
     form.addressCoords = null
+    form.entrance = ''
+    form.floor = ''
+    form.apartment = ''
+    form.intercom = ''
     deliveryZone.value = null
     outsideZones.value = false
-    persist()
   }
 
-  // Totals
   const { data: tenant } = useNuxtData<Tenant>('tenant')
 
   const deliveryFee = computed(() => {
@@ -104,8 +95,13 @@ export const useCheckoutStore = defineStore('checkout', () => {
 
   const orderTotal = computed(() => useCartStore().subtotal - discountAmount.value + deliveryFee.value)
 
-  // Auto-persist on form changes
-  watch(form, persist, { deep: true })
+  function prefillFromAuth() {
+    const authStore = useAuthStore()
+    if (!authStore.isAuthenticated) return
+
+    if (authStore.customerName) form.customerName = authStore.customerName
+    if (authStore.customerPhone) form.customerPhone = authStore.customerPhone
+  }
 
   return {
     form,
@@ -113,10 +109,9 @@ export const useCheckoutStore = defineStore('checkout', () => {
     deliveryZone,
     outsideZones,
     hasZones,
-    persist,
-    restore,
     clearPromo,
     clearAddress,
+    prefillFromAuth,
     deliveryFee,
     discountAmount,
     orderTotal,

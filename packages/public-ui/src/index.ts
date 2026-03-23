@@ -34,6 +34,7 @@ export { default as FsRadioGroup } from './components/form/FsRadioGroup.vue'
 export { default as FsSwitch } from './components/form/FsSwitch.vue'
 export { default as FsLabel } from './components/form/FsLabel.vue'
 export { default as FsField } from './components/form/FsField.vue'
+export { default as FsForm } from './components/form/FsForm.vue'
 
 // Overlay
 export { default as FsDialog } from './components/overlay/FsDialog.vue'

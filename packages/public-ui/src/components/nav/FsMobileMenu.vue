@@ -34,12 +34,15 @@ onUnmounted(() => {
 
 .fs-mobile-menu-root {
   position: fixed;
-  inset: 0;
+  top: var(--header-height, 61px);
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: var(--z-mobile-menu, 150);
   background: var(--mobile-menu-bg, var(--color-bg, #fff));
   display: flex;
   flex-direction: column;
-  padding: 80px 24px 40px;
+  padding: 24px 24px 40px;
   overflow-y: auto;
   font-family: var(--font-family, inherit);
 

@@ -72,7 +72,8 @@
 
     <div class="footer-bottom">
       <FsText variant="caption" color="muted" align="center">
-        &copy; {{ year }} {{ tenant?.name }}. Сделано на FastIO
+        &copy; {{ year }} {{ tenant?.name }}. Сделано в
+        <a href="https://fastio.ru" target="_blank" rel="noopener noreferrer" class="fastio-link">fastio.ru</a>
       </FsText>
     </div>
   </FsSection>
@@ -162,5 +163,17 @@ const hasSocials = computed(() => {
 .footer-bottom {
   display: flex;
   justify-content: center;
+}
+
+.fastio-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border);
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--color-text);
+  }
 }
 </style>

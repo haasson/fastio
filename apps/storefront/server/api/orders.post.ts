@@ -1,6 +1,6 @@
 import { findDeliveryZone, normalizePhone } from '@fastio/shared'
 import type { DeliveryZone } from '@fastio/shared'
-import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
+import { getServerSupabase, getAuthSupabase, mapDeliveryZoneRow } from '../utils/supabase'
 import { createRateLimiter } from '../utils/rateLimit'
 
 const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in'] as const
@@ -39,6 +39,27 @@ export default defineEventHandler(async (event) => {
   }
 
   const supabase = getServerSupabase()
+
+  // Try to get authenticated customer (optional — guest orders still work)
+  let customerId: string | null = null
+  const authHeader = getRequestHeader(event, 'authorization')
+  if (authHeader) {
+    try {
+      const authClient = getAuthSupabase(authHeader)
+      const { data: { user } } = await authClient.auth.getUser()
+      if (user) {
+        const { data: customerData } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('tenant_id', tenantId)
+          .eq('auth_user_id', user.id)
+          .maybeSingle()
+        if (customerData) customerId = customerData.id
+      }
+    } catch {
+      // Ignore auth errors — proceed as guest
+    }
+  }
 
   // Получаем данные тенанта и начальный статус заказа параллельно
   const [{ data: tenantData, error: tenantError }, { data: initialStatusData }] = await Promise.all([
@@ -117,7 +138,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Достаём реальные цены блюд и модификаторы параллельно
-  const dishIds = body.items.map((item: { dishId: string }) => item.dishId)
+  const dishIds = body.items.map((item: { dishId: string | null }) => item.dishId).filter(Boolean) as string[]
   const [{ data: dishes, error: dishesError }, { data: allDishOptions }] = await Promise.all([
     supabase.from('dishes').select('id, price, active, tenant_id').in('id', dishIds),
     supabase
@@ -140,17 +161,23 @@ export default defineEventHandler(async (event) => {
 
   const comboItemsMap = new Map<string, { dishName: string }[]>()
 
+  const comboPriceMap = new Map<string, number>()
+
   if (comboIds.length > 0) {
-    const { data: comboItemRows } = await supabase
-      .from('combo_items')
-      .select('combo_id, dishes(name)')
-      .in('combo_id', comboIds)
-      .order('sort_order')
+    const [{ data: comboItemRows }, { data: comboRows }] = await Promise.all([
+      supabase.from('combo_items').select('combo_id, dishes(name)').in('combo_id', comboIds).order('sort_order'),
+      supabase.from('combos').select('id, price').in('id', comboIds),
+    ])
 
     if (comboItemRows) {
       for (const row of comboItemRows as { combo_id: string; dishes: { name: string } }[]) {
         if (!comboItemsMap.has(row.combo_id)) comboItemsMap.set(row.combo_id, [])
         comboItemsMap.get(row.combo_id)!.push({ dishName: row.dishes.name })
+      }
+    }
+    if (comboRows) {
+      for (const row of comboRows as { id: string; price: number }[]) {
+        comboPriceMap.set(row.id, Number(row.price))
       }
     }
   }
@@ -159,6 +186,7 @@ export default defineEventHandler(async (event) => {
     if (!Number.isInteger(item.quantity) || item.quantity < 1) {
       throw createError({ statusCode: 400, message: `Некорректное количество для "${item.dishName}"` })
     }
+    if (!item.dishId) continue // комбо — проверяется отдельно
     const dish = dishMap.get(item.dishId)
     if (!dish) {
       throw createError({ statusCode: 400, message: `Блюдо ${item.dishId} не найдено` })
@@ -191,13 +219,15 @@ export default defineEventHandler(async (event) => {
   }
 
   // Пересчитываем subtotal по реальным ценам + валидация модификаторов
-  const serverItems = body.items.map((item: { dishId: string; comboId?: string; dishName: string; categoryName?: string; quantity: number; removedIngredients: string[]; modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[] }) => {
-    const dish = dishMap.get(item.dishId)!
-    const basePrice = Number(dish.price)
+  const serverItems = body.items.map((item: { dishId: string | null; comboId?: string; dishName: string; categoryName?: string; quantity: number; removedIngredients: string[]; modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[] }) => {
+    const isCombo = !item.dishId && !!item.comboId
+    const basePrice = isCombo
+      ? (comboPriceMap.get(item.comboId!) ?? 0)
+      : Number(dishMap.get(item.dishId!)!.price)
 
     // Validate and recalculate modifiers from DB
     const serverModifiers: { groupName: string; optionName: string; priceDelta: number }[] = []
-    const dishValidOptions = validOptionsMap.get(item.dishId)
+    const dishValidOptions = item.dishId ? validOptionsMap.get(item.dishId) : undefined
 
     if (item.modifiers && item.modifiers.length > 0) {
       for (const mod of item.modifiers) {
@@ -336,6 +366,7 @@ export default defineEventHandler(async (event) => {
       ...(orderBranchId && { branch_id: orderBranchId }),
       ...(matchedZone && { delivery_zone_id: matchedZone.id }),
       ...(tableRecord && { table_id: tableRecord.id, table_name: tableRecord.name }),
+      ...(customerId && { customer_id: customerId }),
     })
     .select('id')
     .single()

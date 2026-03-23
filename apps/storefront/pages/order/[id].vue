@@ -18,14 +18,22 @@
       <div v-else class="order-content">
         <!-- Header -->
         <div class="order-header">
-          <div class="success-icon"><CircleCheck :size="32" /></div>
-          <FsHeading as="h3" class="order-title">Заказ принят!</FsHeading>
-          <FsText as="p" variant="body-sm" color="secondary" class="order-subtitle">
-            Ожидайте звонка для подтверждения
-          </FsText>
+          <template v-if="isFresh">
+            <div class="success-icon"><CircleCheck :size="32" /></div>
+            <FsHeading as="h3" class="order-title">Заказ принят!</FsHeading>
+            <FsText as="p" variant="body-sm" color="secondary" class="order-subtitle">
+              Ожидайте звонка для подтверждения
+            </FsText>
+          </template>
+          <template v-else>
+            <FsHeading as="h3" class="order-title">Заказ #{{ order.id.slice(0, 8) }}</FsHeading>
+            <FsText as="p" variant="body-sm" color="secondary" class="order-subtitle">
+              {{ formatDate(order.createdAt) }}
+            </FsText>
+          </template>
           <div class="order-meta">
-            <span class="order-id">Заказ #{{ order.id.slice(0, 8) }}</span>
-            <SfOrderStatus :group="statusGroup" :label="order.statusName ?? undefined" />
+            <span v-if="isFresh" class="order-id">Заказ #{{ order.id.slice(0, 8) }}</span>
+            <SfOrderStatus :group="statusGroup" />
           </div>
         </div>
 
@@ -90,17 +98,30 @@ import SfOrderItemsList from '~/components/sf/domain/SfOrderItemsList.vue'
 const route = useRoute()
 const currency = useCurrency()
 
-const { data: order, pending, refresh } = await useFetch<Order>(`/api/orders/${route.params.id}`)
+const { data: order, pending, refresh } = await useFetch<Order>(`/api/orders/${route.params.id}`, {
+  query: route.query.slug ? { slug: route.query.slug } : {},
+})
 
 const statusGroup = computed(() => order.value?.statusGroup ?? 'new')
 
+const isFinished = computed(() => statusGroup.value === 'completed' || statusGroup.value === 'cancelled')
+
+// Свежий заказ — не завершён, создан меньше суток назад
+const isFresh = computed(() => {
+  if (!order.value) return false
+  if (isFinished.value) return false
+  const age = Date.now() - new Date(order.value.createdAt).getTime()
+  return age < 24 * 60 * 60 * 1000
+})
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('ru-RU', {
+    day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
+  })
+}
+
 // Polling: refresh order status every 15s if not finished
 let pollTimer: ReturnType<typeof setInterval> | null = null
-
-const isFinished = computed(() => {
-  const g = statusGroup.value
-  return g === 'completed' || g === 'cancelled'
-})
 
 if (import.meta.client) {
   pollTimer = setInterval(async () => {

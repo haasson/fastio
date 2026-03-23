@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell-root">
-    <div ref="headerRef" class="sticky-header">
+    <div class="sticky-header">
       <SiteHeader :tenant="tenant" :header="layout.header" />
     </div>
 
@@ -8,7 +8,6 @@
       v-if="showCategoryBar && layout.sectionsOrder.includes('categoryBar')"
       ref="categoryBarRef"
       class="sticky-category-bar"
-      :style="{ top: `${headerHeight}px` }"
     >
       <CategoryBar :overflow="layout.sections.categoryBar.overflow" :sticky-offset="stickyTotalHeight" />
     </div>
@@ -46,12 +45,9 @@ const layout = computed(() =>
   deepMerge(defaultSiteLayout(), (tenant.value?.siteLayout ?? {}) as Partial<SiteLayout>)
 )
 
-const headerRef = useTemplateRef('headerRef')
-const { height: headerHeight } = useElementSize(headerRef)
-
 const categoryBarRef = useTemplateRef('categoryBarRef')
 const { height: categoryBarHeight } = useElementSize(categoryBarRef)
-const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.value)
+const stickyTotalHeight = computed(() => categoryBarHeight.value)
 
 </script>
 
@@ -70,6 +66,7 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 
 .sticky-category-bar {
   position: sticky;
+  top: var(--header-height);
   z-index: 99;
 }
 

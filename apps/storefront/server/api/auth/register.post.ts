@@ -1,0 +1,72 @@
+import { createClient } from '@supabase/supabase-js'
+import { getServerSupabase } from '../../utils/supabase'
+import { ensureCustomer } from '../../utils/authHelpers'
+
+export default defineEventHandler(async (event) => {
+  const tenantId = event.context.tenantId as string | undefined
+  if (!tenantId) throw createError({ statusCode: 404 })
+
+  const body = await readBody(event)
+  const { name, email, password } = body ?? {}
+
+  if (!email || !password) {
+    throw createError({ statusCode: 400, message: 'Email и пароль обязательны' })
+  }
+  if (password.length < 6) {
+    throw createError({ statusCode: 400, message: 'Пароль должен быть не менее 6 символов' })
+  }
+
+  const config = useRuntimeConfig()
+  const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
+
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { name, tenant_id: tenantId },
+    },
+  })
+
+  if (authError) {
+    throw createError({ statusCode: 400, message: authError.message })
+  }
+
+  if (!authData.user) {
+    throw createError({ statusCode: 500, message: 'Не удалось создать аккаунт' })
+  }
+
+  const serverSupabase = getServerSupabase()
+
+  // Если identities пустой — юзер уже существует в Supabase Auth (другой тенант или повторная регистрация)
+  // Пробуем залогиниться с предоставленным паролем чтобы получить сессию
+  let authUser = authData.user
+  let session = authData.session
+
+  if (!session || (authData.user.identities?.length ?? 0) === 0) {
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    if (signInError) {
+      throw createError({ statusCode: 400, message: 'Этот email уже используется' })
+    }
+    authUser = signInData.user
+    session = signInData.session
+  }
+
+  // Проверяем, нет ли уже кастомера в этом тенанте
+  const { data: existingCustomer } = await serverSupabase
+    .from('customers')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('auth_user_id', authUser.id)
+    .maybeSingle()
+
+  if (existingCustomer) {
+    throw createError({ statusCode: 409, message: 'Этот email уже зарегистрирован' })
+  }
+
+  const customer = await ensureCustomer(tenantId, authUser.id, { name, email })
+
+  return {
+    customer,
+    session,
+  }
+})

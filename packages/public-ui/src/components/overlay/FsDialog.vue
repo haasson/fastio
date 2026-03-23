@@ -1,5 +1,20 @@
 <template>
-  <DialogRoot :open="modelValue" @update:open="onOpenChange">
+  <FsDrawer
+    v-if="isMobile"
+    :model-value="modelValue"
+    :title="title"
+    :closable="closable"
+    :size="drawerSize"
+    side="bottom"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
+    <slot />
+    <template v-if="$slots.footer" #footer>
+      <slot name="footer" />
+    </template>
+  </FsDrawer>
+
+  <DialogRoot v-else :open="modelValue" @update:open="onOpenChange">
     <DialogPortal>
       <DialogOverlay class="dialog-overlay" />
       <DialogContent
@@ -32,8 +47,10 @@
     </DialogPortal>
   </DialogRoot>
 </template>
+
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import {
   DialogRoot,
   DialogPortal,
@@ -44,18 +61,21 @@ import {
   DialogClose,
 } from 'reka-ui'
 import { X } from 'lucide-vue-next'
+import FsDrawer from './FsDrawer.vue'
 
 type Props = {
   modelValue: boolean
   title?: string
   description?: string
   size?: 'sm' | 'md' | 'lg'
+  drawerSize?: 'sm' | 'md' | 'lg' | 'full'
   closable?: boolean
   closeOnOverlay?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'md',
+  drawerSize: 'md',
   closable: true,
   closeOnOverlay: true,
 })
@@ -64,6 +84,11 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
+const _isMobile = useMediaQuery('(max-width: 767px)')
+const mounted = ref(false)
+onMounted(() => { mounted.value = true })
+const isMobile = computed(() => mounted.value && _isMobile.value)
+
 const sizeMap: Record<string, string> = { sm: '400px', md: '560px', lg: '720px' }
 const maxWidth = computed(() => sizeMap[props.size])
 
@@ -71,6 +96,7 @@ function onOpenChange(value: boolean) {
   emit('update:modelValue', value)
 }
 </script>
+
 <style scoped lang="scss">
 @use '../../styles/mixins' as *;
 

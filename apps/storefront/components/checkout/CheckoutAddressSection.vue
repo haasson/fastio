@@ -1,122 +1,167 @@
 <template>
-  <section class="form-section">
+  <section class="address-section">
     <FsHeading as="h6" class="section-title">Адрес доставки</FsHeading>
 
-    <div class="address-field-wrap">
-      <div class="address-input-wrap">
-        <FsInput
-          :model-value="checkout.form.address"
-          placeholder="Начните вводить адрес..."
-          :error="!!addressError"
-          @update:model-value="onAddressInput"
-          @focus="showSuggestions = true"
-          @blur="hideSuggestionsDelayed(); addressTouched = true"
-        />
-        <FsIconButton
-          v-if="checkout.form.address"
-          aria-label="Очистить адрес"
-          variant="ghost"
-          size="small"
-          class="address-clear"
-          @click="checkout.clearAddress()"
-        >
-          <X :size="14" />
-        </FsIconButton>
+    <template v-if="authStore.isAuthenticated">
+      <div v-if="addressesLoading" class="addr-skeleton" />
 
-        <FsDropdownList
-          v-if="showSuggestions"
-          :items="suggestionItems"
-          @select="onSuggestionSelect"
-        />
-      </div>
+      <template v-else-if="savedAddresses.length">
+        <!-- Список сохранённых + кнопка "Другой адрес" -->
+        <div v-if="!useNewAddress" class="addr-list">
+          <label v-for="addr in savedAddresses" :key="addr.id" class="addr-option">
+            <input
+              type="radio"
+              name="checkout-address"
+              :value="addr.id"
+              :checked="selectedAddressId === addr.id"
+              @change="selectSavedAddress(addr)"
+            />
+            <span class="addr-content">
+              <span class="addr-main">{{ addr.label || addr.address }}</span>
+              <span v-if="addr.label" class="addr-lbl">{{ addr.address }}</span>
+            </span>
+          </label>
+          <button type="button" class="addr-new-btn" @click="switchToNew">
+            + Другой адрес
+          </button>
+        </div>
 
-      <p v-if="addressError" class="field-error">{{ addressError }}</p>
+        <!-- Ручной ввод при "Другой адрес" -->
+        <div v-else class="addr-manual-wrap">
+          <button type="button" class="addr-back-btn" @click="switchToSaved">
+            ← Мои адреса
+          </button>
+          <AddressManualInput ref="manualInputRef" :currency="currency" @verified="onManualVerified" />
+        </div>
 
-      <template v-if="!addressError">
-        <FsAlert v-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
-          Доставка:
-          <strong v-if="zoneFee === 0">бесплатно</strong>
-          <strong v-else>{{ zoneFee }} {{ currency }}</strong>
-          <span v-if="checkout.deliveryZone.freeDeliveryFrom && zoneFee > 0" class="zone-hint">
-            (бесплатно от {{ checkout.deliveryZone.freeDeliveryFrom }} {{ currency }})
-          </span>
-        </FsAlert>
-        <FsAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
-          Адрес вне зоны доставки
-        </FsAlert>
-        <FsAlert v-else-if="addressCheckLoading" type="muted">
-          Проверяем адрес...
-        </FsAlert>
+        <!-- Зона доставки для сохранённого адреса -->
+        <template v-if="!useNewAddress && selectedAddressId && !addressError">
+          <FsAlert v-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
+            Доставка:
+            <strong v-if="zoneFee === 0">бесплатно</strong>
+            <strong v-else>{{ zoneFee }} {{ currency }}</strong>
+            <span v-if="checkout.deliveryZone.freeDeliveryFrom && zoneFee > 0" class="zone-hint">
+              (бесплатно от {{ checkout.deliveryZone.freeDeliveryFrom }} {{ currency }})
+            </span>
+          </FsAlert>
+          <FsAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
+            Адрес вне зоны доставки
+          </FsAlert>
+          <FsAlert v-else-if="addressCheckLoading" type="muted">
+            Проверяем адрес...
+          </FsAlert>
+        </template>
+
+        <p v-if="addressError" class="field-error">{{ addressError }}</p>
       </template>
-    </div>
+
+      <!-- Нет сохранённых адресов -->
+      <template v-else>
+        <AddressManualInput ref="manualInputRef" :currency="currency" @verified="onManualVerified" />
+      </template>
+    </template>
+
+    <!-- Гость -->
+    <template v-else>
+      <AddressManualInput ref="manualInputRef" :currency="currency" @verified="onManualVerified" />
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Check, X } from 'lucide-vue-next'
+import type { CustomerAddress } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'
-import type { DadataSuggestion } from '~/composables/useDadataSuggestions'
-import { useDadataSuggestions } from '~/composables/useDadataSuggestions'
-import { FsHeading, FsInput, FsIconButton, FsAlert, FsDropdownList } from '@fastio/public-ui'
+import { useAuthStore } from '~/stores/auth'
+import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { FsHeading, FsAlert } from '@fastio/public-ui'
+import AddressManualInput from './AddressManualInput.vue'
 
-type Props = {
-  currency: string
-}
-
+type Props = { currency: string }
 defineProps<Props>()
 
 const checkout = useCheckoutStore()
 const cart = useCartStore()
-const { suggestions, search, showSuggestions, hideSuggestionsDelayed, clear: clearSuggestions } = useDadataSuggestions()
+const authStore = useAuthStore()
 
-const addressVerified = ref(false)
-const addressTouched = ref(false)
+const manualInputRef = ref<InstanceType<typeof AddressManualInput> | null>(null)
+const savedAddresses = ref<CustomerAddress[]>([])
+const addressesLoading = ref(false)
+const selectedAddressId = ref<string | null>(null)
 const addressCheckLoading = ref(false)
+const addressTouched = ref(false)
+const useNewAddress = ref(false)
+
+const LAST_ADDRESS_KEY = 'lastCheckoutAddressId'
 
 const zoneFee = computed(() => checkout.deliveryZone?.effectiveDeliveryFee ?? checkout.deliveryZone?.deliveryFee ?? 0)
 
-const suggestionItems = computed(() =>
-  suggestions.value.map((s) => ({ value: s.value, label: s.value, _raw: s })),
-)
-
-function onSuggestionSelect(item: { value: string; [key: string]: unknown }) {
-  selectAddress((item as { _raw: DadataSuggestion })._raw)
-}
-
 const addressError = computed(() => {
   if (!addressTouched.value) return ''
-  if (!checkout.form.address.trim()) return 'Укажите адрес доставки'
-  if (!addressVerified.value) return 'Выберите адрес из списка'
+  if (!useNewAddress.value && savedAddresses.value.length && !selectedAddressId.value) {
+    return 'Выберите адрес доставки'
+  }
   return ''
 })
 
-function onAddressInput(value: string | number) {
-  const str = String(value)
-  checkout.form.address = str
+async function fetchAddresses() {
+  addressesLoading.value = true
+  try {
+    const supabase = useSupabaseClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    savedAddresses.value = await $fetch<CustomerAddress[]>('/api/customer/addresses', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    preselectAddress()
+  } catch {
+    savedAddresses.value = []
+  } finally {
+    addressesLoading.value = false
+  }
+}
+
+function preselectAddress() {
+  if (!savedAddresses.value.length) return
+  const lastId = localStorage.getItem(LAST_ADDRESS_KEY)
+  const found = lastId ? savedAddresses.value.find((a) => a.id === lastId) : null
+  selectSavedAddress(found ?? savedAddresses.value[0])
+}
+
+async function selectSavedAddress(addr: CustomerAddress) {
+  useNewAddress.value = false
+  selectedAddressId.value = addr.id
+  localStorage.setItem(LAST_ADDRESS_KEY, addr.id)
+  checkout.form.address = addr.address
+  checkout.form.addressCoords = addr.coordinates
+    ? { lat: addr.coordinates.lat, lon: addr.coordinates.lng }
+    : null
+  checkout.deliveryZone = null
+  checkout.outsideZones = false
+
+  if (addr.coordinates) {
+    await checkAddress(addr.coordinates.lat, addr.coordinates.lng)
+  }
+}
+
+function switchToNew() {
+  useNewAddress.value = true
+  selectedAddressId.value = null
+  checkout.form.address = ''
   checkout.form.addressCoords = null
   checkout.deliveryZone = null
   checkout.outsideZones = false
-  addressVerified.value = false
-  search(str)
-  showSuggestions.value = true
 }
 
-async function selectAddress(suggestion: DadataSuggestion) {
-  checkout.form.address = suggestion.value
-  showSuggestions.value = false
-  clearSuggestions()
-  addressVerified.value = true
+function switchToSaved() {
+  useNewAddress.value = false
+  preselectAddress()
+}
+
+function onManualVerified() {
   addressTouched.value = true
-
-  const lat = parseFloat(suggestion.data.geo_lat ?? '')
-  const lon = parseFloat(suggestion.data.geo_lon ?? '')
-
-  if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
-    checkout.form.addressCoords = { lat, lon }
-    await checkAddress(lat, lon)
-  }
 }
 
 async function checkAddress(lat: number, lon: number) {
@@ -148,55 +193,131 @@ async function checkAddress(lat: number, lon: number) {
   }
 }
 
-// Re-check delivery fee when cart subtotal changes (for freeDeliveryFrom threshold)
 let subtotalTimer: ReturnType<typeof setTimeout> | null = null
 watch(() => cart.subtotal, () => {
   const coords = checkout.form.addressCoords
   if (!coords) return
   if (subtotalTimer) clearTimeout(subtotalTimer)
-  subtotalTimer = setTimeout(() => {
-    checkAddress(coords.lat, coords.lon)
-  }, 500)
+  subtotalTimer = setTimeout(() => checkAddress(coords.lat, coords.lon), 500)
 })
 
-// Инициализация при монтировании (если адрес уже был выбран ранее)
-if (checkout.form.address && checkout.form.addressCoords) {
-  addressVerified.value = true
-}
+watch(() => authStore.isAuthenticated, (val) => {
+  if (val && !savedAddresses.value.length && !addressesLoading.value) fetchAddresses()
+})
+
+onMounted(() => {
+  if (authStore.isAuthenticated) fetchAddresses()
+})
 
 defineExpose({
   isValid() {
     addressTouched.value = true
-    return !addressError.value && !checkout.outsideZones
+    if (authStore.isAuthenticated && savedAddresses.value.length) {
+      if (useNewAddress.value) return manualInputRef.value?.isValid() ?? false
+      return !!selectedAddressId.value && !checkout.outsideZones
+    }
+    return manualInputRef.value?.isValid() ?? false
   },
 })
 </script>
 
 <style scoped lang="scss">
-.form-section {
+.address-section {
   padding: 20px 0;
   border-bottom: 1px solid var(--color-border);
 }
 
 .section-title {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
 }
 
-.address-field-wrap {
+.addr-skeleton {
+  height: 44px;
+  border-radius: var(--radius-card);
+  background: var(--color-border);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.addr-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  margin-bottom: 10px;
 }
 
-.address-input-wrap {
-  position: relative;
+.addr-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  user-select: none;
+
+  &:hover { background: var(--color-surface); }
+
+  input[type="radio"] {
+    margin-top: 3px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
 }
 
-.address-clear {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+.addr-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.addr-main {
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.addr-lbl {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.addr-new-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 6px;
+  font-size: 13px;
+  color: var(--primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  width: fit-content;
+
+  &:hover { background: var(--color-surface); }
+}
+
+.addr-manual-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.addr-back-btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover { color: var(--color-text); }
 }
 
 .zone-hint {
@@ -207,6 +328,6 @@ defineExpose({
 .field-error {
   font-size: 12px;
   color: var(--color-error);
-  margin: 0;
+  margin: 4px 0 0;
 }
 </style>

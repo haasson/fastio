@@ -25,7 +25,10 @@
           </a>
         </div>
 
-        <FsIconButton aria-label="Корзина">
+        <HeaderUserMenu />
+
+
+        <FsIconButton ariaLabel="Корзина">
           <ShoppingCart :size="20" :stroke-width="1.7" />
         </FsIconButton>
 
@@ -35,11 +38,11 @@
   </FsSection>
 
   <FsMobileMenu v-model="menuOpen">
-    <nav v-if="header.showNav && navLinks.length" class="mobile-nav">
+    <nav v-if="header.showNav && navLinks.length" class="mm-nav">
       <NuxtLink
         v-for="link in navLinks"
         :key="link.page"
-        class="mobile-nav-link"
+        class="mm-nav-link"
         :to="link.to"
         @click="menuOpen = false"
       >
@@ -47,11 +50,15 @@
       </NuxtLink>
     </nav>
 
-    <div v-if="header.showPhone || header.showWorkingHours" class="mobile-venue">
-      <a v-if="header.showPhone" class="mobile-phone" :href="`tel:${tenant?.contacts?.phone}`">
-        {{ tenant?.contacts?.phone }}
-      </a>
-      <span v-if="header.showWorkingHours" class="mobile-hours">{{ tenant?.workingHours }}</span>
+    <div class="mm-footer">
+      <div v-if="header.showPhone || header.showWorkingHours" class="mm-venue">
+        <a v-if="header.showPhone" class="mm-venue-phone" :href="`tel:${tenant?.contacts?.phone}`">
+          {{ tenant?.contacts?.phone }}
+        </a>
+        <span v-if="header.showWorkingHours" class="mm-venue-hours">{{ tenant?.workingHours }}</span>
+      </div>
+
+      <MobileUserCard @close="menuOpen = false" />
     </div>
   </FsMobileMenu>
 </template>
@@ -63,6 +70,8 @@ import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
 import { FsSection, FsIconButton, FsBurger, FsMobileMenu } from '@fastio/public-ui'
+import HeaderUserMenu from '~/components/HeaderUserMenu.vue'
+import MobileUserCard from '~/components/MobileUserCard.vue'
 
 const props = defineProps<{
   tenant: Tenant | null
@@ -88,24 +97,38 @@ const menuOpen = ref(false)
 @use '~/assets/styles/mixins' as *;
 
 .header-root {
+  position: relative;
+  z-index: var(--z-header);
+  height: var(--header-height);
+  padding-block: 0;
   background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+
+  :deep(.container) {
+    height: 100%;
+  }
 }
 
 .header-inner {
   display: flex;
   align-items: center;
   gap: 16px;
+  height: 100%;
 }
 
 .logo-link {
   display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
+  height: 36px;
+  min-width: 80px;
   text-decoration: none;
 }
 
 .logo {
   height: 36px;
   width: auto;
+  max-width: 160px;
   object-fit: contain;
 }
 
@@ -163,47 +186,54 @@ const menuOpen = ref(false)
   text-decoration: none;
 }
 
-// ─── Mobile menu content ────────────────────────────────────────────────────
 
-.mobile-nav {
+// ─── Mobile menu ─────────────────────────────────────────────────────────────
+
+.mm-nav {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
-.mobile-nav-link {
-  display: block;
-  font-family: inherit;
+.mm-nav-link {
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text);
   text-decoration: none;
   padding: 14px 0;
-  border-bottom: 1px solid var(--color-border);
   transition: color 0.15s;
 
-  &:first-child { border-top: 1px solid var(--color-border); }
   &:hover { color: var(--primary); }
+
+  &.router-link-active { color: var(--primary); }
 }
 
-.mobile-venue {
+// ─── Footer ──────────────────────────────────────────────────────────────────
+
+.mm-footer {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: 32px;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
 }
 
-.mobile-phone {
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 700;
+.mm-venue {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mm-venue-phone {
+  font-size: 15px;
+  font-weight: 600;
   color: var(--color-text);
   text-decoration: none;
 }
 
-.mobile-hours {
-  font-family: inherit;
-  font-size: 14px;
+.mm-venue-hours {
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
+
 </style>

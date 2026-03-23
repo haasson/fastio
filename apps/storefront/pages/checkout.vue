@@ -7,6 +7,48 @@
         <div class="checkout-layout">
           <div class="checkout-form">
 
+            <!-- Customer data -->
+            <section class="form-section">
+              <FsHeading as="h6" class="section-title">Ваши данные</FsHeading>
+
+              <!-- Авторизованный: имя и телефон как текст -->
+              <template v-if="authStore.isAuthenticated">
+                <div class="customer-info">
+                  <div v-if="authStore.customerName" class="info-row">
+                    <span class="info-label">Имя</span>
+                    <span class="info-value">{{ authStore.customerName }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Телефон</span>
+                    <span class="info-value">{{ authStore.customerPhone || '—' }}</span>
+                  </div>
+                </div>
+                <FsField label="Комментарий к заказу">
+                  <FsTextarea v-model="checkout.form.comment" placeholder="Пожелания к заказу..." :rows="2" resize="none" />
+                </FsField>
+              </template>
+
+              <!-- Гость: инпуты -->
+              <div v-else class="fields-stack">
+                <FsField label="Имя">
+                  <FsInput v-model="checkout.form.customerName" placeholder="Иван" autocomplete="given-name" />
+                </FsField>
+                <FsField label="Телефон" required :error="phoneError">
+                  <FsInput
+                    v-model="checkout.form.customerPhone"
+                    type="tel"
+                    placeholder="+7 (999) 123-45-67"
+                    autocomplete="tel"
+                    mask="+7 (###) ###-##-##"
+                    :error="!!phoneError"
+                  />
+                </FsField>
+                <FsField label="Комментарий к заказу">
+                  <FsTextarea v-model="checkout.form.comment" placeholder="Пожелания к заказу..." :rows="2" resize="none" />
+                </FsField>
+              </div>
+            </section>
+
             <!-- Delivery type (only if both enabled) -->
             <section v-if="showDeliveryTabs" class="form-section">
               <div class="delivery-tabs">
@@ -35,29 +77,6 @@
               :currency="currency"
             />
 
-            <!-- Customer data -->
-            <section class="form-section">
-              <FsHeading as="h6" class="section-title">Ваши данные</FsHeading>
-              <div class="fields-stack">
-                <FsField label="Имя">
-                  <FsInput v-model="checkout.form.customerName" placeholder="Иван" autocomplete="given-name" />
-                </FsField>
-                <FsField label="Телефон" required :error="phoneError">
-                  <FsInput
-                    v-model="checkout.form.customerPhone"
-                    type="tel"
-                    placeholder="+7 (999) 123-45-67"
-                    autocomplete="tel"
-                    mask="+7 (###) ###-##-##"
-                    :error="!!phoneError"
-                  />
-                </FsField>
-                <FsField label="Комментарий к заказу">
-                  <FsTextarea v-model="checkout.form.comment" placeholder="Домофон, этаж, пожелания..." :rows="2" resize="none" />
-                </FsField>
-              </div>
-            </section>
-
             <!-- Payment -->
             <section class="form-section">
               <FsHeading as="h6" class="section-title">Оплата</FsHeading>
@@ -85,8 +104,12 @@ import { storeToRefs } from 'pinia'
 import { useNuxtData, navigateTo } from 'nuxt/app'
 import { Truck, PersonStanding } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
+import { validationRules } from '@fastio/kit'
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
+import { useAuthStore } from '~/stores/auth'
+import { useConfirm } from '~/composables/useConfirm'
+import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
 import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup } from '@fastio/public-ui'
@@ -98,6 +121,8 @@ import CheckoutSidebar from '~/components/checkout/CheckoutSidebar.vue'
 
 const cart = useCartStore()
 const checkout = useCheckoutStore()
+const authStore = useAuthStore()
+const { confirm } = useConfirm()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const currency = useCurrency()
@@ -132,13 +157,11 @@ function validate(): boolean {
   phoneError.value = ''
 
   const phoneDigits = checkout.form.customerPhone.replace(/\D/g, '')
-  if (!phoneDigits) { phoneError.value = 'Телефон обязателен'; return false }
-  if (phoneDigits.length < 11) { phoneError.value = 'Введите номер полностью'; return false }
+  if (!phoneDigits) { phoneError.value = validationRules.phone.required.message; return false }
+  if (phoneDigits.length < 11) { phoneError.value = validationRules.phone.format.message; return false }
 
   if (checkout.form.deliveryType === 'delivery') {
     if (!addressRef.value?.isValid()) return false
-    if (checkout.outsideZones) return false
-    if (checkout.hasZones && !checkout.deliveryZone) return false
   }
 
   return true
@@ -150,7 +173,7 @@ const submitError = ref('')
 const idempotencyKey = ref('')
 
 onMounted(async () => {
-  checkout.restore()
+  checkout.prefillFromAuth()
   cart.restore()
 
   if (cart.items.length === 0) {
@@ -168,6 +191,14 @@ onMounted(async () => {
 async function submitOrder() {
   if (!validate()) return
   if (cart.items.length === 0) return
+
+  if (checkout.form.deliveryType === 'delivery' && checkout.outsideZones) {
+    const ok = await confirm('Похоже, мы не доставляем заказы по вашему адресу.', {
+      title: 'Адрес вне зоны доставки',
+      confirmLabel: 'Всё равно оформить',
+    })
+    if (!ok) return
+  }
 
   submitting.value = true
   submitError.value = ''
@@ -196,7 +227,12 @@ async function submitOrder() {
     }
 
     if (checkout.form.deliveryType === 'delivery') {
-      body.address = checkout.form.address
+      const addrParts = [checkout.form.address]
+      if (checkout.form.entrance) addrParts.push(`подъезд ${checkout.form.entrance}`)
+      if (checkout.form.floor) addrParts.push(`этаж ${checkout.form.floor}`)
+      if (checkout.form.apartment) addrParts.push(`кв. ${checkout.form.apartment}`)
+      if (checkout.form.intercom) addrParts.push(`домофон ${checkout.form.intercom}`)
+      body.address = addrParts.join(', ')
       if (checkout.form.addressCoords) {
         body.geoLat = checkout.form.addressCoords.lat
         body.geoLon = checkout.form.addressCoords.lon
@@ -207,7 +243,16 @@ async function submitOrder() {
       body.promoCode = checkout.form.promoCode.trim()
     }
 
-    const result = await $fetch<{ id: string }>('/api/orders', { method: 'POST', body })
+    const headers: Record<string, string> = {}
+    if (authStore.isAuthenticated) {
+      const supabase = useSupabaseClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        headers.Authorization = `Bearer ${session.access_token}`
+      }
+    }
+
+    const result = await $fetch<{ id: string }>('/api/orders', { method: 'POST', body, headers })
 
     cart.clear()
     await navigateTo(`/order/${result.id}`)
@@ -290,6 +335,30 @@ async function submitOrder() {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.customer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.info-row {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.info-label {
+  color: var(--color-text-secondary);
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: var(--color-text);
+  font-weight: 500;
 }
 
 </style>

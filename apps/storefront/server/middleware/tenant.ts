@@ -37,22 +37,28 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Dev fallback: ?slug=demo-pizza
-  const querySlug = import.meta.dev
-    ? (getQuery(event).slug as string | undefined)
-    : undefined
-  if (querySlug) {
-    const { data: byQuerySlug } = await supabase
-      .from('tenants')
-      .select('*')
-      .eq('slug', querySlug)
-      .maybeSingle()
+  // Dev fallback: ?slug=demo-pizza or slug from Referer header (for client-side API calls)
+  if (import.meta.dev) {
+    const querySlug = getQuery(event).slug as string | undefined
+    const referer = getRequestHeader(event, 'referer')
+    let refererSlug: string | undefined
+    if (referer) {
+      try { refererSlug = new URL(referer).searchParams.get('slug') ?? undefined } catch {}
+    }
+    const devSlug = querySlug ?? refererSlug
+    if (devSlug) {
+      const { data: byDevSlug } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('slug', devSlug)
+        .maybeSingle()
 
-    if (byQuerySlug) {
-      event.context.tenantId = byQuerySlug.id
-      event.context.tenant = mapTenant(byQuerySlug)
-      checkSuspended(event.context.tenant)
-      return
+      if (byDevSlug) {
+        event.context.tenantId = byDevSlug.id
+        event.context.tenant = mapTenant(byDevSlug)
+        checkSuspended(event.context.tenant)
+        return
+      }
     }
   }
 
