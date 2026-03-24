@@ -17,12 +17,16 @@
         @drop.prevent="onReorderDrop(i)"
         @dragend="dragIndex = null; dragOverIndex = null"
       >
-        <PhotoUpload
-          :model-value="item.url"
-          compact
-          @update:model-value="val => { if (val === null) remove(i) }"
-          @pending="file => onItemPending(i, file)"
+        <img
+          v-if="item.url"
+          :src="item.url"
+          class="card-photo"
+          alt=""
+          @click="openReplaceModal(i)"
         />
+        <div v-else class="card-empty" @click="openReplaceModal(i)">
+          <UiIcon name="image" :size="16" color="var(--color-text-tertiary)" />
+        </div>
         <div v-if="!item.enabled" class="dim" />
         <div class="actions">
           <button
@@ -44,23 +48,24 @@
         </div>
       </div>
 
-      <div class="card card--add">
-        <PhotoUpload
-          :key="items.length"
-          :model-value="null"
-          compact
-          multiple
-          @pending="onAddPending"
-        />
+      <div class="card card--add" @click="openAddModal">
+        <UiIcon name="plus" :size="20" color="var(--color-text-tertiary)" />
       </div>
     </div>
+
+    <ImageUploadModal
+      v-model="modalOpen"
+      aspect-ratio="3:1"
+      title="Баннер"
+      @done="onModalDone"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, watch, ref } from 'vue'
 import { UiIcon } from '@fastio/ui'
-import PhotoUpload from '~/components/ui/PhotoUpload.vue'
+import ImageUploadModal from '~/components/ui/ImageUploadModal.vue'
 import type { BannerItem } from '@fastio/shared'
 
 type InternalItem = BannerItem & { _key: string }
@@ -126,17 +131,29 @@ const remove = (i: number) => {
   items.splice(i, 1)
 }
 
-const onItemPending = (i: number, file: File | null) => {
-  if (!file) return
-  revokeBlob(items[i].url)
-  items[i].url = createBlob(file)
+// --- modal ---
+const modalOpen = ref(false)
+const modalTargetIndex = ref<number | null>(null)
+
+const openReplaceModal = (i: number) => {
+  modalTargetIndex.value = i
+  modalOpen.value = true
 }
 
-const onAddPending = (file: File | null) => {
-  if (!file) return
+const openAddModal = () => {
+  modalTargetIndex.value = null
+  modalOpen.value = true
+}
+
+const onModalDone = (file: File) => {
   const blobUrl = createBlob(file)
 
-  items.push({ _key: `${blobUrl}-${keyCounter++}`, url: blobUrl, enabled: true })
+  if (modalTargetIndex.value !== null) {
+    revokeBlob(items[modalTargetIndex.value].url)
+    items[modalTargetIndex.value].url = blobUrl
+  } else {
+    items.push({ _key: `${blobUrl}-${keyCounter++}`, url: blobUrl, enabled: true })
+  }
 }
 
 const onReorderDrop = (targetIndex: number) => {
@@ -180,11 +197,31 @@ const onReorderDrop = (targetIndex: number) => {
   &--add {
     border-style: dashed;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover { border-color: var(--color-primary); background: var(--color-bg-hover); }
   }
 
   &:hover .actions { opacity: 1; }
+}
+
+.card-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.card-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .dim {

@@ -3,8 +3,10 @@
     <div class="field">
       <label class="label">Логотип</label>
       <div class="logo-wrap">
-        <PhotoUpload
+        <ImageUploadTrigger
           :model-value="form.contentForm.logo"
+          aspect-ratio="1:1"
+          modal-title="Логотип"
           @update:model-value="onLogoChange"
           @pending="form.setPendingLogo"
         />
@@ -29,7 +31,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import { UiCheckbox, UiSelect } from '@fastio/ui'
-import PhotoUpload from '~/components/ui/PhotoUpload.vue'
+import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import { NAV_PAGE_KEYS, featureLabel } from '@fastio/shared'
 import type { NavItem, NavPageKey } from '@fastio/shared'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'

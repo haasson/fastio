@@ -6,6 +6,8 @@
       placement="right"
       display-directive="show"
       :z-index="zIndex"
+      :auto-focus="false"
+      :trap-focus="false"
       @update:show="onUpdateShow"
     >
       <n-drawer-content

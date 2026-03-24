@@ -119,20 +119,12 @@
     </div>
   </UiModal>
 
-  <!-- Photo upload modal -->
-  <UiModal
+  <ImageUploadModal
     v-model="photoModalOpen"
     title="Фото категории"
-    :width="400"
-    :actions="[]"
-  >
-    <PhotoUpload
-      :key="photoModalItemId ?? undefined"
-      :model-value="currentPhotoForModal"
-      @update:model-value="onPhotoRemoved"
-      @pending="onPhotoPending"
-    />
-  </UiModal>
+    aspect-ratio="4:3"
+    @done="onPhotoDone"
+  />
 </template>
 
 <script setup lang="ts">
@@ -143,7 +135,7 @@ import { useConfirm } from '@fastio/kit'
 import type { OrderStatusGroup, SpecialCategoryType, CategoryType } from '@fastio/shared'
 import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
 import { STATUS_GROUP_LABELS } from '~/config/order-status-groups'
-import PhotoUpload from '~/components/ui/PhotoUpload.vue'
+import ImageUploadModal from '~/components/ui/ImageUploadModal.vue'
 
 export type ManagedItem = {
   id: string
@@ -214,35 +206,18 @@ const onPaletteClick = (item: PaletteItem) => {
 const photoModalOpen = ref(false)
 const photoModalItemId = ref<string | null>(null)
 
-const currentPhotoForModal = computed(() => {
-  if (!photoModalItemId.value) return null
-
-  return photoPreview.value[photoModalItemId.value]
-    ?? localItems.value.find((i) => i.id === photoModalItemId.value)?.photoUrl
-    ?? null
-})
-
 const openPhotoModal = (itemId: string) => {
   photoModalItemId.value = itemId
   photoModalOpen.value = true
 }
 
-const onPhotoPending = (file: File | null) => {
-  if (!photoModalItemId.value || !file) return
+const onPhotoDone = (file: File) => {
+  if (!photoModalItemId.value) return
   const id = photoModalItemId.value
 
   if (photoPreview.value[id]?.startsWith('blob:')) URL.revokeObjectURL(photoPreview.value[id])
   photoPreview.value[id] = URL.createObjectURL(file)
   emit('updatePhoto', id, file)
-}
-
-const onPhotoRemoved = (value: string | null) => {
-  if (!photoModalItemId.value || value !== null) return
-  const id = photoModalItemId.value
-
-  if (photoPreview.value[id]?.startsWith('blob:')) URL.revokeObjectURL(photoPreview.value[id])
-  delete photoPreview.value[id]
-  emit('removePhoto', id)
 }
 
 watch(() => props.items, (items) => {

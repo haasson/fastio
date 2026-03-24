@@ -2,9 +2,9 @@
   <div class="basic-info-section-root">
     <div class="col-photo">
       <UiText size="tiny" span class="section-title">Фото</UiText>
-      <PhotoUpload
-        :key="photoKey"
+      <ImageUploadTrigger
         :model-value="photoUrl"
+        aspect-ratio="4:3"
         @update:model-value="$emit('update:photoUrl', $event); $emit('update:photoRemoved', !$event)"
         @pending="$emit('update:pendingPhoto', $event)"
       />
@@ -55,11 +55,10 @@
 
 <script setup lang="ts">
 import { UiText, UiInput, UiInputNumber, UiSelect } from '@fastio/ui'
-import PhotoUpload from '~/components/ui/PhotoUpload.vue'
+import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 
 defineProps<{
   photoUrl: string | null
-  photoKey: number
   name: string
   price: number | null
   description: string

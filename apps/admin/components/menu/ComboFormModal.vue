@@ -10,7 +10,6 @@
     <UiForm ref="formRef" class="form">
       <BasicInfoSection
         :photo-url="currentPhotoUrl"
-        :photo-key="photoKey"
         :name="form.name"
         :price="form.price"
         :description="form.description"
@@ -81,7 +80,6 @@ const refreshKey = ref(0)
 const settingsRef = ref<InstanceType<typeof SettingsSection> | null>(null)
 const formRef = ref()
 
-const photoKey = ref(0)
 const originalPhotoUrl = ref<string | null>(null)
 const currentPhotoUrl = ref<string | null>(null)
 const pendingPhotoFile = ref<File | null>(null)
@@ -108,7 +106,6 @@ watch(
   async (val) => {
     if (!val) return
 
-    photoKey.value++
     refreshKey.value++
     pendingPhotoFile.value = null
     photoRemoved.value = false

@@ -33,8 +33,10 @@
           <label class="label">Фон</label>
           <UiRadioGroup v-model="form.bgType" :options="bgTypeOptions" />
           <div v-if="form.bgType === 'image'" class="photo-wrap">
-            <PhotoUpload
+            <ImageUploadTrigger
               :model-value="heroContent.bgUrl"
+              aspect-ratio="3:1"
+              modal-title="Фон хиро"
               @update:model-value="heroContent.bgUrl = $event ?? null"
               @pending="onPendingHeroBg"
             />
@@ -68,7 +70,7 @@ import { reactive, watch, nextTick, inject, computed, toRefs } from 'vue'
 import { UiSegmentedControl, UiRadioGroup } from '@fastio/ui'
 import ContentPositionPicker from './ContentPositionPicker.vue'
 import GradientPicker from './GradientPicker.vue'
-import PhotoUpload from '~/components/ui/PhotoUpload.vue'
+import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 import type { SiteLayout, SiteContent } from '@fastio/shared'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'

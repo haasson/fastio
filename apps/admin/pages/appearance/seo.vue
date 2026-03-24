@@ -41,8 +41,10 @@
         <span class="label">Картинка для соцсетей</span>
       </div>
       <div class="og-upload">
-        <PhotoUpload
+        <ImageUploadTrigger
           :model-value="seoForm.ogImage"
+          aspect-ratio="free"
+          modal-title="Картинка для соцсетей"
           @update:model-value="seoForm.ogImage = $event"
           @pending="form.setPendingOgImage"
         />
@@ -59,9 +61,11 @@
       </div>
       <div class="favicon-row">
         <div class="favicon-upload">
-          <PhotoUpload
+          <ImageUploadTrigger
             :model-value="seoForm.favicon"
+            aspect-ratio="1:1"
             compact
+            modal-title="Фавиконка"
             @update:model-value="seoForm.favicon = $event"
             @pending="form.setPendingFavicon"
           />
@@ -123,7 +127,7 @@
 import { computed, inject } from 'vue'
 import { UiInput, UiSwitch, UiSectionHeader } from '@fastio/ui'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
-import PhotoUpload from '~/components/ui/PhotoUpload.vue'
+import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 
 const form = inject(AppearanceFormKey)!
 const seoForm = form.seoForm

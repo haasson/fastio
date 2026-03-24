@@ -10,7 +10,6 @@
     <UiForm ref="formRef" class="form">
       <BasicInfoSection
         :photo-url="currentPhotoUrl"
-        :photo-key="photoKey"
         :name="form.name"
         :price="form.price"
         :description="form.description"
@@ -113,7 +112,6 @@ const nutritionRef = ref<InstanceType<typeof NutritionSection> | null>(null)
 const refreshKey = ref(0)
 const saving = ref(false)
 
-const photoKey = ref(0)
 const originalPhotoUrl = ref<string | null>(null)
 const currentPhotoUrl = ref<string | null>(null)
 const pendingPhotoFile = ref<File | null>(null)
@@ -161,7 +159,6 @@ watch(
   async (val) => {
     if (!val) return
 
-    photoKey.value++
     refreshKey.value++
     originalPhotoUrl.value = props.dish?.photos[0] ?? null
     currentPhotoUrl.value = props.dish?.photos[0] ?? null
