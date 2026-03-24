@@ -200,18 +200,20 @@ const handleInvite = async () => {
   inviting.value = true
   inviteError.value = ''
 
-  const { error, message: errorMessage } = await invite(inviteEmail.value, inviteRole.value, inviteBranchIds.value) ?? {}
+  try {
+    const { error, message: errorMessage } = await invite(inviteEmail.value, inviteRole.value, inviteBranchIds.value) ?? {}
 
-  if (error) {
-    inviteError.value = errorMessage ?? 'Не удалось отправить приглашение'
-  } else {
-    inviteEmail.value = ''
-    inviteBranchIds.value = []
-    inviteBranchMode.value = 'all'
-    message.success('Приглашение отправлено')
+    if (error) {
+      inviteError.value = errorMessage ?? 'Не удалось отправить приглашение'
+    } else {
+      inviteEmail.value = ''
+      inviteBranchIds.value = []
+      inviteBranchMode.value = 'all'
+      message.success('Приглашение отправлено')
+    }
+  } finally {
+    inviting.value = false
   }
-
-  inviting.value = false
 }
 
 const handleRemove = async (member: TenantMember) => {

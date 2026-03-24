@@ -28,7 +28,7 @@
           <UiText v-if="branch.phone" size="tiny" class="branch-phone">{{ branch.phone }}</UiText>
           <div v-if="deliveryEnabled && hasAnyZones && branchHasNoZones(branch.id)" class="branch-warning">
             <span class="branch-warning-text">Нет зон доставки — доставка не работает.</span>
-            <NuxtLink to="/settings/delivery" class="branch-warning-link">Настроить зоны</NuxtLink>
+            <NuxtLink to="/orders/delivery" class="branch-warning-link">Настроить зоны</NuxtLink>
           </div>
         </div>
 

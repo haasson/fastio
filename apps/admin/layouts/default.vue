@@ -186,6 +186,8 @@ const currentPageTitle = computed(() => {
     ['/tables', 'Столы'],
     ['/reservations', 'Бронирования'],
     ['/promotions', 'Акции'],
+    ['/team/members', 'Команда'],
+    ['/team/branches', 'Филиалы'],
     ['/appearance', 'Оформление'],
     ['/settings', 'Настройки'],
     ['/account', 'Личный кабинет'],

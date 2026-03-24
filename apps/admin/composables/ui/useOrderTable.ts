@@ -91,7 +91,7 @@ export function useOrderTable(options: UseOrderTableOptions) {
               e.stopPropagation()
               onEdit(row)
             },
-          }, () => `#${row.id.slice(0, 6).toUpperCase()}`)
+          }, () => row.orderNumber)
         },
       },
       ...isVisible('customerName')

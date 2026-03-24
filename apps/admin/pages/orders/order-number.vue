@@ -75,14 +75,14 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { UiForm, UiInput, UiInputNumber, UiButton, UiRadioGroup, UiSectionHeader, UiAlert, useMessage } from '@fastio/ui'
-import type { Tenant, OrderNumberConfig } from '@fastio/shared'
+import type { OrderNumberConfig } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-
-const props = defineProps<{ tenant: Tenant }>()
 
 const tenantStore = useTenantStore()
 const { success } = useMessage()
 const saving = ref(false)
+
+const tenant = computed(() => tenantStore.tenant)
 
 const formatOptions = [
   { value: 'counter', label: 'Только счётчик — 1042' },
@@ -117,14 +117,14 @@ const defaultConfig = (): OrderNumberConfig => ({
   startFrom: 1,
 })
 
-const buildForm = (t: Tenant): OrderNumberConfig => ({
+const buildForm = (t: { orderNumberConfig?: Partial<OrderNumberConfig> }): OrderNumberConfig => ({
   ...defaultConfig(),
   ...t.orderNumberConfig,
 })
 
-const form = reactive<OrderNumberConfig>(buildForm(props.tenant))
+const form = reactive<OrderNumberConfig>(buildForm(tenant.value ?? {}))
 
-watch(() => props.tenant, (t) => Object.assign(form, buildForm(t)))
+watch(tenant, (t) => t && Object.assign(form, buildForm(t)))
 
 const showPrefix = computed(() => form.format === 'prefix_counter' || form.format === 'prefix_date_counter',
 )
@@ -133,7 +133,7 @@ const showDateFormat = computed(() => form.format === 'date_counter' || form.for
 )
 
 const preview = computed(() => {
-  const pad = form.padLength > 0 ? form.padLength : 0
+  const pad = form.padLength
   const counter = form.startFrom ?? 1
   const counterStr = pad > 0 ? String(counter).padStart(pad, '0') : String(counter)
 

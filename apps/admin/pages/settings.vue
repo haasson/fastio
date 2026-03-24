@@ -1,7 +1,12 @@
 <template>
   <div class="settings-root">
     <template v-if="tenantStore.tenant">
-      <UiTabs :model-value="activeTab" :tabs="settingsTabs" @update:model-value="goToTab" />
+      <UiTabs
+        v-if="settingsTabs.length > 1"
+        :model-value="activeTab"
+        :tabs="settingsTabs"
+        @update:model-value="goToTab"
+      />
 
       <UiCard size="large">
         <NuxtPage :tenant="tenantStore.tenant" @save="tenantStore.update" />
@@ -16,32 +21,20 @@
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { UiTabs, UiCard } from '@fastio/ui'
-import { usePermissions } from '~/composables/auth/usePermissions'
-import { useModules } from '~/composables/plan/useModules'
 import { useTenantStore } from '~/stores/tenant'
 
 const tenantStore = useTenantStore()
-const { canManageTeam } = usePermissions()
-const modules = useModules()
 
 onMounted(() => tenantStore.init())
 
 const route = useRoute()
 const router = useRouter()
 
-const settingsTabs = computed(() => {
-  const branches = modules.branches.value
-
-  return [
-    { value: 'contacts', label: 'Контакты', icon: 'mapPin' as const },
-    ...(modules.delivery.value.active ? [{ value: 'delivery', label: 'Доставка', icon: 'bike' as const }] : []),
-    { value: 'modules', label: 'Модули', icon: 'puzzle' as const },
-    { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
-    ...(canManageTeam.value ? [{ value: 'team', label: 'Команда', icon: 'users' as const }] : []),
-    ...(canManageTeam.value && (branches.active || branches.locked) ? [{ value: 'branches', label: 'Филиалы', icon: 'mapPin' as const }] : []),
-    ...(canManageTeam.value ? [{ value: 'order-number', label: 'Нумерация', icon: 'hash' as const }] : []),
-  ]
-})
+const settingsTabs = computed(() => [
+  { value: 'contacts', label: 'Общее', icon: 'settings' as const },
+  { value: 'modules', label: 'Модули', icon: 'puzzle' as const },
+  { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
+])
 
 const activeTab = computed(() => {
   const seg = route.path.split('/').at(-1) ?? ''
