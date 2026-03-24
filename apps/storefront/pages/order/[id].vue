@@ -87,6 +87,7 @@ import { computed, onUnmounted } from 'vue'
 import { useRoute, useFetch, navigateTo } from 'nuxt/app'
 import { SearchX, CircleCheck } from 'lucide-vue-next'
 import type { Order } from '@fastio/shared'
+import { formatDateTime } from '@fastio/shared'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
 import { FsHeading, FsButton, FsCard, FsText, FsDivider, FsSpinner } from '@fastio/public-ui'
@@ -114,11 +115,7 @@ const isFresh = computed(() => {
   return age < 24 * 60 * 60 * 1000
 })
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('ru-RU', {
-    day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
-  })
-}
+const formatDate = formatDateTime
 
 // Polling: refresh order status every 15s if not finished
 let pollTimer: ReturnType<typeof setInterval> | null = null

@@ -2,38 +2,11 @@
   <div class="order-list-root">
     <UiSectionHeader title="Заказы">
       <template #left>
-        <div class="header-left">
-          <UiSegmentedControl
-            v-model="orderView"
-            :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Таблица', value: 'list' }]"
-            size="medium"
-          />
-          <UiDivider vertical />
-          <UiInput
-            v-model:value="searchInput"
-            placeholder="Имя или телефон…"
-            clearable
-            size="medium"
-            class="search"
-          />
-          <div v-if="activeFilterCount > 0" class="reset-wrap">
-            <UiButton size="medium" ghost @click="clearFilters">Сбросить</UiButton>
-            <UiCounter
-              :value="activeFilterCount"
-              type="primary"
-              size="tiny"
-              class="reset-count"
-            />
-          </div>
-          <template v-if="orderView === 'list'">
-            <UiDivider vertical />
-            <UiMenuDropdown :items="columnMenuItems" @item-click="toggleColumn">
-              <template #trigger>
-                <UiButton size="medium" ghost>Столбцы {{ visibleColumns.length }}/{{ COLUMN_OPTIONS.length }}</UiButton>
-              </template>
-            </UiMenuDropdown>
-          </template>
-        </div>
+        <UiSegmentedControl
+          v-model="orderView"
+          :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Таблица', value: 'list' }]"
+          size="medium"
+        />
       </template>
       <template #right>
         <UiButton
@@ -44,6 +17,16 @@
         >Новый заказ</UiButton>
       </template>
     </UiSectionHeader>
+
+    <AppTableToolbar
+      v-model:search="searchInput"
+      v-model:visible-columns="visibleColumns"
+      search-placeholder="Имя или телефон…"
+      :filter-count="activeFilterCount"
+      :column-options="orderView === 'list' ? COLUMN_OPTIONS : undefined"
+      storage-key="orders:list-columns"
+      @reset="clearFilters"
+    />
 
     <div v-if="pendingUpdate" class="pending-banner" @click="refresh">
       Появились новые заказы — нажмите, чтобы обновить
@@ -130,7 +113,8 @@
 <script setup lang="ts">
 import { computed, toRefs, reactive, ref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { UiButton, UiCounter, UiDataTable, UiDivider, UiEmpty, UiInput, UiMenuDropdown, UiPagination, UiSectionHeader, UiSegmentedControl, UiSelect, UiSkeleton } from '@fastio/ui'
+import { UiButton, UiDataTable, UiEmpty, UiPagination, UiSectionHeader, UiSegmentedControl, UiSelect, UiSkeleton } from '@fastio/ui'
+import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import type { Order } from '@fastio/shared'
 import { formatPhone } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
@@ -314,7 +298,9 @@ const handleFiltersChange = (filterState: Record<string, (string | number)[] | n
   filterBranchIds.value = (filterState['branchId'] as string[] | null) ?? []
 }
 
-const { columns, visibleColumns, columnMenuItems, toggleColumn } = useOrderTable({
+const visibleColumns = ref<string[]>(COLUMN_OPTIONS.map((c) => c.value))
+
+const { columns } = useOrderTable({
   statuses: statuses.value,
   sortBy,
   sortDir,
@@ -323,6 +309,7 @@ const { columns, visibleColumns, columnMenuItems, toggleColumn } = useOrderTable
   filterBranchIds,
   branchId: branchIdRef,
   branches: branchStore.branches,
+  visibleColumns,
   onEdit: openEditModal,
   getBranchName,
 })
@@ -335,27 +322,6 @@ const { columns, visibleColumns, columnMenuItems, toggleColumn } = useOrderTable
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.search {
-  width: 220px;
-}
-
-.reset-wrap {
-  position: relative;
-
-  .reset-count {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    pointer-events: none;
-  }
 }
 
 .selection-bar {

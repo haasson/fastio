@@ -55,7 +55,7 @@ const handleLogout = async () => {
   loggingOut.value = true
   tenantStore.dispose()
   await api.auth.signOut()
-  await navigateTo('/login')
+  window.location.href = '/login'
 }
 </script>
 

@@ -71,7 +71,7 @@ import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiCard, UiButton, UiInput, UiText, UiTitle, UiEmpty, UiIcon, UiDivider } from '@fastio/ui'
 import type { TableCallType, TableCall, Table } from '@fastio/shared'
-import { formatRelativeTime } from '~/utils/formatRelativeTime'
+import { formatRelativeTime } from '@fastio/shared'
 
 const props = defineProps<{
   callTypes: TableCallType[]

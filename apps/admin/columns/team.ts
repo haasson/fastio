@@ -4,7 +4,7 @@ import type { DataTableColumns } from '@fastio/ui'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { TenantRole, TenantMember, TenantInvitation, Branch } from '@fastio/shared'
 import { roleLabels, roleTagTypes } from '~/config/team-roles'
-import { formatDate } from '~/utils/formatDate'
+import { formatDate } from '@fastio/shared'
 
 const roleLabel = (role: TenantRole) => roleLabels[role]
 const roleTagType = (role: TenantRole) => roleTagTypes[role]

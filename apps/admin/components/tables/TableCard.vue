@@ -134,7 +134,7 @@ import { UiCard, UiButton, UiIcon, UiText, UiTag } from '@fastio/ui'
 import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { orderItemKey, pluralize } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
-import { formatRelativeTime } from '~/utils/formatRelativeTime'
+import { formatRelativeTime } from '@fastio/shared'
 
 const props = defineProps<{
   table: Table

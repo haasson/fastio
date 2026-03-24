@@ -19,6 +19,7 @@ import type {
   KitchenQueueStatus,
   KitchenConfig,
   OrderNumberConfig,
+  WorkingHoursSchedule,
 } from '@fastio/shared'
 
 export type TenantRow = {
@@ -33,6 +34,7 @@ export type TenantRow = {
   site_content: SiteContent
   contacts: TenantContacts
   working_hours: string
+  working_hours_schedule: WorkingHoursSchedule | null
   notifications: TenantNotifications
   balance: number
   subscription: TenantSubscription

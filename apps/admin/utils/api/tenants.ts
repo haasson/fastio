@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Tenant, KitchenConfig, OrderNumberConfig } from '@fastio/shared'
+import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
@@ -35,6 +35,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     siteContent: deepMerge(defaultSiteContent(), row.site_content ?? {}),
     contacts: row.contacts,
     workingHours: row.working_hours,
+    workingHoursSchedule: row.working_hours_schedule ?? null,
     notifications: row.notifications,
     balance: row.balance ?? 0,
     subscription: row.subscription,
@@ -63,6 +64,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   site_content: data.siteContent,
   contacts: data.contacts,
   working_hours: data.workingHours,
+  working_hours_schedule: data.workingHoursSchedule as WorkingHoursSchedule | undefined,
   notifications: data.notifications,
   modules: data.modules,
   delivery_min_order: data.deliveryMinOrder,

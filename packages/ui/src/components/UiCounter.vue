@@ -1,5 +1,5 @@
 <template>
-  <span class="counter" :class="[`counter--${type}`, `counter--${size}`, { 'counter--filled': filled }]">
+  <span class="counter" :class="[`counter--${type}`, `counter--${size}`, { 'counter--filled': filled, 'counter--solid': solid }]">
     {{ value }}
   </span>
 </template>
@@ -13,6 +13,7 @@ defineProps<{
   type?: CounterType
   size?: CounterSize
   filled?: boolean
+  solid?: boolean
 }>()
 </script>
 
@@ -54,6 +55,12 @@ $counter-sizes: (
     &.counter--#{$type} {
       background: map.get($props, 'bg');
       color: map.get($props, 'color');
+    }
+
+    &.counter--#{$type}.counter--solid {
+      background: map.get($props, 'color');
+      color: #fff;
+      border-radius: 9999px;
     }
 
     &.counter--#{$type}.counter--filled {

@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia'
 import { useNow, createSharedComposable } from '@vueuse/core'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { formatRelativeTime } from '~/utils/formatRelativeTime'
+import { formatRelativeTime } from '@fastio/shared'
 
 const useSharedNow = createSharedComposable(() => useNow({ interval: 30_000 }))
 

@@ -68,7 +68,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiDatepicker } from '@fastio/ui'
 import type { PromoCode, PromoCodeFormData } from '@fastio/shared'
-import { isoToTs, tsToIso } from '~/utils/formatDate'
+import { isoToTs, tsToIso } from '@fastio/shared'
 
 const props = defineProps<{
   modelValue: boolean

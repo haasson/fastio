@@ -30,7 +30,7 @@ const tenantStore = useTenantStore()
 const logout = async () => {
   tenantStore.dispose()
   await api.auth.signOut()
-  await navigateTo('/login')
+  window.location.href = '/login'
 }
 </script>
 

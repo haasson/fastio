@@ -141,7 +141,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiSelect, UiDatepicker, UiTimepicker, UiAlert, UiButton } from '@fastio/ui'
 import type { Promotion, PromotionFormData, PromotionConditions } from '@fastio/shared'
-import { isoToTs, tsToIso } from '~/utils/formatDate'
+import { isoToTs, tsToIso } from '@fastio/shared'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 

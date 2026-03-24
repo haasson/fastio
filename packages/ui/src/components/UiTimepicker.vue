@@ -15,7 +15,7 @@
       format="HH:mm"
       :use-12-hours="false"
       :actions="null"
-      :seconds="false"
+      :input-readonly="true"
       clearable
       v-bind="$attrs"
       @update:value="onUpdate"
@@ -43,7 +43,6 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'medium',
 })
 
-// v-model снаружи — строка "HH:MM" или null
 const modelValue = defineModel<string | null>({ default: null })
 
 const computedSize = useResponsiveSize({
@@ -51,11 +50,10 @@ const computedSize = useResponsiveSize({
   responsive: props.responsive,
 })
 
-// "HH:MM" → timestamp (NTimePicker работает с ms от начала суток)
 const timestamp = computed<number | null>(() => {
   if (!modelValue.value) return null
   const [h, m] = modelValue.value.split(':').map(Number)
-  return (h * 60 + m) * 60 * 1000
+  return new Date(1970, 0, 1, h, m, 0, 0).getTime()
 })
 
 const onUpdate = (val: number | null) => {
@@ -63,9 +61,9 @@ const onUpdate = (val: number | null) => {
     modelValue.value = null
     return
   }
-  const totalMin = Math.floor(val / 60000)
-  const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
-  const m = String(totalMin % 60).padStart(2, '0')
+  const d = new Date(val)
+  const h = String(d.getHours()).padStart(2, '0')
+  const m = String(d.getMinutes()).padStart(2, '0')
   modelValue.value = `${h}:${m}`
 }
 

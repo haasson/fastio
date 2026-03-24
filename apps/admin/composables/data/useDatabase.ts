@@ -25,6 +25,8 @@ import { plansApi } from '~/utils/api/plans'
 import { billingApi } from '~/utils/api/billing'
 import { moduleConfigsApi } from '~/utils/api/module-configs'
 import { kitchenQueueApi } from '~/utils/api/kitchen-queue'
+import { reservationsApi } from '~/utils/api/reservations'
+import { reservationSettingsApi } from '~/utils/api/reservation-settings'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
@@ -70,5 +72,7 @@ export const useDatabase = () => {
     billing: bindAll(billingApi, sb),
     moduleConfigs: bindAll(moduleConfigsApi, sb),
     kitchenQueue: bindAll(kitchenQueueApi, sb),
+    reservations: bindAll(reservationsApi, sb),
+    reservationSettings: bindAll(reservationSettingsApi, sb),
   }
 }

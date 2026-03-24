@@ -97,6 +97,16 @@ export type SiteLayout = {
   pages: NavPage[]
 }
 
+export type WorkingHours = {
+  open: string   // "HH:MM"
+  close: string  // "HH:MM"
+}
+
+export type WorkingHoursSchedule = {
+  default: WorkingHours
+  days: Record<string, WorkingHours>  // key: "1"=Mon .. "7"=Sun (ISO), only overrides
+}
+
 export type TenantContacts = {
   phoneMode: 'shared' | 'per_branch'
   phone: string
@@ -137,6 +147,7 @@ export type TenantModules = {
   customRoles: boolean
   dineIn: boolean
   kitchen: boolean
+  reservations: boolean
 }
 
 export type OrderNumberFormat = 'counter' | 'prefix_counter' | 'date_counter' | 'prefix_date_counter'
@@ -176,6 +187,7 @@ export type Tenant = {
   siteContent: SiteContent
   contacts: TenantContacts
   workingHours: string
+  workingHoursSchedule: WorkingHoursSchedule | null
   notifications: TenantNotifications
   balance: number
   subscription: TenantSubscription

@@ -59,7 +59,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { navigateTo, useRoute } from 'nuxt/app'
 import type { Order } from '@fastio/shared'
-import { pluralize } from '@fastio/shared'
+import { pluralize, formatDateTime } from '@fastio/shared'
 import { ShoppingBag, ChevronRight } from 'lucide-vue-next'
 import { FsSection, FsCard, FsButton } from '@fastio/public-ui'
 import AccountCardsSkeleton from '~/components/account/AccountCardsSkeleton.vue'
@@ -130,14 +130,7 @@ function goToOrder(id: string) {
   navigateTo({ path: `/order/${id}`, query: route.query })
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+const formatDate = formatDateTime
 
 function itemsLabel(n: number) {
   return pluralize(n, 'позиция', 'позиции', 'позиций')

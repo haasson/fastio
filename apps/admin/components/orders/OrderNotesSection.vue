@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { ref, toRefs, watch } from 'vue'
 import { UiInput, UiButton } from '@fastio/ui'
-import { formatRelativeTime } from '~/utils/formatRelativeTime'
+import { formatRelativeTime } from '@fastio/shared'
 import { useOrderNotes } from '~/composables/data/useOrderNotes'
 
 const props = defineProps<{

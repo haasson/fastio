@@ -96,6 +96,7 @@ import { pluralize } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { useReservationsStore } from '~/stores/reservations'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
@@ -116,6 +117,7 @@ const TABS = [
 
 const api = useDatabase()
 const tenantStore = useTenantStore()
+const reservationsStore = useReservationsStore()
 const authStore = useAuthStore()
 const orderStatusesStore = useOrderStatusesStore()
 const userId = computed(() => authStore.user?.id ?? null)
@@ -346,14 +348,25 @@ onUnmounted(() => {
 
 // ── Open / Close ──────────────────────────────────────────
 const toggleOpen = async (table: Table) => {
+  const isClosing = table.isOpen
   const updated = await api.tables.setOpen(table.id, !table.isOpen)
 
   if (!updated) return
   const idx = tables.value.findIndex((t) => t.id === table.id)
 
   if (idx !== -1) tables.value[idx] = updated
-  if (updated.isOpen) tableSums.value[table.id] = { sum: 0, count: 0, items: [] }
-  else delete tableSums.value[table.id]
+  if (updated.isOpen) {
+    tableSums.value[table.id] = { sum: 0, count: 0, items: [] }
+  } else {
+    delete tableSums.value[table.id]
+    if (isClosing) {
+      const seatedReservation = reservationsStore.reservations.find(
+        (r) => r.status === 'seated' && r.tableId === table.id,
+      )
+
+      if (seatedReservation) await reservationsStore.complete(seatedReservation.id)
+    }
+  }
 }
 
 const checkout = async (table: Table) => {

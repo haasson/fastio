@@ -1,5 +1,4 @@
 import { computed, h, type Ref } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
 import { UiTag, UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
@@ -7,7 +6,7 @@ import { formatPhone } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS } from '~/config/order-options'
-import { formatRelativeTime } from '~/utils/formatRelativeTime'
+import { formatRelativeTime } from '@fastio/shared'
 
 type Branch = { id: string; name: string }
 
@@ -20,6 +19,7 @@ type UseOrderTableOptions = {
   filterBranchIds: Ref<string[]>
   branchId: Ref<string | null>
   branches: Branch[]
+  visibleColumns: Ref<string[]>
   onEdit: (order: Order) => void
   getBranchName: (id: string | null | undefined) => string | undefined
 }
@@ -34,9 +34,6 @@ export const COLUMN_OPTIONS = [
   { label: 'Время', value: 'created_at' },
   { label: 'Сумма', value: 'total' },
 ]
-
-const DEFAULT_COLUMNS = COLUMN_OPTIONS.map((c) => c.value)
-const VALID_COLUMN_KEYS = new Set(DEFAULT_COLUMNS)
 
 const DELIVERY_FILTER_OPTIONS = [
   { label: 'Доставка', value: 'delivery' },
@@ -59,32 +56,12 @@ export function useOrderTable(options: UseOrderTableOptions) {
     filterBranchIds,
     branchId,
     branches,
+    visibleColumns,
     onEdit,
     getBranchName,
   } = options
 
-  const _storedColumns = useLocalStorage<string[]>('orders:list-columns', DEFAULT_COLUMNS)
-  const visibleColumns = computed({
-    get: () => _storedColumns.value.filter((k) => VALID_COLUMN_KEYS.has(k)),
-    set: (val: string[]) => { _storedColumns.value = val },
-  })
-
   const isVisible = (key: string) => visibleColumns.value.includes(key)
-
-  const columnMenuItems = computed(() => COLUMN_OPTIONS.map((col) => ({
-    name: col.value,
-    label: col.label,
-    checked: isVisible(col.value),
-  })),
-  )
-
-  const toggleColumn = (key: string) => {
-    if (isVisible(key)) {
-      visibleColumns.value = visibleColumns.value.filter((k) => k !== key)
-    } else {
-      visibleColumns.value = [...visibleColumns.value, key]
-    }
-  }
 
   const sortOrderFor = (key: string) => {
     if (sortBy.value !== key) return false
@@ -215,5 +192,5 @@ export function useOrderTable(options: UseOrderTableOptions) {
     ]
   })
 
-  return { columns, visibleColumns, columnMenuItems, toggleColumn }
+  return { columns }
 }

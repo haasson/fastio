@@ -5,7 +5,7 @@
     :class="[
       `btn-${variant}`,
       `size-${size}`,
-      { 'is-responsive': responsive, 'is-loading': loading, 'is-disabled': disabled || loading },
+      { 'is-responsive': responsive, 'is-loading': loading, 'is-disabled': disabled || loading, 'has-sub': !!$slots.sub },
     ]"
     :type="as === 'button' ? type : undefined"
     :disabled="as === 'button' ? (disabled || loading) : undefined"
@@ -13,6 +13,7 @@
   >
     <FsSpinner v-if="loading" class="btn-spinner" size="small" />
     <slot />
+    <span v-if="$slots.sub" class="btn-sub"><slot name="sub" /></span>
   </component>
 </template>
 <script setup lang="ts">
@@ -125,5 +126,19 @@ withDefaults(defineProps<Props>(), {
 
 .btn-spinner {
   flex-shrink: 0;
+}
+
+.has-sub {
+  flex-direction: column;
+  gap: 2px;
+  height: auto;
+  padding-block: 8px;
+}
+
+.btn-sub {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.75;
+  line-height: 1;
 }
 </style>

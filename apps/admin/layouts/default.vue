@@ -75,6 +75,8 @@ import { useRoute, navigateTo } from '#imports'
 import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
 import { useTableCallsChannel } from '~/composables/data/useTableCallsChannel'
 import { useKitchenQueueChannel } from '~/composables/data/useKitchenQueueChannel'
+import { useReservationsChannel } from '~/composables/data/useReservationsChannel'
+import { useReservationAlertHandler } from '~/composables/data/useReservationAlertHandler'
 import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
 import { useTableCallAlertHandler } from '~/composables/data/useTableCallAlertHandler'
 import { requestNotificationPermission } from '~/composables/data/useAlerts'
@@ -88,6 +90,7 @@ import PastDueBanner from '~/components/layout/PastDueBanner.vue'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
@@ -102,17 +105,22 @@ const isDark = inject<Ref<boolean>>('isDark', ref(false))
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
+const { currentTenantId } = storeToRefs(tenantStore)
 
 // Уведомления о новых заказах
-useOrdersChannel(computed(() => tenantStore.currentTenantId))
+useOrdersChannel(currentTenantId)
 useOrderAlertHandler()
 
 // Вызовы официанта
-useTableCallsChannel(computed(() => tenantStore.currentTenantId))
+useTableCallsChannel(currentTenantId)
 useTableCallAlertHandler()
 
 // Кухонная очередь
-useKitchenQueueChannel(computed(() => tenantStore.currentTenantId))
+useKitchenQueueChannel(currentTenantId)
+
+// Бронирования
+useReservationsChannel(currentTenantId)
+useReservationAlertHandler()
 
 // Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
 requestNotificationPermission()
@@ -176,6 +184,7 @@ const currentPageTitle = computed(() => {
     ['/orders', 'Заказы'],
     ['/kitchen', 'Кухня'],
     ['/tables', 'Столы'],
+    ['/reservations', 'Бронирования'],
     ['/promotions', 'Акции'],
     ['/appearance', 'Оформление'],
     ['/settings', 'Настройки'],

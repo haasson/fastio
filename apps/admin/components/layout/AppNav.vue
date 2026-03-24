@@ -16,7 +16,16 @@
         type="error"
         size="tiny"
         filled
-        class="orders-counter"
+        class="nav-counter"
+        :class="{ blink: blinkingCounter }"
+      />
+      <UiCounter
+        v-if="item.to === '/reservations' && showReservationsBadge"
+        :value="newReservationCount"
+        type="error"
+        size="tiny"
+        filled
+        class="nav-counter"
         :class="{ blink: blinkingCounter }"
       />
     </NuxtLink>
@@ -33,6 +42,7 @@ import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import { useModules } from '~/composables/plan/useModules'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
+import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
 
 defineProps<{ collapsed?: boolean }>()
 
@@ -43,12 +53,15 @@ const modules = useModules()
 const { menuLabel } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
+const { count: newReservationCount } = useNewReservationCounter()
 
 const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.value > 0)
+const showReservationsBadge = computed(() => newReservationCount.value > 0)
 const canSeePromotions = computed(() => canManagePromotions.value && modules.promotions.value.enabled)
 const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.value.enabled || modules.pickup.value.enabled))
 const canSeeKitchen = computed(() => canManageOrders.value && modules.kitchen.value.enabled)
 const canSeeTables = computed(() => canViewSettings.value && modules.dineIn.value.enabled)
+const canSeeReservations = computed(() => canManageOrders.value && (modules.reservations?.value?.enabled ?? false))
 
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
@@ -56,6 +69,7 @@ const allNavItems: NavItem[] = [
   { to: '/orders', icon: 'orders', label: 'Заказы', visible: canSeeOrders },
   { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: canSeeKitchen },
   { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },
+  { to: '/reservations', icon: 'calendar', label: 'Бронирования', visible: canSeeReservations },
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
@@ -103,7 +117,7 @@ defineExpose({ navItems })
   }
 }
 
-.orders-counter {
+.nav-counter {
   margin-left: auto;
 
   &.blink {
@@ -120,7 +134,7 @@ defineExpose({ navItems })
   justify-content: center;
   padding: 10px 0;
 
-  span, .orders-counter {
+  span, .nav-counter {
     display: none;
   }
 }

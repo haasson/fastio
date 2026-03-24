@@ -89,3 +89,10 @@ defineOptions({
 })
 </script>
 
+<style scoped>
+:global(.n-date-panel-month__fast-prev),
+:global(.n-date-panel-month__fast-next) {
+  opacity: 0;
+  pointer-events: none;
+}
+</style>
