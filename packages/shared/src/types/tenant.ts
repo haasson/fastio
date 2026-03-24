@@ -45,6 +45,7 @@ export type NavPage = NavPageKey
 export type BannerItem = {
   url: string
   enabled: boolean
+  link?: string | null
 }
 
 export type SiteContent = {

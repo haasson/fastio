@@ -7,7 +7,11 @@
         :hero-content="content.hero"
         :sticky-height="stickyTotalHeight"
       />
-      <BannersSection v-if="layout.sections.banners.enabled && layout.sectionsOrder.includes('banners')" />
+      <BannersSection
+        v-if="layout.sections.banners.enabled && layout.sectionsOrder.includes('banners')"
+        :banners="content.banners"
+        :settings="layout.sections.banners"
+      />
       <MenuSection
         v-if="layout.sections.menu.enabled && layout.sectionsOrder.includes('menu')"
         :default-view="layout.sections.menu.defaultView"
