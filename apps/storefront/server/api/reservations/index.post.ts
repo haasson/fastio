@@ -1,5 +1,6 @@
 import { getServerSupabase, getAuthSupabase } from '../../utils/supabase'
 import { createRateLimiter } from '../../utils/rateLimit'
+import { todayInTz, addDaysToDateStr } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
   // Check module enabled
   const { data: tenantData } = await supabase
     .from('tenants')
-    .select('modules')
+    .select('modules, timezone')
     .eq('id', tenantId)
     .single()
 
@@ -72,18 +73,16 @@ export default defineEventHandler(async (event) => {
   }
 
   // Validate date range
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const reservedDate = new Date(body.reservedDate)
+  const tenantTz = (tenantData.timezone as string) ?? 'Europe/Moscow'
+  const todayStr = todayInTz(tenantTz)
 
-  if (reservedDate < today) {
+  if (body.reservedDate < todayStr) {
     throw createError({ statusCode: 400, message: 'Нельзя бронировать на прошедшую дату' })
   }
 
-  const maxDate = new Date(today)
+  const maxDateStr = addDaysToDateStr(todayStr, maxAdvanceDays)
 
-  maxDate.setDate(maxDate.getDate() + maxAdvanceDays)
-  if (reservedDate > maxDate) {
+  if (body.reservedDate > maxDateStr) {
     throw createError({ statusCode: 400, message: `Бронирование доступно не позднее чем за ${maxAdvanceDays} дней` })
   }
 

@@ -31,6 +31,14 @@
       />
     </div>
 
+    <UiSelect
+      v-model="form.timezone"
+      label="Часовой пояс"
+      :options="TIMEZONE_OPTIONS"
+      filterable
+      class="timezone-select"
+    />
+
     <UiSectionHeader title="Часы работы" />
 
     <div class="hours-default">
@@ -66,8 +74,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiRadioGroup, useMessage, UiSectionHeader, UiCheckbox, UiTimepicker } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, UiRadioGroup, useMessage, UiSectionHeader, UiCheckbox, UiTimepicker, UiSelect } from '@fastio/ui'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
+import { TIMEZONE_OPTIONS } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 
 const DAYS = [
@@ -107,6 +116,7 @@ const buildForm = (t: Tenant) => ({
   telegram: t.contacts?.telegram ?? '',
   whatsapp: t.contacts?.whatsapp ?? '',
   max: t.contacts?.max ?? '',
+  timezone: t.timezone ?? 'Europe/Moscow',
   scheduleOpen: (t.workingHoursSchedule?.default.open ?? '10:00') as string | null,
   scheduleClose: (t.workingHoursSchedule?.default.close ?? '22:00') as string | null,
   useCustomDays: t.workingHoursSchedule ? Object.keys(t.workingHoursSchedule.days).length > 0 : false,
@@ -136,6 +146,7 @@ const handleSave = async () => {
 
     await tenantStore.update({
       name: form.name,
+      timezone: form.timezone,
       contacts: {
         phoneMode: form.phoneMode as 'shared' | 'per_branch',
         phone: form.phoneMode === 'shared' ? form.phone : '',
@@ -217,6 +228,10 @@ const handleSave = async () => {
   font-size: 13px;
   color: var(--color-text-secondary);
   flex-shrink: 0;
+}
+
+.timezone-select {
+  max-width: 320px;
 }
 
 .footer {

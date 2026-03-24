@@ -1,14 +1,9 @@
 import { getServerSupabase } from '../../utils/supabase'
 import { createRateLimiter } from '../../utils/rateLimit'
 import type { WorkingHoursSchedule } from '@fastio/shared'
+import { getIsoDayForDate, todayInTz, nowTimeInTz } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(30, 60_000)
-
-function getIsoDay(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00')
-  const js = d.getDay()
-  return String(js === 0 ? 7 : js)
-}
 
 function toMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number)
@@ -52,7 +47,7 @@ export default defineEventHandler(async (event) => {
   const supabase = getServerSupabase()
 
   const [{ data: tenantData }, { data: settingsData }] = await Promise.all([
-    supabase.from('tenants').select('modules, working_hours_schedule').eq('id', tenantId).single(),
+    supabase.from('tenants').select('modules, working_hours_schedule, timezone').eq('id', tenantId).single(),
     supabase.from('reservation_settings').select('slot_step, close_buffer_minutes, enabled').eq('tenant_id', tenantId).maybeSingle(),
   ])
 
@@ -64,7 +59,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const schedule = tenantData.working_hours_schedule as WorkingHoursSchedule | null
-  const isoDay = getIsoDay(date)
+  const isoDay = getIsoDayForDate(date)
   const dayHours = schedule ? (schedule.days[isoDay] ?? schedule.default) : { open: '10:00', close: '22:00', closeNextDay: false }
 
   const slotStep = (settingsData?.slot_step as number | null) ?? 30
@@ -72,5 +67,13 @@ export default defineEventHandler(async (event) => {
 
   const times = generateSlots(dayHours.open, dayHours.close, slotStep, closeBuffer)
 
-  return times.map((time) => ({ time, available: true }))
+  const tenantTz = (tenantData.timezone as string) ?? 'Europe/Moscow'
+  const tenantToday = todayInTz(tenantTz)
+  const tenantNow = nowTimeInTz(tenantTz)
+
+  const filteredTimes = date === tenantToday
+    ? times.filter(t => t > tenantNow)
+    : times
+
+  return filteredTimes.map((time) => ({ time, available: true }))
 })
