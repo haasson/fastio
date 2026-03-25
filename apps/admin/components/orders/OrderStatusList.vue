@@ -21,7 +21,6 @@
       mode="statuses"
       :items="managerItems"
       :item-counts="orderCounts"
-      :show-kitchen-toggle="kitchenEnabled"
       @add="handleAdd"
       @update="handleUpdate"
       @remove="handleRemove"
@@ -37,7 +36,6 @@ import { UiEditButton, UiTabs, UiSectionHeader } from '@fastio/ui'
 import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
 import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { useModules } from '~/composables/plan/useModules'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 
 const props = defineProps<{
@@ -52,8 +50,6 @@ const emit = defineEmits<{
 const statusesStore = useOrderStatusesStore()
 const { statuses } = storeToRefs(statusesStore)
 const { add: addStatus, update: updateStatus, remove: removeStatus, reorder: reorderStatuses } = statusesStore
-const modules = useModules()
-const kitchenEnabled = computed(() => modules.kitchen.value.enabled)
 
 const statusTabs = computed(() => statuses.value.map((s) => ({
   value: s.id,
@@ -69,7 +65,6 @@ const managerItems = computed<ManagedItem[]>(() => statuses.value.map((s) => ({
   name: s.name,
   groupType: s.groupType,
   quickActions: s.quickActions,
-  kitchenVisible: s.kitchenVisible,
 })),
 )
 

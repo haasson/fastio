@@ -14,7 +14,6 @@ export const mapOrderStatus = (raw: Record<string, unknown>): OrderStatus => {
     groupType: row.group_type,
     position: row.position,
     quickActions: row.quick_actions ?? [],
-    kitchenVisible: row.kitchen_visible ?? (row.group_type === 'new' || row.group_type === 'in_progress'),
   }
 }
 
@@ -48,7 +47,7 @@ export const orderStatusesApi = {
   async update(sb: SupabaseClient, id: string, data: OrderStatusData): Promise<OrderStatus | null> {
     const result = await query(
       sb.from('order_statuses').update(
-        filterDefined({ name: data.name, group_type: data.groupType, quick_actions: data.quickActions, kitchen_visible: data.kitchenVisible }),
+        filterDefined({ name: data.name, group_type: data.groupType, quick_actions: data.quickActions }),
       ).eq('id', id).select().single(),
     )
 

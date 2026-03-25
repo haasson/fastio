@@ -17,10 +17,9 @@ export type OrderStatus = {
   groupType: OrderStatusGroup
   position: number
   quickActions: string[]
-  kitchenVisible: boolean
 }
 
-export type OrderStatusData = Partial<Pick<OrderStatus, 'name' | 'groupType' | 'quickActions' | 'kitchenVisible'>>
+export type OrderStatusData = Partial<Pick<OrderStatus, 'name' | 'groupType' | 'quickActions'>>
 
 export type OrderItemStatus = 'pending' | 'confirmed'
 
