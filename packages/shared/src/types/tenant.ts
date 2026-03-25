@@ -40,8 +40,6 @@ export type TenantTheme = {
   activeCustomId: string | null
 }
 
-export type NavPage = NavPageKey
-
 export type SiteContent = {
   logo: string | null
   hero: {
@@ -51,8 +49,8 @@ export type SiteContent = {
 }
 
 export type NavItem = {
-  page: NavPage
-  placement: 'index' | 'page'
+  key: string
+  action: 'scroll' | 'navigate'
 }
 
 export type SiteLayout = {
@@ -87,7 +85,7 @@ export type SiteLayout = {
     delivery: { enabled: boolean }
   }
   sectionsOrder: SectionKey[]
-  pages: NavPage[]
+  pages: NavPageKey[]
 }
 
 export type WorkingHours = {

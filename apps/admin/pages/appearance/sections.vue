@@ -99,11 +99,13 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { UiIcon, UiSectionHeader } from '@fastio/ui'
 import SectionSettingsByKey from '~/components/appearance/SectionSettingsByKey.vue'
 import HeaderOptions from '~/components/appearance/HeaderOptions.vue'
-import { SECTION_KEYS, featureLabel, type SectionKey } from '@fastio/shared'
+import { SECTION_KEYS, STRUCTURAL_SECTIONS, featureLabel, type SectionKey, type NavPageKey } from '@fastio/shared'
+import { useConfirm } from '@fastio/kit'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
+const { confirm } = useConfirm()
 
 const headerOpen = ref(false)
 const openKeys = reactive(new Set<string>())
@@ -129,7 +131,28 @@ const addSection = (key: string) => {
   siteLayoutForm.sectionsOrder = [...siteLayoutForm.sectionsOrder, key as SectionKey]
 }
 
-const removeSection = (key: string) => {
+const removeSection = async (key: string) => {
+  const navItem = siteLayoutForm.header.navItems.find((i) => i.key === key)
+
+  if (navItem) {
+    const isAlsoPage = (siteLayoutForm.pages ?? []).includes(key as NavPageKey)
+
+    if (isAlsoPage) {
+      siteLayoutForm.header.navItems = siteLayoutForm.header.navItems.map((i) => i.key === key ? { ...i, action: 'navigate' as const } : i,
+      )
+    } else {
+      const ok = await confirm({
+        title: 'Убрать секцию?',
+        message: `«${featureLabel(key)}» используется в навигации хэдера. При отключении будет удалено из навигации.`,
+        confirmText: 'Убрать',
+        confirmType: 'warning',
+      })
+
+      if (!ok) return
+      siteLayoutForm.header.navItems = siteLayoutForm.header.navItems.filter((i) => i.key !== key)
+    }
+  }
+
   siteLayoutForm.sectionsOrder = siteLayoutForm.sectionsOrder.filter((k) => k !== key)
   openKeys.delete(key)
 }

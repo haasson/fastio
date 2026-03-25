@@ -4,8 +4,8 @@
     <div class="preview-block preview-block--header">
       <div class="ph-logo" />
       <div v-if="layout.header.showNav && layout.header.navItems.length" class="ph-nav">
-        <span v-for="item in layout.header.navItems" :key="item.page" class="ph-nav-label">
-          {{ featureLabel(item.page) }}
+        <span v-for="item in layout.header.navItems" :key="item.key" class="ph-nav-label">
+          {{ featureLabel(item.key) }}
         </span>
       </div>
       <div class="ph-header-right">

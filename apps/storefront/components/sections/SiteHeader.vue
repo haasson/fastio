@@ -9,7 +9,7 @@
       <nav v-if="header.showNav" class="nav">
         <NuxtLink
           v-for="link in navLinks"
-          :key="link.page"
+          :key="link.key"
           class="nav-link"
           :to="link.to"
         >
@@ -41,7 +41,7 @@
     <nav v-if="header.showNav && navLinks.length" class="mm-nav">
       <NuxtLink
         v-for="link in navLinks"
-        :key="link.page"
+        :key="link.key"
         class="mm-nav-link"
         :to="link.to"
         @click="menuOpen = false"
@@ -82,11 +82,11 @@ const route = useRoute()
 
 const navLinks = computed(() =>
   props.header.navItems.map((item) => ({
-    page: item.page,
-    label: featureLabel(item.page),
-    to: item.placement === 'page'
-      ? { path: `/${item.page}`, query: route.query }
-      : `#${item.page}`,
+    key: item.key,
+    label: featureLabel(item.key),
+    to: item.action === 'navigate'
+      ? { path: `/${item.key}`, query: route.query }
+      : `#${item.key}`,
   })),
 )
 

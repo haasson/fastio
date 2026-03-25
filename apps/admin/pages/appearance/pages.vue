@@ -67,11 +67,13 @@ import { computed, inject, reactive } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiIcon, UiSectionHeader } from '@fastio/ui'
 import PageSettingsByKey from '~/components/appearance/PageSettingsByKey.vue'
-import { PAGE_KEYS, featureLabel, type PageKey, type NavPageKey } from '@fastio/shared'
+import { PAGE_KEYS, STRUCTURAL_SECTIONS, featureLabel, type PageKey, type NavPageKey, type SectionKey } from '@fastio/shared'
+import { useConfirm } from '@fastio/kit'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
+const { confirm } = useConfirm()
 
 const openKeys = reactive(new Set<string>())
 
@@ -96,7 +98,29 @@ const addPage = (key: string) => {
   siteLayoutForm.pages = [...(siteLayoutForm.pages ?? []), key as NavPageKey]
 }
 
-const removePage = (key: string) => {
+const removePage = async (key: string) => {
+  const navItem = siteLayoutForm.header.navItems.find((i) => i.key === key)
+
+  if (navItem) {
+    const isAlsoSection = siteLayoutForm.sectionsOrder.includes(key as SectionKey)
+      && !STRUCTURAL_SECTIONS.includes(key as SectionKey)
+
+    if (isAlsoSection) {
+      siteLayoutForm.header.navItems = siteLayoutForm.header.navItems.map((i) => i.key === key ? { ...i, action: 'scroll' as const } : i,
+      )
+    } else {
+      const ok = await confirm({
+        title: 'Убрать страницу?',
+        message: `«${featureLabel(key)}» используется в навигации хэдера. При отключении будет удалено из навигации.`,
+        confirmText: 'Убрать',
+        confirmType: 'warning',
+      })
+
+      if (!ok) return
+      siteLayoutForm.header.navItems = siteLayoutForm.header.navItems.filter((i) => i.key !== key)
+    }
+  }
+
   siteLayoutForm.pages = (siteLayoutForm.pages ?? []).filter((k) => k !== key)
   openKeys.delete(key)
 }
