@@ -6,5 +6,4 @@ export const defaultSiteContent = (): SiteContent => ({
     bgUrl: null,
     text: null,
   },
-  banners: [],
 })

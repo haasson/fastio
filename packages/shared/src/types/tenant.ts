@@ -42,19 +42,12 @@ export type TenantTheme = {
 
 export type NavPage = NavPageKey
 
-export type BannerItem = {
-  url: string
-  enabled: boolean
-  link?: string | null
-}
-
 export type SiteContent = {
   logo: string | null
   hero: {
     bgUrl: string | null
     text: string | null
   }
-  banners: BannerItem[]
 }
 
 export type NavItem = {
@@ -92,7 +85,6 @@ export type SiteLayout = {
     gallery: { enabled: boolean }
     reviews: { enabled: boolean }
     delivery: { enabled: boolean }
-    vacancies: { enabled: boolean }
   }
   sectionsOrder: SectionKey[]
   pages: NavPage[]

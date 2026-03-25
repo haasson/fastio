@@ -36,7 +36,7 @@
     >
       <UiIcon name="plus" :size="compact ? 20 : 32" color="var(--color-text-tertiary)" />
       <UiText v-if="!compact" size="small" color="var(--color-text-secondary)">
-        Нажмите для загрузки
+        Добавить фото
       </UiText>
     </div>
 

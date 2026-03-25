@@ -51,6 +51,7 @@ import {
   QrCode,
   ChefHat,
   Table2,
+  FileText,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -108,6 +109,7 @@ export const iconRegistry = {
   qrCode: QrCode,
   chefHat: ChefHat,
   tableIcon: Table2,
+  fileText: FileText,
 } as const
 
 export type IconName = keyof typeof iconRegistry

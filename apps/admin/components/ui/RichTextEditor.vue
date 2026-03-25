@@ -36,28 +36,16 @@
           <option v-for="size in fontSizes" :key="size.value" :value="size.value">{{ size.label }}</option>
         </select>
         <div class="sep" />
-        <label class="color-tool" title="Цвет текста">
-          <input
-            type="color"
-            class="color-input"
-            :value="activeColor"
-            @input="setColor"
-          />
-          <span class="color-preview" :style="{ background: activeColor }" />
-          <span class="color-label">A</span>
-        </label>
-        <template v-if="colors?.length">
-          <button
-            v-for="color in colors"
-            :key="color"
-            type="button"
-            class="color-swatch"
-            :class="{ 'is-active': activeColor === color }"
-            :style="{ background: color }"
-            :title="color"
-            @click="editor?.chain().focus().setColor(color).run()"
-          />
-        </template>
+        <button
+          v-for="color in themeColors"
+          :key="color.stored"
+          type="button"
+          class="color-swatch"
+          :class="{ 'is-active': activeColor === color.stored }"
+          :style="{ background: color.display }"
+          :title="color.label"
+          @click="editor?.chain().focus().setColor(color.stored).run()"
+        />
         <button
           v-if="hasCustomColor"
           type="button"
@@ -83,7 +71,7 @@
           1.
         </button>
       </div>
-      <EditorContent class="content" :editor="editor" />
+      <EditorContent class="content" :style="contentStyle" :editor="editor" />
     </div>
   </div>
 </template>
@@ -95,6 +83,9 @@ import StarterKit from '@tiptap/starter-kit'
 import { TextStyle, FontSize } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import { Extension } from '@tiptap/core'
+import { THEME_PRESETS } from '@fastio/shared'
+import type { ThemePalette } from '@fastio/shared'
+import { useTenantStore } from '~/stores/tenant'
 
 const EnterAsBr = Extension.create({
   addKeyboardShortcuts() {
@@ -107,11 +98,51 @@ const EnterAsBr = Extension.create({
 const props = defineProps<{
   modelValue: string
   label?: string
-  colors?: string[]
   headingLevels?: number[]
 }>()
 
 const headingLevels = computed(() => props.headingLevels ?? [1, 2, 3])
+
+const tenantStore = useTenantStore()
+
+const activePalette = computed((): ThemePalette | null => {
+  const theme = tenantStore.tenant?.theme
+
+  if (!theme) return null
+  if (theme.activeCustomId) {
+    const custom = theme.customThemes.find((c) => c.id === theme.activeCustomId)
+
+    if (custom) return custom.palette
+  }
+  if (theme.palette) return theme.palette
+
+  return THEME_PRESETS.find((p) => p.name === theme.preset)?.palette ?? null
+})
+
+const themeColors = computed(() => {
+  const p = activePalette.value
+
+  return [
+    { label: 'Основной', stored: 'var(--color-text)', display: p?.text ?? '#111' },
+    { label: 'Акцент', stored: 'var(--primary)', display: p?.primary ?? '#888' },
+    { label: 'Вторичный', stored: 'var(--color-text-secondary)', display: p?.textSecondary ?? '#888' },
+    { label: 'Приглушённый', stored: 'var(--color-text-muted)', display: p?.textMuted ?? '#aaa' },
+  ]
+})
+
+const contentStyle = computed(() => {
+  const p = activePalette.value
+
+  if (!p) return {}
+
+  return {
+    '--primary': p.primary,
+    '--color-text': p.text,
+    '--color-text-secondary': p.textSecondary,
+    '--color-text-muted': p.textMuted,
+    'background': p.bg,
+  }
+})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
@@ -139,23 +170,10 @@ const editor = useEditor({
   },
 })
 
-const activeColor = computed(() => {
-  if (!editor.value) return '#000000'
+const activeColor = computed(() => editor.value?.getAttributes('textStyle').color ?? null,
+)
 
-  return editor.value.getAttributes('textStyle').color ?? '#000000'
-})
-
-const hasCustomColor = computed(() => {
-  if (!editor.value) return false
-
-  return !!editor.value.getAttributes('textStyle').color
-})
-
-const setColor = (e: Event) => {
-  const val = (e.target as HTMLInputElement).value
-
-  editor.value?.chain().focus().setColor(val).run()
-}
+const hasCustomColor = computed(() => !!activeColor.value)
 
 const activeFontSize = computed(() => {
   if (!editor.value) return ''
@@ -266,43 +284,6 @@ onBeforeUnmount(() => editor.value?.destroy())
   height: 18px;
   background: var(--color-border);
   margin: 0 4px;
-}
-
-.color-tool {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  position: relative;
-  cursor: pointer;
-  padding: 0 4px;
-  height: 28px;
-  border-radius: 5px;
-  transition: background 0.15s;
-
-  &:hover { background: var(--color-bg-hover); }
-}
-
-.color-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.color-preview {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  flex-shrink: 0;
-}
-
-.color-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text);
-  line-height: 1;
 }
 
 .color-swatch {

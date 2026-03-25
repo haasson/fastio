@@ -1,83 +1,65 @@
 <template>
-  <SectionSettingsRow v-if="sectionKey === 'categoryBar'" :label="featureLabel(sectionKey)">
+  <div v-if="sectionKey === 'categoryBar'" class="field">
+    <label class="field-label">Поведение при переполнении</label>
+    <UiSegmentedControl
+      v-model="form.sections.categoryBar.overflow"
+      :items="categoryBarOverflowOptions"
+      size="small"
+    />
+  </div>
+
+  <HeroOptions
+    v-else-if="sectionKey === 'hero'"
+    v-model="form.sections.hero"
+    :hero-content="contentForm.hero"
+    :on-pending-hero-bg="pendingHeroBg"
+  />
+
+  <div v-else-if="sectionKey === 'banners'" class="fields-wrap">
+    <span class="banners-hint">Баннеры управляются в разделе <RouterLink to="/promotions" class="banners-link">Акции → Баннеры</RouterLink></span>
     <div class="field">
-      <label class="field-label">Поведение при переполнении</label>
+      <label class="field-label">Размер баннера</label>
       <UiSegmentedControl
-        v-model="form.sections.categoryBar.overflow"
-        :items="categoryBarOverflowOptions"
+        v-model="form.sections.banners.displayMode"
+        :items="bannerDisplayOptions"
         size="small"
       />
     </div>
-  </SectionSettingsRow>
-
-  <SectionSettingsRow v-else-if="sectionKey === 'hero'" :label="featureLabel(sectionKey)">
-    <HeroOptions v-model="form.sections.hero" :hero-content="contentForm.hero" :on-pending-hero-bg="pendingHeroBg" />
-  </SectionSettingsRow>
-
-  <SectionSettingsRow v-else-if="sectionKey === 'banners'" :label="featureLabel(sectionKey)">
-    <div class="fields-wrap">
-      <ImageListManager
-        v-model="contentForm.banners"
-        @pending="pendingBanners"
-      />
-      <div class="field">
-        <label class="field-label">Размер баннера</label>
-        <UiSegmentedControl
-          v-model="form.sections.banners.displayMode"
-          :items="bannerDisplayOptions"
-          size="small"
-        />
-      </div>
-      <div class="field">
-        <UiCheckbox v-model:checked="form.sections.banners.autoplay">Автоперелистывание</UiCheckbox>
-      </div>
-      <div v-if="form.sections.banners.autoplay" class="field">
-        <label class="field-label">Интервал (сек)</label>
-        <UiInputNumber
-          v-model:value="form.sections.banners.autoplayInterval"
-          :min="1"
-          :max="30"
-          :step="1"
-          style="width: 100px"
-        />
-      </div>
-    </div>
-  </SectionSettingsRow>
-
-  <SectionSettingsRow v-else-if="sectionKey === 'menu'" :label="featureLabel(sectionKey)">
     <div class="field">
-      <label class="field-label">Вид по умолчанию</label>
-      <UiSegmentedControl
-        v-model="form.sections.menu.defaultView"
-        :items="menuViewOptions"
-        size="small"
+      <UiCheckbox v-model:checked="form.sections.banners.autoplay">Автоперелистывание</UiCheckbox>
+    </div>
+    <div v-if="form.sections.banners.autoplay" class="field">
+      <label class="field-label">Интервал (сек)</label>
+      <UiInputNumber
+        v-model:value="form.sections.banners.autoplayInterval"
+        :min="1"
+        :max="30"
+        :step="1"
+        style="width: 100px"
       />
     </div>
-  </SectionSettingsRow>
+  </div>
 
-  <SectionSettingsRow v-else-if="sectionKey === 'gallery'" :label="featureLabel(sectionKey)">
-    <span class="coming-soon">Управление галереей появится в ближайшее время</span>
-  </SectionSettingsRow>
+  <div v-else-if="sectionKey === 'menu'" class="field">
+    <label class="field-label">Вид по умолчанию</label>
+    <UiSegmentedControl
+      v-model="form.sections.menu.defaultView"
+      :items="menuViewOptions"
+      size="small"
+    />
+  </div>
 
-  <SectionSettingsRow v-else-if="sectionKey === 'reviews'" :label="featureLabel(sectionKey)">
-    <span class="coming-soon">Управление отзывами появится в ближайшее время</span>
-  </SectionSettingsRow>
+  <span v-else-if="sectionKey === 'gallery'" class="coming-soon">Управление галереей появится в ближайшее время</span>
 
-  <SectionSettingsRow v-else-if="sectionKey === 'delivery'" :label="featureLabel(sectionKey)">
-    <span class="coming-soon">Настройки секции доставки появятся в ближайшее время</span>
-  </SectionSettingsRow>
+  <span v-else-if="sectionKey === 'reviews'" class="coming-soon">Управление отзывами появится в ближайшее время</span>
 
-  <SectionSettingsRow v-else-if="sectionKey === 'vacancies'" :label="featureLabel(sectionKey)">
-    <span class="coming-soon">Настройки секции вакансий появятся в ближайшее время</span>
-  </SectionSettingsRow>
+  <span v-else-if="sectionKey === 'delivery'" class="coming-soon">Настройки секции доставки появятся в ближайшее время</span>
 </template>
 
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 import { UiSegmentedControl, UiInputNumber, UiCheckbox } from '@fastio/ui'
-import SectionSettingsRow from './SectionSettingsRow.vue'
 import HeroOptions from './HeroOptions.vue'
-import ImageListManager from '~/components/ui/ImageListManager.vue'
-import { featureLabel } from '@fastio/shared'
 import type { SiteLayout, SiteContent, SectionKey } from '@fastio/shared'
 
 defineProps<{
@@ -85,7 +67,6 @@ defineProps<{
   form: SiteLayout
   contentForm: SiteContent
   pendingHeroBg: (file: File | null) => void
-  pendingBanners: (files: { blobUrl: string; file: File }[]) => void
 }>()
 
 const categoryBarOverflowOptions = [
@@ -126,5 +107,17 @@ const menuViewOptions = [
 .coming-soon {
   font-size: 13px;
   color: var(--color-text-tertiary);
+}
+
+.banners-hint {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.banners-link {
+  color: var(--color-primary);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
 }
 </style>

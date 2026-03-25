@@ -63,3 +63,27 @@ export type PromoCodeFormData = {
   activeTo: string | null
   active: boolean
 }
+
+export type Banner = {
+  id: string
+  tenantId: string
+  url: string
+  enabled: boolean
+  sortOrder: number
+  promotionId: string | null
+  promoCodeId: string | null
+  link: string | null
+  page: string | null
+  content: string
+  createdAt: string
+}
+
+export type BannerFormData = {
+  url: string
+  enabled: boolean
+  promotionId: string | null
+  promoCodeId: string | null
+  link: string | null
+  page: string | null
+  content: string
+}

@@ -829,7 +829,6 @@ const tabFull = ref('new')
 const tabItems = [
   { value: 'menu', label: 'Меню' },
   { value: 'about', label: 'О нас' },
-  { value: 'contacts', label: 'Контакты', disabled: true },
 ]
 const tabItemsBadge = [
   { value: 'new', label: 'Новые', badge: 3 },

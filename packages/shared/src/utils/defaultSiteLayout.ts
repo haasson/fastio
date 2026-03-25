@@ -24,8 +24,7 @@ export const defaultSiteLayout = (): SiteLayout => ({
     gallery: { enabled: false },
     reviews: { enabled: false },
     delivery: { enabled: false },
-    vacancies: { enabled: false },
   },
-  sectionsOrder: ['categoryBar', 'hero', 'banners', 'menu', 'gallery', 'reviews', 'delivery', 'vacancies'],
+  sectionsOrder: ['categoryBar', 'hero', 'banners', 'menu', 'gallery', 'reviews', 'delivery'],
   pages: [],
 })

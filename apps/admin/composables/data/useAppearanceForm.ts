@@ -39,7 +39,6 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
 
   const pendingLogoFile = ref<File | null>(null)
   const pendingHeroBgFile = ref<File | null>(null)
-  const pendingBannerFiles = ref<Map<string, File>>(new Map())
   const pendingFaviconFile = ref<File | null>(null)
   const pendingOgImageFile = ref<File | null>(null)
   let originalHeroBgUrl: string | null = null
@@ -55,7 +54,6 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     || JSON.stringify(seoForm) !== savedSeoSnapshot.value
     || !!pendingLogoFile.value
     || !!pendingHeroBgFile.value
-    || pendingBannerFiles.value.size > 0
     || !!pendingFaviconFile.value
     || !!pendingOgImageFile.value,
   )
@@ -68,10 +66,6 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     Object.assign(seoForm, initSeo(t))
     updateSnapshots()
   })
-
-  const onPendingBanners = (files: { blobUrl: string; file: File }[]) => {
-    pendingBannerFiles.value = new Map(files.map((f) => [f.blobUrl, f.file]))
-  }
 
   const onPendingHeroBg = (file: File | null) => {
     if (file) {
@@ -118,23 +112,6 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
       contentForm.hero.bgUrl = url
       pendingHeroBgFile.value = null
       originalHeroBgUrl = null
-    }
-    if (pendingBannerFiles.value.size > 0) {
-      const items = contentForm.banners
-
-      for (let i = 0; i < items.length; i++) {
-        const blobUrl = items[i].url
-
-        if (!blobUrl.startsWith('blob:')) continue
-        const file = pendingBannerFiles.value.get(blobUrl)
-
-        if (!file) continue
-        const realUrl = await db.tenants.uploadAsset(tenantId, file, `banner-${i}`)
-
-        URL.revokeObjectURL(blobUrl)
-        items[i].url = realUrl
-      }
-      pendingBannerFiles.value.clear()
     }
     if (pendingFaviconFile.value) {
       seoForm.favicon = await db.tenants.uploadAsset(tenantId, pendingFaviconFile.value, 'favicon')
@@ -220,6 +197,5 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     saving,
     save,
     onPendingHeroBg,
-    onPendingBanners,
   }
 }

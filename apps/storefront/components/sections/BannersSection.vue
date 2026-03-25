@@ -4,13 +4,13 @@
       <div class="slides">
         <div
           v-for="banner in visibleBanners"
-          :key="banner.url"
+          :key="banner.id"
           class="slide"
           :class="{ 'slide--single': settings.displayMode === 'single' }"
         >
           <component
-            :is="banner.link ? 'a' : 'div'"
-            v-bind="banner.link ? { href: banner.link, target: '_blank', rel: 'noopener noreferrer' } : {}"
+            :is="bannerHref(banner) ? 'a' : 'div'"
+            v-bind="bannerLinkProps(banner)"
             class="slide-inner"
           >
             <img :src="banner.url" alt="" class="slide-img" loading="lazy" />
@@ -41,14 +41,30 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import useEmblaCarousel from 'embla-carousel-vue'
 import AutoplayPlugin from 'embla-carousel-autoplay'
 import { FsSection } from '@fastio/public-ui'
-import type { BannerItem, SiteLayout } from '@fastio/shared'
+import type { Banner, SiteLayout } from '@fastio/shared'
 
 const props = defineProps<{
-  banners: BannerItem[]
+  banners: Banner[]
   settings: SiteLayout['sections']['banners']
 }>()
 
 const visibleBanners = computed(() => props.banners.filter(b => b.enabled))
+
+const bannerHref = (banner: Banner): string | null => {
+  if (banner.promotionId || banner.promoCodeId) return `/promotions/${banner.id}`
+  if (banner.page) return `/${banner.page}`
+  if (banner.link) return banner.link
+  return null
+}
+
+const bannerLinkProps = (banner: Banner) => {
+  const href = bannerHref(banner)
+  if (!href) return {}
+  const isExternal = banner.link && !banner.promotionId && !banner.promoCodeId
+  return isExternal
+    ? { href, target: '_blank', rel: 'noopener noreferrer' }
+    : { href }
+}
 
 const plugins = computed(() => {
   if (!props.settings.autoplay) return []

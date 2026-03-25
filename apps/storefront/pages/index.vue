@@ -9,7 +9,7 @@
       />
       <BannersSection
         v-if="layout.sections.banners.enabled && layout.sectionsOrder.includes('banners')"
-        :banners="content.banners"
+        :banners="banners ?? []"
         :settings="layout.sections.banners"
       />
       <MenuSection
@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNuxtData, useAsyncData, useRequestFetch, useRoute, navigateTo } from 'nuxt/app'
-import type { Tenant } from '@fastio/shared'
+import type { Banner, Tenant } from '@fastio/shared'
 import { defaultSiteContent, deepMerge } from '@fastio/shared'
 import PageShell from '~/components/sections/PageShell.vue'
 import HeroSection from '~/components/sections/HeroSection.vue'
@@ -44,7 +44,12 @@ const { data: tenant } = useNuxtData<Tenant>('tenant')
 const rfetch = useRequestFetch()
 const route = useRoute()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
-await useAsyncData('menu', () => rfetch('/api/menu', slugQuery))
+await Promise.all([
+  useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
+  useAsyncData('banners', () => rfetch<Banner[]>('/api/banners', slugQuery)),
+])
+
+const { data: banners } = useNuxtData<Banner[]>('banners')
 
 type SiteContentType = ReturnType<typeof defaultSiteContent>
 
