@@ -61,7 +61,6 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, UiSwitch, useMessage, UiSectionHeader } from '@fastio/ui'
-import type { Tenant } from '@fastio/shared'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -69,14 +68,12 @@ const { blinkingCounter } = useNotificationPrefs()
 
 const tenantStore = useTenantStore()
 
-const props = defineProps<{ tenant: Tenant }>()
-
 const form = reactive({
-  email: props.tenant.notifications?.email ?? '',
-  telegramChatId: props.tenant.notifications?.telegramChatId ?? '',
+  email: tenantStore.tenant?.notifications?.email ?? '',
+  telegramChatId: tenantStore.tenant?.notifications?.telegramChatId ?? '',
 })
 
-watch(() => props.tenant.notifications, (n) => {
+watch(() => tenantStore.tenant?.notifications, (n) => {
   form.email = n?.email ?? ''
   form.telegramChatId = n?.telegramChatId ?? ''
 })

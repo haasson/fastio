@@ -74,6 +74,7 @@ const allNavItems: NavItem[] = [
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
   { to: '/team/members', icon: 'users', label: 'Команда', visible: canManageTeam },
   { to: '/team/branches', icon: 'mapPin', label: 'Филиалы', visible: canSeeBranches },
+  { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewSettings },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
 ]

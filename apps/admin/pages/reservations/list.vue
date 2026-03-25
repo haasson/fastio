@@ -1,5 +1,5 @@
 <template>
-  <div class="active-root">
+  <div class="list-root">
     <AppTableToolbar
       v-model:search="search"
       v-model:visible-columns="visibleColumns"
@@ -78,7 +78,7 @@ const searchedData = computed(() => {
 </script>
 
 <style scoped>
-.active-root {
+.list-root {
   display: flex;
   flex-direction: column;
   gap: 16px;

@@ -89,7 +89,6 @@ const DAYS = [
   { key: '7', label: 'Вс' },
 ]
 
-const props = defineProps<{ tenant: Tenant }>()
 const tenantStore = useTenantStore()
 
 const phoneModeOptions = [
@@ -123,9 +122,11 @@ const buildForm = (t: Tenant) => ({
   days: buildDays(t.workingHoursSchedule ?? null),
 })
 
-const form = reactive(buildForm(props.tenant))
+const form = reactive(buildForm(tenantStore.tenant!))
 
-watch(() => props.tenant, (t) => Object.assign(form, buildForm(t)))
+watch(() => tenantStore.tenant, (t) => {
+  if (t) Object.assign(form, buildForm(t))
+})
 
 const saving = ref(false)
 const { success } = useMessage()

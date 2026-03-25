@@ -1,0 +1,142 @@
+<template>
+  <div class="tab-root">
+    <div class="toolbar">
+      <UiInput
+        v-if="promoCodes.length > 0"
+        v-model:value="search"
+        placeholder="Поиск по коду..."
+        clearable
+        class="search"
+      />
+      <UiButton
+        type="primary"
+        icon="plus"
+        class="add-btn"
+        @click="openAdd"
+      >
+        Добавить
+      </UiButton>
+    </div>
+
+    <UiSkeleton v-if="loading" :height="56" :count="3" />
+
+    <UiEmpty
+      v-else-if="promoCodes.length === 0"
+      icon="promotions"
+      text="Промокодов пока нет. Создайте первый — например WELCOME10 на скидку 10%."
+    />
+
+    <UiDataTable
+      v-else
+      :columns="columns"
+      :data="filtered"
+      :row-key="(row) => row.id"
+      :bordered="false"
+      size="small"
+    />
+
+    <PromoCodeFormModal
+      v-model="showModal"
+      :promo-code="editing"
+      :saving="saving"
+      @save="handleSave"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { UiButton, UiDataTable, UiEmpty, UiInput, UiSkeleton } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
+import type { PromoCode, PromoCodeFormData } from '@fastio/shared'
+import { useTenantStore } from '~/stores/tenant'
+import { usePromoCodes } from '~/composables/data/usePromoCodes'
+import { buildPromoCodeColumns } from '~/columns/promo-codes'
+import PromoCodeFormModal from '~/components/promotions/PromoCodeFormModal.vue'
+
+const tenantStore = useTenantStore()
+const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+
+const { promoCodes, loading, add, update, remove, toggleActive } = usePromoCodes(tenantId)
+
+const search = ref('')
+
+const filtered = computed(() => {
+  const q = search.value.trim().toLowerCase()
+
+  if (!q) return promoCodes.value
+
+  return promoCodes.value.filter((p) => p.code.toLowerCase().includes(q))
+})
+
+const showModal = ref(false)
+const editing = ref<PromoCode | null>(null)
+const saving = ref(false)
+
+const { confirm } = useConfirm()
+
+const openAdd = () => {
+  editing.value = null
+  showModal.value = true
+}
+
+const openEdit = (promo: PromoCode) => {
+  editing.value = promo
+  showModal.value = true
+}
+
+const handleSave = async (data: PromoCodeFormData) => {
+  saving.value = true
+  try {
+    if (editing.value) {
+      await update(editing.value.id, data)
+    } else {
+      await add(data)
+    }
+    showModal.value = false
+  } finally {
+    saving.value = false
+  }
+}
+
+const handleRemove = async (promo: PromoCode) => {
+  const ok = await confirm({ title: `Удалить промокод «${promo.code}»?` })
+
+  if (ok) await remove(promo.id)
+}
+
+const columns = buildPromoCodeColumns({
+  onToggle: toggleActive,
+  onEdit: openEdit,
+  onRemove: handleRemove,
+})
+</script>
+
+<style scoped lang="scss">
+.tab-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search {
+  flex: 1;
+  max-width: 320px;
+}
+
+.add-btn {
+  margin-left: auto;
+}
+
+:deep(.promo-code-text) {
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+</style>

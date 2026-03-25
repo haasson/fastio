@@ -1,5 +1,5 @@
 <template>
-  <div class="addons-tab-root">
+  <div class="addons-root">
     <div class="toolbar">
       <UiTabs v-model="activeTab" variant="pill" :tabs="tabs" />
       <UiButton type="primary" icon="plus" @click="openAdd">
@@ -80,14 +80,14 @@ import { ref, computed, onMounted } from 'vue'
 import { UiButton, UiSkeleton, UiTabs, UiDataTable, UiInput, UiEmpty, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Addon, AddonPreset } from '@fastio/shared'
+import { useTenantStore } from '~/stores/tenant'
 import { useAddons } from '~/composables/data/useAddons'
 import { buildAddonColumns, buildAddonPresetColumns } from '~/columns/addons'
 import AddonFormModal from '~/components/menu/AddonFormModal.vue'
 import AddonPresetFormModal from '~/components/menu/AddonPresetFormModal.vue'
 
-const props = defineProps<{ tenantId: string }>()
-
-const tenantId = computed(() => props.tenantId)
+const tenantStore = useTenantStore()
+const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const {
   addons, loading, presets, presetsLoading, loadPresets,
   remove, toggleActive, removePreset,
@@ -191,7 +191,7 @@ const presetColumns = buildAddonPresetColumns({
 </script>
 
 <style scoped lang="scss">
-.addons-tab-root {
+.addons-root {
   display: flex;
   flex-direction: column;
   gap: 16px;

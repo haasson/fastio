@@ -1,39 +1,31 @@
 <template>
-  <div class="kitchen-root">
-    <div class="tabs-row">
-      <UiTabs v-model="activeTab" :tabs="TABS" prevent-compact />
+  <TabsLayout :tabs="tabs" base-path="/kitchen" prevent-compact>
+    <template #extra>
       <div class="tabs-meta">
         <span class="tabs-count">{{ itemCount }} в работе</span>
         <UiTag size="small" round :type="isConnected ? 'success' : 'error'">
           {{ isConnected ? 'Live' : 'Переподключение...' }}
         </UiTag>
       </div>
-    </div>
-
-    <KitchenQueue v-if="activeTab === 'kitchen'" />
-    <KitchenAssembly v-else-if="activeTab === 'assembly'" />
-    <KitchenSettings v-else-if="activeTab === 'settings'" />
-  </div>
+    </template>
+  </TabsLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { UiTabs, UiTag } from '@fastio/ui'
+import { UiTag } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import { realtimeConnected } from '~/composables/data/useOrdersChannel'
-import KitchenQueue from '~/components/kitchen/KitchenQueue.vue'
-import KitchenAssembly from '~/components/kitchen/KitchenAssembly.vue'
-import KitchenSettings from '~/components/kitchen/KitchenSettings.vue'
+import TabsLayout from '~/components/ui/TabsLayout.vue'
 
 const { canEditSettings } = usePermissions()
 const isConnected = realtimeConnected
 const itemCount = ref(0)
 
-// Lightweight counter — load once, then track via realtime
 const api = useDatabase()
 const tenantStore = useTenantStore()
 
@@ -69,40 +61,18 @@ onUnmounted(() => {
   offDelete()
 })
 
-const activeTab = ref('kitchen')
-
-// Re-sync counter on tab switch or realtime reconnect (drift protection)
-watch(activeTab, () => {
-  loadCount()
-})
-
 watch(isConnected, (connected) => {
   if (connected) loadCount()
 })
 
-const TABS = computed(() => [
-  { value: 'kitchen', label: 'Кухня' },
+const tabs = computed(() => [
+  { value: 'queue', label: 'Кухня' },
   { value: 'assembly', label: 'Сборка' },
   ...(canEditSettings.value ? [{ value: 'settings', label: 'Настройки' }] : []),
 ])
 </script>
 
 <style scoped lang="scss">
-.kitchen-root {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: calc(100vh - var(--content-padding) * 2);
-  overflow: hidden;
-}
-
-.tabs-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
-}
-
 .tabs-meta {
   display: flex;
   align-items: center;
