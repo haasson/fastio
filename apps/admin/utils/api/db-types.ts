@@ -122,6 +122,7 @@ export type DishRow = {
   tags: DishTag[]
   active: boolean
   sort_order: number
+  requires_kitchen: boolean
   deleted_at: string | null
 }
 
@@ -278,6 +279,7 @@ export type KitchenQueueRow = {
   completed_at: string | null
   served_at: string | null
   served_by: string | null
+  skip_kitchen: boolean
   created_at: string
 }
 

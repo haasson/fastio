@@ -23,6 +23,7 @@ export const mapDish = (raw: Record<string, unknown>): Dish => {
     tags: row.tags,
     active: row.active,
     order: row.sort_order,
+    requiresKitchen: row.requires_kitchen,
   }
 }
 
@@ -83,6 +84,7 @@ export const dishesApi = {
       tags: data.tags,
       active: data.active,
       sort_order: data.order,
+      requires_kitchen: data.requiresKitchen,
     }).select().single())
 
     return result ? mapDish(result) : null
@@ -101,6 +103,7 @@ export const dishesApi = {
         active: data.active,
         sort_order: data.order,
         photos: data.photos,
+        requires_kitchen: data.requiresKitchen,
       }),
     ).eq('id', id).select().single())
 

@@ -14,6 +14,7 @@
         :delivery-type="group.deliveryType"
         :items="group.items"
         @assembled="onAssembled(group.orderId)"
+        @collect-item="onCollectItem"
       />
     </div>
 
@@ -107,6 +108,14 @@ const tryAutoAdvance = async (updatedItem: KitchenQueueItem) => {
       api.kitchenQueue.serveAllForOrders([updatedItem.orderId], authStore.user!.id),
     ])
   }
+}
+
+const onCollectItem = (itemId: string, collected: boolean) => {
+  const promise = collected
+    ? api.kitchenQueue.complete(itemId)
+    : api.kitchenQueue.uncollect(itemId)
+
+  promise.catch(console.error)
 }
 
 const onAssembled = async (orderId: string) => {

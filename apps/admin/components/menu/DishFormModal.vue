@@ -56,10 +56,12 @@
           ref="settingsRef"
           entity="dish"
           :active="form.active"
+          :requires-kitchen="form.requiresKitchen"
           :entity-id="dish?.id ?? null"
           :price="form.price"
           :refresh-key="refreshKey"
           @update:active="form.active = $event"
+          @update:requires-kitchen="form.requiresKitchen = $event"
         />
       </UiCollapse>
     </UiForm>
@@ -131,6 +133,7 @@ const defaultForm = () => ({
   price: null as number | null,
   tags: [] as DishTag[],
   active: true,
+  requiresKitchen: true,
   order: 0,
 })
 
@@ -146,6 +149,7 @@ watch(
       form.price = dish.price
       form.tags = [...dish.tags]
       form.active = dish.active
+      form.requiresKitchen = dish.requiresKitchen
       form.order = dish.order
     } else {
       Object.assign(form, defaultForm())

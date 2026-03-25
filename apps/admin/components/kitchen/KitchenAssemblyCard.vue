@@ -14,17 +14,34 @@
       <span class="progress">{{ doneCount }}/{{ items.length }}</span>
     </div>
 
-    <div class="dishes">
-      <div v-for="item in items" :key="item.id" class="dish-row">
-        <UiTag
-          size="small"
-          :type="statusTagType(item.status)"
-          round
-        >
-          {{ STATUS_LABELS[item.status] }}
-        </UiTag>
-        <span class="dish-name">{{ item.dishName }}</span>
-        <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
+    <div v-if="kitchenItems.length" class="section">
+      <span class="section-title">С кухни</span>
+      <div class="dishes">
+        <div v-for="item in kitchenItems" :key="item.id" class="dish-row">
+          <UiTag
+            size="small"
+            :type="statusTagType(item.status)"
+            round
+          >
+            {{ STATUS_LABELS[item.status] }}
+          </UiTag>
+          <span class="dish-name">{{ item.dishName }}</span>
+          <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="selfCollectItems.length" class="section">
+      <span class="section-title">Собрать самому</span>
+      <div class="dishes">
+        <div v-for="item in selfCollectItems" :key="item.id" class="dish-row">
+          <UiCheckbox
+            :model-value="item.status === 'done' || item.status === 'served'"
+            @update:model-value="$emit('collectItem', item.id, $event)"
+          />
+          <span class="dish-name" :class="{ 'dish-name--done': item.status === 'done' || item.status === 'served' }">{{ item.dishName }}</span>
+          <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
+        </div>
       </div>
     </div>
 
@@ -40,7 +57,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { KitchenQueueItem, KitchenQueueStatus } from '@fastio/shared'
-import { UiCard, UiTag, UiButton } from '@fastio/ui'
+import { UiCard, UiTag, UiButton, UiCheckbox } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/order-options'
 
@@ -50,7 +67,10 @@ const props = defineProps<{
   items: KitchenQueueItem[]
 }>()
 
-defineEmits<{ assembled: [] }>()
+defineEmits<{
+  assembled: []
+  collectItem: [id: string, collected: boolean]
+}>()
 
 const STATUS_LABELS: Record<KitchenQueueStatus, string> = {
   queued: 'В очереди',
@@ -60,8 +80,11 @@ const STATUS_LABELS: Record<KitchenQueueStatus, string> = {
   cancelled: 'Отменено',
 }
 
+const kitchenItems = computed(() => props.items.filter((i) => !i.skipKitchen))
+const selfCollectItems = computed(() => props.items.filter((i) => i.skipKitchen))
+
 const doneCount = computed(() => props.items.filter((i) => i.status === 'done' || i.status === 'served').length)
-const allDone = computed(() => doneCount.value === props.items.length)
+const allDone = computed(() => props.items.length > 0 && doneCount.value === props.items.length)
 
 const deliveryIcon = computed(() => (DELIVERY_TYPE_ICONS[props.deliveryType] ?? 'cart') as IconName)
 const deliveryTagType = computed(() => props.deliveryType === 'delivery' ? 'primary' as const : 'success' as const)
@@ -103,6 +126,20 @@ const statusTagType = (status: KitchenQueueStatus) => {
   color: var(--color-text-hint);
 }
 
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-hint);
+}
+
 .dishes {
   display: flex;
   flex-direction: column;
@@ -119,6 +156,11 @@ const statusTagType = (status: KitchenQueueStatus) => {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-text);
+
+  &--done {
+    text-decoration: line-through;
+    color: var(--color-text-hint);
+  }
 }
 
 .combo-hint {

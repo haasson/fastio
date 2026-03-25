@@ -6,6 +6,11 @@
         <UiSwitch :model-value="active" @update:model-value="$emit('update:active', $event)" />
       </div>
 
+      <div v-if="entity === 'dish' && kitchenEnabled" class="toggle-row">
+        <span class="label">Готовить на кухне</span>
+        <UiSwitch :model-value="requiresKitchen" @update:model-value="$emit('update:requiresKitchen', $event)" />
+      </div>
+
       <template v-if="branches.length > 0">
         <div class="toggle-row">
           <span class="label">Разные настройки по филиалам</span>
@@ -37,11 +42,13 @@
 import { computed, toRefs } from 'vue'
 import { UiCollapseItem, UiSwitch, UiInputNumber } from '@fastio/ui'
 import { useBranchStore } from '~/stores/branch'
+import { useModules } from '~/composables/plan/useModules'
 import { useEntityBranchSettings } from '~/composables/data/useEntityBranchSettings'
 import BranchAvailabilityRows from './BranchAvailabilityRows.vue'
 
 const props = defineProps<{
   active: boolean
+  requiresKitchen?: boolean
   entity: 'dish' | 'combo'
   entityId: string | null
   refreshKey: number
@@ -50,7 +57,11 @@ const props = defineProps<{
 
 defineEmits<{
   'update:active': [value: boolean]
+  'update:requiresKitchen': [value: boolean]
 }>()
+
+const modules = useModules()
+const kitchenEnabled = computed(() => modules.kitchen.value.enabled)
 
 const branchStore = useBranchStore()
 const branches = computed(() => branchStore.branches)

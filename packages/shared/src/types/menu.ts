@@ -52,6 +52,7 @@ export type Dish = {
   tags: DishTag[]
   active: boolean
   order: number
+  requiresKitchen: boolean
 }
 
 export type ComboItem = {

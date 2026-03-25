@@ -26,6 +26,7 @@ export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueI
     completedAt: row.completed_at,
     servedAt: row.served_at,
     servedBy: row.served_by ?? null,
+    skipKitchen: row.skip_kitchen,
     createdAt: row.created_at,
   }
 }
@@ -36,6 +37,7 @@ export const kitchenQueueApi = {
       sb.from('kitchen_queue')
         .select('*')
         .eq('tenant_id', tenantId)
+        .eq('skip_kitchen', false)
         .in('status', ['queued', 'in_progress', 'cancelled'])
         .order('created_at', { ascending: true }),
     )
@@ -96,6 +98,14 @@ export const kitchenQueueApi = {
     await query(
       sb.from('kitchen_queue')
         .update({ status: 'queued', assigned_to: null, assigned_at: null })
+        .eq('id', id),
+    )
+  },
+
+  async uncollect(sb: SupabaseClient, id: string): Promise<void> {
+    await query(
+      sb.from('kitchen_queue')
+        .update({ status: 'queued', completed_at: null })
         .eq('id', id),
     )
   },

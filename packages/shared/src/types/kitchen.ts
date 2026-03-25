@@ -23,6 +23,7 @@ export type KitchenQueueItem = {
   completedAt: string | null
   servedAt: string | null
   servedBy: string | null
+  skipKitchen: boolean
   createdAt: string
 }
 
