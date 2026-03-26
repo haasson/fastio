@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',
+      yandexMapsApiKey: '',
     },
   },
 })

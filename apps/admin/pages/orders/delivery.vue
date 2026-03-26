@@ -47,8 +47,8 @@
       <div class="zones-body" :class="{ fullscreen: mapFullscreen }">
         <div class="zones-map">
           <DeliveryZoneMap
-            :zones="zones"
-            :branches="branches"
+            :zones="activeZones"
+            :branches="activeBranches"
             :selected-zone-id="selectedZoneId"
             :selected-branch-id="selectedBranchId"
             :drawing="drawing"
@@ -101,27 +101,31 @@ const modules = useModules()
 const deliveryEnabled = computed(() => modules.delivery.value.enabled)
 
 const branches = computed(() => branchStore.branches)
+const activeBranches = computed(() => branches.value.filter((b) => b.isActive))
 
-const branchOptions = computed(() => branches.value.map((b) => ({
+const branchOptions = computed(() => activeBranches.value.map((b) => ({
   label: b.name,
   value: b.id,
 })))
+
+const activeBranchIds = computed(() => new Set(activeBranches.value.map((b) => b.id)))
+const activeZones = computed(() => zones.value.filter((z) => activeBranchIds.value.has(z.branchId)))
 
 const {
   selectedZoneId, selectedBranchId, drawing, drawingBranchId,
   zoneForm, panelVisible,
   selectZone, onZoneClick, startDraw, onPolygonDrawn, closePanel,
-} = useZoneEditor(zones, branches)
+} = useZoneEditor(activeZones, activeBranches)
 
 const zoneSaving = ref(false)
 const zoneRemoving = ref(false)
 const mapFullscreen = ref(false)
 
-const groupedZones = computed(() => [...branches.value]
+const groupedZones = computed(() => [...activeBranches.value]
   .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
   .map((branch) => ({
     branch,
-    zones: zones.value.filter((z) => z.branchId === branch.id),
+    zones: activeZones.value.filter((z) => z.branchId === branch.id),
   })),
 )
 

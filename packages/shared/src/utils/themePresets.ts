@@ -4,6 +4,7 @@ export type ThemePresetDef = {
   name: TenantThemePreset
   label: string
   palette: ThemePalette
+  dark?: boolean
 }
 
 export const THEME_PRESETS: ThemePresetDef[] = [
@@ -23,6 +24,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'dark',
     label: 'Dark',
+    dark: true,
     palette: {
       primary: '#ff6b35',
       bg: '#2d1208',
@@ -36,6 +38,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'forest',
     label: 'Forest',
+    dark: true,
     palette: {
       primary: '#4ade80',
       bg: '#0f1f14',
@@ -62,6 +65,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'slate',
     label: 'Slate',
+    dark: true,
     palette: {
       primary: '#6366f1',
       bg: '#0f172a',
@@ -88,6 +92,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'neon',
     label: 'Neon',
+    dark: true,
     palette: {
       primary: '#ff2d78',
       bg: '#08000f',
@@ -101,6 +106,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'sunset',
     label: 'Sunset',
+    dark: true,
     palette: {
       primary: '#f97316',
       bg: '#1a0a2e',
@@ -114,6 +120,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'ocean',
     label: 'Ocean',
+    dark: true,
     palette: {
       primary: '#06b6d4',
       bg: '#040d1a',
@@ -140,6 +147,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'ember',
     label: 'Ember',
+    dark: true,
     palette: {
       primary: '#E8622A',
       bg: '#1A1410',
@@ -166,6 +174,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'midnight',
     label: 'Midnight',
+    dark: true,
     palette: {
       primary: '#E8AC34',
       bg: '#0E0F14',
@@ -289,6 +298,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'graphite',
     label: 'Graphite',
+    dark: true,
     palette: {
       primary: '#40aec8',
       bg: '#1a1c1e',
@@ -302,6 +312,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'obsidian',
     label: 'Obsidian',
+    dark: true,
     palette: {
       primary: '#a78bfa',
       bg: '#0c0c14',
@@ -315,6 +326,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'velvet',
     label: 'Velvet',
+    dark: true,
     palette: {
       primary: '#f43f5e',
       bg: '#160810',
@@ -328,6 +340,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'matrix',
     label: 'Matrix',
+    dark: true,
     palette: {
       primary: '#15c544',
       bg: '#030d08',
@@ -341,6 +354,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'dusk',
     label: 'Dusk',
+    dark: true,
     palette: {
       primary: '#fb923c',
       bg: '#100820',
@@ -354,6 +368,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'nordic',
     label: 'Nordic',
+    dark: true,
     palette: {
       primary: '#506cc8',
       bg: '#2e3440',
@@ -584,6 +599,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'espresso',
     label: 'Espresso',
+    dark: true,
     palette: {
       primary: '#c8a070',
       bg: '#140c08',
@@ -597,6 +613,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'navy',
     label: 'Navy',
+    dark: true,
     palette: {
       primary: '#90b8d8',
       bg: '#06101e',
@@ -610,6 +627,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'burgundy',
     label: 'Burgundy',
+    dark: true,
     palette: {
       primary: '#d4a848',
       bg: '#180c0c',
@@ -623,6 +641,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'abyss',
     label: 'Abyss',
+    dark: true,
     palette: {
       primary: '#40a8a0',
       bg: '#030c10',
@@ -636,6 +655,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'pitch',
     label: 'Pitch',
+    dark: true,
     palette: {
       primary: '#e04040',
       bg: '#0c0c0c',
@@ -649,6 +669,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'storm',
     label: 'Storm',
+    dark: true,
     palette: {
       primary: '#90a8cc',
       bg: '#0e121a',
@@ -662,6 +683,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'aubergine',
     label: 'Aubergine',
+    dark: true,
     palette: {
       primary: '#c060a0',
       bg: '#100814',
@@ -675,6 +697,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'forge',
     label: 'Forge',
+    dark: true,
     palette: {
       primary: '#d87030',
       bg: '#141210',
@@ -688,6 +711,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'pine',
     label: 'Pine',
+    dark: true,
     palette: {
       primary: '#388060',
       bg: '#060e08',
@@ -701,6 +725,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
   {
     name: 'night',
     label: 'Night',
+    dark: true,
     palette: {
       primary: '#b8a8e8',
       bg: '#08080e',
@@ -848,6 +873,9 @@ export const THEME_PRESETS: ThemePresetDef[] = [
 
 export const getPresetPalette = (name: string): ThemePalette | null =>
   THEME_PRESETS.find(p => p.name === name)?.palette ?? null
+
+export const isPresetDark = (name: string): boolean =>
+  THEME_PRESETS.find(p => p.name === name)?.dark ?? false
 
 export const paletteToCssVars = (p: ThemePalette): Record<string, string> => ({
   '--primary': p.primary,

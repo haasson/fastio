@@ -185,6 +185,11 @@ img, svg {
   max-width: 100%;
 }
 
+/* Yandex Maps инжектит SVG которые ломаются от глобального max-width: 100% */
+.__ymap svg {
+  max-width: none;
+}
+
 ul, ol {
   list-style: none;
 }

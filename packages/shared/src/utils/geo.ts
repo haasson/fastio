@@ -24,17 +24,20 @@ export const isPointInPolygon = (
 }
 
 /**
- * Находит первую активную зону, в которую попадает точка.
- * Зоны проверяются в порядке sortOrder (массив должен быть уже отсортирован).
+ * Находит активную зону с наименьшей стоимостью доставки, в которую попадает точка.
+ * При пересечении нескольких зон выбирается самая выгодная для клиента.
  */
 export const findDeliveryZone = (
   point: [number, number],
   zones: DeliveryZone[],
 ): DeliveryZone | null => {
+  let best: DeliveryZone | null = null
+
   for (const zone of zones) {
     if (!zone.isActive) continue
-    if (isPointInPolygon(point, zone.coordinates)) return zone
+    if (!isPointInPolygon(point, zone.coordinates)) continue
+    if (!best || zone.deliveryFee < best.deliveryFee) best = zone
   }
 
-  return null
+  return best
 }
