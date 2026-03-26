@@ -140,7 +140,7 @@ function getTagIcon(tag: string): Component | null {
 
 .dish-desc {
   line-height: 1.4;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .dish-footer {

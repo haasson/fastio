@@ -73,7 +73,7 @@ function addonsSummary(item: OrderItem) {
 }
 
 .item-removed {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .item-pending {

@@ -12,6 +12,7 @@
           :key="link.key"
           class="nav-link"
           :to="link.to"
+          @click.prevent="handleNavClick(link)"
         >
           {{ link.label }}
         </NuxtLink>
@@ -44,7 +45,7 @@
         :key="link.key"
         class="mm-nav-link"
         :to="link.to"
-        @click="menuOpen = false"
+        @click.prevent="handleNavClick(link)"
       >
         {{ link.label }}
       </NuxtLink>
@@ -65,7 +66,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'nuxt/app'
+import { useRoute, navigateTo } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
@@ -86,11 +87,44 @@ const navLinks = computed(() =>
     label: featureLabel(item.key),
     to: item.action === 'navigate'
       ? { path: `/${item.key}`, query: route.query }
-      : `#${item.key}`,
+      : { path: '/', hash: `#${item.key}`, query: route.query },
   })),
 )
 
 const menuOpen = ref(false)
+
+type NavLink = { key: string; label: string; to: { path: string; hash?: string; query?: object } }
+
+const scrollToHash = (hash: string) => {
+  const el = document.querySelector(hash)
+  if (!el) return false
+  const top = el.getBoundingClientRect().top + window.scrollY - 72
+  window.scrollTo({ top, behavior: 'smooth' })
+  return true
+}
+
+const handleNavClick = async (link: NavLink) => {
+  menuOpen.value = false
+
+  if (!link.to.hash) {
+    await navigateTo(link.to)
+    return
+  }
+
+  if (route.path === '/') {
+    scrollToHash(link.to.hash)
+    return
+  }
+
+  await navigateTo(link.to)
+
+  const hash = link.to.hash!
+  const observer = new MutationObserver(() => {
+    if (scrollToHash(hash)) observer.disconnect()
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
+  setTimeout(() => observer.disconnect(), 2000)
+}
 </script>
 
 <style scoped lang="scss">

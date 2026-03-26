@@ -1,8 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/" back-label="Главная">
-        <template #heading>Мои заказы</template>
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }, { label: 'Личный кабинет', to: '/account' }]" current="Мои заказы">
 
         <div class="orders-root">
           <AccountCardsSkeleton
@@ -172,7 +171,7 @@ function itemsLabel(n: number) {
 
 .order-number {
   @include text-xs(600);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-family: monospace;
 }
 
@@ -183,7 +182,7 @@ function itemsLabel(n: number) {
 
 .order-meta {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .order-right {

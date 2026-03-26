@@ -1,8 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/" back-label="Главная">
-        <template #heading>Личный кабинет</template>
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" current="Личный кабинет">
 
         <div class="account-root">
           <FsCard class="account-card" @click="navigateTo({ path: '/account/profile', query: route.query })">

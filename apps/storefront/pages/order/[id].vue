@@ -166,7 +166,7 @@ const paymentLabel = computed(() => {
   align-items: center;
   gap: 16px;
   padding: 64px 0;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   @include text-caption;
 }
 
@@ -240,7 +240,7 @@ const paymentLabel = computed(() => {
 }
 
 .info-label {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   min-width: 80px;
   flex-shrink: 0;
 }

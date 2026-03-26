@@ -1,8 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/cart" back-label="Корзина">
-        <template #heading>Оформление</template>
+      <StorePageLayout :breadcrumbs="[{ label: 'Меню', to: '/' }, { label: 'Корзина', to: '/cart' }]" current="Оформление">
 
         <div class="checkout-layout">
           <div class="checkout-form">

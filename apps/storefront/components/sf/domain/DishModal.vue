@@ -113,7 +113,6 @@ function onConfirm() {
   @include md {
     flex-direction: row;
     gap: 16px;
-    padding-right: 32px; // safe space for close button
   }
 }
 

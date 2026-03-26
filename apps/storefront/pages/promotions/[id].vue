@@ -1,13 +1,11 @@
 <template>
   <PageShell>
-    <div class="promo-root">
-      <div v-if="promo.bannerUrl" class="banner">
-        <img :src="promo.bannerUrl" alt="" class="banner-img" />
-      </div>
+    <div v-if="promo.bannerUrl" class="banner">
+      <img :src="promo.bannerUrl" alt="" class="banner-img" />
+    </div>
 
-      <FsSection class="content-section">
-        <FsHeading as="h1" class="title">{{ promo.title }}</FsHeading>
-
+    <FsSection>
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" :current="promo.title">
         <div v-if="promo.type === 'promo_code'" class="code-block">
           <FsText size="small" color="secondary">Промокод</FsText>
           <div class="code-row">
@@ -20,16 +18,17 @@
 
         <!-- eslint-disable-next-line vue/no-v-html -->
         <div v-if="promo.content" class="rich-content" v-html="promo.content" />
-      </FsSection>
-    </div>
+      </StorePageLayout>
+    </FsSection>
   </PageShell>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAsyncData, useRequestFetch, useRoute, createError } from 'nuxt/app'
-import { FsSection, FsHeading, FsText } from '@fastio/public-ui'
+import { FsSection, FsText } from '@fastio/public-ui'
 import PageShell from '~/components/sections/PageShell.vue'
+import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 
 const route = useRoute()
 const rfetch = useRequestFetch()
@@ -67,11 +66,6 @@ const copyCode = async () => {
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
 
-.promo-root {
-  display: flex;
-  flex-direction: column;
-}
-
 .banner {
   width: 100%;
   aspect-ratio: 3 / 1;
@@ -85,20 +79,11 @@ const copyCode = async () => {
   display: block;
 }
 
-.content-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.title {
-  margin: 0;
-}
-
 .code-block {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 20px;
 }
 
 .code-row {

@@ -96,7 +96,7 @@ const onNext = () => {
 
 .no-slots {
   @include text-caption;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .slots-loading {

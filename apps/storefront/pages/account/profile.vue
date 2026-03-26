@@ -1,8 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/" back-label="Главная">
-        <template #heading>Профиль</template>
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }, { label: 'Личный кабинет', to: '/account' }]" current="Профиль">
 
         <div class="profile-root">
           <FsForm class="form" @submit="onSave">

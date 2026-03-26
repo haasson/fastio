@@ -3,21 +3,30 @@
     <template #default="{ stickyTotalHeight, layout }">
       <HeroSection
         v-if="layout.sections.hero.enabled && layout.sectionsOrder.includes('hero')"
+        id="hero"
         :hero="layout.sections.hero"
         :hero-content="content.hero"
         :sticky-height="stickyTotalHeight"
       />
       <BannersSection
         v-if="layout.sections.banners.enabled && layout.sectionsOrder.includes('banners')"
+        id="banners"
         :banners="banners ?? []"
         :settings="layout.sections.banners"
       />
       <MenuSection
         v-if="layout.sections.menu.enabled && layout.sectionsOrder.includes('menu')"
+        id="menu"
         :default-view="layout.sections.menu.defaultView"
       />
-      <GallerySection v-if="layout.sections.gallery.enabled && layout.sectionsOrder.includes('gallery')" />
-      <ReviewsSection v-if="layout.sections.reviews.enabled && layout.sectionsOrder.includes('reviews')" />
+      <GallerySection
+        v-if="layout.sections.gallery.enabled && layout.sectionsOrder.includes('gallery')"
+        id="gallery"
+      />
+      <ReviewsSection
+        v-if="layout.sections.reviews.enabled && layout.sectionsOrder.includes('reviews')"
+        id="reviews"
+      />
     </template>
 
     <template #fab>

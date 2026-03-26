@@ -103,7 +103,7 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
 
 .compact-desc {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
   @include truncate;

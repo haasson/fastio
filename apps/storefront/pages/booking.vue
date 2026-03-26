@@ -1,8 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/" back-label="Главная">
-        <template #heading>Бронирование</template>
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" current="Бронирование">
 
         <div class="booking-wrap">
           <!-- Module disabled -->

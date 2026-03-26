@@ -127,7 +127,7 @@ function onRadio(id: string) {
 
 .chip-price {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .visually-hidden {

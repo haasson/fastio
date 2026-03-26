@@ -158,7 +158,7 @@ const addonChips = computed(() =>
 }
 
 .combo-item-mod {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   @include text-xs;
 }
 </style>

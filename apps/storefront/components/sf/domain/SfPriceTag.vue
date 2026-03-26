@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 .price-prefix {
   font-weight: 400;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .price-main {

@@ -196,7 +196,7 @@ async function onDeleteClick() {
 
 .item-removed {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
 }
@@ -212,7 +212,7 @@ async function onDeleteClick() {
 
 .unit-price {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 

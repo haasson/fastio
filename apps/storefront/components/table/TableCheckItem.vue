@@ -56,7 +56,7 @@ const summary = computed(() => getItemSummary(props.item))
 }
 
 .qty {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .status-bar {

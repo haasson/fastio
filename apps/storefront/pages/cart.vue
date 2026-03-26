@@ -1,11 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/" back-label="Меню">
-        <template #heading>
-          Корзина<span v-if="cart.count" class="cart-count"> ({{ cart.count }})</span>
-        </template>
-
+      <StorePageLayout :breadcrumbs="[{ label: 'Меню', to: '/' }]" current="Корзина">
         <div v-if="!cart.restored" class="cart-loading">
           <FsSpinner size="large" />
         </div>

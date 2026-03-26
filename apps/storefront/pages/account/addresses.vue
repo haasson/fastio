@@ -1,8 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/" back-label="Главная">
-        <template #heading>Мои адреса</template>
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }, { label: 'Личный кабинет', to: '/account' }]" current="Мои адреса">
 
         <div class="addresses-root">
           <AccountCardsSkeleton

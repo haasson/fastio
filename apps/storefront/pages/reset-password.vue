@@ -1,8 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout back-to="/" back-label="Главная">
-        <template #heading>Новый пароль</template>
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" current="Новый пароль">
 
         <div class="reset-root">
           <FsForm v-if="!done" class="form" @submit="onSubmit">

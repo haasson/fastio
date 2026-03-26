@@ -1,11 +1,14 @@
 <template>
   <div class="page-layout-root">
     <div class="page-head">
-      <NuxtLink :to="backTo" class="back-link">
-        <ChevronLeft :size="18" />
-        {{ backLabel }}
-      </NuxtLink>
-      <FsHeading as="h3"><slot name="heading" /></FsHeading>
+      <nav class="breadcrumbs">
+        <template v-for="(crumb, i) in breadcrumbs" :key="i">
+          <NuxtLink :to="crumb.to" class="crumb">{{ crumb.label }}</NuxtLink>
+          <span class="dot" />
+        </template>
+        <span class="crumb-current">{{ current }}</span>
+      </nav>
+      <FsHeading as="h3" class="heading">{{ current }}</FsHeading>
     </div>
     <slot />
   </div>
@@ -13,12 +16,13 @@
 
 <script setup lang="ts">
 import { NuxtLink } from '#components'
-import { ChevronLeft } from 'lucide-vue-next'
 import { FsHeading } from '@fastio/public-ui'
 
+type Breadcrumb = { label: string; to: string }
+
 type Props = {
-  backTo: string
-  backLabel: string
+  breadcrumbs: Breadcrumb[]
+  current: string
 }
 
 defineProps<Props>()
@@ -42,17 +46,39 @@ defineProps<Props>()
   margin-bottom: 24px;
 }
 
-.back-link {
-  display: inline-flex;
+.breadcrumbs {
+  display: flex;
   align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crumb {
   @include text-caption;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   text-decoration: none;
   transition: color 0.15s;
 
   &:hover {
     color: var(--primary);
   }
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.crumb-current {
+  @include text-caption;
+  color: var(--color-text-muted);
+}
+
+.heading {
+  margin: 0;
 }
 </style>

@@ -33,8 +33,10 @@ const emit = defineEmits<{
 .fab-root {
   position: fixed;
   bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: var(--scrollbar-width, 0px);
+  margin-inline: auto;
+  width: fit-content;
   z-index: var(--z-sticky);
   @include flex-row(10px);
   padding: 14px 24px;
@@ -77,6 +79,6 @@ const emit = defineEmits<{
 .fab-enter-from,
 .fab-leave-to {
   opacity: 0;
-  transform: translateX(-50%) translateY(16px) scale(0.9);
+  transform: translateY(16px) scale(0.9);
 }
 </style>

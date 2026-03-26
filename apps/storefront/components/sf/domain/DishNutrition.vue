@@ -32,7 +32,7 @@ withDefaults(defineProps<Props>(), { size: 'sm' })
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 
   span {
     white-space: nowrap;
