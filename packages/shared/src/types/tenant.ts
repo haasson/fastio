@@ -203,5 +203,6 @@ export type Tenant = {
   kitchenUrgencyMinutes: number
   kitchenConfig: KitchenConfig
   orderNumberConfig: OrderNumberConfig | null
+  onboardingCompleted: boolean
   createdAt: string
 }

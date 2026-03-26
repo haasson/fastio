@@ -59,13 +59,12 @@
         />
       </header>
 
-      <main class="content" :class="{ 'content-gate': showBranchGate }">
-        <BranchSetupGate v-if="showBranchGate" />
-        <slot v-else />
+      <main class="content">
+        <slot />
       </main>
     </div>
 
-    <BusinessTypeModal :model-value="showOnboarding" />
+    <OnboardingWizard v-if="showOnboarding" />
   </div>
 </template>
 
@@ -84,8 +83,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
-import BranchSetupGate from '~/components/layout/BranchSetupGate.vue'
-import BusinessTypeModal from '~/components/onboarding/BusinessTypeModal.vue'
+import OnboardingWizard from '~/components/onboarding/OnboardingWizard.vue'
 import PastDueBanner from '~/components/layout/PastDueBanner.vue'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
@@ -125,9 +123,9 @@ useReservationAlertHandler()
 // Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
 requestNotificationPermission()
 
-const showBranchGate = computed(() => !tenantStore.loading && !branchStore.loading && !!tenantStore.tenant && !branchStore.hasBranches,
+const showOnboarding = computed(
+  () => !tenantStore.loading && !!tenantStore.tenant && !tenantStore.tenant.onboardingCompleted,
 )
-const showOnboarding = computed(() => !tenantStore.loading && !!tenantStore.tenant && tenantStore.tenant.businessType === null)
 
 const { menuLabel } = useTenantLabels()
 
@@ -411,10 +409,6 @@ const currentPageTitle = computed(() => {
   overflow-x: auto;
   padding: var(--content-padding);
 
-  &.content-gate {
-    display: flex;
-    padding: 0;
-  }
 }
 
 .overlay {

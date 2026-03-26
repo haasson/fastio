@@ -13,31 +13,16 @@
         name="name"
         label="Название *"
         placeholder="Центральный"
-        :rules="[{ type: 'required', message: 'Введите название' }]"
+        :rules="[validationRules.name.required]"
       />
 
       <UiColorPicker v-model="form.color" label="Цвет филиала" :presets="BRANCH_COLORS" />
 
-      <div class="address-field">
-        <UiInput
-          v-model="form.address"
-          label="Адрес"
-          placeholder="ул. Ленина, 1"
-          @input="onAddressInput"
-          @focus="showSuggestions = true"
-          @blur="hideSuggestionsDelayed"
-        />
-        <div v-if="showSuggestions && dadataSuggestions.length" class="suggestions-dropdown">
-          <button
-            v-for="(s, i) in dadataSuggestions"
-            :key="i"
-            class="suggestion-item"
-            @mousedown.prevent="pickSuggestion(s)"
-          >
-            {{ s.value }}
-          </button>
-        </div>
-      </div>
+      <AddressSuggestInput
+        v-model="form.address"
+        placeholder="ул. Ленина, 1"
+        @pick="onAddressPick"
+      />
 
       <!-- Координаты на миникарте -->
       <div class="coords-block">
@@ -64,64 +49,66 @@
         </UiText>
         <UiText v-else size="tiny" class="coords-hint">Кликните на карту, чтобы поставить точку</UiText>
       </div>
-      <UiInput
-        v-model="form.phone"
-        label="Телефон"
-        placeholder="+7 (900) 000-00-00"
-        :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
-      />
-
-      <UiInput
-        v-model="form.orderNumberPrefix"
-        label="Префикс номера заказа"
-        placeholder="MSK"
-        :disabled="prefixLocked"
-        :hint="prefixLocked ? 'Включите нумерацию «По филиалам» в настройках' : undefined"
-      />
-
-      <div class="active-row">
-        <UiText size="small">Филиал активен</UiText>
-        <UiSwitch v-model="form.isActive" />
-      </div>
-
-      <div class="override-block">
-        <UiSectionHeader title="Часы работы">
-          <template #right>
-            <div class="override-toggle">
-              <UiText size="tiny">Своё расписание</UiText>
-              <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
-            </div>
-          </template>
-        </UiSectionHeader>
+      <template v-if="hasMultipleBranches">
         <UiInput
-          v-if="useCustomHours"
-          v-model="form.workingHours"
-          label="Режим работы"
-          type="textarea"
-          :rows="2"
-          placeholder="Пн–Пт 10:00–22:00, Сб–Вс 11:00–21:00"
+          v-model="form.phone"
+          label="Телефон"
+          placeholder="+7 (900) 000-00-00"
+          :rules="[validationRules.phone.format]"
         />
-        <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
-      </div>
 
-      <div class="override-block">
-        <UiSectionHeader title="Уведомления">
-          <template #right>
-            <div class="override-toggle">
-              <UiText size="tiny">Свои уведомления</UiText>
-              <UiSwitch :model-value="useCustomNotifications" @update:model-value="toggleCustomNotifications" />
-            </div>
-          </template>
-        </UiSectionHeader>
-        <template v-if="useCustomNotifications && form.notifications">
+        <UiInput
+          v-model="form.orderNumberPrefix"
+          label="Префикс номера заказа"
+          placeholder="MSK"
+          :disabled="prefixLocked"
+          :hint="prefixLocked ? 'Включите нумерацию «По филиалам» в настройках' : undefined"
+        />
+
+        <div class="active-row">
+          <UiText size="small">Филиал активен</UiText>
+          <UiSwitch v-model="form.isActive" />
+        </div>
+
+        <div class="override-block">
+          <UiSectionHeader title="Часы работы">
+            <template #right>
+              <div class="override-toggle">
+                <UiText size="tiny">Своё расписание</UiText>
+                <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
+              </div>
+            </template>
+          </UiSectionHeader>
           <UiInput
-            v-model="form.notifications.telegramChatId"
-            label="Telegram Chat ID"
-            placeholder="-100123456789"
+            v-if="useCustomHours"
+            v-model="form.workingHours"
+            label="Режим работы"
+            type="textarea"
+            :rows="2"
+            placeholder="Пн–Пт 10:00–22:00, Сб–Вс 11:00–21:00"
           />
-        </template>
-        <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
-      </div>
+          <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
+        </div>
+
+        <div class="override-block">
+          <UiSectionHeader title="Уведомления">
+            <template #right>
+              <div class="override-toggle">
+                <UiText size="tiny">Свои уведомления</UiText>
+                <UiSwitch :model-value="useCustomNotifications" @update:model-value="toggleCustomNotifications" />
+              </div>
+            </template>
+          </UiSectionHeader>
+          <template v-if="useCustomNotifications && form.notifications">
+            <UiInput
+              v-model="form.notifications.telegramChatId"
+              label="Telegram Chat ID"
+              placeholder="-100123456789"
+            />
+          </template>
+          <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
+        </div>
+      </template>
     </UiForm>
   </UiDrawer>
 </template>
@@ -143,28 +130,20 @@ import type { YandexMapListenerSettings } from 'vue-yandex-maps'
 
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import { useBranchStore } from '~/stores/branch'
+import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import { validationRules } from '@fastio/kit'
 import UiColorPicker from '~/components/ui/ColorPicker.vue'
+import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 
 const BRANCH_COLORS = ['#FF5500', '#FFA500', '#00C853', '#2979FF', '#AA00FF', '#E91E63', '#795548']
 
 const tenantStore = useTenantStore()
+const branchStore = useBranchStore()
 const prefixLocked = computed(() => tenantStore.tenant?.orderNumberConfig?.scope !== 'per_branch')
+const hasMultipleBranches = computed(() => branchStore.branches.length > 1)
 
-// ─── DaData address suggestions ─────────────────────────────────────────────
-
-const { suggestions: dadataSuggestions, search: searchDadata, clear: clearDadata, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
-
-const onAddressInput = () => {
-  showSuggestions.value = true
-  searchDadata(form.address ?? '')
-}
-
-const pickSuggestion = (s: DadataSuggestion) => {
-  form.address = s.value
-  showSuggestions.value = false
-  clearDadata()
-
+const onAddressPick = (s: DadataSuggestion) => {
   if (s.data.geo_lat && s.data.geo_lon) {
     form.latitude = parseFloat(s.data.geo_lat)
     form.longitude = parseFloat(s.data.geo_lon)
@@ -300,41 +279,6 @@ const onConfirm = async () => {
 
 .inherit-hint {
   color: var(--color-text-tertiary);
-}
-
-.address-field {
-  position: relative;
-}
-
-.suggestions-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  margin-top: 4px;
-  overflow: hidden;
-}
-
-.suggestion-item {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  background: none;
-  text-align: left;
-  font-size: 13px;
-  color: var(--color-text);
-  cursor: pointer;
-  transition: background 0.1s;
-
-  &:hover { background: var(--color-bg-hover); }
-
-  & + & { border-top: 1px solid var(--color-border-light); }
 }
 
 .coords-block {

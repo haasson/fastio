@@ -49,6 +49,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     kitchenUrgencyMinutes: row.kitchen_urgency_minutes ?? 15,
     kitchenConfig: parseKitchenConfig(row.kitchen_config),
     orderNumberConfig: (row.order_number_config as OrderNumberConfig | null) ?? null,
+    onboardingCompleted: row.onboarding_completed,
     createdAt: row.created_at,
   }
 }
@@ -75,6 +76,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   kitchen_config: data.kitchenConfig,
   kitchen_urgency_minutes: data.kitchenUrgencyMinutes,
   order_number_config: data.orderNumberConfig,
+  onboarding_completed: data.onboardingCompleted,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {

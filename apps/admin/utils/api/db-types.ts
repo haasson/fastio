@@ -48,6 +48,7 @@ export type TenantRow = {
   kitchen_urgency_minutes: number
   kitchen_config: KitchenConfig
   order_number_config: OrderNumberConfig | null
+  onboarding_completed: boolean
   created_at: string
 }
 
