@@ -15,7 +15,7 @@ export const mapCombo = (raw: Record<string, unknown>): Combo => {
     description: row.description,
     price: row.price,
     photos: row.photos ?? [],
-    tags: row.tags ?? [],
+    tags: [],
     active: row.active,
     order: row.sort_order,
   }
@@ -52,7 +52,6 @@ export const combosApi = {
         description: data.description,
         price: data.price,
         photos: data.photos ?? [],
-        tags: data.tags ?? [],
         active: data.active,
         sort_order: maxOrder + 1,
       }).select().single(),
@@ -85,7 +84,6 @@ export const combosApi = {
     if (data.description !== undefined) updatePayload.description = data.description
     if (data.price !== undefined) updatePayload.price = data.price
     if (data.photos !== undefined) updatePayload.photos = data.photos
-    if (data.tags !== undefined) updatePayload.tags = data.tags
     if (data.active !== undefined) updatePayload.active = data.active
 
     const result = await query(sb.from('combos').update(updatePayload).eq('id', id).select().single())

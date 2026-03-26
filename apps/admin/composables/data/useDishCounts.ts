@@ -1,6 +1,5 @@
 import { ref, watch, type Ref } from 'vue'
 import type { Category } from '@fastio/shared'
-import { VIRTUAL_CATEGORY_TYPES } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 const useDishCounts = (tenantId: Ref<string>, categories?: Ref<Category[]>) => {
@@ -12,14 +11,14 @@ const useDishCounts = (tenantId: Ref<string>, categories?: Ref<Category[]>) => {
     const [dishCounts, comboCounts, tagCounts] = await Promise.all([
       api.dishes.countsByCategory(tenantId.value),
       api.combos.countsByCategory(tenantId.value),
-      api.dishes.countsByTag(tenantId.value),
+      api.tags.countsByTag(tenantId.value),
     ])
 
     const result = { ...dishCounts, ...comboCounts }
 
     for (const cat of categories?.value ?? []) {
-      if (VIRTUAL_CATEGORY_TYPES.includes(cat.type as 'new' | 'hit')) {
-        result[cat.id] = tagCounts[cat.type] ?? 0
+      if (cat.tagId) {
+        result[cat.id] = tagCounts[cat.tagId] ?? 0
       }
     }
 

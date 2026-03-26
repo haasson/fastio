@@ -1,18 +1,17 @@
 import { computed, ref, h, type Ref } from 'vue'
 import { UiPhotoPlaceholder, UiText, UiTag, UiSwitch } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
-import type { Dish, DishTag } from '@fastio/shared'
+import type { Dish, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import { tagOptions } from '~/config/dish-tags'
+import { useTagDisplay } from '~/composables/ui/useTagDisplay'
 
 type Actions = {
   onEdit: (dish: Dish) => void
   onDelete: (id: string) => void
   onToggleActive: (id: string, active: boolean) => void
+  tags: Ref<DishTagDefinition[]>
 }
-
-const TAG_FILTER_OPTIONS = Object.entries(tagOptions).map(([value, label]) => ({ label, value }))
 
 export function useDishTable(dishes: Ref<Dish[]>, actions: Actions) {
   const searchQuery = ref('')
@@ -24,6 +23,11 @@ export function useDishTable(dishes: Ref<Dish[]>, actions: Actions) {
 
     return dishes.value.filter((d) => d.name.toLowerCase().includes(q))
   })
+
+  const { tagName, tagStyleString } = useTagDisplay(actions.tags)
+
+  const tagFilterOptions = computed(() => actions.tags.value.map((t) => ({ label: t.name, value: t.id })),
+  )
 
   const tableColumns = computed<DataTableColumns<Dish>>(() => [
     {
@@ -51,10 +55,11 @@ export function useDishTable(dishes: Ref<Dish[]>, actions: Actions) {
       title: 'Теги',
       key: 'tags',
       width: 200,
-      filterOptions: TAG_FILTER_OPTIONS,
-      filter: (value, row) => row.tags.includes(value as DishTag),
+      filterOptions: tagFilterOptions.value,
+      filter: (value, row) => row.tags.includes(value as string),
       render: (row) => h('div', { style: 'display:flex;gap:4px;flex-wrap:wrap' },
-        row.tags.map((tag) => h(UiTag, { key: tag, size: 'tiny', type: 'primary', empty: true, round: true }, () => tagOptions[tag])),
+        row.tags.map((tagId) => h(UiTag, { key: tagId, size: 'tiny', empty: true, round: true, style: tagStyleString(tagId) }, () => tagName(tagId)),
+        ),
       ),
     },
     {

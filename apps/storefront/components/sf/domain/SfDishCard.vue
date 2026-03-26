@@ -5,15 +5,20 @@
       <div v-else class="dish-placeholder">
         <UtensilsCrossed :size="32" />
       </div>
-      <div v-if="dish.tags.length" class="dish-tags">
+      <div v-if="resolvedTags.length" class="dish-tags">
         <span
-          v-for="tag in dish.tags"
-          :key="tag"
+          v-for="rt in resolvedTags"
+          :key="rt.id"
           class="tag"
-          :style="{ color: getDishTagConfig(tag)?.color, background: getDishTagConfig(tag)?.background }"
+          :style="{ color: rt.preset?.color, background: rt.preset?.background }"
         >
-          <component v-if="getTagIcon(tag)" :is="getTagIcon(tag)" :size="13" :stroke-width="2.5" />
-          {{ getDishTagConfig(tag)?.label ?? tag }}
+          <component
+            v-if="rt.iconComponent"
+            :is="rt.iconComponent"
+            :size="13"
+            :stroke-width="2.5"
+          />
+          {{ rt.name }}
         </span>
       </div>
     </template>
@@ -40,13 +45,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
-import { Plus, UtensilsCrossed, Flame, Leaf, Sparkles, Star, Zap, type LucideIcon } from 'lucide-vue-next'
-import { getDishTagConfig, type Dish, type Combo } from '@fastio/shared'
+import { computed } from 'vue'
+import { Plus, UtensilsCrossed } from 'lucide-vue-next'
+import type { Dish, Combo } from '@fastio/shared'
+import { getTagColorPreset } from '@fastio/shared'
 import { FsCard, FsText, FsButton } from '@fastio/public-ui'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { useCartStore, type CartItem } from '~/stores/cart'
+import { useMenuStore } from '~/stores/menu'
+import { resolveTagIcon } from '~/utils/tag-icons'
 
 type Props = {
   dish: Dish | Combo
@@ -59,6 +67,19 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), { currency: '₽' })
 const emit = defineEmits<{ add: []; cardClick: [] }>()
 const cart = useCartStore()
+const menuStore = useMenuStore()
+
+const resolvedTags = computed(() =>
+  props.dish.tags
+    .map((tagId) => {
+      const def = menuStore.tagDefinitions.find((t) => t.id === tagId)
+      if (!def) return null
+      const preset = getTagColorPreset(def.color)
+      const iconComponent = resolveTagIcon(def.icon)
+      return { id: def.id, name: def.name, preset, iconComponent }
+    })
+    .filter(Boolean) as { id: string; name: string; preset: { color: string; background: string } | undefined; iconComponent: unknown }[],
+)
 
 const itemPred = computed(() =>
   props.comboId
@@ -75,13 +96,6 @@ const firstCartIndex = computed(() =>
 
 function onIncrement() { if (firstCartIndex.value !== -1) cart.increment(firstCartIndex.value) }
 function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCartIndex.value) }
-
-const iconMap: Record<string, LucideIcon> = { Flame, Leaf, Sparkles, Star, Zap }
-
-function getTagIcon(tag: string): Component | null {
-  const config = getDishTagConfig(tag)
-  return config ? (iconMap[config.icon] ?? null) : null
-}
 </script>
 
 <style scoped lang="scss">

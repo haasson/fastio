@@ -4,13 +4,15 @@
       v-model="selectedCategoryId"
       :tenant-id="tenantId"
       :dish-counts="dishCounts"
+      :tags="tags"
       @categories-loaded="onCategoriesLoaded"
     />
     <MenuDishList
-      v-if="selectedCategory?.type === 'regular'"
+      v-if="selectedCategory?.type === 'regular' && !selectedCategory.tagId"
       :tenant-id="tenantId"
       :category-id="selectedCategoryId"
       :categories="loadedCategories"
+      :tags="tags"
       @dishes-changed="refreshDishCounts"
     />
     <MenuComboList
@@ -18,25 +20,23 @@
       :tenant-id="tenantId"
       :category-id="selectedCategoryId!"
       :categories="loadedCategories"
+      :tags="tags"
       @combos-changed="refreshDishCounts"
     />
     <MenuVirtualDishList
-      v-else-if="selectedCategory?.type === 'new'"
+      v-else-if="selectedCategory?.tagId"
       :tenant-id="tenantId"
-      tag="new"
+      :tag-id="selectedCategory.tagId"
+      :category-name="selectedCategory.name"
       :categories="loadedCategories"
-    />
-    <MenuVirtualDishList
-      v-else-if="selectedCategory?.type === 'hit'"
-      :tenant-id="tenantId"
-      tag="hit"
-      :categories="loadedCategories"
+      :all-tags="tags"
     />
     <MenuDishList
       v-else-if="!selectedCategory"
       :tenant-id="tenantId"
       :category-id="null"
       :categories="loadedCategories"
+      :tags="tags"
       @dishes-changed="refreshDishCounts"
     />
   </template>
@@ -47,6 +47,7 @@ import { ref, computed, shallowRef } from 'vue'
 import type { Category } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import useDishCounts from '~/composables/data/useDishCounts'
+import { useTags } from '~/composables/data/useTags'
 import MenuCategoryList from '~/components/menu/CategoryList.vue'
 import MenuDishList from '~/components/menu/DishList.vue'
 import MenuComboList from '~/components/menu/ComboList.vue'
@@ -57,6 +58,8 @@ const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
 const selectedCategoryId = ref<string | null>(null)
 const loadedCategories = shallowRef<Category[]>([])
+
+const { tags } = useTags(tenantId)
 
 const { counts: dishCounts, refresh: refreshDishCounts } = useDishCounts(tenantId, loadedCategories)
 

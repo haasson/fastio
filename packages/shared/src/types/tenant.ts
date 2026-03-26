@@ -86,7 +86,7 @@ export type SiteLayout = {
       autoplay: boolean
       autoplayInterval: number
     }
-    menu: { enabled: boolean; defaultView: 'categories' | 'dishes' }
+    menu: { enabled: boolean; defaultView: 'categories' | 'dishes'; tagDisplayMode: 'text' | 'icon' | 'both' }
     gallery: { enabled: boolean; galleryIds: string[] }
     reviews: { enabled: boolean }
     delivery: { enabled: boolean }
@@ -94,7 +94,7 @@ export type SiteLayout = {
   sectionsOrder: SectionKey[]
   pages: NavPageKey[]
   pageSettings: {
-    menu: { defaultView: 'categories' | 'dishes' }
+    menu: { defaultView: 'categories' | 'dishes'; tagDisplayMode: 'text' | 'icon' | 'both' }
     delivery: { showMap: boolean; descriptionMode: 'auto' | 'manual' }
     gallery: { galleryIds: string[] }
   }

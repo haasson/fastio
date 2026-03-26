@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
-import type { Category, Dish, Combo, DishModifierGroup } from '@fastio/shared'
+import type { Category, Dish, Combo, DishModifierGroup, DishTagDefinition } from '@fastio/shared'
 
 export type ClientAddon = {
   id: string
@@ -18,6 +18,8 @@ type MenuData = {
   dishModifiers: Record<string, DishModifierGroup[]>
   dishAddons: Record<string, ClientAddon[]>
   comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]>
+  tagDefinitions: DishTagDefinition[]
+  tagDisplayMode: 'text' | 'icon' | 'both'
 }
 
 export const useMenuStore = defineStore('menu', () => {
@@ -29,6 +31,8 @@ export const useMenuStore = defineStore('menu', () => {
   const dishModifiers = computed(() => menu.value?.dishModifiers ?? {})
   const dishAddons = computed(() => menu.value?.dishAddons ?? {})
   const comboItems = computed(() => menu.value?.comboItems ?? {})
+  const tagDefinitions = computed(() => menu.value?.tagDefinitions ?? [])
+  const tagDisplayMode = computed(() => menu.value?.tagDisplayMode ?? 'both')
 
   const dishesByCategory = computed<Record<string, Dish[]>>(() => {
     const byId = allDishes.value.reduce<Record<string, Dish[]>>((acc, dish) => {
@@ -36,12 +40,10 @@ export const useMenuStore = defineStore('menu', () => {
       return acc
     }, {})
 
-    // Virtual categories: filled by tags, not categoryId
+    // Categories with tagId: fill with dishes that have that tag
     for (const cat of allCategories.value) {
-      if (cat.type === 'new') {
-        byId[cat.id] = allDishes.value.filter((d) => d.tags.includes('new'))
-      } else if (cat.type === 'hit') {
-        byId[cat.id] = allDishes.value.filter((d) => d.tags.includes('hit') || d.tags.includes('popular'))
+      if (cat.tagId) {
+        byId[cat.id] = allDishes.value.filter((d) => d.tags.includes(cat.tagId!))
       }
     }
 
@@ -62,5 +64,5 @@ export const useMenuStore = defineStore('menu', () => {
     }),
   )
 
-  return { allDishes, allCombos, dishModifiers, dishAddons, comboItems, dishesByCategory, combosByCategory, visibleCategories }
+  return { allDishes, allCombos, dishModifiers, dishAddons, comboItems, tagDefinitions, tagDisplayMode, dishesByCategory, combosByCategory, visibleCategories }
 })

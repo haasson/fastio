@@ -14,7 +14,6 @@ import type {
   OrderItemAddon,
   DishIngredient,
   DishNutrition,
-  DishTag,
   CategoryType,
   KitchenQueueStatus,
   KitchenConfig,
@@ -81,6 +80,7 @@ export type CategoryRow = {
   tenant_id: string
   name: string
   type: CategoryType
+  tag_id: string | null
   sort_order: number
   active: boolean
   photo_url: string | null
@@ -96,7 +96,6 @@ export type ComboRow = {
   description: string
   price: number
   photos: string[]
-  tags: DishTag[]
   active: boolean
   sort_order: number
   created_at: string
@@ -120,7 +119,6 @@ export type DishRow = {
   photos: string[]
   ingredients: DishIngredient[]
   nutrition: DishNutrition | null
-  tags: DishTag[]
   active: boolean
   sort_order: number
   requires_kitchen: boolean

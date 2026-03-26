@@ -21,6 +21,7 @@ const tabs = computed(() => [
   { value: 'dishes', label: 'Блюда' },
   ...(canManageMenu.value && modules.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы' }] : []),
   ...(canManageMenu.value && modules.addons.value.enabled ? [{ value: 'addons', label: 'Добавки' }] : []),
+  ...(canManageMenu.value ? [{ value: 'tags', label: 'Теги' }] : []),
 ])
 
 const route = useRoute()

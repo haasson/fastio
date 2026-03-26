@@ -52,6 +52,7 @@ export function mapCategory(row: Record<string, unknown>): Category {
     tenantId: row.tenant_id as string,
     name: row.name as string,
     type: (row.type as CategoryType) ?? 'regular',
+    tagId: (row.tag_id as string) ?? null,
     order: row.sort_order as number,
     active: row.active as boolean,
     photoUrl: row.photo_url as string | null,
@@ -68,7 +69,7 @@ export function mapCombo(row: Record<string, unknown>): Combo {
     description: row.description as string,
     price: row.price as number,
     photos: row.photos as string[],
-    tags: row.tags as Combo['tags'],
+    tags: [],
     active: row.active as boolean,
     order: row.sort_order as number,
   }
@@ -85,7 +86,7 @@ export function mapDish(row: Record<string, unknown>): Dish {
     photos: row.photos as string[],
     ingredients: row.ingredients as Dish['ingredients'],
     nutrition: row.nutrition as Dish['nutrition'],
-    tags: row.tags as Dish['tags'],
+    tags: [],
     active: row.active as boolean,
     order: row.sort_order as number,
   }

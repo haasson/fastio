@@ -20,7 +20,7 @@ export const defaultSiteLayout = (): SiteLayout => ({
       gradientId: 'diag-bp',
     },
     banners: { enabled: false, displayMode: 'single', autoplay: false, autoplayInterval: 4 },
-    menu: { enabled: true, defaultView: 'categories' },
+    menu: { enabled: true, defaultView: 'categories', tagDisplayMode: 'both' },
     gallery: { enabled: false, galleryIds: [] },
     reviews: { enabled: false },
     delivery: { enabled: false },

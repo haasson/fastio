@@ -33,7 +33,7 @@
           :combo-price="form.price"
         />
 
-        <TagsSection v-model="form.tags" />
+        <TagsSection v-model="form.tags" :available-tags="tags" />
 
         <SettingsSection
           ref="settingsRef"
@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { UiDrawer, UiForm, UiCollapse } from '@fastio/ui'
-import type { Combo, DishTag, Category, ComboItemInput } from '@fastio/shared'
+import type { Combo, Category, ComboItemInput, DishTagDefinition } from '@fastio/shared'
 import type { ComboFormData } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
@@ -65,6 +65,7 @@ const props = defineProps<{
   tenantId: string
   categories: Category[]
   combo: Combo | null
+  tags: DishTagDefinition[]
   addCombo: (data: ComboFormData) => Promise<Combo | null | void>
   updateCombo: (id: string, data: Partial<ComboFormData>) => Promise<void>
 }>()
@@ -94,17 +95,19 @@ const defaultForm = () => ({
   name: '',
   description: '',
   price: null as number | null,
-  tags: [] as DishTag[],
+  tags: [] as string[],
   active: true,
   items: [] as ComboItemInput[],
 })
 
 const form = reactive(defaultForm())
+let loadId = 0
 
 watch(
   () => props.modelValue,
   async (val) => {
     if (!val) return
+    const currentLoadId = ++loadId
 
     refreshKey.value++
     pendingPhotoFile.value = null
@@ -116,9 +119,16 @@ watch(
       form.name = props.combo.name
       form.description = props.combo.description
       form.price = props.combo.price
-      form.tags = [...props.combo.tags]
+
+      const [tags, items] = await Promise.all([
+        api.tags.getComboTagIds(props.combo.id),
+        api.combos.getItems(props.combo.id),
+      ])
+
+      if (currentLoadId !== loadId) return
+      form.tags = tags
       form.active = props.combo.active
-      form.items = await api.combos.getItems(props.combo.id)
+      form.items = items
     } else {
       originalPhotoUrl.value = null
       currentPhotoUrl.value = null
@@ -156,11 +166,13 @@ const onConfirm = async () => {
 
     if (props.combo) {
       await props.updateCombo(props.combo.id, data)
+      await api.tags.setComboTags(props.combo.id, props.tenantId, form.tags)
       await api.combos.setBranchSettings(props.combo.id, settingsRef.value?.getSettings() ?? [])
     } else {
       const created = await props.addCombo(data)
 
       if (created && typeof created === 'object' && 'id' in created) {
+        await api.tags.setComboTags((created as { id: string }).id, props.tenantId, form.tags)
         await api.combos.setBranchSettings((created as { id: string }).id, settingsRef.value?.getSettings() ?? [])
       }
     }

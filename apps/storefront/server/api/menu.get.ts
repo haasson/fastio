@@ -1,4 +1,4 @@
-import type { DishModifierGroup, DishModifierOption, Tenant } from '@fastio/shared'
+import type { DishModifierGroup, DishModifierOption, DishTagDefinition, Tenant } from '@fastio/shared'
 import { getServerSupabase, mapCategory, mapCombo, mapDish } from '../utils/supabase'
 
 type GroupBindingRow = {
@@ -208,6 +208,47 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Load tag definitions and assignments
+  const [{ data: tagRows }, { data: dishTagRows }, { data: comboTagRows }] = await Promise.all([
+    supabase.from('dish_tags').select('*').eq('tenant_id', tenantId).order('sort_order'),
+    supabase.from('dish_tag_assignments').select('dish_id, tag_id').eq('tenant_id', tenantId),
+    supabase.from('combo_tag_assignments').select('combo_id, tag_id').eq('tenant_id', tenantId),
+  ])
+
+  const tagDefinitions: DishTagDefinition[] = (tagRows ?? []).map((r: Record<string, unknown>) => ({
+    id: r.id as string,
+    tenantId: r.tenant_id as string,
+    name: r.name as string,
+    icon: r.icon as string,
+    color: r.color as string,
+    sortOrder: r.sort_order as number,
+  }))
+
+  // Attach tag IDs to dishes and combos
+  const dishTagMap: Record<string, string[]> = {}
+  for (const row of dishTagRows ?? []) {
+    const dishId = (row as Record<string, unknown>).dish_id as string
+    const tagId = (row as Record<string, unknown>).tag_id as string
+    ;(dishTagMap[dishId] ??= []).push(tagId)
+  }
+  for (const dish of dishes) {
+    dish.tags = dishTagMap[dish.id] ?? []
+  }
+
+  const comboTagMap: Record<string, string[]> = {}
+  for (const row of comboTagRows ?? []) {
+    const comboId = (row as Record<string, unknown>).combo_id as string
+    const tagId = (row as Record<string, unknown>).tag_id as string
+    ;(comboTagMap[comboId] ??= []).push(tagId)
+  }
+  for (const combo of combos) {
+    combo.tags = comboTagMap[combo.id] ?? []
+  }
+
+  // Get tagDisplayMode from tenant layout
+  const tenant = event.context.tenant as Tenant | undefined
+  const tagDisplayMode = tenant?.siteLayout?.sections?.menu?.tagDisplayMode ?? 'both'
+
   return {
     categories: (categoriesData ?? []).map(mapCategory),
     dishes,
@@ -215,5 +256,7 @@ export default defineEventHandler(async (event) => {
     dishModifiers,
     dishAddons,
     comboItems,
+    tagDefinitions,
+    tagDisplayMode,
   }
 })

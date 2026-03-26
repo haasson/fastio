@@ -28,7 +28,7 @@
       />
 
       <UiCollapse :expanded-names="[]" class="sections">
-        <TagsSection v-model="form.tags" />
+        <TagsSection v-model="form.tags" :available-tags="tags" />
 
         <DishModifiersSection
           ref="modifiersRef"
@@ -71,8 +71,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, toRefs, watch } from 'vue'
 import { UiDrawer, UiForm, UiCollapse } from '@fastio/ui'
-import type { Dish, DishTag, Category } from '@fastio/shared'
+import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import type { DishFormData } from '~/utils/api/dishes'
+import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
 import { useDishSave } from '~/composables/data/useDishSave'
 import { useAddons } from '~/composables/data/useAddons'
@@ -90,6 +91,7 @@ const props = defineProps<{
   categoryId: string
   categories: Category[]
   dish: Dish | null
+  tags: DishTagDefinition[]
   addDish?: (data: DishFormData) => Promise<Dish | null | void>
   updateDish: (id: string, data: Partial<DishFormData>) => Promise<void>
 }>()
@@ -100,6 +102,7 @@ const emit = defineEmits<{
 }>()
 
 const { tenantId: tenantIdRef } = toRefs(props)
+const db = useDatabase()
 const { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()
 const { addons: allAddons, loading: addonsLoading, presets, loadPresets } = useAddons(tenantIdRef)
@@ -131,7 +134,7 @@ const defaultForm = () => ({
   name: '',
   description: '',
   price: null as number | null,
-  tags: [] as DishTag[],
+  tags: [] as string[],
   active: true,
   requiresKitchen: true,
   order: 0,
@@ -158,10 +161,13 @@ watch(
   { immediate: true },
 )
 
+let loadId = 0
+
 watch(
   () => props.modelValue,
   async (val) => {
     if (!val) return
+    const currentLoadId = ++loadId
 
     refreshKey.value++
     originalPhotoUrl.value = props.dish?.photos[0] ?? null
@@ -172,7 +178,14 @@ watch(
     ingredientsRef.value?.init(props.dish?.ingredients ?? [])
     nutritionRef.value?.init(props.dish?.nutrition ?? null)
 
-    if (!props.dish) Object.assign(form, defaultForm())
+    if (props.dish) {
+      const tags = await db.tags.getAssignedTagIds(props.dish.id)
+
+      if (currentLoadId !== loadId) return
+      form.tags = tags
+    } else {
+      Object.assign(form, defaultForm())
+    }
 
     await loadPresets()
   },
@@ -203,6 +216,7 @@ const onConfirm = async () => {
 
     if (props.dish) {
       await props.updateDish(props.dish.id, data)
+      await db.tags.setDishTags(props.dish.id, props.tenantId, form.tags)
       await saveBranchPrices(props.dish.id, (settingsRef.value?.getSettings() ?? []).map((s) => ({ ...s, dishId: props.dish!.id })))
       await saveDishModifiers(props.dish.id, modifiersRef.value?.getModifiers() ?? [])
       await saveDishAddons(props.dish.id, addonsRef.value?.getAddonIds() ?? [])
@@ -210,6 +224,8 @@ const onConfirm = async () => {
       const newDish = await props.addDish(data)
 
       if (newDish) {
+        await db.tags.setDishTags(newDish.id, props.tenantId, form.tags)
+
         const branchPrices = (settingsRef.value?.getSettings() ?? []).map((s) => ({ ...s, dishId: newDish.id }))
 
         if (branchPrices.length > 0) await saveBranchPrices(newDish.id, branchPrices)

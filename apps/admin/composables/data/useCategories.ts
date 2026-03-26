@@ -15,7 +15,7 @@ export const useCategories = (tenantId: Ref<string>) => {
     mapper: mapCategory,
   })
 
-  const add = async (name: string, extra?: { photoUrl?: string | null; useFirstDishPhoto?: boolean; color?: string | null; type?: CategoryType }) => {
+  const add = async (name: string, extra?: { photoUrl?: string | null; useFirstDishPhoto?: boolean; color?: string | null; type?: CategoryType; tagId?: string | null }) => {
     if (!tenantId.value) return
     const cat = await api.categories.add(tenantId.value, { name, order: categories.value.length, ...extra })
 

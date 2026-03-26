@@ -70,13 +70,13 @@
                       <UiSpace :size="4" align="center">
                         <span class="dish-price">{{ formatPrice(dish.price) }}</span>
                         <UiTag
-                          v-for="tag in dish.tags"
-                          :key="tag"
+                          v-for="tagId in dish.tags"
+                          :key="tagId"
                           size="tiny"
-                          type="primary"
                           empty
                           round
-                        >{{ tagOptions[tag] }}</UiTag>
+                          :style="tagStyle(tagId)"
+                        >{{ tagName(tagId) }}</UiTag>
                       </UiSpace>
                       <div class="card-actions">
                         <UiSwitch
@@ -149,6 +149,7 @@
       :category-id="categoryId"
       :categories="props.categories"
       :dish="editingDish"
+      :tags="props.tags"
       :add-dish="addDish"
       :update-dish="updateDish"
       @saved="closeDishModal"
@@ -157,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue'
+import { toRefs, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
 import {
@@ -165,19 +166,20 @@ import {
   UiPhotoPlaceholder, UiSectionHeader, UiSegmentedControl, UiSkeleton,
   UiSpace, UiSwitch, UiTag,
 } from '@fastio/ui'
-import type { Dish, Category } from '@fastio/shared'
+import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDishes } from '~/composables/data/useDishes'
 import { useDishTable } from '~/composables/ui/useDishTable'
 import { useItemManager } from '~/composables/ui/useItemManager'
-import { tagOptions } from '~/config/dish-tags'
+import { useTagDisplay } from '~/composables/ui/useTagDisplay'
 
 const props = defineProps<{
   tenantId: string
   categoryId: string | null
   categories: Category[]
+  tags: DishTagDefinition[]
 }>()
 
 const emit = defineEmits<{
@@ -224,7 +226,10 @@ const { searchQuery, filteredDishes, tableColumns } = useDishTable(dishes, {
   onEdit: openDishModal,
   onDelete: confirmDeleteDish,
   onToggleActive: toggleActive,
+  tags: computed(() => props.tags),
 })
+
+const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 </script>
 
 <style scoped lang="scss">

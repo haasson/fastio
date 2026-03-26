@@ -1,16 +1,19 @@
-export type DishTag = 'spicy' | 'vegetarian' | 'vegan' | 'new' | 'popular' | 'hit'
+export type CategoryType = 'regular' | 'combo'
+export type SpecialCategoryType = 'combo'
 
-export type CategoryType = 'regular' | 'combo' | 'new' | 'hit'
-export type SpecialCategoryType = Exclude<CategoryType, 'regular'>
-export type VirtualCategoryType = 'new' | 'hit'
-
-export const SPECIAL_CATEGORY_TYPES: SpecialCategoryType[] = ['combo', 'new', 'hit']
-export const VIRTUAL_CATEGORY_TYPES: VirtualCategoryType[] = ['new', 'hit']
+export const SPECIAL_CATEGORY_TYPES: SpecialCategoryType[] = ['combo']
 
 export const CATEGORY_TYPE_LABELS: Record<SpecialCategoryType, string> = {
   combo: 'Комбо',
-  new: 'Новинки',
-  hit: 'Популярное',
+}
+
+export type DishTagDefinition = {
+  id: string
+  tenantId: string
+  name: string
+  icon: string
+  color: string
+  sortOrder: number
 }
 
 export type DishNutrition = {
@@ -31,13 +34,14 @@ export type Category = {
   tenantId: string
   name: string
   type: CategoryType
+  tagId: string | null
   order: number
   active: boolean
   photoUrl: string | null
   useFirstDishPhoto: boolean
 }
 
-export type CategoryData = Partial<Pick<Category, 'name' | 'active' | 'order' | 'photoUrl' | 'useFirstDishPhoto'>>
+export type CategoryData = Partial<Pick<Category, 'name' | 'active' | 'order' | 'photoUrl' | 'useFirstDishPhoto' | 'tagId'>>
 
 export type Dish = {
   id: string
@@ -49,7 +53,7 @@ export type Dish = {
   photos: string[]
   ingredients: DishIngredient[]
   nutrition: DishNutrition | null
-  tags: DishTag[]
+  tags: string[]
   active: boolean
   order: number
   requiresKitchen: boolean
@@ -75,7 +79,7 @@ export type Combo = {
   description: string
   price: number
   photos: string[]
-  tags: DishTag[]
+  tags: string[]
   active: boolean
   order: number
 }
@@ -85,7 +89,7 @@ export type ComboFormData = {
   description: string
   price: number
   photos: string[]
-  tags: DishTag[]
+  tags: string[]
   active: boolean
   items: ComboItemInput[]
 }

@@ -1,9 +1,9 @@
 <template>
   <main class="virtual-root">
-    <UiSectionHeader :title="sectionTitle">
+    <UiSectionHeader :title="categoryName">
       <template #right>
         <UiAlert type="info" class="hint-banner">
-          {{ hintText }}
+          Блюда с тегом «{{ tagName }}»
         </UiAlert>
       </template>
     </UiSectionHeader>
@@ -12,7 +12,7 @@
       <UiSkeleton v-if="loading" text :repeat="4" />
 
       <template v-else>
-        <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="`Нет блюд с тегом «${tagLabel}»`" />
+        <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="`Нет блюд с тегом «${tagName}»`" />
 
         <VueDraggable
           v-else
@@ -51,6 +51,7 @@
       :category-id="editingDish.categoryId"
       :categories="categories"
       :dish="editingDish"
+      :tags="allTags"
       :update-dish="updateDish"
       @saved="closeDishModal"
     />
@@ -62,8 +63,7 @@ import { ref, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiSkeleton, UiIcon, UiPhotoPlaceholder, UiAlert, UiSectionHeader, UiEmpty } from '@fastio/ui'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import type { Dish, Category, VirtualCategoryType } from '@fastio/shared'
-import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
+import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -71,27 +71,40 @@ import type { DishFormData } from '~/utils/api/dishes'
 
 const props = defineProps<{
   tenantId: string
-  tag: VirtualCategoryType
+  tagId: string
+  categoryName: string
   categories: Category[]
+  allTags: DishTagDefinition[]
 }>()
 
-const sectionTitle = computed(() => CATEGORY_TYPE_LABELS[props.tag])
-const tagLabel = computed(() => CATEGORY_TYPE_LABELS[props.tag])
-const hintText = computed(() => `Блюда с тегом «${CATEGORY_TYPE_LABELS[props.tag]}»`)
+const tagName = computed(() => props.allTags.find((t) => t.id === props.tagId)?.name ?? '')
 
 const api = useDatabase()
 const loading = ref(false)
 const dishes = ref<Dish[]>([])
 
 const loadDishes = async () => {
-  if (!props.tenantId) return
+  if (!props.tenantId || !props.tagId) return
   loading.value = true
-  dishes.value = await api.dishes.listByTag(props.tenantId, props.tag)
+
+  const dishIds = await api.tags.listDishIdsByTag(props.tenantId, props.tagId)
+
+  if (dishIds.length === 0) {
+    dishes.value = []
+    loading.value = false
+
+    return
+  }
+
+  const allActive = await api.dishes.listAllActive(props.tenantId)
+  const dishMap = new Map(allActive.map((d) => [d.id, d]))
+
+  dishes.value = dishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[]
   loading.value = false
 }
 
-watch(() => props.tenantId, (id) => {
-  if (id) loadDishes()
+watch([() => props.tenantId, () => props.tagId], () => {
+  if (props.tenantId && props.tagId) loadDishes()
 }, { immediate: true })
 
 const dishModalOpen = ref(false)
@@ -103,7 +116,7 @@ const openDishModal = (dish: Dish) => {
 }
 
 const reorderDishes = async () => {
-  await api.dishes.reorderByTag(props.tenantId, props.tag, dishes.value.map((d, i) => ({ id: d.id, order: i })))
+  await api.tags.reorderByTag(props.tenantId, props.tagId, dishes.value.map((d, i) => ({ id: d.id, order: i })))
 }
 
 const closeDishModal = () => {

@@ -42,7 +42,14 @@
 
               <UiSpace :size="4" align="center">
                 <span class="combo-price">{{ formatPrice(combo.price) }}</span>
-                <UiTag v-for="tag in combo.tags" :key="tag" size="tiny">{{ tagOptions[tag] }}</UiTag>
+                <UiTag
+                  v-for="tagId in combo.tags"
+                  :key="tagId"
+                  size="tiny"
+                  empty
+                  round
+                  :style="tagStyle(tagId)"
+                >{{ tagName(tagId) }}</UiTag>
               </UiSpace>
 
               <div class="card-actions">
@@ -66,6 +73,7 @@
       :tenant-id="tenantId"
       :categories="categories"
       :combo="editingCombo"
+      :tags="props.tags"
       :add-combo="addCombo"
       :update-combo="updateCombo"
       @saved="closeComboModal"
@@ -74,21 +82,22 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue'
+import { toRefs, computed } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiSwitch, UiPhotoPlaceholder, UiSectionHeader, UiEmpty } from '@fastio/ui'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import type { Combo, Category } from '@fastio/shared'
+import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import MenuComboFormModal from '~/components/menu/ComboFormModal.vue'
 import { useCombos } from '~/composables/data/useCombos'
 import { useItemManager } from '~/composables/ui/useItemManager'
-import { tagOptions } from '~/config/dish-tags'
+import { useTagDisplay } from '~/composables/ui/useTagDisplay'
 
 const props = defineProps<{
   tenantId: string
   categoryId: string
   categories: Category[]
+  tags: DishTagDefinition[]
 }>()
 
 const emit = defineEmits<{
@@ -122,6 +131,8 @@ const { showSkeleton, modalOpen: comboModalOpen, editingItem: editingCombo, open
   = useItemManager<Combo>({ loading: combosLoading, remove: removeCombo, confirmTitle: 'Удалить комбо?' })
 
 const reorderCombos = () => reorder(combos.value)
+
+const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 </script>
 
 <style scoped lang="scss">

@@ -29,6 +29,7 @@ import { reservationsApi } from '~/utils/api/reservations'
 import { reservationSettingsApi } from '~/utils/api/reservation-settings'
 import { bannersApi } from '~/utils/api/banners'
 import { galleriesApi } from '~/utils/api/galleries'
+import { tagsApi } from '~/utils/api/tags'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
@@ -78,5 +79,6 @@ export const useDatabase = () => {
     reservationSettings: bindAll(reservationSettingsApi, sb),
     banners: bindAll(bannersApi, sb),
     galleries: bindAll(galleriesApi, sb),
+    tags: bindAll(tagsApi, sb),
   }
 }

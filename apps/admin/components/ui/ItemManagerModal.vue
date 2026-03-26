@@ -8,14 +8,56 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <div class="manager-root">
+      <div v-if="mode === 'categories'" class="add-row">
+        <UiButton
+          type="primary"
+          icon="plus"
+          class="add-btn"
+          @click="onAdd"
+        >
+          Категория
+        </UiButton>
+        <UiButton
+          type="default"
+          icon="plus"
+          class="add-btn"
+          @click="showTagCategoryForm = true"
+        >
+          Спец-категория
+        </UiButton>
+      </div>
       <UiButton
+        v-else
         type="default"
         icon="plus"
         class="add-btn"
         @click="onAdd"
       >
-        {{ mode === 'statuses' ? 'Добавить статус' : 'Добавить категорию' }}
+        Добавить статус
       </UiButton>
+
+      <div v-if="showTagCategoryForm" class="tag-category-form">
+        <UiInput v-model="tagCategoryName" placeholder="Название категории" size="small" />
+        <UiSelect
+          v-model:value="tagCategoryTagId"
+          :options="tagOptions"
+          size="small"
+          placeholder="Выберите тег"
+        />
+        <div class="tag-category-actions">
+          <UiButton
+            size="tiny"
+            type="primary"
+            :disabled="!tagCategoryName.trim() || !tagCategoryTagId"
+            @click="onAddTagCategory"
+          >
+            Создать
+          </UiButton>
+          <UiButton size="tiny" @click="showTagCategoryForm = false">
+            Отмена
+          </UiButton>
+        </div>
+      </div>
 
       <VueDraggable
         v-model="localItems"
@@ -42,6 +84,10 @@
             @blur="onNameBlur(item, $event)"
             @keydown.enter="($event.target as HTMLInputElement).blur()"
           />
+
+          <span v-if="mode === 'categories' && item.tagId" class="tag-badge">
+            {{ tagLabel(item.tagId) }}
+          </span>
 
           <UiSelect
             v-if="mode === 'statuses'"
@@ -120,9 +166,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiModal, UiButton, UiIcon, UiSelect, UiPhotoPlaceholder } from '@fastio/ui'
+import { UiModal, UiButton, UiIcon, UiInput, UiSelect, UiPhotoPlaceholder } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
-import type { OrderStatusGroup, SpecialCategoryType, CategoryType } from '@fastio/shared'
+import type { OrderStatusGroup, SpecialCategoryType, CategoryType, DishTagDefinition } from '@fastio/shared'
 import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
 import { STATUS_GROUP_LABELS } from '~/config/order-status-groups'
 import ImageUploadModal from '~/components/ui/ImageUploadModal.vue'
@@ -131,6 +177,7 @@ export type ManagedItem = {
   id: string
   name: string
   type?: CategoryType
+  tagId?: string | null
   groupType?: OrderStatusGroup
   quickActions?: string[]
   photoUrl?: string | null
@@ -152,6 +199,7 @@ const props = defineProps<{
   mode: 'statuses' | 'categories'
   itemCounts?: Record<string, number>
   availableSpecialTypes?: SpecialCategoryType[]
+  availableTags?: DishTagDefinition[]
 }>()
 
 const emit = defineEmits<{
@@ -219,6 +267,9 @@ watch(() => props.modelValue, (val) => {
     })
     photoPreview.value = {}
     photoModalOpen.value = false
+    showTagCategoryForm.value = false
+    tagCategoryName.value = ''
+    tagCategoryTagId.value = null
   }
 })
 
@@ -275,6 +326,23 @@ const onQuickActionChange = (item: ManagedItem, slotIndex: number, value: string
 
   item.quickActions = quickActions
   emit('update', item.id, { quickActions })
+}
+
+const tagOptions = computed(() => (props.availableTags ?? []).map((t) => ({ label: t.name, value: t.id })),
+)
+
+const tagLabel = (tagId: string) => props.availableTags?.find((t) => t.id === tagId)?.name ?? ''
+
+const showTagCategoryForm = ref(false)
+const tagCategoryName = ref('')
+const tagCategoryTagId = ref<string | null>(null)
+
+const onAddTagCategory = () => {
+  if (!tagCategoryName.value.trim() || !tagCategoryTagId.value) return
+  emit('add', { name: tagCategoryName.value.trim(), tagId: tagCategoryTagId.value })
+  tagCategoryName.value = ''
+  tagCategoryTagId.value = null
+  showTagCategoryForm.value = false
 }
 
 const onReorder = () => {
@@ -363,6 +431,41 @@ const confirmRemove = async (item: ManagedItem) => {
     cursor: default;
     color: var(--color-text-secondary);
   }
+}
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .add-btn {
+    flex: 1;
+    margin-bottom: 0;
+  }
+}
+
+.tag-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--color-fill-quaternary);
+  color: var(--color-text-secondary);
+}
+
+.tag-category-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-fill-quaternary);
+  margin-bottom: 8px;
+}
+
+.tag-category-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .group-select {
