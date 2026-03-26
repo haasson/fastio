@@ -41,13 +41,12 @@
             >
               <div class="coords-pin" />
             </YandexMapMarker>
-            <YandexMapListener :settings="miniMapListenerSettings" />
           </YandexMap>
         </div>
         <UiText v-if="form.latitude != null" size="tiny" class="coords-hint">
           {{ form.latitude.toFixed(6) }}, {{ form.longitude?.toFixed(6) }}
         </UiText>
-        <UiText v-else size="tiny" class="coords-hint">Кликните на карту, чтобы поставить точку</UiText>
+        <UiText v-else size="tiny" class="coords-hint">Введите адрес — точка появится автоматически</UiText>
       </div>
       <template v-if="hasMultipleBranches">
         <UiInput
@@ -124,9 +123,7 @@ import {
   YandexMapDefaultSchemeLayer,
   YandexMapDefaultFeaturesLayer,
   YandexMapMarker,
-  YandexMapListener,
 } from 'vue-yandex-maps'
-import type { YandexMapListenerSettings } from 'vue-yandex-maps'
 
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
@@ -177,15 +174,6 @@ const miniMapSettings = computed(() => {
 
   return { location: { center, zoom: 14 } }
 })
-
-const miniMapListenerSettings = computed((): YandexMapListenerSettings => ({
-  onClick: (_obj, event) => {
-    const [lng, lat] = event.coordinates
-
-    form.latitude = lat
-    form.longitude = lng
-  },
-}))
 
 const defaultForm = (): BranchFormData => ({
   name: '',
