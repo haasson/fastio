@@ -27,5 +27,15 @@ export default defineEventHandler(async (event) => {
     statusInfo = statusRow
   }
 
-  return mapOrder({ ...data, _statusInfo: statusInfo })
+  let branchInfo: { address: string | null } | null = null
+  if (data.branch_id) {
+    const { data: branchRow } = await supabase
+      .from('branches')
+      .select('address')
+      .eq('id', data.branch_id)
+      .maybeSingle()
+    branchInfo = branchRow
+  }
+
+  return mapOrder({ ...data, _statusInfo: statusInfo, _branchInfo: branchInfo })
 })

@@ -130,6 +130,7 @@ export function mapOrder(row: Record<string, unknown>): Order {
     statusName: (row._statusInfo as { name: string } | null)?.name ?? null,
     paymentType: row.payment_type as Order['paymentType'],
     branchId: row.branch_id as string | null,
+    branchAddress: (row._branchInfo as { address: string } | null)?.address ?? null,
     deliveryZoneId: row.delivery_zone_id as string | null,
     tableId: row.table_id as string | null,
     tableName: row.table_name as string | null,

@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
 
   // Загружаем филиалы и зоны доставки тенанта
   const [{ data: branchRows }, { data: zoneRows }] = await Promise.all([
-    supabase.from('branches').select('id').eq('tenant_id', tenantId).eq('is_active', true).limit(2),
+    supabase.from('branches').select('id').eq('tenant_id', tenantId).eq('is_active', true),
     supabase.from('delivery_zones').select('*').eq('tenant_id', tenantId).eq('is_active', true).order('sort_order'),
   ])
 
@@ -134,9 +134,23 @@ export default defineEventHandler(async (event) => {
     orderBranchId = matchedZone.branchId
   }
 
-  // Если зон нет или это самовывоз — привязываем к единственному филиалу
-  if (!orderBranchId && branchRows?.length === 1) {
-    orderBranchId = branchRows[0].id as string
+  // Привязка к филиалу: из body (pickup) или fallback к единственному
+  if (!orderBranchId) {
+    if (deliveryType === 'pickup' && body.branchId) {
+      // Validate that the branch belongs to this tenant and is active
+      const validBranch = branchRows?.find((b) => b.id === body.branchId)
+      if (!validBranch) {
+        throw createError({ statusCode: 400, message: 'Выбранный пункт самовывоза недоступен' })
+      }
+      orderBranchId = body.branchId
+    } else if (branchRows?.length === 1) {
+      orderBranchId = branchRows[0].id as string
+    }
+  }
+
+  // Филиал обязателен для всех типов кроме dine_in
+  if (!orderBranchId && deliveryType !== 'dine_in') {
+    throw createError({ statusCode: 400, message: 'Не удалось определить филиал для заказа' })
   }
 
   // Достаём реальные цены блюд и модификаторы параллельно

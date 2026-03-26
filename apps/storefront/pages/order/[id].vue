@@ -64,8 +64,8 @@
               <span class="info-value">{{ order.address }}</span>
             </div>
             <div v-if="order.deliveryType === 'pickup'" class="info-row">
-              <span class="info-label">Получение</span>
-              <span class="info-value">Самовывоз</span>
+              <span class="info-label">Самовывоз</span>
+              <span class="info-value">{{ order.branchAddress || 'Самовывоз' }}</span>
             </div>
             <div class="info-row">
               <span class="info-label">Оплата</span>

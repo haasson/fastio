@@ -33,6 +33,7 @@ type CheckoutForm = {
   apartment: string
   intercom: string
   promoCode: string
+  pickupBranchId: string | null
 }
 
 const FORM_DEFAULTS: CheckoutForm = {
@@ -48,6 +49,7 @@ const FORM_DEFAULTS: CheckoutForm = {
   apartment: '',
   intercom: '',
   promoCode: '',
+  pickupBranchId: null,
 }
 
 export const useCheckoutStore = defineStore('checkout', () => {

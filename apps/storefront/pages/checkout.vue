@@ -70,6 +70,11 @@
               </div>
             </section>
 
+            <CheckoutPickupBranch
+              v-if="checkout.form.deliveryType === 'pickup'"
+              ref="pickupBranchRef"
+            />
+
             <CheckoutAddressSection
               v-if="checkout.form.deliveryType === 'delivery'"
               ref="addressRef"
@@ -114,6 +119,7 @@ import PageShell from '~/components/sections/PageShell.vue'
 import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup } from '@fastio/public-ui'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CheckoutAddressSection from '~/components/checkout/CheckoutAddressSection.vue'
+import CheckoutPickupBranch from '~/components/checkout/CheckoutPickupBranch.vue'
 import CheckoutPromoSection from '~/components/checkout/CheckoutPromoSection.vue'
 import CheckoutSidebar from '~/components/checkout/CheckoutSidebar.vue'
 
@@ -151,6 +157,7 @@ watch(() => checkout.form.customerPhone, () => { phoneError.value = '' })
 
 // Address validation
 const addressRef = ref<InstanceType<typeof CheckoutAddressSection> | null>(null)
+const pickupBranchRef = ref<InstanceType<typeof CheckoutPickupBranch> | null>(null)
 
 function validate(): boolean {
   phoneError.value = ''
@@ -158,6 +165,13 @@ function validate(): boolean {
   const phoneDigits = checkout.form.customerPhone.replace(/\D/g, '')
   if (!phoneDigits) { phoneError.value = validationRules.phone.required.message; return false }
   if (phoneDigits.length < 11) { phoneError.value = validationRules.phone.format.message; return false }
+
+  if (checkout.form.deliveryType === 'pickup') {
+    if (!pickupBranchRef.value || !pickupBranchRef.value.isValid()) {
+      submitError.value = 'Выберите пункт самовывоза'
+      return false
+    }
+  }
 
   if (checkout.form.deliveryType === 'delivery') {
     if (!addressRef.value?.isValid()) return false
@@ -236,6 +250,10 @@ async function submitOrder() {
         body.geoLat = checkout.form.addressCoords.lat
         body.geoLon = checkout.form.addressCoords.lon
       }
+    }
+
+    if (checkout.form.deliveryType === 'pickup' && checkout.form.pickupBranchId) {
+      body.branchId = checkout.form.pickupBranchId
     }
 
     if (checkout.promoResult?.valid && checkout.form.promoCode) {

@@ -20,6 +20,11 @@ DECLARE
     "startFrom": 1
   }'::jsonb;
 BEGIN
+  -- Заказы со стола не получают номер
+  IF NEW.delivery_type = 'dine_in' THEN
+    RETURN NEW;
+  END IF;
+
   SELECT order_number_config INTO v_config
   FROM tenants
   WHERE id = NEW.tenant_id;

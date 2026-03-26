@@ -91,6 +91,7 @@ export type Order = {
   statusName: string | null
   paymentType: 'cash' | 'card' | 'online'
   branchId: string | null
+  branchAddress: string | null
   deliveryZoneId: string | null
   tableId: string | null
   tableName: string | null
