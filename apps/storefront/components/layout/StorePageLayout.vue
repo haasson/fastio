@@ -32,11 +32,7 @@ defineProps<Props>()
 @use '~/assets/styles/mixins' as *;
 
 .page-layout-root {
-  padding-block: 24px 80px;
-
-  @include md {
-    padding-block: 32px 80px;
-  }
+  padding: 0;
 }
 
 .page-head {

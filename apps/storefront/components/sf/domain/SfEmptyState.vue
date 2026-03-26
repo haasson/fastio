@@ -6,8 +6,8 @@
     <div class="empty-icon">
       <slot />
     </div>
-    <FsText as="p" variant="body-sm" color="secondary" class="empty-title">{{ title }}</FsText>
-    <FsText v-if="description" as="p" variant="caption" color="muted" class="empty-desc">{{ description }}</FsText>
+    <FsText as="p" variant="body-sm" color="secondary" align="center" class="empty-title">{{ title }}</FsText>
+    <FsText v-if="description" as="p" variant="caption" color="muted" align="center" class="empty-desc">{{ description }}</FsText>
     <div v-if="$slots.action" class="empty-action">
       <slot name="action" />
     </div>
