@@ -7,10 +7,14 @@
       </NuxtLink>
 
       <nav v-if="header.showNav" class="nav">
+        <!-- active-class/exact-active-class отключены: scroll-ссылки (/#menu) матчат "/" и светятся некорректно -->
         <NuxtLink
           v-for="link in navLinks"
           :key="link.key"
           class="nav-link"
+          :class="{ 'nav-link--active': isLinkActive(link) }"
+          active-class=""
+          exact-active-class=""
           :to="link.to"
           @click.prevent="handleNavClick(link)"
         >
@@ -44,6 +48,9 @@
         v-for="link in navLinks"
         :key="link.key"
         class="mm-nav-link"
+        :class="{ 'mm-nav-link--active': isLinkActive(link) }"
+        active-class=""
+        exact-active-class=""
         :to="link.to"
         @click.prevent="handleNavClick(link)"
       >
@@ -69,7 +76,7 @@ import { ref, computed } from 'vue'
 import { useRoute, navigateTo } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
-import { featureLabel } from '@fastio/shared'
+import { featureLabel, isFeatureAvailable } from '@fastio/shared'
 import { FsSection, FsIconButton, FsBurger, FsMobileMenu } from '@fastio/public-ui'
 import HeaderUserMenu from '~/components/HeaderUserMenu.vue'
 import MobileUserCard from '~/components/MobileUserCard.vue'
@@ -82,14 +89,22 @@ const props = defineProps<{
 const route = useRoute()
 
 const navLinks = computed(() =>
-  props.header.navItems.map((item) => ({
-    key: item.key,
-    label: featureLabel(item.key),
-    to: item.action === 'navigate'
-      ? { path: `/${item.key}`, query: route.query }
-      : { path: '/', hash: `#${item.key}`, query: route.query },
-  })),
+  props.header.navItems
+    .filter((item) => !props.tenant?.modules || isFeatureAvailable(item.key, props.tenant.modules))
+    .map((item) => ({
+      key: item.key,
+      label: featureLabel(item.key),
+      isScroll: item.action === 'scroll',
+      to: item.action === 'navigate'
+        ? { path: `/${item.key}`, query: route.query }
+        : { path: '/', hash: `#${item.key}`, query: route.query },
+    })),
 )
+
+const isLinkActive = (link: { isScroll: boolean; to: { path: string } }) => {
+  if (link.isScroll) return false
+  return route.path === link.to.path
+}
 
 const menuOpen = ref(false)
 
@@ -188,6 +203,7 @@ const handleNavClick = async (link: NavLink) => {
   transition: color 0.15s;
 
   &:hover { color: var(--color-text); }
+  &--active { color: var(--color-text); font-weight: 600; }
 }
 
 .right {
@@ -235,7 +251,7 @@ const handleNavClick = async (link: NavLink) => {
 
   &:hover { color: var(--primary); }
 
-  &.router-link-active { color: var(--primary); }
+  &--active { color: var(--primary); }
 }
 
 // ─── Footer ──────────────────────────────────────────────────────────────────

@@ -99,13 +99,17 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { UiIcon, UiSectionHeader } from '@fastio/ui'
 import SectionSettingsByKey from '~/components/appearance/SectionSettingsByKey.vue'
 import HeaderOptions from '~/components/appearance/HeaderOptions.vue'
-import { SECTION_KEYS, STRUCTURAL_SECTIONS, featureLabel, type SectionKey, type NavPageKey } from '@fastio/shared'
+import { SECTION_KEYS, STRUCTURAL_SECTIONS, featureLabel, isFeatureAvailable, type SectionKey, type NavPageKey } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
+import { useTenantStore } from '~/stores/tenant'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
 const { confirm } = useConfirm()
+const tenantStore = useTenantStore()
+
+const isAvailable = (key: string) => !tenantStore.tenant?.modules || isFeatureAvailable(key, tenantStore.tenant.modules)
 
 const headerOpen = ref(false)
 const openKeys = reactive(new Set<string>())
@@ -116,19 +120,36 @@ const toggle = (key: string) => {
 }
 
 const order = computed({
-  get: () => siteLayoutForm.sectionsOrder,
-  set: (val: string[]) => { siteLayoutForm.sectionsOrder = val as SectionKey[] },
+  get: () => siteLayoutForm.sectionsOrder.filter((k) => isAvailable(k)),
+  set: (val: string[]) => {
+    // Вставляем недоступные ключи на их оригинальные позиции,
+    // чтобы при включении модуля секция не уехала в конец
+    const all = siteLayoutForm.sectionsOrder
+    const hidden = all.filter((k) => !isAvailable(k))
+    const result = [...val] as SectionKey[]
+
+    for (const key of hidden) {
+      const origIdx = all.indexOf(key)
+
+      result.splice(Math.min(origIdx, result.length), 0, key)
+    }
+
+    siteLayoutForm.sectionsOrder = result
+  },
 })
 
 // setter пустой — VueDraggable вызывает его при drag, но реальное обновление идёт через order
 const disabledKeys = computed({
-  get: () => SECTION_KEYS.filter((k) => !order.value.includes(k)),
+  get: () => SECTION_KEYS.filter((k) => isAvailable(k) && !order.value.includes(k)),
   set: () => {},
 })
 
 const addSection = (key: string) => {
   if (order.value.includes(key as SectionKey)) return
   siteLayoutForm.sectionsOrder = [...siteLayoutForm.sectionsOrder, key as SectionKey]
+  const section = siteLayoutForm.sections[key as SectionKey] as { enabled: boolean } | undefined
+
+  if (section) section.enabled = true
 }
 
 const removeSection = async (key: string) => {
@@ -154,6 +175,9 @@ const removeSection = async (key: string) => {
   }
 
   siteLayoutForm.sectionsOrder = siteLayoutForm.sectionsOrder.filter((k) => k !== key)
+  const section = siteLayoutForm.sections[key as SectionKey] as { enabled: boolean } | undefined
+
+  if (section) section.enabled = false
   openKeys.delete(key)
 }
 </script>

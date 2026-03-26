@@ -49,7 +49,11 @@
     />
   </div>
 
-  <span v-else-if="sectionKey === 'gallery'" class="coming-soon">Управление галереей появится в ближайшее время</span>
+  <GalleryPicker
+    v-else-if="sectionKey === 'gallery'"
+    :gallery-ids="form.sections.gallery.galleryIds ?? []"
+    @update:gallery-ids="form.sections.gallery.galleryIds = $event"
+  />
 
   <span v-else-if="sectionKey === 'reviews'" class="coming-soon">Управление отзывами появится в ближайшее время</span>
 
@@ -60,6 +64,7 @@
 import { RouterLink } from 'vue-router'
 import { UiSegmentedControl, UiInputNumber, UiCheckbox } from '@fastio/ui'
 import HeroOptions from './HeroOptions.vue'
+import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, SectionKey } from '@fastio/shared'
 
 defineProps<{

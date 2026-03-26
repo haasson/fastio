@@ -1,53 +1,27 @@
 <template>
   <div class="modifiers-root">
-    <div class="header">
+    <div class="toolbar">
       <UiButton type="primary" icon="plus" @click="openAdd">
         Добавить группу
       </UiButton>
     </div>
 
-    <div v-if="loading" class="loading">
-      <UiSkeleton :height="80" :count="3" />
-    </div>
+    <UiSkeleton v-if="loading" :height="56" :count="3" />
 
-    <div v-else-if="groups.length === 0" class="empty">
-      <UiText color="secondary">
-        Модификаторов пока нет. Создайте первую группу — например "Размер" или "Бортик".
-      </UiText>
-    </div>
+    <UiEmpty
+      v-else-if="groups.length === 0"
+      icon="settings"
+      text="Модификаторов пока нет. Создайте первую группу — например «Размер» или «Бортик»."
+    />
 
-    <div v-else class="groups-list">
-      <div v-for="group in groups" :key="group.id" class="group-card">
-        <div class="group-header">
-          <div class="group-info">
-            <UiText :weight="600">{{ group.name }}</UiText>
-            <UiBadge v-if="!group.active" type="warning" size="small">
-              Скрыта
-            </UiBadge>
-          </div>
-          <div class="group-actions">
-            <UiSwitch
-              :model-value="group.active"
-              @update:model-value="toggleActive(group.id, $event)"
-            />
-            <UiButton size="tiny" type="default" @click="openEdit(group)">
-              Изменить
-            </UiButton>
-            <UiButton size="tiny" type="text" @click="handleRemove(group)">
-              ✕
-            </UiButton>
-          </div>
-        </div>
-        <div class="group-options">
-          <UiTag v-for="opt in group.options" :key="opt.id" size="small">
-            {{ opt.name }}
-          </UiTag>
-          <UiText v-if="group.options.length === 0" size="small" color="secondary">
-            Нет опций
-          </UiText>
-        </div>
-      </div>
-    </div>
+    <UiDataTable
+      v-else
+      :columns="columns"
+      :data="groups"
+      :row-key="(row) => row.id"
+      :bordered="false"
+      size="small"
+    />
 
     <ModifierGroupFormModal
       v-model="showModal"
@@ -59,11 +33,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiText, UiSkeleton, UiSwitch, UiBadge, UiTag } from '@fastio/ui'
+import { UiButton, UiDataTable, UiEmpty, UiSkeleton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useModifierGroups } from '~/composables/data/useModifierGroups'
+import { buildModifierColumns } from '~/columns/modifiers'
 import ModifierGroupFormModal from '~/components/menu/ModifierGroupFormModal.vue'
 
 const tenantStore = useTenantStore()
@@ -95,15 +70,21 @@ const handleSave = async (data: Parameters<typeof add>[0]) => {
 }
 
 const handleRemove = async (group: ModifierGroup) => {
-  const confirmed = await confirm({
+  const ok = await confirm({
     title: 'Удалить модификатор?',
-    message: `Группа "${group.name}" будет удалена. Привязки к блюдам тоже исчезнут.`,
+    message: `Группа «${group.name}» будет удалена. Привязки к блюдам тоже исчезнут.`,
     confirmText: 'Удалить',
     confirmType: 'error',
   })
 
-  if (confirmed) await remove(group.id)
+  if (ok) await remove(group.id)
 }
+
+const columns = buildModifierColumns({
+  onToggle: toggleActive,
+  onEdit: openEdit,
+  onRemove: handleRemove,
+})
 </script>
 
 <style scoped lang="scss">
@@ -113,58 +94,14 @@ const handleRemove = async (group: ModifierGroup) => {
   gap: 16px;
 }
 
-.header {
+.toolbar {
   display: flex;
   justify-content: flex-end;
 }
 
-.loading {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.empty {
-  padding: 40px;
-  text-align: center;
-}
-
-.groups-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.group-card {
-  padding: 14px 16px;
-  background: var(--color-white);
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-}
-
-.group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.group-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.group-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.group-options {
+:deep(.options-cell) {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 4px;
 }
 </style>

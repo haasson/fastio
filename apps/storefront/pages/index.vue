@@ -20,8 +20,10 @@
         :default-view="layout.sections.menu.defaultView"
       />
       <GallerySection
-        v-if="layout.sections.gallery.enabled && layout.sectionsOrder.includes('gallery')"
+        v-if="layout.sections.gallery.enabled && layout.sectionsOrder.includes('gallery') && layout.sections.gallery.galleryIds?.length"
         id="gallery"
+        :galleries="galleries ?? []"
+        :gallery-ids="layout.sections.gallery.galleryIds ?? []"
       />
       <ReviewsSection
         v-if="layout.sections.reviews.enabled && layout.sectionsOrder.includes('reviews')"
@@ -38,7 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNuxtData, useAsyncData, useRequestFetch, useRoute, navigateTo } from 'nuxt/app'
-import type { Banner, Tenant } from '@fastio/shared'
+import type { Banner, Gallery, Tenant } from '@fastio/shared'
 import { defaultSiteContent, deepMerge } from '@fastio/shared'
 import PageShell from '~/components/sections/PageShell.vue'
 import HeroSection from '~/components/sections/HeroSection.vue'
@@ -56,9 +58,11 @@ const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 await Promise.all([
   useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
   useAsyncData('banners', () => rfetch<Banner[]>('/api/banners', slugQuery)),
+  useAsyncData('galleries', () => rfetch<Gallery[]>('/api/galleries', slugQuery)),
 ])
 
 const { data: banners } = useNuxtData<Banner[]>('banners')
+const { data: galleries } = useNuxtData<Gallery[]>('galleries')
 
 type SiteContentType = ReturnType<typeof defaultSiteContent>
 

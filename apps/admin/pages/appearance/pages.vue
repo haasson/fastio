@@ -72,13 +72,17 @@ import { computed, inject, reactive } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiIcon, UiSectionHeader } from '@fastio/ui'
 import PageSettingsByKey from '~/components/appearance/PageSettingsByKey.vue'
-import { PAGE_KEYS, STRUCTURAL_SECTIONS, featureLabel, type PageKey, type NavPageKey, type SectionKey } from '@fastio/shared'
+import { PAGE_KEYS, STRUCTURAL_SECTIONS, featureLabel, isFeatureAvailable, type PageKey, type NavPageKey, type SectionKey } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
+import { useTenantStore } from '~/stores/tenant'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
 const { confirm } = useConfirm()
+const tenantStore = useTenantStore()
+
+const isAvailable = (key: string) => !tenantStore.tenant?.modules || isFeatureAvailable(key, tenantStore.tenant.modules)
 
 const openKeys = reactive(new Set<string>())
 
@@ -88,13 +92,27 @@ const toggle = (key: string) => {
 }
 
 const order = computed({
-  get: () => siteLayoutForm.pages ?? [],
-  set: (val: string[]) => { siteLayoutForm.pages = val as NavPageKey[] },
+  get: () => (siteLayoutForm.pages ?? []).filter((k) => isAvailable(k)),
+  set: (val: string[]) => {
+    // Вставляем недоступные ключи на их оригинальные позиции,
+    // чтобы при включении модуля фича не уехала в конец
+    const all = siteLayoutForm.pages ?? []
+    const hidden = all.filter((k) => !isAvailable(k))
+    const result = [...val] as NavPageKey[]
+
+    for (const key of hidden) {
+      const origIdx = all.indexOf(key)
+
+      result.splice(Math.min(origIdx, result.length), 0, key)
+    }
+
+    siteLayoutForm.pages = result
+  },
 })
 
 // setter пустой — VueDraggable вызывает его при drag, но реальное обновление идёт через order
 const disabledKeys = computed({
-  get: () => PAGE_KEYS.filter((k) => !order.value.includes(k as NavPageKey)),
+  get: () => PAGE_KEYS.filter((k) => isAvailable(k) && !order.value.includes(k as NavPageKey)),
   set: () => {},
 })
 

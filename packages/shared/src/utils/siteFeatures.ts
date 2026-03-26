@@ -1,8 +1,11 @@
+import type { TenantModules } from '../types/tenant'
+
 type SiteFeatureDef = {
   label: string
   index: boolean
   page: boolean
   nav: boolean
+  module?: keyof TenantModules
 }
 
 export const SITE_FEATURES = {
@@ -12,9 +15,9 @@ export const SITE_FEATURES = {
   menu:        { label: 'Меню',             index: true,  page: true,  nav: true  },
   gallery:     { label: 'Галерея',          index: true,  page: true,  nav: true  },
   reviews:     { label: 'Отзывы',           index: true,  page: false, nav: true  },
-  delivery:    { label: 'Доставка',         index: true,  page: true,  nav: true  },
+  delivery:    { label: 'Доставка',         index: true,  page: true,  nav: true,  module: 'delivery'     },
   vacancies:   { label: 'Вакансии',         index: false, page: true,  nav: true  },
-  booking:     { label: 'Бронирование',     index: false, page: true,  nav: true  },
+  booking:     { label: 'Бронирование',     index: false, page: true,  nav: true,  module: 'reservations' },
   about:       { label: 'О нас',            index: false, page: true,  nav: true  },
 } as const satisfies Record<string, SiteFeatureDef>
 
@@ -43,3 +46,9 @@ export const STRUCTURAL_SECTIONS: readonly SectionKey[] = ['categoryBar', 'hero'
 
 export const featureLabel = (key: string): string =>
   (SITE_FEATURES as Record<string, SiteFeatureDef>)[key]?.label ?? key
+
+export const isFeatureAvailable = (key: string, modules: TenantModules): boolean => {
+  const requiredModule = (SITE_FEATURES as Record<string, SiteFeatureDef>)[key]?.module
+  if (!requiredModule) return true
+  return modules[requiredModule] === true
+}

@@ -63,39 +63,15 @@ export function addDaysToDateStr(dateStr: string, days: number): string {
  * // можно расширить список или сделать поиск по всем IANA-зонам
  */
 export const TIMEZONE_OPTIONS: { value: string; label: string }[] = [
-  // Россия
-  { value: 'Europe/Kaliningrad', label: 'UTC+2 — Калининград' },
-  { value: 'Europe/Moscow', label: 'UTC+3 — Москва, Санкт-Петербург' },
-  { value: 'Europe/Samara', label: 'UTC+4 — Самара, Ижевск' },
-  { value: 'Asia/Yekaterinburg', label: 'UTC+5 — Екатеринбург' },
-  { value: 'Asia/Omsk', label: 'UTC+6 — Омск' },
-  { value: 'Asia/Krasnoyarsk', label: 'UTC+7 — Красноярск' },
-  { value: 'Asia/Irkutsk', label: 'UTC+8 — Иркутск' },
-  { value: 'Asia/Yakutsk', label: 'UTC+9 — Якутск' },
-  { value: 'Asia/Vladivostok', label: 'UTC+10 — Владивосток' },
-  { value: 'Asia/Magadan', label: 'UTC+11 — Магадан' },
-  { value: 'Asia/Kamchatka', label: 'UTC+12 — Камчатка' },
-  // СНГ
-  { value: 'Europe/Minsk', label: 'UTC+3 — Минск' },
-  { value: 'Asia/Almaty', label: 'UTC+6 — Алматы' },
-  { value: 'Asia/Tashkent', label: 'UTC+5 — Ташкент' },
-  { value: 'Asia/Tbilisi', label: 'UTC+4 — Тбилиси' },
-  { value: 'Asia/Yerevan', label: 'UTC+4 — Ереван' },
-  { value: 'Asia/Baku', label: 'UTC+4 — Баку' },
-  { value: 'Europe/Chisinau', label: 'UTC+2 — Кишинёв' },
-  { value: 'Asia/Bishkek', label: 'UTC+6 — Бишкек' },
-  { value: 'Asia/Dushanbe', label: 'UTC+5 — Душанбе' },
-  { value: 'Asia/Ashgabat', label: 'UTC+5 — Ашхабад' },
-  // Европа
-  { value: 'Europe/London', label: 'UTC+0 — Лондон' },
-  { value: 'Europe/Berlin', label: 'UTC+1 — Берлин, Париж' },
-  { value: 'Europe/Istanbul', label: 'UTC+3 — Стамбул' },
-  // Азия
-  { value: 'Asia/Dubai', label: 'UTC+4 — Дубай' },
-  { value: 'Asia/Bangkok', label: 'UTC+7 — Бангкок' },
-  { value: 'Asia/Shanghai', label: 'UTC+8 — Пекин, Шанхай' },
-  { value: 'Asia/Tokyo', label: 'UTC+9 — Токио' },
-  // Америка (на будущее)
-  { value: 'America/New_York', label: 'UTC-5 — Нью-Йорк' },
-  { value: 'America/Los_Angeles', label: 'UTC-8 — Лос-Анджелес' },
+  { value: 'Europe/Kaliningrad', label: 'МСК−1 — Калининград' },
+  { value: 'Europe/Moscow', label: 'МСК — Москва, Санкт-Петербург' },
+  { value: 'Europe/Samara', label: 'МСК+1 — Самара, Ижевск' },
+  { value: 'Asia/Yekaterinburg', label: 'МСК+2 — Екатеринбург, Тюмень' },
+  { value: 'Asia/Omsk', label: 'МСК+3 — Омск' },
+  { value: 'Asia/Krasnoyarsk', label: 'МСК+4 — Красноярск, Новосибирск' },
+  { value: 'Asia/Irkutsk', label: 'МСК+5 — Иркутск' },
+  { value: 'Asia/Yakutsk', label: 'МСК+6 — Якутск, Чита' },
+  { value: 'Asia/Vladivostok', label: 'МСК+7 — Владивосток, Хабаровск' },
+  { value: 'Asia/Magadan', label: 'МСК+8 — Магадан, Сахалин' },
+  { value: 'Asia/Kamchatka', label: 'МСК+9 — Камчатка, Анадырь' },
 ]

@@ -188,6 +188,7 @@ function onOpenChange(value: boolean) {
   transition: background 0.15s;
 
   &:hover { background: var(--surface-hover); }
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 }
 
 .close-btn-no-title {

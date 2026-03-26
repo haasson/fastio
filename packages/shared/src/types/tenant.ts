@@ -87,7 +87,7 @@ export type SiteLayout = {
       autoplayInterval: number
     }
     menu: { enabled: boolean; defaultView: 'categories' | 'dishes' }
-    gallery: { enabled: boolean }
+    gallery: { enabled: boolean; galleryIds: string[] }
     reviews: { enabled: boolean }
     delivery: { enabled: boolean }
   }
@@ -96,6 +96,7 @@ export type SiteLayout = {
   pageSettings: {
     menu: { defaultView: 'categories' | 'dishes' }
     delivery: { showMap: boolean; descriptionMode: 'auto' | 'manual' }
+    gallery: { galleryIds: string[] }
   }
 }
 

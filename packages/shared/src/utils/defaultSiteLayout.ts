@@ -21,7 +21,7 @@ export const defaultSiteLayout = (): SiteLayout => ({
     },
     banners: { enabled: false, displayMode: 'single', autoplay: false, autoplayInterval: 4 },
     menu: { enabled: true, defaultView: 'categories' },
-    gallery: { enabled: false },
+    gallery: { enabled: false, galleryIds: [] },
     reviews: { enabled: false },
     delivery: { enabled: false },
   },
@@ -30,5 +30,6 @@ export const defaultSiteLayout = (): SiteLayout => ({
   pageSettings: {
     menu: { defaultView: 'categories' },
     delivery: { showMap: false, descriptionMode: 'auto' },
+    gallery: { galleryIds: [] },
   },
 })

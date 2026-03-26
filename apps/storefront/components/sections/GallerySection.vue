@@ -1,28 +1,54 @@
 <template>
-  <FsSection class="gallery-root">
-    <FsHeading as="h2">Галерея</FsHeading>
-    <div class="gallery-content">
-      <SfEmptyState title="Галерея пуста" description="Фотографии появятся здесь">
-        <Image :size="48" />
-      </SfEmptyState>
-    </div>
-  </FsSection>
+  <div v-bind="$attrs">
+    <template v-for="gallery in visibleGalleries" :key="gallery.id">
+      <FsSection class="gallery-section">
+        <div v-if="gallery.title || gallery.description" class="gallery-header">
+          <FsHeading v-if="gallery.title" as="h2">{{ gallery.title }}</FsHeading>
+          <p v-if="gallery.description" class="gallery-desc">{{ gallery.description }}</p>
+        </div>
+
+        <GallerySlider :gallery="gallery" />
+      </FsSection>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { Image } from 'lucide-vue-next'
+defineOptions({ inheritAttrs: false })
+import { computed } from 'vue'
 import { FsSection, FsHeading } from '@fastio/public-ui'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
+import type { Gallery } from '@fastio/shared'
+import GallerySlider from './GallerySlider.vue'
+
+const props = defineProps<{
+  galleries: Gallery[]
+  galleryIds: string[]
+}>()
+
+const visibleGalleries = computed(() =>
+  props.galleryIds
+    .map((id) => props.galleries.find((g) => g.id === id))
+    .filter((g): g is Gallery => !!g && g.photos.length > 0),
+)
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/styles/mixins' as *;
-
-.gallery-root {
-  background: var(--color-surface);
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.gallery-content {
-  margin-top: 32px;
+.gallery-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gallery-desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
 }
 </style>

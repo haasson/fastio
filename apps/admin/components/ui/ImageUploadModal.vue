@@ -108,9 +108,11 @@ const props = withDefaults(defineProps<{
   modelValue: boolean
   aspectRatio?: ImageAspectRatio
   title?: string
+  initialFile?: File | null
 }>(), {
   aspectRatio: '4:3',
   title: 'Загрузка изображения',
+  initialFile: null,
 })
 
 const emit = defineEmits<{
@@ -244,7 +246,6 @@ const close = () => {
 }
 
 const resetState = () => {
-  step.value = 'pick'
   if (imageSrc.value) {
     URL.revokeObjectURL(imageSrc.value)
     imageSrc.value = null
@@ -254,6 +255,13 @@ const resetState = () => {
   urlLoading.value = false
   dragging.value = false
   cropping.value = false
+
+  if (props.initialFile) {
+    imageSrc.value = URL.createObjectURL(props.initialFile)
+    step.value = 'crop'
+  } else {
+    step.value = 'pick'
+  }
 }
 
 watch(() => props.modelValue, (shown) => {

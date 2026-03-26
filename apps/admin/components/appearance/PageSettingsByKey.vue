@@ -56,7 +56,11 @@
     </div>
   </div>
 
-  <span v-else-if="pageKey === 'gallery'" class="coming-soon">Настройки страницы галереи появятся в ближайшее время</span>
+  <GalleryPicker
+    v-else-if="pageKey === 'gallery'"
+    :gallery-ids="siteLayoutForm.pageSettings.gallery?.galleryIds ?? []"
+    @update:gallery-ids="siteLayoutForm.pageSettings.gallery = { galleryIds: $event }"
+  />
   <span v-else-if="pageKey === 'vacancies'" class="coming-soon">Настройки страницы вакансий появятся в ближайшее время</span>
   <span v-else-if="pageKey === 'booking'" class="hint">
     Настройки бронирования — в разделе <NuxtLink to="/reservations/settings" class="link">Бронирования → Настройки</NuxtLink>
@@ -67,6 +71,7 @@
 import { UiSegmentedControl, UiCheckbox } from '@fastio/ui'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
+import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, PageKey } from '@fastio/shared'
 
 defineProps<{

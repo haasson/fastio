@@ -19,48 +19,34 @@
       text="Баннеров пока нет. Добавьте первый — он появится в карусели на главной."
     />
 
-    <VueDraggable
+    <AppDraggableList
       v-else
       v-model="banners"
-      class="banner-list"
-      handle=".drag-handle"
-      :animation="180"
-      ghost-class="row-ghost"
-      @end="onReorder"
+      @reorder="onReorder"
     >
-      <div v-for="banner in banners" :key="banner.id" class="banner-row">
-        <UiIcon name="grip" class="drag-handle" />
+      <AppListRow
+        v-for="banner in banners"
+        :key="banner.id"
+        :thumb-url="banner.url || null"
+        :disabled="!banner.enabled"
+        thumb-width="96px"
+        thumb-height="32px"
+        :name="linkLabel(banner)"
+      >
 
-        <div class="banner-thumb">
-          <img
-            v-if="banner.url"
-            :src="banner.url"
-            alt=""
-            class="thumb-img"
+        <template #append>
+          <UiSwitch
+            :model-value="banner.enabled"
+            @update:model-value="toggleEnabled(banner.id, $event)"
           />
-          <div v-else class="thumb-empty">
-            <UiIcon name="image" :size="14" color="var(--color-text-tertiary)" />
-          </div>
-        </div>
-
-        <div class="banner-meta">
-          <UiText size="small" :color="banner.enabled ? undefined : 'var(--color-text-tertiary)'">
-            {{ linkLabel(banner) }}
-          </UiText>
-        </div>
-
-        <UiSwitch
-          :model-value="banner.enabled"
-          @update:model-value="toggleEnabled(banner.id, $event)"
-        />
-
-        <AppActionsBlock
-          size="small"
-          @edit="openEdit(banner)"
-          @delete="handleRemove(banner)"
-        />
-      </div>
-    </VueDraggable>
+          <AppActionsBlock
+            size="small"
+            @edit="openEdit(banner)"
+            @delete="handleRemove(banner)"
+          />
+        </template>
+      </AppListRow>
+    </AppDraggableList>
 
     <BannerFormModal
       v-model="showModal"
@@ -76,8 +62,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch, UiText } from '@fastio/ui'
+import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Banner, BannerFormData } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
@@ -86,6 +71,8 @@ import { useBanners } from '~/composables/data/useBanners'
 import { usePromotions } from '~/composables/data/usePromotions'
 import { usePromoCodes } from '~/composables/data/usePromoCodes'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppListRow from '~/components/ui/AppListRow.vue'
+import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import BannerFormModal from '~/components/promotions/BannerFormModal.vue'
 
 const tenantStore = useTenantStore()
@@ -173,65 +160,6 @@ const handleRemove = async (banner: Banner) => {
 .toolbar {
   display: flex;
   justify-content: flex-end;
-}
-
-.banner-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.banner-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-
-  &:hover { background: var(--color-bg-hover); }
-}
-
-.drag-handle {
-  cursor: grab;
-  color: var(--color-text-tertiary);
-  flex-shrink: 0;
-
-  &:active { cursor: grabbing; }
-}
-
-.banner-thumb {
-  width: 96px;
-  height: 32px;
-  border-radius: 4px;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-secondary);
-}
-
-.thumb-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.thumb-empty {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.banner-meta {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 :deep(.row-ghost) {

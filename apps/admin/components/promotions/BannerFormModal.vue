@@ -8,7 +8,7 @@
     :on-confirm="onConfirm"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <div class="form">
+    <UiForm ref="formRef">
       <div class="field">
         <span class="field-label">Изображение *</span>
         <ImageUploadTrigger
@@ -60,21 +60,23 @@
       <UiInput
         v-if="linkType === 'custom'"
         v-model="form.link"
+        name="link"
         label="Ссылка"
         placeholder="https://..."
+        :rules="[{ type: 'required', message: 'Введите ссылку' }]"
       />
 
       <RichTextEditor
         v-model="form.content"
         label="Контент страницы"
       />
-    </div>
+    </UiForm>
   </UiModal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiSwitch, UiSelect, UiInput } from '@fastio/ui'
+import { UiModal, UiForm, UiSwitch, UiSelect, UiInput } from '@fastio/ui'
 import type { ModalAction } from '@fastio/ui'
 import type { Banner, BannerFormData, Promotion, PromoCode } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
@@ -109,6 +111,7 @@ const form = ref<BannerFormData>({
   content: '',
 })
 
+const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 const pendingFile = ref<File | null>(null)
 const imageError = ref(false)
 
@@ -176,11 +179,16 @@ const modalActions = computed((): ModalAction[] => [
 ])
 
 const onConfirm = () => {
+  const fieldsValid = formRef.value?.validate() ?? true
+
   if (!form.value.url && !pendingFile.value) {
     imageError.value = true
 
     return false
   }
+
+  if (!fieldsValid) return false
+
   imageError.value = false
   emit('save', { ...form.value }, pendingFile.value)
 }
@@ -211,6 +219,5 @@ const onConfirm = () => {
 .field-error {
   font-size: 12px;
   color: var(--color-error);
-  margin-top: 2px;
 }
 </style>
