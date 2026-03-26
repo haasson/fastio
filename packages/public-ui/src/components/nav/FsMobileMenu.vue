@@ -46,7 +46,7 @@ onUnmounted(() => {
   overflow-y: auto;
   font-family: var(--font-family, inherit);
 
-  @include md { display: none; }
+  @include lg { display: none; }
 }
 
 .mobile-menu-enter-active,

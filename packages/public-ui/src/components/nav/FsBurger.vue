@@ -37,7 +37,7 @@ const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
   cursor: pointer;
   flex-shrink: 0;
 
-  @include md { display: none; }
+  @include lg { display: none; }
 }
 
 .line {

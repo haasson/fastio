@@ -178,7 +178,7 @@ const handleNavClick = async (link: NavLink) => {
   gap: 24px;
   flex: 1;
 
-  @include md { display: flex; }
+  @include lg { display: flex; }
 }
 
 .nav-link {
@@ -203,7 +203,7 @@ const handleNavClick = async (link: NavLink) => {
   align-items: flex-end;
   gap: 2px;
 
-  @include md { display: flex; }
+  @include lg { display: flex; }
 }
 
 .venue-hours {

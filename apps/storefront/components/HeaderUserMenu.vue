@@ -74,7 +74,7 @@ async function onLogout() {
 .user-menu-root {
   display: none;
 
-  @include md { display: block; }
+  @include lg { display: block; }
 }
 
 .dropdown {
