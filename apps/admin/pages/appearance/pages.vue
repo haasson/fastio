@@ -31,7 +31,12 @@
           </span>
         </div>
         <div v-if="openKeys.has(key)" class="item-options">
-          <PageSettingsByKey :page-key="key" />
+          <PageSettingsByKey
+            :page-key="key"
+            :site-layout-form="siteLayoutForm"
+            :content-form="form.contentForm"
+            @pending-about-cover="form.onPendingAboutCover"
+          />
         </div>
       </div>
     </VueDraggable>

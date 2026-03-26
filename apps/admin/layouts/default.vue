@@ -188,6 +188,7 @@ const currentPageTitle = computed(() => {
     ['/promotions', 'Акции'],
     ['/team/members', 'Команда'],
     ['/team/branches', 'Филиалы'],
+    ['/content', 'Контент сайта'],
     ['/appearance', 'Оформление'],
     ['/settings', 'Настройки'],
     ['/account', 'Личный кабинет'],

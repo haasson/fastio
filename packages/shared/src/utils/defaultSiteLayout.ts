@@ -27,4 +27,8 @@ export const defaultSiteLayout = (): SiteLayout => ({
   },
   sectionsOrder: ['categoryBar', 'hero', 'banners', 'menu', 'gallery', 'reviews', 'delivery'],
   pages: [],
+  pageSettings: {
+    menu: { defaultView: 'categories' },
+    delivery: { showMap: false, descriptionMode: 'auto' },
+  },
 })

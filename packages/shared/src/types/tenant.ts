@@ -46,6 +46,13 @@ export type SiteContent = {
     bgUrl: string | null
     text: string | null
   }
+  about: {
+    coverUrl: string | null
+    text: string
+  }
+  delivery: {
+    manualText: string
+  }
 }
 
 export type NavItem = {
@@ -86,6 +93,10 @@ export type SiteLayout = {
   }
   sectionsOrder: SectionKey[]
   pages: NavPageKey[]
+  pageSettings: {
+    menu: { defaultView: 'categories' | 'dishes' }
+    delivery: { showMap: boolean; descriptionMode: 'auto' | 'manual' }
+  }
 }
 
 export type WorkingHours = {

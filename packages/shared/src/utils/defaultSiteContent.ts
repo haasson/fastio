@@ -6,4 +6,11 @@ export const defaultSiteContent = (): SiteContent => ({
     bgUrl: null,
     text: null,
   },
+  about: {
+    coverUrl: null,
+    text: '',
+  },
+  delivery: {
+    manualText: '',
+  },
 })

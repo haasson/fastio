@@ -39,9 +39,11 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
 
   const pendingLogoFile = ref<File | null>(null)
   const pendingHeroBgFile = ref<File | null>(null)
+  const pendingAboutCoverFile = ref<File | null>(null)
   const pendingFaviconFile = ref<File | null>(null)
   const pendingOgImageFile = ref<File | null>(null)
   let originalHeroBgUrl: string | null = null
+  let originalAboutCoverUrl: string | null = null
 
   const savedSiteLayoutSnapshot = ref(JSON.stringify(siteLayoutForm))
   const savedThemeSnapshot = ref(JSON.stringify(themeForm))
@@ -54,6 +56,7 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     || JSON.stringify(seoForm) !== savedSeoSnapshot.value
     || !!pendingLogoFile.value
     || !!pendingHeroBgFile.value
+    || !!pendingAboutCoverFile.value
     || !!pendingFaviconFile.value
     || !!pendingOgImageFile.value,
   )
@@ -86,6 +89,25 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     }
   }
 
+  const onPendingAboutCover = (file: File | null) => {
+    if (file) {
+      if (pendingAboutCoverFile.value && contentForm.about.coverUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(contentForm.about.coverUrl)
+      } else {
+        originalAboutCoverUrl = contentForm.about.coverUrl
+      }
+      pendingAboutCoverFile.value = file
+      contentForm.about.coverUrl = URL.createObjectURL(file)
+    } else {
+      if (contentForm.about.coverUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(contentForm.about.coverUrl)
+      }
+      pendingAboutCoverFile.value = null
+      contentForm.about.coverUrl = originalAboutCoverUrl
+      originalAboutCoverUrl = null
+    }
+  }
+
   const setPendingLogo = (file: File | null) => {
     pendingLogoFile.value = file
   }
@@ -112,6 +134,16 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
       contentForm.hero.bgUrl = url
       pendingHeroBgFile.value = null
       originalHeroBgUrl = null
+    }
+    if (pendingAboutCoverFile.value) {
+      const url = await db.tenants.uploadAsset(tenantId, pendingAboutCoverFile.value, 'about-cover')
+
+      if (contentForm.about.coverUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(contentForm.about.coverUrl)
+      }
+      contentForm.about.coverUrl = url
+      pendingAboutCoverFile.value = null
+      originalAboutCoverUrl = null
     }
     if (pendingFaviconFile.value) {
       seoForm.favicon = await db.tenants.uploadAsset(tenantId, pendingFaviconFile.value, 'favicon')
@@ -197,5 +229,6 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     saving,
     save,
     onPendingHeroBg,
+    onPendingAboutCover,
   }
 }
