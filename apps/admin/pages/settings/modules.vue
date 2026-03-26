@@ -39,7 +39,6 @@
 import { computed } from 'vue'
 import { UiSectionHeader, UiDivider, useMessage } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
 import { useModules, useModuleConfigs } from '~/composables/plan/useModules'
 import { usePlans } from '~/composables/plan/usePlans'
 import type { ModuleKey } from '~/config/modules'
@@ -47,7 +46,6 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import ModuleCard from '~/components/settings/ModuleCard.vue'
 
 const tenantStore = useTenantStore()
-const branchStore = useBranchStore()
 const api = useDatabase()
 const modules = useModules()
 const { configs } = useModuleConfigs()
@@ -65,12 +63,6 @@ const lockedModules = computed(() => moduleList.value.filter((m) => m.state.lock
 
 const toggle = async (key: ModuleKey, val: boolean) => {
   if (!tenantStore.tenant) return
-
-  if (key === 'branches' && !val && branchStore.branches.length > 1) {
-    warning(`Архивируйте все филиалы кроме одного, чтобы отключить этот модуль (активных: ${branchStore.branches.length})`)
-
-    return
-  }
 
   if (key === 'dineIn' && !val) {
     const tables = await api.tables.list(tenantStore.tenant.id)

@@ -60,7 +60,7 @@ export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<Te
         ? h(UiTag, { type: 'error', size: 'small' }, () => 'Заблокирован')
         : h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
     },
-    ...(branches.value.length > 0 ? [branchesCol] : []),
+    branchesCol,
     {
       title: 'Добавлен',
       key: 'createdAt',
@@ -123,7 +123,7 @@ export const buildInviteColumns = (deps: InviteColumnsDeps): DataTableColumns<Te
       width: 120,
       render: (row) => h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
     },
-    ...(branches.value.length > 0 ? [branchesCol] : []),
+    branchesCol,
     {
       title: 'Истекает',
       key: 'expiresAt',

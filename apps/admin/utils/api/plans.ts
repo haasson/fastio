@@ -10,6 +10,7 @@ const mapPlan = (row: Record<string, unknown>): Plan => ({
   price: row.price as number,
   sortOrder: row.sort_order as number,
   isActive: row.is_active as boolean,
+  maxBranches: row.max_branches as number,
 })
 
 export const plansApi = {

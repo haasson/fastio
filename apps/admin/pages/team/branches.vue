@@ -1,15 +1,17 @@
 <template>
   <div class="branches-root">
-    <UiAlert v-if="branchesModule.locked" type="warning" icon="mapPin">
-      Управление филиалами недоступно на вашем тарифе. Обновите тариф, чтобы добавлять и настраивать точки.
+    <UiAlert v-if="branchLimitReached" type="info" icon="mapPin">
+      На вашем тарифе доступно {{ maxBranches }} {{ branchLimitLabel }}. Обновите тариф для добавления новых точек.
     </UiAlert>
 
     <UiSectionHeader title="Филиалы">
-      <template v-if="branchesModule.active && !branchesModule.locked" #right>
+      <template #right>
         <UiButton
           type="primary"
           icon="plus"
           size="small"
+          :disabled="branchLimitReached"
+          :title="branchLimitReached ? 'Лимит филиалов на вашем тарифе' : undefined"
           @click="openAdd"
         >Добавить</UiButton>
       </template>
@@ -88,6 +90,7 @@ import { useConfirm } from '@fastio/kit'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
+import { useBranchLimit } from '~/composables/plan/useBranchLimit'
 import { useModules } from '~/composables/plan/useModules'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
@@ -104,8 +107,8 @@ const { confirm } = useConfirm()
 const { zones } = useAllDeliveryZones()
 const modules = useModules()
 
+const { branchLimitReached, maxBranches, branchLimitLabel } = useBranchLimit()
 const deliveryEnabled = computed(() => modules.delivery.value.enabled)
-const branchesModule = modules.branches
 const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
 
@@ -149,6 +152,17 @@ const handleArchive = async (branch: Branch) => {
 }
 
 const handleRestore = async (branch: Branch) => {
+  if (branchLimitReached.value) {
+    await confirm({
+      title: 'Лимит филиалов',
+      message: `На вашем тарифе доступно ${maxBranches.value} ${branchLimitLabel.value}. Обновите тариф или архивируйте другой филиал.`,
+      confirmText: false,
+      cancelText: 'Понятно',
+    })
+
+    return
+  }
+
   const confirmed = await confirm({
     title: 'Восстановить филиал?',
     message: `Филиал «${branch.name}» снова станет активным.`,

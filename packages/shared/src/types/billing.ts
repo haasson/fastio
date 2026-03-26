@@ -6,6 +6,7 @@ export type Plan = {
   price: number
   sortOrder: number
   isActive: boolean
+  maxBranches: number // 0 = unlimited
 }
 
 export type BillingTransactionType = 'topup' | 'charge' | 'refund'

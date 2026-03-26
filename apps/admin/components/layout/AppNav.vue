@@ -62,7 +62,7 @@ const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.v
 const canSeeKitchen = computed(() => canManageOrders.value && modules.kitchen.value.enabled)
 const canSeeTables = computed(() => canViewSettings.value && modules.dineIn.value.enabled)
 const canSeeReservations = computed(() => canManageOrders.value && (modules.reservations?.value?.enabled ?? false))
-const canSeeBranches = computed(() => canManageTeam.value && (modules.branches.value.active || modules.branches.value.locked))
+const canSeeBranches = computed(() => canManageTeam.value)
 
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },

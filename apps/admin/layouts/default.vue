@@ -16,7 +16,7 @@
 
         <div class="user-info">
           <UiSelect
-            v-if="branchStore.hasBranches"
+            v-if="branchStore.branches.length > 1"
             :value="branchStore.currentBranchId ?? ''"
             :options="branchOptions"
             class="branch-select"
@@ -161,7 +161,7 @@ const availableBranches = computed(() => {
 const branchOptions = computed(() => {
   const opts: { label: string; value: string }[] = []
 
-  if (canSeeAll.value) {
+  if (canSeeAll.value && availableBranches.value.length > 1) {
     opts.push({ label: 'Все филиалы', value: '' })
   }
 

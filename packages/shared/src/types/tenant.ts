@@ -145,7 +145,6 @@ export type TenantModules = {
   addons: boolean
   promotions: boolean
   combos: boolean
-  branches: boolean
   customRoles: boolean
   dineIn: boolean
   kitchen: boolean
