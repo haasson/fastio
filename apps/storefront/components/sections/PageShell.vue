@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell-root">
-    <div class="sticky-header">
+    <div ref="headerRef" class="sticky-header">
       <SiteHeader :tenant="tenant" :header="layout.header" />
     </div>
 
@@ -45,9 +45,11 @@ const layout = computed(() =>
   deepMerge(defaultSiteLayout(), (tenant.value?.siteLayout ?? {}) as Partial<SiteLayout>)
 )
 
+const headerRef = useTemplateRef('headerRef')
+const { height: headerHeight } = useElementSize(headerRef)
 const categoryBarRef = useTemplateRef('categoryBarRef')
 const { height: categoryBarHeight } = useElementSize(categoryBarRef)
-const stickyTotalHeight = computed(() => categoryBarHeight.value)
+const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.value)
 
 </script>
 
