@@ -1,9 +1,5 @@
 <template>
   <PageShell>
-    <div v-if="promo.bannerUrl" class="banner">
-      <img :src="promo.bannerUrl" alt="" class="banner-img" />
-    </div>
-
     <FsSection>
       <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" :current="promo.title">
         <div v-if="promo.type === 'promo_code'" class="code-block">
@@ -65,19 +61,6 @@ const copyCode = async () => {
 
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
-
-.banner {
-  width: 100%;
-  aspect-ratio: 3 / 1;
-  overflow: hidden;
-}
-
-.banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
 
 .code-block {
   display: flex;

@@ -17,6 +17,7 @@ type EditState = {
   initialRemovedIngredients: string[]
   initialModifiers: OrderItemModifier[]
   initialAddonIds: string[]
+  maxAddons: number | null
 }
 
 export function useCartEdit() {
@@ -34,6 +35,7 @@ export function useCartEdit() {
     initialRemovedIngredients: [],
     initialModifiers: [],
     initialAddonIds: [],
+    maxAddons: null,
   })
 
   async function ensureMenu() {
@@ -72,6 +74,7 @@ export function useCartEdit() {
       initialRemovedIngredients: cartItem.removedIngredients ?? [],
       initialModifiers: cartItem.modifiers ?? [],
       initialAddonIds: (cartItem.addons ?? []).map((a) => a.addonId),
+      maxAddons: dish.maxAddons ?? menu.maxAddonsDefault,
     }
   }
 

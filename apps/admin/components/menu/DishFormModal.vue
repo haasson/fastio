@@ -51,9 +51,15 @@
           :all-addons="allAddons"
           :presets="presets"
           :loading="addonsLoading"
+          :category-dishes="categoryDishes"
+          :max-addons-default="tenantStore.tenant?.maxAddonsDefault ?? null"
+          :initial-max-addons="dish?.maxAddons ?? null"
         />
 
-        <IngredientsSection ref="ingredientsRef" />
+        <IngredientsSection
+          ref="ingredientsRef"
+          :category-dishes="categoryDishes"
+        />
 
         <NutritionSection ref="nutritionRef" />
 
@@ -76,10 +82,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, toRefs, watch } from 'vue'
 import { UiDrawer, UiForm, UiCollapse } from '@fastio/ui'
-import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
+import type { Dish, Category, DishTagDefinition, DishIngredient } from '@fastio/shared'
 import type { DishFormData } from '~/utils/api/dishes'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/stores/tenant'
 import { useDishSave } from '~/composables/data/useDishSave'
 import { useAddons } from '~/composables/data/useAddons'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
@@ -107,6 +114,7 @@ const emit = defineEmits<{
 }>()
 
 const { tenantId: tenantIdRef } = toRefs(props)
+const tenantStore = useTenantStore()
 const db = useDatabase()
 const { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()
@@ -121,6 +129,7 @@ const ingredientsRef = ref<InstanceType<typeof IngredientsSection> | null>(null)
 const nutritionRef = ref<InstanceType<typeof NutritionSection> | null>(null)
 const refreshKey = ref(0)
 const saving = ref(false)
+const categoryDishes = ref<Array<{ id: string; name: string; ingredients: DishIngredient[] }>>([])
 
 const originalPhotoUrl = ref<string | null>(null)
 const currentPhotoUrl = ref<string | null>(null)
@@ -200,6 +209,19 @@ watch(
   },
 )
 
+watch(
+  () => [props.modelValue, form.categoryId] as const,
+  async ([open]) => {
+    if (!open) return
+    const dishes = await db.dishes.list(props.tenantId, form.categoryId)
+
+    categoryDishes.value = dishes
+      .filter((d) => d.id !== props.dish?.id)
+      .map((d) => ({ id: d.id, name: d.name, ingredients: d.ingredients }))
+  },
+  { immediate: true },
+)
+
 const onConfirm = async () => {
   if (!formRef.value?.validate()) return false
 
@@ -217,12 +239,14 @@ const onConfirm = async () => {
 
     const kbju = nutritionRef.value?.getKbju() ?? null
     const hasNutrition = form.weight != null || kbju != null
+    const maxAddons = addonsRef.value?.getMaxAddons()
     const data: DishFormData = {
       ...form,
       price: form.price ?? 0,
       ingredients: ingredientsRef.value?.getIngredients() ?? [],
       nutrition: hasNutrition ? { weight: form.weight ?? 0, calories: kbju?.calories ?? 0, protein: kbju?.protein ?? 0, fat: kbju?.fat ?? 0, carbs: kbju?.carbs ?? 0 } : null,
       weightUnit: form.weightUnit,
+      maxAddons: maxAddons !== undefined ? maxAddons : null,
       photos,
     }
 

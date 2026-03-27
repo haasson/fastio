@@ -51,12 +51,14 @@
         label="Нули слева"
         :min="0"
         :max="6"
+        :show-button="true"
         hint="0 — без нулей, 3 → «042»"
       />
       <UiInputNumber
         v-model="form.startFrom"
         label="Начать с"
         :min="1"
+        :show-button="true"
         hint="Стартовое значение счётчика"
       />
     </div>

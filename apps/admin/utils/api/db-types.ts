@@ -47,6 +47,7 @@ export type TenantRow = {
   kitchen_urgency_minutes: number
   kitchen_config: KitchenConfig
   order_number_config: OrderNumberConfig | null
+  max_addons_default: number | null
   onboarding_completed: boolean
   created_at: string
 }
@@ -123,6 +124,7 @@ export type DishRow = {
   active: boolean
   sort_order: number
   requires_kitchen: boolean
+  max_addons: number | null
   deleted_at: string | null
 }
 

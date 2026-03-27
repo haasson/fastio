@@ -47,6 +47,7 @@
           as="label"
           size="small"
           :active="modelValue.includes(item.id)"
+          :disabled="disabledSelect && !modelValue.includes(item.id)"
         >
           <input
             type="checkbox"
@@ -78,6 +79,7 @@ type Props = {
   items: ChipItem[]
   mode: 'radio' | 'checkbox' | 'toggle'
   modelValue: string[]
+  disabledSelect?: boolean
   currency?: string
   groupName?: string
 }
@@ -94,7 +96,7 @@ const emit = defineEmits<{
 function onToggle(id: string) {
   if (props.modelValue.includes(id)) {
     emit('update:modelValue', props.modelValue.filter((v) => v !== id))
-  } else {
+  } else if (!props.disabledSelect) {
     emit('update:modelValue', [...props.modelValue, id])
   }
 }

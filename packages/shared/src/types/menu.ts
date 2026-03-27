@@ -26,7 +26,6 @@ export type DishNutrition = {
 
 export type DishIngredient = {
   name: string
-  removable: boolean
 }
 
 export type Category = {
@@ -58,6 +57,7 @@ export type Dish = {
   active: boolean
   order: number
   requiresKitchen: boolean
+  maxAddons: number | null
 }
 
 export type ComboItem = {

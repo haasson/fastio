@@ -58,6 +58,7 @@
       :item="editState.item"
       :modifiers="editState.modifiers"
       :addons="editState.addons"
+      :max-addons="editState.maxAddons"
       :currency="currency"
       :initial-quantity="editState.initialQuantity"
       :initial-removed-ingredients="editState.initialRemovedIngredients"

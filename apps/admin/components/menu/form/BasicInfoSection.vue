@@ -56,6 +56,7 @@
             :model-value="weight"
             :label="weightUnit === 'мл' ? 'Объём, мл' : 'Вес, г'"
             :min="0"
+            :show-button="true"
             :placeholder="weightUnit === 'мл' ? '400' : '350'"
             class="weight-input"
             @update:model-value="$emit('update:weight', $event)"

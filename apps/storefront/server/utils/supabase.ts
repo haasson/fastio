@@ -42,6 +42,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     timezone: row.timezone as string,
     seo: { ...defaultSeo(), ...(row.seo as object ?? {}) },
     orderNumberConfig: (row.order_number_config as OrderNumberConfig | null) ?? null,
+    maxAddonsDefault: (row.max_addons_default as number | null) ?? null,
     createdAt: row.created_at as string,
   }
 }
@@ -91,6 +92,7 @@ export function mapDish(row: Record<string, unknown>): Dish {
     active: row.active as boolean,
     order: row.sort_order as number,
     requiresKitchen: row.requires_kitchen as boolean,
+    maxAddons: (row.max_addons as number | null) ?? null,
   }
 }
 

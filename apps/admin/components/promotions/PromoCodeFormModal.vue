@@ -48,6 +48,7 @@
         v-model="form.usageLimit"
         label="Лимит использований"
         :min="1"
+        :show-button="true"
         placeholder="Без ограничений"
         :clearable="true"
       />

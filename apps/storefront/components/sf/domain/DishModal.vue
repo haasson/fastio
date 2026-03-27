@@ -30,6 +30,8 @@
         :removed-ingredients="[...removedSet]"
         :addons="addons"
         :selected-addon-ids="[...selectedAddonIds]"
+        :can-select-more-addons="canSelectMoreAddons"
+        :addons-count-label="addonsCountLabel"
         :currency="custCurrency"
         @select-modifier="selectModifier"
         @update:removed-ingredients="removedSet = new Set($event)"
@@ -63,6 +65,7 @@ type Props = {
   initialRemovedIngredients?: string[]
   initialModifiers?: OrderItemModifier[]
   initialAddonIds?: string[]
+  maxAddons?: number | null
 }
 
 const props = withDefaults(defineProps<Props>(), { currency: '₽', mode: 'add' })
@@ -81,6 +84,8 @@ const {
   displayNutrition,
   weightUnit,
   totalPrice,
+  canSelectMoreAddons,
+  addonsCountLabel,
   currency: custCurrency,
   selectModifier,
   buildCartItem,
@@ -93,6 +98,7 @@ const {
   initialRemovedIngredients: props.initialRemovedIngredients,
   initialModifiers: props.initialModifiers,
   initialAddonIds: props.initialAddonIds,
+  maxAddons: props.maxAddons,
 })
 
 function onConfirm() {

@@ -32,6 +32,7 @@ type UseDishCustomizationProps = {
   initialRemovedIngredients?: string[]
   initialModifiers?: OrderItemModifier[]
   initialAddonIds?: string[]
+  maxAddons?: number | null
 }
 
 export function useDishCustomization(props: UseDishCustomizationProps) {
@@ -67,11 +68,21 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
   }
 
   const selectedAddonIds = ref(new Set<string>(props.initialAddonIds ?? []))
+  const maxAddons = props.maxAddons ?? null
+
+  const canSelectMoreAddons = computed(() =>
+    maxAddons == null || selectedAddonIds.value.size < maxAddons,
+  )
+
+  const addonsCountLabel = computed(() => {
+    if (maxAddons == null || props.addons.length <= maxAddons) return null
+    return `${selectedAddonIds.value.size} из ${maxAddons}`
+  })
 
   // --- Computed ---
 
   const removableIngredients = computed(() =>
-    (props.item.ingredients ?? []).filter((i) => i.removable),
+    props.item.ingredients ?? [],
   )
 
   const selectedModifierOptions = computed<OrderItemModifier[]>(() => {
@@ -150,6 +161,9 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
     removableIngredients,
     selectedModifierOptions,
     selectedAddonsList,
+    canSelectMoreAddons,
+    addonsCountLabel,
+    maxAddons,
     displayNutrition,
     weightUnit: props.item.weightUnit ?? 'г',
     unitPrice,

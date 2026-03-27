@@ -35,6 +35,7 @@
         :min="1"
         :max="30"
         :step="1"
+        :show-button="true"
         style="width: 100px"
       />
     </div>

@@ -41,10 +41,11 @@
 
     <DishChips
       v-if="addons.length"
-      title="Можно добавить"
+      :title="addonsTitle"
       :items="addonChips"
       mode="checkbox"
       :model-value="selectedAddonIds"
+      :disabled-select="!canSelectMoreAddons"
       :currency="currency"
       @update:model-value="emit('update:selectedAddonIds', $event)"
     />
@@ -68,6 +69,8 @@ type Props = {
   removedIngredients: string[]
   addons: ClientAddon[]
   selectedAddonIds: string[]
+  canSelectMoreAddons?: boolean
+  addonsCountLabel?: string | null
   currency?: string
 }
 
@@ -95,6 +98,10 @@ function modifierChips(group: DishModifierGroup) {
 
 const addonChips = computed(() =>
   props.addons.map((a) => ({ id: a.id, label: a.name, priceDelta: a.price })),
+)
+
+const addonsTitle = computed(() =>
+  props.addonsCountLabel ? `Можно добавить (${props.addonsCountLabel})` : 'Можно добавить',
 )
 </script>
 

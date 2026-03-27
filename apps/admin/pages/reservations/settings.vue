@@ -19,6 +19,7 @@
           label="Дней вперёд (макс.)"
           :min="1"
           :max="365"
+          :show-button="true"
         />
       </div>
 

@@ -1,5 +1,20 @@
 <template>
   <div class="addons-root">
+    <div class="max-addons-setting">
+      <UiCheckbox :model-value="maxAddonsDefault != null" @update:model-value="toggleMaxAddons">
+        <UiText size="small">Ограничить количество добавок на блюдо</UiText>
+      </UiCheckbox>
+      <UiInputNumber
+        v-if="maxAddonsDefault != null"
+        v-model="maxAddonsDefault"
+        :min="1"
+        :show-button="true"
+        placeholder="3"
+        class="max-addons-input"
+        @update:model-value="saveMaxAddons"
+      />
+    </div>
+
     <div class="toolbar">
       <UiTabs v-model="activeTab" variant="pill" :tabs="tabs" />
       <UiButton type="primary" icon="plus" @click="openAdd">
@@ -77,17 +92,31 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { UiButton, UiSkeleton, UiTabs, UiDataTable, UiInput, UiEmpty, useMessage } from '@fastio/ui'
+import { useDebounceFn } from '@vueuse/core'
+import { UiButton, UiSkeleton, UiTabs, UiDataTable, UiInput, UiEmpty, UiCheckbox, UiInputNumber, UiText, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Addon, AddonPreset } from '@fastio/shared'
+import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAddons } from '~/composables/data/useAddons'
 import { buildAddonColumns, buildAddonPresetColumns } from '~/columns/addons'
 import AddonFormModal from '~/components/menu/AddonFormModal.vue'
 import AddonPresetFormModal from '~/components/menu/AddonPresetFormModal.vue'
 
+const db = useDatabase()
 const tenantStore = useTenantStore()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+
+const maxAddonsDefault = ref<number | null>(tenantStore.tenant?.maxAddonsDefault ?? null)
+
+const toggleMaxAddons = (checked: boolean) => {
+  maxAddonsDefault.value = checked ? 3 : null
+  saveMaxAddons()
+}
+
+const saveMaxAddons = useDebounceFn(() => {
+  db.tenants.update(tenantId.value, { maxAddonsDefault: maxAddonsDefault.value })
+}, 300)
 const {
   addons, loading, presets, presetsLoading, loadPresets,
   remove, toggleActive, removePreset,
@@ -202,6 +231,16 @@ const presetColumns = buildAddonPresetColumns({
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.max-addons-setting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.max-addons-input {
+  width: 100px;
 }
 
 .search {

@@ -31,6 +31,7 @@
           label="Вес, г"
           :min="0"
           :precision="0"
+          :show-button="true"
           placeholder="30"
         />
       </div>

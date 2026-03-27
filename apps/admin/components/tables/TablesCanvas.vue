@@ -17,6 +17,7 @@
               v-model:value="editForm.capacity"
               :min="1"
               :max="50"
+              :show-button="true"
               size="small"
               placeholder="—"
             />
@@ -121,6 +122,7 @@
               v-model:value="customCapacity"
               :min="1"
               :max="50"
+              :show-button="true"
               placeholder="—"
               size="small"
             />

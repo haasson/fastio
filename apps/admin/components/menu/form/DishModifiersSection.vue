@@ -3,6 +3,14 @@
     name="modifiers"
     title="Модификаторы"
   >
+    <template #header-extra>
+      <HintPopover>
+        <UiText size="tiny">
+          Группы вариантов блюда. Например, размер пиццы или вид теста. Гость выбирает один вариант из каждой группы.
+        </UiText>
+      </HintPopover>
+    </template>
+
     <div class="content">
       <div v-if="loading" class="loading">
         <UiSkeleton :height="40" :count="2" />
@@ -49,6 +57,7 @@
                     v-if="isPerDishWeight(attached.groupId)"
                     :model-value="getAttachedOption(gi, sourceOpt.id)!.weight ?? undefined"
                     label=""
+                    :show-button="true"
                     placeholder="—"
                     class="weight-input"
                     @update:model-value="getAttachedOption(gi, sourceOpt.id)!.weight = $event ?? null"
@@ -72,12 +81,18 @@
               <UiButton
                 v-if="canAddGroup"
                 type="primary"
+                size="small"
                 icon="plus"
                 @click="addMode = 'group'"
               >
                 Добавить
               </UiButton>
-              <UiButton v-if="hasCopySource" type="default" @click="addMode = 'copy'">
+              <UiButton
+                v-if="hasCopySource"
+                type="default"
+                size="small"
+                @click="addMode = 'copy'"
+              >
                 Скопировать с другого блюда
               </UiButton>
             </div>
@@ -122,6 +137,7 @@
 import { toRefs } from 'vue'
 import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, useMessage } from '@fastio/ui'
 import { useDishModifiersEditor } from '~/composables/menu/useDishModifiersEditor'
+import HintPopover from '~/components/ui/HintPopover.vue'
 
 const props = defineProps<{
   tenantId: string

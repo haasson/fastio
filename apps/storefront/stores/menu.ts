@@ -20,6 +20,7 @@ type MenuData = {
   comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]>
   tagDefinitions: DishTagDefinition[]
   tagDisplayMode: 'text' | 'icon' | 'both'
+  maxAddonsDefault: number | null
 }
 
 export const useMenuStore = defineStore('menu', () => {
@@ -33,6 +34,7 @@ export const useMenuStore = defineStore('menu', () => {
   const comboItems = computed(() => menu.value?.comboItems ?? {})
   const tagDefinitions = computed(() => menu.value?.tagDefinitions ?? [])
   const tagDisplayMode = computed(() => menu.value?.tagDisplayMode ?? 'both')
+  const maxAddonsDefault = computed(() => menu.value?.maxAddonsDefault ?? null)
 
   const dishesByCategory = computed<Record<string, Dish[]>>(() => {
     const byId = allDishes.value.reduce<Record<string, Dish[]>>((acc, dish) => {
@@ -64,5 +66,5 @@ export const useMenuStore = defineStore('menu', () => {
     }),
   )
 
-  return { allDishes, allCombos, dishModifiers, dishAddons, comboItems, tagDefinitions, tagDisplayMode, dishesByCategory, combosByCategory, visibleCategories }
+  return { allDishes, allCombos, dishModifiers, dishAddons, comboItems, tagDefinitions, tagDisplayMode, maxAddonsDefault, dishesByCategory, combosByCategory, visibleCategories }
 })

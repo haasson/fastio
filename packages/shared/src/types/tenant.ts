@@ -203,6 +203,7 @@ export type Tenant = {
   kitchenUrgencyMinutes: number
   kitchenConfig: KitchenConfig
   orderNumberConfig: OrderNumberConfig | null
+  maxAddonsDefault: number | null
   onboardingCompleted: boolean
   createdAt: string
 }

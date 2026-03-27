@@ -260,5 +260,6 @@ export default defineEventHandler(async (event) => {
     comboItems,
     tagDefinitions,
     tagDisplayMode,
+    maxAddonsDefault: tenant?.maxAddonsDefault ?? null,
   }
 })

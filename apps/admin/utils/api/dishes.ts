@@ -25,6 +25,7 @@ export const mapDish = (raw: Record<string, unknown>): Dish => {
     active: row.active,
     order: row.sort_order,
     requiresKitchen: row.requires_kitchen,
+    maxAddons: row.max_addons ?? null,
   }
 }
 
@@ -57,6 +58,7 @@ export const dishesApi = {
       active: data.active,
       sort_order: data.order,
       requires_kitchen: data.requiresKitchen,
+      max_addons: data.maxAddons,
     }).select().single())
 
     return result ? mapDish(result) : null
@@ -76,6 +78,7 @@ export const dishesApi = {
         sort_order: data.order,
         photos: data.photos,
         requires_kitchen: data.requiresKitchen,
+        max_addons: data.maxAddons,
       }),
     ).eq('id', id).select().single())
 

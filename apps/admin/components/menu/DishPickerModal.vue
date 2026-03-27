@@ -135,7 +135,7 @@
 
       <template v-if="showIngredients && removableIngredients.length">
         <div class="section-label">
-          Состав <span class="section-hint">— нажмите, чтобы убрать или вернуть</span>
+          Ингредиенты <span class="section-hint">— нажмите, чтобы убрать или вернуть</span>
         </div>
         <div class="pills">
           <UiTag
@@ -268,7 +268,7 @@ const searchResults = computed(() => {
   return allDishes.value.filter((d) => !excluded.value.has(d.id) && d.name.toLowerCase().includes(q))
 })
 
-const removableIngredients = computed(() => selectedDish.value?.ingredients.filter((i) => i.removable) ?? [])
+const removableIngredients = computed(() => selectedDish.value?.ingredients ?? [])
 
 const modalTitle = computed(() => {
   if (step.value === 'pick') return 'Выберите блюдо'

@@ -59,6 +59,7 @@
             <UiInputNumber
               v-if="form.affectsWeight && form.weightMode === 'global'"
               v-model:model-value="opt.weight"
+              :show-button="true"
               placeholder="—"
               class="weight-input"
             >

@@ -79,6 +79,7 @@
       :item="modalItem"
       :modifiers="modalModifiers"
       :addons="modalAddons"
+      :max-addons="modalMaxAddons"
       :mode="tableMode ? 'order' : 'add'"
       @add="handleModalAdd"
     />
@@ -214,6 +215,12 @@ const modalAddons = computed<ClientAddon[]>(() =>
     ? (menuStore.dishAddons[modalItem.value.id] ?? [])
     : [],
 )
+
+const modalMaxAddons = computed(() => {
+  if (!modalItem.value) return null
+  const dish = menuStore.allDishes.find((d) => d.id === modalItem.value!.id)
+  return dish?.maxAddons ?? menuStore.maxAddonsDefault
+})
 
 function addToCart(dish: Dish) {
   const item: CartItem = {
