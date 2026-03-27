@@ -32,11 +32,6 @@
 
         <HeaderUserMenu />
 
-
-        <FsIconButton ariaLabel="Корзина">
-          <ShoppingCart :size="20" :stroke-width="1.7" />
-        </FsIconButton>
-
         <FsBurger v-model="menuOpen" style="--burger-color: var(--primary)" />
       </div>
     </div>
@@ -74,10 +69,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, navigateTo } from 'nuxt/app'
-import { ShoppingCart } from 'lucide-vue-next'
 import type { Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel, isFeatureAvailable } from '@fastio/shared'
-import { FsSection, FsIconButton, FsBurger, FsMobileMenu } from '@fastio/public-ui'
+import { FsSection, FsBurger, FsMobileMenu } from '@fastio/public-ui'
 import HeaderUserMenu from '~/components/HeaderUserMenu.vue'
 import MobileUserCard from '~/components/MobileUserCard.vue'
 

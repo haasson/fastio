@@ -14,9 +14,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import DOMPurify from 'dompurify'
 import { getHeroGradient, heroContentPositionStyle } from '@fastio/shared'
 import type { SiteLayout, SiteContent } from '@fastio/shared'
+import { useSafeHtml } from '~/composables/useSafeHtml'
 
 const props = defineProps<{
   hero: SiteLayout['sections']['hero']
@@ -24,11 +24,7 @@ const props = defineProps<{
   stickyHeight?: number
 }>()
 
-const safeContent = computed(() => {
-  if (import.meta.server) return props.heroContent?.text ?? ''
-
-  return DOMPurify.sanitize(props.heroContent?.text ?? '')
-})
+const safeContent = useSafeHtml(() => props.heroContent?.text ?? '')
 
 const heroStyle = computed(() => {
   if (props.hero.size === 'fullscreen') {

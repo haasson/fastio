@@ -16,7 +16,7 @@
       <slot :sticky-total-height="stickyTotalHeight" :layout="layout" />
     </div>
 
-    <SiteFooter />
+    <SiteFooter :class="{ 'has-fab': hasCartItems }" />
     <slot name="fab" />
   </div>
 </template>
@@ -25,11 +25,13 @@
 import { computed, useTemplateRef } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { useElementSize } from '@vueuse/core'
+import { storeToRefs } from 'pinia'
 import type { Tenant } from '@fastio/shared'
 import { defaultSiteLayout, deepMerge } from '@fastio/shared'
 import SiteHeader from '~/components/sections/SiteHeader.vue'
 import CategoryBar from '~/components/sections/CategoryBar.vue'
 import SiteFooter from '~/components/sections/SiteFooter.vue'
+import { useCartStore } from '~/stores/cart'
 
 withDefaults(defineProps<{
   showCategoryBar?: boolean
@@ -44,6 +46,9 @@ type SiteLayout = ReturnType<typeof defaultSiteLayout>
 const layout = computed(() =>
   deepMerge(defaultSiteLayout(), (tenant.value?.siteLayout ?? {}) as Partial<SiteLayout>)
 )
+
+const { count } = storeToRefs(useCartStore())
+const hasCartItems = computed(() => count.value > 0)
 
 const headerRef = useTemplateRef('headerRef')
 const { height: headerHeight } = useElementSize(headerRef)
@@ -74,5 +79,9 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 
 .page-content {
   flex: 1;
+}
+
+.has-fab {
+  padding-bottom: 80px;
 }
 </style>

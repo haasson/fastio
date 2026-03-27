@@ -48,7 +48,6 @@
 import { computed, defineAsyncComponent } from 'vue'
 import { Truck } from 'lucide-vue-next'
 import { useNuxtData, useAsyncData, useRequestFetch, useRoute } from 'nuxt/app'
-import DOMPurify from 'dompurify'
 import type { DeliveryZone, Tenant } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, deepMerge, isPresetDark } from '@fastio/shared'
 import { FsSection, FsText } from '@fastio/public-ui'
@@ -56,6 +55,7 @@ import PageShell from '~/components/sections/PageShell.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import { useCurrency } from '~/composables/useCurrency'
+import { useSafeHtml } from '~/composables/useSafeHtml'
 import { buildDeliveryText, formatZoneConditions } from '~/utils/deliveryText'
 
 const DeliveryMapView = defineAsyncComponent(() => import('~/components/delivery/DeliveryMapView.vue'))
@@ -86,10 +86,7 @@ const showMap = computed(() => layout.value.pageSettings.delivery?.showMap ?? fa
 const isDark = computed(() => isPresetDark(tenant.value?.theme?.preset ?? ''))
 const manualText = computed(() => content.value.delivery?.manualText ?? '')
 
-const sanitizedManualText = computed(() => {
-  if (typeof window === 'undefined') return manualText.value
-  return DOMPurify.sanitize(manualText.value)
-})
+const sanitizedManualText = useSafeHtml(manualText)
 
 const autoText = computed(() =>
   buildDeliveryText(zones.value ?? [], tenant.value!, currency.value),
