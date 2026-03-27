@@ -1,5 +1,5 @@
 <template>
-  <PageShell show-category-bar>
+  <PageShell :show-category-bar="menuDefaultView === 'dishes'">
     <template #default="{ stickyTotalHeight, layout }">
       <HeroSection
         v-if="layout.sections.hero.enabled && layout.sectionsOrder.includes('hero')"
@@ -17,7 +17,7 @@
       <MenuSection
         v-if="layout.sections.menu.enabled && layout.sectionsOrder.includes('menu')"
         id="menu"
-        :default-view="layout.sections.menu.defaultView"
+        :default-view="menuDefaultView"
       />
       <GallerySection
         v-if="layout.sections.gallery.enabled && layout.sectionsOrder.includes('gallery') && layout.sections.gallery.galleryIds?.length"
@@ -41,7 +41,7 @@
 import { computed } from 'vue'
 import { useNuxtData, useAsyncData, useRequestFetch, useRoute, navigateTo } from 'nuxt/app'
 import type { Banner, Gallery, Tenant } from '@fastio/shared'
-import { defaultSiteContent, deepMerge } from '@fastio/shared'
+import { defaultSiteContent, defaultSiteLayout, deepMerge } from '@fastio/shared'
 import PageShell from '~/components/sections/PageShell.vue'
 import HeroSection from '~/components/sections/HeroSection.vue'
 import BannersSection from '~/components/sections/BannersSection.vue'
@@ -69,4 +69,12 @@ type SiteContentType = ReturnType<typeof defaultSiteContent>
 const content = computed(() =>
   deepMerge(defaultSiteContent(), (tenant.value?.siteContent ?? {}) as Partial<SiteContentType>)
 )
+
+type SiteLayoutType = ReturnType<typeof defaultSiteLayout>
+
+const layout = computed(() =>
+  deepMerge(defaultSiteLayout(), (tenant.value?.siteLayout ?? {}) as Partial<SiteLayoutType>)
+)
+
+const menuDefaultView = computed(() => layout.value.sections.menu.defaultView)
 </script>
