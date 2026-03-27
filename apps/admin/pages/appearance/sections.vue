@@ -39,7 +39,7 @@
             <span class="drag-handle" @click.stop>
               <UiIcon name="grip" :size="14" />
             </span>
-            <span class="item-label">{{ featureLabel(key) }}</span>
+            <span class="item-label">{{ featureLabel(key, businessType) }}</span>
             <UiIcon
               name="chevronRound"
               :size="20"
@@ -83,7 +83,7 @@
         <span class="drag-handle">
           <UiIcon name="grip" :size="14" />
         </span>
-        <span class="item-label">{{ featureLabel(key) }}</span>
+        <span class="item-label">{{ featureLabel(key, businessType) }}</span>
         <span class="action-btn" @click.stop="addSection(key)">
           <UiIcon name="plus" :size="14" />
         </span>
@@ -108,8 +108,9 @@ const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
 const { confirm } = useConfirm()
 const tenantStore = useTenantStore()
+const businessType = computed(() => tenantStore.tenant?.businessType)
 
-const isAvailable = (key: string) => !tenantStore.tenant?.modules || isFeatureAvailable(key, tenantStore.tenant.modules)
+const isAvailable = (key: string) => !tenantStore.tenant?.modules || isFeatureAvailable(key, tenantStore.tenant.modules, businessType.value)
 
 const headerOpen = ref(false)
 const openKeys = reactive(new Set<string>())
@@ -164,7 +165,7 @@ const removeSection = async (key: string) => {
     } else {
       const ok = await confirm({
         title: 'Убрать секцию?',
-        message: `«${featureLabel(key)}» используется в навигации хэдера. При отключении будет удалено из навигации.`,
+        message: `«${featureLabel(key, businessType.value)}» используется в навигации хэдера. При отключении будет удалено из навигации.`,
         confirmText: 'Убрать',
         confirmType: 'warning',
       })

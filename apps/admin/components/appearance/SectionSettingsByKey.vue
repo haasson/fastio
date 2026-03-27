@@ -62,11 +62,13 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { UiSegmentedControl, UiInputNumber, UiCheckbox } from '@fastio/ui'
 import HeroOptions from './HeroOptions.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, SectionKey } from '@fastio/shared'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 
 defineProps<{
   sectionKey: SectionKey
@@ -85,10 +87,11 @@ const bannerDisplayOptions = [
   { value: 'auto', label: 'По размеру' },
 ]
 
-const menuViewOptions = [
+const { itemsLabel } = useTenantLabels()
+const menuViewOptions = computed(() => [
   { value: 'categories', label: 'Категории' },
-  { value: 'dishes', label: 'Блюда' },
-]
+  { value: 'dishes', label: itemsLabel.value },
+])
 </script>
 
 <style scoped lang="scss">

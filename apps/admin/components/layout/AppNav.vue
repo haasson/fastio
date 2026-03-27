@@ -50,7 +50,7 @@ type NavItem = { to: string; icon: IconName; label: string | ComputedRef<string>
 
 const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings, canManageTeam } = usePermissions()
 const modules = useModules()
-const { menuLabel } = useTenantLabels()
+const { menuLabel, isServices } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 const { count: newReservationCount } = useNewReservationCounter()
@@ -62,7 +62,7 @@ const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.v
 const canSeeKitchen = computed(() => canManageOrders.value && modules.kitchen.value.enabled)
 const canSeeTables = computed(() => canViewSettings.value && modules.dineIn.value.enabled)
 const canSeeReservations = computed(() => canManageOrders.value && (modules.reservations?.value?.enabled ?? false))
-const canSeeBranches = computed(() => canManageTeam.value)
+const canSeeBranches = computed(() => canManageTeam.value && !isServices.value)
 
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
@@ -72,7 +72,7 @@ const allNavItems: NavItem[] = [
   { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },
   { to: '/reservations', icon: 'calendar', label: 'Бронирования', visible: canSeeReservations },
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
-  { to: '/team/members', icon: 'users', label: 'Команда', visible: canManageTeam },
+  { to: '/team/members', icon: 'users', label: 'Команда', visible: computed(() => canManageTeam.value && !isServices.value) },
   { to: '/team/branches', icon: 'mapPin', label: 'Филиалы', visible: canSeeBranches },
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewSettings },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },

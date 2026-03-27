@@ -69,11 +69,13 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { UiSegmentedControl, UiCheckbox } from '@fastio/ui'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, PageKey } from '@fastio/shared'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 
 defineProps<{
   pageKey: PageKey
@@ -85,10 +87,11 @@ const emit = defineEmits<{
   'pending-about-cover': [file: File | null]
 }>()
 
-const menuViewOptions = [
+const { itemsLabel } = useTenantLabels()
+const menuViewOptions = computed(() => [
   { value: 'categories', label: 'Категории' },
-  { value: 'dishes', label: 'Блюда' },
-]
+  { value: 'dishes', label: itemsLabel.value },
+])
 
 const deliveryDescriptionOptions = [
   { value: 'auto', label: 'Авто' },

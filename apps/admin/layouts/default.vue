@@ -121,7 +121,9 @@ useReservationsChannel(currentTenantId)
 useReservationAlertHandler()
 
 // Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
-requestNotificationPermission()
+if (tenantStore.tenant?.businessType !== 'services') {
+  requestNotificationPermission()
+}
 
 const showOnboarding = computed(
   () => !tenantStore.loading && !!tenantStore.tenant && !tenantStore.tenant.onboardingCompleted,

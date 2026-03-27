@@ -2,20 +2,24 @@ import type { TenantModules } from '../types/tenant'
 
 type SiteFeatureDef = {
   label: string
+  /** Переопределённое название для типа бизнеса services */
+  servicesLabel?: string
   index: boolean
   page: boolean
   nav: boolean
   module?: keyof TenantModules
+  /** Если задано — секция доступна только для этих типов бизнеса */
+  businessTypes?: string[]
 }
 
 export const SITE_FEATURES = {
-  categoryBar: { label: 'Панель категорий', index: true,  page: false, nav: false },
+  categoryBar: { label: 'Панель категорий', servicesLabel: 'Панель категорий услуг', index: true,  page: false, nav: false },
   hero:        { label: 'Хиро',             index: true,  page: false, nav: false },
   banners:     { label: 'Баннеры',          index: true,  page: false, nav: false },
-  menu:        { label: 'Меню',             index: true,  page: true,  nav: true  },
+  menu:        { label: 'Меню',             servicesLabel: 'Услуги',                index: true,  page: true,  nav: true  },
   gallery:     { label: 'Галерея',          index: true,  page: true,  nav: true  },
   reviews:     { label: 'Отзывы',           index: true,  page: false, nav: true  },
-  delivery:    { label: 'Доставка',         index: true,  page: true,  nav: true,  module: 'delivery'     },
+  delivery:    { label: 'Доставка',         index: true,  page: true,  nav: true,  module: 'delivery' },
   // TODO: vacancies page — скрыто до реализации функционала
   vacancies:   { label: 'Вакансии',         index: false, page: false, nav: false },
   booking:     { label: 'Бронирование',     index: false, page: true,  nav: true,  module: 'reservations' },
@@ -45,11 +49,17 @@ export const PAGE_KEYS = keys.filter((k): k is PageKey => SITE_FEATURES[k].page)
 /** Structural sections excluded from nav (always present, not user-selectable) */
 export const STRUCTURAL_SECTIONS: readonly SectionKey[] = ['categoryBar', 'hero']
 
-export const featureLabel = (key: string): string =>
-  (SITE_FEATURES as Record<string, SiteFeatureDef>)[key]?.label ?? key
+export const featureLabel = (key: string, businessType?: string | null): string => {
+  const def = (SITE_FEATURES as Record<string, SiteFeatureDef>)[key]
+  if (!def) return key
+  if (businessType === 'services' && def.servicesLabel) return def.servicesLabel
+  return def.label
+}
 
-export const isFeatureAvailable = (key: string, modules: TenantModules): boolean => {
-  const requiredModule = (SITE_FEATURES as Record<string, SiteFeatureDef>)[key]?.module
-  if (!requiredModule) return true
-  return modules[requiredModule] === true
+export const isFeatureAvailable = (key: string, modules: TenantModules, businessType?: string | null): boolean => {
+  const def = (SITE_FEATURES as Record<string, SiteFeatureDef>)[key]
+  if (!def) return true
+  if (def.businessTypes && businessType && !def.businessTypes.includes(businessType)) return false
+  if (!def.module) return true
+  return modules[def.module] === true
 }

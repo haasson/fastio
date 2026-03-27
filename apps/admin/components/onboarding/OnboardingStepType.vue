@@ -40,12 +40,8 @@ const options: { type: BusinessType; icon: IconName; title: string; desc: string
     title: 'Общепит',
     desc: 'Кафе, ресторан, столовая, доставка еды',
   },
-  {
-    type: 'retail',
-    icon: 'cart',
-    title: 'Магазин',
-    desc: 'Интернет-магазин, розница, товары на заказ',
-  },
+  // retail temporarily hidden — UI not adapted yet
+  // { type: 'retail', icon: 'cart', title: 'Магазин', desc: 'Интернет-магазин, розница, товары на заказ' },
   {
     type: 'services',
     icon: 'users',

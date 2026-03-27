@@ -51,7 +51,7 @@
           class="category-select"
           @update:value="$emit('update:categoryId', $event)"
         />
-        <div class="weight-group">
+        <div v-if="showWeight !== false" class="weight-group">
           <UiInputNumber
             :model-value="weight"
             :label="weightUnit === 'мл' ? 'Объём, мл' : 'Вес, г'"
@@ -95,6 +95,7 @@ defineProps<{
   descriptionPlaceholder?: string
   categoryId?: string
   categoryOptions?: { label: string; value: string }[]
+  showWeight?: boolean
 }>()
 
 defineEmits<{

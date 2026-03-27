@@ -5,7 +5,7 @@
       <div class="logo-wrap">
         <ImageUploadTrigger
           :model-value="form.contentForm.logo"
-          aspect-ratio="1:1"
+          aspect-ratio="free"
           modal-title="Логотип"
           @update:model-value="onLogoChange"
           @pending="form.setPendingLogo"

@@ -1,6 +1,6 @@
 <template>
   <div class="wizard-root">
-    <div class="wizard-container">
+    <UiCard size="large" class="wizard-card">
       <!-- Progress -->
       <div class="progress">
         <div
@@ -14,33 +14,33 @@
       <!-- Steps -->
       <div class="step-content">
         <OnboardingStepType
-          v-if="step === 1"
+          v-if="currentStep === 'type'"
           v-model="form.businessType"
         />
         <OnboardingStepInfo
-          v-else-if="step === 2"
+          v-else-if="currentStep === 'info'"
           v-model:name="form.name"
           v-model:phone="form.phone"
           v-model:timezone="form.timezone"
         />
         <OnboardingStepBranch
-          v-else-if="step === 3"
+          v-else-if="currentStep === 'branch'"
         />
         <OnboardingStepModules
-          v-else-if="step === 4"
+          v-else-if="currentStep === 'modules'"
           v-model:delivery="form.delivery"
           v-model:pickup="form.pickup"
           v-model:dine-in="form.dineIn"
         />
         <OnboardingStepComplete
-          v-else-if="step === 5"
+          v-else-if="currentStep === 'complete'"
         />
       </div>
 
       <!-- Navigation -->
       <div class="nav">
         <UiButton
-          v-if="step > 1 && step < 5"
+          v-if="step > 1 && currentStep !== 'complete'"
           type="secondary"
           @click="prev"
         >
@@ -49,7 +49,7 @@
         <div v-else class="spacer" />
 
         <UiButton
-          v-if="step < 5"
+          v-if="currentStep !== 'complete'"
           type="primary"
           :disabled="!canProceed"
           :loading="saving"
@@ -66,13 +66,13 @@
           Перейти в админку
         </UiButton>
       </div>
-    </div>
+    </UiCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { UiButton } from '@fastio/ui'
+import { UiButton, UiCard } from '@fastio/ui'
 import type { BusinessType } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
@@ -82,10 +82,11 @@ import OnboardingStepBranch from '~/components/onboarding/OnboardingStepBranch.v
 import OnboardingStepModules from '~/components/onboarding/OnboardingStepModules.vue'
 import OnboardingStepComplete from '~/components/onboarding/OnboardingStepComplete.vue'
 
+type StepName = 'type' | 'info' | 'branch' | 'modules' | 'complete'
+
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 
-const totalSteps = 5
 const step = ref(1)
 const saving = ref(false)
 const form = reactive({
@@ -98,15 +99,26 @@ const form = reactive({
   dineIn: tenantStore.tenant?.modules?.dineIn ?? false,
 })
 
+const stepList = computed<StepName[]>(() => {
+  if (form.businessType === 'services') {
+    return ['type', 'info', 'complete']
+  }
+
+  return ['type', 'info', 'branch', 'modules', 'complete']
+})
+
+const totalSteps = computed(() => stepList.value.length)
+const currentStep = computed<StepName>(() => stepList.value[step.value - 1])
+
 const canProceed = computed(() => {
-  switch (step.value) {
-    case 1:
+  switch (currentStep.value) {
+    case 'type':
       return !!form.businessType
-    case 2:
+    case 'info':
       return form.name.trim().length > 0 && form.phone.trim().length > 0
-    case 3:
+    case 'branch':
       return branchStore.hasBranches
-    case 4:
+    case 'modules':
       return form.delivery || form.pickup || form.dineIn
     default:
       return true
@@ -122,9 +134,19 @@ const next = async () => {
 
   saving.value = true
   try {
-    if (step.value === 1) {
-      await tenantStore.update({ businessType: form.businessType })
-    } else if (step.value === 2) {
+    if (currentStep.value === 'type') {
+      const updates: Parameters<typeof tenantStore.update>[0] = { businessType: form.businessType }
+
+      if (form.businessType === 'services') {
+        updates.modules = {
+          ...tenantStore.tenant!.modules,
+          delivery: false,
+          pickup: false,
+          dineIn: false,
+        }
+      }
+      await tenantStore.update(updates)
+    } else if (currentStep.value === 'info') {
       await tenantStore.update({
         name: form.name.trim(),
         contacts: {
@@ -133,9 +155,9 @@ const next = async () => {
         },
         timezone: form.timezone,
       })
-    } else if (step.value === 3) {
+    } else if (currentStep.value === 'branch') {
       // Branch is saved inline via branchStore.add — nothing to save here
-    } else if (step.value === 4) {
+    } else if (currentStep.value === 'modules') {
       await tenantStore.update({
         modules: {
           ...tenantStore.tenant!.modules,
@@ -175,12 +197,10 @@ const finish = async () => {
   overflow-y: auto;
 }
 
-.wizard-container {
-  width: 100%;
+.wizard-card {
   max-width: 480px;
-  display: flex;
-  flex-direction: column;
   gap: 32px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
 }
 
 .progress {

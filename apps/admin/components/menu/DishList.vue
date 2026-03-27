@@ -5,7 +5,7 @@
     </div>
 
     <template v-else>
-      <UiSectionHeader title="Блюда">
+      <UiSectionHeader :title="sectionTitle">
         <template #left>
           <div class="header-left">
             <UiSegmentedControl
@@ -41,7 +41,7 @@
             <UiSkeleton v-if="showSkeleton" text :repeat="6" />
 
             <template v-else-if="!dishesLoading">
-              <UiEmpty v-if="dishes.length === 0" icon="dishes" text="В этой категории пока нет блюд" />
+              <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="emptyText" />
 
               <template v-else>
 
@@ -155,6 +155,7 @@
 <script setup lang="ts">
 import { toRefs, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import { VueDraggable } from 'vue-draggable-plus'
 import {
   UiButton, UiCard, UiDataTable, UiDivider, UiEmpty, UiInput,
@@ -182,6 +183,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   dishesChanged: []
 }>()
+
+const { isServices, itemsLabel, itemsLabelLower, itemsLabelGen } = useTenantLabels()
+const sectionTitle = computed(() => isServices.value ? 'Услуги' : 'Блюда')
+const emptyText = computed(() => `В этой категории пока нет ${itemsLabelGen.value}`)
 
 const { tenantId: tenantIdRef, categoryId: categoryIdRef } = toRefs(props)
 
@@ -215,7 +220,7 @@ const VIEW_ITEMS = [
 const dishView = useLocalStorage<'cards' | 'table' | 'order'>('menu:dish-view', 'cards')
 
 const { showSkeleton, modalOpen: dishModalOpen, editingItem: editingDish, openModal: openDishModal, closeModal: closeDishModal, confirmDelete: confirmDeleteDish }
-  = useItemManager<Dish>({ loading: dishesLoading, remove: removeDish, confirmTitle: 'Удалить блюдо?' })
+  = useItemManager<Dish>({ loading: dishesLoading, remove: removeDish, confirmTitle: `Удалить ${itemsLabelLower.value}?` })
 
 const reorderDishes = () => reorder(dishes.value)
 

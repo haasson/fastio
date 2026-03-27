@@ -1,7 +1,7 @@
 <template>
   <UiDrawer
     :model-value="modelValue"
-    :title="dish ? 'Редактировать блюдо' : 'Новое блюдо'"
+    :title="modalTitle"
     :width="900"
     :actions="drawerActions"
     :on-confirm="onConfirm"
@@ -17,9 +17,10 @@
         :weight-unit="form.weightUnit"
         :category-id="form.categoryId"
         :category-options="categoryOptions"
-        name-placeholder="Маргарита"
+        :name-placeholder="isServices ? 'Например: Ремонт холодильника' : 'Маргарита'"
         :price-placeholder="350"
-        description-placeholder="Томатный соус, моцарелла, базилик"
+        :description-placeholder="isServices ? 'Опишите услугу' : 'Томатный соус, моцарелла, базилик'"
+        :show-weight="!isServices"
         @update:photo-url="currentPhotoUrl = $event"
         @update:photo-removed="photoRemoved = $event"
         @update:pending-photo="pendingPhotoFile = $event"
@@ -44,6 +45,7 @@
         />
 
         <AddonsSection
+          v-if="!isServices"
           ref="addonsRef"
           :tenant-id="tenantId"
           :dish-id="dish?.id ?? null"
@@ -57,11 +59,12 @@
         />
 
         <IngredientsSection
+          v-if="!isServices"
           ref="ingredientsRef"
           :category-dishes="categoryDishes"
         />
 
-        <NutritionSection ref="nutritionRef" />
+        <NutritionSection v-if="!isServices" ref="nutritionRef" />
 
         <SettingsSection
           ref="settingsRef"
@@ -87,6 +90,7 @@ import type { DishFormData } from '~/utils/api/dishes'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import { useDishSave } from '~/composables/data/useDishSave'
 import { useAddons } from '~/composables/data/useAddons'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
@@ -115,6 +119,10 @@ const emit = defineEmits<{
 
 const { tenantId: tenantIdRef } = toRefs(props)
 const tenantStore = useTenantStore()
+const { isServices } = useTenantLabels()
+const modalTitle = computed(() => props.dish
+  ? (isServices.value ? 'Редактировать услугу' : 'Редактировать блюдо')
+  : (isServices.value ? 'Новая услуга' : 'Новое блюдо'))
 const db = useDatabase()
 const { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()

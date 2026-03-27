@@ -8,6 +8,7 @@ import { useRoute, useRouter } from '#imports'
 import { useTenantStore } from '~/stores/tenant'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useModules } from '~/composables/plan/useModules'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 
 const tenantStore = useTenantStore()
@@ -16,12 +17,13 @@ onMounted(() => tenantStore.init())
 
 const { canManageMenu } = usePermissions()
 const modules = useModules()
+const { isServices, itemsLabel } = useTenantLabels()
 
 const tabs = computed(() => [
-  { value: 'dishes', label: 'Блюда' },
+  { value: 'dishes', label: itemsLabel.value },
   ...(canManageMenu.value ? [{ value: 'categories', label: 'Категории' }] : []),
-  ...(canManageMenu.value && modules.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы' }] : []),
-  ...(canManageMenu.value && modules.addons.value.enabled ? [{ value: 'addons', label: 'Добавки' }] : []),
+  ...(!isServices.value && canManageMenu.value && modules.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы' }] : []),
+  ...(!isServices.value && canManageMenu.value && modules.addons.value.enabled ? [{ value: 'addons', label: 'Добавки' }] : []),
   ...(canManageMenu.value ? [{ value: 'tags', label: 'Теги' }] : []),
 ])
 

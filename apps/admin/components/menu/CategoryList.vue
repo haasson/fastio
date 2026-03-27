@@ -29,7 +29,7 @@
         </template>
         <template v-if="dishCounts" #default>
           <UiText size="tiny" color="tertiary">
-            {{ dishCounts[cat.id] ?? 0 }} блюд
+            {{ dishCounts[cat.id] ?? 0 }} {{ itemsLabelGen }}
           </UiText>
         </template>
         <template #append>
@@ -53,6 +53,7 @@ import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import { useTagDisplay } from '~/composables/ui/useTagDisplay'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 
 const props = defineProps<{
   categories: Category[]
@@ -75,6 +76,7 @@ watch(() => props.categories, (v) => {
 }, { immediate: true })
 
 const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags ?? []))
+const { itemsLabelGen } = useTenantLabels()
 </script>
 
 <style scoped lang="scss">

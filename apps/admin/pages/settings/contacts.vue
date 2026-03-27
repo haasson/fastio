@@ -15,6 +15,7 @@
 
     <div class="phone-block">
       <UiRadioGroup
+        v-if="!isServices"
         v-model="form.phoneMode"
         label="Телефон"
         :options="phoneModeOptions"
@@ -22,9 +23,10 @@
         :space="6"
       />
       <UiInput
-        v-if="form.phoneMode === 'shared'"
+        v-if="form.phoneMode === 'shared' || isServices"
         v-model="form.phone"
         name="phone"
+        :label="isServices ? 'Телефон' : undefined"
         class="phone-input"
         placeholder="+7 (999) 000-00-00"
         :rules="[{ type: 'required', message: 'Введите телефон' }, { type: 'phone', message: 'Введите корректный телефон' }]"
@@ -32,7 +34,7 @@
     </div>
 
     <UiSelect
-      v-model="form.timezone"
+      v-model:value="form.timezone"
       label="Часовой пояс"
       :options="TIMEZONE_OPTIONS"
       filterable
@@ -77,6 +79,7 @@ import { ref, reactive, watch } from 'vue'
 import { UiForm, UiInput, UiButton, UiRadioGroup, useMessage, UiSectionHeader, UiCheckbox, UiTimepicker, UiSelect } from '@fastio/ui'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { TIMEZONE_OPTIONS } from '@fastio/shared'
+import { computed } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
 
 const DAYS = [
@@ -90,6 +93,7 @@ const DAYS = [
 ]
 
 const tenantStore = useTenantStore()
+const isServices = computed(() => tenantStore.tenant?.businessType === 'services')
 
 const phoneModeOptions = [
   { value: 'shared', label: 'Один номер для всех филиалов' },
