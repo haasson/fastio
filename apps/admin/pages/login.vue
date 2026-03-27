@@ -111,6 +111,8 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/form' as *;
+
 .login-root {
   min-height: 100vh;
   display: flex;
@@ -133,8 +135,6 @@ const handleSubmit = async () => {
 }
 
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  @include modal-form;
 }
 </style>

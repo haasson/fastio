@@ -1,5 +1,5 @@
 <template>
-  <div class="trigger-root" :class="{ 'trigger-root--compact': compact }">
+  <div class="trigger-root" :class="{ 'trigger-root--compact': compact }" :style="rootStyle">
     <!-- Preview state -->
     <div
       v-if="previewUrl"
@@ -34,10 +34,9 @@
       :style="previewStyle"
       @click="showModal = true"
     >
-      <UiIcon name="plus" :size="compact ? 20 : 32" color="var(--color-text-tertiary)" />
-      <UiText v-if="!compact" size="small" color="var(--color-text-secondary)">
-        Добавить фото
-      </UiText>
+      <UiIcon name="plus" :size="compact ? 24 : 32" color="var(--color-text-tertiary)" />
+      <span v-if="compact" class="compact-label">Фото</span>
+      <UiText v-else size="small" color="var(--color-text-secondary)">Добавить фото</UiText>
     </div>
 
     <ImageUploadModal
@@ -59,6 +58,8 @@ const props = withDefaults(defineProps<{
   modelValue: string | null
   aspectRatio?: ImageAspectRatio
   compact?: boolean
+  width?: string
+  height?: string
   modalTitle?: string
 }>(), {
   aspectRatio: '4:3',
@@ -73,6 +74,15 @@ const showModal = ref(false)
 const pendingBlobUrl = ref<string | null>(null)
 
 const previewUrl = computed(() => pendingBlobUrl.value ?? props.modelValue)
+
+const rootStyle = computed(() => {
+  if (!props.compact) return {}
+
+  return {
+    ...(props.width && { width: props.width }),
+    ...(props.height && { height: props.height }),
+  }
+})
 
 const previewStyle = computed(() => {
   if (props.compact) return {}
@@ -128,8 +138,6 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     padding: 0;
-    border: none;
-    border-radius: 0;
   }
 
   &:hover {
@@ -148,7 +156,6 @@ onUnmounted(() => {
   .trigger-root--compact & {
     aspect-ratio: unset;
     height: 100%;
-    border-radius: 0;
   }
 }
 
@@ -172,6 +179,11 @@ onUnmounted(() => {
   .preview:hover & {
     opacity: 1;
   }
+}
+
+.compact-label {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
 }
 
 .remove-btn {

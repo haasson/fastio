@@ -103,37 +103,32 @@
                     v-else
                     :columns="tableColumns"
                     :data="filteredDishes"
-                    :row-key="(row) => row.id"
+                    :row-key="(row: Dish) => row.id"
                     :bordered="false"
                     size="small"
                   />
                 </template>
 
                 <!-- Порядок: чистый DnD -->
-                <VueDraggable
+                <AppDraggableList
                   v-else-if="dishView === 'order'"
                   v-model="dishes"
-                  class="order-list"
-                  handle=".drag-handle"
-                  :animation="180"
-                  ghost-class="order-row-ghost"
-                  @end="reorderDishes"
+                  @reorder="reorderDishes"
                 >
-                  <div
+                  <AppListRow
                     v-for="dish in dishes"
                     :key="dish.id"
-                    class="order-row"
-                    :class="{ inactive: !dish.active }"
+                    :name="dish.name"
+                    :thumb-url="dish.photos[0] ?? null"
+                    thumb-width="40px"
+                    thumb-height="40px"
+                    :disabled="!dish.active"
                   >
-                    <UiIcon name="grip" class="drag-handle" />
-                    <div class="order-photo">
-                      <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" />
-                      <UiPhotoPlaceholder v-else size="small" />
-                    </div>
-                    <span class="order-name">{{ dish.name }}</span>
-                    <span class="order-price">{{ formatPrice(dish.price) }}</span>
-                  </div>
-                </VueDraggable>
+                    <template #append>
+                      <span class="order-price">{{ formatPrice(dish.price) }}</span>
+                    </template>
+                  </AppListRow>
+                </AppDraggableList>
 
               </template>
             </template>
@@ -162,13 +157,15 @@ import { toRefs, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { VueDraggable } from 'vue-draggable-plus'
 import {
-  UiButton, UiCard, UiDataTable, UiDivider, UiEmpty, UiIcon, UiInput,
+  UiButton, UiCard, UiDataTable, UiDivider, UiEmpty, UiInput,
   UiPhotoPlaceholder, UiSectionHeader, UiSegmentedControl, UiSkeleton,
   UiSpace, UiSwitch, UiTag,
 } from '@fastio/ui'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppDraggableList from '~/components/ui/AppDraggableList.vue'
+import AppListRow from '~/components/ui/AppListRow.vue'
 import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
 import { useDishes } from '~/composables/data/useDishes'
 import { useDishTable } from '~/composables/ui/useDishTable'
@@ -349,67 +346,6 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 }
 
 // Порядок
-.order-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.order-row-ghost {
-  opacity: 0.35;
-}
-
-.order-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-
-  &.inactive { opacity: 0.5; }
-}
-
-.drag-handle {
-  flex-shrink: 0;
-  color: var(--color-text-tertiary);
-  cursor: grab;
-  width: 16px;
-  height: 16px;
-
-  &:active { cursor: grabbing; }
-}
-
-.order-photo {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--color-bg-page);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.order-name {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-title);
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .order-price {
   flex-shrink: 0;
   font-size: 13px;

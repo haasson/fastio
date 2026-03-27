@@ -8,9 +8,9 @@
     :on-confirm="onConfirm"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <UiForm ref="formRef">
+    <UiForm ref="formRef" class="form">
       <div class="field">
-        <span class="field-label">Изображение *</span>
+        <span class="label">Изображение *</span>
         <ImageUploadTrigger
           v-model="form.url"
           aspect-ratio="3:1"
@@ -195,21 +195,10 @@ const onConfirm = () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/form' as *;
+
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field-label {
-  font-size: 13px;
-  color: var(--color-text-secondary);
+  @include modal-form;
 }
 
 .switch-row {

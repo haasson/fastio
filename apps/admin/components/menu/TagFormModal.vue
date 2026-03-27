@@ -144,20 +144,10 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/form' as *;
+
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.label {
-  color: var(--color-text-secondary);
+  @include modal-form;
 }
 
 .icon-grid {

@@ -53,6 +53,7 @@ import {
   Table2,
   FileText,
   Sparkles,
+  Hash,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -112,6 +113,7 @@ export const iconRegistry = {
   tableIcon: Table2,
   fileText: FileText,
   sparkles: Sparkles,
+  hash: Hash,
 } as const
 
 export type IconName = keyof typeof iconRegistry

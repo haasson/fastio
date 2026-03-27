@@ -111,10 +111,10 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/form' as *;
+
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  @include modal-form;
 }
 
 .checkboxes-label {

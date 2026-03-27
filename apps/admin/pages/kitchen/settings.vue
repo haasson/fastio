@@ -115,10 +115,10 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/form' as *;
+
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  @include modal-form;
 }
 
 .row {
@@ -130,12 +130,6 @@ const handleSave = async () => {
     flex: 1;
     min-width: 200px;
   }
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
 }
 
 .hint {

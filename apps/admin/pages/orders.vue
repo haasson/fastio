@@ -11,14 +11,23 @@
 import { computed } from 'vue'
 import { useModules } from '~/composables/plan/useModules'
 import { usePermissions } from '~/composables/auth/usePermissions'
+import type { IconName } from '@fastio/icons'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 
 const modules = useModules()
 const { canManageTeam } = usePermissions()
 
-const tabs = computed(() => [
-  { value: 'orders', label: 'Заказы', icon: 'orders' as const },
-  ...(modules.delivery.value.active ? [{ value: 'delivery', label: 'Доставка', icon: 'bike' as const }] : []),
-  ...(canManageTeam.value ? [{ value: 'order-number', label: 'Нумерация', icon: 'hash' as const }] : []),
-])
+type Tab = { value: string; label: string; icon?: IconName }
+
+const tabs = computed(() => {
+  const result: Tab[] = [
+    { value: 'orders', label: 'Заказы', icon: 'orders' },
+  ]
+
+  if (canManageTeam.value) result.push({ value: 'statuses', label: 'Статусы', icon: 'list' })
+  if (modules.delivery.value.active) result.push({ value: 'delivery', label: 'Доставка', icon: 'bike' })
+  if (canManageTeam.value) result.push({ value: 'order-number', label: 'Нумерация', icon: 'hash' })
+
+  return result
+})
 </script>

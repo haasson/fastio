@@ -1,137 +1,92 @@
 <template>
-  <div class="categories-root">
-    <UiSectionHeader title="Категории">
-      <template #left>
-        <UiEditButton @click="managerOpen = true" />
-      </template>
-    </UiSectionHeader>
-
-    <UiSkeleton
-      v-if="categoriesLoading"
-      text
-      :repeat="3"
-      class="skeleton"
-    />
-
-    <UiTabs
-      v-else
-      variant="pill"
-      :model-value="modelValue ?? ''"
-      :tabs="categoryTabs"
-      @update:model-value="$emit('update:modelValue', String($event))"
-    />
-
-    <ItemManagerModal
-      v-model="managerOpen"
-      title="Категории"
-      hint="Перетаскивайте категории для изменения порядка. Нажмите на название, чтобы переименовать."
-      mode="categories"
-      :items="managerItems"
-      :item-counts="dishCountByCategory"
-      :available-special-types="availableSpecialTypes"
-      :available-tags="tags"
-      @add="handleAdd"
-      @update="handleUpdate"
-      @remove="handleRemove"
-      @reorder="handleReorder"
-      @update-photo="handleUpdatePhoto"
-      @remove-photo="handleRemovePhoto"
-    />
+  <div class="category-list-root">
+    <UiSkeleton v-if="loading" :height="56" :count="3" />
+    <UiEmpty v-else-if="categories.length === 0" text="Нет категорий" />
+    <AppDraggableList v-else v-model="localCategories" @reorder="$emit('reorder', localCategories)">
+      <AppListRow
+        v-for="cat in localCategories"
+        :key="cat.id"
+        :name="cat.name"
+        :thumb-url="cat.photoUrl"
+        thumb-width="48px"
+        thumb-height="36px"
+        :disabled="!cat.active"
+      >
+        <template #name>
+          <div class="name-row">
+            <UiText size="small" weight="medium">{{ cat.name }}</UiText>
+            <UiTag v-if="cat.type !== 'regular'" size="tiny" type="warning">
+              {{ CATEGORY_TYPE_LABELS[cat.type as SpecialCategoryType] }}
+            </UiTag>
+            <UiTag
+              v-if="cat.tagId && tagName(cat.tagId)"
+              size="tiny"
+              empty
+              round
+              :style="tagStyle(cat.tagId)"
+            >{{ tagName(cat.tagId) }}</UiTag>
+          </div>
+        </template>
+        <template v-if="dishCounts" #default>
+          <UiText size="tiny" color="tertiary">
+            {{ dishCounts[cat.id] ?? 0 }} блюд
+          </UiText>
+        </template>
+        <template #append>
+          <UiSwitch
+            :model-value="cat.active"
+            @update:model-value="$emit('toggleActive', cat.id, $event)"
+          />
+          <AppActionsBlock @edit="$emit('edit', cat)" @delete="$emit('delete', cat.id)" />
+        </template>
+      </AppListRow>
+    </AppDraggableList>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, toRefs, watch } from 'vue'
-import { UiEditButton, UiSkeleton, UiTabs, UiSectionHeader } from '@fastio/ui'
-import type { Category, CategoryType, SpecialCategoryType, DishTagDefinition } from '@fastio/shared'
-import { SPECIAL_CATEGORY_TYPES } from '@fastio/shared'
-import ItemManagerModal from '~/components/ui/ItemManagerModal.vue'
-import type { ManagedItem } from '~/components/ui/ItemManagerModal.vue'
-import { useCategories } from '~/composables/data/useCategories'
+import { ref, computed, watch } from 'vue'
+import { UiSkeleton, UiEmpty, UiText, UiTag, UiSwitch } from '@fastio/ui'
+import type { Category, SpecialCategoryType, DishTagDefinition } from '@fastio/shared'
+import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
+import AppDraggableList from '~/components/ui/AppDraggableList.vue'
+import AppListRow from '~/components/ui/AppListRow.vue'
+import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import { useTagDisplay } from '~/composables/ui/useTagDisplay'
 
 const props = defineProps<{
-  tenantId: string
-  modelValue: string | null
-  dishCounts: Record<string, number>
-  tags: DishTagDefinition[]
+  categories: Category[]
+  loading: boolean
+  dishCounts?: Record<string, number>
+  tags?: DishTagDefinition[]
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [id: string | null]
-  'categoriesLoaded': [cats: Category[]]
+defineEmits<{
+  edit: [category: Category]
+  delete: [id: string]
+  reorder: [categories: Category[]]
+  toggleActive: [id: string, active: boolean]
 }>()
 
-const { tenantId: tenantIdRef } = toRefs(props)
+const localCategories = ref<Category[]>([])
 
-const { categories, loading: categoriesLoading, add: addCategory, update: updateCategory, remove: removeCategory, reorder: reorderCategories, updatePhoto: updateCategoryPhoto, removePhoto: removeCategoryPhoto }
-  = useCategories(tenantIdRef)
+watch(() => props.categories, (v) => {
+  localCategories.value = v.map((c) => ({ ...c }))
+}, { immediate: true })
 
-watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
-
-const { dishCounts: dishCountByCategory } = toRefs(props)
-
-const existingSpecialTypes = computed<SpecialCategoryType[]>(() => categories.value
-  .map((c) => c.type)
-  .filter((t): t is SpecialCategoryType => t !== 'regular'),
-)
-
-const availableSpecialTypes = computed<SpecialCategoryType[]>(() => SPECIAL_CATEGORY_TYPES.filter((t) => !existingSpecialTypes.value.includes(t)),
-)
-
-const categoryTabs = computed(() => categories.value.map((c) => ({
-  value: c.id,
-  label: c.name,
-  count: dishCountByCategory.value[c.id] ?? 0,
-  ...((c.type !== 'regular' || c.tagId) && { type: 'warning' as const }),
-})))
-
-const managerOpen = ref(false)
-
-const managerItems = computed<ManagedItem[]>(() => categories.value.map((c) => ({
-  id: c.id,
-  name: c.name,
-  type: c.type,
-  tagId: c.tagId,
-  photoUrl: c.photoUrl,
-})),
-)
-
-const handleAdd = async (data: Partial<ManagedItem> & { type?: CategoryType }) => {
-  await addCategory(data.name!, { type: data.type, tagId: data.tagId })
-}
-
-const handleUpdate = async (id: string, data: Partial<ManagedItem>) => {
-  await updateCategory(id, data)
-}
-
-const handleRemove = async (id: string) => {
-  if (props.modelValue === id) emit('update:modelValue', null)
-  await removeCategory(id)
-}
-
-const handleReorder = async (items: ManagedItem[]) => {
-  await reorderCategories(items.map((item, i) => ({
-    ...categories.value.find((c) => c.id === item.id)!,
-    order: i,
-  })))
-}
-
-const handleUpdatePhoto = (id: string, file: File) => updateCategoryPhoto(id, file)
-
-const handleRemovePhoto = (id: string) => removeCategoryPhoto(id)
+const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags ?? []))
 </script>
 
 <style scoped lang="scss">
-.categories-root {
-  flex-shrink: 0;
+.category-list-root {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed var(--color-border);
+  gap: 4px;
 }
 
-.skeleton {
-  padding: 0;
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>

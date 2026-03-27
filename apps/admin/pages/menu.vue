@@ -19,6 +19,7 @@ const modules = useModules()
 
 const tabs = computed(() => [
   { value: 'dishes', label: 'Блюда' },
+  ...(canManageMenu.value ? [{ value: 'categories', label: 'Категории' }] : []),
   ...(canManageMenu.value && modules.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы' }] : []),
   ...(canManageMenu.value && modules.addons.value.enabled ? [{ value: 'addons', label: 'Добавки' }] : []),
   ...(canManageMenu.value ? [{ value: 'tags', label: 'Теги' }] : []),
