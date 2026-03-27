@@ -30,16 +30,12 @@
         id="reviews"
       />
     </template>
-
-    <template #fab>
-      <SfCartFab @click="navigateTo('/cart')" />
-    </template>
   </PageShell>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useNuxtData, useAsyncData, useRequestFetch, useRoute, navigateTo } from 'nuxt/app'
+import { useNuxtData, useAsyncData, useRequestFetch, useRoute } from 'nuxt/app'
 import type { Banner, Gallery, Tenant } from '@fastio/shared'
 import { defaultSiteContent, defaultSiteLayout, deepMerge } from '@fastio/shared'
 import PageShell from '~/components/sections/PageShell.vue'
@@ -48,7 +44,6 @@ import BannersSection from '~/components/sections/BannersSection.vue'
 import MenuSection from '~/components/sections/MenuSection.vue'
 import GallerySection from '~/components/sections/GallerySection.vue'
 import ReviewsSection from '~/components/sections/ReviewsSection.vue'
-import SfCartFab from '~/components/sf/domain/SfCartFab.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 

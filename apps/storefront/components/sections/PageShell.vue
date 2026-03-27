@@ -17,13 +17,13 @@
     </div>
 
     <SiteFooter :class="{ 'has-fab': hasCartItems }" />
-    <slot name="fab" />
+    <SfCartFab @click="navigateTo('/cart')" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
-import { useNuxtData } from 'nuxt/app'
+import { useNuxtData, navigateTo } from 'nuxt/app'
 import { useElementSize } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import type { Tenant } from '@fastio/shared'
@@ -32,6 +32,7 @@ import SiteHeader from '~/components/sections/SiteHeader.vue'
 import CategoryBar from '~/components/sections/CategoryBar.vue'
 import SiteFooter from '~/components/sections/SiteFooter.vue'
 import { useCartStore } from '~/stores/cart'
+import SfCartFab from '~/components/sf/domain/SfCartFab.vue'
 
 withDefaults(defineProps<{
   showCategoryBar?: boolean
@@ -82,6 +83,6 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 }
 
 .has-fab {
-  padding-bottom: 80px;
+  padding-bottom: 100px;
 }
 </style>
