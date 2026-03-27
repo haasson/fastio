@@ -86,9 +86,11 @@ export function mapDish(row: Record<string, unknown>): Dish {
     photos: row.photos as string[],
     ingredients: row.ingredients as Dish['ingredients'],
     nutrition: row.nutrition as Dish['nutrition'],
+    weightUnit: (row.weight_unit as 'г' | 'мл') ?? 'г',
     tags: [],
     active: row.active as boolean,
     order: row.sort_order as number,
+    requiresKitchen: row.requires_kitchen as boolean,
   }
 }
 

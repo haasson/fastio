@@ -13,7 +13,7 @@ import { FsButton } from '@fastio/public-ui'
 
 type Props = {
   modelValue: number
-  totalPrice: string
+  totalPrice: number
   currency: string
   mode?: 'add' | 'edit' | 'order'
 }

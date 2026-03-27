@@ -62,6 +62,12 @@ export const useDishModifiersEditor = (
     addMode.value = null
   }
 
+  const getGroupWeightMode = (groupId: string) => {
+    const g = availableGroups.value.find((g) => g.id === groupId)
+
+    return { affectsWeight: g?.affectsWeight ?? false, weightMode: g?.weightMode ?? 'per_dish' }
+  }
+
   const addGroup = () => {
     const group = availableGroups.value.find((g) => g.id === selectedGroupId.value)
 
@@ -73,6 +79,7 @@ export const useDishModifiersEditor = (
       groupId: group.id,
       groupName: group.name,
       priceDelta: 0,
+      weight: group.affectsWeight && group.weightMode === 'global' ? (o.weight ?? null) : null,
       isDefault: i === 0,
       sortOrder: i,
     }))
@@ -90,14 +97,17 @@ export const useDishModifiersEditor = (
 
   const getAttachedOption = (groupIndex: number, optionId: string) => attachedGroups.value[groupIndex].options.find((o) => o.optionId === optionId)
 
-  const toggleOption = (groupIndex: number, sourceOpt: { id: string; name: string }, checked: boolean) => {
+  const toggleOption = (groupIndex: number, sourceOpt: { id: string; name: string; weight?: number | null }, checked: boolean) => {
     const group = attachedGroups.value[groupIndex]
 
     if (checked) {
+      const { affectsWeight, weightMode } = getGroupWeightMode(group.groupId)
+      const weight = affectsWeight && weightMode === 'global' ? (sourceOpt.weight ?? null) : null
+
       group.options.push({
         optionId: sourceOpt.id, optionName: sourceOpt.name,
         groupId: group.groupId, groupName: group.groupName,
-        priceDelta: 0, isDefault: group.options.length === 0, sortOrder: group.options.length,
+        priceDelta: 0, weight, isDefault: group.options.length === 0, sortOrder: group.options.length,
       })
     } else {
       group.options = group.options.filter((o) => o.optionId !== sourceOpt.id)
@@ -148,6 +158,7 @@ export const useDishModifiersEditor = (
     addGroup,
     removeGroup,
     getGroupSourceOptions,
+    getGroupWeightMode,
     isOptionAttached,
     getAttachedOption,
     toggleOption,

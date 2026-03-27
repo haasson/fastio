@@ -4,6 +4,8 @@ export type ModifierGroup = {
   name: string
   sortOrder: number
   active: boolean
+  affectsWeight: boolean
+  weightMode: 'global' | 'per_dish'
   options: ModifierOption[]
 }
 
@@ -13,6 +15,7 @@ export type ModifierOption = {
   name: string
   sortOrder: number
   active: boolean
+  weight: number | null
 }
 
 export type DishModifierOption = {
@@ -21,6 +24,7 @@ export type DishModifierOption = {
   groupId: string
   groupName: string
   priceDelta: number
+  weight: number | null
   isDefault: boolean
   sortOrder: number
 }
@@ -42,5 +46,7 @@ export type OrderItemModifier = {
 export type ModifierGroupFormData = {
   name: string
   active: boolean
-  options: { id?: string; name: string; active: boolean }[]
+  affectsWeight: boolean
+  weightMode: 'global' | 'per_dish'
+  options: { id?: string; name: string; active: boolean; weight?: number | null }[]
 }

@@ -53,6 +53,7 @@ export type Dish = {
   photos: string[]
   ingredients: DishIngredient[]
   nutrition: DishNutrition | null
+  weightUnit: 'г' | 'мл'
   tags: string[]
   active: boolean
   order: number

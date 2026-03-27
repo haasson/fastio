@@ -20,6 +20,7 @@ export const mapDish = (raw: Record<string, unknown>): Dish => {
     photos: row.photos,
     ingredients: row.ingredients,
     nutrition: row.nutrition,
+    weightUnit: row.weight_unit ?? 'г',
     tags: [],
     active: row.active,
     order: row.sort_order,
@@ -52,6 +53,7 @@ export const dishesApi = {
       photos: data.photos ?? [],
       ingredients: data.ingredients,
       nutrition: data.nutrition,
+      weight_unit: data.weightUnit,
       active: data.active,
       sort_order: data.order,
       requires_kitchen: data.requiresKitchen,
@@ -69,6 +71,7 @@ export const dishesApi = {
         category_id: data.categoryId,
         ingredients: data.ingredients,
         nutrition: data.nutrition,
+        weight_unit: data.weightUnit,
         active: data.active,
         sort_order: data.order,
         photos: data.photos,
@@ -166,10 +169,10 @@ export const dishesApi = {
 
     const optionRows = await query(
       sb.from('dish_modifier_options')
-        .select('option_id, price_delta, is_default, sort_order, modifier_options(id, name, group_id)')
+        .select('option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id)')
         .eq('dish_id', dishId)
         .order('sort_order'),
-    ) as unknown as { option_id: string; price_delta: number; is_default: boolean; sort_order: number; modifier_options: { id: string; name: string; group_id: string } }[]
+    ) as unknown as { option_id: string; price_delta: number; weight: number | null; is_default: boolean; sort_order: number; modifier_options: { id: string; name: string; group_id: string } }[]
 
     const optionsByGroup = new Map<string, DishModifierOption[]>()
 
@@ -183,6 +186,7 @@ export const dishesApi = {
         groupId,
         groupName: '',
         priceDelta: Number(row.price_delta),
+        weight: row.weight,
         isDefault: row.is_default,
         sortOrder: row.sort_order,
       })
@@ -239,6 +243,7 @@ export const dishesApi = {
       dish_id: dishId,
       option_id: o.optionId,
       price_delta: o.priceDelta,
+      weight: o.weight ?? null,
       is_default: o.isDefault,
       sort_order: i,
     })))

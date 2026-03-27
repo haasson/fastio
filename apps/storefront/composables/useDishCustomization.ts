@@ -18,6 +18,7 @@ export type ModalItem = {
   categoryName?: string | null
   ingredients?: Dish['ingredients']
   nutrition?: Dish['nutrition']
+  weightUnit?: 'г' | 'мл'
   comboId?: string
   comboItems?: ComboItemInfo[]
 }
@@ -96,6 +97,18 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
       .map((a) => ({ addonId: a.id, addonName: a.name, price: a.price })),
   )
 
+  const displayNutrition = computed(() => {
+    if (!props.item.nutrition) return null
+    for (const group of props.modifiers) {
+      const selectedId = selectedModifiers[group.groupId]
+      const option = group.options.find((o) => o.optionId === selectedId)
+      if (option?.weight != null) {
+        return { ...props.item.nutrition, weight: option.weight }
+      }
+    }
+    return props.item.nutrition
+  })
+
   const unitPrice = computed(() => {
     let price = props.item.price
     price += selectedModifierOptions.value.reduce((s, m) => s + m.priceDelta, 0)
@@ -137,6 +150,8 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
     removableIngredients,
     selectedModifierOptions,
     selectedAddonsList,
+    displayNutrition,
+    weightUnit: props.item.weightUnit ?? 'г',
     unitPrice,
     totalPrice,
     currency,

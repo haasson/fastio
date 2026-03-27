@@ -42,8 +42,19 @@
                     placeholder="0"
                     class="price-input"
                     @update:model-value="getAttachedOption(gi, sourceOpt.id)!.priceDelta = $event ?? 0"
-                  />
-                  <UiText size="tiny" color="secondary" class="delta-label">+₽</UiText>
+                  >
+                    <template #suffix>+₽</template>
+                  </UiInputNumber>
+                  <UiInputNumber
+                    v-if="isPerDishWeight(attached.groupId)"
+                    :model-value="getAttachedOption(gi, sourceOpt.id)!.weight ?? undefined"
+                    label=""
+                    placeholder="—"
+                    class="weight-input"
+                    @update:model-value="getAttachedOption(gi, sourceOpt.id)!.weight = $event ?? null"
+                  >
+                    <template #suffix>{{ weightUnit ?? 'г' }}</template>
+                  </UiInputNumber>
                   <UiCheckbox
                     :model-value="getAttachedOption(gi, sourceOpt.id)!.isDefault"
                     @update:model-value="setDefault(gi, sourceOpt.id, $event)"
@@ -117,19 +128,26 @@ const props = defineProps<{
   categoryId: string
   dishId: string | null
   refreshKey: number
+  weightUnit?: 'г' | 'мл'
 }>()
 
 const { success } = useMessage()
 
-const { tenantId, categoryId, dishId, refreshKey } = toRefs(props)
+const { tenantId, categoryId, dishId, refreshKey, weightUnit } = toRefs(props)
 
 const {
   loading, availableGroups, attachedGroups, selectedGroupId, copyFromDishId, addMode,
   canAddGroup, hasCopySource, groupSelectOptions, copyDishSelectOptions,
-  addGroup, removeGroup, getGroupSourceOptions, isOptionAttached, getAttachedOption,
+  addGroup, removeGroup, getGroupSourceOptions, getGroupWeightMode, isOptionAttached, getAttachedOption,
   toggleOption, setDefault, getModifiers,
   copyFromDish: copyFromDishRaw,
 } = useDishModifiersEditor(tenantId, categoryId, dishId, refreshKey)
+
+const isPerDishWeight = (groupId: string) => {
+  const { affectsWeight, weightMode } = getGroupWeightMode(groupId)
+
+  return affectsWeight && weightMode === 'per_dish'
+}
 
 const copyFromDish = async () => {
   await copyFromDishRaw()
@@ -181,12 +199,9 @@ defineExpose({ getModifiers })
   gap: 8px;
 }
 
-.price-input {
+.price-input,
+.weight-input {
   width: 80px;
-  flex-shrink: 0;
-}
-
-.delta-label {
   flex-shrink: 0;
 }
 

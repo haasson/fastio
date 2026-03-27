@@ -119,6 +119,7 @@ export type DishRow = {
   photos: string[]
   ingredients: DishIngredient[]
   nutrition: DishNutrition | null
+  weight_unit: 'г' | 'мл'
   active: boolean
   sort_order: number
   requires_kitchen: boolean

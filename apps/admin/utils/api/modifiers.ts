@@ -8,6 +8,8 @@ type ModifierGroupRow = {
   name: string
   sort_order: number
   active: boolean
+  affects_weight: boolean
+  weight_mode: 'global' | 'per_dish'
   deleted_at: string | null
   created_at: string
   modifier_options: ModifierOptionRow[]
@@ -19,6 +21,7 @@ type ModifierOptionRow = {
   name: string
   sort_order: number
   active: boolean
+  weight: number | null
 }
 
 export const mapModifierOption = (row: ModifierOptionRow): ModifierOption => ({
@@ -27,6 +30,7 @@ export const mapModifierOption = (row: ModifierOptionRow): ModifierOption => ({
   name: row.name,
   sortOrder: row.sort_order,
   active: row.active,
+  weight: row.weight ?? null,
 })
 
 export const mapModifierGroup = (raw: Record<string, unknown>): ModifierGroup => {
@@ -38,9 +42,13 @@ export const mapModifierGroup = (raw: Record<string, unknown>): ModifierGroup =>
     name: row.name,
     sortOrder: row.sort_order,
     active: row.active,
+    affectsWeight: row.affects_weight ?? false,
+    weightMode: row.weight_mode ?? 'per_dish',
     options: (row.modifier_options ?? []).map(mapModifierOption),
   }
 }
+
+const resolveOptionWeight = (data: ModifierGroupFormData, opt: { weight?: number | null }) => data.affectsWeight && data.weightMode === 'global' ? (opt.weight ?? null) : null
 
 export const modifiersApi = {
   async list(sb: SupabaseClient, tenantId: string): Promise<ModifierGroup[]> {
@@ -59,7 +67,7 @@ export const modifiersApi = {
   async add(sb: SupabaseClient, tenantId: string, data: ModifierGroupFormData): Promise<ModifierGroup | null> {
     const result = await query(
       sb.from('modifier_groups')
-        .insert({ tenant_id: tenantId, name: data.name, active: data.active })
+        .insert({ tenant_id: tenantId, name: data.name, active: data.active, affects_weight: data.affectsWeight, weight_mode: data.weightMode })
         .select('*, modifier_options(*)')
         .single(),
     )
@@ -76,6 +84,7 @@ export const modifiersApi = {
             name: opt.name,
             sort_order: i,
             active: opt.active,
+            weight: resolveOptionWeight(data, opt),
           })),
         ),
       )
@@ -98,7 +107,7 @@ export const modifiersApi = {
   async update(sb: SupabaseClient, id: string, data: ModifierGroupFormData): Promise<ModifierGroup | null> {
     await query(
       sb.from('modifier_groups')
-        .update({ name: data.name, active: data.active })
+        .update({ name: data.name, active: data.active, affects_weight: data.affectsWeight, weight_mode: data.weightMode })
         .eq('id', id),
     )
 
@@ -124,6 +133,7 @@ export const modifiersApi = {
       name: opt.name,
       sort_order: i,
       active: opt.active,
+      weight: data.affectsWeight && data.weightMode === 'global' ? (opt.weight ?? null) : null,
     }))
 
     if (toUpsert.length > 0) {

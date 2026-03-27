@@ -13,6 +13,8 @@
         :name="form.name"
         :price="form.price"
         :description="form.description"
+        :weight="form.weight"
+        :weight-unit="form.weightUnit"
         :category-id="form.categoryId"
         :category-options="categoryOptions"
         name-placeholder="Маргарита"
@@ -25,6 +27,8 @@
         @update:price="form.price = $event"
         @update:description="form.description = $event"
         @update:category-id="form.categoryId = $event"
+        @update:weight="form.weight = $event"
+        @update:weight-unit="form.weightUnit = $event"
       />
 
       <UiCollapse :expanded-names="[]" class="sections">
@@ -36,6 +40,7 @@
           :category-id="form.categoryId"
           :dish-id="dish?.id ?? null"
           :refresh-key="refreshKey"
+          :weight-unit="form.weightUnit"
         />
 
         <AddonsSection
@@ -134,6 +139,8 @@ const defaultForm = () => ({
   name: '',
   description: '',
   price: null as number | null,
+  weight: null as number | null,
+  weightUnit: 'г' as 'г' | 'мл',
   tags: [] as string[],
   active: true,
   requiresKitchen: true,
@@ -150,6 +157,8 @@ watch(
       form.name = dish.name
       form.description = dish.description
       form.price = dish.price
+      form.weight = dish.nutrition?.weight ?? null
+      form.weightUnit = dish.weightUnit ?? 'г'
       form.tags = [...dish.tags]
       form.active = dish.active
       form.requiresKitchen = dish.requiresKitchen
@@ -206,11 +215,14 @@ const onConfirm = async () => {
       photos = []
     }
 
+    const kbju = nutritionRef.value?.getKbju() ?? null
+    const hasNutrition = form.weight != null || kbju != null
     const data: DishFormData = {
       ...form,
       price: form.price ?? 0,
       ingredients: ingredientsRef.value?.getIngredients() ?? [],
-      nutrition: nutritionRef.value?.getNutrition() ?? null,
+      nutrition: hasNutrition ? { weight: form.weight ?? 0, calories: kbju?.calories ?? 0, protein: kbju?.protein ?? 0, fat: kbju?.fat ?? 0, carbs: kbju?.carbs ?? 0 } : null,
+      weightUnit: form.weightUnit,
       photos,
     }
 

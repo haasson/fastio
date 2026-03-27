@@ -18,6 +18,24 @@
 
       <div class="switch-row">
         <UiSwitch v-model="form.active" label="Активна" />
+        <UiSwitch v-model="form.affectsWeight" label="Влияет на вес" />
+      </div>
+
+      <div v-if="form.affectsWeight" class="weight-mode-block">
+        <div class="weight-mode-label">
+          <UiText size="tiny" color="secondary">Вес задаётся</UiText>
+          <HintPopover>
+            <UiText size="tiny">
+              <b>На уровне модификатора</b> — вес одинаковый для всех блюд, которые используют эту группу. Укажи его прямо здесь, рядом с каждой опцией.<br/><br/>
+              <b>Каждое блюдо своё</b> — вес задаётся отдельно для каждого блюда в форме редактирования блюда.
+            </UiText>
+          </HintPopover>
+        </div>
+        <UiSegmentedControl
+          v-model:model-value="form.weightMode"
+          size="small"
+          :items="weightModeItems"
+        />
       </div>
 
       <div class="options-section">
@@ -38,6 +56,14 @@
               name="option"
               :rules="[{ type: 'required', message: 'Введите название' }]"
             />
+            <UiInputNumber
+              v-if="form.affectsWeight && form.weightMode === 'global'"
+              v-model:model-value="opt.weight"
+              placeholder="—"
+              class="weight-input"
+            >
+              <template #suffix>г / мл</template>
+            </UiInputNumber>
             <UiButton size="tiny" type="text" @click="removeOption(i)">
               ✕
             </UiButton>
@@ -59,8 +85,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiModal, UiForm, UiInput, UiButton, UiSwitch, UiText, UiIcon, UiAlert } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiSwitch, UiText, UiIcon, UiAlert, UiSegmentedControl } from '@fastio/ui'
 import type { ModifierGroup, ModifierGroupFormData } from '@fastio/shared'
+import HintPopover from '~/components/ui/HintPopover.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -76,16 +103,23 @@ const formRef = ref()
 const saving = ref(false)
 const optionsError = ref<string | null>(null)
 
+const weightModeItems = [
+  { label: 'На уровне модификатора', value: 'global' },
+  { label: 'Каждое блюдо своё', value: 'per_dish' },
+]
+
 const modalActions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
   { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
 ])
 
-type OptionForm = { id?: string; name: string; active: boolean }
+type OptionForm = { id?: string; name: string; active: boolean; weight: number | null }
 
 const defaultForm = () => ({
   name: '',
   active: true,
+  affectsWeight: false,
+  weightMode: 'global' as 'global' | 'per_dish',
   options: [] as OptionForm[],
 })
 
@@ -99,7 +133,9 @@ watch(
     if (props.group) {
       form.name = props.group.name
       form.active = props.group.active
-      form.options = props.group.options.map((o) => ({ id: o.id, name: o.name, active: o.active }))
+      form.affectsWeight = props.group.affectsWeight
+      form.weightMode = props.group.weightMode
+      form.options = props.group.options.map((o) => ({ id: o.id, name: o.name, active: o.active, weight: o.weight }))
     } else {
       Object.assign(form, defaultForm())
     }
@@ -107,7 +143,7 @@ watch(
 )
 
 const addOption = () => {
-  form.options.push({ name: '', active: true })
+  form.options.push({ name: '', active: true, weight: null })
 }
 
 const removeOption = (i: number) => {
@@ -138,6 +174,8 @@ const onConfirm = async () => {
     emit('save', {
       name: form.name,
       active: form.active,
+      affectsWeight: form.affectsWeight,
+      weightMode: form.weightMode,
       options: validOptions,
     })
   } finally {
@@ -159,6 +197,24 @@ const onConfirm = async () => {
   @include section-title;
 }
 
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.weight-mode-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-mode-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .options-section {
   display: flex;
   flex-direction: column;
@@ -177,8 +233,9 @@ const onConfirm = async () => {
   gap: 8px;
 }
 
-.switch-row {
-  align-self: flex-start;
+.weight-input {
+  width: 100px;
+  flex-shrink: 0;
 }
 
 .drag-handle {

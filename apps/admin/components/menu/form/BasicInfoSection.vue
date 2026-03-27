@@ -42,26 +42,53 @@
         @update:model-value="$emit('update:description', $event)"
       />
 
-      <UiSelect
-        v-if="categoryOptions && categoryOptions.length > 1"
-        :value="categoryId"
-        label="Категория"
-        :options="categoryOptions"
-        @update:value="$emit('update:categoryId', $event)"
-      />
+      <div class="category-row">
+        <UiSelect
+          v-if="categoryOptions && categoryOptions.length > 1"
+          :value="categoryId"
+          label="Категория"
+          :options="categoryOptions"
+          class="category-select"
+          @update:value="$emit('update:categoryId', $event)"
+        />
+        <div class="weight-group">
+          <UiInputNumber
+            :model-value="weight"
+            :label="weightUnit === 'мл' ? 'Объём, мл' : 'Вес, г'"
+            :min="0"
+            :placeholder="weightUnit === 'мл' ? '400' : '350'"
+            class="weight-input"
+            @update:model-value="$emit('update:weight', $event)"
+          />
+          <UiSegmentedControl
+            :model-value="weightUnit"
+            size="small"
+            :items="unitItems"
+            class="unit-control"
+            @update:model-value="$emit('update:weightUnit', $event as 'г' | 'мл')"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { UiText, UiInput, UiInputNumber, UiSelect } from '@fastio/ui'
+import { UiText, UiInput, UiInputNumber, UiSelect, UiSegmentedControl } from '@fastio/ui'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
+
+const unitItems = [
+  { label: 'г', value: 'г' },
+  { label: 'мл', value: 'мл' },
+]
 
 defineProps<{
   photoUrl: string | null
   name: string
   price: number | null
   description: string
+  weight: number | null
+  weightUnit: 'г' | 'мл'
   namePlaceholder?: string
   pricePlaceholder?: number
   descriptionPlaceholder?: string
@@ -77,6 +104,8 @@ defineEmits<{
   'update:price': [value: number | null]
   'update:description': [value: string]
   'update:categoryId': [value: string]
+  'update:weight': [value: number | null]
+  'update:weightUnit': [value: 'г' | 'мл']
 }>()
 </script>
 
@@ -116,4 +145,27 @@ defineEmits<{
     grid-template-columns: 1fr 120px;
   }
 }
+
+.category-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.category-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.weight-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.weight-input {
+  width: 90px;
+}
+
 </style>

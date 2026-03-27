@@ -12,6 +12,7 @@ type OptionBindingRow = {
   dish_id: string
   option_id: string
   price_delta: number
+  weight: number | null
   is_default: boolean
   sort_order: number
   modifier_options: { id: string; name: string; group_id: string }
@@ -66,7 +67,7 @@ export default defineEventHandler(async (event) => {
         .order('sort_order'),
       supabase
         .from('dish_modifier_options')
-        .select('dish_id, option_id, price_delta, is_default, sort_order, modifier_options(id, name, group_id)')
+        .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id)')
         .in('dish_id', dishIds)
         .order('sort_order'),
     ])
@@ -90,6 +91,7 @@ export default defineEventHandler(async (event) => {
         groupId,
         groupName: '',
         priceDelta: Number(row.price_delta),
+        weight: row.weight,
         isDefault: row.is_default,
         sortOrder: row.sort_order,
       })

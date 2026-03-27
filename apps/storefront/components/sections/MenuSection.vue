@@ -74,6 +74,7 @@
 
     <DishModal
       v-if="modalItem"
+      :key="modalItem.id"
       v-model="modalOpen"
       :item="modalItem"
       :modifiers="modalModifiers"
@@ -165,6 +166,7 @@ function openDishModal(dish: Dish) {
     categoryName: findCategoryName(dish.id),
     ingredients: dish.ingredients,
     nutrition: dish.nutrition,
+    weightUnit: dish.weightUnit,
   })
 }
 
