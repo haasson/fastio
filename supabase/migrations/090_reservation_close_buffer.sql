@@ -4,4 +4,4 @@
 -- Default 60 matches the fallback that was hardcoded in the API mapper.
 
 ALTER TABLE reservation_settings
-  ADD COLUMN close_buffer_minutes int NOT NULL DEFAULT 60;
+  ADD COLUMN IF NOT EXISTS close_buffer_minutes int NOT NULL DEFAULT 60;

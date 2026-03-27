@@ -11,15 +11,15 @@
 -- ─── Drop unused columns ──────────────────────────────────────
 
 ALTER TABLE reservation_settings
-  DROP COLUMN slot_from,
-  DROP COLUMN slot_to;
+  DROP COLUMN IF EXISTS slot_from,
+  DROP COLUMN IF EXISTS slot_to;
 
 -- ─── Trigram search indexes ───────────────────────────────────
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
-CREATE INDEX idx_reservations_guest_name_trgm
+CREATE INDEX IF NOT EXISTS idx_reservations_guest_name_trgm
   ON reservations USING gin(guest_name gin_trgm_ops);
 
-CREATE INDEX idx_reservations_guest_phone_trgm
+CREATE INDEX IF NOT EXISTS idx_reservations_guest_phone_trgm
   ON reservations USING gin(guest_phone gin_trgm_ops);
