@@ -138,7 +138,7 @@ declare
   cat record;
   matching_tag_id uuid;
 begin
-  for cat in select id, tenant_id, type from categories where type in ('new', 'hit') and deleted_at is null loop
+  for cat in select id, tenant_id, type from categories where type in ('new', 'hit') loop
     if cat.type = 'new' then
       select id into matching_tag_id from dish_tags where tenant_id = cat.tenant_id and is_virtual_category = true and name in ('Новинка', 'Новинки') limit 1;
     elsif cat.type = 'hit' then
@@ -152,7 +152,7 @@ $$;
 
 alter table dish_tags drop column is_virtual_category;
 
-alter table categories drop constraint categories_type_check;
+alter table categories drop constraint if exists categories_type_check;
 alter table categories add constraint categories_type_check check (type in ('regular', 'combo'));
 
 drop index if exists categories_tenant_special_type;
