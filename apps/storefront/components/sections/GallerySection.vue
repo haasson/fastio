@@ -33,16 +33,11 @@ const visibleGalleries = computed(() =>
 </script>
 
 <style scoped lang="scss">
-.gallery-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .gallery-header {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom: 8px;
 }
 
 .gallery-desc {
