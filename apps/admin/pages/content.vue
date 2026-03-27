@@ -15,6 +15,7 @@ const tabs = [
   { value: 'banners', label: 'Баннеры' },
   { value: 'gallery', label: 'Галерея' },
   { value: 'reviews', label: 'Отзывы' },
-  { value: 'vacancies', label: 'Вакансии' },
+  // TODO: vacancies tab — скрыто до реализации функционала
+  // { value: 'vacancies', label: 'Вакансии' },
 ]
 </script>

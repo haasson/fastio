@@ -16,7 +16,8 @@ export const SITE_FEATURES = {
   gallery:     { label: 'Галерея',          index: true,  page: true,  nav: true  },
   reviews:     { label: 'Отзывы',           index: true,  page: false, nav: true  },
   delivery:    { label: 'Доставка',         index: true,  page: true,  nav: true,  module: 'delivery'     },
-  vacancies:   { label: 'Вакансии',         index: false, page: true,  nav: true  },
+  // TODO: vacancies page — скрыто до реализации функционала
+  vacancies:   { label: 'Вакансии',         index: false, page: false, nav: false },
   booking:     { label: 'Бронирование',     index: false, page: true,  nav: true,  module: 'reservations' },
   about:       { label: 'О нас',            index: false, page: true,  nav: true  },
 } as const satisfies Record<string, SiteFeatureDef>

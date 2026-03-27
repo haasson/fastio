@@ -95,10 +95,11 @@
         <div v-for="i in 3" :key="i" class="ph-delivery-row" />
       </div>
 
-      <div v-else-if="key === 'vacancies'" class="preview-block preview-block--vacancies">
+      <!-- TODO: vacancies preview — скрыто до реализации функционала -->
+      <!-- <div v-else-if="key === 'vacancies'" class="preview-block preview-block&#45;&#45;vacancies">
         <div class="ph-section-title" />
         <div v-for="i in 2" :key="i" class="ph-vacancy-card" />
-      </div>
+      </div> -->
     </template>
 
     <!-- Футер -->
@@ -457,7 +458,8 @@ const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.se
   border: 1px solid var(--color-border);
 }
 
-.preview-block--vacancies {
+/* TODO: vacancies styles — скрыто до реализации функционала */
+/* .preview-block--vacancies {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -469,7 +471,7 @@ const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.se
   border-radius: 4px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-}
+} */
 
 .preview-block--footer {
   display: flex;

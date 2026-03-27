@@ -61,7 +61,8 @@
     :gallery-ids="siteLayoutForm.pageSettings.gallery?.galleryIds ?? []"
     @update:gallery-ids="siteLayoutForm.pageSettings.gallery = { galleryIds: $event }"
   />
-  <span v-else-if="pageKey === 'vacancies'" class="coming-soon">Настройки страницы вакансий появятся в ближайшее время</span>
+  <!-- TODO: vacancies settings — скрыто до реализации функционала -->
+  <!-- <span v-else-if="pageKey === 'vacancies'" class="coming-soon">Настройки страницы вакансий появятся в ближайшее время</span> -->
   <span v-else-if="pageKey === 'booking'" class="hint">
     Настройки бронирования — в разделе <NuxtLink to="/reservations/settings" class="link">Бронирования → Настройки</NuxtLink>
   </span>
