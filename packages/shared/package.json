@@ -8,6 +8,10 @@
     ".": "./src/index.ts",
     "./configs/eslint": "./configs/eslint.js"
   },
+  "scripts": {
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
   "devDependencies": {
     "vue": "^3.5.0",
     "@eslint/js": "^9.35.0",

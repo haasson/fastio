@@ -17,7 +17,10 @@
     "create-tenant": "node scripts/create-tenant.mjs",
     "create-tenant:remote": "node scripts/create-tenant.mjs",
     "supabase:deploy:functions": "supabase functions deploy",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "workspaces": [
     "apps/*",
@@ -25,10 +28,15 @@
   ],
   "devDependencies": {
     "@supabase/supabase-js": "^2.98.0",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vitest/coverage-v8": "^4.1.2",
+    "@vue/test-utils": "^2.4.6",
     "concurrently": "^9.1.2",
+    "happy-dom": "^20.8.9",
     "husky": "^9.1.7",
     "turbo": "^2.3.3",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.2"
   },
   "packageManager": "pnpm@9.15.0",
   "engines": {
