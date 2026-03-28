@@ -5,6 +5,8 @@
       Филиал — это точка, к которой привязываются заказы, зоны доставки и сотрудники.
     </UiText>
 
+    <UiText v-if="showError && !branchStore.hasBranches" size="small" class="error">Создайте хотя бы один филиал</UiText>
+
     <template v-if="branchStore.hasBranches">
       <UiCard class="done-card">
         <UiIcon name="check" :size="24" class="done-icon" />
@@ -47,6 +49,20 @@ import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 
 const branchStore = useBranchStore()
+
+const showError = ref(false)
+
+defineExpose({
+  validate: () => {
+    if (!branchStore.hasBranches) {
+      showError.value = true
+
+      return false
+    }
+
+    return true
+  },
+})
 
 const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 const branchName = ref('')
@@ -123,5 +139,9 @@ const createBranch = async () => {
 
 .done-address {
   color: var(--color-text-secondary);
+}
+
+.error {
+  color: var(--color-error);
 }
 </style>

@@ -7,6 +7,8 @@
       Выбор всегда можно изменить позже в настройках.
     </UiText>
 
+    <UiText v-if="showError" size="small" class="error">Выберите тип бизнеса</UiText>
+
     <div class="options">
       <button
         v-for="option in options"
@@ -26,12 +28,32 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { UiTitle, UiText, UiIcon } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import type { BusinessType } from '@fastio/shared'
 
-defineProps<{ modelValue: BusinessType | null }>()
+const props = defineProps<{ modelValue: BusinessType | null }>()
+
 defineEmits<{ 'update:modelValue': [value: BusinessType] }>()
+
+const showError = ref(false)
+
+watch(() => props.modelValue, (v) => {
+  if (v) showError.value = false
+})
+
+defineExpose({
+  validate: () => {
+    if (!props.modelValue) {
+      showError.value = true
+
+      return false
+    }
+
+    return true
+  },
+})
 
 const options: { type: BusinessType; icon: IconName; title: string; desc: string }[] = [
   {
@@ -109,5 +131,9 @@ const options: { type: BusinessType; icon: IconName; title: string; desc: string
 
 .option-desc {
   color: var(--color-text-secondary);
+}
+
+.error {
+  color: var(--color-error);
 }
 </style>

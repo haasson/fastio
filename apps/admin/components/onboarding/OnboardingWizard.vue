@@ -15,6 +15,7 @@
       <div class="step-content">
         <OnboardingStepType
           v-if="currentStep === 'type'"
+          ref="typeStepRef"
           v-model="form.businessType"
         />
         <OnboardingStepInfo
@@ -26,9 +27,11 @@
         />
         <OnboardingStepBranch
           v-else-if="currentStep === 'branch'"
+          ref="branchStepRef"
         />
         <OnboardingStepModules
           v-else-if="currentStep === 'modules'"
+          ref="modulesStepRef"
           v-model:delivery="form.delivery"
           v-model:pickup="form.pickup"
           v-model:dine-in="form.dineIn"
@@ -52,7 +55,6 @@
         <UiButton
           v-if="currentStep !== 'complete'"
           type="primary"
-          :disabled="!canProceed"
           :loading="saving"
           @click="next"
         >
@@ -75,9 +77,7 @@
 import { ref, reactive, computed } from 'vue'
 import { UiButton, UiCard } from '@fastio/ui'
 import type { BusinessType } from '@fastio/shared'
-import { validateValue, validationRules } from '@fastio/kit'
 import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
 import OnboardingStepType from '~/components/onboarding/OnboardingStepType.vue'
 import OnboardingStepInfo from '~/components/onboarding/OnboardingStepInfo.vue'
 import OnboardingStepBranch from '~/components/onboarding/OnboardingStepBranch.vue'
@@ -87,11 +87,13 @@ import OnboardingStepComplete from '~/components/onboarding/OnboardingStepComple
 type StepName = 'type' | 'info' | 'branch' | 'modules' | 'complete'
 
 const tenantStore = useTenantStore()
-const branchStore = useBranchStore()
 
 const step = ref(1)
 const saving = ref(false)
+const typeStepRef = ref<InstanceType<typeof OnboardingStepType> | null>(null)
 const infoStepRef = ref<InstanceType<typeof OnboardingStepInfo> | null>(null)
+const branchStepRef = ref<InstanceType<typeof OnboardingStepBranch> | null>(null)
+const modulesStepRef = ref<InstanceType<typeof OnboardingStepModules> | null>(null)
 const form = reactive({
   businessType: tenantStore.tenant?.businessType ?? null as BusinessType | null,
   name: tenantStore.tenant?.name ?? '',
@@ -113,34 +115,20 @@ const stepList = computed<StepName[]>(() => {
 const totalSteps = computed(() => stepList.value.length)
 const currentStep = computed<StepName>(() => stepList.value[step.value - 1])
 
-const canProceed = computed(() => {
-  switch (currentStep.value) {
-    case 'type':
-      return !!form.businessType
-    case 'info':
-      return form.name.trim().length > 0
-        && validateValue(form.phone, [validationRules.phone.required, validationRules.phone.format]) === null
-    case 'branch':
-      return branchStore.hasBranches
-    case 'modules':
-      return form.delivery || form.pickup || form.dineIn
-    default:
-      return true
-  }
-})
-
 const prev = () => {
   if (step.value > 1) step.value--
 }
 
 const next = async () => {
-  if (!canProceed.value) return
-
-  if (currentStep.value === 'info') {
-    const valid = infoStepRef.value?.validate()
-
-    if (!valid) return
+  const stepRefs: Record<string, { validate: () => boolean } | null> = {
+    type: typeStepRef.value,
+    info: infoStepRef.value,
+    branch: branchStepRef.value,
+    modules: modulesStepRef.value,
   }
+  const valid = stepRefs[currentStep.value]?.validate() ?? true
+
+  if (!valid) return
 
   saving.value = true
   try {

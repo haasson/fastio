@@ -5,6 +5,8 @@
       Выберите хотя бы один способ, которым клиенты смогут сделать заказ.
     </UiText>
 
+    <UiText v-if="showError && !delivery && !pickup && !dineIn" size="small" class="error">Выберите хотя бы один способ заказа</UiText>
+
     <div class="options">
       <button
         v-for="option in options"
@@ -25,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { UiTitle, UiText } from '@fastio/ui'
 
 const props = defineProps<{
@@ -65,6 +67,20 @@ const options = computed(() => [
     value: props.dineIn,
   },
 ])
+
+const showError = ref(false)
+
+defineExpose({
+  validate: () => {
+    if (!props.delivery && !props.pickup && !props.dineIn) {
+      showError.value = true
+
+      return false
+    }
+
+    return true
+  },
+})
 
 const toggle = (key: ModuleKey) => {
   if (key === 'delivery') emit('update:delivery', !props.delivery)
@@ -132,6 +148,10 @@ const toggle = (key: ModuleKey) => {
 
 .option-desc {
   color: var(--color-text-secondary);
+}
+
+.error {
+  color: var(--color-error);
 }
 
 .toggle-indicator {
