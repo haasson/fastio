@@ -54,24 +54,80 @@ export default defineEventHandler(async (event) => {
 
   const dishes = (dishesData ?? []).map(mapDish)
   const dishIds = dishes.map((d) => d.id)
+  const combos = (combosData ?? []).map(mapCombo)
+  const comboIds = combos.map((c) => c.id)
 
-  // Load modifier bindings for all dishes in batch
+  type ClientAddon = { id: string; name: string; weight: number | null; price: number; order: number }
+  type AddonBindingRow = {
+    dish_id: string
+    addon_id: string
+    sort_order: number
+    addons: { id: string; name: string; weight: number | null; price: number }
+  }
+  type ComboItemRow = {
+    combo_id: string
+    sort_order: number
+    modifier_option_ids: string[]
+    dishes: { name: string; photos: string[] }
+  }
+
+  // Round 2: all secondary queries in parallel — they all depend only on dishIds/comboIds
+  const [
+    groupBindingsResult,
+    optionBindingsResult,
+    addonBindingsResult,
+    comboItemsResult,
+    tagRowsResult,
+    dishTagRowsResult,
+    comboTagRowsResult,
+  ] = await Promise.all([
+    dishIds.length > 0
+      ? supabase
+          .from('dish_modifier_groups')
+          .select('dish_id, group_id, sort_order, modifier_groups(id, name)')
+          .in('dish_id', dishIds)
+          .order('sort_order')
+      : Promise.resolve({ data: [] }),
+    dishIds.length > 0
+      ? supabase
+          .from('dish_modifier_options')
+          .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id)')
+          .in('dish_id', dishIds)
+          .order('sort_order')
+      : Promise.resolve({ data: [] }),
+    dishIds.length > 0 && addonsEnabled
+      ? supabase
+          .from('dish_addons')
+          .select('dish_id, addon_id, sort_order, addons(id, name, weight, price)')
+          .in('dish_id', dishIds)
+          .order('sort_order')
+          .returns<AddonBindingRow[]>()
+      : Promise.resolve({ data: [] as AddonBindingRow[] }),
+    comboIds.length > 0
+      ? supabase
+          .from('combo_items')
+          .select('combo_id, sort_order, modifier_option_ids, dishes(name, photos)')
+          .in('combo_id', comboIds)
+          .order('sort_order')
+          .returns<ComboItemRow[]>()
+      : Promise.resolve({ data: [] as ComboItemRow[] }),
+    supabase.from('dish_tags').select('*').eq('tenant_id', tenantId).order('sort_order'),
+    supabase.from('dish_tag_assignments').select('dish_id, tag_id').eq('tenant_id', tenantId),
+    supabase.from('combo_tag_assignments').select('combo_id, tag_id').eq('tenant_id', tenantId),
+  ])
+
+  const groupBindings = groupBindingsResult.data
+  const optionBindings = optionBindingsResult.data
+  const addonBindings = addonBindingsResult.data
+  const itemRows = comboItemsResult.data
+  const tagRows = tagRowsResult.data
+  const dishTagRows = dishTagRowsResult.data
+  const comboTagRows = comboTagRowsResult.data
+
+  // Build modifier groups per dish
   const dishModifiers: Record<string, DishModifierGroup[]> = {}
 
   if (dishIds.length > 0) {
-    const [{ data: groupBindings }, { data: optionBindings }] = await Promise.all([
-      supabase
-        .from('dish_modifier_groups')
-        .select('dish_id, group_id, sort_order, modifier_groups(id, name)')
-        .in('dish_id', dishIds)
-        .order('sort_order'),
-      supabase
-        .from('dish_modifier_options')
-        .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id)')
-        .in('dish_id', dishIds)
-        .order('sort_order'),
-    ])
-
     // Build options map: dishId -> groupId -> options[]
     const optionsMap = new Map<string, Map<string, DishModifierOption[]>>()
 
@@ -127,60 +183,27 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Load addon bindings for all dishes in batch
-  type ClientAddon = { id: string; name: string; weight: number | null; price: number; order: number }
+  // Build addons per dish
   const dishAddons: Record<string, ClientAddon[]> = {}
 
-  if (dishIds.length > 0 && addonsEnabled) {
-    type AddonBindingRow = {
-      dish_id: string
-      addon_id: string
-      sort_order: number
-      addons: { id: string; name: string; weight: number | null; price: number }
-    }
-
-    const { data: addonBindings } = await supabase
-      .from('dish_addons')
-      .select('dish_id, addon_id, sort_order, addons(id, name, weight, price)')
-      .in('dish_id', dishIds)
-      .order('sort_order')
-      .returns<AddonBindingRow[]>()
-
-    for (const row of addonBindings ?? []) {
-      if (!dishAddons[row.dish_id]) dishAddons[row.dish_id] = []
-      dishAddons[row.dish_id].push({
-        id: row.addons.id,
-        name: row.addons.name,
-        weight: row.addons.weight,
-        price: row.addons.price,
-        order: row.sort_order,
-      })
-    }
+  for (const row of addonBindings ?? []) {
+    if (!dishAddons[row.dish_id]) dishAddons[row.dish_id] = []
+    dishAddons[row.dish_id].push({
+      id: row.addons.id,
+      name: row.addons.name,
+      weight: row.addons.weight,
+      price: row.addons.price,
+      order: row.sort_order,
+    })
   }
 
-  // Load combo items (composition) in batch
-  const combos = (combosData ?? []).map(mapCombo)
-  const comboIds = combos.map((c) => c.id)
+  // Build combo items — needs one more round to resolve modifier option names
   const comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]> = {}
 
-  if (comboIds.length > 0) {
-    type ComboItemRow = {
-      combo_id: string
-      sort_order: number
-      modifier_option_ids: string[]
-      dishes: { name: string; photos: string[] }
-    }
-
-    const { data: itemRows } = await supabase
-      .from('combo_items')
-      .select('combo_id, sort_order, modifier_option_ids, dishes(name, photos)')
-      .in('combo_id', comboIds)
-      .order('sort_order')
-      .returns<ComboItemRow[]>()
-
+  if (comboIds.length > 0 && itemRows && itemRows.length > 0) {
     // Collect all modifier option IDs to resolve names
     const allOptionIds = new Set<string>()
-    for (const row of itemRows ?? []) {
+    for (const row of itemRows) {
       for (const id of row.modifier_option_ids ?? []) allOptionIds.add(id)
     }
 
@@ -197,7 +220,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    for (const row of itemRows ?? []) {
+    for (const row of itemRows) {
       if (!comboItems[row.combo_id]) comboItems[row.combo_id] = []
       const modNames = (row.modifier_option_ids ?? [])
         .map((id) => optionNames[id])
@@ -209,13 +232,6 @@ export default defineEventHandler(async (event) => {
       })
     }
   }
-
-  // Load tag definitions and assignments
-  const [{ data: tagRows }, { data: dishTagRows }, { data: comboTagRows }] = await Promise.all([
-    supabase.from('dish_tags').select('*').eq('tenant_id', tenantId).order('sort_order'),
-    supabase.from('dish_tag_assignments').select('dish_id, tag_id').eq('tenant_id', tenantId),
-    supabase.from('combo_tag_assignments').select('combo_id, tag_id').eq('tenant_id', tenantId),
-  ])
 
   const tagDefinitions: DishTagDefinition[] = (tagRows ?? []).map((r: Record<string, unknown>) => ({
     id: r.id as string,
