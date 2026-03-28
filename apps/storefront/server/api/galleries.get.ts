@@ -7,15 +7,12 @@ export default defineEventHandler(async (event) => {
   if (!tenantId) throw createError({ statusCode: 404 })
 
   const supabase = getServerSupabase()
-  const t0 = Date.now()
 
   const { data } = await supabase
     .from('galleries')
     .select('*, gallery_photos(*)')
     .eq('tenant_id', tenantId)
     .order('sort_order', { ascending: true })
-
-  console.log(`[galleries] done ${Date.now() - t0}ms`)
 
   return (data ?? []).map((row): Gallery => ({
     id: row.id,

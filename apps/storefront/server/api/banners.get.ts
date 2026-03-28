@@ -7,7 +7,6 @@ export default defineEventHandler(async (event) => {
   if (!tenantId) throw createError({ statusCode: 404 })
 
   const supabase = getServerSupabase()
-  const t0 = Date.now()
 
   const { data } = await supabase
     .from('banners')
@@ -15,8 +14,6 @@ export default defineEventHandler(async (event) => {
     .eq('tenant_id', tenantId)
     .eq('enabled', true)
     .order('sort_order', { ascending: true })
-
-  console.log(`[banners] done ${Date.now() - t0}ms`)
 
   return (data ?? []).map((row): Banner => ({
     id: row.id,

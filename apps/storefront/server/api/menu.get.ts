@@ -28,7 +28,6 @@ export default defineEventHandler(async (event) => {
   const combosEnabled = tenantModules?.combos ?? true
 
   const supabase = getServerSupabase()
-  const t0 = Date.now()
 
   const [{ data: categoriesData }, { data: dishesData }, { data: combosData }] = await Promise.all([
     supabase
@@ -71,8 +70,6 @@ export default defineEventHandler(async (event) => {
     modifier_option_ids: string[]
     dishes: { name: string; photos: string[] }
   }
-
-  console.log('[menu] round1 done', Date.now() - t0, 'ms', { dishes: dishes.length, combos: combos.length })
 
   // Round 2: all secondary queries in parallel — they all depend only on dishIds/comboIds
   const [
@@ -118,8 +115,6 @@ export default defineEventHandler(async (event) => {
     supabase.from('dish_tag_assignments').select('dish_id, tag_id').eq('tenant_id', tenantId),
     supabase.from('combo_tag_assignments').select('combo_id, tag_id').eq('tenant_id', tenantId),
   ])
-
-  console.log('[menu] round2 done', Date.now() - t0, 'ms')
 
   const groupBindings = groupBindingsResult.data
   const optionBindings = optionBindingsResult.data
@@ -237,8 +232,6 @@ export default defineEventHandler(async (event) => {
       })
     }
   }
-
-  console.log('[menu] total done', Date.now() - t0, 'ms')
 
   const tagDefinitions: DishTagDefinition[] = (tagRows ?? []).map((r: Record<string, unknown>) => ({
     id: r.id as string,
