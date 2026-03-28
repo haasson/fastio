@@ -227,6 +227,14 @@ otp_expiry = 3600
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
+[auth.email.template.recovery]
+subject = "Сброс пароля — Fastio"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.confirmation]
+subject = "Подтвердите email — Fastio"
+content_path = "./supabase/templates/confirm_signup.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
