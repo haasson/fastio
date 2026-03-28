@@ -5,17 +5,20 @@
       Базовая информация для вашей витрины и клиентов.
     </UiText>
 
-    <div class="fields">
+    <UiForm ref="formRef" class="fields">
       <UiInput
         v-model="nameModel"
+        name="name"
         label="Название заведения"
         placeholder="Например: Кафе «Уют»"
+        :rules="[validationRules.name.required]"
       />
 
       <UiInput
         v-model="phoneModel"
+        name="phone"
         label="Телефон"
-        :rules="[validationRules.phone.format]"
+        :rules="[validationRules.phone.required, validationRules.phone.format]"
       />
 
       <UiSelect
@@ -24,13 +27,13 @@
         :options="timezoneOptions"
         @update:value="$emit('update:timezone', String($event))"
       />
-    </div>
+    </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { UiTitle, UiInput, UiText, UiSelect } from '@fastio/ui'
+import { computed, ref } from 'vue'
+import { UiTitle, UiInput, UiText, UiSelect, UiForm } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
 import { TIMEZONE_OPTIONS } from '@fastio/shared'
 
@@ -46,6 +49,8 @@ const emit = defineEmits<{
   'update:timezone': [value: string]
 }>()
 
+const formRef = ref<InstanceType<typeof UiForm> | null>(null)
+
 const nameModel = computed({
   get: () => props.name,
   set: (v) => emit('update:name', v ?? ''),
@@ -60,6 +65,10 @@ const timezoneOptions = TIMEZONE_OPTIONS.map((tz) => ({
   label: tz.label,
   value: tz.value,
 }))
+
+defineExpose({
+  validate: () => formRef.value?.validate() ?? true,
+})
 </script>
 
 <style scoped lang="scss">

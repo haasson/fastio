@@ -19,6 +19,7 @@
         />
         <OnboardingStepInfo
           v-else-if="currentStep === 'info'"
+          ref="infoStepRef"
           v-model:name="form.name"
           v-model:phone="form.phone"
           v-model:timezone="form.timezone"
@@ -74,6 +75,7 @@
 import { ref, reactive, computed } from 'vue'
 import { UiButton, UiCard } from '@fastio/ui'
 import type { BusinessType } from '@fastio/shared'
+import { validateValue, validationRules } from '@fastio/kit'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import OnboardingStepType from '~/components/onboarding/OnboardingStepType.vue'
@@ -89,6 +91,7 @@ const branchStore = useBranchStore()
 
 const step = ref(1)
 const saving = ref(false)
+const infoStepRef = ref<InstanceType<typeof OnboardingStepInfo> | null>(null)
 const form = reactive({
   businessType: tenantStore.tenant?.businessType ?? null as BusinessType | null,
   name: tenantStore.tenant?.name ?? '',
@@ -115,7 +118,8 @@ const canProceed = computed(() => {
     case 'type':
       return !!form.businessType
     case 'info':
-      return form.name.trim().length > 0 && form.phone.trim().length > 0
+      return form.name.trim().length > 0
+        && validateValue(form.phone, [validationRules.phone.required, validationRules.phone.format]) === null
     case 'branch':
       return branchStore.hasBranches
     case 'modules':
@@ -131,6 +135,12 @@ const prev = () => {
 
 const next = async () => {
   if (!canProceed.value) return
+
+  if (currentStep.value === 'info') {
+    const valid = infoStepRef.value?.validate()
+
+    if (!valid) return
+  }
 
   saving.value = true
   try {

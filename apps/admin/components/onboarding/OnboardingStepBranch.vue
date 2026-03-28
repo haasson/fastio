@@ -16,20 +16,21 @@
     </template>
 
     <template v-else>
-      <div class="fields">
+      <UiForm ref="formRef" class="fields">
         <UiInput
           v-model="branchName"
+          name="branchName"
           label="Название филиала"
           placeholder="Например: Центральный"
+          :rules="[{ type: 'required', message: 'Укажите название филиала' }]"
         />
 
         <AddressSuggestInput v-model="branchAddress" @pick="onAddressPick" />
-      </div>
+      </UiForm>
 
       <UiButton
         type="primary"
         :loading="saving"
-        :disabled="!branchName?.trim()"
         @click="createBranch"
       >
         Создать филиал
@@ -40,13 +41,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon } from '@fastio/ui'
+import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon, UiForm } from '@fastio/ui'
 import { useBranchStore } from '~/stores/branch'
 import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 
 const branchStore = useBranchStore()
 
+const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 const branchName = ref('')
 const branchAddress = ref<string | null>('')
 const branchLat = ref<number | null>(null)
@@ -61,7 +63,9 @@ const onAddressPick = (s: DadataSuggestion) => {
 }
 
 const createBranch = async () => {
-  if (!branchName.value?.trim()) return
+  const valid = formRef.value?.validate()
+
+  if (!valid) return
 
   saving.value = true
   try {
