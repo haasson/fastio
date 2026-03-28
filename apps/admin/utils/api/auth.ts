@@ -20,4 +20,8 @@ export const authApi = {
   updateUser(sb: SupabaseClient, attrs: { password?: string; data?: Record<string, unknown> }) {
     return sb.auth.updateUser(attrs)
   },
+
+  resetPasswordForEmail(sb: SupabaseClient, email: string, redirectTo: string) {
+    return sb.auth.resetPasswordForEmail(email, { redirectTo })
+  },
 }

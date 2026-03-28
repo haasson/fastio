@@ -11,6 +11,39 @@
         </UiSpace>
       </template>
 
+      <template v-else-if="forgotMode">
+        <UiTitle size="h3" class="title">Восстановление пароля</UiTitle>
+
+        <template v-if="resetSent">
+          <UiAlert type="info">Ссылка для сброса пароля отправлена на {{ resetEmail }}. Проверьте почту.</UiAlert>
+          <UiButton style="margin-top: 16px" block @click="forgotMode = false">Назад к входу</UiButton>
+        </template>
+
+        <UiForm
+          v-else
+          class="form"
+          :error="resetError"
+          @submit="handleReset"
+        >
+          <UiInput
+            v-model="resetEmail"
+            name="email"
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            :clearable="false"
+            :rules="[{ type: 'required', message: 'Введите email' }, { type: 'email', message: 'Некорректный email' }]"
+          />
+          <UiButton
+            submit
+            type="primary"
+            block
+            :loading="resetLoading"
+          >Отправить ссылку</UiButton>
+          <UiButton block @click="forgotMode = false">Назад</UiButton>
+        </UiForm>
+      </template>
+
       <template v-else>
         <UiTitle size="h3" class="title">Вход в панель управления</UiTitle>
 
@@ -44,6 +77,8 @@
           >
             Войти
           </UiButton>
+
+          <UiButton block @click="forgotMode = true">Забыли пароль?</UiButton>
         </UiForm>
       </template>
     </UiCard>
@@ -67,6 +102,12 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 const hashError = ref('')
+
+const forgotMode = ref(false)
+const resetEmail = ref('')
+const resetError = ref('')
+const resetLoading = ref(false)
+const resetSent = ref(false)
 
 const inviteToken = route.query.token as string | undefined
 
@@ -107,6 +148,22 @@ const handleSubmit = async () => {
   }
 
   loading.value = false
+}
+
+const handleReset = async () => {
+  resetError.value = ''
+  resetLoading.value = true
+
+  const appUrl = window.location.origin
+  const { error: err } = await api.auth.resetPasswordForEmail(resetEmail.value, `${appUrl}/set-password`)
+
+  if (err) {
+    resetError.value = 'Не удалось отправить письмо. Попробуйте ещё раз.'
+  } else {
+    resetSent.value = true
+  }
+
+  resetLoading.value = false
 }
 </script>
 

@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import nodemailer from 'npm:nodemailer@6'
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
@@ -115,37 +116,36 @@ Deno.serve(async (req) => {
 
   console.log(`Invite URL: ${inviteUrl}`)
 
-  // Отправляем email через SendGrid (опционально — на локалке ключа нет)
-  const sendgridKey = Deno.env.get('SENDGRID_KEY')
-  if (sendgridKey) {
-    const sendgridResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${sendgridKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: [{ email }],
-        from: { email: 'noreply@fastio.ru' },
-        subject: `Приглашение в команду ${tenant?.name ?? 'Fastio'}`,
-        content: [{
-          type: 'text/plain',
-          value: [
-            `Вас пригласили в команду «${tenant?.name}» на платформе Fastio.`,
-            '',
-            `Роль: ${role}`,
-            '',
-            'Для принятия приглашения перейдите по ссылке:',
-            inviteUrl,
-            '',
-            'Ссылка действительна 7 дней.',
-          ].join('\n'),
-        }],
-      }),
+  // Отправляем email через SMTP (на локалке секретов нет — только логируем)
+  const smtpUser = Deno.env.get('SMTP_USER')
+  const smtpPass = Deno.env.get('SMTP_PASS')
+
+  if (smtpUser && smtpPass) {
+    const transporter = nodemailer.createTransport({
+      host: Deno.env.get('SMTP_HOST') ?? 'smtp.timeweb.ru',
+      port: 465,
+      secure: true,
+      auth: { user: smtpUser, pass: smtpPass },
     })
 
-    if (!sendgridResponse.ok) {
-      console.error('SendGrid error:', await sendgridResponse.text())
+    try {
+      await transporter.sendMail({
+        from: `"Fastio" <${smtpUser}>`,
+        to: email,
+        subject: `Приглашение в команду ${tenant?.name ?? 'Fastio'}`,
+        text: [
+          `Вас пригласили в команду «${tenant?.name}» на платформе Fastio.`,
+          '',
+          `Роль: ${role}`,
+          '',
+          'Для принятия приглашения перейдите по ссылке:',
+          inviteUrl,
+          '',
+          'Ссылка действительна 7 дней.',
+        ].join('\n'),
+      })
+    } catch (err) {
+      console.error('SMTP error:', err)
     }
   }
 

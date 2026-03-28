@@ -3,8 +3,8 @@
     <UiCard size="large" class="auth-card">
       <AppBrand class="brand" />
 
-      <UiTitle size="h3" class="title">Установите пароль</UiTitle>
-      <UiText size="small" class="subtitle">Введите имя и придумайте пароль для входа</UiText>
+      <UiTitle size="h3" class="title">{{ title }}</UiTitle>
+      <UiText size="small" class="subtitle">{{ subtitle }}</UiText>
 
       <UiAlert v-if="emailConfirmSent" type="info" style="margin-bottom: 16px">
         Проверьте почту — отправили письмо для подтверждения регистрации
@@ -12,6 +12,7 @@
 
       <UiForm v-if="!emailConfirmSent" :error="error" @submit="handleSubmit">
         <UiInput
+          v-if="showNameField"
           v-model="form.name"
           name="name"
           label="Ваше имя"
@@ -47,7 +48,7 @@
           block
           :loading="loading"
         >
-          {{ inviteToken ? 'Создать аккаунт и присоединиться' : 'Сохранить и войти' }}
+          {{ buttonText }}
         </UiButton>
       </UiForm>
     </UiCard>
@@ -55,12 +56,12 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { definePageMeta, useRoute, navigateTo } from '#imports'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
-import { INVITE_PENDING_KEY } from '~/utils/constants'
+import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/utils/constants'
 
 definePageMeta({ layout: false })
 
@@ -69,18 +70,69 @@ const route = useRoute()
 
 const inviteToken = route.query.token as string | undefined
 const inviteEmail = route.query.email as string | undefined
+const isRecovery = !!sessionStorage.getItem(RECOVERY_PENDING_KEY)
 
 const form = reactive({ name: '', password: '', passwordConfirm: '' })
 const error = ref('')
 const loading = ref(false)
 const emailConfirmSent = ref(false)
 
+const showNameField = computed(() => !isRecovery)
+
+const title = computed(() => {
+  if (isRecovery) return 'Новый пароль'
+
+  return 'Установите пароль'
+})
+
+const subtitle = computed(() => {
+  if (isRecovery) return 'Придумайте новый пароль для входа'
+
+  return 'Введите имя и придумайте пароль для входа'
+})
+
+const buttonText = computed(() => {
+  if (isRecovery) return 'Сохранить пароль'
+  if (inviteToken) return 'Создать аккаунт и присоединиться'
+
+  return 'Сохранить и войти'
+})
+
 const handleSubmit = async () => {
   error.value = ''
   loading.value = true
 
+  // Восстановление пароля — юзер уже авторизован через recovery-ссылку
+  if (isRecovery) {
+    const { error: updateError } = await api.auth.updateUser({ password: form.password })
+
+    if (updateError) {
+      error.value = 'Не удалось сохранить. Попробуйте ещё раз'
+    } else {
+      sessionStorage.removeItem(RECOVERY_PENDING_KEY)
+      await navigateTo('/')
+    }
+
+    loading.value = false
+
+    return
+  }
+
   // Инвайт нового юзера — нужно создать аккаунт
   if (inviteToken && inviteEmail) {
+    // Проверяем: вдруг юзер уже авторизован (вернулся по confirmation-ссылке)
+    const { data: { session } } = await api.auth.getSession()
+
+    if (session) {
+      await api.auth.updateUser({ data: { full_name: form.name } })
+      await api.functions.acceptInvite({ token: inviteToken })
+      sessionStorage.removeItem(INVITE_PENDING_KEY)
+      await navigateTo('/')
+      loading.value = false
+
+      return
+    }
+
     const appUrl = window.location.origin
     const { error: signUpError } = await api.auth.signUp(inviteEmail, form.password, {
       data: { full_name: form.name },
@@ -94,9 +146,9 @@ const handleSubmit = async () => {
       return
     }
 
-    const { data: { session } } = await api.auth.getSession()
+    const { data: { session: newSession } } = await api.auth.getSession()
 
-    if (session) {
+    if (newSession) {
       await api.functions.acceptInvite({ token: inviteToken })
       sessionStorage.removeItem(INVITE_PENDING_KEY)
       await navigateTo('/')

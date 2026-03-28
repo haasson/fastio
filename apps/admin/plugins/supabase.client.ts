@@ -1,7 +1,7 @@
 import { defineNuxtPlugin, navigateTo, useRuntimeConfig } from '#imports'
 import { createClient } from '@supabase/supabase-js'
 import { useAuthStore } from '~/stores/auth'
-import { INVITE_PENDING_KEY } from '~/utils/constants'
+import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/utils/constants'
 
 export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()
@@ -10,6 +10,9 @@ export default defineNuxtPlugin(async () => {
   // sessionStorage надёжнее стора: не затрагивается Supabase и SSR-гидрацией.
   if (window.location.hash.includes('type=invite')) {
     sessionStorage.setItem(INVITE_PENDING_KEY, '1')
+  }
+  if (window.location.hash.includes('type=recovery')) {
+    sessionStorage.setItem(RECOVERY_PENDING_KEY, '1')
   }
 
   const supabase = createClient(
