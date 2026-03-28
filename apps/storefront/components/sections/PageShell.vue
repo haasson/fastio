@@ -17,7 +17,7 @@
     </div>
 
     <SiteFooter :class="{ 'has-fab': hasCartItems }" />
-    <SfCartFab @click="navigateTo('/cart')" />
+    <SfCartFab v-if="tenant?.businessType !== 'services'" @click="navigateTo('/cart')" />
   </div>
 </template>
 

@@ -49,6 +49,7 @@
                 :dish="combo"
                 :combo-id="combo.id"
                 :hide-stepper="tableMode"
+                :is-services="isServices"
                 @add="addComboToCart(combo)"
                 @card-click="openComboModal(combo)"
               />
@@ -60,8 +61,10 @@
                 :dish="dish"
                 :has-modifiers="hasModifiers(dish)"
                 :hide-stepper="tableMode"
+                :is-services="isServices"
                 @add="handleAddButton(dish)"
                 @card-click="handleCardClick(dish)"
+                @request="openRequestModal(dish)"
               />
             </template>
           </div>
@@ -83,13 +86,20 @@
       :mode="tableMode ? 'order' : 'add'"
       @add="handleModalAdd"
     />
+
+    <ServiceRequestModal
+      v-if="requestDish"
+      v-model="requestModalOpen"
+      :dish="requestDish"
+    />
   </FsSection>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { UtensilsCrossed, ChevronLeft } from 'lucide-vue-next'
-import type { Dish, Combo } from '@fastio/shared'
+import type { Dish, Combo, Tenant } from '@fastio/shared'
+import { useNuxtData } from 'nuxt/app'
 import { useCartStore, type CartItem } from '~/stores/cart'
 import { useMenuStore, type ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
@@ -97,6 +107,7 @@ import { FsSection, FsCard, FsHeading, FsText } from '@fastio/public-ui'
 import SfDishCard from '~/components/sf/domain/SfDishCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'
+import ServiceRequestModal from '~/components/services/ServiceRequestModal.vue'
 
 const props = defineProps<{
   defaultView: 'categories' | 'dishes'
@@ -110,6 +121,8 @@ const emit = defineEmits<{
 const menuStore = useMenuStore()
 const cart = useCartStore()
 const selectedCategoryId = ref<string | null>(null)
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+const isServices = computed(() => tenant.value?.businessType === 'services')
 
 const categories = computed(() => menuStore.visibleCategories)
 const dishesByCategory = computed(() => menuStore.dishesByCategory)
@@ -137,6 +150,16 @@ const categoryPhotos = computed<Record<string, string | null>>(() =>
 // Modal state
 const modalOpen = ref(false)
 const modalItem = ref<ModalItem | null>(null)
+
+// Service request modal
+type ServiceDish = { id: string; name: string; price: number; categoryName: string | null }
+const requestModalOpen = ref(false)
+const requestDish = ref<ServiceDish | null>(null)
+
+function openRequestModal(dish: Dish) {
+  requestDish.value = { id: dish.id, name: dish.name, price: dish.price, categoryName: findCategoryName(dish.id) }
+  requestModalOpen.value = true
+}
 
 function hasModifiers(dish: Dish): boolean {
   return (menuStore.dishModifiers[dish.id]?.length ?? 0) > 0

@@ -3,7 +3,7 @@ import type { DeliveryZone } from '@fastio/shared'
 import { getServerSupabase, getAuthSupabase, mapDeliveryZoneRow } from '../utils/supabase'
 import { createRateLimiter } from '../utils/rateLimit'
 
-const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in'] as const
+const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in', 'request'] as const
 const VALID_PAYMENT_TYPES = ['cash', 'card', 'online'] as const
 
 const orderRateLimiter = createRateLimiter(5, 60_000)
@@ -84,6 +84,9 @@ export default defineEventHandler(async (event) => {
   if (deliveryType === 'dine_in' && !tenantData.modules?.dineIn) {
     throw createError({ statusCode: 400, message: 'Заказ со стола недоступен' })
   }
+  if (deliveryType === 'request' && tenantData.modules?.delivery) {
+    throw createError({ statusCode: 400, message: 'Используйте обычный заказ для этого заведения' })
+  }
 
   // Валидация стола для dine_in
   let tableRecord: { id: string; name: string } | null = null
@@ -148,8 +151,8 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Филиал обязателен для всех типов кроме dine_in
-  if (!orderBranchId && deliveryType !== 'dine_in') {
+  // Филиал обязателен для всех типов кроме dine_in и request
+  if (!orderBranchId && deliveryType !== 'dine_in' && deliveryType !== 'request') {
     throw createError({ statusCode: 400, message: 'Не удалось определить филиал для заказа' })
   }
 

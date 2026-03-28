@@ -28,17 +28,24 @@
       <FsText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</FsText>
       <div class="dish-footer" @click.stop>
         <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
-        <SfStepper
-          v-if="cartCount > 0 && !hideStepper"
-          :model-value="cartCount"
-          :min="0"
-          size="small"
-          @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
-        />
-        <FsButton v-else variant="primary" size="small" :responsive="true" @click="emit('add')">
-          <Plus :size="16" />
-          Добавить
-        </FsButton>
+        <template v-if="isServices">
+          <FsButton variant="primary" size="small" :responsive="true" @click.stop="emit('request')">
+            Оставить заявку
+          </FsButton>
+        </template>
+        <template v-else>
+          <SfStepper
+            v-if="cartCount > 0 && !hideStepper"
+            :model-value="cartCount"
+            :min="0"
+            size="small"
+            @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
+          />
+          <FsButton v-else variant="primary" size="small" :responsive="true" @click="emit('add')">
+            <Plus :size="16" />
+            Добавить
+          </FsButton>
+        </template>
       </div>
     </div>
   </FsCard>
@@ -62,10 +69,11 @@ type Props = {
   hasModifiers?: boolean
   currency?: string
   hideStepper?: boolean
+  isServices?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), { currency: '₽' })
-const emit = defineEmits<{ add: []; cardClick: [] }>()
+const emit = defineEmits<{ add: []; cardClick: []; request: [] }>()
 const cart = useCartStore()
 const menuStore = useMenuStore()
 
