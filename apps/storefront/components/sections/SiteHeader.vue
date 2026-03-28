@@ -30,7 +30,7 @@
           </a>
         </div>
 
-        <HeaderUserMenu />
+        <HeaderUserMenu v-if="tenant?.businessType !== 'services'" />
 
         <FsBurger v-model="menuOpen" style="--burger-color: var(--primary)" />
       </div>
@@ -61,7 +61,7 @@
         <span v-if="header.showWorkingHours" class="mm-venue-hours">{{ tenant?.workingHours }}</span>
       </div>
 
-      <MobileUserCard @close="menuOpen = false" />
+      <MobileUserCard v-if="tenant?.businessType !== 'services'" @close="menuOpen = false" />
     </div>
   </FsMobileMenu>
 </template>

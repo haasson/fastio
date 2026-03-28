@@ -57,6 +57,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'no-services' })
+
 import { ref, onMounted } from 'vue'
 import { navigateTo } from 'nuxt/app'
 import { useConfirm } from '~/composables/useConfirm'

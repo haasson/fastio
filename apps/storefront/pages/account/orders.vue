@@ -55,6 +55,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'no-services' })
+
 import { ref, computed, onMounted } from 'vue'
 import { navigateTo, useRoute } from 'nuxt/app'
 import type { Order } from '@fastio/shared'

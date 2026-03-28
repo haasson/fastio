@@ -31,6 +31,8 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ middleware: 'no-services' })
+
 import { ref, onMounted } from 'vue'
 import { navigateTo } from 'nuxt/app'
 import { FsSection, FsField, FsForm, FsInput, FsButton, FsAlert } from '@fastio/public-ui'
