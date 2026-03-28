@@ -9,30 +9,16 @@ export default defineEventHandler(async (event) => {
   const domain = host.split(':')[0]
   const slug = domain.split('.')[0]
 
-  // Сначала ищем по кастомному домену
-  const { data: byDomain } = await supabase
-    .from('tenants')
-    .select('*')
-    .eq('custom_domain', domain)
-    .maybeSingle()
+  // Ищем по кастомному домену и slug параллельно
+  const [{ data: byDomain }, { data: bySlug }] = await Promise.all([
+    supabase.from('tenants').select('*').eq('custom_domain', domain).maybeSingle(),
+    supabase.from('tenants').select('*').eq('slug', slug).maybeSingle(),
+  ])
 
-  if (byDomain) {
-    event.context.tenantId = byDomain.id
-    event.context.tenant = mapTenant(byDomain)
-    checkSuspended(event.context.tenant)
-    return
-  }
-
-  // Fallback: поддомен вида slug.platform.com
-  const { data: bySlug } = await supabase
-    .from('tenants')
-    .select('*')
-    .eq('slug', slug)
-    .maybeSingle()
-
-  if (bySlug) {
-    event.context.tenantId = bySlug.id
-    event.context.tenant = mapTenant(bySlug)
+  const tenant = byDomain ?? bySlug
+  if (tenant) {
+    event.context.tenantId = tenant.id
+    event.context.tenant = mapTenant(tenant)
     checkSuspended(event.context.tenant)
     return
   }
