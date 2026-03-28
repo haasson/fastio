@@ -10,7 +10,10 @@
     <template v-else-if="tenant">
       <!-- Info -->
       <section class="card">
-        <h3 class="card-title">Информация</h3>
+        <div class="card-header">
+          <h3 class="card-title">Информация</h3>
+          <NButton type="error" size="small" :loading="deleteLoading" @click="handleDelete">Удалить тенанта</NButton>
+        </div>
         <div class="info-grid">
           <div><span class="label">Слаг:</span> {{ tenant.slug }}</div>
           <div><span class="label">Email владельца:</span> {{ tenant.ownerEmail }}</div>
@@ -112,14 +115,33 @@
         />
       </section>
     </template>
+
+    <!-- Delete confirmation modal -->
+    <NModal v-model:show="deleteModalOpen" preset="card" title="Удалить тенанта" style="max-width: 440px">
+      <p class="delete-hint">Это действие необратимо. Введите слаг тенанта <strong>{{ tenant?.slug }}</strong>, чтобы подтвердить.</p>
+      <NInput v-model:value="deleteSlugInput" placeholder="slug" @keydown.enter="deleteSlugInput === tenant?.slug && confirmDelete()" />
+      <template #footer>
+        <NSpace justify="end">
+          <NButton @click="deleteModalOpen = false">Отмена</NButton>
+          <NButton
+            type="error"
+            :disabled="deleteSlugInput !== tenant?.slug"
+            :loading="deleteLoading"
+            @click="confirmDelete"
+          >
+            Удалить
+          </NButton>
+        </NSpace>
+      </template>
+    </NModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRoute, useFetch } from '#imports'
+import { useRoute, useFetch, navigateTo } from '#imports'
 import { $fetch } from 'ofetch'
 import { ref, computed, h, watch } from 'vue'
-import { NButton, NTag, NInput, NInputNumber, NDataTable, type DataTableColumns } from 'naive-ui'
+import { NButton, NTag, NInput, NInputNumber, NDataTable, NModal, NSpace, type DataTableColumns } from 'naive-ui'
 
 const route = useRoute()
 const tenantId = route.params.id as string
@@ -273,6 +295,31 @@ const handleChangePlan = async (planKey: string) => {
   }
 }
 
+// ─── Delete tenant ──────────────────────────────────────────────────────────────
+
+const deleteModalOpen = ref(false)
+const deleteSlugInput = ref('')
+const deleteLoading = ref(false)
+
+const handleDelete = () => {
+  deleteSlugInput.value = ''
+  deleteModalOpen.value = true
+}
+
+const confirmDelete = async () => {
+  deleteLoading.value = true
+  try {
+    await $fetch(`/api/tenants/${tenantId}`, { method: 'DELETE' })
+    await navigateTo('/tenants')
+  } catch (err: unknown) {
+    const message = (err as { data?: { message?: string } })?.data?.message ?? 'Ошибка'
+
+    window.alert(message)
+  } finally {
+    deleteLoading.value = false
+  }
+}
+
 // ─── Transactions table ─────────────────────────────────────────────────────────
 
 const txTypeLabel: Record<string, string> = { topup: 'Пополнение', charge: 'Списание', refund: 'Возврат' }
@@ -335,10 +382,16 @@ const txColumns: DataTableColumns<TxRow> = [
   padding: 20px;
 }
 
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
 .card-title {
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 16px;
 }
 
 .info-grid {
@@ -365,6 +418,12 @@ const txColumns: DataTableColumns<TxRow> = [
 
 .override-tag {
   margin-left: 6px;
+}
+
+.delete-hint {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #555;
 }
 
 .balance-low {
