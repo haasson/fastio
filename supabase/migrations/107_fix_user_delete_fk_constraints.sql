@@ -50,10 +50,10 @@ ALTER TABLE reservations
   ADD CONSTRAINT reservations_confirmed_by_fkey
     FOREIGN KEY (confirmed_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
--- billing_balance: created_by
-ALTER TABLE billing_balance
-  DROP CONSTRAINT IF EXISTS billing_balance_created_by_fkey,
-  ADD CONSTRAINT billing_balance_created_by_fkey
+-- billing_transactions: created_by
+ALTER TABLE billing_transactions
+  DROP CONSTRAINT IF EXISTS billing_transactions_created_by_fkey,
+  ADD CONSTRAINT billing_transactions_created_by_fkey
     FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 -- tenants: owner_id (NOT NULL → nullable)
