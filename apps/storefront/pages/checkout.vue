@@ -76,7 +76,7 @@
             />
 
             <CheckoutAddressSection
-              v-if="checkout.form.deliveryType === 'delivery'"
+              v-if="checkout.form.deliveryType === 'delivery' && tenant?.modules?.delivery"
               ref="addressRef"
               :currency="currency"
             />
