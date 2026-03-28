@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     supabaseJwtPrivateKey: '', // NUXT_SUPABASE_JWT_PRIVATE_KEY — только local dev
     backofficeUser: '', // NUXT_BACKOFFICE_USER
     backofficePass: '', // NUXT_BACKOFFICE_PASS
+    adminUrl: 'http://localhost:4710', // NUXT_ADMIN_URL
     public: {
       supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL
     },

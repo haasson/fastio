@@ -29,12 +29,8 @@ export default defineEventHandler(async (event) => {
     userId = existing.id
   } else {
     const config = useRuntimeConfig()
-    const appUrl = config.public.supabaseUrl.includes('127.0.0.1')
-      ? 'http://localhost:4710'
-      : 'https://admin-fastio.vercel.app'
-
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${appUrl}/set-password`,
+      redirectTo: `${config.adminUrl}/set-password`,
     })
 
     if (error) throw createError({ statusCode: 500, message: error.message })

@@ -10,24 +10,21 @@ type TenantRow = {
   balance: number
   branchCount: number
   createdAt: string
+  isActivated: boolean
 }
 
 export default defineEventHandler(async (): Promise<TenantRow[]> => {
   const supabase = getAdminClient()
 
-  const [tenantsResult, branchesResult] = await Promise.all([
+  const [tenantsResult, branchesResult, usersResult] = await Promise.all([
     supabase.from('tenants').select('id, name, slug, created_at, owner_id, subscription, balance'),
     supabase.from('branches').select('tenant_id'),
+    supabase.auth.admin.listUsers({ perPage: 1000 }),
   ])
 
   if (tenantsResult.error) throw createError({ statusCode: 500, message: tenantsResult.error.message })
   if (branchesResult.error) throw createError({ statusCode: 500, message: branchesResult.error.message })
-
-  const ownerIds = tenantsResult.data.map((t) => t.owner_id)
-
-  const { data: userEmails, error: usersError } = await supabase.rpc('get_user_emails_admin', { user_ids: ownerIds })
-
-  if (usersError) throw createError({ statusCode: 500, message: usersError.message })
+  if (usersResult.error) throw createError({ statusCode: 500, message: usersResult.error.message })
 
   const branchCountByTenant = new Map<string, number>()
 
@@ -35,20 +32,21 @@ export default defineEventHandler(async (): Promise<TenantRow[]> => {
     branchCountByTenant.set(branch.tenant_id, (branchCountByTenant.get(branch.tenant_id) ?? 0) + 1)
   }
 
-  const emailByUserId = new Map<string, string>()
+  const userById = new Map(usersResult.data.users.map((u) => [u.id, u]))
 
-  for (const row of (userEmails ?? [])) {
-    emailByUserId.set(row.user_id, row.email ?? '')
-  }
+  return tenantsResult.data.map((tenant) => {
+    const user = userById.get(tenant.owner_id)
 
-  return tenantsResult.data.map((tenant) => ({
-    id: tenant.id,
-    name: tenant.name,
-    slug: tenant.slug,
-    ownerEmail: emailByUserId.get(tenant.owner_id) ?? '—',
-    plan: (tenant.subscription as { plan?: string })?.plan ?? 'start',
-    balance: tenant.balance ?? 0,
-    branchCount: branchCountByTenant.get(tenant.id) ?? 0,
-    createdAt: tenant.created_at,
-  }))
+    return {
+      id: tenant.id,
+      name: tenant.name,
+      slug: tenant.slug,
+      ownerEmail: user?.email ?? '—',
+      plan: (tenant.subscription as { plan?: string })?.plan ?? 'start',
+      balance: tenant.balance ?? 0,
+      branchCount: branchCountByTenant.get(tenant.id) ?? 0,
+      createdAt: tenant.created_at,
+      isActivated: !!user?.email_confirmed_at,
+    }
+  })
 })

@@ -64,7 +64,7 @@ import { useFetch, useRouter } from '#imports'
 import { $fetch } from 'ofetch'
 import { h, ref, reactive, computed } from 'vue'
 import {
-  NDataTable, NTag, NButton, NModal, NForm, NFormItem, NInput,
+  NDataTable, NTag, NButton, NModal, NForm, NFormItem, NInput, NSpace,
   type DataTableColumns, type FormInst, type FormRules,
 } from 'naive-ui'
 
@@ -79,6 +79,7 @@ type TenantRow = {
   balance: number
   branchCount: number
   createdAt: string
+  isActivated: boolean
 }
 
 const { data, pending, error, refresh } = await useFetch<TenantRow[]>('/api/tenants')
@@ -88,6 +89,23 @@ const rowProps = (row: TenantRow) => ({
   style: 'cursor: pointer',
   onClick: () => router.push(`/tenants/${row.id}`),
 })
+
+const resendingId = ref<string | null>(null)
+
+async function resendInvite(row: TenantRow, e: MouseEvent) {
+  e.stopPropagation()
+  resendingId.value = row.id
+  try {
+    await $fetch(`/api/tenants/${row.id}/resend-invite`, { method: 'POST' })
+    window.alert(`Приглашение отправлено на ${row.ownerEmail}`)
+  } catch (err: unknown) {
+    const message = (err as { data?: { message?: string } })?.data?.message ?? 'Ошибка'
+
+    window.alert(`Ошибка: ${message}`)
+  } finally {
+    resendingId.value = null
+  }
+}
 
 const columns: DataTableColumns<TenantRow> = [
   {
@@ -103,6 +121,27 @@ const columns: DataTableColumns<TenantRow> = [
   {
     title: 'Email владельца',
     key: 'ownerEmail',
+  },
+  {
+    title: 'Статус',
+    key: 'isActivated',
+    width: 180,
+    render: (row) => {
+      if (row.isActivated) {
+        return h(NTag, { type: 'success', size: 'small', bordered: false }, { default: () => 'Активен' })
+      }
+
+      return h(NSpace, { align: 'center', size: 'small' }, {
+        default: () => [
+          h(NTag, { type: 'warning', size: 'small', bordered: false }, { default: () => 'Приглашён' }),
+          h(NButton, {
+            size: 'tiny',
+            loading: resendingId.value === row.id,
+            onClick: (e: MouseEvent) => resendInvite(row, e),
+          }, { default: () => 'Отправить снова' }),
+        ],
+      })
+    },
   },
   {
     title: 'Тариф',
