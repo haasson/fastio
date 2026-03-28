@@ -378,6 +378,9 @@ port = 54327
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
 
+[functions.dadata-suggest]
+verify_jwt = false
+
 [functions.list-team]
 verify_jwt = false
 

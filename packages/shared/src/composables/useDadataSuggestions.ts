@@ -11,13 +11,13 @@ export type DadataSuggestion = {
   }
 }
 
-export const useDadataSuggestions = (apiKey: string) => {
+export const useDadataSuggestions = (proxyUrl: string) => {
   const suggestions = ref<DadataSuggestion[]>([])
   const loading = ref(false)
   let timer: ReturnType<typeof setTimeout> | null = null
 
   const fetchSuggestions = async (query: string) => {
-    if (!query || query.length < 3 || !apiKey) {
+    if (!query || query.length < 3 || !proxyUrl) {
       suggestions.value = []
 
       return
@@ -25,14 +25,10 @@ export const useDadataSuggestions = (apiKey: string) => {
 
     loading.value = true
     try {
-      const res = await fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address', {
+      const res = await fetch(proxyUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Token ${apiKey}`,
-        },
-        body: JSON.stringify({ query, count: 5 }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
       })
 
       const json = await res.json()

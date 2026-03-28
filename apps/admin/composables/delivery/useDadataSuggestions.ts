@@ -3,4 +3,9 @@ import { useDadataSuggestions as useSharedDadataSuggestions } from '@fastio/shar
 
 export type { DadataSuggestion } from '@fastio/shared'
 
-export const useDadataSuggestions = () => useSharedDadataSuggestions(useRuntimeConfig().public.dadataApiKey as string)
+export const useDadataSuggestions = () => {
+  const config = useRuntimeConfig()
+  const proxyUrl = `${config.public.supabaseUrl}/functions/v1/dadata-suggest`
+
+  return useSharedDadataSuggestions(proxyUrl)
+}
