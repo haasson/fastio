@@ -40,7 +40,9 @@
           :key="category.id"
           class="category-block"
         >
-          <FsHeading v-if="!selectedCategoryId" as="h3" class="category-title">{{ category.name }}</FsHeading>
+          <div v-if="!selectedCategoryId" class="category-title">
+            <FsHeading as="h3">{{ category.name }}</FsHeading>
+          </div>
           <div class="menu-grid">
             <template v-if="category.type === 'combo'">
               <SfDishCard
@@ -216,7 +218,11 @@ function handleAddButton(dish: Dish) {
 }
 
 function handleCardClick(dish: Dish) {
-  openDishModal(dish)
+  if (isServices.value) {
+    openRequestModal(dish)
+  } else {
+    openDishModal(dish)
+  }
 }
 
 function handleModalAdd(item: CartItem) {

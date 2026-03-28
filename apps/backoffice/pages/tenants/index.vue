@@ -15,6 +15,7 @@
         :pagination="{ pageSize: 20 }"
         :bordered="false"
         :row-props="rowProps"
+        :scroll-x="900"
         striped
       />
 
