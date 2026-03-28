@@ -4,6 +4,9 @@ export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   if (url.pathname.startsWith('/_nuxt') || url.pathname.startsWith('/__nuxt')) return
 
+  const t0 = Date.now()
+  console.log(`[tenant] start ${url.pathname}`)
+
   const supabase = getServerSupabase()
   const host = getRequestHeader(event, 'x-original-host') || getRequestHost(event)
   const domain = host.split(':')[0]
@@ -16,10 +19,13 @@ export default defineEventHandler(async (event) => {
     .eq('custom_domain', domain)
     .maybeSingle()
 
+  console.log(`[tenant] byDomain done ${Date.now() - t0}ms, found: ${!!byDomain}`)
+
   if (byDomain) {
     event.context.tenantId = byDomain.id
     event.context.tenant = mapTenant(byDomain)
     checkSuspended(event.context.tenant)
+    console.log(`[tenant] resolved by domain ${Date.now() - t0}ms`)
     return
   }
 
@@ -30,10 +36,13 @@ export default defineEventHandler(async (event) => {
     .eq('slug', slug)
     .maybeSingle()
 
+  console.log(`[tenant] bySlug done ${Date.now() - t0}ms, found: ${!!bySlug}`)
+
   if (bySlug) {
     event.context.tenantId = bySlug.id
     event.context.tenant = mapTenant(bySlug)
     checkSuspended(event.context.tenant)
+    console.log(`[tenant] resolved by slug ${Date.now() - t0}ms`)
     return
   }
 
