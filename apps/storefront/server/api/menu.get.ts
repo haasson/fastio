@@ -35,12 +35,14 @@ export default defineEventHandler(async (event) => {
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('active', true)
+      .is('deleted_at', null)
       .order('sort_order'),
     supabase
       .from('dishes')
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('active', true)
+      .is('deleted_at', null)
       .order('sort_order'),
     combosEnabled
       ? supabase
