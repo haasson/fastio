@@ -1,7 +1,11 @@
 <template>
   <PageShell :show-category-bar="menuDefaultView === 'dishes'">
     <template #default>
-      <MenuSection :default-view="menuDefaultView" />
+      <MenuSection
+        :default-view="menuDefaultView"
+        :dish-description-mode="layout.pageSettings.menu.dishDescriptionMode"
+        :mobile-dish-card="layout.pageSettings.menu.mobileDishCard"
+      />
     </template>
   </PageShell>
 </template>

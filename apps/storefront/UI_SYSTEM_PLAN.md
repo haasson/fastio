@@ -107,7 +107,7 @@ apps/storefront/
 │       │   └── SfScrollNav.vue    # горизонтальный скролл-навигатор (категории)
 │       └── domain/
 │           ├── SfDishCard.vue     # карточка блюда (image+name+price+add button)
-│           ├── SfDishCardCompact.vue # компактный вариант для списка
+│           ├── (удалён — compact-режим встроен в SfDishCard.vue)
 │           ├── SfPriceTag.vue     # цена (основная + старая зачёркнутая)
 │           ├── SfStepper.vue      # инкремент/декремент counter (+-N)
 │           ├── SfCartFab.vue      # floating кнопка корзины с badge
@@ -298,7 +298,6 @@ apps/storefront/
 
 ### Шаг 5 — Domain Components (1 агент)
 - `SfDishCard.vue`
-- `SfDishCardCompact.vue`
 - `SfPriceTag.vue`
 - `SfStepper.vue`
 - `SfCartFab.vue`

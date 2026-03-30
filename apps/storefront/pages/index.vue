@@ -18,6 +18,8 @@
         v-if="layout.sections.menu.enabled && layout.sectionsOrder.includes('menu')"
         id="menu"
         :default-view="menuDefaultView"
+        :dish-description-mode="layout.sections.menu.dishDescriptionMode"
+        :mobile-dish-card="layout.sections.menu.mobileDishCard"
       />
       <GallerySection
         v-if="layout.sections.gallery.enabled && layout.sectionsOrder.includes('gallery') && layout.sections.gallery.galleryIds?.length"

@@ -1,12 +1,30 @@
 <template>
   <!-- Меню -->
-  <div v-if="pageKey === 'menu'" class="field">
-    <label class="field-label">Вид по умолчанию</label>
-    <UiSegmentedControl
-      v-model="siteLayoutForm.pageSettings.menu.defaultView"
-      :items="menuViewOptions"
-      size="small"
-    />
+  <div v-if="pageKey === 'menu'" class="fields-wrap">
+    <div class="field">
+      <label class="field-label">Вид по умолчанию</label>
+      <UiSegmentedControl
+        v-model="siteLayoutForm.pageSettings.menu.defaultView"
+        :items="menuViewOptions"
+        size="small"
+      />
+    </div>
+    <div class="field">
+      <label class="field-label">Описание блюда</label>
+      <UiSegmentedControl
+        v-model="siteLayoutForm.pageSettings.menu.dishDescriptionMode"
+        :items="dishDescriptionOptions"
+        size="small"
+      />
+    </div>
+    <div class="field">
+      <label class="field-label">Карточка на мобильном</label>
+      <UiSegmentedControl
+        v-model="siteLayoutForm.pageSettings.menu.mobileDishCard"
+        :items="mobileDishCardOptions"
+        size="small"
+      />
+    </div>
   </div>
 
   <!-- Доставка -->
@@ -75,6 +93,7 @@ import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, PageKey, NavPageKey } from '@fastio/shared'
+import { dishDescriptionOptions, mobileDishCardOptions } from '@fastio/shared'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 
 defineProps<{

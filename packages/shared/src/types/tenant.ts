@@ -86,7 +86,7 @@ export type SiteLayout = {
       autoplay: boolean
       autoplayInterval: number
     }
-    menu: { enabled: boolean; defaultView: 'categories' | 'dishes'; tagDisplayMode: 'text' | 'icon' | 'both' }
+    menu: { enabled: boolean; defaultView: 'categories' | 'dishes'; tagDisplayMode: 'text' | 'icon' | 'both'; dishDescriptionMode: 'below' | 'overlay'; mobileDishCard: 'vertical' | 'horizontal' }
     gallery: { enabled: boolean; galleryIds: string[] }
     reviews: { enabled: boolean }
     delivery: { enabled: boolean }
@@ -94,7 +94,7 @@ export type SiteLayout = {
   sectionsOrder: SectionKey[]
   pages: NavPageKey[]
   pageSettings: {
-    menu: { defaultView: 'categories' | 'dishes'; tagDisplayMode: 'text' | 'icon' | 'both' }
+    menu: { defaultView: 'categories' | 'dishes'; tagDisplayMode: 'text' | 'icon' | 'both'; dishDescriptionMode: 'below' | 'overlay'; mobileDishCard: 'vertical' | 'horizontal' }
     delivery: { showMap: boolean; descriptionMode: 'auto' | 'manual' }
     gallery: { galleryIds: string[] }
   }

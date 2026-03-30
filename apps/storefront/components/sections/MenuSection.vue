@@ -53,6 +53,8 @@
                 :hide-stepper="tableMode"
                 :is-services="isServices"
                 :ordering-enabled="orderingEnabled"
+                :overlay="props.dishDescriptionMode === 'overlay'"
+                :mobile-compact="props.mobileDishCard === 'horizontal'"
                 @add="addComboToCart(combo)"
                 @card-click="openComboModal(combo)"
               />
@@ -66,6 +68,8 @@
                 :hide-stepper="tableMode"
                 :is-services="isServices"
                 :ordering-enabled="orderingEnabled"
+                :overlay="props.dishDescriptionMode === 'overlay'"
+                :mobile-compact="props.mobileDishCard === 'horizontal'"
                 @add="handleAddButton(dish)"
                 @card-click="handleCardClick(dish)"
                 @request="openRequestModal(dish)"
@@ -116,6 +120,8 @@ import ServiceRequestModal from '~/components/services/ServiceRequestModal.vue'
 const props = defineProps<{
   defaultView: 'categories' | 'dishes'
   tableMode?: boolean
+  dishDescriptionMode?: 'below' | 'overlay'
+  mobileDishCard?: 'vertical' | 'horizontal'
 }>()
 
 const emit = defineEmits<{
@@ -327,7 +333,8 @@ function addComboToCart(combo: Combo) {
   grid-template-columns: 1fr;
   gap: 8px;
 
-  @include md { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @include md { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (min-width: 960px) { grid-template-columns: repeat(3, 1fr); }
   @include lg { grid-template-columns: repeat(4, 1fr); gap: 20px; }
 }
 

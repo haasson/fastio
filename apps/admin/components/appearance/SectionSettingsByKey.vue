@@ -41,13 +41,31 @@
     </div>
   </div>
 
-  <div v-else-if="sectionKey === 'menu'" class="field">
-    <label class="field-label">Вид по умолчанию</label>
-    <UiSegmentedControl
-      v-model="form.sections.menu.defaultView"
-      :items="menuViewOptions"
-      size="small"
-    />
+  <div v-else-if="sectionKey === 'menu'" class="fields-wrap">
+    <div class="field">
+      <label class="field-label">Вид по умолчанию</label>
+      <UiSegmentedControl
+        v-model="form.sections.menu.defaultView"
+        :items="menuViewOptions"
+        size="small"
+      />
+    </div>
+    <div class="field">
+      <label class="field-label">Описание блюда</label>
+      <UiSegmentedControl
+        v-model="form.sections.menu.dishDescriptionMode"
+        :items="dishDescriptionOptions"
+        size="small"
+      />
+    </div>
+    <div class="field">
+      <label class="field-label">Карточка на мобильном</label>
+      <UiSegmentedControl
+        v-model="form.sections.menu.mobileDishCard"
+        :items="mobileDishCardOptions"
+        size="small"
+      />
+    </div>
   </div>
 
   <GalleryPicker
@@ -68,6 +86,7 @@ import { UiSegmentedControl, UiInputNumber, UiCheckbox } from '@fastio/ui'
 import HeroOptions from './HeroOptions.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, SectionKey } from '@fastio/shared'
+import { dishDescriptionOptions, mobileDishCardOptions } from '@fastio/shared'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 
 defineProps<{
@@ -92,6 +111,7 @@ const menuViewOptions = computed(() => [
   { value: 'categories', label: 'Категории' },
   { value: 'dishes', label: itemsLabel.value },
 ])
+
 </script>
 
 <style scoped lang="scss">

@@ -1,5 +1,45 @@
 <template>
-  <FsCard :image-alt="dish.name" :class="['dish-card-root', { clickable: isServices || orderingEnabled }]" @click="emit('cardClick')">
+  <!-- Mobile compact layout (shown only on mobile when mobileCompact is true) -->
+  <FsCard
+    v-if="mobileCompact"
+    :class="['dish-card-root', 'mobile-compact', { clickable: isServices || orderingEnabled }]"
+    @click="emit('cardClick')"
+  >
+    <div class="compact-inner">
+      <div class="compact-photo">
+        <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
+        <div v-else class="dish-placeholder compact-placeholder">
+          <UtensilsCrossed :size="24" />
+        </div>
+      </div>
+      <div class="compact-body">
+        <h3 class="compact-name">{{ dish.name }}</h3>
+        <p v-if="dish.description" class="compact-desc">{{ dish.description }}</p>
+        <div class="dish-footer" @click.stop>
+          <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" size="small" />
+          <FsButton v-if="isServices" variant="primary" size="small" @click.stop="emit('request')">
+            Заявка
+          </FsButton>
+          <template v-else-if="orderingEnabled">
+            <SfStepper
+              v-if="cartCount > 0 && !hideStepper"
+              :model-value="cartCount"
+              :min="0"
+              size="small"
+              @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
+            />
+            <FsButton v-else variant="primary" size="small" @click="emit('add')">
+              <Plus :size="16" />
+              Добавить
+            </FsButton>
+          </template>
+        </div>
+      </div>
+    </div>
+  </FsCard>
+
+  <!-- Default vertical layout (hidden on mobile when mobileCompact is true) -->
+  <FsCard :image-alt="dish.name" :class="['dish-card-root', { clickable: isServices || orderingEnabled, 'hide-mobile': mobileCompact }]" @click="emit('cardClick')">
     <template #image>
       <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
       <div v-else class="dish-placeholder">
@@ -21,9 +61,30 @@
           {{ rt.name }}
         </span>
       </div>
+      <div v-if="overlay" class="dish-overlay">
+        <FsText as="h3" variant="body-sm" class="dish-name">{{ dish.name }}</FsText>
+        <FsText v-if="dish.description" variant="caption" class="dish-desc-overlay">{{ dish.description }}</FsText>
+        <div class="dish-footer">
+          <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
+          <FsButton v-if="isServices" variant="primary" size="small" :responsive="true" @click.stop="emit('request')">
+            Оставить заявку
+          </FsButton>
+          <SfStepper
+            v-else-if="orderingEnabled && cartCount > 0 && !hideStepper"
+            :model-value="cartCount"
+            :min="0"
+            size="small"
+            @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
+          />
+          <FsButton v-else-if="orderingEnabled" variant="primary" size="small" :responsive="true" @click="emit('add')">
+            <Plus :size="16" />
+            Добавить
+          </FsButton>
+        </div>
+      </div>
     </template>
 
-    <div class="dish-body">
+    <div v-if="!overlay" class="dish-body">
       <FsText as="h3" variant="body-sm" class="dish-name">{{ dish.name }}</FsText>
       <FsText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</FsText>
       <div class="dish-footer" @click.stop>
@@ -67,6 +128,8 @@ type Props = {
   hideStepper?: boolean
   isServices?: boolean
   orderingEnabled?: boolean
+  overlay?: boolean
+  mobileCompact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), { currency: '₽', orderingEnabled: true })
@@ -147,6 +210,35 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
 }
 
 
+.dish-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 130px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  @include flex-col(4px);
+
+  .dish-name { color: #fff; }
+  .dish-footer { color: #fff; }
+  :deep(.price-main) { color: #fff; }
+  :deep(.price-prefix) { color: rgba(255, 255, 255, 0.8); }
+  :deep(.price-old) { color: rgba(255, 255, 255, 0.5); }
+  :deep(.stepper-root) { border-color: rgba(255, 255, 255, 0.3); }
+  :deep(.stepper-value) { color: #fff; }
+  :deep(.stepper-btn) { color: #fff; }
+  .dish-desc-overlay {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
 .dish-body {
   padding: 12px;
   @include flex-col(8px);
@@ -169,5 +261,65 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
   min-height: 36px;
 
   @include lg { min-height: 44px; }
+}
+
+// Mobile compact
+.mobile-compact {
+  display: none;
+  max-width: none;
+  @media (max-width: 767px) { display: flex; }
+}
+
+.hide-mobile {
+  @media (max-width: 767px) { display: none; }
+}
+
+.compact-inner {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+}
+
+.compact-photo {
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.compact-placeholder {
+  border-radius: var(--radius-card);
+}
+
+.compact-body {
+  @include flex-col(6px);
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-name {
+  @include text-caption(600);
+  color: var(--color-text);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.compact-desc {
+  @include text-xs;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
