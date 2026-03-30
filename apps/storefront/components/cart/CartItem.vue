@@ -13,8 +13,7 @@
         <span class="item-price">{{ itemTotal }} {{ currency }}</span>
       </div>
 
-      <p v-if="modifiersSummary" class="item-mods">{{ modifiersSummary }}</p>
-      <p v-if="removedSummary" class="item-removed">{{ removedSummary }}</p>
+      <p v-if="summary" class="item-mods">{{ summary }}</p>
 
       <div class="item-controls">
         <div class="item-left">
@@ -56,7 +55,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Pencil, Trash2, UtensilsCrossed } from 'lucide-vue-next'
-import { getItemUnitPrice } from '@fastio/shared'
+import { getItemUnitPrice, getItemSummary } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { FsIconButton } from '@fastio/public-ui'
@@ -83,22 +82,7 @@ const emit = defineEmits<{
 const unitPrice = computed(() => getItemUnitPrice(props.item))
 const itemTotal = computed(() => unitPrice.value * props.item.quantity)
 
-const modifiersSummary = computed(() => {
-  const parts: string[] = []
-  if (props.item.modifiers?.length) {
-    parts.push(...props.item.modifiers.map((m) => m.optionName))
-  }
-  if (props.item.addons?.length) {
-    parts.push(...props.item.addons.map((a) => `+ ${a.addonName}`))
-  }
-  return parts.join(' · ')
-})
-
-const removedSummary = computed(() => {
-  if (!props.item.removedIngredients?.length) return ''
-  const names = props.item.removedIngredients.map((s) => s.toLowerCase()).join(', ')
-  return `Убрать: ${names}`
-})
+const summary = computed(() => getItemSummary(props.item))
 
 function onQtyChange(newVal: number) {
   emit('change', props.index, newVal)
@@ -188,13 +172,6 @@ async function onDeleteClick() {
 }
 
 .item-mods {
-  @include text-xs;
-  color: var(--color-text-secondary);
-  line-height: 1.4;
-  margin: 0;
-}
-
-.item-removed {
   @include text-xs;
   color: var(--color-text-secondary);
   line-height: 1.4;

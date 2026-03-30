@@ -5,11 +5,7 @@
         <span class="item-name">{{ item.dishName }} × {{ item.quantity }}</span>
         <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} {{ currency }}</span>
       </div>
-      <p v-if="modifiersSummary(item)" class="item-detail">{{ modifiersSummary(item) }}</p>
-      <p v-if="item.removedIngredients?.length" class="item-detail item-removed">
-        Убрать: {{ item.removedIngredients.join(', ') }}
-      </p>
-      <p v-if="addonsSummary(item)" class="item-detail">{{ addonsSummary(item) }}</p>
+      <p v-if="getItemSummaryText(item)" class="item-detail">{{ getItemSummaryText(item) }}</p>
       <p v-if="item.status === 'pending'" class="item-detail item-pending">Ожидает подтверждения</p>
     </div>
   </div>
@@ -17,7 +13,7 @@
 
 <script setup lang="ts">
 import type { OrderItem } from '@fastio/shared'
-import { getItemUnitPrice } from '@fastio/shared'
+import { getItemUnitPrice, getItemSummary } from '@fastio/shared'
 
 type Props = {
   items: OrderItem[]
@@ -26,12 +22,8 @@ type Props = {
 
 defineProps<Props>()
 
-function modifiersSummary(item: OrderItem) {
-  return item.modifiers?.map((m) => m.optionName).join(' · ') ?? ''
-}
-
-function addonsSummary(item: OrderItem) {
-  return item.addons?.map((a) => `+ ${a.addonName}`).join(' · ') ?? ''
+function getItemSummaryText(item: OrderItem) {
+  return getItemSummary(item)
 }
 </script>
 
@@ -70,10 +62,6 @@ function addonsSummary(item: OrderItem) {
   @include text-xs;
   color: var(--color-text-secondary);
   margin: 0;
-}
-
-.item-removed {
-  color: var(--color-text-secondary);
 }
 
 .item-pending {
