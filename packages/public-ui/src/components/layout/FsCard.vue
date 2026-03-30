@@ -29,7 +29,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   as: 'article',
-  imageAspect: '4 / 3',
+  imageAspect: '1 / 1',
   horizontal: false,
 })
 

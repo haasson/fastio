@@ -11,10 +11,10 @@
       <div data-tour="category-photo">
         <ImageUploadTrigger
           :model-value="form.photoUrl"
-          aspect-ratio="4:3"
+          aspect-ratio="1:1"
           modal-title="Фото категории"
           compact
-          width="96px"
+          width="72px"
           height="72px"
           @update:model-value="form.photoUrl = $event"
           @pending="pendingPhotoFile = $event"

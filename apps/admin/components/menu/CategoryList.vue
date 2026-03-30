@@ -8,7 +8,7 @@
         :key="cat.id"
         :name="cat.name"
         :thumb-url="cat.photoUrl"
-        thumb-width="48px"
+        thumb-width="36px"
         thumb-height="36px"
         :disabled="!cat.active"
       >

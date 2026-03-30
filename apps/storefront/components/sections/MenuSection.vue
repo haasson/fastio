@@ -352,7 +352,7 @@ function addComboToCart(combo: Combo) {
 
 .category-placeholder {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;

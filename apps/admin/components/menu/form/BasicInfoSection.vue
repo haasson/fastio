@@ -4,7 +4,7 @@
       <UiText size="tiny" span class="section-title">Фото</UiText>
       <ImageUploadTrigger
         :model-value="photoUrl"
-        aspect-ratio="4:3"
+        aspect-ratio="1:1"
         @update:model-value="$emit('update:photoUrl', $event); $emit('update:photoRemoved', !$event)"
         @pending="$emit('update:pendingPhoto', $event)"
       />
