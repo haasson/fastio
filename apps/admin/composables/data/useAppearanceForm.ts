@@ -1,7 +1,7 @@
 import { reactive, ref, computed, watch } from 'vue'
 import type { InjectionKey, Ref } from 'vue'
-import type { Tenant, SiteLayout, SiteContent, TenantSeo } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, getPresetPalette } from '@fastio/shared'
+import type { Tenant, SiteLayout, SiteContent, TenantSeo, ConfigIssue } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, getPresetPalette, validateTenantConfig } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useMessage } from '@fastio/ui'
@@ -163,6 +163,10 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
   }
 
   const saving = ref(false)
+  const configIssues = ref<ConfigIssue[]>([])
+  const dismissConfigIssues = () => {
+    configIssues.value = []
+  }
 
   const sanitizeSeo = (): TenantSeo => {
     const seo: TenantSeo = JSON.parse(JSON.stringify(seoForm))
@@ -200,6 +204,15 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
       await uploadPendingAssets(tenantStore.tenant.id)
       const seo = sanitizeSeo()
 
+      const issues = validateTenantConfig(siteLayoutForm, tenantStore.tenant.modules, contentForm)
+      const hasErrors = issues.some((i) => i.severity === 'error')
+
+      if (hasErrors) {
+        configIssues.value = issues
+
+        return
+      }
+
       await tenantStore.update({
         siteLayout: JSON.parse(JSON.stringify(siteLayoutForm)),
         theme: JSON.parse(JSON.stringify(themeForm)),
@@ -207,7 +220,8 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
         seo,
       })
       updateSnapshots()
-      success('Сохранено')
+      configIssues.value = issues
+      success(issues.length ? 'Сохранено (есть замечания)' : 'Сохранено')
     } catch (e) {
       showError('Не удалось сохранить. Попробуйте ещё раз')
       throw e
@@ -230,5 +244,7 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
     save,
     onPendingHeroBg,
     onPendingAboutCover,
+    configIssues,
+    dismissConfigIssues,
   }
 }

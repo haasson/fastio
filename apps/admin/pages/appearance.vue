@@ -27,6 +27,11 @@
       </TabsLayout>
     </template>
     <div v-else class="state-msg">Загрузка…</div>
+
+    <ConfigIssuesModal
+      :issues="configIssues"
+      @close="dismissConfigIssues()"
+    />
   </div>
 </template>
 
@@ -35,6 +40,7 @@ import { computed, onMounted, provide } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton } from '@fastio/ui'
 import AppearancePreview from '~/components/appearance/AppearancePreview.vue'
+import ConfigIssuesModal from '~/components/appearance/ConfigIssuesModal.vue'
 import { useTenantStore } from '~/stores/tenant'
 import { useAppearanceForm, AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
@@ -54,7 +60,7 @@ onMounted(() => tenantStore.init())
 
 const { tenant } = storeToRefs(tenantStore)
 const form = useAppearanceForm(tenant)
-const { isDirty, saving } = form
+const { isDirty, saving, configIssues, dismissConfigIssues } = form
 
 provide(AppearanceFormKey, form)
 useUnsavedGuard(isDirty)

@@ -32,18 +32,27 @@
         />
       </div>
     </template>
+
+    <ModuleToggleIssuesModal
+      :issues="toggleIssues"
+      :can-proceed="!!pendingToggleKey"
+      @confirm="onIssuesConfirm"
+      @close="onIssuesDismiss"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { UiSectionHeader, UiDivider, useMessage } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useModules, useModuleConfigs } from '~/composables/plan/useModules'
 import { usePlans } from '~/composables/plan/usePlans'
 import type { ModuleKey } from '~/config/modules'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { checkModuleDisable, type ToggleIssue } from '~/utils/moduleToggleChecks'
 import ModuleCard from '~/components/settings/ModuleCard.vue'
+import ModuleToggleIssuesModal from '~/components/settings/ModuleToggleIssuesModal.vue'
 
 const tenantStore = useTenantStore()
 const api = useDatabase()
@@ -51,6 +60,9 @@ const modules = useModules()
 const { configs } = useModuleConfigs()
 const { getPlanLabel } = usePlans()
 const { warning } = useMessage()
+
+const toggleIssues = ref<ToggleIssue[]>([])
+const pendingToggleKey = ref<ModuleKey | null>(null)
 
 const moduleList = computed(() => configs.value.map((cfg) => ({
   ...cfg,
@@ -61,23 +73,57 @@ const moduleList = computed(() => configs.value.map((cfg) => ({
 const availableModules = computed(() => moduleList.value.filter((m) => !m.state.locked))
 const lockedModules = computed(() => moduleList.value.filter((m) => m.state.locked))
 
+const doToggle = async (key: ModuleKey, val: boolean) => {
+  await tenantStore.update({
+    modules: { ...tenantStore.tenant!.modules, [key]: val },
+  }).catch(() => warning('Не удалось сохранить изменения'))
+}
+
 const toggle = async (key: ModuleKey, val: boolean) => {
   if (!tenantStore.tenant) return
 
-  if (key === 'dineIn' && !val) {
-    const tables = await api.tables.list(tenantStore.tenant.id)
-    const openCount = tables.filter((t) => t.isOpen).length
+  // Enabling — no checks needed
+  if (val) {
+    await doToggle(key, true)
 
-    if (openCount > 0) {
-      warning(`Закройте все столы перед отключением модуля (открытых: ${openCount})`)
-
-      return
-    }
+    return
   }
 
-  await tenantStore.update({
-    modules: { ...tenantStore.tenant.modules, [key]: val },
-  }).catch(() => warning('Не удалось сохранить изменения'))
+  const issues = await checkModuleDisable(key, tenantStore.tenant.id, tenantStore.tenant.siteLayout, api)
+
+  const blockers = issues.filter((i) => i.severity === 'blocker')
+  const warnings = issues.filter((i) => i.severity === 'warning')
+
+  // Hard blockers — show modal, can't proceed
+  if (blockers.length) {
+    toggleIssues.value = issues
+    pendingToggleKey.value = null
+
+    return
+  }
+
+  // Warnings only — show modal with confirm
+  if (warnings.length) {
+    toggleIssues.value = issues
+    pendingToggleKey.value = key
+
+    return
+  }
+
+  await doToggle(key, false)
+}
+
+const onIssuesConfirm = async () => {
+  if (pendingToggleKey.value) {
+    await doToggle(pendingToggleKey.value, false)
+  }
+  toggleIssues.value = []
+  pendingToggleKey.value = null
+}
+
+const onIssuesDismiss = () => {
+  toggleIssues.value = []
+  pendingToggleKey.value = null
 }
 </script>
 

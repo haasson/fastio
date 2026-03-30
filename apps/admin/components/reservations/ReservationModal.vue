@@ -22,17 +22,19 @@
       </div>
 
       <!-- Guest info -->
-      <UiForm class="form">
+      <UiForm ref="formRef" class="form">
         <div class="row">
           <UiInput
             v-model="form.guestName"
             label="Имя гостя"
+            name="guestName"
             :disabled="formDisabled"
             :rules="[validationRules.name.required]"
           />
           <UiInput
             v-model="form.guestPhone"
             label="Телефон"
+            name="guestPhone"
             :disabled="formDisabled"
             :rules="[validationRules.phone.required, validationRules.phone.format]"
           />
@@ -41,12 +43,14 @@
           <UiDatepicker
             v-model="reservedDateTs"
             label="Дата"
+            name="reservedDate"
             :disabled="formDisabled"
             :rules="[{ type: 'required', message: 'Укажите дату' }]"
           />
           <UiTimepicker
             v-model="reservedTimeVal"
             label="Время"
+            name="reservedTime"
             :disabled="formDisabled"
             :rules="[{ type: 'required', message: 'Укажите время' }]"
           />
@@ -172,6 +176,7 @@ const form = reactive({
 const selectedTableId = ref<string | null>(null)
 const cancelReason = ref('')
 const showCancelReason = ref(false)
+const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 const saving = ref(false)
 const isEditing = ref(false)
 
@@ -298,6 +303,8 @@ const drawerActions = computed<DrawerAction[]>(() => {
 })
 
 const onSave = async () => {
+  if (!formRef.value?.validate()) return false
+
   saving.value = true
   try {
     const r = props.reservation
