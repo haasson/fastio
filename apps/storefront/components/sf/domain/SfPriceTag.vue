@@ -18,7 +18,7 @@ type Props = {
   responsive?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   currency: '₽',
   size: 'medium',
   responsive: false,

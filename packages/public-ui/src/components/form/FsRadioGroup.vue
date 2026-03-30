@@ -27,7 +27,7 @@
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RadioGroupRoot, RadioGroupItem, RadioGroupIndicator } from 'reka-ui'
+import { RadioGroupRoot, RadioGroupItem, RadioGroupIndicator, type AcceptableValue } from 'reka-ui'
 
 type Option = {
   value: string | number
@@ -53,8 +53,10 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
-function onValueChange(value: string) {
-  emit('update:modelValue', value)
+function onValueChange(value: AcceptableValue) {
+  if (typeof value === 'string' || typeof value === 'number') {
+    emit('update:modelValue', value)
+  }
 }
 
 const stringValue = computed(() =>

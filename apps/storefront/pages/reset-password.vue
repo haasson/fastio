@@ -5,11 +5,11 @@
 
         <div class="reset-root">
           <FsForm v-if="!done" class="form" @submit="onSubmit">
-            <FsField label="Новый пароль" required name="password" :model-value="password" :rules="[validationRules.password.required, validationRules.password.minLength]" v-slot="{ hasError }">
+            <FsField v-slot="{ hasError }" label="Новый пароль" required name="password" :model-value="password" :rules="[validationRules.password.required, validationRules.password.minLength]">
               <FsInput v-model="password" type="password" placeholder="Минимум 6 символов" :error="hasError" />
             </FsField>
 
-            <FsField label="Подтвердите пароль" required name="confirmPassword" :model-value="confirmPassword" :rules="[validationRules.password.required, { type: 'custom', validator: (v) => v === password.value, message: 'Пароли не совпадают' }]" v-slot="{ hasError }">
+            <FsField v-slot="{ hasError }" label="Подтвердите пароль" required name="confirmPassword" :model-value="confirmPassword" :rules="[validationRules.password.required, { type: 'custom', validator: (v: string) => v === password, message: 'Пароли не совпадают' }]">
               <FsInput v-model="confirmPassword" type="password" placeholder="Ещё раз" :error="hasError" />
             </FsField>
 

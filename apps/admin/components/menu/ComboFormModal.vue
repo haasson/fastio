@@ -19,9 +19,9 @@
         @update:photo-url="currentPhotoUrl = $event"
         @update:photo-removed="photoRemoved = $event"
         @update:pending-photo="pendingPhotoFile = $event"
-        @update:name="form.name = $event"
+        @update:name="form.name = $event ?? ''"
         @update:price="form.price = $event"
-        @update:description="form.description = $event"
+        @update:description="form.description = $event ?? ''"
       />
 
       <UiCollapse :expanded-names="['composition']" class="sections">

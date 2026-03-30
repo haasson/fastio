@@ -24,18 +24,18 @@
 
     <UiSkeleton v-if="loading" :repeat="5" />
 
-    <UiEmpty v-else-if="!reservations.length" icon="calendarCheck" text="Броней нет" />
+    <UiEmpty v-else-if="!reservations.length" icon="calendar" text="Броней нет" />
 
     <UiDataTable
       v-else
       :columns="visibleColumnDefs"
       :data="searchedData"
       :filters="tableFilters"
-      :row-key="(row) => row.id"
+      :row-key="(row: Reservation) => row.id"
       :bordered="false"
       :scroll-x="860"
       size="small"
-      :row-props="(row) => ({ onClick: () => openEdit(row), style: 'cursor: pointer' })"
+      :row-props="(row: Reservation) => ({ onClick: () => openEdit(row), style: 'cursor: pointer' })"
       @update:filters="onFiltersUpdate"
     />
 
@@ -51,6 +51,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiSkeleton } from '@fastio/ui'
+import type { Reservation } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import ReservationModal from '~/components/reservations/ReservationModal.vue'
 import { useReservationsStore } from '~/stores/reservations'

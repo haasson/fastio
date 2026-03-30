@@ -74,11 +74,11 @@ import { UiSegmentedControl, UiCheckbox } from '@fastio/ui'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import GalleryPicker from './GalleryPicker.vue'
-import type { SiteLayout, SiteContent, PageKey } from '@fastio/shared'
+import type { SiteLayout, SiteContent, PageKey, NavPageKey } from '@fastio/shared'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 
 defineProps<{
-  pageKey: PageKey
+  pageKey: PageKey | NavPageKey
   siteLayoutForm: SiteLayout
   contentForm: SiteContent
 }>()

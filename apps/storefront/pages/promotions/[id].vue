@@ -1,7 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" :current="promo.title">
+      <StorePageLayout v-if="promo" :breadcrumbs="[{ label: 'Главная', to: '/' }]" :current="promo.title">
         <div v-if="promo.type === 'promo_code'" class="code-block">
           <FsText size="small" color="secondary">Промокод</FsText>
           <div class="code-row">

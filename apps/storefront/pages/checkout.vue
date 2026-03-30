@@ -104,7 +104,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useNuxtData, navigateTo } from 'nuxt/app'
 import { Truck, PersonStanding } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
@@ -131,7 +130,6 @@ const { confirm } = useConfirm()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const currency = useCurrency()
-const { deliveryFee, discountAmount, orderTotal } = storeToRefs(checkout)
 
 const showDeliveryTabs = computed(() => {
   const m = tenant.value?.modules

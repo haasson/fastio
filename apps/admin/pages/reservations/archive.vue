@@ -24,18 +24,18 @@
 
     <UiSkeleton v-if="loading" :repeat="5" />
 
-    <UiEmpty v-else-if="!rows.length" icon="calendarCheck" text="Архив пуст" />
+    <UiEmpty v-else-if="!rows.length" icon="calendar" text="Архив пуст" />
 
     <template v-else>
       <UiDataTable
         :columns="visibleColumnDefs"
         :data="rows"
         :filters="tableFilters"
-        :row-key="(row) => row.id"
+        :row-key="(row: Reservation) => row.id"
         :bordered="false"
         :scroll-x="860"
         size="small"
-        :row-props="(row) => ({ onClick: () => openEdit(row), style: 'cursor: pointer' })"
+        :row-props="(row: Reservation) => ({ onClick: () => openEdit(row), style: 'cursor: pointer' })"
         @update:filters="onFiltersUpdate"
       />
       <UiPagination
@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiPagination, UiSkeleton } from '@fastio/ui'
-import type { ReservationStatus } from '@fastio/shared'
+import type { Reservation, ReservationStatus } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import ReservationModal from '~/components/reservations/ReservationModal.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -77,7 +77,7 @@ const api = useDatabase()
 
 // Архив держит локальный state — данные пагинируются server-side и не нужны в глобальном сторе.
 // ReservationsActive использует useReservationsStore (realtime) — разные паттерны намеренны.
-const rows = ref([])
+const rows = ref<Reservation[]>([])
 const total = ref(0)
 const loading = ref(false)
 const page = ref(1)

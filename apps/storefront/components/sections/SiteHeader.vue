@@ -2,7 +2,7 @@
   <FsSection as="header" class="header-root" style="--section-spacing: 12px">
     <div class="header-inner">
       <NuxtLink :to="{ path: '/', query: route.query }" class="logo-link">
-        <img v-if="tenant?.siteContent?.logo" class="logo" :src="tenant.siteContent.logo" :alt="tenant.name" />
+        <img v-if="tenant?.siteContent?.logo" class="logo" :src="tenant.siteContent.logo" :alt="tenant.name" >
         <span v-else class="logo-fallback">{{ tenant?.name ?? '' }}</span>
       </NuxtLink>
 
@@ -116,6 +116,7 @@ const handleNavClick = async (link: NavLink) => {
   menuOpen.value = false
 
   if (!link.to.hash) {
+    // @ts-expect-error Nuxt router type causes excessive stack depth
     await navigateTo(link.to)
     return
   }
@@ -125,6 +126,7 @@ const handleNavClick = async (link: NavLink) => {
     return
   }
 
+  // @ts-expect-error Nuxt router type causes excessive stack depth
   await navigateTo(link.to)
 
   const hash = link.to.hash!

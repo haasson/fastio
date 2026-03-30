@@ -120,7 +120,7 @@ export const buildReservationColumns = ({
         width: 140,
         filterMultiple: false,
         filterOptions: tableNames.map((name) => ({ label: name, value: name })),
-        filter: (value: string, row: Reservation) => row.tableName === value,
+        filter: (value: string | number, row: Reservation) => row.tableName === value,
         render: (row: Reservation) => row.tableName ?? '—',
       }]
     : []),
@@ -129,7 +129,7 @@ export const buildReservationColumns = ({
     key: 'status',
     width: 150,
     filterOptions: statusFilterOptions,
-    filter: (value: unknown, row: Reservation) => row.status === value,
+    filter: (value: string | number, row: Reservation) => row.status === value,
     render: (row) => h(UiTag, {
       type: STATUS_TYPES[row.status],
       round: true,

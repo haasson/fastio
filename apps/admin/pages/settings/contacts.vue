@@ -167,7 +167,6 @@ const handleSave = async () => {
         default: {
           open: form.scheduleOpen ?? '10:00',
           close: form.scheduleClose ?? '22:00',
-          closeNextDay: form.scheduleCloseNextDay || undefined,
         },
         days,
       },

@@ -44,7 +44,6 @@ export type OrderItem = {
 }
 
 export type { OrderItemModifier } from './modifier'
-export type { OrderItemAddon }
 
 export type OrderNote = {
   id: string

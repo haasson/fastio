@@ -1,11 +1,12 @@
 import { defineEventHandler, readBody, createError } from 'h3'
+import { useRuntimeConfig } from '#imports'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { streamText } from 'ai'
 
 export default defineEventHandler(async (event) => {
   const { messages, context } = await readBody(event)
 
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
   const apiKey = config.anthropicApiKey
 
   if (!apiKey) {
@@ -23,10 +24,10 @@ export default defineEventHandler(async (event) => {
     model: anthropic('claude-haiku-4-5-20251001'),
     system: systemPrompt,
     messages,
-    maxTokens: 1024,
+    maxOutputTokens: 1024,
   })
 
-  return result.toDataStreamResponse()
+  return result.toTextStreamResponse()
 })
 
 function buildSystemPrompt(context?: { tenantName?: string; businessType?: string; currentRoute?: string }) {

@@ -42,8 +42,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useNuxtData, navigateTo } from 'nuxt/app'
-import type { Tenant } from '@fastio/shared'
+import { navigateTo } from 'nuxt/app'
 import { validationRules } from '@fastio/kit'
 import { FsDialog, FsText, FsField, FsInput, FsTextarea, FsButton } from '@fastio/public-ui'
 import { useAuthStore } from '~/stores/auth'
@@ -59,7 +58,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
 const authStore = useAuthStore()
-const { data: tenant } = useNuxtData<Tenant>('tenant')
 const currency = useCurrency()
 
 const form = ref({ name: '', phone: '', comment: '' })

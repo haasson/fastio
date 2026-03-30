@@ -38,7 +38,7 @@ export const buildPromoActivePeriodColumn = <T extends PromoLike>(): DataTableCo
   sorter: (a, b) => (a.activeFrom ?? '').localeCompare(b.activeFrom ?? ''),
   render: (row) => {
     if (!row.activeFrom && !row.activeTo) return h(UiText, { size: 'tiny', style: 'color: var(--color-text-secondary)' }, () => '—')
-    const parts = []
+    const parts: string[] = []
 
     if (row.activeFrom) parts.push(`с ${formatDateShort(row.activeFrom)}`)
     if (row.activeTo) parts.push(`по ${formatDateShort(row.activeTo)}`)

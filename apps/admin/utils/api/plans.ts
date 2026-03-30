@@ -17,6 +17,6 @@ export const plansApi = {
   async list(sb: SupabaseClient): Promise<Plan[]> {
     const data = await query(sb.from('plans').select('*').eq('is_active', true).order('sort_order'))
 
-    return data.map(mapPlan)
+    return (data ?? []).map(mapPlan)
   },
 }

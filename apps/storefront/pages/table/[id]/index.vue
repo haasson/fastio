@@ -112,7 +112,7 @@ const { data, error } = await useAsyncData(`table-${tableId}`, () =>
 )
 
 if (error.value) {
-  tableError.value = error.value.data?.message ?? 'Стол не найден'
+  tableError.value = (error.value as { data?: { message?: string } }).data?.message ?? 'Стол не найден'
 } else if (data.value) {
   tableData.value = data.value as { id: string; name: string }
   tableStore.setTable(tableData.value.id, tableData.value.name)

@@ -79,7 +79,7 @@
         v-else
         :columns="columns"
         :data="tableData"
-        :row-key="(row) => row.id"
+        :row-key="(row: Order) => row.id"
         :checked-row-keys="checkedRowKeys"
         :bordered="false"
         size="small"

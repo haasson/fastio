@@ -13,7 +13,7 @@
           :alt="item.name"
           class="photo"
           loading="lazy"
-        />
+        >
         <div class="info">
           <FsText v-if="item.description" variant="body-sm" color="secondary">
             {{ item.description }}
@@ -103,7 +103,11 @@ const {
 
 function onConfirm() {
   const item = buildCartItem()
-  emit(props.mode === 'edit' ? 'edit' : 'add', item)
+  if (props.mode === 'edit') {
+    emit('edit', item)
+  } else {
+    emit('add', item)
+  }
   emit('update:modelValue', false)
 }
 </script>

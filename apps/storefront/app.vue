@@ -4,7 +4,7 @@
       <NuxtPage />
     </NuxtLayout>
     <ClientOnly>
-      <FsToastProvider :toasts="toasts" :on-dismiss="dismiss" />
+      <FsToastProvider :toasts="toasts" :on-dismiss="dismiss as (id: string | number) => void" />
       <AuthLoginModal />
       <AuthRegisterModal />
       <AuthForgotPasswordModal />
@@ -44,6 +44,7 @@ onMounted(() => {
 const route = useRoute()
 const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
+// @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
 const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
 
 const googleFontLink = computed(() => {

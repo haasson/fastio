@@ -41,8 +41,11 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     currency: row.currency as string,
     timezone: row.timezone as string,
     seo: { ...defaultSeo(), ...(row.seo as object ?? {}) },
+    kitchenUrgencyMinutes: (row.kitchen_urgency_minutes as number) ?? 15,
+    kitchenConfig: row.kitchen_config as Tenant['kitchenConfig'],
     orderNumberConfig: (row.order_number_config as OrderNumberConfig | null) ?? null,
     maxAddonsDefault: (row.max_addons_default as number | null) ?? null,
+    onboardingCompleted: (row.onboarding_completed as boolean) ?? false,
     createdAt: row.created_at as string,
   }
 }

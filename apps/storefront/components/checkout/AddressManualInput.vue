@@ -115,7 +115,7 @@ function onAddressInput(value: string | number) {
 }
 
 function onSuggestionSelect(item: { value: string; [key: string]: unknown }) {
-  selectAddress((item as { _raw: DadataSuggestion })._raw)
+  selectAddress((item as unknown as { _raw: DadataSuggestion })._raw)
 }
 
 async function selectAddress(suggestion: DadataSuggestion) {

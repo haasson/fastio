@@ -24,10 +24,10 @@
         @update:photo-url="currentPhotoUrl = $event"
         @update:photo-removed="photoRemoved = $event"
         @update:pending-photo="pendingPhotoFile = $event"
-        @update:name="form.name = $event"
+        @update:name="form.name = $event ?? ''"
         @update:price="form.price = $event"
-        @update:description="form.description = $event"
-        @update:category-id="form.categoryId = $event"
+        @update:description="form.description = $event ?? ''"
+        @update:category-id="form.categoryId = String($event ?? '')"
         @update:weight="form.weight = $event"
         @update:weight-unit="form.weightUnit = $event"
       />

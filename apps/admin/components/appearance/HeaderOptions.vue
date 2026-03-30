@@ -124,8 +124,8 @@ const navItems = computed({
   set: (val: NavItem[]) => { siteLayoutForm.header.navItems = val },
 })
 
-const addNavItem = (key: string | null) => {
-  if (!key) return
+const addNavItem = (key: string | number | (string | number)[] | null) => {
+  if (!key || typeof key !== 'string') return
   const inSections = siteLayoutForm.sectionsOrder.includes(key as SectionKey)
     && !STRUCTURAL_SECTIONS.includes(key as SectionKey)
 

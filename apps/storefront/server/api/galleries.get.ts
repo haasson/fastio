@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
         sortOrder: Number(p.sort_order),
         createdAt: p.created_at as string,
       }))
-      .filter((p) => p.url)
-      .sort((a, b) => a.sortOrder - b.sortOrder),
+      .filter((p: GalleryPhoto) => p.url)
+      .sort((a: GalleryPhoto, b: GalleryPhoto) => a.sortOrder - b.sortOrder),
   }))
 })

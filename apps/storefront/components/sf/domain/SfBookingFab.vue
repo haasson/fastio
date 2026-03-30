@@ -1,6 +1,6 @@
 <template>
   <Transition name="fab">
-    <button class="fab-root" type="button" @click="emit('click')">
+    <button v-show="visible" class="fab-root" type="button" @click="emit('click')">
       <CalendarCheck :size="20" />
       <span class="fab-label">Забронировать</span>
     </button>
@@ -10,6 +10,7 @@
 <script setup lang="ts">
 import { CalendarCheck } from 'lucide-vue-next'
 
+withDefaults(defineProps<{ visible?: boolean }>(), { visible: true })
 const emit = defineEmits<{ click: [] }>()
 </script>
 

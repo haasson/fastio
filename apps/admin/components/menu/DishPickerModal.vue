@@ -393,6 +393,7 @@ const selectCombo = (combo: Combo) => {
     modifierOptionIds: [],
     modifiers: [],
     removedIngredients: [],
+    addons: [],
   })
   emit('update:modelValue', false)
 }

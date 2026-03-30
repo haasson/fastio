@@ -102,7 +102,7 @@
             <FsInput v-model="inputVal" placeholder="Normal" />
             <FsInput v-model="inputVal" :error="true" placeholder="Error state" />
             <FsInput v-model="inputVal" :disabled="true" placeholder="Disabled" />
-            <FsInput v-model="inputVal" :readonly="true" model-value="Readonly value" />
+            <FsInput :readonly="true" model-value="Readonly value" />
           </div>
         </div>
 

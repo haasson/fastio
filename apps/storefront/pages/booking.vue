@@ -40,7 +40,7 @@
 
             <BookingStepParams
               v-if="step === 1"
-              :form="form"
+              v-model:form="form"
               :max-guests="settings?.maxGuests ?? 20"
               :max-advance-days="settings?.maxAdvanceDays ?? 30"
               @next="goToStep2"
@@ -48,7 +48,7 @@
 
             <BookingStepSlots
               v-else-if="step === 2"
-              :form="form"
+              v-model:form="form"
               :slots="slots"
               :loading="loading"
               :working-hours="workingHoursForDate"
@@ -58,7 +58,7 @@
 
             <BookingStepContact
               v-else-if="step === 3"
-              :form="form"
+              v-model:form="form"
               :loading="loading"
               @submit="handleSubmit"
               @back="step = 2"
@@ -71,12 +71,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useAsyncData, useNuxtData, useRequestFetch } from 'nuxt/app'
-import type { WorkingHours } from '@fastio/shared'
+import type { WorkingHours, ReservationSettings, Tenant } from '@fastio/shared'
 import { CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsHeading, FsAlert } from '@fastio/public-ui'
-import type { ReservationSettings, Tenant } from '@fastio/shared'
 import PageShell from '~/components/sections/PageShell.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'

@@ -68,7 +68,7 @@ const useTour = () => {
       allowClose: true,
       disableActiveInteraction: true,
       onNextClick: (_el, _step, { state }) => {
-        const step = steps[state.activeIndex] as TourStep
+        const step = state.activeIndex != null ? steps[state.activeIndex] as TourStep : undefined
 
         if (step?.onNext) {
           step.onNext().then(() => driverObj?.moveNext())

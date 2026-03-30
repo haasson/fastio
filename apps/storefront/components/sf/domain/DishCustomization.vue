@@ -5,7 +5,7 @@
       <FsText variant="body-sm" class="section-title">Состав</FsText>
       <div class="combo-items">
         <div v-for="(ci, idx) in comboItems" :key="idx" class="combo-item">
-          <img v-if="ci.photo" :src="ci.photo" :alt="ci.name" class="combo-item-photo" />
+          <img v-if="ci.photo" :src="ci.photo" :alt="ci.name" class="combo-item-photo" >
           <div v-else class="combo-item-placeholder">
             <UtensilsCrossed :size="18" />
           </div>

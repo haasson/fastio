@@ -18,9 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { FsHeading } from '@fastio/public-ui'
-import { FsText } from '@fastio/public-ui'
-import { FsButton } from '@fastio/public-ui'
+import { FsHeading, FsText, FsButton } from '@fastio/public-ui'
 </script>
 
 <style scoped lang="scss">

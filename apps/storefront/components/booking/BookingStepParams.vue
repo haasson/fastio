@@ -5,7 +5,7 @@
         <FsButton
           v-for="day in days"
           :key="day.value"
-          :variant="form.date === day.value ? 'primary' : 'secondary'"
+          :variant="form?.date === day.value ? 'primary' : 'secondary'"
           size="medium"
           class="date-btn"
           @click="onDateClick(day.value)"
@@ -44,8 +44,9 @@ type BookingForm = {
   branchId: string | null
 }
 
+const form = defineModel<BookingForm>('form', { required: true })
+
 const props = defineProps<{
-  form: BookingForm
   maxGuests: number
   maxAdvanceDays: number
 }>()
@@ -76,12 +77,13 @@ const days = computed(() => {
 })
 
 const onDateClick = (value: string) => {
-  props.form.date = value
+  if (!form.value) return
+  form.value.date = value
   dateError.value = ''
 }
 
 const onNext = () => {
-  if (!props.form.date) {
+  if (!form.value?.date) {
     dateError.value = 'Выберите дату'
     return
   }

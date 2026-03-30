@@ -147,6 +147,11 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
       modifiers: selectedModifierOptions.value,
       addons: selectedAddonsList.value,
       photo: props.item.photos[0] ?? null,
+      completedAt: null,
+      comboItems: null,
+      addedBy: null,
+      confirmedBy: null,
+      status: 'pending',
     }
   }
 

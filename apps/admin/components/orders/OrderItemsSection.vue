@@ -153,6 +153,9 @@ const onPickerSelect = (result: DishPickerResult) => {
     addons: result.addons,
     completedAt: null,
     comboItems: null,
+    addedBy: null,
+    confirmedBy: null,
+    status: 'pending',
   }
 
   if (isEdit) {

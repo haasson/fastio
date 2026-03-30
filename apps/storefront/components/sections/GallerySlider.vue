@@ -3,7 +3,7 @@
     <div ref="viewportRef" class="viewport">
       <div class="slides">
         <div v-for="photo in gallery.photos" :key="photo.id" class="slide">
-          <img :src="photo.url" alt="" class="slide-img" loading="lazy" />
+          <img :src="photo.url" alt="" class="slide-img" loading="lazy" >
         </div>
       </div>
     </div>
@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount } from 'vue'
+import { computed, onBeforeUnmount } from 'vue'
 import useEmblaCarousel from 'embla-carousel-vue'
 import AutoplayPlugin from 'embla-carousel-autoplay'
 import type { Gallery } from '@fastio/shared'

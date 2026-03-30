@@ -55,8 +55,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'no-services' })
-
 import { ref, computed, onMounted } from 'vue'
 import { navigateTo, useRoute } from 'nuxt/app'
 import type { Order } from '@fastio/shared'
@@ -72,6 +70,8 @@ import { useAuthStore } from '~/stores/auth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useCurrency } from '~/composables/useCurrency'
 import { storeToRefs } from 'pinia'
+
+definePageMeta({ middleware: 'no-services' })
 
 const route = useRoute()
 const authStore = useAuthStore()

@@ -1,11 +1,11 @@
 <template>
   <FsDialog v-model="modal.isOpen.value" title="Вход" size="sm">
     <FsForm class="login-root" @submit="onSubmit">
-      <FsField label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]">
         <FsInput v-model="email" type="email" placeholder="email@example.com" :error="hasError" />
       </FsField>
 
-      <FsField label="Пароль" required name="password" :model-value="password" :rules="[validationRules.password.required]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Пароль" required name="password" :model-value="password" :rules="[validationRules.password.required]">
         <FsInput v-model="password" type="password" placeholder="Пароль" :error="hasError" />
       </FsField>
 

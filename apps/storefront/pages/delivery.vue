@@ -20,7 +20,7 @@
 
         <!-- auto + карта -->
         <template v-else-if="showMap">
-          <template v-if="zones.length">
+          <template v-if="zones?.length">
             <FsText variant="body-sm" color="secondary" class="map-description">{{ mapDescription }}</FsText>
             <ClientOnly>
               <DeliveryMapView :zones="zones" :dark="isDark" />

@@ -4,6 +4,7 @@ import { getAdminClient } from '../../../utils/adminClient'
 
 export default defineEventHandler(async (event) => {
   const tenantId = getRouterParam(event, 'id')
+
   if (!tenantId) throw createError({ statusCode: 400, message: 'id required' })
 
   const supabase = getAdminClient()

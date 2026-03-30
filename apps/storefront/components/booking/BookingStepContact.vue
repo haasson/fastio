@@ -45,8 +45,9 @@ type BookingForm = {
   comment: string
 }
 
+const form = defineModel<BookingForm>('form', { required: true })
+
 defineProps<{
-  form: BookingForm
   loading: boolean
 }>()
 

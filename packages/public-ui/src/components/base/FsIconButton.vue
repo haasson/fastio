@@ -26,7 +26,7 @@ type Props = {
   disabled?: boolean
   loading?: boolean
   as?: string
-  ariaLabel: string
+  ariaLabel?: string
 }
 
 withDefaults(defineProps<Props>(), {

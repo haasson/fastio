@@ -166,7 +166,7 @@ const handleUpload = async (files: File[]) => {
   uploading.value = true
   try {
     for (const file of files) {
-      await uploadPhoto(photosGallery.value.id, file)
+      await uploadPhoto(photosGallery.value!.id, file)
       photosGallery.value = galleries.value.find((g) => g.id === photosGallery.value?.id) ?? null
     }
   } finally {

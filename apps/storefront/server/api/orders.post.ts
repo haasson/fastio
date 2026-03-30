@@ -189,7 +189,8 @@ export default defineEventHandler(async (event) => {
     ])
 
     if (comboItemRows) {
-      for (const row of comboItemRows as { combo_id: string; dishes: { name: string } }[]) {
+      for (const row of comboItemRows as unknown as { combo_id: string; dishes: { name: string } | null }[]) {
+        if (!row.dishes) continue
         if (!comboItemsMap.has(row.combo_id)) comboItemsMap.set(row.combo_id, [])
         comboItemsMap.get(row.combo_id)!.push({ dishName: row.dishes.name })
       }

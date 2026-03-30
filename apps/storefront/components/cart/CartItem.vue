@@ -1,7 +1,7 @@
 <template>
   <div class="cart-item-root">
     <div class="item-photo">
-      <img v-if="item.photo" :src="item.photo" :alt="item.dishName" class="item-img" loading="lazy" />
+      <img v-if="item.photo" :src="item.photo" :alt="item.dishName" class="item-img" loading="lazy" >
       <div v-else class="item-placeholder">
         <UtensilsCrossed :size="24" />
       </div>

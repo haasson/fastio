@@ -21,7 +21,7 @@
       </template>
     </UiSectionHeader>
 
-    <div v-if="open" class="plans-grid">
+    <div v-if="open && tenant" class="plans-grid">
       <PlanCard
         v-for="p in plans"
         :key="p.id"

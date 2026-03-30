@@ -9,7 +9,7 @@
             alt=""
             class="cover"
             loading="lazy"
-          />
+          >
 
           <div
             v-if="aboutText"

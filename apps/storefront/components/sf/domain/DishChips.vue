@@ -31,7 +31,7 @@
             :checked="modelValue.includes(item.id)"
             class="visually-hidden"
             @change="onRadio(item.id)"
-          />
+          >
           {{ item.label }}
           <span v-if="item.priceDelta && item.priceDelta > 0" class="chip-price">
             +{{ item.priceDelta }} {{ currency }}
@@ -54,7 +54,7 @@
             :checked="modelValue.includes(item.id)"
             class="visually-hidden"
             @change="onToggle(item.id)"
-          />
+          >
           {{ item.label }}
           <span v-if="item.priceDelta && item.priceDelta > 0" class="chip-price">
             +{{ item.priceDelta }} {{ currency }}

@@ -92,7 +92,7 @@ export const useReservationTable = (
     })
   })
 
-  const visibleColumnDefs = computed(() => allColumns.value.filter((col) => visibleColumns.value.includes(col.key as string)),
+  const visibleColumnDefs = computed(() => allColumns.value.filter((col) => 'key' in col && visibleColumns.value.includes(col.key as string)),
   )
 
   const onFiltersUpdate = (filters: Record<string, string | number | (string | number)[] | null>) => {

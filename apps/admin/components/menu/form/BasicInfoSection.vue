@@ -20,7 +20,7 @@
           label="Название *"
           :placeholder="namePlaceholder"
           :rules="[{ type: 'required', message: 'Введите название' }]"
-          @update:model-value="$emit('update:name', $event)"
+          @update:model-value="$emit('update:name', $event ?? '')"
         />
         <UiInputNumber
           :model-value="price"
@@ -39,7 +39,7 @@
         type="textarea"
         :rows="2"
         :placeholder="descriptionPlaceholder"
-        @update:model-value="$emit('update:description', $event)"
+        @update:model-value="$emit('update:description', $event ?? '')"
       />
 
       <div class="category-row">
@@ -88,8 +88,8 @@ defineProps<{
   name: string
   price: number | null
   description: string
-  weight: number | null
-  weightUnit: 'г' | 'мл'
+  weight?: number | null
+  weightUnit?: 'г' | 'мл'
   namePlaceholder?: string
   pricePlaceholder?: number
   descriptionPlaceholder?: string
@@ -105,7 +105,7 @@ defineEmits<{
   'update:name': [value: string]
   'update:price': [value: number | null]
   'update:description': [value: string]
-  'update:categoryId': [value: string]
+  'update:categoryId': [value: string | number | (string | number)[] | null]
   'update:weight': [value: number | null]
   'update:weightUnit': [value: 'г' | 'мл']
 }>()

@@ -86,8 +86,8 @@ const availableOptions = computed(() => galleries.value
   .map((g) => ({ label: g.name, value: g.id })),
 )
 
-const onSelect = (id: string | null) => {
-  if (!id) return
+const onSelect = (id: string | number | (string | number)[] | null) => {
+  if (!id || typeof id !== 'string') return
   emit('update:galleryIds', [...props.galleryIds, id])
 }
 

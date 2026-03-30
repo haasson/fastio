@@ -13,6 +13,8 @@ const SELECT_FIELDS = `
   created_at, updated_at
 `.trim()
 
+const toReservation = (row: unknown) => mapReservation(row as Record<string, unknown>)
+
 export { mapReservation }
 
 export const reservationsApi = {
@@ -34,7 +36,7 @@ export const reservationsApi = {
 
     const data = await query(q)
 
-    return (data ?? []).map(mapReservation)
+    return (data ?? []).map(toReservation)
   },
 
   async getById(sb: SupabaseClient, id: string): Promise<Reservation | null> {
@@ -50,7 +52,7 @@ export const reservationsApi = {
       return null
     }
 
-    return data ? mapReservation(data) : null
+    return data ? toReservation(data) : null
   },
 
   async create(sb: SupabaseClient, tenantId: string, data: ReservationFormData): Promise<Reservation | null> {
@@ -68,7 +70,7 @@ export const reservationsApi = {
       }).select(SELECT_FIELDS).single(),
     )
 
-    return result ? mapReservation(result) : null
+    return result ? toReservation(result) : null
   },
 
   async update(sb: SupabaseClient, id: string, patch: Partial<Record<string, unknown>>): Promise<Reservation | null> {
@@ -76,7 +78,7 @@ export const reservationsApi = {
       sb.from('reservations').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', id).select(SELECT_FIELDS).single(),
     )
 
-    return result ? mapReservation(result) : null
+    return result ? toReservation(result) : null
   },
 
   async confirm(
@@ -97,7 +99,7 @@ export const reservationsApi = {
       }).eq('id', id).select(SELECT_FIELDS).single(),
     )
 
-    return result ? mapReservation(result) : null
+    return result ? toReservation(result) : null
   },
 
   async cancel(sb: SupabaseClient, id: string, reason?: string): Promise<void> {
@@ -120,7 +122,7 @@ export const reservationsApi = {
       }).eq('id', id).select(SELECT_FIELDS).single(),
     )
 
-    return result ? mapReservation(result) : null
+    return result ? toReservation(result) : null
   },
 
   async complete(sb: SupabaseClient, id: string): Promise<void> {
@@ -176,7 +178,7 @@ export const reservationsApi = {
     }
 
     return {
-      data: (data ?? []).map(mapReservation),
+      data: (data ?? []).map(toReservation),
       total: count ?? 0,
     }
   },

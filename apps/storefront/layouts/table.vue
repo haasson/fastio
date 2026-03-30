@@ -6,7 +6,7 @@
         :src="logo"
         :alt="tenantName"
         class="logo"
-      />
+      >
       <span v-else class="tenant-name">{{ tenantName }}</span>
       <ClientOnly>
         <span v-if="tableStore.tableName" class="table-badge">{{ tableStore.tableName }}</span>

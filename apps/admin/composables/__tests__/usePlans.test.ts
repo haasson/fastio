@@ -11,9 +11,9 @@ vi.mock('~/composables/data/useDatabase', () => ({
 }))
 
 const TEST_PLANS: Plan[] = [
-  { id: '1', key: 'start', name: 'Start', sortOrder: 0, maxBranches: 1 },
-  { id: '2', key: 'business', name: 'Business', sortOrder: 1, maxBranches: 3 },
-  { id: '3', key: 'pro', name: 'Pro', sortOrder: 2, maxBranches: 0 },
+  { id: '1', key: 'start', name: 'Start', description: '', price: 0, isActive: true, sortOrder: 0, maxBranches: 1 },
+  { id: '2', key: 'business', name: 'Business', description: '', price: 0, isActive: true, sortOrder: 1, maxBranches: 3 },
+  { id: '3', key: 'pro', name: 'Pro', description: '', price: 0, isActive: true, sortOrder: 2, maxBranches: 0 },
 ]
 
 describe('usePlans', () => {

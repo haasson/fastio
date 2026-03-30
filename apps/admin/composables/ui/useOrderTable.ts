@@ -1,6 +1,6 @@
 import { computed, h, type Ref } from 'vue'
 import { UiTag, UiText } from '@fastio/ui'
-import type { DataTableColumns } from '@fastio/ui'
+import type { DataTableColumn, DataTableColumns } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { formatPhone } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
@@ -96,88 +96,88 @@ export function useOrderTable(options: UseOrderTableOptions) {
       },
       ...isVisible('customerName')
         ? [{
-            title: 'Имя',
-            key: 'customerName',
-            minWidth: 120,
-            render: (row: Order) => h('span', { class: 'customer-name' }, row.customerName),
-          }]
+          title: 'Имя',
+          key: 'customerName',
+          minWidth: 120,
+          render: (row: Order) => h('span', { class: 'customer-name' }, row.customerName ?? ''),
+        } satisfies DataTableColumn<Order>]
         : [],
       ...isVisible('customerPhone')
         ? [{
-            title: 'Телефон',
-            key: 'customerPhone',
-            width: 160,
-            render: (row: Order) => h('span', { class: 'customer-phone' }, formatPhone(row.customerPhone)),
-          }]
+          title: 'Телефон',
+          key: 'customerPhone',
+          width: 160,
+          render: (row: Order) => h('span', { class: 'customer-phone' }, formatPhone(row.customerPhone)),
+        } satisfies DataTableColumn<Order>]
         : [],
       ...isVisible('items')
         ? [{
-            title: 'Состав',
-            key: 'items',
-            minWidth: 160,
-            render: (row: Order) => h(
-              UiText,
-              { size: 'tiny', style: 'color: var(--color-text-secondary)' },
-              () => row.items.map((i) => `${i.dishName} × ${i.quantity}`).join(', '),
-            ),
-          }]
+          title: 'Состав',
+          key: 'items',
+          minWidth: 160,
+          render: (row: Order) => h(
+            UiText,
+            { size: 'tiny', style: 'color: var(--color-text-secondary)' },
+            () => row.items.map((i) => `${i.dishName} × ${i.quantity}`).join(', '),
+          ),
+        } satisfies DataTableColumn<Order>]
         : [],
       ...isVisible('deliveryType')
         ? [{
-            title: 'Доставка',
-            key: 'deliveryType',
-            width: 130,
-            filterOptions: DELIVERY_FILTER_OPTIONS,
-            filterOptionValues: filterDeliveryTypes.value.length > 0 ? filterDeliveryTypes.value : null,
-            filter: () => true,
-            render: (row: Order) => h(
-              UiTag,
-              { size: 'tiny', icon: row.deliveryType === 'delivery' ? 'bike' : undefined },
-              () => DELIVERY_TYPE_LABELS[row.deliveryType],
-            ),
-          }]
+          title: 'Доставка',
+          key: 'deliveryType',
+          width: 130,
+          filterOptions: DELIVERY_FILTER_OPTIONS,
+          filterOptionValues: filterDeliveryTypes.value.length > 0 ? filterDeliveryTypes.value : null,
+          filter: () => true,
+          render: (row: Order) => h(
+            UiTag,
+            { size: 'tiny', icon: row.deliveryType === 'delivery' ? 'bike' : undefined },
+            () => DELIVERY_TYPE_LABELS[row.deliveryType],
+          ),
+        } satisfies DataTableColumn<Order>]
         : [],
       ...isVisible('paymentType')
         ? [{
-            title: 'Оплата',
-            key: 'paymentType',
-            width: 130,
-            filterOptions: PAYMENT_FILTER_OPTIONS,
-            filterOptionValues: filterPaymentTypes.value.length > 0 ? filterPaymentTypes.value : null,
-            filter: () => true,
-            render: (row: Order) => h(UiText, { size: 'tiny' }, () => PAYMENT_TYPE_LABELS[row.paymentType] ?? row.paymentType),
-          }]
+          title: 'Оплата',
+          key: 'paymentType',
+          width: 130,
+          filterOptions: PAYMENT_FILTER_OPTIONS,
+          filterOptionValues: filterPaymentTypes.value.length > 0 ? filterPaymentTypes.value : null,
+          filter: () => true,
+          render: (row: Order) => h(UiText, { size: 'tiny' }, () => PAYMENT_TYPE_LABELS[row.paymentType] ?? row.paymentType),
+        } satisfies DataTableColumn<Order>]
         : [],
       ...isVisible('created_at')
         ? [{
-            title: 'Время',
-            key: 'created_at',
-            width: 90,
-            sorter: true,
-            sortOrder: sortOrderFor('created_at'),
-            render: (row: Order) => h('span', { class: 'col-time' }, formatRelativeTime(row.createdAt, new Date())),
-          }]
+          title: 'Время',
+          key: 'created_at',
+          width: 90,
+          sorter: true,
+          sortOrder: sortOrderFor('created_at'),
+          render: (row: Order) => h('span', { class: 'col-time' }, formatRelativeTime(row.createdAt, new Date())),
+        } satisfies DataTableColumn<Order>]
         : [],
       ...isVisible('total')
         ? [{
-            title: 'Сумма',
-            key: 'total',
-            width: 90,
-            sorter: true,
-            sortOrder: sortOrderFor('total'),
-            render: (row: Order) => h('span', { class: 'col-total' }, `${row.total} ₽`),
-          }]
+          title: 'Сумма',
+          key: 'total',
+          width: 90,
+          sorter: true,
+          sortOrder: sortOrderFor('total'),
+          render: (row: Order) => h('span', { class: 'col-total' }, `${row.total} ₽`),
+        } satisfies DataTableColumn<Order>]
         : [],
       ...(branchId.value === null && branchFilterOptions.length > 1 && isVisible('branchId'))
         ? [{
-            title: 'Филиал',
-            key: 'branchId',
-            width: 140,
-            filterOptions: branchFilterOptions,
-            filterOptionValues: filterBranchIds.value.length > 0 ? filterBranchIds.value : null,
-            filter: () => true,
-            render: (row: Order) => h(UiText, { size: 'tiny' }, () => getBranchName(row.branchId) ?? '—'),
-          }]
+          title: 'Филиал',
+          key: 'branchId',
+          width: 140,
+          filterOptions: branchFilterOptions,
+          filterOptionValues: filterBranchIds.value.length > 0 ? filterBranchIds.value : null,
+          filter: () => true,
+          render: (row: Order) => h(UiText, { size: 'tiny' }, () => getBranchName(row.branchId) ?? '—'),
+        } satisfies DataTableColumn<Order>]
         : [],
       {
         title: '',

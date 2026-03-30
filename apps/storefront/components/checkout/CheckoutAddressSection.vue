@@ -15,7 +15,7 @@
               :value="addr.id"
               :checked="selectedAddressId === addr.id"
               @change="selectSavedAddress(addr)"
-            />
+            >
             <span class="addr-content">
               <span class="addr-main">{{ addr.label || addr.address }}</span>
               <span v-if="addr.label" class="addr-lbl">{{ addr.address }}</span>

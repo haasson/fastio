@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     const referer = getRequestHeader(event, 'referer')
     let refererSlug: string | undefined
     if (referer) {
-      try { refererSlug = new URL(referer).searchParams.get('slug') ?? undefined } catch {}
+      try { refererSlug = new URL(referer).searchParams.get('slug') ?? undefined } catch { /* ignore */ }
     }
     const devSlug = querySlug ?? refererSlug
     if (devSlug) {

@@ -35,7 +35,7 @@ describe('useBranchLimit', () => {
     })
 
     it('возвращает maxBranches текущего плана', () => {
-      setPlans([{ id: '1', key: 'business', name: 'Business', sortOrder: 1, maxBranches: 3 }])
+      setPlans([{ id: '1', key: 'business', name: 'Business', description: '', price: 0, isActive: true, sortOrder: 1, maxBranches: 3 }])
       mockPlan.value = 'business'
       expect(useBranchLimit().maxBranches.value).toBe(3)
     })
@@ -43,28 +43,28 @@ describe('useBranchLimit', () => {
 
   describe('canAddBranch', () => {
     it('maxBranches=0 → безлимит → всегда true', () => {
-      setPlans([{ id: '1', key: 'pro', name: 'Pro', sortOrder: 2, maxBranches: 0 }])
+      setPlans([{ id: '1', key: 'pro', name: 'Pro', description: '', price: 0, isActive: true, sortOrder: 2, maxBranches: 0 }])
       mockPlan.value = 'pro'
       setBranches(100)
       expect(useBranchLimit().canAddBranch.value).toBe(true)
     })
 
     it('меньше лимита → можно добавить', () => {
-      setPlans([{ id: '1', key: 'business', name: 'Business', sortOrder: 1, maxBranches: 3 }])
+      setPlans([{ id: '1', key: 'business', name: 'Business', description: '', price: 0, isActive: true, sortOrder: 1, maxBranches: 3 }])
       mockPlan.value = 'business'
       setBranches(2)
       expect(useBranchLimit().canAddBranch.value).toBe(true)
     })
 
     it('достигнут лимит → нельзя добавить', () => {
-      setPlans([{ id: '1', key: 'business', name: 'Business', sortOrder: 1, maxBranches: 3 }])
+      setPlans([{ id: '1', key: 'business', name: 'Business', description: '', price: 0, isActive: true, sortOrder: 1, maxBranches: 3 }])
       mockPlan.value = 'business'
       setBranches(3)
       expect(useBranchLimit().canAddBranch.value).toBe(false)
     })
 
     it('превышен лимит → нельзя добавить', () => {
-      setPlans([{ id: '1', key: 'business', name: 'Business', sortOrder: 1, maxBranches: 3 }])
+      setPlans([{ id: '1', key: 'business', name: 'Business', description: '', price: 0, isActive: true, sortOrder: 1, maxBranches: 3 }])
       mockPlan.value = 'business'
       setBranches(5)
       expect(useBranchLimit().canAddBranch.value).toBe(false)
@@ -73,7 +73,7 @@ describe('useBranchLimit', () => {
 
   describe('branchLimitReached', () => {
     it('обратен canAddBranch', () => {
-      setPlans([{ id: '1', key: 'business', name: 'Business', sortOrder: 1, maxBranches: 1 }])
+      setPlans([{ id: '1', key: 'business', name: 'Business', description: '', price: 0, isActive: true, sortOrder: 1, maxBranches: 1 }])
       mockPlan.value = 'business'
       setBranches(0)
       expect(useBranchLimit().branchLimitReached.value).toBe(false)
@@ -84,19 +84,19 @@ describe('useBranchLimit', () => {
 
   describe('branchLimitLabel', () => {
     it('1 → "филиал"', () => {
-      setPlans([{ id: '1', key: 'start', name: 'Start', sortOrder: 0, maxBranches: 1 }])
+      setPlans([{ id: '1', key: 'start', name: 'Start', description: '', price: 0, isActive: true, sortOrder: 0, maxBranches: 1 }])
       mockPlan.value = 'start'
       expect(useBranchLimit().branchLimitLabel.value).toBe('филиал')
     })
 
     it('3 → "филиала"', () => {
-      setPlans([{ id: '1', key: 'business', name: 'Business', sortOrder: 1, maxBranches: 3 }])
+      setPlans([{ id: '1', key: 'business', name: 'Business', description: '', price: 0, isActive: true, sortOrder: 1, maxBranches: 3 }])
       mockPlan.value = 'business'
       expect(useBranchLimit().branchLimitLabel.value).toBe('филиала')
     })
 
     it('5 → "филиалов"', () => {
-      setPlans([{ id: '1', key: 'pro', name: 'Pro', sortOrder: 2, maxBranches: 5 }])
+      setPlans([{ id: '1', key: 'pro', name: 'Pro', description: '', price: 0, isActive: true, sortOrder: 2, maxBranches: 5 }])
       mockPlan.value = 'pro'
       expect(useBranchLimit().branchLimitLabel.value).toBe('филиалов')
     })

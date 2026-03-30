@@ -5,11 +5,11 @@
 
         <div class="profile-root">
           <FsForm class="form" @submit="onSave">
-            <FsField label="Имя" required name="name" :model-value="name" :rules="[validationRules.name.required]" v-slot="{ hasError }">
+            <FsField v-slot="{ hasError }" label="Имя" required name="name" :model-value="name" :rules="[validationRules.name.required]">
               <FsInput v-model="name" placeholder="Ваше имя" :error="hasError" />
             </FsField>
 
-            <FsField label="Телефон" name="phone" :model-value="phone" :rules="[validationRules.phone.format]" v-slot="{ hasError }">
+            <FsField v-slot="{ hasError }" label="Телефон" name="phone" :model-value="phone" :rules="[validationRules.phone.format]">
               <FsInput v-model="phone" type="tel" placeholder="+7 (999) 123-45-67" mask="+7 (###) ###-##-##" :error="hasError" />
             </FsField>
 
@@ -31,8 +31,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'no-services' })
-
 import { ref, onMounted } from 'vue'
 import { navigateTo } from 'nuxt/app'
 import { FsSection, FsField, FsForm, FsInput, FsButton, FsAlert } from '@fastio/public-ui'
@@ -41,6 +39,8 @@ import PageShell from '~/components/sections/PageShell.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import { useAuthStore } from '~/stores/auth'
 import { storeToRefs } from 'pinia'
+
+definePageMeta({ middleware: 'no-services' })
 
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)

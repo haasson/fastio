@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <FsIconButton v-else size="small" ariaLabel="Войти" @click="authStore.showLogin()">
+    <FsIconButton v-else size="small" aria-label="Войти" @click="authStore.showLogin()">
       <UserRound :size="18" :stroke-width="1.7" />
     </FsIconButton>
   </div>

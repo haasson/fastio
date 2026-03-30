@@ -28,7 +28,7 @@ export const defaultSiteLayout = (): SiteLayout => ({
   sectionsOrder: ['categoryBar', 'hero', 'banners', 'menu', 'gallery', 'reviews', 'delivery'],
   pages: [],
   pageSettings: {
-    menu: { defaultView: 'categories' },
+    menu: { defaultView: 'categories', tagDisplayMode: 'both' },
     delivery: { showMap: false, descriptionMode: 'auto' },
     gallery: { galleryIds: [] },
   },

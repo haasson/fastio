@@ -119,7 +119,7 @@ const defaultConfig = (): OrderNumberConfig => ({
   startFrom: 1,
 })
 
-const buildForm = (t: { orderNumberConfig?: Partial<OrderNumberConfig> }): OrderNumberConfig => ({
+const buildForm = (t: { orderNumberConfig?: OrderNumberConfig | null }): OrderNumberConfig => ({
   ...defaultConfig(),
   ...t.orderNumberConfig,
 })

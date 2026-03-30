@@ -51,7 +51,7 @@
         <UiDataTable
           :columns="addonColumns"
           :data="filteredAddons"
-          :row-key="(row) => row.id"
+          :row-key="(row: Addon) => row.id"
           :bordered="false"
           size="small"
         />
@@ -77,7 +77,7 @@
         <UiDataTable
           :columns="presetColumns"
           :data="filteredPresets"
-          :row-key="(row) => row.id"
+          :row-key="(row: AddonPreset) => row.id"
           :bordered="false"
           size="small"
         />

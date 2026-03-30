@@ -1,11 +1,11 @@
 <template>
   <FsDialog v-model="open" :title="editing ? 'Редактировать адрес' : 'Новый адрес'" size="md" drawer-size="lg">
     <FsForm class="form-root" @submit="onSubmit">
-      <FsField label="Название" required name="label" :model-value="form.label" :rules="[{ type: 'required', message: 'Введите название' }]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Название" required name="label" :model-value="form.label" :rules="[{ type: 'required', message: 'Введите название' }]">
         <FsInput v-model="form.label" placeholder="Дом, Работа..." :error="hasError" />
       </FsField>
 
-      <FsField label="Адрес" required name="address" :model-value="form.address" :rules="[validationRules.address.required, { type: 'custom', validator: () => !addressTouched.value || addressVerified.value, message: 'Выберите адрес из списка' }]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Адрес" required name="address" :model-value="form.address" :rules="[validationRules.address.required, { type: 'custom', validator: () => !addressTouched || addressVerified, message: 'Выберите адрес из списка' }]">
         <div class="address-wrap">
           <FsInput
             v-model="form.address"
@@ -141,7 +141,7 @@ function onAddressInput(value: string | number) {
 }
 
 async function onSuggestionSelect(item: { value: string; [key: string]: unknown }) {
-  const suggestion = (item as { _raw: DadataSuggestion })._raw
+  const suggestion = (item as unknown as { _raw: DadataSuggestion })._raw
   form.address = suggestion.value
   addressVerified.value = true
   addressTouched.value = true

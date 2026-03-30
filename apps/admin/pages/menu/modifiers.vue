@@ -23,7 +23,7 @@
       v-else
       :columns="columns"
       :data="groups"
-      :row-key="(row) => row.id"
+      :row-key="(row: ModifierGroup) => row.id"
       :bordered="false"
       size="small"
     />

@@ -3,7 +3,7 @@
     <FsForm v-if="!sent" class="forgot-root" @submit="onSubmit">
       <FsText>Введите email, на который зарегистрирован аккаунт. Мы отправим ссылку для сброса пароля.</FsText>
 
-      <FsField label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]">
         <FsInput v-model="email" type="email" placeholder="email@example.com" :error="hasError" />
       </FsField>
 

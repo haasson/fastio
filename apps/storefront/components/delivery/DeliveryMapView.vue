@@ -161,19 +161,19 @@ const zoneFeatureSettings = computed(() =>
 )
 
 const listenerSettings = computed((): YandexMapListenerSettings => ({
-  onMouseMove: (_obj: unknown, event: { coordinates: [number, number] }) => {
+  onMouseMove: ((_obj, event) => {
     if (isMobile.value) return
-    const found = findDeliveryZone(event.coordinates, props.zones)
+    const found = findDeliveryZone(event.coordinates as [number, number], props.zones)
     hoveredZone.value = found ?? null
-  },
-  onMouseLeave: () => { hoveredZone.value = null },
-  onClick: (_obj: unknown, event: { coordinates: [number, number] }) => {
+  }) as YandexMapListenerSettings['onMouseMove'],
+  onMouseLeave: (() => { hoveredZone.value = null }) as YandexMapListenerSettings['onMouseLeave'],
+  onClick: ((_obj, event) => {
     if (!isMobile.value) return
-    const found = findDeliveryZone(event.coordinates, props.zones)
+    const found = findDeliveryZone(event.coordinates as [number, number], props.zones)
     if (!found) return
     selectedZone.value = found
     drawerOpen.value = true
-  },
+  }) as YandexMapListenerSettings['onClick'],
 }))
 </script>
 

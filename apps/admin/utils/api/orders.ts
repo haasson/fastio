@@ -92,6 +92,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     statusName: (raw as Record<string, unknown>).statusName as string ?? null,
     paymentType: row.payment_type,
     branchId: row.branch_id,
+    branchAddress: row.branch_address ?? null,
     deliveryZoneId: row.delivery_zone_id,
     tableId: row.table_id,
     tableName: row.table_name,
@@ -102,7 +103,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
   }
 }
 
-const toOrderPayload = (data: OrderUpdateData): Partial<OrderRow> => filterDefined({
+const toOrderPayload = (data: OrderUpdateData | OrderCreateData): Partial<OrderRow> => filterDefined({
   customer_name: data.customerName,
   customer_phone: data.customerPhone,
   customer_email: data.customerEmail,

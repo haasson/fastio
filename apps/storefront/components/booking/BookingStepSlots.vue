@@ -43,8 +43,9 @@ import type { WorkingHours } from '@fastio/shared'
 type Slot = { time: string; available: boolean }
 type BookingForm = { time: string }
 
-const props = defineProps<{
-  form: BookingForm
+const form = defineModel<BookingForm>('form', { required: true })
+
+defineProps<{
   slots: Slot[]
   loading: boolean
   workingHours?: WorkingHours | null
@@ -55,12 +56,13 @@ const emit = defineEmits<{ next: []; back: [] }>()
 const timeError = ref('')
 
 const onSlotClick = (time: string) => {
-  props.form.time = time
+  if (!form.value) return
+  form.value.time = time
   timeError.value = ''
 }
 
 const onNext = () => {
-  if (!props.form.time) {
+  if (!form.value?.time) {
     timeError.value = 'Выберите время'
     return
   }

@@ -1,5 +1,5 @@
 <template>
-  <div class="billing-summary">
+  <div v-if="tenant" class="billing-summary">
     <div class="summary-item">
       <UiText size="small" class="summary-label">Текущий тариф</UiText>
       <UiTitle size="h3">{{ planName }}</UiTitle>

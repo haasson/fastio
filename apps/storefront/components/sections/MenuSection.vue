@@ -269,6 +269,11 @@ function addToCart(dish: Dish) {
     removedIngredients: [],
     addons: [],
     photo: dish.photos[0] ?? null,
+    completedAt: null,
+    comboItems: null,
+    addedBy: null,
+    confirmedBy: null,
+    status: 'pending',
   }
   if (props.tableMode) {
     emit('tableOrder', item)
@@ -289,6 +294,11 @@ function addComboToCart(combo: Combo) {
     removedIngredients: [],
     addons: [],
     photo: combo.photos[0] ?? null,
+    completedAt: null,
+    comboItems: null,
+    addedBy: null,
+    confirmedBy: null,
+    status: 'pending',
   }
   if (props.tableMode) {
     emit('tableOrder', item)

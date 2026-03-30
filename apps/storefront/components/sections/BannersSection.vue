@@ -13,7 +13,7 @@
             v-bind="bannerLinkProps(banner)"
             class="slide-inner"
           >
-            <img :src="banner.url" alt="" class="slide-img" loading="lazy" />
+            <img :src="banner.url" alt="" class="slide-img" loading="lazy" >
           </component>
         </div>
       </div>

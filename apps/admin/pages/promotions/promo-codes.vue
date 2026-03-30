@@ -30,7 +30,7 @@
       v-else
       :columns="columns"
       :data="filtered"
-      :row-key="(row) => row.id"
+      :row-key="(row: PromoCode) => row.id"
       :bordered="false"
       size="small"
     />

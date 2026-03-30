@@ -38,7 +38,7 @@ export function getAdminClient() {
   const client = createClient(supabaseUrl, token, { auth: { persistSession: false } })
   const expiresAt = isJwt ? Date.now() + 55 * 60 * 1000 : Infinity
 
-  cached = { client, expiresAt }
+  cached = { client: client as ReturnType<typeof createClient>, expiresAt }
 
   return client
 }

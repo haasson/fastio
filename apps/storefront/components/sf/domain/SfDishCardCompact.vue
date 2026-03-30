@@ -6,7 +6,7 @@
     class="dish-card-compact-root"
   >
     <template #image>
-      <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" />
+      <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
       <div v-else class="compact-placeholder">
         <UtensilsCrossed :size="20" />
       </div>
@@ -36,11 +36,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Plus, UtensilsCrossed } from 'lucide-vue-next'
-import { type Dish } from '@fastio/shared'
+import type { Dish } from '@fastio/shared'
 import { FsCard, FsButton } from '@fastio/public-ui'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
-import { useCartStore, type CartItem } from '~/stores/cart'
+import type { CartItem } from '~/stores/cart'
+import { useCartStore } from '~/stores/cart'
 
 type Props = {
   dish: Dish

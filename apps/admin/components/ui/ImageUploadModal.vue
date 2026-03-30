@@ -102,7 +102,7 @@ import 'vue-advanced-cropper/dist/style.css'
 import { UiModal, UiIcon, UiText, UiInput, UiButton } from '@fastio/ui'
 import { useRuntimeConfig } from '#imports'
 
-export type ImageAspectRatio = '4:3' | '3:1' | '1:1' | 'free'
+export type ImageAspectRatio = '4:3' | '3:1' | '16:9' | '1:1' | 'free'
 
 const props = withDefaults(defineProps<{
   modelValue: boolean

@@ -32,5 +32,5 @@ export default defineEventHandler(async (event) => {
   if (error) throw createError({ statusCode: 500, message: error.message })
   if (!data) throw createError({ statusCode: 404, message: 'Бронь не найдена' })
 
-  return mapReservation(data)
+  return mapReservation(data as unknown as Record<string, unknown>)
 })

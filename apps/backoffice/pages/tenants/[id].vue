@@ -12,7 +12,12 @@
       <section class="card">
         <div class="card-header">
           <h3 class="card-title">Информация</h3>
-          <NButton type="error" size="small" :loading="deleteLoading" @click="handleDelete">Удалить тенанта</NButton>
+          <NButton
+            type="error"
+            size="small"
+            :loading="deleteLoading"
+            @click="handleDelete"
+          >Удалить тенанта</NButton>
         </div>
         <div class="info-grid">
           <div><span class="label">Слаг:</span> {{ tenant.slug }}</div>
@@ -117,7 +122,12 @@
     </template>
 
     <!-- Delete confirmation modal -->
-    <NModal v-model:show="deleteModalOpen" preset="card" title="Удалить тенанта" style="max-width: 440px">
+    <NModal
+      v-model:show="deleteModalOpen"
+      preset="card"
+      title="Удалить тенанта"
+      style="max-width: 440px"
+    >
       <p class="delete-hint">Это действие необратимо. Введите слаг тенанта <strong>{{ tenant?.slug }}</strong>, чтобы подтвердить.</p>
       <NInput v-model:value="deleteSlugInput" placeholder="slug" @keydown.enter="deleteSlugInput === tenant?.slug && confirmDelete()" />
       <template #footer>

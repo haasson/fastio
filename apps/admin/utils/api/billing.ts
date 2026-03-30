@@ -23,7 +23,7 @@ export const billingApi = {
         .range(offset, offset + limit - 1),
     )
 
-    return data.map(mapTransaction)
+    return (data ?? []).map(mapTransaction)
   },
 
   async changePlan(sb: SupabaseClient, tenantId: string, newPlanKey: string): Promise<string> {

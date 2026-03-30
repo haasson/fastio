@@ -5,15 +5,15 @@
         <FsInput v-model="name" placeholder="Как вас зовут?" />
       </FsField>
 
-      <FsField label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]">
         <FsInput v-model="email" type="email" placeholder="email@example.com" :error="hasError" />
       </FsField>
 
-      <FsField label="Пароль" required name="password" :model-value="password" :rules="[validationRules.password.required, validationRules.password.minLength]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Пароль" required name="password" :model-value="password" :rules="[validationRules.password.required, validationRules.password.minLength]">
         <FsInput v-model="password" type="password" placeholder="Минимум 6 символов" :error="hasError" />
       </FsField>
 
-      <FsField label="Подтвердите пароль" required name="confirmPassword" :model-value="confirmPassword" :rules="[validationRules.password.required, { type: 'custom', validator: (v) => v === password.value, message: 'Пароли не совпадают' }]" v-slot="{ hasError }">
+      <FsField v-slot="{ hasError }" label="Подтвердите пароль" required name="confirmPassword" :model-value="confirmPassword" :rules="[validationRules.password.required, { type: 'custom', validator: (v) => v === password, message: 'Пароли не совпадают' }]">
         <FsInput v-model="confirmPassword" type="password" placeholder="Ещё раз" :error="hasError" />
       </FsField>
 

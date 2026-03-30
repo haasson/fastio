@@ -15,7 +15,7 @@
         </SfEmptyState>
       </div>
 
-      <div v-else class="order-content">
+      <div v-else-if="order" class="order-content">
         <!-- Header -->
         <div class="order-header">
           <template v-if="isFresh">

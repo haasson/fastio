@@ -1,7 +1,7 @@
 <template>
   <FsCard :image-alt="dish.name" :class="['dish-card-root', { clickable: isServices || orderingEnabled }]" @click="emit('cardClick')">
     <template #image>
-      <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" />
+      <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
       <div v-else class="dish-placeholder">
         <UtensilsCrossed :size="32" />
       </div>
@@ -13,8 +13,8 @@
           :style="{ color: rt.preset?.color, background: rt.preset?.background }"
         >
           <component
-            v-if="rt.iconComponent"
             :is="rt.iconComponent"
+            v-if="rt.iconComponent"
             :size="13"
             :stroke-width="2.5"
           />

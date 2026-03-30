@@ -57,8 +57,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'no-services' })
-
 import { ref, onMounted } from 'vue'
 import { navigateTo } from 'nuxt/app'
 import { useConfirm } from '~/composables/useConfirm'
@@ -73,6 +71,8 @@ import AddressFormModal from '~/components/account/AddressFormModal.vue'
 import { useAuthStore } from '~/stores/auth'
 import { useAddressesStore } from '~/stores/addresses'
 import { storeToRefs } from 'pinia'
+
+definePageMeta({ middleware: 'no-services' })
 
 const authStore = useAuthStore()
 const addressesStore = useAddressesStore()

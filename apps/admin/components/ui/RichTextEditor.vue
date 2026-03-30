@@ -84,6 +84,8 @@ import { TextStyle, FontSize } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import { Extension } from '@tiptap/core'
 import { THEME_PRESETS } from '@fastio/shared'
+
+type Level = 1 | 2 | 3 | 4 | 5 | 6
 import type { ThemePalette } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -98,10 +100,10 @@ const EnterAsBr = Extension.create({
 const props = defineProps<{
   modelValue: string
   label?: string
-  headingLevels?: number[]
+  headingLevels?: Level[]
 }>()
 
-const headingLevels = computed(() => props.headingLevels ?? [1, 2, 3])
+const headingLevels = computed((): Level[] => props.headingLevels ?? [1, 2, 3])
 
 const tenantStore = useTenantStore()
 

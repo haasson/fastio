@@ -199,6 +199,7 @@ export type OrderRow = {
   status: string
   payment_type: 'cash' | 'card' | 'online'
   branch_id: string | null
+  branch_address: string | null
   delivery_zone_id: string | null
   table_id: string | null
   table_name: string | null

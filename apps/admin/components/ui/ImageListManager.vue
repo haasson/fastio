@@ -66,7 +66,10 @@
 import { reactive, watch, ref } from 'vue'
 import { UiIcon } from '@fastio/ui'
 import ImageUploadModal from '~/components/ui/ImageUploadModal.vue'
-import type { BannerItem } from '@fastio/shared'
+type BannerItem = {
+  url: string
+  enabled: boolean
+}
 
 type InternalItem = BannerItem & { _key: string }
 
@@ -88,14 +91,14 @@ const items = reactive<InternalItem[]>(makeItems(props.modelValue))
 
 // --- sync ---
 const emitChanges = () => {
-  emit('update:modelValue', items.map(({ url, enabled }) => ({ url, enabled })))
+  emit('update:modelValue', items.map(({ url, enabled }: InternalItem) => ({ url, enabled })))
   emit('pending', [...pendingFiles.entries()].map(([blobUrl, file]) => ({ blobUrl, file })))
 }
 
 watch(
   () => props.modelValue,
   (v) => {
-    const currentJson = JSON.stringify(items.map(({ url, enabled }) => ({ url, enabled })))
+    const currentJson = JSON.stringify(items.map(({ url, enabled }: InternalItem) => ({ url, enabled })))
 
     if (currentJson !== JSON.stringify(v)) {
       items.splice(0, items.length, ...makeItems(v))

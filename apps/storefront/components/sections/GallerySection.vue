@@ -14,11 +14,11 @@
 </template>
 
 <script setup lang="ts">
-defineOptions({ inheritAttrs: false })
 import { computed } from 'vue'
 import { FsSection, FsHeading } from '@fastio/public-ui'
 import type { Gallery } from '@fastio/shared'
 import GallerySlider from './GallerySlider.vue'
+defineOptions({ inheritAttrs: false })
 
 const props = defineProps<{
   galleries: Gallery[]
