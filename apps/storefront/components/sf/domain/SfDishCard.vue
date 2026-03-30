@@ -1,5 +1,5 @@
 <template>
-  <FsCard :image-alt="dish.name" class="dish-card-root" @click="emit('cardClick')">
+  <FsCard :image-alt="dish.name" :class="['dish-card-root', { clickable: isServices || orderingEnabled }]" @click="emit('cardClick')">
     <template #image>
       <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" />
       <div v-else class="dish-placeholder">
@@ -28,24 +28,20 @@
       <FsText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</FsText>
       <div class="dish-footer" @click.stop>
         <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
-        <template v-if="isServices">
-          <FsButton variant="primary" size="small" :responsive="true" @click.stop="emit('request')">
-            Оставить заявку
-          </FsButton>
-        </template>
-        <template v-else>
-          <SfStepper
-            v-if="cartCount > 0 && !hideStepper"
-            :model-value="cartCount"
-            :min="0"
-            size="small"
-            @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
-          />
-          <FsButton v-else variant="primary" size="small" :responsive="true" @click="emit('add')">
-            <Plus :size="16" />
-            Добавить
-          </FsButton>
-        </template>
+        <FsButton v-if="isServices" variant="primary" size="small" :responsive="true" @click.stop="emit('request')">
+          Оставить заявку
+        </FsButton>
+        <SfStepper
+          v-else-if="orderingEnabled && cartCount > 0 && !hideStepper"
+          :model-value="cartCount"
+          :min="0"
+          size="small"
+          @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
+        />
+        <FsButton v-else-if="orderingEnabled" variant="primary" size="small" :responsive="true" @click="emit('add')">
+          <Plus :size="16" />
+          Добавить
+        </FsButton>
       </div>
     </div>
   </FsCard>
@@ -70,9 +66,10 @@ type Props = {
   currency?: string
   hideStepper?: boolean
   isServices?: boolean
+  orderingEnabled?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), { currency: '₽' })
+const props = withDefaults(defineProps<Props>(), { currency: '₽', orderingEnabled: true })
 const emit = defineEmits<{ add: []; cardClick: []; request: [] }>()
 const cart = useCartStore()
 const menuStore = useMenuStore()
@@ -113,7 +110,8 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
   max-width: 400px;
   margin-inline: auto;
   width: 100%;
-  cursor: pointer;
+
+  &.clickable { cursor: pointer; }
 
   @include md { max-width: none; margin-inline: 0; }
 }

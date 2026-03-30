@@ -52,6 +52,7 @@
                 :combo-id="combo.id"
                 :hide-stepper="tableMode"
                 :is-services="isServices"
+                :ordering-enabled="orderingEnabled"
                 @add="addComboToCart(combo)"
                 @card-click="openComboModal(combo)"
               />
@@ -64,6 +65,7 @@
                 :has-modifiers="hasModifiers(dish)"
                 :hide-stepper="tableMode"
                 :is-services="isServices"
+                :ordering-enabled="orderingEnabled"
                 @add="handleAddButton(dish)"
                 @card-click="handleCardClick(dish)"
                 @request="openRequestModal(dish)"
@@ -125,6 +127,10 @@ const cart = useCartStore()
 const selectedCategoryId = ref<string | null>(null)
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const isServices = computed(() => tenant.value?.businessType === 'services')
+const orderingEnabled = computed(() => {
+  const m = tenant.value?.modules
+  return !!m?.delivery || !!m?.pickup
+})
 
 const categories = computed(() => menuStore.visibleCategories)
 const dishesByCategory = computed(() => menuStore.dishesByCategory)
@@ -220,7 +226,7 @@ function handleAddButton(dish: Dish) {
 function handleCardClick(dish: Dish) {
   if (isServices.value) {
     openRequestModal(dish)
-  } else {
+  } else if (orderingEnabled.value) {
     openDishModal(dish)
   }
 }

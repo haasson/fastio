@@ -16,16 +16,18 @@
       <p v-if="dish.description" class="compact-desc">{{ dish.description }}</p>
       <div class="compact-footer">
         <SfPriceTag :price="dish.price" :currency="currency" size="small" />
-        <SfStepper
-          v-if="cartCount > 0"
-          :model-value="cartCount"
-          :min="0"
-          size="small"
-          @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
-        />
-        <FsButton v-else variant="primary" size="small" @click="emit('add')">
-          <Plus :size="16" />
-        </FsButton>
+        <template v-if="orderingEnabled">
+          <SfStepper
+            v-if="cartCount > 0"
+            :model-value="cartCount"
+            :min="0"
+            size="small"
+            @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
+          />
+          <FsButton v-else variant="primary" size="small" @click="emit('add')">
+            <Plus :size="16" />
+          </FsButton>
+        </template>
       </div>
     </div>
   </FsCard>
@@ -44,9 +46,10 @@ type Props = {
   dish: Dish
   comboId?: string
   currency?: string
+  orderingEnabled?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), { currency: '₽' })
+const props = withDefaults(defineProps<Props>(), { currency: '₽', orderingEnabled: true })
 const emit = defineEmits<{ add: [] }>()
 const cart = useCartStore()
 
