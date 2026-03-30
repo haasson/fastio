@@ -26,32 +26,6 @@ export const waitForElement = (selector: string, timeout = 5000): Promise<HTMLEl
   }, timeout)
 })
 
-export const clickToAdvance = (step: TourStep): TourStep => ({
-  ...step,
-  popover: {
-    ...step.popover,
-    showButtons: ['previous', 'close'],
-  },
-  onHighlightStarted: (el, _step, { driver }) => {
-    el?.addEventListener('click', () => driver.moveNext(), { once: true })
-  },
-})
-
-export const clickToAdvanceWhen = (step: TourStep, waitSelector: string): TourStep => ({
-  ...step,
-  popover: {
-    ...step.popover,
-    showButtons: ['previous', 'close'],
-  },
-  onHighlightStarted: (el, _step, { driver }) => {
-    el?.addEventListener('click', () => {
-      waitForElement(waitSelector)
-        .then(() => driver.moveNext())
-        .catch(() => driver.moveNext())
-    }, { once: true })
-  },
-})
-
 const isActive = ref(false)
 let driverObj: { drive: () => void; destroy: () => void; moveNext: () => void } | null = null
 
@@ -71,7 +45,9 @@ const useTour = () => {
         const step = state.activeIndex != null ? steps[state.activeIndex] as TourStep : undefined
 
         if (step?.onNext) {
-          step.onNext().then(() => driverObj?.moveNext())
+          step.onNext()
+            .then(() => driverObj?.moveNext())
+            .catch(() => driverObj?.moveNext())
         } else {
           driverObj?.moveNext()
         }
