@@ -27,6 +27,7 @@
         </template>
         <template #right>
           <UiButton
+            data-tour="add-dish"
             size="medium"
             type="primary"
             icon="plus"

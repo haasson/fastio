@@ -1,6 +1,6 @@
 <template>
   <div class="addons-root">
-    <div class="max-addons-setting">
+    <div class="max-addons-setting" data-tour="addon-max-setting">
       <UiCheckbox :model-value="maxAddonsDefault != null" @update:model-value="toggleMaxAddons">
         <UiText size="small">Ограничить количество добавок на блюдо</UiText>
       </UiCheckbox>
@@ -15,9 +15,19 @@
       />
     </div>
 
-    <div class="toolbar">
-      <UiTabs v-model="activeTab" variant="pill" :tabs="tabs" />
-      <UiButton type="primary" icon="plus" @click="openAdd">
+    <div class="toolbar" data-tour="addon-toolbar">
+      <UiTabs
+        v-model="activeTab"
+        variant="pill"
+        :tabs="tabs"
+        data-tour="addon-tabs"
+      />
+      <UiButton
+        type="primary"
+        icon="plus"
+        data-tour="add-addon"
+        @click="openAdd"
+      >
         {{ activeTab === 'addons' ? 'Добавка' : 'Пресет' }}
       </UiButton>
     </div>
@@ -128,8 +138,8 @@ const { confirm } = useConfirm()
 const message = useMessage()
 
 const tabs = [
-  { value: 'addons', label: 'Добавки' },
-  { value: 'presets', label: 'Пресеты' },
+  { value: 'addons', label: 'Добавки', attrs: { 'data-tour': 'addon-tab-addons' } },
+  { value: 'presets', label: 'Пресеты', attrs: { 'data-tour': 'addon-tab-presets' } },
 ]
 const activeTab = ref('addons')
 

@@ -8,27 +8,31 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
-      <ImageUploadTrigger
-        :model-value="form.photoUrl"
-        aspect-ratio="4:3"
-        modal-title="Фото категории"
-        compact
-        width="96px"
-        height="72px"
-        @update:model-value="form.photoUrl = $event"
-        @pending="pendingPhotoFile = $event"
-      />
+      <div data-tour="category-photo">
+        <ImageUploadTrigger
+          :model-value="form.photoUrl"
+          aspect-ratio="4:3"
+          modal-title="Фото категории"
+          compact
+          width="96px"
+          height="72px"
+          @update:model-value="form.photoUrl = $event"
+          @pending="pendingPhotoFile = $event"
+        />
+      </div>
 
-      <UiInput
-        v-model="form.name"
-        name="name"
-        label="Название"
-        placeholder="Пицца"
-        :rules="[{ required: true, message: 'Введите название' }]"
-        :readonly="isSpecial"
-      />
+      <div data-tour="category-name">
+        <UiInput
+          v-model="form.name"
+          name="name"
+          label="Название"
+          placeholder="Пицца"
+          :rules="[{ required: true, message: 'Введите название' }]"
+          :readonly="isSpecial"
+        />
+      </div>
 
-      <div v-if="!category" class="field">
+      <div v-if="!category" class="field" data-tour="category-type">
         <UiText size="small" weight="medium" class="label">Тип</UiText>
         <UiSelect
           :value="formMode"
@@ -149,7 +153,7 @@ const tagOptions = computed(() => (props.tags ?? []).map((t) => ({ label: t.name
 
 const actions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, buttonProps: { 'data-tour': 'category-save' } },
 ])
 
 const handleSave = async () => {

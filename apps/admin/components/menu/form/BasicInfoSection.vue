@@ -1,6 +1,6 @@
 <template>
   <div class="basic-info-section-root">
-    <div class="col-photo">
+    <div class="col-photo" data-tour="dish-photo">
       <UiText size="tiny" span class="section-title">Фото</UiText>
       <ImageUploadTrigger
         :model-value="photoUrl"
@@ -10,7 +10,7 @@
       />
     </div>
 
-    <div class="col-main">
+    <div class="col-main" data-tour="dish-main-fields">
       <UiText size="tiny" span class="section-title">Основное</UiText>
 
       <div class="row">

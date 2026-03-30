@@ -1,7 +1,12 @@
 <template>
   <div class="modifiers-root">
     <div class="toolbar">
-      <UiButton type="primary" icon="plus" @click="openAdd">
+      <UiButton
+        data-tour="add-modifier"
+        type="primary"
+        icon="plus"
+        @click="openAdd"
+      >
         Добавить группу
       </UiButton>
     </div>

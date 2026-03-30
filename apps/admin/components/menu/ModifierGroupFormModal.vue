@@ -8,20 +8,22 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
-      <UiInput
-        v-model="form.name"
-        name="name"
-        label="Название группы *"
-        placeholder="Размер, Диаметр, Бортик..."
-        :rules="[{ type: 'required', message: 'Введите название' }]"
-      />
-
-      <div class="switch-row">
-        <UiSwitch v-model="form.active" label="Активна" />
-        <UiSwitch v-model="form.affectsWeight" label="Влияет на вес" />
+      <div data-tour="modifier-name">
+        <UiInput
+          v-model="form.name"
+          name="name"
+          label="Название группы *"
+          placeholder="Размер, Диаметр, Бортик..."
+          :rules="[{ type: 'required', message: 'Введите название' }]"
+        />
       </div>
 
-      <div v-if="form.affectsWeight" class="weight-mode-block">
+      <div class="switch-row" data-tour="modifier-switches">
+        <UiSwitch v-model="form.active" label="Активна" data-tour="modifier-active" />
+        <UiSwitch v-model="form.affectsWeight" label="Влияет на вес" data-tour="modifier-affects-weight" />
+      </div>
+
+      <div v-if="form.affectsWeight" class="weight-mode-block" data-tour="modifier-weight-mode">
         <div class="weight-mode-label">
           <UiText size="tiny" color="secondary">Вес задаётся</UiText>
           <HintPopover>
@@ -38,7 +40,7 @@
         />
       </div>
 
-      <div class="options-section">
+      <div class="options-section" data-tour="modifier-options">
         <UiText size="tiny" span class="section-title">Опции *</UiText>
 
         <VueDraggable
@@ -75,7 +77,12 @@
           {{ optionsError }}
         </UiAlert>
 
-        <UiButton type="default" icon="plus" @click="addOption">
+        <UiButton
+          type="default"
+          icon="plus"
+          data-tour="modifier-add-option"
+          @click="addOption"
+        >
           Добавить опцию
         </UiButton>
       </div>
@@ -111,7 +118,7 @@ const weightModeItems = [
 
 const modalActions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, buttonProps: { 'data-tour': 'modifier-save' } },
 ])
 
 type OptionForm = { id?: string; name: string; active: boolean; weight: number | null }

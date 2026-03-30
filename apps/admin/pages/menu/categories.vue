@@ -1,7 +1,12 @@
 <template>
   <div class="categories-root">
     <div class="toolbar">
-      <UiButton type="primary" icon="plus" @click="openModal(null)">
+      <UiButton
+        data-tour="add-category"
+        type="primary"
+        icon="plus"
+        @click="openModal(null)"
+      >
         Добавить категорию
       </UiButton>
     </div>

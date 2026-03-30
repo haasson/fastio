@@ -20,10 +20,10 @@ const modules = useModules()
 const { isServices, itemsLabel } = useTenantLabels()
 
 const tabs = computed(() => [
-  { value: 'dishes', label: itemsLabel.value },
-  ...(canManageMenu.value ? [{ value: 'categories', label: 'Категории' }] : []),
-  ...(!isServices.value && canManageMenu.value && modules.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы' }] : []),
-  ...(!isServices.value && canManageMenu.value && modules.addons.value.enabled ? [{ value: 'addons', label: 'Добавки' }] : []),
+  { value: 'dishes', label: itemsLabel.value, attrs: { 'data-tour': 'menu-tab-dishes' } },
+  ...(canManageMenu.value ? [{ value: 'categories', label: 'Категории', attrs: { 'data-tour': 'menu-tab-categories' } }] : []),
+  ...(!isServices.value && canManageMenu.value && modules.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы', attrs: { 'data-tour': 'menu-tab-modifiers' } }] : []),
+  ...(!isServices.value && canManageMenu.value && modules.addons.value.enabled ? [{ value: 'addons', label: 'Добавки', attrs: { 'data-tour': 'menu-tab-addons' } }] : []),
   ...(canManageMenu.value ? [{ value: 'tags', label: 'Теги' }] : []),
 ])
 

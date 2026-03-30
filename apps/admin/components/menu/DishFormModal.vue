@@ -32,7 +32,7 @@
         @update:weight-unit="form.weightUnit = $event"
       />
 
-      <UiCollapse :expanded-names="[]" class="sections">
+      <UiCollapse :expanded-names="[]" class="sections" data-tour="dish-sections">
         <TagsSection v-model="form.tags" :available-tags="tags" />
 
         <DishModifiersSection
@@ -148,7 +148,7 @@ const categoryOptions = computed(() => props.categories.map((c) => ({ label: c.n
 
 const drawerActions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, attrs: { 'data-tour': 'dish-save' } },
 ])
 
 const defaultForm = () => ({

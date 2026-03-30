@@ -8,15 +8,17 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
-      <UiInput
-        v-model="form.name"
-        name="name"
-        label="Название"
-        placeholder="Халапеньо"
-        :rules="[{ required: true, message: 'Введите название' }]"
-      />
+      <div data-tour="addon-name">
+        <UiInput
+          v-model="form.name"
+          name="name"
+          label="Название"
+          placeholder="Халапеньо"
+          :rules="[{ required: true, message: 'Введите название' }]"
+        />
+      </div>
 
-      <div class="row">
+      <div class="row" data-tour="addon-price-weight">
         <UiInputNumber
           v-model="form.price"
           label="Цена, ₽"
@@ -81,8 +83,8 @@ watch(
 )
 
 const actions = computed(() => [
-  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const, buttonProps: { 'data-tour': 'addon-cancel' } },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, buttonProps: { 'data-tour': 'addon-save' } },
 ])
 
 const handleSave = async () => {

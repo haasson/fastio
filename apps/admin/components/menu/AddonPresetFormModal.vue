@@ -8,19 +8,21 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
-      <UiInput
-        v-model="form.name"
-        name="name"
-        label="Название"
-        placeholder="Острый набор"
-        :rules="[{ required: true, message: 'Введите название' }]"
-      />
+      <div data-tour="preset-name">
+        <UiInput
+          v-model="form.name"
+          name="name"
+          label="Название"
+          placeholder="Острый набор"
+          :rules="[{ required: true, message: 'Введите название' }]"
+        />
+      </div>
 
       <div class="checkboxes-label">
         <UiText size="small" color="secondary">Добавки в пресете</UiText>
         <UiText v-if="addonsError" size="small" style="color: var(--color-error)">{{ addonsError }}</UiText>
       </div>
-      <div class="checkboxes">
+      <div class="checkboxes" data-tour="preset-addons">
         <UiCheckbox
           v-for="addon in addons"
           :key="addon.id"
@@ -77,7 +79,7 @@ watch(
 
 const actions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, buttonProps: { 'data-tour': 'preset-save' } },
 ])
 
 const toggleAddon = (addonId: string, checked: boolean) => {

@@ -47,6 +47,7 @@ const categoryTabs = computed(() => categories.value.map((c) => ({
   value: c.id,
   label: c.name,
   count: dishCountByCategory.value[c.id] ?? 0,
+  attrs: { 'data-tour': 'category-tab', 'data-category-type': c.tagId ? 'virtual' : (c.type ?? 'regular') },
   ...((c.type !== 'regular' || c.tagId) && { type: 'warning' as const }),
 })))
 </script>
