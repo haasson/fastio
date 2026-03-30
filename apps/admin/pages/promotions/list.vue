@@ -52,6 +52,7 @@ import { useConfirm } from '@fastio/kit'
 import type { Promotion, PromotionFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { usePromotions } from '~/composables/data/usePromotions'
+import { useBanners } from '~/composables/data/useBanners'
 import { buildPromotionColumns } from '~/columns/promotions'
 import PromotionFormModal from '~/components/promotions/PromotionFormModal.vue'
 
@@ -59,6 +60,7 @@ const tenantStore = useTenantStore()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
 const { promotions, loading, add, update, remove, toggleActive } = usePromotions(tenantId)
+const { banners: allBanners } = useBanners(tenantId)
 
 const search = ref('')
 
@@ -106,8 +108,25 @@ const handleRemove = async (promo: Promotion) => {
   if (ok) await remove(promo.id)
 }
 
+const handleToggleActive = async (id: string, active: boolean) => {
+  if (!active) {
+    const linked = allBanners.value.filter((b) => b.promotionId === id && b.enabled)
+
+    if (linked.length > 0) {
+      const ok = await confirm({
+        title: 'Отключить акцию?',
+        message: `К этой акции привязано баннеров: ${linked.length}. После отключения они перестанут отображаться на сайте.`,
+      })
+
+      if (!ok) return
+    }
+  }
+
+  toggleActive(id, active)
+}
+
 const columns = buildPromotionColumns({
-  onToggle: toggleActive,
+  onToggle: handleToggleActive,
   onEdit: openEdit,
   onRemove: handleRemove,
 })

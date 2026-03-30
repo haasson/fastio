@@ -51,6 +51,7 @@ import { useConfirm } from '@fastio/kit'
 import type { PromoCode, PromoCodeFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { usePromoCodes } from '~/composables/data/usePromoCodes'
+import { useBanners } from '~/composables/data/useBanners'
 import { buildPromoCodeColumns } from '~/columns/promo-codes'
 import PromoCodeFormModal from '~/components/promotions/PromoCodeFormModal.vue'
 
@@ -58,6 +59,7 @@ const tenantStore = useTenantStore()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
 const { promoCodes, loading, add, update, remove, toggleActive } = usePromoCodes(tenantId)
+const { banners: allBanners } = useBanners(tenantId)
 
 const search = ref('')
 
@@ -105,8 +107,25 @@ const handleRemove = async (promo: PromoCode) => {
   if (ok) await remove(promo.id)
 }
 
+const handleToggleActive = async (id: string, active: boolean) => {
+  if (!active) {
+    const linked = allBanners.value.filter((b) => b.promoCodeId === id && b.enabled)
+
+    if (linked.length > 0) {
+      const ok = await confirm({
+        title: 'Отключить промокод?',
+        message: `К этому промокоду привязано баннеров: ${linked.length}. После отключения они перестанут отображаться на сайте.`,
+      })
+
+      if (!ok) return
+    }
+  }
+
+  toggleActive(id, active)
+}
+
 const columns = buildPromoCodeColumns({
-  onToggle: toggleActive,
+  onToggle: handleToggleActive,
   onEdit: openEdit,
   onRemove: handleRemove,
 })

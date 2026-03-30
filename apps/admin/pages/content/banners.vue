@@ -31,8 +31,13 @@
         :disabled="!banner.enabled"
         thumb-width="96px"
         thumb-height="32px"
-        :name="linkLabel(banner)"
       >
+        <template #name>
+          <span>{{ linkLabel(banner) }}</span>
+          <UiTag v-if="isBroken(banner)" type="warning" style="margin-left: 8px">
+            {{ isBroken(banner) }}
+          </UiTag>
+        </template>
 
         <template #append>
           <UiSwitch
@@ -62,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch } from '@fastio/ui'
+import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch, UiTag } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Banner, BannerFormData } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
@@ -89,6 +94,23 @@ const saving = ref(false)
 const { confirm } = useConfirm()
 
 const onReorder = () => reorder(banners.value)
+
+const isBroken = (banner: Banner): string | null => {
+  if (banner.promotionId) {
+    const p = promotions.value.find((pr) => pr.id === banner.promotionId)
+
+    if (!p) return 'Акция удалена'
+    if (!p.active) return 'Акция отключена'
+  }
+  if (banner.promoCodeId) {
+    const c = promoCodes.value.find((pc) => pc.id === banner.promoCodeId)
+
+    if (!c) return 'Промокод удалён'
+    if (!c.active) return 'Промокод отключён'
+  }
+
+  return null
+}
 
 const linkLabel = (banner: Banner): string => {
   if (banner.promotionId) {
