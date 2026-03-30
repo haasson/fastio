@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     .from('tenants')
     .select('owner_id')
     .eq('id', id)
-    .single()
+    .maybeSingle()
 
   if (tenantError) throw createError({ statusCode: 500, message: tenantError.message })
   if (!tenant) throw createError({ statusCode: 404, message: 'Tenant not found' })
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     .eq('owner_id', ownerId)
     .limit(1)
 
-  if (!otherTenants || otherTenants.length === 0) {
+  if (ownerId && (!otherTenants || otherTenants.length === 0)) {
     await supabase.auth.admin.deleteUser(ownerId)
   }
 

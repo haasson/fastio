@@ -32,6 +32,7 @@
               <UiButton
                 v-for="(action, index) in actions"
                 :key="index"
+                v-bind="action.attrs"
                 :type="(action.type as any)"
                 :disabled="action.disabled"
                 :loading="action.loading"
@@ -62,6 +63,7 @@ export type DrawerAction = {
   disabled?: boolean
   loading?: boolean
   actionType: 'confirm' | 'decline'
+  attrs?: Record<string, string>
 }
 
 export type UiDrawerProps = {

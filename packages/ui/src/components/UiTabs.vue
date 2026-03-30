@@ -12,6 +12,7 @@
     <button
       v-for="tab in tabs"
       :key="tab.value"
+      v-bind="tab.attrs"
       class="tab-line-item"
       :class="{ active: activeTab === tab.value }"
       @click="handleTabClick(tab.value)"
@@ -33,6 +34,7 @@
     <ui-tag
       v-for="tab in tabs"
       :key="tab.value"
+      v-bind="tab.attrs"
       :size="props.size"
       :responsive="props.responsive"
       round
@@ -75,6 +77,7 @@ type TabItem = {
   icon?: IconName
   count?: number
   type?: TagType
+  attrs?: Record<string, string>
 }
 
 type Props = {
