@@ -16,14 +16,15 @@
       <slot :sticky-total-height="stickyTotalHeight" :layout="layout" />
     </div>
 
-    <SiteFooter :class="{ 'has-fab': hasCartItems }" />
-    <SfCartFab v-if="tenant?.businessType !== 'services'" @click="navigateTo('/cart')" />
+    <SiteFooter :class="{ 'has-fab': (showCartFab && hasCartItems) || showBookingFab }" />
+    <SfCartFab v-if="showCartFab" @click="navigateTo('/cart')" />
+    <SfBookingFab v-else-if="showBookingFab" @click="navigateTo('/booking')" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
-import { useNuxtData, navigateTo } from 'nuxt/app'
+import { useNuxtData, navigateTo, useRoute } from 'nuxt/app'
 import { useElementSize } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import type { Tenant } from '@fastio/shared'
@@ -33,6 +34,7 @@ import CategoryBar from '~/components/sections/CategoryBar.vue'
 import SiteFooter from '~/components/sections/SiteFooter.vue'
 import { useCartStore } from '~/stores/cart'
 import SfCartFab from '~/components/sf/domain/SfCartFab.vue'
+import SfBookingFab from '~/components/sf/domain/SfBookingFab.vue'
 
 withDefaults(defineProps<{
   showCategoryBar?: boolean
@@ -41,6 +43,7 @@ withDefaults(defineProps<{
 })
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
+const route = useRoute()
 
 type SiteLayout = ReturnType<typeof defaultSiteLayout>
 
@@ -50,6 +53,14 @@ const layout = computed(() =>
 
 const { count } = storeToRefs(useCartStore())
 const hasCartItems = computed(() => count.value > 0)
+
+const isServices = computed(() => tenant.value?.businessType === 'services')
+const orderingEnabled = computed(() => {
+  const m = tenant.value?.modules
+  return !!m?.delivery || !!m?.pickup
+})
+const showCartFab = computed(() => !isServices.value && orderingEnabled.value && !['/cart', '/checkout'].includes(route.path))
+const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.modules?.reservations && route.path !== '/booking')
 
 const headerRef = useTemplateRef('headerRef')
 const { height: headerHeight } = useElementSize(headerRef)
