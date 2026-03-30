@@ -77,6 +77,7 @@ const allNavItems: NavItem[] = [
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewSettings },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
+  { to: '/help', icon: 'help', label: 'Помощь' },
 ]
 
 const navItems = computed(() => allNavItems.filter((item) => !item.visible || item.visible.value))

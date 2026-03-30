@@ -15,6 +15,8 @@
     "*.{js,ts,vue}": "eslint --fix"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.64",
+    "@ai-sdk/vue": "^3.0.141",
     "@fastio/icons": "workspace:*",
     "@fastio/kit": "workspace:*",
     "@fastio/shared": "workspace:*",
@@ -28,6 +30,8 @@
     "@tiptap/vue-3": "^3.20.1",
     "@vueuse/core": "^14.2.1",
     "@vueuse/nuxt": "^14.2.1",
+    "ai": "^6.0.141",
+    "driver.js": "^1.4.0",
     "naive-ui": "^2.42.0",
     "nuxt": "^3.15.0",
     "pinia": "^3.0.4",

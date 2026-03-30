@@ -65,6 +65,7 @@
     </div>
 
     <OnboardingWizard v-if="showOnboarding" />
+    <AiChat />
   </div>
 </template>
 
@@ -88,6 +89,7 @@ import PastDueBanner from '~/components/layout/PastDueBanner.vue'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
+import AiChat from '~/components/ai/AiChat.vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
@@ -191,6 +193,7 @@ const currentPageTitle = computed(() => {
     ['/content', 'Контент сайта'],
     ['/appearance', 'Оформление'],
     ['/settings', 'Настройки'],
+    ['/help', 'Помощь'],
     ['/account', 'Личный кабинет'],
     ['/', 'Дашборд'],
   ]

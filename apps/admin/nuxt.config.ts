@@ -32,9 +32,10 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@vueuse/nuxt'],
 
-  css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css'],
+  css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
 
   runtimeConfig: {
+    anthropicApiKey: '',
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',
