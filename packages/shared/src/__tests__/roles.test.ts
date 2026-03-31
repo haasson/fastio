@@ -1,40 +1,34 @@
 import { describe, it, expect } from 'vitest'
-import { hasMinRole } from '../utils/roles'
+import { hasPermission } from '../utils/roles'
+import type { RolePermissions } from '../types/role'
 
-describe('hasMinRole', () => {
-  it('owner имеет доступ ко всем ролям', () => {
-    expect(hasMinRole('owner', 'owner')).toBe(true)
-    expect(hasMinRole('owner', 'admin')).toBe(true)
-    expect(hasMinRole('owner', 'manager')).toBe(true)
-    expect(hasMinRole('owner', 'staff')).toBe(true)
+describe('hasPermission', () => {
+  const managerPerms: RolePermissions = {
+    'menu.view': true,
+    'menu.edit': true,
+    'orders.view': true,
+  }
+
+  it('возвращает true для включённого пермишена', () => {
+    expect(hasPermission(managerPerms, 'menu.view')).toBe(true)
+    expect(hasPermission(managerPerms, 'menu.edit')).toBe(true)
   })
 
-  it('staff не имеет доступ к ролям выше', () => {
-    expect(hasMinRole('staff', 'manager')).toBe(false)
-    expect(hasMinRole('staff', 'admin')).toBe(false)
-    expect(hasMinRole('staff', 'owner')).toBe(false)
+  it('возвращает false для отсутствующего пермишена', () => {
+    expect(hasPermission(managerPerms, 'settings.edit')).toBe(false)
+    expect(hasPermission(managerPerms, 'team.manage')).toBe(false)
   })
 
-  it('одинаковые роли — доступ есть', () => {
-    expect(hasMinRole('admin', 'admin')).toBe(true)
-    expect(hasMinRole('manager', 'manager')).toBe(true)
-    expect(hasMinRole('staff', 'staff')).toBe(true)
+  it('возвращает false для null permissions', () => {
+    expect(hasPermission(null, 'menu.view')).toBe(false)
   })
 
-  it('admin не имеет доступ к owner', () => {
-    expect(hasMinRole('admin', 'owner')).toBe(false)
+  it('возвращает false для пустого объекта', () => {
+    expect(hasPermission({}, 'menu.view')).toBe(false)
   })
 
-  it('manager не имеет доступ к admin', () => {
-    expect(hasMinRole('manager', 'admin')).toBe(false)
-  })
-
-  it('admin имеет доступ к manager и staff', () => {
-    expect(hasMinRole('admin', 'manager')).toBe(true)
-    expect(hasMinRole('admin', 'staff')).toBe(true)
-  })
-
-  it('manager имеет доступ к staff', () => {
-    expect(hasMinRole('manager', 'staff')).toBe(true)
+  it('возвращает false если значение явно false', () => {
+    const perms: RolePermissions = { 'menu.view': false }
+    expect(hasPermission(perms, 'menu.view')).toBe(false)
   })
 })

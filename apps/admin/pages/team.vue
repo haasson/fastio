@@ -1,15 +1,32 @@
 <template>
-  <UiCard size="large">
-    <NuxtPage />
-  </UiCard>
+  <TabsLayout
+    :tabs="tabs"
+    base-path="/team"
+    card
+    hide-single
+  />
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { UiCard } from '@fastio/ui'
+import { computed, onMounted } from 'vue'
+import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { useTenantStore } from '~/stores/tenant'
+import { usePermissions } from '~/composables/auth/usePermissions'
 
 const tenantStore = useTenantStore()
+const { canManageRoles } = usePermissions()
+
+const tabs = computed(() => {
+  const list = [
+    { value: 'members', label: 'Участники' },
+  ]
+
+  if (canManageRoles.value) {
+    list.push({ value: 'roles', label: 'Роли' })
+  }
+
+  return list
+})
 
 onMounted(() => tenantStore.init())
 </script>

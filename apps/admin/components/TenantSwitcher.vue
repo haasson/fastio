@@ -13,12 +13,16 @@
 import { computed } from 'vue'
 import { UiSelect } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
-import { roleLabels } from '~/config/team-roles'
-
 const tenantStore = useTenantStore()
 
+const getRoleName = (membership: { roleId: string | null; roleName: string | null }) => {
+  if (membership.roleId === null) return 'Владелец'
+
+  return membership.roleName ?? '—'
+}
+
 const tenantOptions = computed(() => tenantStore.memberships.map((membership) => ({
-  label: `${membership.tenant?.name ?? 'Без названия'} (${roleLabels[membership.role]})`,
+  label: `${membership.tenant?.name ?? 'Без названия'} (${getRoleName(membership)})`,
   value: membership.tenantId,
 })),
 )

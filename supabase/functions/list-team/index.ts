@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
   // Проверяем что запрашивающий — участник тенанта
   const { data: membership } = await adminSupabase
     .from('tenant_members')
-    .select('role')
+    .select('role_id, tenant_roles(permissions)')
     .eq('tenant_id', tenantId)
     .eq('user_id', user.id)
     .single()
@@ -45,10 +45,13 @@ Deno.serve(async (req) => {
     return json({ error: 'Not a member' }, { status: 403 })
   }
 
-  // Загружаем мемберов
+  const isOwner = membership.role_id === null
+  const permissions = (membership as { tenant_roles?: { permissions?: Record<string, boolean> } }).tenant_roles?.permissions
+
+  // Загружаем мемберов с ролями
   const { data: members } = await adminSupabase
     .from('tenant_members')
-    .select('id, tenant_id, user_id, role, branch_ids, blocked_until, created_at')
+    .select('id, tenant_id, user_id, role_id, branch_ids, blocked_until, created_at, tenant_roles(id, name, permissions)')
     .eq('tenant_id', tenantId)
     .order('created_at')
 
@@ -90,12 +93,15 @@ Deno.serve(async (req) => {
     const email = profile?.email ?? null
     const invitedByUserId = email ? invitedByMap.get(email) : null
     const invitedBy = invitedByUserId ? getDisplayName(invitedByUserId) : null
+    const roleData = (m as { tenant_roles?: { id: string; name: string; permissions: Record<string, boolean> } | null }).tenant_roles
 
     return {
       id: m.id,
       tenantId: m.tenant_id,
       userId: m.user_id,
-      role: m.role,
+      roleId: m.role_id ?? null,
+      roleName: roleData?.name ?? null,
+      permissions: roleData?.permissions ?? {},
       branchIds: m.branch_ids ?? [],
       blockedUntil: m.blocked_until ?? null,
       createdAt: m.created_at,
@@ -105,28 +111,33 @@ Deno.serve(async (req) => {
     }
   })
 
-  // Загружаем pending-инвайты (только для admin+)
+  // Загружаем pending-инвайты (только для тех кто имеет team.manage)
   let invitations: unknown[] = []
-  if (['owner', 'admin'].includes(membership.role)) {
+  if (isOwner || permissions?.['team.manage']) {
     const { data } = await adminSupabase
       .from('tenant_invitations')
-      .select('*')
+      .select('*, tenant_roles(id, name)')
       .eq('tenant_id', tenantId)
       .is('accepted_at', null)
       .order('created_at', { ascending: false })
 
-    invitations = (data ?? []).map(inv => ({
-      id: inv.id,
-      tenantId: inv.tenant_id,
-      email: inv.email,
-      role: inv.role,
-      invitedBy: inv.invited_by,
-      token: inv.token,
-      expiresAt: inv.expires_at,
-      acceptedAt: inv.accepted_at,
-      createdAt: inv.created_at,
-      branchIds: inv.branch_ids ?? [],
-    }))
+    invitations = (data ?? []).map(inv => {
+      const invRoleData = (inv as { tenant_roles?: { id: string; name: string } | null }).tenant_roles
+
+      return {
+        id: inv.id,
+        tenantId: inv.tenant_id,
+        email: inv.email,
+        roleId: inv.role_id ?? null,
+        roleName: invRoleData?.name ?? null,
+        invitedBy: inv.invited_by,
+        token: inv.token,
+        expiresAt: inv.expires_at,
+        acceptedAt: inv.accepted_at,
+        createdAt: inv.created_at,
+        branchIds: inv.branch_ids ?? [],
+      }
+    })
   }
 
   return json({ members: enrichedMembers, invitations }, { status: 200 })

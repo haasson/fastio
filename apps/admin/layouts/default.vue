@@ -94,7 +94,6 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { roleLabels } from '~/config/team-roles'
 
 const route = useRoute()
 const sidebarOpen = ref(false)
@@ -135,7 +134,7 @@ const { menuLabel } = useTenantLabels()
 
 const displayName = computed(() => {
   const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || ''
-  const role = tenantStore.currentRole ? roleLabels[tenantStore.currentRole] : ''
+  const role = tenantStore.currentRoleName ?? ''
 
   return role ? `${name} (${role})` : name
 })
@@ -145,9 +144,7 @@ const currentMember = computed(() => tenantStore.memberships.find((m) => m.tenan
 )
 
 const canSeeAll = computed(() => {
-  const role = tenantStore.currentRole
-
-  if (role === 'owner' || role === 'admin') return true
+  if (tenantStore.isOwner) return true
 
   return (currentMember.value?.branchIds ?? []).length === 0
 })
@@ -189,6 +186,7 @@ const currentPageTitle = computed(() => {
     ['/reservations', 'Бронирования'],
     ['/promotions', 'Акции'],
     ['/team/members', 'Команда'],
+    ['/team/roles', 'Роли'],
     ['/team/branches', 'Филиалы'],
     ['/content', 'Контент сайта'],
     ['/appearance', 'Оформление'],

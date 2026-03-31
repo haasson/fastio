@@ -19,7 +19,7 @@ export const useBranchStore = defineStore('branch', () => {
   const membership = computed(() => tenantStore.memberships.find((m) => m.tenantId === tenantStore.currentTenantId),
   )
   const memberBranchIds = computed(() => membership.value?.branchIds ?? [])
-  const isAdmin = computed(() => membership.value?.role === 'owner' || membership.value?.role === 'admin',
+  const hasAllBranchAccess = computed(() => tenantStore.isOwner || (membership.value?.branchIds ?? []).length === 0,
   )
 
   const { branches, archivedBranches, loading, add, update, archive, restore } = useBranches(tenantId)
@@ -27,7 +27,7 @@ export const useBranchStore = defineStore('branch', () => {
     tenantId,
     branches,
     memberBranchIds,
-    isAdmin,
+    hasAllBranchAccess,
   )
 
   return {

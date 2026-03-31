@@ -48,7 +48,7 @@ defineProps<{ collapsed?: boolean }>()
 
 type NavItem = { to: string; icon: IconName; label: string | ComputedRef<string>; visible?: ComputedRef<boolean> }
 
-const { canManageMenu, canManageOrders, canManagePromotions, canViewSettings, canManageTeam } = usePermissions()
+const { canManageMenu, canManageOrders, canViewKitchen, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canManageTeam } = usePermissions()
 const modules = useModules()
 const { menuLabel, isServices } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
@@ -59,9 +59,9 @@ const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.va
 const showReservationsBadge = computed(() => newReservationCount.value > 0)
 const canSeePromotions = computed(() => canManagePromotions.value && modules.promotions.value.enabled)
 const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.value.enabled || modules.pickup.value.enabled || isServices.value))
-const canSeeKitchen = computed(() => canManageOrders.value && modules.kitchen.value.enabled)
-const canSeeTables = computed(() => canViewSettings.value && modules.dineIn.value.enabled)
-const canSeeReservations = computed(() => canManageOrders.value && (modules.reservations?.value?.enabled ?? false))
+const canSeeKitchen = computed(() => canViewKitchen.value && modules.kitchen.value.enabled)
+const canSeeTables = computed(() => canViewTables.value && modules.dineIn.value.enabled)
+const canSeeReservations = computed(() => canViewReservations.value && (modules.reservations?.value?.enabled ?? false))
 const canSeeBranches = computed(() => canManageTeam.value && !isServices.value)
 
 const allNavItems: NavItem[] = [
@@ -74,8 +74,8 @@ const allNavItems: NavItem[] = [
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
   { to: '/team/members', icon: 'users', label: 'Команда', visible: computed(() => canManageTeam.value && !isServices.value) },
   { to: '/team/branches', icon: 'mapPin', label: 'Филиалы', visible: canSeeBranches },
-  { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewSettings },
-  { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewSettings },
+  { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
+  { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewContent },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
   { to: '/help', icon: 'help', label: 'Помощь' },
 ]

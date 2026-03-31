@@ -2,13 +2,11 @@ import { h, type ComputedRef } from 'vue'
 import { UiTag, UiText, UiButton } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import type { TenantRole, TenantMember, TenantInvitation, Branch } from '@fastio/shared'
-import { roleLabels, roleTagTypes } from '~/config/team-roles'
+import type { TenantMember, TenantInvitation, Branch } from '@fastio/shared'
 import { formatDate } from '@fastio/shared'
 
-const roleLabel = (role: TenantRole) => roleLabels[role]
-const roleTagType = (role: TenantRole) => roleTagTypes[role]
 const isBlocked = (row: TenantMember) => !!row.blockedUntil && new Date(row.blockedUntil) > new Date()
+const isOwner = (row: TenantMember) => row.roleId === null
 
 type MemberColumnsDeps = {
   branches: ComputedRef<Branch[]>
@@ -56,9 +54,12 @@ export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<Te
       title: 'Роль',
       key: 'role',
       width: 120,
-      render: (row) => isBlocked(row)
-        ? h(UiTag, { type: 'error', size: 'small' }, () => 'Заблокирован')
-        : h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
+      render: (row) => {
+        if (isBlocked(row)) return h(UiTag, { type: 'error', size: 'small' }, () => 'Заблокирован')
+        if (isOwner(row)) return h(UiTag, { type: 'warning', size: 'small' }, () => 'Владелец')
+
+        return h(UiTag, { type: 'primary', size: 'small' }, () => row.roleName ?? '—')
+      },
     },
     branchesCol,
     {
@@ -72,7 +73,7 @@ export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<Te
       key: 'actions',
       width: 130,
       render: (row) => {
-        if (row.role === 'owner' || !canManageTeam.value) return null
+        if (isOwner(row) || !canManageTeam.value) return null
 
         const blocked = isBlocked(row)
 
@@ -121,7 +122,7 @@ export const buildInviteColumns = (deps: InviteColumnsDeps): DataTableColumns<Te
       title: 'Роль',
       key: 'role',
       width: 120,
-      render: (row) => h(UiTag, { type: roleTagType(row.role), size: 'small' }, () => roleLabel(row.role)),
+      render: (row) => h(UiTag, { type: 'primary', size: 'small' }, () => row.roleName ?? '—'),
     },
     branchesCol,
     {

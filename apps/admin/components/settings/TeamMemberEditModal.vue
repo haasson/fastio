@@ -14,11 +14,11 @@
   >
     <div class="form">
       <UiSelect
-        v-model:value="form.role"
+        v-model:value="form.roleId"
         label="Роль"
-        :options="roleOptions"
+        :options="roleSelectOptions"
       />
-      <template v-if="branches.length > 0 && form.role !== 'admin' && form.role !== 'owner'">
+      <template v-if="branches.length > 0">
         <UiRadioGroup
           v-model="branchMode"
           label="Доступ к филиалам"
@@ -40,12 +40,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { UiModal, UiSelect, UiRadioGroup, UiCheckbox } from '@fastio/ui'
-import type { TenantRole, TenantMember } from '@fastio/shared'
-import type { Branch } from '@fastio/shared'
+import type { TenantMember, Branch } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { roleOptions } from '~/config/team-roles'
+import { useTenantStore } from '~/stores/tenant'
 
 const props = defineProps<{
   modelValue: boolean
@@ -59,9 +58,13 @@ const emit = defineEmits<{
 }>()
 
 const api = useDatabase()
+const tenantStore = useTenantStore()
+
+const roleSelectOptions = computed(() => tenantStore.roles.map((r) => ({ value: r.id, label: r.name })),
+)
 
 const saving = ref(false)
-const form = reactive({ role: '' as TenantRole, branchIds: [] as string[] })
+const form = reactive({ roleId: '' as string, branchIds: [] as string[] })
 const branchMode = ref<'all' | 'selected'>('all')
 
 const branchAccessOptions = [
@@ -73,7 +76,7 @@ watch(
   () => props.modelValue,
   (open) => {
     if (open && props.member) {
-      form.role = props.member.role
+      form.roleId = props.member.roleId ?? ''
       form.branchIds = [...(props.member.branchIds ?? [])]
       branchMode.value = form.branchIds.length > 0 ? 'selected' : 'all'
     }
@@ -98,7 +101,7 @@ const handleSave = async () => {
   try {
     const branchIds = branchMode.value === 'all' ? [] : form.branchIds
 
-    await api.members.updateRoleAndBranches(props.member.id, form.role, branchIds)
+    await api.members.updateRoleAndBranches(props.member.id, form.roleId, branchIds)
     emit('saved')
     emit('update:modelValue', false)
   } finally {

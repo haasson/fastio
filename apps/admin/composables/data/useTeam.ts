@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { TenantMember, TenantInvitation, TenantRole } from '@fastio/shared'
+import type { TenantMember, TenantInvitation } from '@fastio/shared'
 import { useQuery } from '@fastio/kit'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -18,13 +18,13 @@ export const useTeam = () => {
   const members = computed<TenantMember[]>(() => data.value?.members ?? [])
   const invitations = computed<TenantInvitation[]>(() => data.value?.invitations ?? [])
 
-  const invite = async (email: string, role: TenantRole, branchIds: string[] = []) => {
+  const invite = async (email: string, roleId: string, branchIds: string[] = []) => {
     if (!tenantStore.currentTenantId) return
 
     const { error } = await api.functions.inviteMember({
       tenantId: tenantStore.currentTenantId,
       email,
-      role,
+      roleId,
       branchIds,
     })
 
@@ -45,13 +45,13 @@ export const useTeam = () => {
     return { error: null, message: null }
   }
 
-  const changeRole = async (memberId: string, role: TenantRole) => {
-    await api.members.updateRole(memberId, role)
+  const changeRole = async (memberId: string, roleId: string) => {
+    await api.members.updateRole(memberId, roleId)
     await load()
   }
 
-  const updateRoleAndBranches = async (memberId: string, role: TenantRole, branchIds: string[]) => {
-    await api.members.updateRoleAndBranches(memberId, role, branchIds)
+  const updateRoleAndBranches = async (memberId: string, roleId: string, branchIds: string[]) => {
+    await api.members.updateRoleAndBranches(memberId, roleId, branchIds)
     await load()
   }
 
@@ -83,7 +83,7 @@ export const useTeam = () => {
     await api.functions.inviteMember({
       tenantId: inv.tenantId,
       email: inv.email,
-      role: inv.role,
+      roleId: inv.roleId!,
       branchIds: inv.branchIds,
       force: true,
     })

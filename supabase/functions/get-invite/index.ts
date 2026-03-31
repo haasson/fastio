@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
   const { data: invitation } = await adminSupabase
     .from('tenant_invitations')
-    .select('email, role, expires_at, accepted_at, tenant_id')
+    .select('email, role_id, expires_at, accepted_at, tenant_id, tenant_roles(name)')
     .eq('token', token)
     .single()
 
@@ -36,6 +36,8 @@ Deno.serve(async (req) => {
     return json({ error: 'Invitation expired' }, { status: 410 })
   }
 
+  const roleData = (invitation as { tenant_roles?: { name: string } | null }).tenant_roles
+
   const [{ data: tenant }, { data: { users } }] = await Promise.all([
     adminSupabase
       .from('tenants')
@@ -49,7 +51,7 @@ Deno.serve(async (req) => {
 
   return json({
     email: invitation.email,
-    role: invitation.role,
+    roleName: roleData?.name ?? '—',
     tenantName: tenant?.name ?? '',
     userExists,
   }, { status: 200 })

@@ -1,7 +1,10 @@
-import type { TenantRole } from '../types/member'
+import type { PermissionKey, RolePermissions } from '../types/role'
 
-const ROLE_ORDER: TenantRole[] = ['owner', 'admin', 'manager', 'staff']
-
-export function hasMinRole(userRole: TenantRole, requiredRole: TenantRole): boolean {
-  return ROLE_ORDER.indexOf(userRole) <= ROLE_ORDER.indexOf(requiredRole)
+/**
+ * Check if permissions object has a specific permission enabled.
+ * Owner (null roleId) should be checked separately — this only checks the permissions map.
+ */
+export function hasPermission(permissions: RolePermissions | null, key: PermissionKey): boolean {
+  if (!permissions) return false
+  return permissions[key] === true
 }

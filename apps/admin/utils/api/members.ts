@@ -1,16 +1,19 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { TenantMember, TenantRole } from '@fastio/shared'
+import type { TenantMember } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantMemberRow } from './db-types'
 
 const mapMember = (raw: Record<string, unknown>): TenantMember => {
   const row = raw as TenantMemberRow
+  const role = row.tenant_roles
 
   return {
     id: row.id,
     tenantId: row.tenant_id,
     userId: row.user_id,
-    role: row.role,
+    roleId: row.role_id ?? null,
+    roleName: role?.name ?? null,
+    permissions: role?.permissions ?? {},
     branchIds: row.branch_ids ?? [],
     createdAt: row.created_at,
   }
@@ -20,7 +23,7 @@ export const membersApi = {
   async listByUser(sb: SupabaseClient, userId: string) {
     const data = await query(
       sb.from('tenant_members')
-        .select('*, tenants(id, name, slug)')
+        .select('*, tenants(id, name, slug), tenant_roles(id, name, permissions)')
         .eq('user_id', userId),
     )
 
@@ -31,16 +34,16 @@ export const membersApi = {
     })
   },
 
-  async updateRole(sb: SupabaseClient, memberId: string, role: TenantRole) {
-    await query(sb.from('tenant_members').update({ role }).eq('id', memberId))
+  async updateRole(sb: SupabaseClient, memberId: string, roleId: string) {
+    await query(sb.from('tenant_members').update({ role_id: roleId }).eq('id', memberId))
   },
 
   async updateBranchIds(sb: SupabaseClient, memberId: string, branchIds: string[]) {
     await query(sb.from('tenant_members').update({ branch_ids: branchIds }).eq('id', memberId))
   },
 
-  async updateRoleAndBranches(sb: SupabaseClient, memberId: string, role: TenantRole, branchIds: string[]) {
-    await query(sb.from('tenant_members').update({ role, branch_ids: branchIds }).eq('id', memberId))
+  async updateRoleAndBranches(sb: SupabaseClient, memberId: string, roleId: string, branchIds: string[]) {
+    await query(sb.from('tenant_members').update({ role_id: roleId, branch_ids: branchIds }).eq('id', memberId))
   },
 
   async block(sb: SupabaseClient, memberId: string, blockedUntil: string) {

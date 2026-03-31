@@ -28,7 +28,6 @@ import { useConfirm } from '@fastio/kit'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { roleLabels } from '~/config/team-roles'
 
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
@@ -40,7 +39,7 @@ const loggingOut = ref(false)
 
 const userName = computed(() => user.value?.user_metadata?.full_name || '—')
 const userEmail = computed(() => user.value?.email || '—')
-const roleName = computed(() => tenantStore.currentRole ? roleLabels[tenantStore.currentRole] : '—')
+const roleName = computed(() => tenantStore.currentRoleName ?? '—')
 
 const handleLogout = async () => {
   const confirmed = await confirm({

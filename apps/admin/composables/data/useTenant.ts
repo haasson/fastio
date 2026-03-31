@@ -1,15 +1,18 @@
 import { ref, computed, type Ref } from 'vue'
-import type { Tenant, TenantRole } from '@fastio/shared'
+import type { Tenant, RolePermissions } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 import { usePlans } from '~/composables/plan/usePlans'
 import { useModuleConfigs } from '~/composables/plan/useModules'
+import { useRoles } from '~/composables/data/useRoles'
 
 type MembershipWithTenant = {
   id: string
   tenantId: string
   userId: string
-  role: TenantRole
+  roleId: string | null
+  roleName: string | null
+  permissions: RolePermissions
   branchIds: string[]
   tenant: { id: string; name: string; slug: string } | null
 }
@@ -24,11 +27,22 @@ export const useTenant = (userId: Ref<string | null>) => {
   const tenant = ref<Tenant | null>(null)
   const loading = ref(false)
 
-  const currentRole = computed<TenantRole | null>(() => {
-    if (!currentTenantId.value) return null
-    const m = memberships.value.find((m) => m.tenantId === currentTenantId.value)
+  const rolesApi = useRoles(currentTenantId)
 
-    return m?.role ?? null
+  const currentMembership = computed(() => {
+    if (!currentTenantId.value) return null
+
+    return memberships.value.find((m) => m.tenantId === currentTenantId.value) ?? null
+  })
+
+  const isOwner = computed(() => currentMembership.value?.roleId === null && currentMembership.value !== null)
+
+  const currentPermissions = computed<RolePermissions | null>(() => currentMembership.value?.permissions ?? null)
+
+  const currentRoleName = computed<string | null>(() => {
+    if (isOwner.value) return 'Владелец'
+
+    return currentMembership.value?.roleName ?? null
   })
 
   const hasMultipleTenants = computed(() => memberships.value.length > 1)
@@ -71,7 +85,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     const { load: loadPlans } = usePlans()
     const { load: loadConfigs } = useModuleConfigs()
 
-    await Promise.all([fetchTenant(), loadPlans(), loadConfigs()])
+    await Promise.all([fetchTenant(), loadPlans(), loadConfigs(), rolesApi.load()])
     loading.value = false
   }
 
@@ -82,7 +96,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     currentTenantId.value = tenantId
     localStorage.setItem(STORAGE_KEY, tenantId)
 
-    await fetchTenant()
+    await Promise.all([fetchTenant(), rolesApi.load()])
     loading.value = false
   }
 
@@ -104,7 +118,7 @@ export const useTenant = (userId: Ref<string | null>) => {
   const dispose = () => {
     tenant.value = null
     memberships.value = []
-    currentTenantId.value = null // реактивно отписывает useRealtimeWatch
+    currentTenantId.value = null
     localStorage.removeItem(STORAGE_KEY)
   }
 
@@ -113,7 +127,16 @@ export const useTenant = (userId: Ref<string | null>) => {
     currentTenantId,
     tenant,
     loading,
-    currentRole,
+    currentRoleName,
+    currentPermissions,
+    isOwner,
+    roles: rolesApi.roles,
+    rolesLoading: rolesApi.loading,
+    loadRoles: rolesApi.load,
+    createRole: rolesApi.create,
+    updateRole: rolesApi.update,
+    removeRole: rolesApi.remove,
+    getRoleById: rolesApi.getRoleById,
     hasMultipleTenants,
     init,
     switchTenant,

@@ -54,6 +54,7 @@ import {
   FileText,
   Sparkles,
   Hash,
+  Copy,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -114,6 +115,7 @@ export const iconRegistry = {
   fileText: FileText,
   sparkles: Sparkles,
   hash: Hash,
+  copy: Copy,
 } as const
 
 export type IconName = keyof typeof iconRegistry

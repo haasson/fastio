@@ -55,13 +55,14 @@ Deno.serve(async (req) => {
     return json({ error: 'Email mismatch' }, { status: 403 })
   }
 
-  // Создаём membership
+  // Создаём membership с role_id
   const { error: memberError } = await adminSupabase
     .from('tenant_members')
     .insert({
       tenant_id: invitation.tenant_id,
       user_id: user.id,
-      role: invitation.role,
+      role_id: invitation.role_id,
+      branch_ids: invitation.branch_ids ?? [],
     })
 
   if (memberError) {
@@ -81,6 +82,6 @@ Deno.serve(async (req) => {
   return json({
     success: true,
     tenantId: invitation.tenant_id,
-    role: invitation.role,
+    roleId: invitation.role_id,
   }, { status: 200 })
 })

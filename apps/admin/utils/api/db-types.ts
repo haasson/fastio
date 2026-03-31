@@ -1,5 +1,5 @@
 import type {
-  TenantRole,
+  RolePermissions,
   TenantTheme,
   TenantContacts,
   TenantNotifications,
@@ -52,28 +52,40 @@ export type TenantRow = {
   created_at: string
 }
 
+export type TenantRoleRow = {
+  id: string
+  tenant_id: string
+  name: string
+  permissions: RolePermissions
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
 export type TenantMemberRow = {
   id: string
   tenant_id: string
   user_id: string
-  role: TenantRole
+  role_id: string | null
   branch_ids: string[]
   blocked_until: string | null
   created_at: string
   tenants?: { id: string; name: string; slug: string } | null
+  tenant_roles?: { id: string; name: string; permissions: RolePermissions } | null
 }
 
 export type TenantInvitationRow = {
   id: string
   tenant_id: string
   email: string
-  role: TenantRole
+  role_id: string | null
   invited_by: string
   token: string
   expires_at: string
   accepted_at: string | null
   created_at: string
   branch_ids: string[]
+  tenant_roles?: { id: string; name: string } | null
 }
 
 export type CategoryRow = {

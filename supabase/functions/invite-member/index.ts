@@ -24,20 +24,16 @@ Deno.serve(async (req) => {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const { tenantId, email, role, branchIds = [], force = false } = await req.json() as {
+  const { tenantId, email, roleId, branchIds = [], force = false } = await req.json() as {
     tenantId: string
     email: string
-    role: string
+    roleId: string
     branchIds?: string[]
     force?: boolean
   }
 
-  if (!tenantId || !email || !role) {
-    return json({ error: 'tenantId, email, role are required' }, { status: 400 })
-  }
-
-  if (!['admin', 'manager', 'staff'].includes(role)) {
-    return json({ error: 'Invalid role' }, { status: 400 })
+  if (!tenantId || !email || !roleId) {
+    return json({ error: 'tenantId, email, roleId are required' }, { status: 400 })
   }
 
   const adminSupabase = createClient(
@@ -45,16 +41,47 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  // Проверяем что приглашающий — admin+ в этом тенанте
+  // Проверяем что roleId существует для этого тенанта
+  const { data: targetRole } = await adminSupabase
+    .from('tenant_roles')
+    .select('id, name, permissions')
+    .eq('id', roleId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!targetRole) {
+    return json({ error: 'Invalid role' }, { status: 400 })
+  }
+
+  // Проверяем что приглашающий имеет permission team.manage
   const { data: membership } = await adminSupabase
     .from('tenant_members')
-    .select('role')
+    .select('role_id, tenant_roles(permissions)')
     .eq('tenant_id', tenantId)
     .eq('user_id', user.id)
     .single()
 
-  if (!membership || !['owner', 'admin'].includes(membership.role)) {
+  if (!membership) {
     return json({ error: 'Insufficient permissions' }, { status: 403 })
+  }
+
+  // Owner (role_id IS NULL) имеет все пермишены
+  const isOwner = membership.role_id === null
+  const permissions = (membership as { tenant_roles?: { permissions?: Record<string, boolean> } }).tenant_roles?.permissions
+  if (!isOwner && !permissions?.['team.manage']) {
+    return json({ error: 'Insufficient permissions' }, { status: 403 })
+  }
+
+  // Не-owner не может назначить роль с пермишенами, которых нет у него самого
+  if (!isOwner) {
+    const targetPerms = (targetRole as { permissions?: Record<string, boolean> }).permissions ?? {}
+    const hasEscalation = Object.entries(targetPerms)
+      .filter(([, v]) => v === true)
+      .some(([key]) => !permissions?.[key])
+
+    if (hasEscalation) {
+      return json({ error: 'Cannot assign a role with permissions you don\'t have' }, { status: 403 })
+    }
   }
 
   // Проверяем статус: уже участник или есть pending-инвайт
@@ -75,7 +102,7 @@ Deno.serve(async (req) => {
     // force=true: обновляем существующий инвайт
     const { error: updateError } = await adminSupabase
       .from('tenant_invitations')
-      .update({ token, expires_at: expiresAt, branch_ids: branchIds })
+      .update({ token, expires_at: expiresAt, role_id: roleId, branch_ids: branchIds })
       .eq('tenant_id', tenantId)
       .eq('email', email)
       .is('accepted_at', null)
@@ -91,7 +118,7 @@ Deno.serve(async (req) => {
       .insert({
         tenant_id: tenantId,
         email,
-        role,
+        role_id: roleId,
         invited_by: user.id,
         token,
         expires_at: expiresAt,
@@ -128,12 +155,7 @@ Deno.serve(async (req) => {
       auth: { user: smtpUser, pass: smtpPass },
     })
 
-    const roleLabels: Record<string, string> = {
-      admin: 'Администратор',
-      manager: 'Менеджер',
-      staff: 'Сотрудник',
-    }
-    const roleLabel = roleLabels[role] ?? role
+    const roleLabel = targetRole.name
 
     try {
       await transporter.sendMail({

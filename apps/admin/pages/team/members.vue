@@ -16,15 +16,15 @@
           ]"
         />
         <UiSelect
-          v-model:value="inviteRole"
+          v-model:value="inviteRoleId"
           label="Роль"
-          :options="roleOptions"
+          :options="roleSelectOptions"
           :rules="[{ type: 'required', message: 'Выберите роль' }]"
           style="min-width: 160px"
         />
       </UiSpace>
 
-      <template v-if="branches.length > 0 && inviteRole !== 'admin' && inviteRole !== 'owner'">
+      <template v-if="branches.length > 0">
         <UiRadioGroup
           v-model="inviteBranchMode"
           label="Доступ к филиалам"
@@ -93,12 +93,12 @@ import {
   UiInput, UiSelect, UiButton, UiAlert, UiText,
   UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, UiCheckbox, useConfirm, useMessage, UiSectionHeader,
 } from '@fastio/ui'
-import type { TenantRole, TenantMember, TenantInvitation } from '@fastio/shared'
+import type { TenantMember, TenantInvitation } from '@fastio/shared'
 import TeamMemberEditModal from '~/components/settings/TeamMemberEditModal.vue'
 import { useTeam } from '~/composables/data/useTeam'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useBranchStore } from '~/stores/branch'
-import { roleOptions } from '~/config/team-roles'
+import { useTenantStore } from '~/stores/tenant'
 import { buildMemberColumns, buildInviteColumns } from '~/columns/team'
 
 const { members, invitations, loading: teamLoading, load, invite, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
@@ -106,11 +106,15 @@ const { canManageTeam } = usePermissions()
 const { confirm } = useConfirm()
 const message = useMessage()
 const branchStore = useBranchStore()
+const tenantStore = useTenantStore()
 const branches = computed(() => branchStore.branches)
+
+const roleSelectOptions = computed(() => tenantStore.roles.map((r) => ({ value: r.id, label: r.name })),
+)
 
 const inviteFormRef = ref()
 const inviteEmail = ref('')
-const inviteRole = ref<TenantRole>('staff')
+const inviteRoleId = ref<string | null>(null)
 const inviting = ref(false)
 const inviteError = ref('')
 const inviteBranchMode = ref<'all' | 'selected'>('all')
@@ -191,6 +195,12 @@ const inviteColumns = computed(() => buildInviteColumns({
 const handleInvite = async () => {
   if (!inviteFormRef.value?.validate()) return
 
+  if (!inviteRoleId.value) {
+    inviteError.value = 'Выберите роль'
+
+    return
+  }
+
   if (inviteBranchMode.value === 'selected' && inviteBranchIds.value.length === 0) {
     inviteError.value = 'Выберите хотя бы один филиал'
 
@@ -201,7 +211,7 @@ const handleInvite = async () => {
   inviteError.value = ''
 
   try {
-    const { error, message: errorMessage } = await invite(inviteEmail.value, inviteRole.value, inviteBranchIds.value) ?? {}
+    const { error, message: errorMessage } = await invite(inviteEmail.value, inviteRoleId.value, inviteBranchIds.value) ?? {}
 
     if (error) {
       inviteError.value = errorMessage ?? 'Не удалось отправить приглашение'

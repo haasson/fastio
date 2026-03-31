@@ -7,7 +7,7 @@ export const useBranch = (
   tenantId: Ref<string>,
   branches: Ref<Branch[]>,
   memberBranchIds: Ref<string[]>,
-  isAdmin: Ref<boolean>,
+  hasAllBranchAccess: Ref<boolean>,
 ) => {
   const currentBranchId = ref<string | null>(null)
 
@@ -39,20 +39,20 @@ export const useBranch = (
 
     if (newBranches.length === 0) return
 
-    const available = isAdmin.value || memberBranchIds.value.length === 0
+    const available = hasAllBranchAccess.value || memberBranchIds.value.length === 0
       ? newBranches
       : newBranches.filter((b) => memberBranchIds.value.includes(b.id))
 
     const saved = localStorage.getItem(STORAGE_KEY)
-    const savedAll = saved === 'all' && (isAdmin.value || memberBranchIds.value.length === 0)
+    const savedAll = saved === 'all' && (hasAllBranchAccess.value || memberBranchIds.value.length === 0)
     const savedValid = saved && saved !== 'all' && available.some((b) => b.id === saved)
 
     if (savedAll) {
       currentBranchId.value = null
     } else if (savedValid) {
       currentBranchId.value = saved
-    } else if (isAdmin.value || memberBranchIds.value.length === 0) {
-      // Админ с несколькими филиалами — по умолчанию "все"
+    } else if (hasAllBranchAccess.value || memberBranchIds.value.length === 0) {
+      // Участник с доступом ко всем филиалам — по умолчанию "все"
       currentBranchId.value = null
     } else {
       // Сотрудник с ограниченным доступом — первый доступный

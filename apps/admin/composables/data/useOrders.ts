@@ -191,7 +191,7 @@ export function useOrders(
         tenantId: tenantId.value,
         actorId: authStore.user.id,
         actorName: authStore.user.user_metadata?.full_name || authStore.user.email || null,
-        actorRole: tenantStore.currentRole ?? null,
+        actorRole: tenantStore.currentRoleName ?? null,
         eventType: 'status_changed',
         meta: {
           from_id: oldStatusId,

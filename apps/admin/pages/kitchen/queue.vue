@@ -209,7 +209,7 @@ const getActor = () => {
     tenantId: tenantStore.tenant?.id ?? '',
     actorId: user.id,
     actorName: user.user_metadata?.full_name || user.email || null,
-    actorRole: tenantStore.currentRole ?? null,
+    actorRole: tenantStore.currentRoleName ?? null,
   }
 }
 

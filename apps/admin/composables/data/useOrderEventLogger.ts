@@ -43,7 +43,7 @@ export const useOrderEventLogger = () => {
       tenantId: order.tenantId,
       actorId: authStore.user.id,
       actorName: authStore.user.user_metadata?.full_name || authStore.user.email || null,
-      actorRole: tenantStore.currentRole ?? null,
+      actorRole: tenantStore.currentRoleName ?? null,
     }
 
     if (form.status !== order.status) {

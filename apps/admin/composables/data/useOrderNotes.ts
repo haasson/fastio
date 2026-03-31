@@ -26,7 +26,7 @@ export const useOrderNotes = (orderId: Ref<string>, tenantId: Ref<string>) => {
       tenantId: tenantId.value,
       authorId: authStore.user.id,
       authorName: authStore.user.email ?? 'Оператор',
-      authorRole: tenantStore.currentRole ?? 'staff',
+      authorRole: tenantStore.currentRoleName ?? 'Сотрудник',
       content,
     })
 

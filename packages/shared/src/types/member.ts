@@ -1,10 +1,12 @@
-export type TenantRole = 'owner' | 'admin' | 'manager' | 'staff'
+import type { RolePermissions } from './role'
 
 export type TenantMember = {
   id: string
   tenantId: string
   userId: string
-  role: TenantRole
+  roleId: string | null
+  roleName: string | null
+  permissions: RolePermissions
   branchIds: string[]
   blockedUntil?: string | null
   createdAt: string
@@ -17,7 +19,8 @@ export type TenantInvitation = {
   id: string
   tenantId: string
   email: string
-  role: TenantRole
+  roleId: string | null
+  roleName: string | null
   invitedBy: string
   token: string
   expiresAt: string

@@ -10,6 +10,15 @@
       title="Редактировать"
       @click="$emit('edit')"
     />
+    <UiButton
+      v-if="showCopy"
+      type="text"
+      :size="size"
+      icon="copy"
+      icon-bg="color-text-secondary"
+      title="Копировать"
+      @click="$emit('copy')"
+    />
     <slot />
     <UiButton
       v-if="showDelete"
@@ -30,17 +39,20 @@ import { UiButton } from '@fastio/ui'
 type Props = {
   size?: 'tiny' | 'small' | 'medium' | 'large'
   showEdit?: boolean
+  showCopy?: boolean
   showDelete?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
   size: 'medium',
   showEdit: true,
+  showCopy: false,
   showDelete: true,
 })
 
 defineEmits<{
   edit: []
+  copy: []
   delete: []
 }>()
 </script>

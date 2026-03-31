@@ -1,21 +1,88 @@
-import type { TenantRole } from '@fastio/shared'
+import type { PermissionKey } from '@fastio/shared'
 
-export const roleLabels: Record<TenantRole, string> = {
-  owner: 'Владелец',
-  admin: 'Админ',
-  manager: 'Менеджер',
-  staff: 'Сотрудник',
+export type PermissionGroup = {
+  label: string
+  permissions: { key: PermissionKey; label: string }[]
 }
 
-export const roleOptions = [
-  { value: 'admin', label: 'Админ' },
-  { value: 'manager', label: 'Менеджер' },
-  { value: 'staff', label: 'Сотрудник' },
+export const permissionGroups: PermissionGroup[] = [
+  {
+    label: 'Меню',
+    permissions: [
+      { key: 'menu.view', label: 'Просмотр меню' },
+      { key: 'menu.edit', label: 'Редактирование меню' },
+      { key: 'menu.delete', label: 'Удаление позиций' },
+    ],
+  },
+  {
+    label: 'Заказы',
+    permissions: [
+      { key: 'orders.view', label: 'Просмотр заказов' },
+      { key: 'orders.create', label: 'Приём заказов' },
+      { key: 'orders.edit', label: 'Изменение заказа' },
+      { key: 'orders.status', label: 'Изменение статуса' },
+      { key: 'orders.cancel', label: 'Отмена заказов' },
+    ],
+  },
+  {
+    label: 'Кухня',
+    permissions: [
+      { key: 'kitchen.view', label: 'Доступ к кухонной очереди' },
+    ],
+  },
+  {
+    label: 'Столы',
+    permissions: [
+      { key: 'tables.view', label: 'Просмотр столов и вызовов' },
+      { key: 'tables.manage', label: 'Управление столами' },
+    ],
+  },
+  {
+    label: 'Бронирования',
+    permissions: [
+      { key: 'reservations.view', label: 'Просмотр бронирований' },
+      { key: 'reservations.manage', label: 'Управление бронированиями' },
+    ],
+  },
+  {
+    label: 'Промоакции',
+    permissions: [
+      { key: 'promos.view', label: 'Просмотр промоакций' },
+      { key: 'promos.manage', label: 'Управление промоакциями' },
+    ],
+  },
+  {
+    label: 'Контент и сайт',
+    permissions: [
+      { key: 'content.view', label: 'Просмотр контента и оформления' },
+      { key: 'content.edit', label: 'Редактирование контента и оформления' },
+    ],
+  },
+  {
+    label: 'Команда',
+    permissions: [
+      { key: 'team.view', label: 'Просмотр команды' },
+      { key: 'team.manage', label: 'Управление командой' },
+      { key: 'roles.manage', label: 'Управление ролями' },
+    ],
+  },
+  {
+    label: 'Настройки',
+    permissions: [
+      { key: 'settings.view', label: 'Просмотр настроек' },
+      { key: 'settings.edit', label: 'Редактирование настроек' },
+    ],
+  },
+  {
+    label: 'Аналитика',
+    permissions: [
+      { key: 'analytics.view', label: 'Просмотр аналитики' },
+    ],
+  },
+  {
+    label: 'Биллинг',
+    permissions: [
+      { key: 'billing.manage', label: 'Управление биллингом' },
+    ],
+  },
 ]
-
-export const roleTagTypes: Record<TenantRole, 'warning' | 'primary' | 'success' | 'default'> = {
-  owner: 'warning',
-  admin: 'primary',
-  manager: 'success',
-  staff: 'default',
-}
