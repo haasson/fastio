@@ -3,6 +3,8 @@
 // задаются useTheme через inline style на .app-root.
 // Здесь — только defaults и производные.
 
+* { -webkit-tap-highlight-color: transparent; }
+
 :root {
   // Fallback defaults (перекрываются useTheme при загрузке)
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

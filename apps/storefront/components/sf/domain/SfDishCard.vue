@@ -15,7 +15,7 @@
       <div class="compact-body">
         <h3 class="compact-name">{{ dish.name }}</h3>
         <p v-if="dish.description" class="compact-desc">{{ dish.description }}</p>
-        <div class="dish-footer" @click.stop>
+        <div class="dish-footer">
           <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" size="small" />
           <FsButton v-if="isServices" variant="primary" size="small" @click.stop="emit('request')">
             Заявка
@@ -26,9 +26,10 @@
               :model-value="cartCount"
               :min="0"
               size="small"
+              @click.stop
               @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
             />
-            <FsButton v-else variant="primary" size="small" @click="emit('add')">
+            <FsButton v-else variant="primary" size="small" @click.stop="emit('add')">
               <Plus :size="16" />
               Добавить
             </FsButton>
@@ -87,7 +88,7 @@
     <div v-if="!overlay" class="dish-body">
       <FsText as="h3" variant="body-sm" class="dish-name">{{ dish.name }}</FsText>
       <FsText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</FsText>
-      <div class="dish-footer" @click.stop>
+      <div class="dish-footer">
         <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
         <FsButton v-if="isServices" variant="primary" size="small" :responsive="true" @click.stop="emit('request')">
           Оставить заявку
@@ -97,9 +98,10 @@
           :model-value="cartCount"
           :min="0"
           size="small"
+          @click.stop
           @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
         />
-        <FsButton v-else-if="orderingEnabled" variant="primary" size="small" :responsive="true" @click="emit('add')">
+        <FsButton v-else-if="orderingEnabled" variant="primary" size="small" :responsive="true" @click.stop="emit('add')">
           <Plus :size="16" />
           Добавить
         </FsButton>
