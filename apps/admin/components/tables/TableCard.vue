@@ -7,6 +7,16 @@
       </div>
       <UiTag v-if="pendingCount > 0" type="warning" size="small">{{ pendingCount }} ожидают</UiTag>
       <span v-if="table.capacity" class="card-cap"><UiIcon name="users" :size="12" /> {{ table.capacity }}</span>
+      <UiMenuDropdown :items="menuItems" @item-click="onMenuClick">
+        <template #trigger>
+          <UiButton
+            type="text"
+            size="small"
+            icon="moreVertical"
+            class="card-menu-trigger"
+          />
+        </template>
+      </UiMenuDropdown>
     </div>
 
     <!-- Calls indicator -->
@@ -130,7 +140,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiCard, UiButton, UiIcon, UiText, UiTag } from '@fastio/ui'
+import { UiCard, UiButton, UiIcon, UiText, UiTag, UiMenuDropdown } from '@fastio/ui'
+import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { orderItemKey, pluralize } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
@@ -144,7 +155,7 @@ const props = defineProps<{
   readyDishes?: KitchenQueueItem[]
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'add-dish': []
   'checkout': []
   'toggle-open': []
@@ -154,7 +165,19 @@ defineEmits<{
   'confirm-item': [itemId: string]
   'reject-item': [itemId: string]
   'confirm-all': []
+  'edit': []
+  'show-qr': []
 }>()
+
+const menuItems: UiMenuDropdownItem[] = [
+  { name: 'edit', label: 'Настройки', icon: 'settings' },
+  { name: 'qr', label: 'QR-код', icon: 'qrCode' },
+]
+
+const onMenuClick = (name: string) => {
+  if (name === 'edit') emit('edit')
+  else if (name === 'qr') emit('show-qr')
+}
 
 const now = useNow({ interval: 30_000 })
 const expanded = ref(false)
@@ -253,6 +276,11 @@ const kitchenProgress = computed<KitchenProgressRow[]>(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.card-menu-trigger {
+  flex-shrink: 0;
+  color: var(--color-text-hint);
 }
 
 .card-cap {

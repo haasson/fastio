@@ -1,6 +1,6 @@
 import { inject, reactive } from 'vue'
 import type { InjectionKey, Ref, ComputedRef } from 'vue'
-import type { Table, TableCallType, TableCall, KitchenQueueItem } from '@fastio/shared'
+import type { Table, TableCallType, TableCall, KitchenQueueItem, Reservation } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
 
 export type TablesContext = {
@@ -40,5 +40,6 @@ export type TablesContext = {
 }
 
 export const TablesContextKey: InjectionKey<TablesContext> = Symbol('tables:context')
+export const TodayReservationsKey: InjectionKey<ComputedRef<Reservation[]>> = Symbol('tables:todayReservations')
 
 export const useTablesContext = () => reactive(inject(TablesContextKey)!)

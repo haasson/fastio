@@ -1,169 +1,28 @@
 <template>
   <div class="canvas-root">
-    <!-- Sidebar -->
-    <transition name="sidebar-slide">
-      <div v-show="sidebarVisible" class="canvas-sidebar">
-
-        <!-- ── Selected table ────────────────────────────── -->
-        <template v-if="selectedTable">
-          <div class="sidebar-section">
-            <UiText size="tiny" class="sidebar-label">Название</UiText>
-            <UiInput v-model="editForm.name" size="small" @keyup.enter="saveEdit" />
-          </div>
-
-          <div class="sidebar-section">
-            <UiText size="tiny" class="sidebar-label">Вместимость</UiText>
-            <UiInputNumber
-              v-model:value="editForm.capacity"
-              :min="1"
-              :max="50"
-              :show-button="true"
-              size="small"
-              placeholder="—"
-            />
-          </div>
-
-          <div class="sidebar-section">
-            <UiText size="tiny" class="sidebar-label">Заметка</UiText>
-            <UiInput v-model="editForm.notes" size="small" placeholder="Внутренняя заметка..." />
-          </div>
-
-          <UiButton type="primary" size="small" @click="saveEdit">Сохранить</UiButton>
-
-          <UiDivider />
-
-          <div v-if="selectedTable.shape === 'rectangle'" class="sidebar-section">
-            <UiText size="tiny" class="sidebar-label">Поворот</UiText>
-            <div class="rotation-row">
-              <UiButton size="small" type="default" @click="rotate(-45)">
-                <UiIcon name="chevronLeft" :size="14" />
-              </UiButton>
-              <span class="rot-value">{{ selectedTable.rotation }}°</span>
-              <UiButton size="small" type="default" @click="rotate(45)">
-                <UiIcon name="chevronRight" :size="14" />
-              </UiButton>
-            </div>
-          </div>
-
-          <div class="sidebar-section">
-            <UiText size="tiny" class="sidebar-label">Цвет</UiText>
-            <div class="color-row">
-              <button
-                v-for="c in COLORS"
-                :key="c ?? 'default'"
-                class="color-swatch"
-                :class="{ 'color-swatch--active': selectedTable.color === c }"
-                :style="swatchStyle(c)"
-                @click="setColor(c)"
-              />
-            </div>
-          </div>
-
-          <UiDivider />
-
-          <UiButton size="small" type="default" @click="removeFromCanvas(selectedTable)">
-            Убрать со схемы
-          </UiButton>
-          <UiButton
-            size="small"
-            type="error"
-            icon="trash"
-            @click="archiveTable(selectedTable)"
-          >
-            Удалить стол
-          </UiButton>
-        </template>
-
-        <!-- ── Default: presets + custom ────────────────── -->
-        <template v-else>
-          <UiText size="tiny" class="sidebar-label">Новый стол</UiText>
-          <div class="custom-form">
-            <UiText size="tiny" class="form-label">Ширина: {{ customWidth }}px</UiText>
-            <input
-              v-model.number="customWidth"
-              type="range"
-              min="60"
-              max="300"
-              step="10"
-              class="slider"
-            />
-
-            <UiText size="tiny" class="form-label">Высота: {{ customHeight }}px</UiText>
-            <input
-              v-model.number="customHeight"
-              type="range"
-              min="60"
-              max="300"
-              step="10"
-              class="slider"
-              :disabled="customShape === 'circle'"
-            />
-
-            <UiText size="tiny" class="form-label">Форма</UiText>
-            <div class="shape-pick">
-              <UiButton size="small" :type="customShape === 'rectangle' ? 'primary' : 'default'" @click="customShape = 'rectangle'">▭</UiButton>
-              <UiButton size="small" :type="customShape === 'circle' ? 'primary' : 'default'" @click="setCircle">○</UiButton>
-            </div>
-
-            <UiText size="tiny" class="form-label">Цвет</UiText>
-            <div class="color-row">
-              <button
-                v-for="c in COLORS"
-                :key="c ?? 'default'"
-                class="color-swatch"
-                :class="{ 'color-swatch--active': customColor === c }"
-                :style="swatchStyle(c)"
-                @click="customColor = c"
-              />
-            </div>
-
-            <UiText size="tiny" class="form-label">Вместимость</UiText>
-            <UiInputNumber
-              v-model:value="customCapacity"
-              :min="1"
-              :max="50"
-              :show-button="true"
-              placeholder="—"
-              size="small"
-            />
-
-            <UiButton
-              type="primary"
-              size="small"
-              icon="plus"
-              @click="createCustom"
-            >Добавить стол</UiButton>
-          </div>
-
-          <template v-if="unplacedTables.length">
-            <UiDivider />
-            <UiText size="tiny" class="sidebar-label">Без места</UiText>
-            <div class="unplaced-list">
-              <button
-                v-for="table in unplacedTables"
-                :key="table.id"
-                class="unplaced-item"
-                @click="placeTable(table)"
-              >
-                <UiIcon name="tableIcon" :size="12" class="unplaced-icon" />
-                <UiText size="tiny" class="unplaced-name">{{ table.name }}</UiText>
-                <UiIcon name="plus" :size="10" class="unplaced-plus" />
-              </button>
-            </div>
-          </template>
-        </template>
-
-      </div>
-    </transition>
-
-    <!-- Sidebar toggle -->
-    <UiButton
-      class="sidebar-toggle"
-      type="text"
-      size="small"
-      :icon="sidebarVisible ? 'chevronLeft' : 'chevronRight'"
-      @click="sidebarVisible = !sidebarVisible"
-    />
+    <!-- Floating toolbar -->
+    <div class="canvas-toolbar">
+      <UiButton
+        :type="editing ? 'primary' : 'default'"
+        size="small"
+        icon="pencil"
+        @click="editing = !editing"
+      >
+        {{ editing ? 'Готово' : 'Редактировать' }}
+      </UiButton>
+      <template v-if="editing && unplacedTables.length">
+        <span class="toolbar-divider" />
+        <span class="toolbar-hint">Без места:</span>
+        <button
+          v-for="table in unplacedTables"
+          :key="table.id"
+          class="unplaced-chip"
+          @click="placeTable(table)"
+        >
+          {{ table.name }}
+        </button>
+      </template>
+    </div>
 
     <!-- Canvas -->
     <div class="canvas-scroll" @click.self="deselectAll">
@@ -179,23 +38,41 @@
           :key="table.id"
           class="canvas-table"
           :class="{
-            'canvas-table--selected': selectedId === table.id,
+            'canvas-table--selected': editing && selectedId === table.id,
             'canvas-table--open': table.isOpen,
+            'canvas-table--reserved': !!tableReservations[table.id],
             'canvas-table--circle': table.shape === 'circle',
-            'canvas-table--colored': !!table.color,
+            'canvas-table--editing': editing,
           }"
           :style="tableStyle(table)"
           @pointerdown.stop="onTablePointerDown($event, table)"
-          @click.stop="selectTable(table)"
+          @click.stop="onTableClick(table)"
         >
-          <div
-            class="ct-content"
-            :style="table.rotation ? { transform: `rotate(${-table.rotation}deg)` } : undefined"
-          >
-            <UiIcon name="tableIcon" :size="16" class="ct-icon" />
-            <span class="ct-name">{{ table.name }}</span>
-            <span v-if="table.capacity" class="ct-cap"><UiIcon name="users" :size="11" /> {{ table.capacity }}</span>
-          </div>
+          <span class="ct-name">{{ table.name }}</span>
+          <span v-if="tableReservations[table.id]" class="ct-reservation">
+            {{ tableReservations[table.id] }}
+          </span>
+
+          <!-- Resize handles: visible on all tables in edit mode -->
+          <template v-if="editing">
+            <div
+              v-for="h in resizeHandles"
+              :key="h"
+              class="resize-handle"
+              :class="[`resize-handle--${h}`, { 'resize-handle--active': selectedId === table.id }]"
+              :style="{ cursor: getResizeCursor(h, table.rotation) }"
+              @pointerdown.stop="onResizePointerDown($event, table, h)"
+            />
+
+            <!-- Rotate handle: only on selected table -->
+            <template v-if="selectedId === table.id">
+              <div class="rotate-stem" />
+              <div
+                class="rotate-handle"
+                @pointerdown.stop="onRotatePointerDown($event, table)"
+              />
+            </template>
+          </template>
         </div>
       </div>
     </div>
@@ -203,120 +80,84 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { UiButton, UiText, UiIcon, UiInput, UiInputNumber, UiDivider, useMessage } from '@fastio/ui'
-import type { Table, TableShape } from '@fastio/shared'
-import { useConfirm } from '@fastio/kit'
+import { ref, computed } from 'vue'
+import { UiButton } from '@fastio/ui'
+import type { Table, Reservation } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
 
 type Props = {
   tables: Table[]
-  globalTags: string[]
+  todayReservations: Reservation[]
 }
+
 type Emits = {
-  'add': [table: Table]
-  'update': [table: Table]
-  'delete': [id: string]
-  'updatePosition': [id: string, x: number | null, y: number | null]
-  'update:globalTags': [tags: string[]]
+  update: [table: Table]
+  updatePosition: [id: string, x: number | null, y: number | null]
+  editTable: [table: Table]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const api = useDatabase()
-const tenantStore = useTenantStore()
-const { success } = useMessage()
-const { confirm } = useConfirm()
-
-// ── Colors ────────────────────────────────────────────────
-const COLORS: (string | null)[] = [
-  null, '#7C9EBF', '#72A67A', '#C4A84F', '#C47E3A', '#B85C55', '#8E6BAA', '#7B8FA6',
-]
-
-const swatchStyle = (c: string | null) => ({
-  background: c ?? 'var(--color-bg)',
-  border: c ? '2px solid transparent' : '2px solid var(--color-border)',
-})
-
-// ── Custom form ───────────────────────────────────────────
-const customWidth = ref(120)
-const customHeight = ref(80)
-const customShape = ref<TableShape>('rectangle')
-const customColor = ref<string | null>(null)
-const customCapacity = ref<number | null>(null)
-
-const setCircle = () => {
-  customShape.value = 'circle'
-  customHeight.value = customWidth.value
-}
 
 // ── Canvas state ──────────────────────────────────────────
 const canvasRef = ref<HTMLElement | null>(null)
 const selectedId = ref<string | null>(null)
-const sidebarVisible = ref(true)
+const editing = ref(false)
 
 const placedTables = computed(() => props.tables.filter((t) => t.positionX !== null && t.positionY !== null))
 const unplacedTables = computed(() => props.tables.filter((t) => t.positionX === null || t.positionY === null))
-const selectedTable = computed(() => props.tables.find((t) => t.id === selectedId.value) ?? null)
 
-// ── Edit form ─────────────────────────────────────────────
-const editForm = ref({ name: '', capacity: null as number | null, tags: [] as string[], notes: '' })
+// ── Reservations map ─────────────────────────────────────
+const tableReservations = computed(() => {
+  const map: Record<string, string> = {}
 
-watch(selectedTable, (table) => {
-  if (!table) return
-  editForm.value = {
-    name: table.name,
-    capacity: table.capacity,
-    tags: [],
-    notes: table.notes ?? '',
+  for (const r of props.todayReservations) {
+    if (!r.tableId) continue
+    if (!map[r.tableId] || r.reservedTime < map[r.tableId]) {
+      map[r.tableId] = r.reservedTime
+    }
   }
+
+  return map
 })
 
-const saveEdit = async () => {
-  const table = selectedTable.value
-
-  if (!table) return
-  const updated = await api.tables.updateMeta(table.id, {
-    name: editForm.value.name.trim() || table.name,
-    capacity: editForm.value.capacity,
-    tags: editForm.value.tags,
-    notes: editForm.value.notes.trim() || null,
-  })
-
-  if (updated) {
-    emit('update', updated)
-    success('Сохранено')
-  }
-}
-
-// ── Table style ───────────────────────────────────────────
+// ── Table style ──────────────────────────────────────────
 const tableStyle = (table: Table) => ({
   left: `${table.positionX ?? 0}px`,
   top: `${table.positionY ?? 0}px`,
   width: `${table.tableWidth}px`,
   height: `${table.tableHeight}px`,
   transform: table.rotation ? `rotate(${table.rotation}deg)` : undefined,
-  backgroundColor: table.color
-    ? `color-mix(in srgb, ${table.color} 25%, var(--color-bg-card))`
-    : undefined,
-  borderColor:
-    table.color && !table.isOpen && selectedId.value !== table.id ? table.color : undefined,
 })
 
-// ── Drag ──────────────────────────────────────────────────
-type DragState = { tableId: string; startPx: number; startPy: number; startCx: number; startCy: number }
-const dragging = ref<DragState | null>(null)
-
-const selectTable = (table: Table) => {
-  selectedId.value = table.id
+// ── Selection ────────────────────────────────────────────
+const onTableClick = (table: Table) => {
+  if (editing.value) {
+    selectedId.value = table.id
+  } else {
+    emit('editTable', table)
+  }
 }
+
 const deselectAll = () => {
   selectedId.value = null
 }
 
+// ── Drag ─────────────────────────────────────────────────
+type DragState = {
+  tableId: string
+  startPx: number
+  startPy: number
+  startCx: number
+  startCy: number
+}
+
+const dragging = ref<DragState | null>(null)
+
 const onTablePointerDown = (e: PointerEvent, table: Table) => {
+  if (!editing.value) return
   ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   selectedId.value = table.id
   if (!canvasRef.value) return
@@ -331,7 +172,173 @@ const onTablePointerDown = (e: PointerEvent, table: Table) => {
   }
 }
 
+// ── Resize ───────────────────────────────────────────────
+type ResizeState = {
+  tableId: string
+  handle: 'nw' | 'ne' | 'sw' | 'se'
+  startMouseX: number
+  startMouseY: number
+  startWidth: number
+  startHeight: number
+  anchorX: number // world position of the fixed (opposite) corner
+  anchorY: number
+  rad: number
+}
+
+const resizing = ref<ResizeState | null>(null)
+const resizeHandles = ['nw', 'ne', 'sw', 'se']
+const MIN_SIZE = 60
+
+// Map handle + rotation to correct cursor
+const CURSORS = ['nw-resize', 'n-resize', 'ne-resize', 'e-resize', 'se-resize', 's-resize', 'sw-resize', 'w-resize'] as const
+const HANDLE_BASE: Record<string, number> = { nw: 0, ne: 2, se: 4, sw: 6 }
+
+const getResizeCursor = (handle: string, rotation: number): string => {
+  const base = HANDLE_BASE[handle] ?? 0
+  const steps = Math.round(((rotation % 360) + 360) % 360 / 45)
+
+  return CURSORS[(base + steps) % 8]
+}
+
+// Opposite corner offset in local coords (relative to center)
+const anchorLocal = (handle: string, w: number, h: number) => {
+  switch (handle) {
+    case 'se': return { x: -w / 2, y: -h / 2 }
+    case 'nw': return { x: w / 2, y: h / 2 }
+    case 'ne': return { x: -w / 2, y: h / 2 }
+    case 'sw': return { x: w / 2, y: -h / 2 }
+    default: return { x: 0, y: 0 }
+  }
+}
+
+const onResizePointerDown = (e: PointerEvent, table: Table, handle: string) => {
+  e.stopPropagation()
+  selectedId.value = table.id
+  ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+
+  const w = table.tableWidth
+  const h = table.tableHeight
+  const px = table.positionX ?? 0
+  const py = table.positionY ?? 0
+  const cx = px + w / 2
+  const cy = py + h / 2
+  const rad = table.rotation * Math.PI / 180
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+
+  // World position of the anchor (opposite) corner
+  const a = anchorLocal(handle, w, h)
+
+  resizing.value = {
+    tableId: table.id,
+    handle: handle as ResizeState['handle'],
+    startMouseX: e.clientX,
+    startMouseY: e.clientY,
+    startWidth: w,
+    startHeight: h,
+    anchorX: cx + a.x * cos - a.y * sin,
+    anchorY: cy + a.x * sin + a.y * cos,
+    rad,
+  }
+}
+
+// ── Rotate ──────────────────────────────────────────────
+type RotateState = { tableId: string }
+
+const rotating = ref<RotateState | null>(null)
+const ROTATE_STEP = 15
+
+const onRotatePointerDown = (e: PointerEvent, table: Table) => {
+  e.stopPropagation()
+  ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  rotating.value = { tableId: table.id }
+}
+
+// ── Pointermove (drag + resize + rotate) ────────────────
 const onCanvasPointerMove = (e: PointerEvent) => {
+  // Resize
+  if (resizing.value) {
+    const r = resizing.value
+    const table = props.tables.find((t) => t.id === r.tableId)
+
+    if (!table) return
+
+    // Mouse delta in local (table-rotated) coordinates
+    const rawDx = e.clientX - r.startMouseX
+    const rawDy = e.clientY - r.startMouseY
+    const cosNeg = Math.cos(-r.rad)
+    const sinNeg = Math.sin(-r.rad)
+    const dx = rawDx * cosNeg - rawDy * sinNeg
+    const dy = rawDx * sinNeg + rawDy * cosNeg
+
+    // Compute new size based on which handle is dragged
+    let newW: number
+    let newH: number
+
+    switch (r.handle) {
+      case 'se':
+        newW = r.startWidth + dx
+        newH = r.startHeight + dy
+        break
+      case 'nw':
+        newW = r.startWidth - dx
+        newH = r.startHeight - dy
+        break
+      case 'ne':
+        newW = r.startWidth + dx
+        newH = r.startHeight - dy
+        break
+      case 'sw':
+        newW = r.startWidth - dx
+        newH = r.startHeight + dy
+        break
+    }
+
+    newW = Math.max(newW, MIN_SIZE)
+    newH = Math.max(newH, MIN_SIZE)
+
+    if (table.shape === 'circle') {
+      const s = Math.max(newW, newH)
+
+      newW = s
+      newH = s
+    }
+
+    // Recompute center so that the anchor corner stays fixed
+    const a = anchorLocal(r.handle, newW, newH)
+    const cosR = Math.cos(r.rad)
+    const sinR = Math.sin(r.rad)
+    const newCx = r.anchorX - (a.x * cosR - a.y * sinR)
+    const newCy = r.anchorY - (a.x * sinR + a.y * cosR)
+
+    table.tableWidth = newW
+    table.tableHeight = newH
+    table.positionX = newCx - newW / 2
+    table.positionY = newCy - newH / 2
+
+    return
+  }
+
+  // Rotate
+  if (rotating.value) {
+    const table = props.tables.find((t) => t.id === rotating.value!.tableId)
+
+    if (!table || !canvasRef.value) return
+
+    const rect = canvasRef.value.getBoundingClientRect()
+    const cx = (table.positionX ?? 0) + table.tableWidth / 2
+    const cy = (table.positionY ?? 0) + table.tableHeight / 2
+    const mx = e.clientX - rect.left
+    const my = e.clientY - rect.top
+    const rawAngle = Math.atan2(mx - cx, -(my - cy)) * 180 / Math.PI
+    const snapped = Math.round(rawAngle / ROTATE_STEP) * ROTATE_STEP
+
+    table.rotation = ((snapped % 360) + 360) % 360
+
+    return
+  }
+
+  // Drag
   if (!dragging.value || !canvasRef.value) return
   const rect = canvasRef.value.getBoundingClientRect()
   const dx = e.clientX - rect.left - dragging.value.startPx
@@ -344,7 +351,47 @@ const onCanvasPointerMove = (e: PointerEvent) => {
   }
 }
 
+// ── Pointerup (save drag + resize + rotate) ─────────────
 const onCanvasPointerUp = async () => {
+  if (rotating.value) {
+    const { tableId } = rotating.value
+    const table = props.tables.find((t) => t.id === tableId)
+
+    rotating.value = null
+
+    if (table) {
+      await api.tables.updateMeta(tableId, { rotation: table.rotation })
+      emit('update', table)
+    }
+
+    return
+  }
+
+  if (resizing.value) {
+    const { tableId } = resizing.value
+    const table = props.tables.find((t) => t.id === tableId)
+
+    resizing.value = null
+
+    if (table) {
+      await Promise.all([
+        api.tables.updateMeta(tableId, {
+          tableWidth: table.tableWidth,
+          tableHeight: table.tableHeight,
+        }),
+        api.tables.updatePosition(
+          tableId,
+          table.positionX ?? 0,
+          table.positionY ?? 0,
+        ),
+      ])
+      emit('updatePosition', tableId, table.positionX, table.positionY)
+      emit('update', table)
+    }
+
+    return
+  }
+
   if (!dragging.value) return
   const { tableId } = dragging.value
 
@@ -357,35 +404,7 @@ const onCanvasPointerUp = async () => {
   }
 }
 
-// ── Rotation ──────────────────────────────────────────────
-const rotate = async (delta: number) => {
-  const table = selectedTable.value
-
-  if (!table) return
-  const newRot = ((table.rotation + delta) % 360 + 360) % 360
-
-  table.rotation = newRot
-  await api.tables.updateMeta(table.id, { rotation: newRot })
-}
-
-// ── Color ─────────────────────────────────────────────────
-const setColor = async (color: string | null) => {
-  const table = selectedTable.value
-
-  if (!table) return
-  table.color = color
-  await api.tables.updateMeta(table.id, { color })
-}
-
-// ── Remove / Place ────────────────────────────────────────
-const removeFromCanvas = async (table: Table) => {
-  table.positionX = null
-  table.positionY = null
-  selectedId.value = null
-  await api.tables.updatePosition(table.id, null, null)
-  emit('updatePosition', table.id, null, null)
-}
-
+// ── Place unplaced table ─────────────────────────────────
 const placeTable = (table: Table) => {
   const x = 100 + Math.random() * 200
   const y = 100 + Math.random() * 200
@@ -396,47 +415,11 @@ const placeTable = (table: Table) => {
   emit('updatePosition', table.id, x, y)
 }
 
-// ── Archive ───────────────────────────────────────────────
-const archiveTable = async (table: Table) => {
-  const ok = await confirm({
-    title: 'Удалить стол?',
-    message: `«${table.name}» будет деактивирован. История заказов сохранится.`,
-    confirmText: 'Удалить',
-    confirmType: 'error',
-  })
-
-  if (!ok) return
-  await api.tables.archive(table.id)
-  selectedId.value = null
-  emit('delete', table.id)
-  success('Стол удалён')
-}
-
-// ── Create ────────────────────────────────────────────────
-const createCustom = async () => {
-  const tenantId = tenantStore.currentTenantId
-
-  if (!tenantId) return
-  const n = props.tables.length + 1
-  const h = customShape.value === 'circle' ? customWidth.value : customHeight.value
-  const created = await api.tables.add(tenantId, {
-    name: `Стол ${n}`,
-    capacity: customCapacity.value,
-    shape: customShape.value,
-    tableWidth: customWidth.value,
-    tableHeight: h,
-    color: customColor.value,
-    positionX: 80 + Math.random() * 300,
-    positionY: 80 + Math.random() * 200,
-  })
-
-  if (created) emit('add', created)
-}
 </script>
 
 <style scoped lang="scss">
 .canvas-root {
-  display: flex;
+  position: relative;
   height: calc(100vh - 60px - 48px - 40px - 24px);
   min-height: 500px;
   overflow: hidden;
@@ -445,160 +428,59 @@ const createCustom = async () => {
   background: var(--color-bg-subtle);
 }
 
-// ── Sidebar ──────────────────────────────────────────────
-.canvas-sidebar {
-  width: 240px;
+// ── Toolbar ──────────────────────────────────────────────
+.canvas-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-bg-card) 85%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px color-mix(in srgb, #000 6%, transparent);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--color-border);
   flex-shrink: 0;
-  border-right: 1px solid var(--color-border);
-  background: var(--color-bg-card);
-  padding: 12px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
-.sidebar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.sidebar-label {
+.toolbar-hint {
+  font-size: 12px;
   color: var(--color-text-hint);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  white-space: nowrap;
 }
 
-// ── Sidebar transition ────────────────────────────────────
-.sidebar-slide-enter-active,
-.sidebar-slide-leave-active {
-  transition: width 0.2s ease, opacity 0.15s ease, padding 0.2s ease;
-  overflow: hidden;
-}
-.sidebar-slide-enter-from,
-.sidebar-slide-leave-to {
-  width: 0 !important;
-  opacity: 0;
-  padding: 0 !important;
-}
-
-// ── Sidebar toggle ────────────────────────────────────────
-.sidebar-toggle {
-  flex-shrink: 0;
-  width: 20px;
-  border-radius: 0;
-  border-right: 1px solid var(--color-border);
-  color: var(--color-text-hint);
-
-  &:hover { color: var(--color-text); background: var(--color-bg-subtle); }
-}
-
-// ── Rotation ─────────────────────────────────────────────
-.rotation-row {
-  display: flex;
+.unplaced-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-}
-
-.rot-value {
-  flex: 1;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-// ── Colors ────────────────────────────────────────────────
-.color-row {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 4px;
-}
-
-.color-swatch {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.1s, outline 0.1s;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-
-  &:hover { transform: scale(1.15); }
-  &--active { outline-color: var(--color-primary); }
-}
-
-// ── Tags ──────────────────────────────────────────────────
-.tag-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  min-height: 20px;
-}
-
-.tag-available {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.tag-new-row {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-
-// ── Custom form ──────────────────────────────────────────
-.custom-form {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-label { color: var(--color-text-hint); }
-
-.slider {
-  width: 100%;
-  accent-color: var(--color-primary);
-  cursor: pointer;
-  height: 4px;
-}
-
-.shape-pick {
-  display: flex;
-  gap: 4px;
-  > * { flex: 1; }
-}
-
-// ── Unplaced ─────────────────────────────────────────────
-.unplaced-list { display: flex; flex-direction: column; gap: 3px; }
-
-.unplaced-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 7px;
-  border-radius: 6px;
+  padding: 2px 10px;
+  border-radius: 12px;
   border: 1px dashed var(--color-border);
-  background: none;
+  background: var(--color-bg-card);
+  font-size: 12px;
+  color: var(--color-text);
   cursor: pointer;
-  color: inherit;
-  width: 100%;
-  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
 
-  &:hover { background: var(--color-bg-subtle); border-color: var(--color-primary); }
+  &:hover {
+    border-color: var(--color-primary);
+    background: var(--color-bg-subtle);
+  }
 }
-
-.unplaced-icon { color: var(--color-text-hint); flex-shrink: 0; }
-.unplaced-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.unplaced-plus { color: var(--color-primary); flex-shrink: 0; }
 
 // ── Canvas ───────────────────────────────────────────────
 .canvas-scroll {
-  flex: 1;
+  width: 100%;
+  height: 100%;
   overflow: auto;
   background:
     radial-gradient(circle, var(--color-border) 1px, transparent 1px) 0 0 / 24px 24px,
@@ -621,17 +503,26 @@ const createCustom = async () => {
   border: 2px solid var(--color-border);
   border-radius: 8px;
   background: color-mix(in srgb, var(--color-primary) 6%, var(--color-bg-card));
-  cursor: grab;
   user-select: none;
   transform-origin: center center;
   transition: border-color 0.15s, box-shadow 0.15s;
   box-shadow: 0 2px 6px color-mix(in srgb, #000 8%, transparent);
+  cursor: default;
 
-  &:active { cursor: grabbing; }
-  &--circle { border-radius: 50%; }
+  &--editing {
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &--circle {
+    border-radius: 50%;
+  }
 
   &--selected {
-    border-color: var(--color-primary) !important;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
   }
 
@@ -639,42 +530,124 @@ const createCustom = async () => {
     border-color: var(--color-success);
     background: color-mix(in srgb, var(--color-success) 10%, var(--color-bg-card));
   }
-}
 
-.ct-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  max-width: 90%;
-  pointer-events: none;
-}
-
-.ct-icon {
-  color: var(--color-primary);
-  opacity: 0.7;
-  .canvas-table--open & { color: var(--color-success); }
-  .canvas-table--colored & { color: var(--color-text-secondary); }
+  &--reserved:not(&--selected):not(&--open) {
+    border-color: var(--color-warning);
+    background: color-mix(in srgb, var(--color-warning) 8%, var(--color-bg-card));
+  }
 }
 
 .ct-name {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text);
-  max-width: 100%;
+  max-width: 90%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
   line-height: 1.2;
+  pointer-events: none;
 }
 
-.ct-cap {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
+.ct-reservation {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  padding: 1px 5px;
+  border-radius: 6px;
   font-size: 9px;
-  color: var(--color-text-hint);
+  font-weight: 700;
+  background: var(--color-warning);
+  color: #fff;
+  line-height: 1.3;
+  pointer-events: none;
+}
+
+// ── Resize handles ───────────────────────────────────────
+.resize-handle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  border-radius: 50%;
+  z-index: 2;
+  transition: width 0.15s, height 0.15s, background 0.15s, border-color 0.15s, opacity 0.15s;
+  opacity: 0.6;
+
+  &--active {
+    width: 10px;
+    height: 10px;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    border-radius: 3px;
+    opacity: 1;
+  }
+
+  &--nw {
+    top: -3px;
+    left: -3px;
+
+    &.resize-handle--active { top: -5px; left: -5px; }
+  }
+
+  &--ne {
+    top: -3px;
+    right: -3px;
+
+    &.resize-handle--active { top: -5px; right: -5px; }
+  }
+
+  &--sw {
+    bottom: -3px;
+    left: -3px;
+
+    &.resize-handle--active { bottom: -5px; left: -5px; }
+  }
+
+  &--se {
+    bottom: -3px;
+    right: -3px;
+
+    &.resize-handle--active { bottom: -5px; right: -5px; }
+  }
+}
+
+// ── Rotate handle ───────────────────────────────────────
+.rotate-stem {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 1px;
+  height: 16px;
+  background: var(--color-primary);
+  opacity: 0.5;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.rotate-handle {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg-card);
+  cursor: grab;
+  z-index: 3;
+  transition: transform 0.1s;
+  box-shadow: 0 1px 4px color-mix(in srgb, #000 15%, transparent);
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 </style>

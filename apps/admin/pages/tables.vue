@@ -18,7 +18,7 @@ import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { tableCallEvents } from '~/composables/data/useTableCallsChannel'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
-import { TablesContextKey } from '~/composables/ui/useTablesContext'
+import { TablesContextKey, TodayReservationsKey } from '~/composables/ui/useTablesContext'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
 
 const tabs = [
@@ -350,6 +350,12 @@ const onTableAdded = (table: Table) => {
   tables.value.push(table)
 }
 const onTableUpdated = (table: Table) => {
+  if (!table.isActive) {
+    tables.value = tables.value.filter((t) => t.id !== table.id)
+
+    return
+  }
+
   const idx = tables.value.findIndex((t) => t.id === table.id)
 
   if (idx !== -1) tables.value[idx] = table
@@ -381,6 +387,17 @@ const onCallTypeRemoved = async (id: string) => {
 const onGlobalTagsUpdated = (tags: string[]) => {
   globalTags.value = tags
 }
+
+// ── Today's reservations ─────────────────────────────────────
+const todayReservations = computed(() => {
+  const today = new Date().toISOString().slice(0, 10)
+
+  return reservationsStore.reservations.filter(
+    (r) => r.reservedDate === today && (r.status === 'confirmed' || r.status === 'pending' || r.status === 'seated'),
+  )
+})
+
+provide(TodayReservationsKey, todayReservations)
 
 // ── Provide context ───────────────────────────────────────────
 provide(TablesContextKey, {

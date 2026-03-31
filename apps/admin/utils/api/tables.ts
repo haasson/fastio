@@ -93,6 +93,18 @@ export const tablesApi = {
     return result ? mapTable(result) : null
   },
 
+  async setActive(sb: SupabaseClient, id: string, isActive: boolean): Promise<Table | null> {
+    const result = await query(
+      sb.from('tables')
+        .update({ is_active: isActive })
+        .eq('id', id)
+        .select()
+        .single(),
+    )
+
+    return result ? mapTable(result) : null
+  },
+
   async updatePosition(sb: SupabaseClient, id: string, x: number | null, y: number | null): Promise<void> {
     await query(sb.from('tables').update({ position_x: x, position_y: y }).eq('id', id))
   },
