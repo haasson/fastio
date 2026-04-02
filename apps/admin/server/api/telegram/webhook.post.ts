@@ -11,8 +11,12 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const message = body?.message
 
+  console.warn('[tg webhook] body:', JSON.stringify(body))
+
   const text: string = message?.text ?? ''
   const startMatch = text.match(/^\/start(?:@\S+)?\s+(\S+)/)
+
+  console.warn('[tg webhook] text:', text, 'match:', startMatch)
 
   if (!startMatch) return { ok: true }
 
@@ -35,6 +39,8 @@ export default defineEventHandler(async (event) => {
     .eq('code', code)
     .gt('expires_at', new Date().toISOString())
     .single()
+
+  console.warn('[tg webhook] linkCode lookup result:', linkCode)
 
   if (!linkCode) {
     await sendMessage('❌ Код устарел или недействителен. Сгенерируй новый в настройках.')
