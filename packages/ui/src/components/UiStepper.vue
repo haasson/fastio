@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import UiIcon from './UiIcon.vue'
+import { UiIcon } from '@fastio/icons'
 
 type Props = {
   modelValue: number
