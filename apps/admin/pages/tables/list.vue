@@ -9,6 +9,7 @@
     <template v-else>
       <div class="list-header">
         <UiButton
+          v-if="canManageTables"
           size="small"
           type="primary"
           icon="plus"
@@ -30,7 +31,7 @@
               :ready-dishes="ctx.readyDishes[table.id] ?? []"
               @edit="openEdit(table)"
               @show-qr="openQr(table)"
-              @add-dish="addDish(table)"
+              @add-dish="openPicker(table)"
               @checkout="ctx.checkout(table)"
               @resolve-call="ctx.onCallResolved"
               @mark-served="ctx.onMarkServed"
@@ -89,14 +90,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag, useMessage } from '@fastio/ui'
-import type { Table, OrderItem } from '@fastio/shared'
-import { storeToRefs } from 'pinia'
+import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag } from '@fastio/ui'
+import type { Table } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useAuthStore } from '~/stores/auth'
-import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useTablesContext } from '~/composables/ui/useTablesContext'
-import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
+import useAddDishToTable from '~/composables/ui/useAddDishToTable'
+import { usePermissions } from '~/composables/auth/usePermissions'
+import DishPickerModal from '~/components/menu/DishPickerModal.vue'
 import TableCard from '~/components/tables/TableCard.vue'
 import TableEditModal from '~/components/tables/TableEditModal.vue'
 import TableQrModal from '~/components/tables/TableQrModal.vue'
@@ -104,14 +104,9 @@ import TableQrModal from '~/components/tables/TableQrModal.vue'
 const ctx = useTablesContext()
 
 const api = useDatabase()
-const authStore = useAuthStore()
-const orderStatusesStore = useOrderStatusesStore()
-const userId = computed(() => authStore.user?.id ?? null)
-const { statuses } = storeToRefs(orderStatusesStore)
-const { warning } = useMessage()
+const { canManageTables } = usePermissions()
 
-const dishPickerOpen = ref(false)
-const dishPickerTable = ref<Table | null>(null)
+const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId)
 
 const editModalOpen = ref(false)
 const editModalTable = ref<Table | null>(null)
@@ -148,68 +143,6 @@ const openQr = (table: Table) => {
   qrModalOpen.value = true
 }
 
-const addDish = (table: Table) => {
-  dishPickerTable.value = table
-  dishPickerOpen.value = true
-}
-
-const onDishPicked = async (result: DishPickerResult) => {
-  const table = dishPickerTable.value
-  const tenantId = ctx.tenantId
-
-  if (!table || !tenantId) return
-
-  const newStatusId = statuses.value.find((s) => s.groupType === 'new')?.id
-
-  if (!newStatusId) {
-    warning('Статусы заказов не загружены, попробуйте ещё раз')
-
-    return
-  }
-
-  dishPickerOpen.value = false
-
-  const modifiersDelta = (result.modifiers ?? []).reduce((sum, m) => sum + (m.priceDelta ?? 0), 0)
-  const addonsDelta = (result.addons ?? []).reduce((sum, a) => sum + (a.price ?? 0), 0)
-  const totalPrice = result.price + modifiersDelta + addonsDelta
-
-  const item: OrderItem = {
-    dishId: result.dishId,
-    comboId: result.comboId ?? null,
-    dishName: result.dishName,
-    categoryName: result.categoryName,
-    price: totalPrice,
-    quantity: 1,
-    removedIngredients: result.removedIngredients,
-    modifiers: result.modifiers,
-    addons: result.addons,
-    completedAt: null,
-    comboItems: null,
-    addedBy: userId.value,
-    confirmedBy: userId.value,
-    status: 'confirmed' as const,
-  }
-
-  await api.orders.create({
-    tenantId,
-    branchId: null,
-    customerName: null,
-    customerPhone: '',
-    items: [item],
-    deliveryType: 'dine_in',
-    address: null,
-    comment: null,
-    promoCode: null,
-    discountAmount: 0,
-    subtotal: totalPrice,
-    deliveryFee: 0,
-    total: totalPrice,
-    status: newStatusId,
-    paymentType: 'cash',
-    tableId: table.id,
-    tableName: table.name,
-  })
-}
 </script>
 
 <style scoped lang="scss">

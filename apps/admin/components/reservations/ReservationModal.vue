@@ -148,6 +148,7 @@ import ReservationTablePicker from './ReservationTablePicker.vue'
 const props = defineProps<{
   modelValue: boolean
   reservation: Reservation | null
+  preselectedTableId?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -222,7 +223,7 @@ watch(() => props.reservation, (r) => {
     form.reservedTime = ''
     form.guestCount = 2
     form.comment = ''
-    selectedTableId.value = null
+    selectedTableId.value = props.preselectedTableId ?? null
   }
   cancelReason.value = ''
   showCancelReason.value = false

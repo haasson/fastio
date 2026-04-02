@@ -25,6 +25,7 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Minus,
   Check,
   MapPin,
   Bike,
@@ -56,6 +57,7 @@ import {
   Hash,
   Copy,
   EllipsisVertical,
+  LockOpen,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -83,6 +85,7 @@ export const iconRegistry = {
   pencil: Pencil,
   trash: Trash2,
   plus: Plus,
+  minus: Minus,
   check: Check,
   mapPin: MapPin,
   bike: Bike,
@@ -118,6 +121,7 @@ export const iconRegistry = {
   hash: Hash,
   copy: Copy,
   moreVertical: EllipsisVertical,
+  unlock: LockOpen,
 } as const
 
 export type IconName = keyof typeof iconRegistry

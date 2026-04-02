@@ -59,7 +59,7 @@ const readyDishes = computed(() => {
   const map: Record<string, KitchenQueueItem[]> = {}
 
   for (const [tableId, items] of Object.entries(kitchenDishes.value)) {
-    const ready = items.filter((i) => i.status === 'done')
+    const ready = items.filter((i) => i.status === 'done' && !i.skipKitchen)
 
     if (ready.length) map[tableId] = ready
   }
@@ -157,7 +157,10 @@ const reloadTableSums = (tableId: string) => {
 
   if (!table?.isOpen) return
   api.tables.loadSums([table], cancelledStatusIds.value).then((partial) => {
-    tableSums.value = { ...tableSums.value, ...partial }
+    tableSums.value = {
+      ...tableSums.value,
+      [tableId]: partial[tableId] ?? { sum: 0, count: 0, items: [] },
+    }
   })
 }
 
@@ -299,15 +302,6 @@ const onMarkServed = async (dishId: string) => {
 }
 
 const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
-  const ok = await confirm({
-    title: 'Удалить блюдо?',
-    message: `«${sessionItem.dishName}» будет удалено из чека`,
-    confirmText: 'Удалить',
-    confirmType: 'error',
-  })
-
-  if (ok !== true) return
-
   const item = await api.orders.findTableItem(table.id, sessionItem, cancelledStatusIds.value)
 
   if (!item) {
@@ -317,6 +311,7 @@ const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
   }
 
   await api.orders.removeItem(item.id, item.orderId)
+  success(`${sessionItem.dishName} удалено`)
   reloadTableSums(table.id)
   reloadKitchenDishes()
 }

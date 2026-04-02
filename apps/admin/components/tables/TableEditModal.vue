@@ -12,12 +12,14 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <div class="edit-modal-root">
-      <div class="form">
+      <UiForm ref="formRef" class="form">
         <UiInput
           v-model="form.name"
           label="Название"
+          name="name"
           placeholder="Например: Стол 1"
           :clearable="false"
+          :rules="[{ type: 'required', message: 'Введите название стола' }]"
         />
 
         <UiInputNumber
@@ -26,19 +28,32 @@
           placeholder="Кол-во мест"
           :min="1"
           :max="100"
+          :show-button="true"
         />
 
         <UiInput
           v-model="form.notes"
           label="Заметки"
+          type="textarea"
+          :rows="2"
           placeholder="Дополнительная информация"
         />
+
+        <div class="field">
+          <UiText size="small" class="field-label">Форма</UiText>
+          <UiSegmentedControl
+            :model-value="form.shape"
+            :items="shapeOptions"
+            size="small"
+            @update:model-value="form.shape = $event as TableShape"
+          />
+        </div>
 
         <div class="toggle-row">
           <UiText size="small" class="toggle-label">Активен</UiText>
           <NSwitch :value="form.isActive" @update:value="form.isActive = $event" />
         </div>
-      </div>
+      </UiForm>
 
       <div v-if="!isNew" class="delete-section">
         <UiButton type="error" size="small" @click="handleDelete">
@@ -52,9 +67,9 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { NSwitch } from 'naive-ui'
-import { UiModal, UiInput, UiInputNumber, UiButton, UiText, useMessage } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiText, UiSegmentedControl, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
-import type { Table } from '@fastio/shared'
+import type { Table, TableShape } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 const props = defineProps<{
@@ -70,15 +85,22 @@ const emit = defineEmits<{
 }>()
 
 const api = useDatabase()
-const { success, warning } = useMessage()
+const formRef = ref<InstanceType<typeof UiForm> | null>(null)
+const { success } = useMessage()
 const { confirm } = useConfirm()
 
 const saving = ref(false)
+
+const shapeOptions = [
+  { label: 'Прямоугольный', value: 'rectangle' },
+  { label: 'Круглый', value: 'circle' },
+]
 
 const form = reactive({
   name: '',
   capacity: null as number | null,
   notes: '' as string | null,
+  shape: 'rectangle' as TableShape,
   isActive: true,
 })
 
@@ -89,6 +111,7 @@ watch(
       form.name = props.table.name
       form.capacity = props.table.capacity
       form.notes = props.table.notes ?? ''
+      form.shape = props.table.shape
       form.isActive = props.table.isActive
     }
   },
@@ -96,14 +119,9 @@ watch(
 
 const handleSave = async () => {
   if (!props.table) return
+  if (!formRef.value?.validate()) return
 
   const trimmedName = form.name.trim()
-
-  if (!trimmedName) {
-    warning('Введите название стола')
-
-    return false
-  }
 
   saving.value = true
   try {
@@ -112,6 +130,7 @@ const handleSave = async () => {
         name: trimmedName,
         capacity: form.capacity,
         notes: form.notes || null,
+        shape: form.shape,
       }),
       form.isActive !== props.table.isActive
         ? api.tables.setActive(props.table.id, form.isActive)
@@ -160,6 +179,16 @@ const handleDelete = async () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-weight: 500;
 }
 
 .toggle-row {

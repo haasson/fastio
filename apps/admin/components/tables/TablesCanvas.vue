@@ -1,7 +1,7 @@
 <template>
   <div class="canvas-root">
     <!-- Floating toolbar -->
-    <div class="canvas-toolbar">
+    <div v-if="canManageTables" class="canvas-toolbar">
       <UiButton
         :type="editing ? 'primary' : 'default'"
         size="small"
@@ -46,7 +46,7 @@
           }"
           :style="tableStyle(table)"
           @pointerdown.stop="onTablePointerDown($event, table)"
-          @click.stop="onTableClick(table)"
+          @click.stop="onTableClick($event, table)"
         >
           <span class="ct-name">{{ table.name }}</span>
           <span v-if="tableReservations[table.id]" class="ct-reservation">
@@ -76,14 +76,37 @@
         </div>
       </div>
     </div>
+    <!-- Context menu for closed tables -->
+    <UiPopover
+      trigger="manual"
+      placement="bottom-start"
+      :show="!!contextMenu"
+      :x="contextMenu?.x"
+      :y="contextMenu?.y"
+      :show-arrow="false"
+      no-sheet
+      @clickoutside="contextMenu = null"
+    >
+      <template #trigger>
+        <span />
+      </template>
+      <UiMenuDropdown
+        :items="contextMenuItems"
+        inline
+        compact
+        @item-click="onContextMenuClick"
+      />
+    </UiPopover>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton } from '@fastio/ui'
+import { UiButton, UiMenuDropdown, UiPopover } from '@fastio/ui'
+import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { Table, Reservation } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { usePermissions } from '~/composables/auth/usePermissions'
 
 type Props = {
   tables: Table[]
@@ -93,13 +116,17 @@ type Props = {
 type Emits = {
   update: [table: Table]
   updatePosition: [id: string, x: number | null, y: number | null]
-  editTable: [table: Table]
+  openDetail: [table: Table]
+  openTable: [table: Table]
+  bookTable: [table: Table]
+  openReservation: [id: string]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const api = useDatabase()
+const { canManageTables } = usePermissions()
 
 // ── Canvas state ──────────────────────────────────────────
 const canvasRef = ref<HTMLElement | null>(null)
@@ -109,7 +136,7 @@ const editing = ref(false)
 const placedTables = computed(() => props.tables.filter((t) => t.positionX !== null && t.positionY !== null))
 const unplacedTables = computed(() => props.tables.filter((t) => t.positionX === null || t.positionY === null))
 
-// ── Reservations map ─────────────────────────────────────
+// ── Reservations map (earliest time per table) ──────────
 const tableReservations = computed(() => {
   const map: Record<string, string> = {}
 
@@ -123,6 +150,44 @@ const tableReservations = computed(() => {
   return map
 })
 
+// ── Context menu ────────────────────────────────────────
+const contextMenu = ref<{ table: Table; x: number; y: number } | null>(null)
+const contextMenuItems = computed<UiMenuDropdownItem[]>(() => {
+  if (!contextMenu.value) return []
+
+  const table = contextMenu.value.table
+  const items: UiMenuDropdownItem[] = [
+    { name: 'open', label: 'Открыть стол', icon: 'unlock' },
+    { name: 'book', label: 'Забронировать', icon: 'calendar' },
+  ]
+
+  // Add today's reservations for this table
+  const tableRes = props.todayReservations.filter((r) => r.tableId === table.id)
+
+  if (tableRes.length) {
+    items.push({ name: 'divider', isDivider: true })
+
+    for (const r of tableRes) {
+      const label = `${r.reservedTime.slice(0, 5)} — ${r.guestName} (${r.guestCount} гостей)`
+
+      items.push({ name: `reservation:${r.id}`, label, icon: 'calendar' })
+    }
+  }
+
+  return items
+})
+
+const onContextMenuClick = (name: string) => {
+  if (!contextMenu.value) return
+  const table = contextMenu.value.table
+
+  contextMenu.value = null
+
+  if (name === 'open') emit('openTable', table)
+  else if (name === 'book') emit('bookTable', table)
+  else if (name.startsWith('reservation:')) emit('openReservation', name.replace('reservation:', ''))
+}
+
 // ── Table style ──────────────────────────────────────────
 const tableStyle = (table: Table) => ({
   left: `${table.positionX ?? 0}px`,
@@ -133,16 +198,25 @@ const tableStyle = (table: Table) => ({
 })
 
 // ── Selection ────────────────────────────────────────────
-const onTableClick = (table: Table) => {
+const onTableClick = (event: MouseEvent, table: Table) => {
   if (editing.value) {
     selectedId.value = table.id
-  } else {
-    emit('editTable', table)
+
+    return
   }
+
+  if (table.isOpen) {
+    emit('openDetail', table)
+
+    return
+  }
+
+  contextMenu.value = { table, x: event.clientX, y: event.clientY + 4 }
 }
 
 const deselectAll = () => {
   selectedId.value = null
+  contextMenu.value = null
 }
 
 // ── Drag ─────────────────────────────────────────────────
@@ -650,4 +724,5 @@ const placeTable = (table: Table) => {
     cursor: grabbing;
   }
 }
+
 </style>

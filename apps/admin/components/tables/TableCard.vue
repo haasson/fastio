@@ -7,7 +7,7 @@
       </div>
       <UiTag v-if="pendingCount > 0" type="warning" size="small">{{ pendingCount }} ожидают</UiTag>
       <span v-if="table.capacity" class="card-cap"><UiIcon name="users" :size="12" /> {{ table.capacity }}</span>
-      <UiMenuDropdown :items="menuItems" @item-click="onMenuClick">
+      <UiMenuDropdown v-if="menuItems.length" :items="menuItems" @item-click="onMenuClick">
         <template #trigger>
           <UiButton
             type="text"
@@ -143,9 +143,10 @@ import { useNow } from '@vueuse/core'
 import { UiCard, UiButton, UiIcon, UiText, UiTag, UiMenuDropdown } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
-import { orderItemKey, pluralize } from '@fastio/shared'
+import { orderItemKey, pluralize, formatRelativeTime } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
-import { formatRelativeTime } from '@fastio/shared'
+import useKitchenProgress from '~/composables/ui/useKitchenProgress'
+import { usePermissions } from '~/composables/auth/usePermissions'
 
 const props = defineProps<{
   table: Table
@@ -169,10 +170,16 @@ const emit = defineEmits<{
   'show-qr': []
 }>()
 
-const menuItems: UiMenuDropdownItem[] = [
-  { name: 'edit', label: 'Настройки', icon: 'settings' },
-  { name: 'qr', label: 'QR-код', icon: 'qrCode' },
-]
+const { canManageTables } = usePermissions()
+
+const menuItems = computed<UiMenuDropdownItem[]>(() => {
+  if (!canManageTables.value) return []
+
+  return [
+    { name: 'edit', label: 'Настройки', icon: 'settings' },
+    { name: 'qr', label: 'QR-код', icon: 'qrCode' },
+  ]
+})
 
 const onMenuClick = (name: string) => {
   if (name === 'edit') emit('edit')
@@ -196,47 +203,10 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 
 const hasCustomizations = (item: TableSessionItem) => item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
 
-// Kitchen progress — flat list grouped by dishName+status, with dot color and price
-type KitchenProgressRow = { key: string; dishName: string; count: number; dotClass: string; totalPrice: number }
-
-const kitchenProgress = computed<KitchenProgressRow[]>(() => {
-  if (!props.kitchenDishes?.length) return []
-
-  // Build price lookup keyed by dishName + customization fingerprint
-  const priceMap = new Map<string, number>()
-
-  for (const item of props.session?.items ?? []) {
-    const fp = orderItemKey(item.modifiers, item.addons, item.removedIngredients)
-
-    priceMap.set(`${item.dishName}::${fp}`, item.price)
-  }
-
-  const map = new Map<string, KitchenProgressRow>()
-
-  for (const item of props.kitchenDishes) {
-    if (item.status !== 'queued' && item.status !== 'in_progress') continue
-
-    const fp = orderItemKey(item.modifiers, item.addons, item.removedIngredients)
-    const key = `${item.dishName}::${fp}::${item.status}`
-    let row = map.get(key)
-
-    if (!row) {
-      row = {
-        key,
-        dishName: item.dishName,
-        count: 0,
-        dotClass: item.status === 'in_progress' ? 'dot--cooking' : 'dot--queued',
-        totalPrice: 0,
-      }
-      map.set(key, row)
-    }
-
-    row.count++
-    row.totalPrice = row.count * (priceMap.get(`${item.dishName}::${fp}`) ?? 0)
-  }
-
-  return [...map.values()]
-})
+const { kitchenProgress } = useKitchenProgress(
+  () => props.kitchenDishes,
+  () => props.session,
+)
 </script>
 
 <style scoped lang="scss">

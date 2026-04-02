@@ -6,7 +6,9 @@ import type { TableRow } from './db-types'
 
 export type TableSessionItem = {
   id: string | null
+  dishId: string | null
   dishName: string
+  categoryName: string | null
   quantity: number
   price: number
   modifiers: OrderItemModifier[]
@@ -130,7 +132,7 @@ export const tablesApi = {
     const earliestOpenedAt = openTables.map((t) => t.openedAt!).sort()[0]
 
     let q = sb.from('orders')
-      .select('table_id, total, created_at, order_items(id, dish_name, quantity, price, modifiers, addons, removed_ingredients, status)')
+      .select('table_id, total, created_at, order_items(id, dish_id, dish_name, category_name, quantity, price, modifiers, addons, removed_ingredients, status)')
       .in('table_id', tableIds)
       .gte('created_at', earliestOpenedAt)
 
@@ -140,7 +142,9 @@ export const tablesApi = {
 
     type RawItem = {
       id: string
+      dish_id: string | null
       dish_name: string
+      category_name: string | null
       quantity: number
       price: number
       modifiers: OrderItemModifier[]
@@ -180,7 +184,9 @@ export const tablesApi = {
           // Pending items stay individual so they can be confirmed/rejected
           const pendingItem: TableSessionItem = {
             id: item.id,
+            dishId: item.dish_id ?? null,
             dishName: item.dish_name,
+            categoryName: item.category_name ?? null,
             quantity: item.quantity,
             price: item.price,
             modifiers: item.modifiers ?? [],
@@ -199,7 +205,9 @@ export const tablesApi = {
           } else {
             const newItem: TableSessionItem = {
               id: null,
+              dishId: item.dish_id ?? null,
               dishName: item.dish_name,
+              categoryName: item.category_name ?? null,
               quantity: item.quantity,
               price: item.price,
               modifiers: item.modifiers ?? [],
