@@ -1,3 +1,5 @@
+import { defineEventHandler, readBody } from 'h3'
+import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
 
 export default defineEventHandler(async (event) => {
