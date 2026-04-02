@@ -11,9 +11,12 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const message = body?.message
 
-  if (!message?.text?.startsWith('/start ')) return { ok: true }
+  const text: string = message?.text ?? ''
+  const startMatch = text.match(/^\/start(?:@\S+)?\s+(\S+)/)
 
-  const code = message.text.slice(7).trim()
+  if (!startMatch) return { ok: true }
+
+  const code = startMatch[1]
   const chatId: number = message.chat?.id
 
   if (!code || !chatId) return { ok: true }
