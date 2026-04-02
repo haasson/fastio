@@ -36,11 +36,14 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     anthropicApiKey: '',
+    supabaseServiceRoleKey: '',
+    telegramBotToken: '',
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',
       yandexMapsApiKey: '',
       dadataApiKey: '',
+      telegramBotUsername: '',
     },
   },
 })

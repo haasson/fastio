@@ -15,19 +15,6 @@
           />
           <span class="hint">На этот адрес придёт письмо при каждом новом заказе</span>
         </div>
-
-        <div class="field">
-          <UiInput
-            v-model="form.telegramChatId"
-            label="Telegram Chat ID"
-            placeholder="-1001234567890"
-          />
-          <span class="hint">
-            Как получить:
-            <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>
-            (для личных сообщений) или добавьте бота в группу и используйте ID группы
-          </span>
-        </div>
       </div>
 
       <UiSectionHeader title="Браузерные уведомления" />
@@ -42,13 +29,34 @@
         </div>
       </div>
 
-      <div class="tg-status">
+      <UiSectionHeader title="Telegram" />
+
+      <div class="tg-block">
         <span class="tg-icon"><UiIcon name="messageCircle" :size="28" /></span>
-        <div>
-          <UiText size="small" class="tg-title">Telegram бот</UiText>
-          <UiText size="tiny" class="tg-desc">Функция будет доступна в следующем обновлении</UiText>
+        <div class="tg-info">
+          <UiText size="small" class="tg-title">Уведомления в Telegram</UiText>
+          <UiText size="tiny" class="tg-desc">
+            <template v-if="isTelegramConnected">Группа подключена — заказы будут приходить туда</template>
+            <template v-else>Подключи группу — бот будет писать туда при каждом новом заказе</template>
+          </UiText>
         </div>
-        <UiTag size="small" class="tg-badge">Скоро</UiTag>
+        <UiButton
+          v-if="isTelegramConnected"
+          size="small"
+          :loading="disconnecting"
+          @click="disconnectTelegram"
+        >
+          Отключить
+        </UiButton>
+        <UiButton
+          v-else
+          size="small"
+          type="primary"
+          :loading="generating"
+          @click="connectTelegram"
+        >
+          Подключить
+        </UiButton>
       </div>
 
       <div class="footer">
@@ -56,44 +64,95 @@
       </div>
     </div>
   </UiForm>
+
+  <UiModal v-model="showModal" title="Подключить Telegram" :width="440">
+    <div class="tg-steps">
+      <p>1. Создай Telegram-группу и добавь в неё <b>@{{ botUsername }}</b></p>
+      <p>2. Отправь в группу эту команду:</p>
+      <div class="tg-code">
+        <code>/start {{ linkCode }}</code>
+        <UiButton size="small" @click="copyCode">Скопировать</UiButton>
+      </div>
+      <p class="tg-hint">Код действует 15 минут</p>
+    </div>
+  </UiModal>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiText, UiIcon, UiTag, UiSwitch, useMessage, UiSectionHeader } from '@fastio/ui'
+import { ref, reactive, computed, watch } from 'vue'
+import { UiForm, UiInput, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal, useMessage } from '@fastio/ui'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'
+import { useNuxtApp, useRuntimeConfig } from '#imports'
 
 const { blinkingCounter } = useNotificationPrefs()
-
 const tenantStore = useTenantStore()
+const { $supabase } = useNuxtApp()
+const { success } = useMessage()
 
 const form = reactive({
   email: tenantStore.tenant?.notifications?.email ?? '',
-  telegramChatId: tenantStore.tenant?.notifications?.telegramChatId ?? '',
 })
 
 watch(() => tenantStore.tenant?.notifications, (n) => {
   form.email = n?.email ?? ''
-  form.telegramChatId = n?.telegramChatId ?? ''
 })
 
 const saving = ref(false)
-const { success } = useMessage()
+const generating = ref(false)
+const disconnecting = ref(false)
+const showModal = ref(false)
+const linkCode = ref('')
+
+const botUsername = useRuntimeConfig().public.telegramBotUsername
+const isTelegramConnected = computed(() => !!tenantStore.tenant?.notifications?.telegramChatId)
 
 const handleSave = async () => {
   saving.value = true
   try {
     await tenantStore.update({
       notifications: {
+        ...(tenantStore.tenant?.notifications ?? {}),
         email: form.email || null,
-        telegramChatId: form.telegramChatId || null,
       },
     })
     success('Сохранено')
   } finally {
     saving.value = false
   }
+}
+
+const connectTelegram = async () => {
+  generating.value = true
+  try {
+    const code = Math.random().toString(36).slice(2, 10)
+
+    await $supabase
+      .from('telegram_link_codes')
+      .upsert({ code, tenant_id: tenantStore.currentTenantId }, { onConflict: 'tenant_id' })
+    linkCode.value = code
+    showModal.value = true
+  } finally {
+    generating.value = false
+  }
+}
+
+const disconnectTelegram = async () => {
+  disconnecting.value = true
+  try {
+    await tenantStore.update({
+      notifications: {
+        ...(tenantStore.tenant?.notifications ?? {}),
+        telegramChatId: null,
+      },
+    })
+  } finally {
+    disconnecting.value = false
+  }
+}
+
+const copyCode = () => {
+  navigator.clipboard.writeText(`/start ${linkCode.value}`)
 }
 </script>
 
@@ -139,7 +198,7 @@ const handleSave = async () => {
   display: block;
 }
 
-.tg-status {
+.tg-block {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -154,6 +213,11 @@ const handleSave = async () => {
   color: var(--color-text-secondary);
 }
 
+.tg-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .tg-title {
   font-size: 14px;
   font-weight: 600;
@@ -166,12 +230,40 @@ const handleSave = async () => {
   color: var(--color-text-secondary);
 }
 
-.tg-badge {
-  margin-left: auto;
+.tg-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+
+  p {
+    margin: 0;
+  }
+}
+
+.tg-code {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--color-bg-page);
+  border-radius: 8px;
+
+  code {
+    flex: 1;
+    font-size: 15px;
+    font-family: monospace;
+    user-select: all;
+  }
+}
+
+.tg-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
 .footer {
   @include settings-footer;
 }
-
 </style>
