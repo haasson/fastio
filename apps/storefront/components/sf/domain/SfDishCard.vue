@@ -181,6 +181,15 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
   @include md { max-width: none; margin-inline: 0; }
 }
 
+.dish-card-root {
+  :deep(.card-image) img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
 .dish-placeholder {
   width: 100%;
   height: 100%;
