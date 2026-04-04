@@ -90,12 +90,6 @@ export default defineEventHandler(async (event) => {
 
   if (threadId) payload.message_thread_id = threadId
 
-  if (order.customer_phone) {
-    payload.reply_markup = {
-      inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:${order.customer_phone}` }]],
-    }
-  }
-
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
