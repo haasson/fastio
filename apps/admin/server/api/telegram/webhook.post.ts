@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     .eq('id', linkCode.tenant_id)
     .single()
 
-  await Promise.all([
+  const [updateResult, deleteResult] = await Promise.all([
     supabase
       .from('tenants')
       .update({ notifications: { ...(tenant?.notifications ?? {}), telegramChatId: String(chatId) } })
@@ -65,7 +65,13 @@ export default defineEventHandler(async (event) => {
       .eq('code', code),
   ])
 
-  await sendMessage('✅ Группа подключена к ресторану! Теперь сюда будут приходить уведомления о новых заказах.')
+  console.warn('[tg webhook] update error:', updateResult.error)
+  console.warn('[tg webhook] delete error:', deleteResult.error)
+
+  const tgRes = await sendMessage('✅ Группа подключена к ресторану! Теперь сюда будут приходить уведомления о новых заказах.')
+  const tgJson = await tgRes.json()
+
+  console.warn('[tg webhook] sendMessage result:', JSON.stringify(tgJson))
 
   return { ok: true }
 })
