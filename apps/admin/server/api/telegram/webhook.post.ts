@@ -56,10 +56,13 @@ export default defineEventHandler(async (event) => {
     .eq('id', linkCode.tenant_id)
     .single()
 
+  const chatTitle: string | null = message.chat?.title ?? null
+
   const notifications = {
     ...(tenant?.notifications ?? {}),
     telegramChatId: String(chatId),
     ...(threadId ? { telegramThreadId: threadId } : {}),
+    ...(chatTitle ? { telegramChatTitle: chatTitle } : {}),
   }
 
   await Promise.all([

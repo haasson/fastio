@@ -38,7 +38,9 @@
         <div class="tg-info">
           <UiText size="small" class="tg-title">Уведомления в Telegram</UiText>
           <UiText size="tiny" class="tg-desc">
-            <template v-if="isTelegramConnected">Группа подключена — заказы и бронирования будут приходить туда</template>
+            <template v-if="isTelegramConnected">
+              {{ chatTitle ? `Подключена группа «${chatTitle}»` : 'Группа подключена' }} — заказы и бронирования будут приходить туда
+            </template>
             <template v-else>Подключи группу — бот будет писать туда при каждом новом заказе или бронировании</template>
           </UiText>
         </div>
@@ -75,8 +77,9 @@
   >
     <div class="tg-steps">
       <template v-if="!connected">
-        <p>1. Создай Telegram-группу и добавь в неё <b>@{{ botUsername }}</b></p>
-        <p>2. Отправь в группу эту команду:</p>
+        <p>1. Создай Telegram-группу (обычную или с топиками) и добавь в неё бота <b>@{{ botUsername }}</b></p>
+        <p>2. Назначь бота <b>администратором</b> группы — иначе он не сможет читать сообщения. Остальные права можно не давать</p>
+        <p>3. Отправь в группу эту команду (можно в любой топик):</p>
         <div class="tg-code">
           <code>/start {{ linkCode }}</code>
           <UiButton size="small" @click="copyCode">Скопировать</UiButton>
@@ -106,11 +109,13 @@ import { UiForm, UiInput, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, U
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'
 import { useNuxtApp, useRuntimeConfig } from '#imports'
+import { useConfirm } from '@fastio/kit'
 
 const { blinkingCounter } = useNotificationPrefs()
 const tenantStore = useTenantStore()
 const { $supabase } = useNuxtApp()
 const { success } = useMessage()
+const { confirm } = useConfirm()
 
 const form = reactive({
   email: tenantStore.tenant?.notifications?.email ?? '',
@@ -132,6 +137,7 @@ let pollInterval: ReturnType<typeof setInterval> | null = null
 
 const botUsername = useRuntimeConfig().public.telegramBotUsername
 const isTelegramConnected = computed(() => !!tenantStore.tenant?.notifications?.telegramChatId)
+const chatTitle = computed(() => tenantStore.tenant?.notifications?.telegramChatTitle ?? null)
 
 const stopPolling = () => {
   if (pollInterval) {
@@ -206,6 +212,18 @@ const connectTelegram = async () => {
 }
 
 const disconnectTelegram = async () => {
+  const title = chatTitle.value
+  const ok = await confirm({
+    title: 'Отключить Telegram?',
+    message: title
+      ? `Группа «${title}» будет отключена. Уведомления о заказах и бронированиях перестанут приходить.`
+      : 'Группа будет отключена. Уведомления о заказах и бронированиях перестанут приходить.',
+    confirmText: 'Отключить',
+    confirmType: 'error',
+  })
+
+  if (!ok) return
+
   disconnecting.value = true
   try {
     const current = tenantStore.tenant?.notifications
@@ -215,6 +233,7 @@ const disconnectTelegram = async () => {
         email: current?.email ?? null,
         telegramChatId: null,
         telegramThreadId: null,
+        telegramChatTitle: null,
       },
     })
   } finally {

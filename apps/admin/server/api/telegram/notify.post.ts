@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     supabase.from('tenants').select('notifications').eq('id', tenantId).single(),
     supabase
       .from('orders')
-      .select('order_number, total, delivery_type, address, customer_phone, customer_name, table_name, comment, order_items(dish_name, quantity, price, sort_order, modifiers, addons, removed_ingredients)')
+      .select('order_number, total, delivery_fee, delivery_type, address, customer_phone, customer_name, table_name, comment, order_items(dish_name, quantity, price, sort_order, modifiers, addons, removed_ingredients)')
       .eq('id', orderId)
       .eq('tenant_id', tenantId)
       .single(),
@@ -72,6 +72,8 @@ export default defineEventHandler(async (event) => {
     })
     .join('\n')
 
+  const sep = '─────────────────'
+
   let text = `🆕 <b>Заказ${order.order_number ? ` #${order.order_number}` : ''}</b> · ${deliveryLabel}\n`
 
   if (order.customer_name) text += `👤 ${order.customer_name}\n`
@@ -79,7 +81,9 @@ export default defineEventHandler(async (event) => {
   if (order.address) text += `📍 ${order.address}\n`
   if (order.comment) text += `💬 ${order.comment}\n`
 
-  text += `\n${items}\n\n`
+  text += `\n${sep}\n${items}\n${sep}\n\n`
+
+  if (order.delivery_fee) text += `🚗 Доставка: ${order.delivery_fee} ₽\n`
   text += `💰 Итого: <b>${order.total} ₽</b>`
 
   const payload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: 'HTML' }

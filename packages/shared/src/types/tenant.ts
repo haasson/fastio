@@ -126,6 +126,7 @@ export type TenantNotifications = {
   email: string | null
   telegramChatId: string | null
   telegramThreadId?: number | null
+  telegramChatTitle?: string | null
 }
 
 export type TenantSubscription = {
