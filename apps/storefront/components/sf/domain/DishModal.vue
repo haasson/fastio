@@ -15,8 +15,8 @@
           loading="lazy"
         >
         <div class="info">
-          <FsText v-if="item.description" variant="body-sm" color="secondary">
-            {{ item.description }}
+          <FsText v-if="item.longDescription || item.description" variant="body-sm" color="secondary">
+            {{ item.longDescription || item.description }}
           </FsText>
           <DishNutrition v-if="displayNutrition" :nutrition="displayNutrition" :weight-unit="weightUnit" size="md" />
         </div>

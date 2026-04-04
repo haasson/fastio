@@ -86,6 +86,7 @@ export function mapDish(row: Record<string, unknown>): Dish {
     categoryId: row.category_id as string,
     name: row.name as string,
     description: row.description as string,
+    longDescription: (row.long_description as string | null) ?? null,
     price: row.price as number,
     photos: row.photos as string[],
     ingredients: row.ingredients as Dish['ingredients'],

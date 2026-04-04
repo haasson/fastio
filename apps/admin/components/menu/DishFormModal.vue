@@ -30,6 +30,10 @@
         @update:category-id="form.categoryId = String($event ?? '')"
         @update:weight="form.weight = $event"
         @update:weight-unit="form.weightUnit = $event"
+        :long-description="form.longDescription"
+        :show-long-description="form.showLongDescription"
+        @update:long-description="form.longDescription = $event ?? ''"
+        @update:show-long-description="form.showLongDescription = $event"
       />
 
       <UiCollapse :expanded-names="[]" class="sections" data-tour="dish-sections">
@@ -162,6 +166,8 @@ const defaultForm = () => ({
   active: true,
   requiresKitchen: true,
   order: 0,
+  longDescription: '',
+  showLongDescription: false,
 })
 
 const form = reactive(defaultForm())
@@ -180,6 +186,8 @@ watch(
       form.active = dish.active
       form.requiresKitchen = dish.requiresKitchen
       form.order = dish.order
+      form.longDescription = dish.longDescription ?? ''
+      form.showLongDescription = !!dish.longDescription
     } else {
       Object.assign(form, defaultForm())
     }
@@ -248,9 +256,11 @@ const onConfirm = async () => {
     const kbju = nutritionRef.value?.getKbju() ?? null
     const hasNutrition = form.weight != null || kbju != null
     const maxAddons = addonsRef.value?.getMaxAddons()
+    const { showLongDescription, ...formData } = form
     const data: DishFormData = {
-      ...form,
+      ...formData,
       price: form.price ?? 0,
+      longDescription: showLongDescription && form.longDescription ? form.longDescription : null,
       ingredients: ingredientsRef.value?.getIngredients() ?? [],
       nutrition: hasNutrition ? { weight: form.weight ?? 0, calories: kbju?.calories ?? 0, protein: kbju?.protein ?? 0, fat: kbju?.fat ?? 0, carbs: kbju?.carbs ?? 0 } : null,
       weightUnit: form.weightUnit,

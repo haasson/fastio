@@ -42,6 +42,22 @@
         @update:model-value="$emit('update:description', $event ?? '')"
       />
 
+      <UiCheckbox
+        :checked="showLongDescription"
+        @update:checked="$emit('update:showLongDescription', $event)"
+      >
+        Подробное описание
+      </UiCheckbox>
+
+      <UiInput
+        v-if="showLongDescription"
+        :model-value="longDescription"
+        label="Подробное описание"
+        type="textarea"
+        :rows="5"
+        @update:model-value="$emit('update:longDescription', $event ?? '')"
+      />
+
       <div class="category-row">
         <UiSelect
           v-if="categoryOptions && categoryOptions.length > 1"
@@ -75,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiText, UiInput, UiInputNumber, UiSelect, UiSegmentedControl } from '@fastio/ui'
+import { UiText, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiCheckbox } from '@fastio/ui'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 
 const unitItems = [
@@ -96,6 +112,8 @@ defineProps<{
   categoryId?: string
   categoryOptions?: { label: string; value: string }[]
   showWeight?: boolean
+  longDescription?: string
+  showLongDescription?: boolean
 }>()
 
 defineEmits<{
@@ -108,6 +126,8 @@ defineEmits<{
   'update:categoryId': [value: string | number | (string | number)[] | null]
   'update:weight': [value: number | null]
   'update:weightUnit': [value: 'г' | 'мл']
+  'update:longDescription': [value: string]
+  'update:showLongDescription': [value: boolean]
 }>()
 </script>
 

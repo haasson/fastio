@@ -13,6 +13,7 @@ export type ModalItem = {
   id: string
   name: string
   description: string
+  longDescription?: string | null
   price: number
   photos: string[]
   categoryName?: string | null

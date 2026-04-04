@@ -48,6 +48,7 @@ export type Dish = {
   categoryId: string
   name: string
   description: string
+  longDescription: string | null
   price: number
   photos: string[]
   ingredients: DishIngredient[]

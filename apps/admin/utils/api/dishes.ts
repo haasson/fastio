@@ -16,6 +16,7 @@ export const mapDish = (raw: Record<string, unknown>): Dish => {
     categoryId: row.category_id,
     name: row.name,
     description: row.description,
+    longDescription: row.long_description ?? null,
     price: row.price,
     photos: row.photos,
     ingredients: row.ingredients,
@@ -50,6 +51,7 @@ export const dishesApi = {
       category_id: data.categoryId,
       name: data.name,
       description: data.description,
+      long_description: data.longDescription ?? null,
       price: data.price,
       photos: data.photos ?? [],
       ingredients: data.ingredients,
@@ -69,6 +71,7 @@ export const dishesApi = {
       filterDefined({
         name: data.name,
         description: data.description,
+        long_description: data.longDescription,
         price: data.price,
         category_id: data.categoryId,
         ingredients: data.ingredients,

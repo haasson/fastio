@@ -199,6 +199,7 @@ function openDishModal(dish: Dish) {
     id: dish.id,
     name: dish.name,
     description: dish.description,
+    longDescription: dish.longDescription,
     price: dish.price,
     photos: dish.photos,
     categoryName: findCategoryName(dish.id),

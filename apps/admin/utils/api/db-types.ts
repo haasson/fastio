@@ -128,6 +128,7 @@ export type DishRow = {
   category_id: string
   name: string
   description: string
+  long_description: string | null
   price: number
   photos: string[]
   ingredients: DishIngredient[]
