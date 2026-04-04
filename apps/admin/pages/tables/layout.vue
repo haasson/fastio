@@ -98,7 +98,7 @@ const openReservation = (id: string) => {
 }
 
 const onReservationSaved = () => {
-  reservationsStore.load()
+  reservationsStore.refresh()
 }
 
 // ── Detail drawer handlers ──────────────────────────────

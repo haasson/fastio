@@ -139,6 +139,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     getRoleById: rolesApi.getRoleById,
     hasMultipleTenants,
     init,
+    fetchTenant,
     switchTenant,
     update,
     dispose,

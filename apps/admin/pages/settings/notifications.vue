@@ -83,7 +83,7 @@
         </div>
         <div class="tg-status-row">
           <span v-if="polling" class="tg-waiting">
-            <UiIcon name="loader" :size="14" class="spin" />
+            <span class="spinner" />
             Ожидаем подключения...
           </span>
           <span class="tg-hint">Код действует 15 минут</span>
@@ -91,7 +91,7 @@
       </template>
       <template v-else>
         <div class="tg-success">
-          <UiIcon name="checkCircle" :size="32" class="tg-success-icon" />
+          <UiIcon name="checkRound" :size="32" class="tg-success-icon" />
           <UiText size="small" class="tg-success-text">Группа успешно подключена!</UiText>
           <UiText size="tiny" class="tg-desc">Теперь сюда будут приходить уведомления о новых заказах и бронированиях</UiText>
         </div>
@@ -153,7 +153,7 @@ const startPolling = () => {
     if (data?.notifications?.telegramChatId) {
       stopPolling()
       connected.value = true
-      if (tenantStore.tenant) tenantStore.tenant.notifications = data.notifications
+      await tenantStore.fetchTenant()
       setTimeout(() => {
         showModal.value = false
       }, 2000)
@@ -173,10 +173,13 @@ onUnmounted(() => stopPolling())
 const handleSave = async () => {
   saving.value = true
   try {
+    const current = tenantStore.tenant?.notifications
+
     await tenantStore.update({
       notifications: {
-        ...(tenantStore.tenant?.notifications ?? {}),
         email: form.email || null,
+        telegramChatId: current?.telegramChatId ?? null,
+        telegramThreadId: current?.telegramThreadId ?? null,
       },
     })
     success('Сохранено')
@@ -205,10 +208,13 @@ const connectTelegram = async () => {
 const disconnectTelegram = async () => {
   disconnecting.value = true
   try {
+    const current = tenantStore.tenant?.notifications
+
     await tenantStore.update({
       notifications: {
-        ...(tenantStore.tenant?.notifications ?? {}),
+        email: current?.email ?? null,
         telegramChatId: null,
+        telegramThreadId: null,
       },
     })
   } finally {
@@ -360,12 +366,18 @@ const copyCode = () => {
   font-weight: 600;
 }
 
-.spin {
-  animation: spin 1s linear infinite;
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-text-secondary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 

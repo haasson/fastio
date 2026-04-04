@@ -1,1 +1,2 @@
 pnpm --filter admin exec lint-staged
+pnpm --filter admin typecheck
