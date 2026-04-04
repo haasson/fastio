@@ -12,11 +12,8 @@
           Вы можете задавать различные зоны на карте, и устанавливать для них отдельные условия доставки. Заказы вне зон не будут приниматься
         </UiAlert>
 
-        <UiAlert v-if="hasBranchesWithoutZones && pickupEnabled" type="warning">
+        <UiAlert v-if="hasBranchesWithoutZones" type="warning">
           Не у всех филиалов заданы зоны доставки — заказы в них можно оформить только на самовывоз
-        </UiAlert>
-        <UiAlert v-else-if="hasBranchesWithoutZones" type="warning">
-          Не у всех филиалов заданы зоны доставки — заказы в них приниматься не будут
         </UiAlert>
 
         <div class="zones-tiles">
@@ -102,7 +99,6 @@ const { zones, loading: zonesLoading, add: addZone, update: updateZone, remove: 
 const modules = useModules()
 
 const deliveryEnabled = computed(() => modules.delivery.value.enabled)
-const pickupEnabled = computed(() => modules.pickup.value.enabled)
 
 const branches = computed(() => branchStore.branches)
 const activeBranches = computed(() => branches.value.filter((b) => b.isActive))
