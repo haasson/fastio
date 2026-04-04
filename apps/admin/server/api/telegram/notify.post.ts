@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
     })
     .join('\n')
 
-  const sep = '─────────────────'
+  const sep = '──────────'
 
   let text = `🆕 <b>Заказ${order.order_number ? ` #${order.order_number}` : ''}</b> · ${deliveryLabel}\n`
 
@@ -90,11 +90,23 @@ export default defineEventHandler(async (event) => {
 
   if (threadId) payload.message_thread_id = threadId
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  if (order.customer_phone) {
+    payload.reply_markup = {
+      inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:${order.customer_phone}` }]],
+    }
+  }
+
+  const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
+
+  if (!tgRes.ok) {
+    const err = await tgRes.json()
+
+    console.error('[telegram notify] sendMessage failed:', JSON.stringify(err))
+  }
 
   return { ok: true }
 })
