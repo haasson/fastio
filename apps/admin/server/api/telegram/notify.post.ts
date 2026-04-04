@@ -27,6 +27,8 @@ export default defineEventHandler(async (event) => {
   const chatId = tenant?.notifications?.telegramChatId
   const threadId = tenant?.notifications?.telegramThreadId ?? null
 
+  console.warn('[tg notify] chatId:', chatId, 'threadId:', threadId, 'order:', !!order)
+
   if (!chatId || !order) return { ok: true }
 
   const deliveryLabel = order.delivery_type === 'delivery'
@@ -54,11 +56,14 @@ export default defineEventHandler(async (event) => {
 
   if (threadId) payload.message_thread_id = threadId
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
+  const tgJson = await tgRes.json()
+
+  console.warn('[tg notify] sendMessage result:', JSON.stringify(tgJson))
 
   return { ok: true }
 })
