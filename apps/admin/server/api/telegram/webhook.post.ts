@@ -18,7 +18,8 @@ export default defineEventHandler(async (event) => {
 
   const code = startMatch[1]
   const chatId: number = message.chat?.id
-  const threadId: number | null = message.message_thread_id ?? null
+  const isForum: boolean = message.chat?.is_forum === true
+  const threadId: number | null = message.message_thread_id ?? (isForum ? 1 : null)
 
   if (!code || !chatId) return { ok: true }
 
