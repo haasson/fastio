@@ -49,11 +49,21 @@ export default defineEventHandler(async (event) => {
 
   if (threadId) payload.message_thread_id = threadId
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  payload.reply_markup = {
+    inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:+${reservation.guest_phone.replace(/^\+/, '')}` }]],
+  }
+
+  const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
+
+  if (!tgRes.ok) {
+    const err = await tgRes.json()
+
+    console.error('[telegram notify-reservation] sendMessage failed:', JSON.stringify(err))
+  }
 
   return { ok: true }
 })

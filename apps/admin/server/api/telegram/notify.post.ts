@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
 
   if (order.customer_phone) {
     payload.reply_markup = {
-      inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:${order.customer_phone}` }]],
+      inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:+${order.customer_phone.replace(/^\+/, '')}` }]],
     }
   }
 
