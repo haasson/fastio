@@ -11,27 +11,30 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const message = body?.message
 
-  console.warn('[tg webhook] body:', JSON.stringify(body))
-
   const text: string = message?.text ?? ''
   const startMatch = text.match(/^\/start(?:@\S+)?\s+(\S+)/)
-
-  console.warn('[tg webhook] text:', text, 'match:', startMatch)
 
   if (!startMatch) return { ok: true }
 
   const code = startMatch[1]
   const chatId: number = message.chat?.id
+  const threadId: number | null = message.message_thread_id ?? null
 
   if (!code || !chatId) return { ok: true }
 
   const supabase = getServerSupabase()
 
-  const sendMessage = (text: string) => fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  })
+  const sendMessage = (text: string) => {
+    const payload: Record<string, unknown> = { chat_id: chatId, text }
+
+    if (threadId) payload.message_thread_id = threadId
+
+    return fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+  }
 
   const { data: linkCode } = await supabase
     .from('telegram_link_codes')
@@ -39,8 +42,6 @@ export default defineEventHandler(async (event) => {
     .eq('code', code)
     .gt('expires_at', new Date().toISOString())
     .single()
-
-  console.warn('[tg webhook] linkCode lookup result:', linkCode)
 
   if (!linkCode) {
     await sendMessage('❌ Код устарел или недействителен. Сгенерируй новый в настройках.')
@@ -54,24 +55,18 @@ export default defineEventHandler(async (event) => {
     .eq('id', linkCode.tenant_id)
     .single()
 
-  const [updateResult, deleteResult] = await Promise.all([
-    supabase
-      .from('tenants')
-      .update({ notifications: { ...(tenant?.notifications ?? {}), telegramChatId: String(chatId) } })
-      .eq('id', linkCode.tenant_id),
-    supabase
-      .from('telegram_link_codes')
-      .delete()
-      .eq('code', code),
+  const notifications = {
+    ...(tenant?.notifications ?? {}),
+    telegramChatId: String(chatId),
+    ...(threadId ? { telegramThreadId: threadId } : {}),
+  }
+
+  await Promise.all([
+    supabase.from('tenants').update({ notifications }).eq('id', linkCode.tenant_id),
+    supabase.from('telegram_link_codes').delete().eq('code', code),
   ])
 
-  console.warn('[tg webhook] update error:', updateResult.error)
-  console.warn('[tg webhook] delete error:', deleteResult.error)
-
-  const tgRes = await sendMessage('✅ Группа подключена к ресторану! Теперь сюда будут приходить уведомления о новых заказах.')
-  const tgJson = await tgRes.json()
-
-  console.warn('[tg webhook] sendMessage result:', JSON.stringify(tgJson))
+  await sendMessage('✅ Группа подключена к ресторану! Теперь сюда будут приходить уведомления о новых заказах.')
 
   return { ok: true }
 })

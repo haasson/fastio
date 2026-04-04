@@ -25,6 +25,7 @@ export default defineEventHandler(async (event) => {
   ])
 
   const chatId = tenant?.notifications?.telegramChatId
+  const threadId = tenant?.notifications?.telegramThreadId ?? null
 
   if (!chatId || !order) return { ok: true }
 
@@ -49,10 +50,14 @@ export default defineEventHandler(async (event) => {
   text += `🕐 ${time}\n\n`
   text += items
 
+  const payload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: 'HTML' }
+
+  if (threadId) payload.message_thread_id = threadId
+
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    body: JSON.stringify(payload),
   })
 
   return { ok: true }
