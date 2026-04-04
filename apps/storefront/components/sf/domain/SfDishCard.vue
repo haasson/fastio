@@ -42,7 +42,7 @@
   <!-- Default vertical layout (hidden on mobile when mobileCompact is true) -->
   <FsCard :image-alt="dish.name" :class="['dish-card-root', { clickable: isServices || orderingEnabled, 'hide-mobile': mobileCompact }]" @click="emit('cardClick')">
     <template #image>
-      <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
+      <img v-if="dish.photos[0]" class="dish-photo" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
       <div v-else class="dish-placeholder">
         <UtensilsCrossed :size="32" />
       </div>
@@ -179,6 +179,13 @@ function onDecrement() { if (firstCartIndex.value !== -1) cart.decrement(firstCa
   &.clickable { cursor: pointer; }
 
   @include md { max-width: none; margin-inline: 0; }
+}
+
+.dish-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .dish-placeholder {
