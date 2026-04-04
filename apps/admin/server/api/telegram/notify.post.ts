@@ -90,12 +90,6 @@ export default defineEventHandler(async (event) => {
 
   if (threadId) payload.message_thread_id = threadId
 
-  if (order.customer_phone) {
-    payload.reply_markup = {
-      inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:+${order.customer_phone.replace(/^\+/, '')}` }]],
-    }
-  }
-
   const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -106,6 +100,22 @@ export default defineEventHandler(async (event) => {
     const err = await tgRes.json()
 
     console.error('[telegram notify] sendMessage failed:', JSON.stringify(err))
+  }
+
+  if (order.customer_phone) {
+    const contactPayload: Record<string, unknown> = {
+      chat_id: chatId,
+      phone_number: `+${order.customer_phone.replace(/^\+/, '')}`,
+      first_name: order.customer_name || order.customer_phone,
+    }
+
+    if (threadId) contactPayload.message_thread_id = threadId
+
+    await fetch(`https://api.telegram.org/bot${token}/sendContact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(contactPayload),
+    })
   }
 
   return { ok: true }
