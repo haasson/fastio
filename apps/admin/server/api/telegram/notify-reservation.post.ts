@@ -49,6 +49,12 @@ export default defineEventHandler(async (event) => {
 
   if (threadId) payload.message_thread_id = threadId
 
+  if (reservation.guest_phone) {
+    payload.reply_markup = {
+      inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:${reservation.guest_phone}` }]],
+    }
+  }
+
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
   let text = `🆕 <b>Заказ${order.order_number ? ` #${order.order_number}` : ''}</b> · ${deliveryLabel}\n`
 
   if (order.customer_name) text += `👤 ${order.customer_name}\n`
-  if (phone) text += `📞 <a href="tel:${order.customer_phone}">${phone}</a>\n`
+  if (phone) text += `📞 ${phone}\n`
   if (order.address) text += `📍 ${order.address}\n`
   if (order.comment) text += `💬 ${order.comment}\n`
 
@@ -85,6 +85,12 @@ export default defineEventHandler(async (event) => {
   const payload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: 'HTML' }
 
   if (threadId) payload.message_thread_id = threadId
+
+  if (order.customer_phone) {
+    payload.reply_markup = {
+      inline_keyboard: [[{ text: '📞 Позвонить', url: `tel:${order.customer_phone}` }]],
+    }
+  }
 
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
