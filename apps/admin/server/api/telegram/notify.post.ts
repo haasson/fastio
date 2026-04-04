@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   if (!orderId || !tenantId) return { ok: true }
 
   const config = useRuntimeConfig()
-  const token = config.telegramBotToken
+  const token = config.telegramBotToken?.trim()
 
   if (!token) return { ok: true }
 
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
   const chatId = tenant?.notifications?.telegramChatId
   const threadId = tenant?.notifications?.telegramThreadId ?? null
 
-  console.warn('[tg notify] chatId:', chatId, 'threadId:', threadId, 'order:', !!order)
+  console.warn('[tg notify] chatId:', chatId, 'threadId:', threadId, 'order:', !!order, 'tokenLen:', token.length)
 
   if (!chatId || !order) return { ok: true }
 
