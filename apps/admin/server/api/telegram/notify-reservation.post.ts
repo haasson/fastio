@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
+import { formatPhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 
 export default defineEventHandler(async (event) => {
@@ -35,8 +36,10 @@ export default defineEventHandler(async (event) => {
 
   let text = `📅 <b>Новое бронирование</b>\n\n`
 
+  const phone = reservation.guest_phone
+
   text += `👤 ${reservation.guest_name}\n`
-  text += `📞 ${reservation.guest_phone}\n`
+  text += `📞 <a href="tel:${phone}">${formatPhone(phone)}</a>\n`
   text += `👥 ${reservation.guest_count} ${guestWord(reservation.guest_count)}\n`
   text += `🗓 ${dateStr} в ${timeStr}\n`
   if (reservation.table_name) text += `🪑 ${reservation.table_name}\n`

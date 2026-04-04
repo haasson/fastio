@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
+import { formatPhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 
 type OrderItem = {
@@ -45,9 +46,7 @@ export default defineEventHandler(async (event) => {
       ? '🏃 Самовывоз'
       : order.table_name ? `🪑 Стол ${order.table_name}` : '🪑 В зале'
 
-  const phone = order.customer_phone
-    ? order.customer_phone.replace(/(\+7|8)(\d{3})(\d{3})(\d{2})(\d{2})/, '+7 ($2) $3-$4-$5')
-    : null
+  const phone = order.customer_phone ? formatPhone(order.customer_phone) : null
 
   const items = [...((order.order_items ?? []) as unknown as OrderItem[])]
     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
