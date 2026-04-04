@@ -153,7 +153,7 @@ const startPolling = () => {
     if (data?.notifications?.telegramChatId) {
       stopPolling()
       connected.value = true
-      await tenantStore.fetchTenant()
+      if (tenantStore.tenant) tenantStore.tenant.notifications = data.notifications
       setTimeout(() => {
         showModal.value = false
       }, 2000)
