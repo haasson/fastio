@@ -2,6 +2,7 @@ CREATE OR REPLACE FUNCTION notify_new_reservation_telegram()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = net, public, vault
 AS $$
 DECLARE
   v_notify_url text;
@@ -14,8 +15,7 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Заменяем /notify на /notify-reservation
-  PERFORM pg_net.http_post(
+  PERFORM net.http_post(
     url     := regexp_replace(v_notify_url, '/notify$', '/notify-reservation'),
     body    := jsonb_build_object('reservationId', NEW.id, 'tenantId', NEW.tenant_id),
     headers := '{"Content-Type": "application/json"}'::jsonb

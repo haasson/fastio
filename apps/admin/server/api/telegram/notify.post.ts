@@ -2,6 +2,16 @@ import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
 
+type OrderItem = {
+  dish_name: string
+  quantity: number
+  price: number
+  sort_order: number
+  modifiers: { groupName: string; optionName: string; priceDelta: number }[]
+  addons: { name: string; price: number; quantity: number }[]
+  removed_ingredients: string[]
+}
+
 export default defineEventHandler(async (event) => {
   const { orderId, tenantId } = await readBody(event)
 
@@ -18,7 +28,7 @@ export default defineEventHandler(async (event) => {
     supabase.from('tenants').select('notifications').eq('id', tenantId).single(),
     supabase
       .from('orders')
-      .select('order_number, total, delivery_type, address, customer_phone, table_name, order_items(dish_name, quantity, sort_order)')
+      .select('order_number, total, delivery_type, address, customer_phone, customer_name, table_name, comment, order_items(dish_name, quantity, price, sort_order, modifiers, addons, removed_ingredients)')
       .eq('id', orderId)
       .eq('tenant_id', tenantId)
       .single(),
@@ -30,25 +40,48 @@ export default defineEventHandler(async (event) => {
   if (!chatId || !order) return { ok: true }
 
   const deliveryLabel = order.delivery_type === 'delivery'
-    ? 'Доставка'
+    ? '🚗 Доставка'
     : order.delivery_type === 'pickup'
-      ? 'Самовывоз'
-      : order.table_name ? `В зале (${order.table_name})` : 'В зале'
+      ? '🏃 Самовывоз'
+      : order.table_name ? `🪑 Стол ${order.table_name}` : '🪑 В зале'
 
-  const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+  const phone = order.customer_phone
+    ? order.customer_phone.replace(/(\+7|8)(\d{3})(\d{3})(\d{2})(\d{2})/, '+7 ($2) $3-$4-$5')
+    : null
 
-  const items = [...(order.order_items ?? [])]
+  const items = [...((order.order_items ?? []) as unknown as OrderItem[])]
     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-    .map((i) => `• ${i.dish_name} × ${i.quantity}`)
+    .map((i) => {
+      const itemTotal = (i.price
+        + (i.modifiers?.reduce((s, m) => s + m.priceDelta, 0) ?? 0)
+        + (i.addons?.reduce((s, a) => s + a.price * a.quantity, 0) ?? 0)
+      ) * i.quantity
+
+      let line = `• <b>${i.dish_name}</b> × ${i.quantity} — ${itemTotal} ₽`
+
+      if (i.modifiers?.length) {
+        line += `\n  <i>${i.modifiers.map((m) => m.optionName).join(', ')}</i>`
+      }
+      if (i.addons?.length) {
+        line += `\n  + ${i.addons.map((a) => `${a.name}${a.quantity > 1 ? ` × ${a.quantity}` : ''}`).join(', ')}`
+      }
+      if (i.removed_ingredients?.length) {
+        line += `\n  − ${i.removed_ingredients.join(', ')}`
+      }
+
+      return line
+    })
     .join('\n')
 
-  let text = `🆕 <b>Новый заказ${order.order_number ? ` #${order.order_number}` : ''}</b>\n\n`
+  let text = `🆕 <b>Заказ${order.order_number ? ` #${order.order_number}` : ''}</b> · ${deliveryLabel}\n`
 
-  text += `💰 ${order.total} ₽ · ${deliveryLabel}\n`
+  if (order.customer_name) text += `👤 ${order.customer_name}\n`
+  if (phone) text += `📞 <a href="tel:${order.customer_phone}">${phone}</a>\n`
   if (order.address) text += `📍 ${order.address}\n`
-  if (order.customer_phone) text += `📞 ${order.customer_phone}\n`
-  text += `🕐 ${time}\n\n`
-  text += items
+  if (order.comment) text += `💬 ${order.comment}\n`
+
+  text += `\n${items}\n\n`
+  text += `💰 Итого: <b>${order.total} ₽</b>`
 
   const payload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: 'HTML' }
 
