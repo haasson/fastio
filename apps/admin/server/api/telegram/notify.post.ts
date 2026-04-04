@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
 
   const config = useRuntimeConfig()
   const token = config.telegramBotToken?.trim()
+  const adminUrl = config.adminUrl?.trim()
 
   if (!token) return { ok: true }
 
@@ -90,6 +91,14 @@ export default defineEventHandler(async (event) => {
 
   if (threadId) payload.message_thread_id = threadId
 
+  if (order.customer_phone && adminUrl) {
+    const phone = order.customer_phone.replace(/\D/g, '')
+
+    payload.reply_markup = {
+      inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phone}` }]],
+    }
+  }
+
   const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -100,22 +109,6 @@ export default defineEventHandler(async (event) => {
     const err = await tgRes.json()
 
     console.error('[telegram notify] sendMessage failed:', JSON.stringify(err))
-  }
-
-  if (order.customer_phone) {
-    const contactPayload: Record<string, unknown> = {
-      chat_id: chatId,
-      phone_number: `+${order.customer_phone.replace(/^\+/, '')}`,
-      first_name: order.customer_name || order.customer_phone,
-    }
-
-    if (threadId) contactPayload.message_thread_id = threadId
-
-    await fetch(`https://api.telegram.org/bot${token}/sendContact`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(contactPayload),
-    })
   }
 
   return { ok: true }

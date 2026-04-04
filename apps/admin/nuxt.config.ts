@@ -38,6 +38,7 @@ export default defineNuxtConfig({
     anthropicApiKey: '',
     supabaseServiceRoleKey: '',
     telegramBotToken: '',
+    adminUrl: '',
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',

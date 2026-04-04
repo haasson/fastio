@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
 
   const config = useRuntimeConfig()
   const token = config.telegramBotToken
+  const adminUrl = config.adminUrl?.trim()
 
   if (!token) return { ok: true }
 
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
   const phone = reservation.guest_phone
 
   text += `👤 ${reservation.guest_name}\n`
-  text += `📞 <a href="tel:${phone}">${formatPhone(phone)}</a>\n`
+  text += `📞 ${formatPhone(phone)}\n`
   text += `👥 ${reservation.guest_count} ${guestWord(reservation.guest_count)}\n`
   text += `🗓 ${dateStr} в ${timeStr}\n`
   if (reservation.table_name) text += `🪑 ${reservation.table_name}\n`
@@ -48,6 +49,14 @@ export default defineEventHandler(async (event) => {
   const payload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: 'HTML' }
 
   if (threadId) payload.message_thread_id = threadId
+
+  if (adminUrl) {
+    const phoneDigits = reservation.guest_phone.replace(/\D/g, '')
+
+    payload.reply_markup = {
+      inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phoneDigits}` }]],
+    }
+  }
 
   const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
@@ -60,20 +69,6 @@ export default defineEventHandler(async (event) => {
 
     console.error('[telegram notify-reservation] sendMessage failed:', JSON.stringify(err))
   }
-
-  const contactPayload: Record<string, unknown> = {
-    chat_id: chatId,
-    phone_number: `+${reservation.guest_phone.replace(/^\+/, '')}`,
-    first_name: reservation.guest_name || reservation.guest_phone,
-  }
-
-  if (threadId) contactPayload.message_thread_id = threadId
-
-  await fetch(`https://api.telegram.org/bot${token}/sendContact`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(contactPayload),
-  })
 
   return { ok: true }
 })
