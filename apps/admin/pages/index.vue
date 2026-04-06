@@ -13,7 +13,7 @@
         />
 
         <UiSelect
-          v-if="hasBranches && isOwner"
+          v-if="branches.length > 1 && isOwner"
           v-model:value="selectedBranchKey"
           :options="branchOptions"
           size="small"
