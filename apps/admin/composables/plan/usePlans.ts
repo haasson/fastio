@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { Plan } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { reportError } from '~/utils/reportError'
 
 const plans = ref<Plan[]>([])
 const loaded = ref(false)
@@ -14,7 +15,7 @@ export const usePlans = () => {
       plans.value = await api.plans.list()
       loaded.value = true
     } catch (e) {
-      console.error('Failed to load plans:', e)
+      reportError(e)
     }
   }
 

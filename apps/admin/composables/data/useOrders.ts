@@ -6,6 +6,7 @@ import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
+import { reportError } from '~/utils/reportError'
 
 export type UseOrdersOptions = {
   branchId?: Ref<string | null>
@@ -178,9 +179,9 @@ export function useOrders(
     const newStatus = statuses.value.find((s) => s.id === newStatusId)
 
     if (newStatus?.groupType === 'cancelled') {
-      api.kitchenQueue.cancelForOrders([orderId]).catch(console.error)
+      api.kitchenQueue.cancelForOrders([orderId]).catch(reportError)
     } else if (newStatus?.groupType === 'completed') {
-      api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id).catch(console.error)
+      api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id).catch(reportError)
     }
 
     if (authStore.user && oldStatusId) {
@@ -199,7 +200,7 @@ export function useOrders(
           to_id: newStatusId,
           to_name: newStatus?.name ?? null,
         },
-      }).catch(console.error)
+      }).catch(reportError)
     }
 
     if (i === -1) return

@@ -15,7 +15,7 @@ export default defineNuxtConfig({
 
   components: false,
 
-  modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt'],
+  modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt', '@sentry/nuxt/module'],
 
   runtimeConfig: {
     supabaseServiceRoleKey: '',

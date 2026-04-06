@@ -1,6 +1,7 @@
 import type { Order, OrderStatus } from '@fastio/shared'
 import { normalizePhone } from '@fastio/shared'
 import { useAuthStore } from '~/stores/auth'
+import { reportError } from '~/utils/reportError'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 
@@ -59,7 +60,7 @@ export const useOrderEventLogger = () => {
           to_id: form.status,
           to_name: newStatus?.name ?? null,
         },
-      }).catch(console.error)
+      }).catch(reportError)
     }
 
     const fieldChanges = FIELD_MAPPINGS
@@ -67,11 +68,11 @@ export const useOrderEventLogger = () => {
       .map((m) => ({ field: m.field, old_value: m.orderVal(order), new_value: m.formVal(form) }))
 
     if (fieldChanges.length > 0) {
-      api.orderEvents.add({ ...actor, eventType: 'field_updated', meta: { changes: fieldChanges } }).catch(console.error)
+      api.orderEvents.add({ ...actor, eventType: 'field_updated', meta: { changes: fieldChanges } }).catch(reportError)
     }
 
     if (JSON.stringify(form.items) !== JSON.stringify(order.items)) {
-      api.orderEvents.add({ ...actor, eventType: 'items_updated', meta: { before: order.items, after: form.items } }).catch(console.error)
+      api.orderEvents.add({ ...actor, eventType: 'items_updated', meta: { before: order.items, after: form.items } }).catch(reportError)
     }
   }
 

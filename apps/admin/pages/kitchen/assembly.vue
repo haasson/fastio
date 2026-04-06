@@ -31,6 +31,7 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import KitchenAssemblyCard from '~/components/kitchen/KitchenAssemblyCard.vue'
+import { reportError } from '~/utils/reportError'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()
@@ -115,7 +116,7 @@ const onCollectItem = (itemId: string, collected: boolean) => {
     ? api.kitchenQueue.complete(itemId)
     : api.kitchenQueue.uncollect(itemId)
 
-  promise.catch(console.error)
+  promise.catch(reportError)
 }
 
 const onAssembled = async (orderId: string) => {
@@ -143,7 +144,7 @@ const offUpdate = kitchenQueueEvents.onUpdate((item) => {
     if (idx !== -1) items.value[idx] = item
     else items.value.push(item)
 
-    tryAutoAdvance(item).catch(console.error)
+    tryAutoAdvance(item).catch(reportError)
   }
 })
 

@@ -30,7 +30,7 @@ export default defineNuxtConfig({
 
   components: false,
 
-  modules: ['@pinia/nuxt', '@vueuse/nuxt'],
+  modules: ['@pinia/nuxt', '@vueuse/nuxt', '@sentry/nuxt/module'],
 
   css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
 

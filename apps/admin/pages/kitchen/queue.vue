@@ -104,6 +104,7 @@ import { useModules } from '~/composables/plan/useModules'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import KitchenQueueItem from '~/components/kitchen/KitchenQueueItem.vue'
 import KitchenWorkCard from '~/components/kitchen/KitchenWorkCard.vue'
+import { reportError } from '~/utils/reportError'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()
@@ -217,7 +218,7 @@ const logKitchenEvent = async (orderId: string, eventType: string, meta: Record<
   const actor = getActor()
 
   if (!actor) return
-  await api.orderEvents.add({ orderId, ...actor, eventType: eventType as OrderEvent['eventType'], meta }).catch(console.error)
+  await api.orderEvents.add({ orderId, ...actor, eventType: eventType as OrderEvent['eventType'], meta }).catch(reportError)
 }
 
 const claimDish = async (qItem: KitchenQueueItemType) => {
