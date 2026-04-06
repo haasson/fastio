@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, getCurrentInstance, onUnmounted } from 'vue'
 
 export type DadataSuggestion = {
   value: string
@@ -11,15 +11,24 @@ export type DadataSuggestion = {
   }
 }
 
-export const useDadataSuggestions = (proxyUrl: string) => {
+export type DadataSuggestionsOptions = {
+  proxyUrl: string
+  debounce?: number
+}
+
+export const useDadataSuggestions = (options: DadataSuggestionsOptions | string) => {
+  const { proxyUrl, debounce = 300 } = typeof options === 'string'
+    ? { proxyUrl: options }
+    : options
+
   const suggestions = ref<DadataSuggestion[]>([])
   const loading = ref(false)
   let timer: ReturnType<typeof setTimeout> | null = null
+  let hideTimer: ReturnType<typeof setTimeout> | null = null
 
   const fetchSuggestions = async (query: string) => {
     if (!query || query.length < 3 || !proxyUrl) {
       suggestions.value = []
-
       return
     }
 
@@ -32,7 +41,6 @@ export const useDadataSuggestions = (proxyUrl: string) => {
       })
 
       const json = await res.json()
-
       suggestions.value = json.suggestions ?? []
     } catch {
       suggestions.value = []
@@ -43,18 +51,25 @@ export const useDadataSuggestions = (proxyUrl: string) => {
 
   const search = (query: string) => {
     if (timer) clearTimeout(timer)
-    timer = setTimeout(() => fetchSuggestions(query), 300)
+    timer = setTimeout(() => fetchSuggestions(query), debounce)
   }
 
   const showSuggestions = ref(false)
 
   const hideSuggestionsDelayed = () => {
-    setTimeout(() => { showSuggestions.value = false }, 200)
+    hideTimer = setTimeout(() => { showSuggestions.value = false }, 200)
   }
 
   const clear = () => {
     suggestions.value = []
   }
 
-  return { suggestions, loading, search, clear, showSuggestions, hideSuggestionsDelayed }
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      if (timer) clearTimeout(timer)
+      if (hideTimer) clearTimeout(hideTimer)
+    })
+  }
+
+  return { suggestions, loading, search, fetchSuggestions, clear, showSuggestions, hideSuggestionsDelayed }
 }
