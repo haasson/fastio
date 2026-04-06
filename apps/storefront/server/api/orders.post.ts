@@ -6,6 +6,7 @@ import { resolveCustomer } from '../services/order-customer'
 import { resolveDelivery } from '../services/order-delivery'
 import { validateAndBuildItems } from '../services/order-items'
 import { resolvePromo } from '../services/order-promo'
+import { calcOrderTotal } from '../services/order-calc'
 
 const orderRateLimiter = createRateLimiter(5, 60_000)
 
@@ -46,7 +47,7 @@ export default defineEventHandler(async (event) => {
     supabase, tenantId, body.promoCode ?? null, subtotal,
   )
 
-  const total = subtotal - discountAmount + deliveryFee
+  const total = calcOrderTotal(subtotal, discountAmount, deliveryFee)
 
   // 6. Создание заказа
   const idempotencyKey = typeof body.idempotencyKey === 'string' && body.idempotencyKey.trim()

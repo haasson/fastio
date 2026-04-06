@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { calcSubtotal } from './order-calc'
 
 type ClientItem = {
   dishId: string | null
@@ -168,11 +169,7 @@ export async function validateAndBuildItems(
     }
   })
 
-  const subtotal = serverItems.reduce(
-    (sum, item) =>
-      sum + (item.price + (item.modifiers?.reduce((s, m) => s + m.priceDelta, 0) ?? 0)) * item.quantity,
-    0,
-  )
+  const subtotal = calcSubtotal(serverItems)
 
   return { serverItems, subtotal, comboItemsMap }
 }

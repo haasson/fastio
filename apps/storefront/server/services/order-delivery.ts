@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DeliveryZone, DeliveryZoneRow } from '@fastio/shared'
 import { findDeliveryZone, mapDeliveryZoneRow } from '@fastio/shared'
 import type { DeliveryType, TenantOrderConfig } from './order-validation'
+import { calcDeliveryFee } from './order-calc'
 
 export type TableRecord = {
   id: string
@@ -97,16 +98,13 @@ export async function resolveDelivery(
     throw createError({ statusCode: 400, message: 'Не удалось определить филиал для заказа' })
   }
 
-  // Delivery fee: из зоны (если есть) или из тенанта
-  const zoneDeliveryFee = matchedZone
-    ? (matchedZone.freeDeliveryFrom > 0 && subtotal >= matchedZone.freeDeliveryFrom ? 0 : matchedZone.deliveryFee)
-    : null
-
-  const deliveryFee = deliveryType === 'delivery'
-    ? (zoneDeliveryFee !== null ? zoneDeliveryFee : tenantConfig.deliveryFee)
-    : 0
-
-  const minOrder = matchedZone ? matchedZone.minOrder : tenantConfig.deliveryMinOrder
+  const { deliveryFee, minOrder } = calcDeliveryFee({
+    deliveryType,
+    matchedZone,
+    tenantDeliveryFee: tenantConfig.deliveryFee,
+    tenantMinOrder: tenantConfig.deliveryMinOrder,
+    subtotal,
+  })
 
   if (deliveryType === 'delivery' && subtotal < minOrder) {
     throw createError({

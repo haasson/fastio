@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { calcPromoDiscount } from './order-calc'
 
 export type PromoResult = {
   discountAmount: number
@@ -21,35 +22,12 @@ export async function resolvePromo(
     supabase.rpc('get_free_item_promotion', { p_tenant_id: tenantId, p_subtotal: subtotal }),
   ])
 
-  let promoCodeDiscount = 0
-  if (promoResult?.valid) {
-    const raw = promoResult.discount_type === 'percent'
-      ? Math.round(subtotal * Number(promoResult.discount_value) / 100)
-      : Number(promoResult.discount_value)
-    promoCodeDiscount = Math.min(raw, subtotal)
-  }
-
-  let promotionDiscount = 0
-  let appliedPromotionId: string | null = null
-
-  if (bestPromo) {
-    promotionDiscount = Number(bestPromo.discount_amount)
-    appliedPromotionId = bestPromo.promotion_id as string
-  }
-
-  // Лучшая скидка побеждает
-  let discountAmount: number
-  let appliedPromoCode: string | null
-
-  if (promotionDiscount > promoCodeDiscount) {
-    discountAmount = promotionDiscount
-    appliedPromoCode = null
-  }
-  else {
-    discountAmount = promoCodeDiscount
-    appliedPromotionId = null
-    appliedPromoCode = promoCode
-  }
+  const { discountAmount, appliedPromoCode, appliedPromotionId } = calcPromoDiscount(
+    subtotal,
+    promoCode,
+    promoResult,
+    bestPromo as { discount_amount: number; promotion_id: string } | null,
+  )
 
   return {
     discountAmount,
