@@ -92,6 +92,9 @@ importers:
       ai:
         specifier: ^6.0.141
         version: 6.0.141(zod@4.3.6)
+      apexcharts:
+        specifier: ^5.10.4
+        version: 5.10.4
       driver.js:
         specifier: ^1.4.0
         version: 1.4.0
@@ -125,6 +128,9 @@ importers:
       vue-yandex-maps:
         specifier: ^3.0.2
         version: 3.0.2(@yandex/ymaps3-cartesian-projection@0.0.6)(@yandex/ymaps3-clusterer@0.0.12)(@yandex/ymaps3-context-menu@0.0.2)(@yandex/ymaps3-default-ui-theme@0.0.24)(@yandex/ymaps3-drawer-control@0.0.2)(@yandex/ymaps3-hint@0.1.2)(@yandex/ymaps3-minimap@0.0.4)(@yandex/ymaps3-resizer@0.0.2)(@yandex/ymaps3-signpost@0.0.2)(@yandex/ymaps3-spinner@0.0.2)(@yandex/ymaps3-types@1.0.18856213(@vue/runtime-core@3.5.29))(@yandex/ymaps3-web-mercator-projection@0.0.5)(@yandex/ymaps3-world-utils@0.0.18856213)(nuxt@3.21.1(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.6.1))(ioredis@5.10.0)(magicast@0.5.2)(optionator@0.9.4)(rollup@4.59.0)(sass@1.97.3)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.3)(jiti@2.6.1)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
+      vue3-apexcharts:
+        specifier: ^1.11.1
+        version: 1.11.1(apexcharts@5.10.4)(vue@3.5.29(typescript@5.9.3))
     devDependencies:
       '@types/qrcode':
         specifier: ^1.5.6
@@ -2535,6 +2541,9 @@ packages:
   anymatch@3.1.3:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
+
+  apexcharts@5.10.4:
+    resolution: {integrity: sha512-gt0VUqZ2+mr25ScbUcKZgJr96jKYm4vjOcxEWCEh/E5F4dWqhyo3dBhPRvNNnkKiWxkMd2cBwj3ZYH3rK39fkA==}
 
   archiver-utils@5.0.2:
     resolution: {integrity: sha512-wuLJMmIBQYCsGZgYLTy5FIB2pF6Lfb6cXMSF8Qywwk3t20zWnAi7zLcQFdKQmIB8wyZpY5ER38x08GbwtR2cLA==}
@@ -5760,6 +5769,12 @@ packages:
       nuxt:
         optional: true
 
+  vue3-apexcharts@1.11.1:
+    resolution: {integrity: sha512-MbN3vg8bMG19wc0Lm1HkeQvODgLm56DgpIxtNUO0xpf/JCzYWVGE4jzXp2JISzy2s3Kul1yOxNQUYsLvKQ5L9g==}
+    peerDependencies:
+      apexcharts: '>=5.10.0'
+      vue: '>=3.0.0'
+
   vue@3.5.29:
     resolution: {integrity: sha512-BZqN4Ze6mDQVNAni0IHeMJ5mwr8VAJ3MQC9FmprRhcBYENw+wOAAjRj8jfmN6FLl0j96OXbR+CjWhmAmM+QGnA==}
     peerDependencies:
@@ -8254,6 +8269,8 @@ snapshots:
     dependencies:
       normalize-path: 3.0.0
       picomatch: 2.3.1
+
+  apexcharts@5.10.4: {}
 
   archiver-utils@5.0.2:
     dependencies:
@@ -11811,6 +11828,11 @@ snapshots:
       vue: 3.5.29(typescript@5.9.3)
     optionalDependencies:
       nuxt: 3.21.1(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.6.1))(ioredis@5.10.0)(magicast@0.5.2)(optionator@0.9.4)(rollup@4.59.0)(sass@1.97.3)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.3)(jiti@2.6.1)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))(yaml@2.8.2)
+
+  vue3-apexcharts@1.11.1(apexcharts@5.10.4)(vue@3.5.29(typescript@5.9.3)):
+    dependencies:
+      apexcharts: 5.10.4
+      vue: 3.5.29(typescript@5.9.3)
 
   vue@3.5.29(typescript@5.9.3):
     dependencies:

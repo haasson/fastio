@@ -370,6 +370,42 @@ export const ordersApi = {
     return result ? mapOrder(result) : null
   },
 
+  async getStatsForPeriod(
+    sb: SupabaseClient,
+    tenantId: string,
+    dateFrom: string,
+    dateTo: string,
+    branchId: string | null = null,
+  ): Promise<Array<{ id: string; total: number; createdAt: string; deliveryType: OrderDeliveryType; items: Array<{ dishName: string; quantity: number; categoryName: string | null }> }>> {
+    let q = sb
+      .from('orders')
+      .select('id, total, created_at, delivery_type, order_items(dish_name, quantity, category_name)')
+      .eq('tenant_id', tenantId)
+      .gte('created_at', dateFrom)
+      .lte('created_at', dateTo)
+
+    if (branchId !== null) q = q.eq('branch_id', branchId)
+
+    const { data, error } = await q
+
+    if (error) {
+      console.error('[Supabase]', error.message, error)
+      throw new Error(error.message)
+    }
+
+    return (data ?? []).map((row) => ({
+      id: row.id as string,
+      total: row.total as number,
+      createdAt: row.created_at as string,
+      deliveryType: row.delivery_type as OrderDeliveryType,
+      items: ((row.order_items as Array<{ dish_name: string; quantity: number; category_name: string | null }>) ?? []).map((i) => ({
+        dishName: i.dish_name,
+        quantity: i.quantity,
+        categoryName: i.category_name ?? null,
+      })),
+    }))
+  },
+
   async confirmItem(sb: SupabaseClient, itemId: string, userId: string): Promise<void> {
     await query(
       sb.from('order_items')
