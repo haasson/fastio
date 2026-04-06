@@ -42,7 +42,7 @@ export default defineEventHandler(async (): Promise<TenantRow[]> => {
       name: tenant.name,
       slug: tenant.slug,
       ownerEmail: user?.email ?? '—',
-      plan: (tenant.subscription as { plan?: string })?.plan ?? 'start',
+      plan: (tenant.subscription as { plan?: string })?.plan ?? 'service',
       balance: tenant.balance ?? 0,
       branchCount: branchCountByTenant.get(tenant.id) ?? 0,
       createdAt: tenant.created_at,

@@ -321,7 +321,7 @@ BEGIN
     '{"email":null,"telegramChatId":null}'::jsonb,
 
     -- subscription
-    '{"status":"active","plan":"pro","trialEndsAt":null,"renewsAt":"2027-01-01T00:00:00Z","pastDueAt":null,"priceOverride":null,"gracePeriodDays":null}'::jsonb,
+    '{"status":"active","plan":"business","trialEndsAt":null,"renewsAt":"2027-01-01T00:00:00Z","pastDueAt":null,"priceOverride":null,"gracePeriodDays":null}'::jsonb,
 
     -- modules
     '{"delivery":true,"pickup":true,"modifiers":true,"addons":true,"promotions":true,"combos":false,"customRoles":false,"dineIn":false,"kitchen":true,"reservations":false}'::jsonb,
@@ -787,7 +787,7 @@ BEGIN
 
     '{"email":null,"telegramChatId":null}'::jsonb,
 
-    '{"status":"active","plan":"pro","trialEndsAt":null,"renewsAt":"2027-01-01T00:00:00Z","pastDueAt":null,"priceOverride":null,"gracePeriodDays":null}'::jsonb,
+    '{"status":"active","plan":"business","trialEndsAt":null,"renewsAt":"2027-01-01T00:00:00Z","pastDueAt":null,"priceOverride":null,"gracePeriodDays":null}'::jsonb,
 
     -- modules: dineIn + reservations + modifiers
     '{"delivery":false,"pickup":false,"modifiers":true,"addons":false,"promotions":false,"combos":false,"customRoles":false,"dineIn":true,"kitchen":false,"reservations":true}'::jsonb,
@@ -1023,7 +1023,7 @@ BEGIN
 
     '{"email":null,"telegramChatId":null}'::jsonb,
 
-    '{"status":"active","plan":"pro","trialEndsAt":null,"renewsAt":"2027-01-01T00:00:00Z","pastDueAt":null,"priceOverride":null,"gracePeriodDays":null}'::jsonb,
+    '{"status":"active","plan":"business","trialEndsAt":null,"renewsAt":"2027-01-01T00:00:00Z","pastDueAt":null,"priceOverride":null,"gracePeriodDays":null}'::jsonb,
 
     -- modules: pickup + dineIn + modifiers + addons + promotions + kitchen + reservations
     '{"delivery":false,"pickup":true,"modifiers":true,"addons":true,"promotions":true,"combos":false,"customRoles":false,"dineIn":true,"kitchen":true,"reservations":true}'::jsonb,

@@ -26,10 +26,21 @@
           :max="30"
           style="width: 120px"
         />
+      </div>
+      <div class="row-form">
+        <span class="form-label">Trial period (дней бесплатного периода)</span>
+        <NInputNumber
+          v-model:value="trialDays"
+          :min="1"
+          :max="30"
+          style="width: 120px"
+        />
+      </div>
+      <div class="row-form">
         <NButton
           type="primary"
           :loading="savingConfig"
-          :disabled="gracePeriod === originalGracePeriod"
+          :disabled="gracePeriod === originalGracePeriod && trialDays === originalTrialDays"
           @click="saveConfig"
         >
           Сохранить
@@ -102,10 +113,12 @@ type PlanRow = {
 const { data, pending, refresh } = await useFetch<PlanRow[]>('/api/plans')
 
 // Billing config
-type BillingConfig = { grace_period_days: number }
+type BillingConfig = { grace_period_days: number; trial_days: number }
 const { data: configData } = await useFetch<BillingConfig>('/api/billing-config')
 const gracePeriod = ref(configData.value?.grace_period_days ?? 3)
 const originalGracePeriod = ref(gracePeriod.value)
+const trialDays = ref(configData.value?.trial_days ?? 14)
+const originalTrialDays = ref(trialDays.value)
 const savingConfig = ref(false)
 
 const saveConfig = async () => {
@@ -113,9 +126,10 @@ const saveConfig = async () => {
   try {
     await $fetch('/api/billing-config', {
       method: 'PUT',
-      body: { grace_period_days: gracePeriod.value },
+      body: { grace_period_days: gracePeriod.value, trial_days: trialDays.value },
     })
     originalGracePeriod.value = gracePeriod.value
+    originalTrialDays.value = trialDays.value
   } catch (err: unknown) {
     const message = (err as { data?: { message?: string } })?.data?.message ?? 'Ошибка'
 

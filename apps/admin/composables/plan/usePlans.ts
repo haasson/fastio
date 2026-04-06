@@ -24,8 +24,8 @@ export const usePlans = () => {
   }
 
   const getPlanSortOrder = (key: string): number => {
-    // До загрузки планов — всё кроме start залочено (безопасный дефолт)
-    if (!loaded.value) return key === 'start' ? 0 : Infinity
+    // До загрузки планов — всё кроме service залочено (безопасный дефолт)
+    if (!loaded.value) return key === 'service' ? 0 : Infinity
     const plan = plans.value.find((p) => p.key === key)
 
     return plan?.sortOrder ?? 0

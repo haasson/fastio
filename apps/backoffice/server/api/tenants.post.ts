@@ -47,7 +47,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, message: `Slug "${slug}" уже занят` })
   }
 
-  // 3. Создаём тенант
+  // 3. Получаем trial_days из billing_config
+  const { data: billingConfig } = await supabase
+    .from('billing_config')
+    .select('trial_days')
+    .single()
+  const trialDays = billingConfig?.trial_days ?? 14
+
+  // 4. Создаём тенант
   const { data: tenant, error: tenantError } = await supabase
     .from('tenants')
     .insert({
@@ -75,8 +82,8 @@ export default defineEventHandler(async (event) => {
       notifications: { email, telegramChatId: null },
       subscription: {
         status: 'trial',
-        plan: 'start',
-        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        plan: 'service',
+        trialEndsAt: new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString(),
         renewsAt: null,
       },
       delivery_min_order: 500,
@@ -87,7 +94,7 @@ export default defineEventHandler(async (event) => {
 
   if (tenantError) throw createError({ statusCode: 500, message: tenantError.message })
 
-  // 4. Добавляем owner в tenant_members
+  // 5. Добавляем owner в tenant_members
   const { error: memberError } = await supabase
     .from('tenant_members')
     .insert({ tenant_id: tenant.id, user_id: userId, role: 'owner' })

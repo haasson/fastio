@@ -8,25 +8,25 @@ vi.mock('~/stores/tenant', () => ({
 }))
 
 describe('usePlanFeatures', () => {
-  it('план start если tenant null', () => {
+  it('план service если tenant null', () => {
     mockStore.tenant = null
     const { plan } = usePlanFeatures()
 
-    expect(plan.value).toBe('start')
+    expect(plan.value).toBe('service')
   })
 
-  it('план start если subscription null', () => {
+  it('план service если subscription null', () => {
     mockStore.tenant = { subscription: null }
     const { plan } = usePlanFeatures()
 
-    expect(plan.value).toBe('start')
+    expect(plan.value).toBe('service')
   })
 
-  it('план start если subscription без plan', () => {
+  it('план service если subscription без plan', () => {
     mockStore.tenant = { subscription: {} }
     const { plan } = usePlanFeatures()
 
-    expect(plan.value).toBe('start')
+    expect(plan.value).toBe('service')
   })
 
   it('корректно определяет business', () => {
@@ -36,17 +36,10 @@ describe('usePlanFeatures', () => {
     expect(plan.value).toBe('business')
   })
 
-  it('корректно определяет pro', () => {
-    mockStore.tenant = { subscription: { plan: 'pro' } }
+  it('корректно определяет service', () => {
+    mockStore.tenant = { subscription: { plan: 'service' } }
     const { plan } = usePlanFeatures()
 
-    expect(plan.value).toBe('pro')
-  })
-
-  it('корректно определяет start', () => {
-    mockStore.tenant = { subscription: { plan: 'start' } }
-    const { plan } = usePlanFeatures()
-
-    expect(plan.value).toBe('start')
+    expect(plan.value).toBe('service')
   })
 })

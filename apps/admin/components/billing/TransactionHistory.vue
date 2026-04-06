@@ -1,6 +1,6 @@
 <template>
   <div>
-    <UiSectionHeader title="История операций" />
+    <UiSectionHeader title="История операций" class="tx-title" />
 
     <div v-if="loading" class="state-msg">Загрузка…</div>
     <div v-else-if="transactions.length === 0" class="state-msg">Операций пока нет</div>
@@ -67,6 +67,10 @@ onMounted(() => load())
 </script>
 
 <style scoped>
+.tx-title {
+  margin-bottom: 16px;
+}
+
 .tx-table {
   display: flex;
   flex-direction: column;
