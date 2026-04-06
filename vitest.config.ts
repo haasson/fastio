@@ -22,6 +22,7 @@ export default defineConfig({
       'packages/shared/src/**/*.test.ts',
       'apps/admin/**/*.test.ts',
       'apps/storefront/**/*.test.ts',
+      'apps/backoffice/**/*.test.ts',
     ],
     coverage: {
       provider: 'v8',

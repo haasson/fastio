@@ -1,18 +1,17 @@
 import { defineEventHandler, createError, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { getAdminClient } from '../utils/adminClient'
-
-type CreateTenantBody = {
-  name: string
-  slug: string
-  email: string
-}
+import { validateCreateTenantInput } from '../utils/billing'
 
 export default defineEventHandler(async (event) => {
-  const { name, slug, email } = await readBody<CreateTenantBody>(event)
+  const body = await readBody<{ name?: string; slug?: string; email?: string }>(event)
 
-  if (!name?.trim() || !slug?.trim() || !email?.trim()) {
-    throw createError({ statusCode: 400, message: 'Заполни все поля: name, slug, email' })
+  let name: string, slug: string, email: string
+  try {
+    ({ name, slug, email } = validateCreateTenantInput(body))
+  }
+  catch (err) {
+    throw createError({ statusCode: 400, message: (err as Error).message })
   }
 
   const supabase = getAdminClient()

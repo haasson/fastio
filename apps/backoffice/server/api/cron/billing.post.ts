@@ -1,5 +1,6 @@
 import { defineEventHandler, createError } from 'h3'
 import { getAdminClient } from '../../utils/adminClient'
+import { filterDueTenants } from '../../utils/billing'
 
 /**
  * Ручной триггер биллинга — для дебага и принудительного запуска.
@@ -18,15 +19,10 @@ export default defineEventHandler(async () => {
 
   const now = new Date()
 
-  const dueTenants = (tenants ?? []).filter((tenant) => {
-    const sub = tenant.subscription as { status: string; renewsAt?: string; trialEndsAt?: string }
-    const renewsAt = sub.renewsAt ? new Date(sub.renewsAt) : null
-    const trialEndsAt = sub.trialEndsAt ? new Date(sub.trialEndsAt) : null
-
-    return sub.status === 'past_due'
-      || (renewsAt && renewsAt <= now)
-      || (sub.status === 'trial' && trialEndsAt && trialEndsAt <= now)
-  })
+  const dueTenants = filterDueTenants(
+    (tenants ?? []) as { id: string; subscription: { status: string; renewsAt?: string | null; trialEndsAt?: string | null } }[],
+    now,
+  )
 
   const BATCH_SIZE = 10
   const results: { tenantId: string; result: string }[] = []
