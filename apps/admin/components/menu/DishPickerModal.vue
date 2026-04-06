@@ -412,7 +412,10 @@ const onConfirm = () => {
     ? removableIngredients.value.filter((i) => removed[i.name]).map((i) => i.name)
     : []
 
-  const categoryName = categories.value.find((c) => c.id === selectedDish.value!.categoryId)?.name ?? null
+  const dishCategory = categories.value.find((c) => c.id === selectedDish.value!.categoryId)
+  // Если категория виртуальная (tagId != null) — не используем её как categoryName,
+  // т.к. блюдо туда попало по тегу, а не как родная категория
+  const categoryName = dishCategory && !dishCategory.tagId ? dishCategory.name : null
 
   const addons: OrderItemAddon[] = dishAddons.value
     .filter((a) => selectedAddonIds.has(a.id))

@@ -3,7 +3,6 @@ import { UiTag, UiText } from '@fastio/ui'
 import type { DataTableColumn, DataTableColumns } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
 import { formatPhone } from '@fastio/shared'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS } from '~/config/order-options'
 import { formatRelativeTime } from '@fastio/shared'
@@ -20,7 +19,6 @@ type UseOrderTableOptions = {
   branchId: Ref<string | null>
   branches: Branch[]
   visibleColumns: Ref<string[]>
-  onEdit: (order: Order) => void
   getBranchName: (id: string | null | undefined) => string | undefined
 }
 
@@ -57,7 +55,6 @@ export function useOrderTable(options: UseOrderTableOptions) {
     branchId,
     branches,
     visibleColumns,
-    onEdit,
     getBranchName,
   } = options
 
@@ -82,16 +79,7 @@ export function useOrderTable(options: UseOrderTableOptions) {
           const groupType = statuses.find((s) => s.id === row.status)?.groupType
           const tagType = groupType ? STATUS_GROUP_TAG_TYPES[groupType] : 'default'
 
-          return h(UiTag, {
-            type: tagType,
-            size: 'small',
-            round: true,
-            style: 'cursor: pointer',
-            onClick: (e: MouseEvent) => {
-              e.stopPropagation()
-              onEdit(row)
-            },
-          }, () => row.orderNumber)
+          return h(UiTag, { type: tagType, size: 'small', round: true }, () => row.orderNumber)
         },
       },
       ...isVisible('customerName')
@@ -179,16 +167,6 @@ export function useOrderTable(options: UseOrderTableOptions) {
           render: (row: Order) => h(UiText, { size: 'tiny' }, () => getBranchName(row.branchId) ?? '—'),
         } satisfies DataTableColumn<Order>]
         : [],
-      {
-        title: '',
-        key: 'actions',
-        minWidth: 56,
-        render: (row) => h(AppActionsBlock, {
-          showDelete: false,
-          size: 'small',
-          onEdit: () => onEdit(row),
-        }),
-      },
     ]
   })
 

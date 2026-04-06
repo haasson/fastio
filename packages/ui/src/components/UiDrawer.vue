@@ -16,7 +16,9 @@
       >
         <template #header>
           <div class="drawer-header">
-            <span class="drawer-title">{{ title }}</span>
+            <div class="drawer-title">
+              <slot name="title">{{ title }}</slot>
+            </div>
             <div class="header-right">
               <slot name="header-actions" />
               <div v-if="closable" class="close-btn" @click="onUpdateShow(false)">
@@ -139,6 +141,8 @@ async function handleActionClick(action: DrawerAction) {
 }
 
 .drawer-title {
+  display: flex;
+  align-items: center;
   font-size: 16px;
   font-weight: 600;
   color: var(--color-title);

@@ -81,6 +81,7 @@
         :data="tableData"
         :row-key="(row: Order) => row.id"
         :checked-row-keys="checkedRowKeys"
+        :row-props="(row: Order) => ({ style: 'cursor: pointer', onClick: () => openEditModal(row) })"
         :bordered="false"
         size="small"
         @update:sorter="handleSorterChange"
@@ -310,7 +311,6 @@ const { columns } = useOrderTable({
   branchId: branchIdRef,
   branches: branchStore.branches,
   visibleColumns,
-  onEdit: openEditModal,
   getBranchName,
 })
 </script>
@@ -384,8 +384,8 @@ const { columns } = useOrderTable({
 }
 
 :deep(.col-time) {
-  font-size: 11px;
-  color: var(--color-text-tertiary);
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
 :deep(.col-total) {

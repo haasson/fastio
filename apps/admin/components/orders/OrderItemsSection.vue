@@ -5,7 +5,7 @@
         v-for="(item, idx) in items"
         :key="`${item.dishId}-${idx}`"
         :name="item.dishName"
-        :category-name="item.categoryName"
+        :category-name="item.comboId ? 'Комбо' : item.categoryName"
         :modifiers="item.modifiers.map((m) => ({ name: m.optionName, priceDelta: m.priceDelta }))"
         :removed-ingredients="item.removedIngredients"
         :addons="item.addons?.map((a) => ({ name: a.addonName, price: a.price }))"

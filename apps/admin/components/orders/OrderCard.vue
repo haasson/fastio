@@ -193,7 +193,7 @@ const absoluteTime = computed(() => {
 
 .address {
   font-size: 13px;
-  color: var(--color-text-hint);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -217,7 +217,7 @@ const absoluteTime = computed(() => {
 
 .items-label {
   font-size: 11px;
-  color: var(--color-text-hint);
+  color: var(--color-text-secondary);
 }
 
 .items {
@@ -236,7 +236,7 @@ const absoluteTime = computed(() => {
 .item-name {
   flex: 1;
   font-size: 13px;
-  color: var(--grey-800);
+  color: var(--color-text);
 }
 
 .item-qty {
@@ -254,7 +254,7 @@ const absoluteTime = computed(() => {
 
 .item-more {
   font-size: 12px;
-  color: var(--color-text-hint);
+  color: var(--color-text-secondary);
 }
 
 .discount,
@@ -266,7 +266,7 @@ const absoluteTime = computed(() => {
 }
 
 .discount {
-  color: var(--color-text-hint);
+  color: var(--color-text-secondary);
 }
 
 .comment {
