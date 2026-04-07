@@ -17,21 +17,22 @@ export default defineEventHandler(async (event) => {
   const supabase = getAdminClient()
 
   // 1. Ищем или создаём пользователя
-  const { data: { users }, error: listError } = await supabase.auth.admin.listUsers()
-
+  const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 })
   if (listError) throw createError({ statusCode: 500, message: listError.message })
 
+  const existing = users.find((u) => u.email?.toLowerCase() === email.toLowerCase())
+
   let userId: string
-  const existing = users.find((u) => u.email === email)
+  let isNewUser = false
 
   if (existing) {
     userId = existing.id
   } else {
+    isNewUser = true
     const config = useRuntimeConfig()
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${config.adminUrl}/set-password`,
     })
-
     if (error) throw createError({ statusCode: 500, message: error.message })
     userId = data.user.id
   }
@@ -101,5 +102,13 @@ export default defineEventHandler(async (event) => {
 
   if (memberError) throw createError({ statusCode: 500, message: memberError.message })
 
-  return tenant
+  // 6. Уведомляем существующего пользователя о новом заведении
+  if (!isNewUser) {
+    const config = useRuntimeConfig()
+    supabase.functions.invoke('send-new-tenant-email', {
+      body: { email, tenantName: name, adminUrl: config.adminUrl },
+    }).catch((err) => console.error('Failed to send new tenant notification:', err))
+  }
+
+  return { ...tenant, isNewUser }
 })
