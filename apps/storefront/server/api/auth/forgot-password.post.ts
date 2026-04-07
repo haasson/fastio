@@ -14,7 +14,9 @@ export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   const redirectTo = `${url.origin}/reset-password`
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+  const { error } = await supabase.functions.invoke('send-recovery-email', {
+    body: { email, redirectTo },
+  })
 
   if (error) {
     throw createError({ statusCode: 400, message: error.message })

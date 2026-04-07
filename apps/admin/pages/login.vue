@@ -155,7 +155,10 @@ const handleReset = async () => {
   resetLoading.value = true
 
   const appUrl = window.location.origin
-  const { error: err } = await api.auth.resetPasswordForEmail(resetEmail.value, `${appUrl}/set-password`)
+  const { error: err } = await api.functions.sendRecoveryEmail({
+    email: resetEmail.value,
+    redirectTo: `${appUrl}/set-password`,
+  })
 
   if (err) {
     resetError.value = 'Не удалось отправить письмо. Попробуйте ещё раз.'

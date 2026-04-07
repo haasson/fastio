@@ -16,4 +16,8 @@ export const functionsApi = {
   getInvite(sb: SupabaseClient, body: object) {
     return sb.functions.invoke('get-invite', { body })
   },
+
+  sendRecoveryEmail(sb: SupabaseClient, body: { email: string; redirectTo: string }) {
+    return sb.functions.invoke('send-recovery-email', { body })
+  },
 }
