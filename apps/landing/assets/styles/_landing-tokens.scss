@@ -1,29 +1,34 @@
 :root {
   // Landing-specific palette
-  --ln-black: #0f0e0d;
-  --ln-white: #fafaf8;
-  --ln-cream: #f5f3ee;
+  --ln-black: #0d0c0b;
+  --ln-white: #f5f3ee;
+  --ln-cream: #f0ede8;
   --ln-accent: #e55a25;
-  --ln-accent-light: #fff4ed;
-  --ln-muted: #7a7670;
-  --ln-border: #e2dfd8;
+  --ln-accent-light: rgba(229, 90, 37, 0.15);
+  --ln-gold: #c9973a;
+  --ln-muted: #6a6764;
+  --ln-border: #252220;
+
+  // Dark surfaces
+  --ln-surface: #161412;
+  --ln-surface-2: #1e1b18;
 
   // Override primary to orange for landing
   --primary: var(--ln-accent);
   --primary-hover: #cc4e1f;
   --primary-subtle: var(--ln-accent-light);
-  --primary-subtle-hover: #ffe8d6;
+  --primary-subtle-hover: rgba(229, 90, 37, 0.25);
   --on-primary: #ffffff;
 
-  // Surface & text
-  --color-bg: var(--ln-white);
-  --color-surface: #ffffff;
-  --color-text: var(--ln-black);
-  --color-text-secondary: #4a4744;
+  // Surface & text (dark theme)
+  --color-bg: var(--ln-black);
+  --color-surface: var(--ln-surface);
+  --color-text: var(--ln-white);
+  --color-text-secondary: #c0bbb5;
   --color-text-muted: var(--ln-muted);
   --color-border: var(--ln-border);
-  --surface-hover: #f0ede8;
-  --border-hover: #c8c4bc;
+  --surface-hover: var(--ln-surface-2);
+  --border-hover: #3a3633;
 
   // Semantic
   --color-error: #ef4444;
@@ -31,12 +36,12 @@
 
   // Shape
   --radius-btn: 10px;
-  --radius-card: 12px;
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-card-md: 0 4px 20px rgba(0, 0, 0, 0.10);
+  --radius-card: 14px;
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-card-md: 0 8px 32px rgba(0, 0, 0, 0.5);
 
   // Spacing
-  --section-spacing: 48px;
+  --section-spacing: 64px;
 
   // Typography
   --font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -58,12 +63,12 @@
 
 @media (min-width: 768px) {
   :root {
-    --section-spacing: 64px;
+    --section-spacing: 80px;
   }
 }
 
 @media (min-width: 1280px) {
   :root {
-    --section-spacing: 80px;
+    --section-spacing: 100px;
   }
 }
