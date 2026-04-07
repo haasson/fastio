@@ -2,24 +2,20 @@
   <div class="dashboard-root">
     <DashboardSubscriptionBanner />
 
-    <div class="page-header">
-      <UiTitle size="h4">Дашборд</UiTitle>
+    <div class="controls">
+      <UiSegmentedControl
+        v-model="period"
+        :items="periodItems"
+        size="small"
+      />
 
-      <div class="controls">
-        <UiSegmentedControl
-          v-model="period"
-          :items="periodItems"
-          size="small"
-        />
-
-        <UiSelect
-          v-if="branches.length > 1 && isOwner"
-          v-model:value="selectedBranchKey"
-          :options="branchOptions"
-          size="small"
-          class="branch-select"
-        />
-      </div>
+      <UiSelect
+        v-if="branches.length > 1 && isOwner"
+        v-model:value="selectedBranchKey"
+        :options="branchOptions"
+        size="small"
+        class="branch-select"
+      />
     </div>
 
     <!-- Нет ни одного модуля заказов — онбординг -->
@@ -88,7 +84,7 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { usePageTitle } from '~/composables/usePageTitle'
-import { UiTitle, UiSegmentedControl, UiSelect } from '@fastio/ui'
+import { UiSegmentedControl, UiSelect } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useModules } from '~/composables/plan/useModules'
@@ -163,14 +159,6 @@ const hasMultipleOrderTypes = computed(() => [
   flex-direction: column;
   gap: 16px;
   padding-bottom: 32px;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
 }
 
 .controls {

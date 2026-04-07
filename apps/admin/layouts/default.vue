@@ -4,24 +4,23 @@
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <UiConfigProvider :is-dark="true">
         <div class="sidebar-header">
-          <UiAppLogo :size="28" />
-          <UiTitle size="h1" class="logo-text">Fastio</UiTitle>
-        </div>
-
-        <div class="tenant-wrap">
-          <TenantSwitcher />
+          <NuxtLink to="/" class="logo">
+            <span class="logo-text">Fast<span class="logo-accent">io</span></span>
+          </NuxtLink>
         </div>
 
         <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
 
         <div class="user-info">
+          <TenantSwitcher />
           <BranchSelector />
 
           <NuxtLink to="/account" class="account-link" @click="sidebarOpen = false">
             <UiIcon name="users" :size="18" />
             <div class="user-names">
               <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
-              <UiText size="tiny" class="user-name">{{ displayName }}</UiText>
+              <UiText size="tiny" class="user-name">{{ userName }}</UiText>
+              <UiText v-if="userRole" size="tiny" class="user-role">{{ userRole }}</UiText>
             </div>
           </NuxtLink>
         </div>
@@ -73,7 +72,6 @@ import AppNav from '~/components/layout/AppNav.vue'
 import BranchSelector from '~/components/layout/BranchSelector.vue'
 import OnboardingWizard from '~/components/onboarding/OnboardingWizard.vue'
 import PastDueBanner from '~/components/layout/PastDueBanner.vue'
-import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
 import AiChat from '~/components/ai/AiChat.vue'
 import { storeToRefs } from 'pinia'
@@ -102,12 +100,8 @@ const showOnboarding = computed(
   () => !tenantStore.loading && !!tenantStore.tenant && !tenantStore.tenant.onboardingCompleted,
 )
 
-const displayName = computed(() => {
-  const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || ''
-  const role = tenantStore.currentRoleName ?? ''
-
-  return role ? `${name} (${role})` : name
-})
+const userName = computed(() => authStore.user?.user_metadata?.full_name || authStore.user?.email || '')
+const userRole = computed(() => tenantStore.currentRoleName ?? '')
 
 const pageTitle = usePageTitle()
 </script>
@@ -163,14 +157,30 @@ const pageTitle = usePageTitle()
 .sidebar-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 24px 20px 20px;
+  height: var(--topbar-height);
+  padding: 0 16px;
   border-bottom: 1px solid var(--grey-700);
-  margin-bottom: 8px;
+  flex-shrink: 0;
+}
 
-  :deep(*) {
-    color: var(--grey-50);
-  }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--grey-50);
+}
+
+.logo-text {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--grey-50);
+}
+
+.logo-accent {
+  color: #e55a25;
 }
 
 .collapse-btn {
@@ -179,7 +189,8 @@ const pageTitle = usePageTitle()
   justify-content: center;
   position: absolute;
   right: -12px;
-  top: 60px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -248,22 +259,42 @@ const pageTitle = usePageTitle()
   text-overflow: ellipsis;
 }
 
+.user-role {
+  display: block;
+  color: var(--grey-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sidebar-collapsed {
   .sidebar {
     width: 64px;
   }
 
-  .logo-text,
-  .tenant-wrap,
-  .user-info {
+  .sidebar-header {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .logo-text {
     display: none;
   }
 
-  .sidebar-header {
-    justify-content: center;
-    padding: 24px 0 20px;
+  .user-info {
+    padding: 12px 8px 4px;
   }
 
+  .user-info .switcher-root,
+  .user-info .branch-selector-root,
+  .user-names {
+    display: none;
+  }
+
+  .account-link {
+    justify-content: center;
+    padding: 10px 0;
+  }
 }
 
 .burger-wrap {

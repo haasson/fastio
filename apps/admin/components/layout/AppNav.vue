@@ -96,21 +96,29 @@ defineExpose({ navItems })
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 10px;
+  padding: 8px 10px 0;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  height: 38px;
+  padding: 0 12px;
   border-radius: 10px;
   color: var(--grey-400);
   font-size: 14px;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
   text-decoration: none;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+
+  span {
+    opacity: 1;
+    transition: opacity 0.15s 0.15s;
+  }
 
   &:hover {
     background: var(--grey-800);
@@ -137,11 +145,24 @@ defineExpose({ navItems })
 }
 
 .nav--collapsed .nav-item {
-  justify-content: center;
-  padding: 10px 0;
+  position: relative;
 
-  span, .nav-counter {
-    display: none;
+  span {
+    opacity: 0;
+    width: 0;
+    transition: opacity 0.1s;
+  }
+
+  .nav-counter {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    margin-left: 0;
+    min-width: 8px;
+    height: 8px;
+    padding: 0;
+    font-size: 0;
+    border-radius: 50%;
   }
 }
 </style>

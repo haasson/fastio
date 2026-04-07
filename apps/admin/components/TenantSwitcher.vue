@@ -35,7 +35,6 @@ const currentTenantId = computed({
 
 <style scoped lang="scss">
 .switcher-root {
-  padding: 0 10px;
-  margin-bottom: 8px;
+  width: 100%;
 }
 </style>

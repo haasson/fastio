@@ -97,9 +97,13 @@ const chartOptions = computed(() => ({
   },
   xaxis: {
     categories: topItems.value.map((i) => i.name),
-    labels: { style: { fontSize: '11px' } },
+    labels: {
+      style: { fontSize: '11px' },
+      formatter: (v: number) => Math.floor(v) === v ? String(v) : '',
+    },
     axisBorder: { show: false },
     axisTicks: { show: false },
+    tickAmount: Math.min(Math.max(...topItems.value.map((i) => i.count), 1), 10),
   },
   yaxis: {
     labels: {
