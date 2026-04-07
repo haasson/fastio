@@ -1,25 +1,41 @@
 <template>
   <section id="hero" class="hero-root">
     <div class="container">
-      <div class="hero-text">
-        <span class="label">Конструктор сайта для бизнеса</span>
+      <span class="label">Сайт для кафе и бизнеса</span>
 
-        <h1 class="title">Сайт с&nbsp;<em>онлайн&#8209;заказами</em> для&nbsp;любого бизнеса</h1>
+      <h1 class="title">
+        Пока вы без сайта — клиенты <em>уходят</em> туда, где можно заказать онлайн
+      </h1>
 
-        <FsText as="p" variant="body" color="secondary" class="subtitle">
-          Кафе, салон красоты, кальянная, частный мастер — настраиваете сайт
-          и принимаете заказы сами. Без агентств и программистов.
-        </FsText>
+      <div class="hero-body">
+        <div class="hero-text">
+          <p class="subtitle">
+            Кафе, ресторан, салон — запускаете сайт с онлайн-заказами за&nbsp;1&nbsp;день.
+            Без агентств, без 200 000 ₽, без ожидания 3&nbsp;месяца.
+          </p>
 
-        <div class="actions">
-          <FsButton size="large" variant="primary" class="btn-primary">Попробовать бесплатно</FsButton>
-          <FsButton size="large" variant="outline" class="btn-outline">Смотреть демо →</FsButton>
+          <div class="price-hint">
+            <span class="price-hint-old">от 200 000 ₽ у агентства</span>
+            <span class="price-hint-arrow">→</span>
+            <span class="price-hint-new">2 490 ₽/мес в Fastio</span>
+          </div>
+
+          <div class="actions">
+            <FsButton as="a" href="#contact" variant="primary" size="large">
+              Оставить заявку
+            </FsButton>
+            <FsButton as="a" href="#how-it-works" variant="outline" size="large">
+              Как это работает →
+            </FsButton>
+          </div>
+
+          <p class="trust">
+            Подключаем за 1 день через менеджера — быстро и без лишних вопросов
+          </p>
         </div>
-      </div>
 
-      <div class="hero-mockup">
-        <div class="mockup-wrapper">
-          <!-- Browser chrome -->
+        <div class="hero-mockup">
+          <div class="mockup-wrapper">
           <div class="browser-frame">
             <div class="browser-bar">
               <div class="browser-dots">
@@ -31,7 +47,6 @@
             </div>
 
             <div class="browser-body">
-              <!-- Sidebar -->
               <div class="mock-sidebar">
                 <div class="sidebar-item active">
                   <span class="sidebar-icon orange" />
@@ -51,7 +66,6 @@
                 </div>
               </div>
 
-              <!-- Main content -->
               <div class="mock-main">
                 <div class="mock-header">ПАНЕЛЬ УПРАВЛЕНИЯ</div>
                 <div class="mock-stats">
@@ -61,51 +75,64 @@
                   </div>
                   <div class="stat-card">
                     <span class="stat-title">Выручка</span>
-                    <span class="stat-value">14к</span>
+                    <span class="stat-value">14 800 ₽</span>
+                  </div>
+                </div>
+                <div class="mock-orders">
+                  <div class="mock-order">
+                    <span class="order-num">#1047</span>
+                    <span class="order-name">Шаурма × 2, Кола</span>
+                    <span class="order-badge new">Новый</span>
+                  </div>
+                  <div class="mock-order">
+                    <span class="order-num">#1046</span>
+                    <span class="order-name">Бургер, Картофель</span>
+                    <span class="order-badge cooking">Готовится</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Floating card: top-right -->
           <div class="floating-card floating-top">
             <span class="floating-title">Заказов за неделю</span>
-            <span class="floating-badge green">+34% к прошлой</span>
+            <span class="floating-value">+34%</span>
+            <span class="floating-sub">к прошлой неделе</span>
           </div>
 
-          <!-- Floating card: bottom-right -->
           <div class="floating-card floating-bottom">
-            <span class="floating-title">Заказ #1042</span>
-            <span class="floating-badge green">Новый</span>
+            <span class="floating-title">Новый заказ #1048</span>
+            <span class="floating-value accent">2 340 ₽</span>
           </div>
+        </div>
         </div>
       </div>
     </div>
   </section>
+
 </template>
 
 <script setup lang="ts">
-import { FsButton, FsText } from '@fastio/public-ui'
+import { FsButton } from '@fastio/public-ui'
 </script>
 
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
+
 .hero-root {
-  background: var(--ln-cream);
-  padding: 48px 16px;
-  display: flex;
+  background: var(--ln-black);
+  padding: 48px 16px 64px;
 
   @media (min-width: 480px) {
-    padding: 64px 24px;
+    padding: 64px 24px 80px;
   }
 
   @media (min-width: 768px) {
-    padding: 100px 32px;
+    padding: 80px 32px 100px;
   }
 
   @media (min-width: 1280px) {
-    padding: 120px 32px;
+    padding: 100px 32px 120px;
   }
 }
 
@@ -115,17 +142,22 @@ import { FsButton, FsText } from '@fastio/public-ui'
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 40px;
+}
+
+.hero-body {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  @media (min-width: 768px) {
+    gap: 48px;
+  }
 
   @media (min-width: 1100px) {
     flex-direction: row;
     align-items: center;
-    gap: 40px;
-  }
-
-  @media (min-width: 1280px) {
-    gap: 64px;
+    gap: 48px;
   }
 }
 
@@ -142,18 +174,20 @@ import { FsButton, FsText } from '@fastio/public-ui'
 }
 
 .label {
-  @include flex-row(8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   @include text-xs(600);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ln-accent);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 
   &::before {
     content: '';
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: var(--ln-accent);
   }
@@ -163,10 +197,10 @@ import { FsButton, FsText } from '@fastio/public-ui'
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: 800;
-  font-size: 24px;
-  line-height: 1.2;
-  color: var(--ln-black);
-  max-width: 600px;
+  font-size: 28px;
+  line-height: 1.15;
+  color: var(--ln-white);
+  text-align: center;
 
   em {
     color: var(--ln-accent);
@@ -174,68 +208,93 @@ import { FsButton, FsText } from '@fastio/public-ui'
   }
 
   @media (min-width: 480px) {
-    font-size: 32px;
-    line-height: 1.15;
+    font-size: 36px;
+  }
+
+  @media (min-width: 768px) {
+    font-size: 44px;
   }
 
   @media (min-width: 1100px) {
-    font-size: 40px;
+    font-size: 52px;
+    text-align: left;
   }
 
   @media (min-width: 1280px) {
-    font-size: 52px;
+    font-size: 60px;
+    line-height: 1.08;
   }
 }
 
 .subtitle {
   margin-top: 20px;
-  max-width: 560px;
+  max-width: 540px;
+  @include text-body-sm;
+  color: rgba(245, 243, 238, 0.65);
+  line-height: 1.6;
 
   @media (min-width: 768px) {
     margin-top: 24px;
-    font-size: 20px;
+    font-size: 18px;
   }
 }
 
+.price-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 8px 16px;
+  background: rgba(245, 243, 238, 0.05);
+  border: 1px solid var(--ln-border);
+  border-radius: 40px;
+  @include text-caption(500);
+}
+
+.price-hint-old {
+  color: var(--ln-muted);
+  text-decoration: line-through;
+}
+
+.price-hint-arrow {
+  color: var(--ln-muted);
+}
+
+.price-hint-new {
+  color: var(--ln-accent);
+  font-weight: 600;
+}
+
 .actions {
-  @include flex-col(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-top: 32px;
   width: 100%;
 
   @media (min-width: 480px) {
     flex-direction: row;
     width: auto;
+    gap: 16px;
   }
 
   @media (min-width: 768px) {
     margin-top: 40px;
-    gap: 16px;
   }
 }
 
-.btn-primary {
-  --primary: var(--ln-black);
-  --on-primary: var(--ln-white);
-  --primary-hover: var(--ln-black);
-
-  &:hover {
-    opacity: 0.85;
-  }
-}
-
-.btn-outline {
-  color: var(--ln-black);
-  border-color: var(--color-border);
-
-  &:hover {
-    border-color: var(--ln-black);
-  }
+.trust {
+  margin-top: 16px;
+  @include text-xs;
+  color: var(--ln-muted);
+  max-width: 400px;
 }
 
 /* Mockup */
 
 .hero-mockup {
   @include flex-fill;
+  flex-shrink: 0;
   display: none;
 
   @media (min-width: 1100px) {
@@ -245,20 +304,22 @@ import { FsButton, FsText } from '@fastio/public-ui'
 
 .mockup-wrapper {
   position: relative;
-  padding: 24px 48px 40px 0;
+  padding: 28px 52px 44px 0;
 }
 
 .browser-frame {
-  background: var(--ln-black);
-  border-radius: 12px;
+  background: var(--ln-surface-2, #1e1b18);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: var(--shadow-card-md);
+  border: 1px solid var(--ln-border);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
 }
 
 .browser-bar {
   @include flex-row(12px);
   padding: 10px 14px;
-  background: var(--ln-black);
+  background: #1a1714;
+  border-bottom: 1px solid var(--ln-border);
 }
 
 .browser-dots {
@@ -269,7 +330,6 @@ import { FsButton, FsText } from '@fastio/public-ui'
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #555;
 }
 
 .dot-red { background: #ff5f57; }
@@ -278,33 +338,29 @@ import { FsButton, FsText } from '@fastio/public-ui'
 
 .browser-address {
   flex: 1;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 6px;
   padding: 4px 12px;
   @include text-micro;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .browser-body {
   display: flex;
-  min-height: 220px;
+  min-height: 240px;
 
   @media (min-width: 1280px) {
-    min-height: 260px;
+    min-height: 280px;
   }
 }
 
 .mock-sidebar {
   @include flex-col(4px);
-  width: 120px;
-  background: #1a1a1a;
+  width: 130px;
+  background: #141210;
   padding: 14px 10px;
   flex-shrink: 0;
-
-  @media (min-width: 1280px) {
-    width: 140px;
-    padding: 16px 12px;
-  }
+  border-right: 1px solid var(--ln-border);
 }
 
 .sidebar-item {
@@ -314,7 +370,7 @@ import { FsButton, FsText } from '@fastio/public-ui'
   cursor: default;
 
   &.active {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(229, 90, 37, 0.15);
   }
 }
 
@@ -322,7 +378,7 @@ import { FsButton, FsText } from '@fastio/public-ui'
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  background: #444;
+  background: rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 
   &.orange {
@@ -332,18 +388,18 @@ import { FsButton, FsText } from '@fastio/public-ui'
 
 .sidebar-label {
   @include text-xs;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.35);
   white-space: nowrap;
 
   .active & {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--ln-accent);
     font-weight: 600;
   }
 }
 
 .mock-main {
   flex: 1;
-  background: var(--ln-white);
+  background: #0f0e0c;
   padding: 16px 18px;
 
   @media (min-width: 1280px) {
@@ -353,59 +409,91 @@ import { FsButton, FsText } from '@fastio/public-ui'
 
 .mock-header {
   @include text-micro(700);
-  letter-spacing: 0.06em;
-  color: var(--ln-black);
+  letter-spacing: 0.08em;
+  color: rgba(245, 243, 238, 0.3);
   margin-bottom: 14px;
-
-  @media (min-width: 1280px) {
-    @include text-xs(700);
-    margin-bottom: 18px;
-  }
 }
 
 .mock-stats {
   @include flex-row(10px);
+  margin-bottom: 16px;
 
   @media (min-width: 1280px) {
     gap: 14px;
+    margin-bottom: 18px;
   }
 }
 
 .stat-card {
   @include flex-col(4px);
   @include flex-fill;
-  background: var(--ln-white);
-  border: 1px solid var(--color-border);
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-border);
   border-radius: 10px;
   padding: 12px 14px;
-
-  @media (min-width: 1280px) {
-    padding: 14px 16px;
-  }
 }
 
 .stat-title {
   @include text-micro;
-  color: #888;
-
-  @media (min-width: 1280px) {
-    @include text-xs;
-  }
+  color: var(--ln-muted);
 }
 
 .stat-value {
-  @include text-xs(700);
-  color: var(--ln-black);
+  @include text-caption(700);
+  color: var(--ln-white);
+}
+
+.mock-orders {
+  @include flex-col(6px);
+}
+
+.mock-order {
+  @include flex-row(8px);
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.order-num {
+  @include text-micro(600);
+  color: var(--ln-muted);
+  flex-shrink: 0;
+}
+
+.order-name {
+  @include text-micro;
+  color: rgba(245, 243, 238, 0.7);
+  flex: 1;
+  @include truncate;
+}
+
+.order-badge {
+  @include text-micro(600);
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+
+  &.new {
+    background: rgba(229, 90, 37, 0.2);
+    color: var(--ln-accent);
+  }
+
+  &.cooking {
+    background: rgba(201, 151, 58, 0.2);
+    color: var(--ln-gold);
+  }
 }
 
 /* Floating cards */
 
 .floating-card {
-  @include flex-col(4px);
+  @include flex-col(2px);
   position: absolute;
-  background: var(--ln-white);
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-border);
   border-radius: 12px;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   padding: 12px 16px;
   white-space: nowrap;
 }
@@ -422,14 +510,22 @@ import { FsButton, FsText } from '@fastio/public-ui'
 
 .floating-title {
   @include text-xs(600);
-  color: var(--ln-black);
+  color: var(--ln-white);
 }
 
-.floating-badge {
-  @include text-micro(600);
+.floating-value {
+  font-family: var(--heading-font-family);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ln-white);
 
-  &.green {
-    color: #22c55e;
+  &.accent {
+    color: var(--ln-accent);
   }
+}
+
+.floating-sub {
+  @include text-micro;
+  color: var(--color-success);
 }
 </style>

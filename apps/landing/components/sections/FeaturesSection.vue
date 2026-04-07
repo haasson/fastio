@@ -1,22 +1,18 @@
 <template>
   <section id="features" class="features-root">
     <div class="container">
-      <span class="label">Возможности</span>
-
-      <FsHeading as="h2" align="center">
-        Всё что нужно — из коробки
-      </FsHeading>
-      <FsText variant="body" color="secondary" align="center" class="subtitle">
-        Не придётся покупать дополнительные модули или доплачивать за базовые функции.
-      </FsText>
+      <SectionHeader label="Возможности">
+        <template #heading>Всё что нужно — из коробки</template>
+        <template #subtitle>Никаких дополнительных модулей и скрытых доплат за базовые функции.</template>
+      </SectionHeader>
 
       <div class="grid">
         <div v-for="feature in features" :key="feature.title" class="card">
           <div class="icon">
             <component :is="feature.icon" :size="22" />
           </div>
-          <FsText as="span" variant="label" class="title">{{ feature.title }}</FsText>
-          <FsText variant="body-sm" color="muted">{{ feature.desc }}</FsText>
+          <span class="title">{{ feature.title }}</span>
+          <span class="desc">{{ feature.desc }}</span>
         </div>
       </div>
     </div>
@@ -24,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { FsHeading, FsText } from '@fastio/public-ui'
+import SectionHeader from './SectionHeader.vue'
 import {
   UtensilsCrossed,
   ShoppingCart,
@@ -32,6 +28,8 @@ import {
   MapPin,
   Smartphone,
   BarChart3,
+  QrCode,
+  Tag,
 } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
@@ -55,7 +53,7 @@ const features: Feature[] = [
   {
     icon: Palette,
     title: 'Свой дизайн',
-    desc: 'Настройте цвета, шрифты и стиль под ваш бренд. Без дизайнера.',
+    desc: 'Настройте цвета, шрифты и стиль под ваш бренд — без дизайнера.',
   },
   {
     icon: MapPin,
@@ -63,9 +61,19 @@ const features: Feature[] = [
     desc: 'Настройте зоны, стоимость доставки и минимальный заказ для каждой зоны.',
   },
   {
+    icon: QrCode,
+    title: 'QR-меню со стола',
+    desc: 'Гость сканирует QR-код и заказывает со своего телефона. Без ошибок официанта.',
+  },
+  {
+    icon: Tag,
+    title: 'Промокоды и акции',
+    desc: 'Создавайте скидки, запускайте акции и управляйте ими из панели управления.',
+  },
+  {
     icon: Smartphone,
     title: 'Мобильная версия',
-    desc: 'Сайт отлично работает на любом устройстве — телефоне, планшете, компьютере.',
+    desc: 'Сайт отлично работает на телефоне, планшете и компьютере без каких-либо правок.',
   },
   {
     icon: BarChart3,
@@ -77,9 +85,10 @@ const features: Feature[] = [
 
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
+
 .features-root {
-  background: var(--ln-white, #fff);
-  padding: var(--section-spacing, 64px) 0;
+  background: var(--ln-black);
+  padding: var(--section-spacing) 0;
 }
 
 .container {
@@ -87,31 +96,10 @@ const features: Feature[] = [
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
-  align-items: center;
-}
 
-.label {
-  @include flex-row(8px);
-  @include text-xs(600);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ln-accent);
-  margin-bottom: 20px;
-
-  &::before {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--ln-accent);
+  @media (min-width: 1024px) {
+    padding: 0 32px;
   }
-}
-
-.subtitle {
-  margin-top: 12px;
-  margin-bottom: 40px;
-  max-width: 560px;
 }
 
 .grid {
@@ -122,16 +110,30 @@ const features: Feature[] = [
 
   @media (min-width: 480px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
   }
 }
 
 .card {
-  @include flex-col(8px);
+  @include flex-col(10px);
   padding: 20px;
-  border-radius: 8px;
-  background: var(--ln-cream, #f9f8f6);
-  border: 1px solid var(--color-border, #eee);
+  border-radius: var(--radius-card);
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-border);
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: var(--border-hover);
+  }
+
+  @media (min-width: 1024px) {
+    padding: 24px;
+  }
 }
 
 .icon {
@@ -141,29 +143,19 @@ const features: Feature[] = [
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: var(--primary-subtle);
-  color: var(--primary);
+  background: rgba(229, 90, 37, 0.12);
+  color: var(--ln-accent);
   flex-shrink: 0;
-  opacity: 0.85;
 }
 
 .title {
-  font-weight: 600;
+  @include text-caption(600);
+  color: var(--ln-white);
 }
 
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 24px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-
-  .card {
-    padding: 28px;
-    gap: 10px;
-  }
+.desc {
+  @include text-caption;
+  color: var(--ln-muted);
+  line-height: 1.6;
 }
 </style>

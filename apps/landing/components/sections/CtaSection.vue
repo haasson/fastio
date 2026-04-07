@@ -1,100 +1,135 @@
 <template>
-  <section id="cta" class="cta-root">
+  <section id="contact" class="cta-root">
     <div class="container">
-      <FsHeading as="h2" align="center" class="title">
-        Запустите свой сайт сегодня
-      </FsHeading>
+      <SectionHeader label="Связаться с нами">
+        <template #heading>Запустите сайт с онлайн-заказами за 1 день</template>
+        <template #subtitle>
+          Напишите нам удобным способом — менеджер ответит, поможет с настройкой
+          и запустит ваш сайт. Без лишних вопросов и месяцев ожидания.
+        </template>
+      </SectionHeader>
 
-      <FsText as="p" variant="body" align="center" class="subtitle">
-        14 дней бесплатно. Без карты. Без звонков менеджерам.
-      </FsText>
-
-      <div class="actions">
-        <FsButton size="large" class="btn-accent">Попробовать бесплатно</FsButton>
-        <FsButton size="large" class="btn-dark">Смотреть демо</FsButton>
+      <div class="channels">
+        <a
+          v-for="ch in channels"
+          :key="ch.name"
+          :href="ch.href"
+          target="_blank"
+          rel="noopener"
+          class="channel"
+        >
+          <component :is="ch.icon" :size="22" class="channel-icon" />
+          <div class="channel-body">
+            <span class="channel-name">{{ ch.name }}</span>
+            <span class="channel-desc">{{ ch.desc }}</span>
+          </div>
+        </a>
       </div>
+
+      <p class="hint">Отвечаем в течение часа в рабочее время</p>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { FsHeading, FsText, FsButton } from '@fastio/public-ui'
+import { Send, MessageCircle, Mail } from 'lucide-vue-next'
+import SectionHeader from './SectionHeader.vue'
+import type { Component } from 'vue'
+
+type Channel = {
+  name: string
+  desc: string
+  href: string
+  icon: Component
+}
+
+const channels: Channel[] = [
+  { name: 'Telegram', desc: '@fastio_ru', href: 'https://t.me/fastio_ru', icon: Send },
+  { name: 'MAX', desc: 'fastio_ru', href: 'https://max.ru/fastio_ru', icon: MessageCircle },
+  { name: 'Почта', desc: 'hello@fastio.ru', href: 'mailto:hello@fastio.ru', icon: Mail },
+]
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .cta-root {
-  background: var(--ln-black);
-  padding: 64px 20px;
-  display: flex;
-  justify-content: center;
-
-  @media (min-width: 768px) {
-    padding: 80px 32px;
-  }
-
-  @media (min-width: 1280px) {
-    padding: 100px 32px;
-  }
+  background: var(--ln-surface);
+  border-top: 1px solid var(--ln-border);
+  padding: var(--section-spacing) 0;
 }
 
 .container {
   max-width: 640px;
-  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.title {
-  color: var(--ln-white);
-}
-
-.subtitle {
-  margin-top: 16px;
-  color: rgba(255, 255, 255, 0.65);
 
   @media (min-width: 768px) {
-    margin-top: 20px;
-    font-size: 20px;
+    padding: 0 32px;
   }
 }
 
-.actions {
-  margin-top: 32px;
+.channels {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
 
-  @media (min-width: 480px) {
+  @media (min-width: 640px) {
     flex-direction: row;
-    justify-content: center;
-    width: auto;
-  }
-
-  @media (min-width: 768px) {
-    margin-top: 40px;
     gap: 16px;
   }
 }
 
-.btn-accent {
-  background: var(--ln-accent) !important;
-  color: var(--ln-white) !important;
-  border-color: var(--ln-accent) !important;
+.channel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+  padding: 14px 20px;
+  background: var(--ln-accent);
+  border: 1px solid var(--ln-accent);
+  border-radius: var(--radius-card);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
 
   &:hover {
-    opacity: 0.9;
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  @media (min-width: 480px) {
+    padding: 20px;
   }
 }
 
-.btn-dark {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: var(--ln-white) !important;
-  border: none !important;
+.channel-icon {
+  color: #fff;
+  flex-shrink: 0;
+}
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-  }
+.channel-body {
+  @include flex-col(2px);
+  flex: 1;
+  min-width: 0;
+}
+
+.channel-name {
+  @include text-caption(600);
+  color: #fff;
+}
+
+.channel-desc {
+  @include text-xs;
+  color: rgba(255, 255, 255, 0.7);
+}
+.hint {
+  margin-top: 20px;
+  @include text-xs;
+  color: var(--ln-muted);
 }
 </style>

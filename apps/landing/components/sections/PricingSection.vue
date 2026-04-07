@@ -1,96 +1,122 @@
 <template>
   <section id="pricing" class="pricing-root">
     <div class="container">
-      <span class="label">Тарифы</span>
-      <h2 class="heading">Простые цены</h2>
-      <p class="subtitle">
-        Никаких скрытых платежей. Никаких обязательств. Первые 14 дней — бесплатно.
+      <SectionHeader label="Тарифы">
+        <template #heading>Вы удивитесь, насколько это дёшево</template>
+        <template #subtitle>Тариф окупается с первых же онлайн-заказов. Никаких скрытых платежей.</template>
+      </SectionHeader>
+
+      <p class="note-text">
+        Fastio создан для общепита и крупных заведений, но мы оставили доступный тариф
+        для частных мастеров и небольших сервисов — чтобы классный инструмент
+        был у каждого.
       </p>
 
       <div class="cards">
-        <div v-for="plan in plans" :key="plan.name" class="card" :class="{ dark: plan.dark }">
+        <div v-for="plan in plans" :key="plan.name" class="card" :class="{ featured: plan.featured }">
           <div class="card-inner">
             <span v-if="plan.badge" class="badge">{{ plan.badge }}</span>
             <span class="plan-name">{{ plan.name }}</span>
-            <div class="price">
-              <span class="amount">{{ plan.price }}</span>
+            <p class="plan-desc">{{ plan.desc }}</p>
+
+            <div class="price-wrap">
+              <div class="price">
+                <span class="amount">{{ plan.price }}</span>
+                <span class="period">/ мес</span>
+              </div>
+              <span class="per-year">{{ plan.perYear }} в год</span>
             </div>
-            <span class="period">{{ plan.period }}</span>
 
             <ul class="features">
               <li v-for="feature in plan.features" :key="feature" class="feature">
-                <Check :size="16" class="check-icon" />
+                <Check :size="15" class="check-icon" />
                 <span>{{ feature }}</span>
               </li>
             </ul>
 
-            <button class="action" :class="{ 'action-accent': plan.dark }">
-              Начать бесплатно
-            </button>
+            <FsButton as="a" href="#contact" :variant="plan.featured ? 'primary' : 'outline'" class="action">
+              Оставить заявку
+            </FsButton>
           </div>
           <p v-if="plan.note" class="note">{{ plan.note }}</p>
         </div>
+      </div>
+
+      <div class="compare-hint">
+        <span>Агентство возьмёт</span>
+        <span class="compare-old">150 000 — 300 000 ₽</span>
+        <span>за то, что Fastio даёт с первого дня</span>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { FsButton } from '@fastio/public-ui'
 import { Check } from 'lucide-vue-next'
+import SectionHeader from './SectionHeader.vue'
 
 type Plan = {
   name: string
+  desc: string
   price: string
-  period: string
+  perYear: string
   features: string[]
   note?: string
-  dark?: boolean
+  featured?: boolean
   badge?: string
 }
 
 const plans: Plan[] = [
   {
     name: 'Услуги',
+    desc: 'Для мастеров, салонов и сервисов',
     price: '490 ₽',
-    period: 'в месяц',
+    perYear: '5 880 ₽',
     features: [
       'Конструктор сайта',
       'Каталог услуг',
-      'Приём заявок',
+      'Приём заявок онлайн',
       'Онлайн-бронирование',
       'Уведомления в Telegram',
       'Поддомен fastio.ru',
     ],
-    note: 'Для мастеров, салонов, ремонтных мастерских',
   },
   {
     name: 'Бизнес',
+    desc: 'Для кафе, ресторанов и магазинов',
     price: '2 490 ₽',
-    period: 'в месяц',
+    perYear: '29 880 ₽',
+    badge: 'Популярный',
+    featured: true,
     features: [
       'Всё из тарифа Услуги',
-      'Корзина и заказы',
+      'Корзина и онлайн-заказы',
       'Доставка и самовывоз',
       'Модификаторы и добавки',
       'Промокоды и акции',
       'Комбо-наборы',
       'Экран кухни',
       'Заказ со стола (QR)',
-      'Кастомные роли',
+      'Кастомные роли сотрудников',
       'Свой домен + SSL',
     ],
-    note: 'Для кафе, ресторанов и магазинов',
-    dark: true,
-    badge: 'Всё включено',
+    note: 'Окупается уже с первой недели онлайн-заказов',
   },
 ]
 </script>
 
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
+
 .pricing-root {
   padding: var(--section-spacing) 0;
-  background: var(--ln-white);
+  background: var(--ln-black);
+  border-top: 1px solid var(--ln-border);
+
+  :deep(.section-header-root) {
+    margin-bottom: 16px;
+  }
 }
 
 .container {
@@ -100,41 +126,19 @@ const plans: Plan[] = [
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.label {
-  @include text-xs(600);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ln-accent);
-  margin: 0 0 16px;
-
-  &::before {
-    content: '●';
-    margin-right: 8px;
-    font-size: 8px;
-    vertical-align: middle;
-  }
-}
-
-.heading {
-  font-family: var(--heading-font-family);
-  font-weight: 700;
-  font-size: 24px;
-  text-align: center;
-  margin: 0 0 12px;
 
   @media (min-width: 768px) {
-    font-size: 32px;
+    padding: 0 32px;
   }
 }
 
-.subtitle {
+.note-text {
   text-align: center;
-  color: var(--color-text-muted);
-  @include text-body-sm;
+  @include text-caption;
+  color: var(--ln-muted);
+  max-width: 520px;
   margin: 0 0 48px;
-  max-width: 500px;
+  line-height: 1.5;
 }
 
 .cards {
@@ -143,8 +147,9 @@ const plans: Plan[] = [
   gap: 20px;
   align-items: center;
   width: 100%;
+  max-width: 900px;
 
-  @media (min-width: 900px) {
+  @media (min-width: 768px) {
     flex-direction: row;
     align-items: stretch;
     justify-content: center;
@@ -155,53 +160,45 @@ const plans: Plan[] = [
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 400px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  max-width: 420px;
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-border);
   border-radius: 16px;
   overflow: hidden;
+  transition: border-color 0.2s;
 
-  @media (min-width: 900px) {
+  &:hover {
+    border-color: var(--border-hover);
+  }
+
+  @media (min-width: 768px) {
     max-width: none;
     flex: 1;
   }
 
-  &.dark {
-    background: var(--ln-black);
-    border-color: var(--ln-black);
-    color: var(--ln-white);
+  &.featured {
+    border-color: rgba(229, 90, 37, 0.4);
+    background: var(--ln-surface-2);
 
-    .plan-name {
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .amount {
-      color: var(--ln-white);
-    }
-
-    .period {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .feature {
-      color: rgba(255, 255, 255, 0.85);
-    }
-
-    .check-icon {
-      color: var(--ln-accent);
-    }
-
-    .note {
-      color: rgba(255, 255, 255, 0.5);
+    &:hover {
+      border-color: var(--ln-accent);
     }
   }
 }
 
 .card-inner {
-  padding: 32px 28px;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   flex: 1;
+
+  @media (min-width: 480px) {
+    padding: 28px 24px;
+  }
+
+  @media (min-width: 768px) {
+    padding: 32px 28px;
+  }
 }
 
 .badge {
@@ -215,29 +212,49 @@ const plans: Plan[] = [
 }
 
 .plan-name {
-  @include text-xs(600);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-muted);
-  margin: 0 0 12px;
+  font-family: var(--heading-font-family);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ln-white);
+  margin: 0 0 6px;
+}
+
+.plan-desc {
+  @include text-caption;
+  color: var(--ln-muted);
+  margin: 0 0 20px;
+}
+
+.price-wrap {
+  @include flex-col(4px);
+  margin-bottom: 24px;
 }
 
 .price {
-  margin: 0 0 4px;
+  @include flex-row(6px);
+  align-items: baseline;
 }
 
 .amount {
-  font-size: 42px;
+  font-size: 32px;
   font-weight: 700;
+
+  @media (min-width: 480px) {
+    font-size: 40px;
+  }
   font-family: var(--heading-font-family);
-  color: var(--color-text);
+  color: var(--ln-white);
   line-height: 1;
 }
 
 .period {
   @include text-caption;
-  color: var(--color-text-muted);
-  margin: 0 0 28px;
+  color: var(--ln-muted);
+}
+
+.per-year {
+  @include text-xs;
+  color: var(--ln-muted);
 }
 
 .features {
@@ -246,57 +263,52 @@ const plans: Plan[] = [
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   flex: 1;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .feature {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   @include text-caption;
-  color: var(--color-text);
+  color: rgba(245, 243, 238, 0.8);
   line-height: 1.4;
 }
 
 .check-icon {
-  color: var(--color-success);
+  color: var(--ln-accent);
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .action {
   width: 100%;
-  height: var(--ctrl-h);
-  padding: 0 var(--ctrl-px);
-  @include text-body-sm(500);
-  font-family: var(--font-family);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-btn);
-  background: transparent;
-  color: var(--color-text);
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &:hover {
-    background: var(--ln-cream);
-  }
-
-  &.action-accent {
-    background: var(--ln-accent);
-    border-color: var(--ln-accent);
-    color: white;
-
-    &:hover {
-      background: var(--primary-hover);
-    }
-  }
 }
 
 .note {
-  padding: 12px 28px 16px;
+  padding: 12px 24px 16px;
   @include text-xs;
-  color: var(--color-text-muted);
+  color: rgba(229, 90, 37, 0.7);
   text-align: center;
+  border-top: 1px solid var(--ln-border);
+}
+
+.compare-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+  @include text-caption;
+  color: var(--ln-muted);
+}
+
+.compare-old {
+  @include text-caption(600);
+  color: #f87171;
+  text-decoration: line-through;
 }
 </style>

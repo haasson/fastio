@@ -10,7 +10,6 @@
         <div class="right">
           <a href="/privacy" class="link">Политика конфиденциальности</a>
           <a href="/terms" class="link">Оферта</a>
-          <a href="https://t.me/fastio" target="_blank" class="link">Telegram</a>
         </div>
       </div>
     </div>
@@ -24,10 +23,10 @@ const year = new Date().getFullYear()
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
 .footer-root {
-  background: var(--ln-white);
-  color: var(--ln-black);
+  background: var(--ln-black);
+  color: var(--ln-white);
   padding: 32px 0;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--ln-border);
 }
 
 .container {
@@ -51,7 +50,7 @@ const year = new Date().getFullYear()
 }
 
 .logo-fast {
-  color: var(--ln-black);
+  color: var(--ln-white);
 }
 
 .logo-io {
@@ -60,7 +59,7 @@ const year = new Date().getFullYear()
 
 .copy {
   @include text-caption;
-  color: var(--color-text-muted);
+  color: var(--ln-muted);
 }
 
 .right {
@@ -68,13 +67,13 @@ const year = new Date().getFullYear()
 }
 
 .link {
-  color: var(--color-text-muted);
+  color: var(--ln-muted);
   text-decoration: none;
   @include text-caption;
   transition: color 0.15s;
 
   &:hover {
-    color: var(--ln-black);
+    color: var(--ln-white);
   }
 }
 

@@ -14,15 +14,15 @@
         </a>
       </nav>
 
-      <FsButton variant="primary" class="cta-desktop cta-black">
-        Попробовать бесплатно
+      <FsButton as="a" href="#contact" variant="primary" class="cta-desktop cta-accent">
+        Оставить заявку
       </FsButton>
 
-      <FsBurger v-model="menuOpen" style="--burger-color: var(--ln-black)" />
+      <FsBurger v-model="menuOpen" style="--burger-color: var(--ln-white)" />
     </div>
   </header>
 
-  <FsMobileMenu v-model="menuOpen" style="--mobile-menu-bg: var(--ln-white)">
+  <FsMobileMenu v-model="menuOpen" style="--mobile-menu-bg: #161412">
     <nav class="mobile-nav">
       <a
         v-for="link in navLinks"
@@ -35,8 +35,8 @@
       </a>
     </nav>
     <div class="mobile-bottom">
-      <FsButton variant="primary" size="large" class="cta-black" @click="menuOpen = false">
-        Попробовать бесплатно
+      <FsButton as="a" href="#contact" variant="primary" size="large" class="cta-accent" @click="menuOpen = false">
+        Оставить заявку
       </FsButton>
     </div>
   </FsMobileMenu>
@@ -82,11 +82,12 @@ onUnmounted(() => {
   top: 0;
   z-index: var(--z-sticky, 100);
   background: transparent;
-  transition: background 0.25s, box-shadow 0.25s;
+  transition: background 0.25s, border-color 0.25s;
 
   &.scrolled {
-    background: var(--ln-white);
-    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+    background: rgba(13, 12, 11, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--ln-border);
   }
 }
 
@@ -108,14 +109,14 @@ onUnmounted(() => {
   font-family: var(--heading-font-family);
   font-weight: 800;
   font-size: 24px;
-  color: var(--ln-black);
+  color: var(--ln-white);
   text-decoration: none;
   flex-shrink: 0;
   margin-right: auto;
 }
 
 .logo-accent {
-  color: var(--ln-accent, #e55a25);
+  color: var(--ln-accent);
 }
 
 .nav {
@@ -123,13 +124,13 @@ onUnmounted(() => {
   gap: 4px;
   align-items: center;
 
-  @media (min-width: 768px) {
+  @media (min-width: 1280px) {
     display: flex;
   }
 }
 
 .nav-link {
-  color: var(--color-text);
+  color: rgba(245, 243, 238, 0.7);
   text-decoration: none;
   font-family: var(--font-family);
   @include text-caption(400);
@@ -138,26 +139,22 @@ onUnmounted(() => {
   transition: color 0.15s;
 
   &:hover {
-    color: var(--ln-accent);
+    color: var(--ln-white);
   }
 }
 
-.cta-black {
-  --primary: var(--ln-black, #1a1a1a);
+.cta-accent {
+  --primary: var(--ln-accent);
   --on-primary: #fff;
-  --primary-hover: var(--ln-black, #1a1a1a);
+  --primary-hover: var(--primary-hover);
   border-radius: 8px;
-
-  &:hover {
-    opacity: 0.9;
-  }
 }
 
 .cta-desktop {
   display: none;
   flex-shrink: 0;
 
-  @media (min-width: 768px) {
+  @media (min-width: 1280px) {
     display: inline-flex;
   }
 }
@@ -172,13 +169,13 @@ onUnmounted(() => {
 .mobile-nav-link {
   display: block;
   @include text-body(600);
-  color: var(--color-text);
+  color: var(--ln-white);
   text-decoration: none;
   padding: 14px 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--ln-border);
   transition: color 0.15s;
 
-  &:first-child { border-top: 1px solid var(--color-border); }
+  &:first-child { border-top: 1px solid var(--ln-border); }
   &:hover { color: var(--ln-accent); }
 }
 

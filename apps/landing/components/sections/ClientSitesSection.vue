@@ -1,14 +1,10 @@
 <template>
   <section id="clients" class="clients-root">
     <div class="container">
-      <span class="label">Примеры</span>
-
-      <FsHeading as="h2" align="center">
-        Как выглядят сайты клиентов
-      </FsHeading>
-      <FsText variant="body" color="secondary" align="center" class="subtitle">
-        Каждый настраивает под свой стиль. Один редактор — разные результаты.
-      </FsText>
+      <SectionHeader label="Примеры">
+        <template #heading>Как выглядят сайты клиентов</template>
+        <template #subtitle>Каждый настраивает под свой стиль. Один редактор — разные результаты.</template>
+      </SectionHeader>
 
       <div class="grid">
         <div
@@ -43,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { FsHeading, FsText } from '@fastio/public-ui'
+import SectionHeader from './SectionHeader.vue'
 
 type ClientSite = {
   name: string
@@ -73,8 +69,9 @@ const sites: ClientSite[] = [
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
 .clients-root {
-  background: var(--ln-white, #fff);
-  padding: var(--section-spacing, 64px) 0;
+  background: var(--ln-black);
+  padding: var(--section-spacing) 0;
+  border-top: 1px solid var(--ln-border);
 }
 
 .container {
@@ -84,32 +81,6 @@ const sites: ClientSite[] = [
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  @include text-xs(600);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ln-accent);
-  margin-bottom: 20px;
-
-  &::before {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--ln-accent);
-  }
-}
-
-.subtitle {
-  margin-top: 12px;
-  margin-bottom: 40px;
-  max-width: 560px;
 }
 
 .grid {

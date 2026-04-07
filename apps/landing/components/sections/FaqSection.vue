@@ -1,22 +1,24 @@
 <template>
   <section id="faq" class="faq-root">
     <div class="container">
-      <FsHeading as="h2" align="center">Частые вопросы</FsHeading>
+      <SectionHeader label="FAQ">
+        <template #heading>Частые вопросы</template>
+      </SectionHeader>
 
       <div class="accordion">
         <div
           v-for="(item, index) in items"
           :key="index"
           class="item"
-          :class="{ open: openIndex === index }"
+          :class="{ open: openIndexes.has(index) }"
         >
           <button class="question" @click="toggle(index)">
             <span>{{ item.q }}</span>
             <ChevronDown :size="20" class="chevron" />
           </button>
           <Transition name="slide">
-            <div v-if="openIndex === index" class="answer-wrap">
-              <FsText color="secondary" class="answer">{{ item.a }}</FsText>
+            <div v-if="openIndexes.has(index)" class="answer-wrap">
+              <p class="answer">{{ item.a }}</p>
             </div>
           </Transition>
         </div>
@@ -27,8 +29,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { FsHeading, FsText } from '@fastio/public-ui'
 import { ChevronDown } from 'lucide-vue-next'
+import SectionHeader from './SectionHeader.vue'
 
 type FaqItem = {
   q: string
@@ -37,58 +39,89 @@ type FaqItem = {
 
 const items: FaqItem[] = [
   {
+    q: 'Как подключиться к Fastio?',
+    a: 'Напишите нам в Telegram — менеджер ответит в течение часа (в рабочее время). Вместе настроим сайт, загрузим меню и запустим онлайн-заказы. Обычно уходит меньше одного дня.',
+  },
+  {
     q: 'Нужно ли уметь программировать?',
-    a: 'Нет, Fastio — это конструктор без кода. Вы просто заполняете меню, выбираете дизайн и публикуете сайт.',
+    a: 'Нет. Меню, дизайн, настройки доставки — всё через простую панель управления. Если что-то непонятно, менеджер поможет.',
   },
   {
-    q: 'Могу ли я использовать свой домен?',
-    a: 'Да, на тарифах Бизнес и Про вы можете подключить свой домен.',
+    q: 'Кто будет обновлять меню и цены?',
+    a: 'Вы сами — через удобную админку. Добавить блюдо, изменить цену, поставить на стоп — пара кликов с телефона или компьютера. Никаких звонков разработчику и ожидания правок. А если не хотите заниматься переносом — мы можем загрузить ваше меню в сервис за вас за отдельную плату.',
   },
   {
-    q: 'Как клиенты будут оплачивать заказы?',
-    a: 'Сейчас поддерживается оплата при получении. Онлайн-оплата появится в ближайшее время.',
+    q: 'У меня уже есть Яндекс Еда / Delivery Club. Зачем свой сайт?',
+    a: 'Агрегаторы забирают 25–35% комиссии с каждого заказа. Свой сайт — это прямой канал без посредников: клиент заказывает у вас, вы получаете 100% выручки. Плюс вы контролируете бренд, собираете базу клиентов и не зависите от чужих алгоритмов.',
   },
   {
     q: 'Можно ли изменить дизайн сайта?',
-    a: 'Да, вы можете настроить цвета, шрифты, логотип и стиль карточек под ваш бренд.',
+    a: 'Да, и очень гибко. Выбирайте из множества готовых тем — светлых, тёмных, цветных. Настраивайте шрифты, цвета, стиль кнопок, структуру страниц. Если нужна точная палитра под ваш бренд — мы бесплатно создадим индивидуальную тему с вашими корпоративными цветами.',
   },
   {
-    q: 'Есть ли мобильное приложение?',
-    a: 'Сайт полностью адаптивен и работает как приложение на телефоне. Нативное приложение в планах.',
+    q: 'Сайт нормально работает на телефонах?',
+    a: 'Да. Сайт адаптирован под любые экраны — телефон, планшет, компьютер. В общепите до 80% заказов приходит с мобильных, поэтому мобильная версия — приоритет.',
+  },
+  {
+    q: 'Можно ли использовать свой домен?',
+    a: 'Да, на тарифе Бизнес можно подключить свой домен с бесплатным SSL-сертификатом. На тарифе Услуги сайт работает на поддомене fastio.ru.',
+  },
+  {
+    q: 'Есть ли пробный период?',
+    a: 'Да — первые 2 недели бесплатно. Менеджер поможет настроить сайт и загрузить меню, вы спокойно всё попробуете в деле. Если не подойдёт — просто не продлеваете.',
+  },
+  {
+    q: 'Как клиенты будут оплачивать заказы?',
+    a: 'Сейчас поддерживается оплата при получении — наличными или картой курьеру. Онлайн-оплата на сайте находится в разработке.',
+  },
+  {
+    q: 'Что если мне нужна функция, которой пока нет?',
+    a: 'Напишите нам — мы прислушиваемся к каждому клиенту. Многие функции появились именно по запросам пользователей. Обновления выходят регулярно и входят в стоимость подписки без доплат.',
   },
   {
     q: 'Как отменить подписку?',
-    a: 'Вы можете отменить подписку в любой момент в личном кабинете. Без штрафов и скрытых условий.',
+    a: 'В любой момент — через личный кабинет или написав менеджеру. Без штрафов и скрытых условий.',
   },
 ]
 
-const openIndex = ref<number | null>(null)
+const openIndexes = ref(new Set<number>())
 
 function toggle(index: number) {
-  openIndex.value = openIndex.value === index ? null : index
+  const next = new Set(openIndexes.value)
+  next.has(index) ? next.delete(index) : next.add(index)
+  openIndexes.value = next
 }
 </script>
 
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
+
 .faq-root {
   padding: var(--section-spacing) 0;
-  background: var(--ln-white);
+  background: var(--ln-surface);
+  border-top: 1px solid var(--ln-border);
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  @media (min-width: 768px) {
+    padding: 0 32px;
+  }
 }
 
 .accordion {
+  width: 100%;
   max-width: 800px;
-  margin: 48px auto 0;
 }
 
 .item {
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--ln-border);
 }
 
 .question {
@@ -99,23 +132,25 @@ function toggle(index: number) {
   border: none;
   cursor: pointer;
   @include text-body-sm(600);
-  color: var(--color-text);
+  color: var(--ln-white);
   text-align: left;
-  font-family: var(--heading-font-family);
+  font-family: var(--font-family);
   line-height: 1.4;
+  transition: color 0.15s;
 
   &:hover {
-    color: var(--primary);
+    color: var(--ln-accent);
   }
 }
 
 .chevron {
   flex-shrink: 0;
   transition: transform 0.25s ease;
-  color: var(--color-text-muted);
+  color: var(--ln-muted);
 
   .open & {
     transform: rotate(180deg);
+    color: var(--ln-accent);
   }
 }
 
@@ -124,10 +159,13 @@ function toggle(index: number) {
 }
 
 .answer {
+  @include text-caption;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
   padding-bottom: 20px;
+  margin: 0;
 }
 
-// Slide transition
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.25s ease;
@@ -138,6 +176,5 @@ function toggle(index: number) {
 .slide-leave-to {
   opacity: 0;
   max-height: 0;
-  padding-bottom: 0;
 }
 </style>
