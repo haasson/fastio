@@ -116,6 +116,7 @@ const goToTab = (tab: string | number) => {
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
   }
 
 }
