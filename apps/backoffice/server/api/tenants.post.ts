@@ -97,7 +97,7 @@ export default defineEventHandler(async (event) => {
   // 5. Добавляем owner в tenant_members
   const { error: memberError } = await supabase
     .from('tenant_members')
-    .insert({ tenant_id: tenant.id, user_id: userId, role: 'owner' })
+    .insert({ tenant_id: tenant.id, user_id: userId })
 
   if (memberError) throw createError({ statusCode: 500, message: memberError.message })
 
