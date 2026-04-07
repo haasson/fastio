@@ -138,7 +138,7 @@
       </div>
     </template>
 
-    <MenuDishFormModal
+    <MenuDishFormDrawer
       v-if="categoryId"
       v-model="dishModalOpen"
       :tenant-id="tenantId"
@@ -168,7 +168,7 @@ import { formatPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
-import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
+import MenuDishFormDrawer from '~/components/menu/DishFormDrawer.vue'
 import { useDishes } from '~/composables/data/useDishes'
 import { useDishTable } from '~/composables/ui/useDishTable'
 import { useItemManager } from '~/composables/ui/useItemManager'

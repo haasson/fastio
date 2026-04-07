@@ -29,7 +29,7 @@
       @confirm-all="detailDrawerTable && ctx.onConfirmAllItems(detailDrawerTable.id)"
     />
 
-    <ReservationModal
+    <ReservationDrawer
       v-model="reservationModalOpen"
       :reservation="reservationModalReservation"
       :preselected-table-id="reservationPreselectedTableId"
@@ -56,7 +56,7 @@ import { useReservationsStore } from '~/stores/reservations'
 import useAddDishToTable from '~/composables/ui/useAddDishToTable'
 import TablesCanvas from '~/components/tables/TablesCanvas.vue'
 import TableDetailDrawer from '~/components/tables/TableDetailDrawer.vue'
-import ReservationModal from '~/components/reservations/ReservationModal.vue'
+import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
 import DishPickerModal from '~/components/menu/DishPickerModal.vue'
 
 const ctx = useTablesContext()

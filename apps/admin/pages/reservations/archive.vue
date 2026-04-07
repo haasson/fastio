@@ -46,7 +46,7 @@
       />
     </template>
 
-    <ReservationModal
+    <ReservationDrawer
       v-model="modalOpen"
       :reservation="selectedReservation"
       @saved="fetch"
@@ -59,7 +59,7 @@ import { ref, computed, watch } from 'vue'
 import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiPagination, UiSkeleton } from '@fastio/ui'
 import type { Reservation, ReservationStatus } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
-import ReservationModal from '~/components/reservations/ReservationModal.vue'
+import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'

@@ -171,9 +171,9 @@ const onConfirm = async () => {
     } else {
       const created = await props.addCombo(data)
 
-      if (created && typeof created === 'object' && 'id' in created) {
-        await api.tags.setComboTags((created as { id: string }).id, props.tenantId, form.tags)
-        await api.combos.setBranchSettings((created as { id: string }).id, settingsRef.value?.getSettings() ?? [])
+      if (created) {
+        await api.tags.setComboTags(created.id, props.tenantId, form.tags)
+        await api.combos.setBranchSettings(created.id, settingsRef.value?.getSettings() ?? [])
       }
     }
 

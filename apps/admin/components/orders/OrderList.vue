@@ -101,7 +101,7 @@
       @update:page-size="pageSize = $event"
     />
 
-    <OrderModal
+    <OrderDrawer
       v-model="modalOpen"
       :order="modalOrder"
       :tenant-id="tenantId"
@@ -119,7 +119,7 @@ import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import type { Order } from '@fastio/shared'
 import { formatPhone } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
-import OrderModal from '~/components/orders/OrderModal.vue'
+import OrderDrawer from '~/components/orders/OrderDrawer.vue'
 import { useOrders } from '~/composables/data/useOrders'
 import { DEFAULT_PAGE_SIZE } from '~/utils/api/orders'
 import { storeToRefs } from 'pinia'

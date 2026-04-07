@@ -39,7 +39,7 @@
       @update:filters="onFiltersUpdate"
     />
 
-    <ReservationModal
+    <ReservationDrawer
       v-model="modalOpen"
       :reservation="selectedReservation"
       @saved="reservationsStore.refresh()"
@@ -53,7 +53,7 @@ import { storeToRefs } from 'pinia'
 import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiSkeleton } from '@fastio/ui'
 import type { Reservation } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
-import ReservationModal from '~/components/reservations/ReservationModal.vue'
+import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
 import { useReservationsStore } from '~/stores/reservations'
 import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/composables/ui/useReservationTable'
 

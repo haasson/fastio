@@ -68,7 +68,7 @@
       </template>
     </div>
 
-    <MenuComboFormModal
+    <MenuComboFormDrawer
       v-model="comboModalOpen"
       :tenant-id="tenantId"
       :categories="categories"
@@ -88,7 +88,7 @@ import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiSwitch, UiPhotoPlacehol
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import MenuComboFormModal from '~/components/menu/ComboFormModal.vue'
+import MenuComboFormDrawer from '~/components/menu/ComboFormDrawer.vue'
 import { useCombos } from '~/composables/data/useCombos'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import { useTagDisplay } from '~/composables/ui/useTagDisplay'

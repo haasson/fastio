@@ -44,7 +44,7 @@
       </template>
     </div>
 
-    <MenuDishFormModal
+    <MenuDishFormDrawer
       v-if="editingDish"
       v-model="dishModalOpen"
       :tenant-id="tenantId"
@@ -65,7 +65,7 @@ import { UiSkeleton, UiIcon, UiPhotoPlaceholder, UiAlert, UiSectionHeader, UiEmp
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import MenuDishFormModal from '~/components/menu/DishFormModal.vue'
+import MenuDishFormDrawer from '~/components/menu/DishFormDrawer.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
 import type { DishFormData } from '~/utils/api/dishes'
 
