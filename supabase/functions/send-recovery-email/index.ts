@@ -1,10 +1,23 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import nodemailer from 'npm:nodemailer@6'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 const json = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
+  new Response(JSON.stringify(body), {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  })
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 })
   }
