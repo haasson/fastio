@@ -38,7 +38,7 @@
         @update:selected-addon-ids="selectedAddonIds = new Set($event)"
       />
 
-      <DishModalFooter v-model="quantity" :total-price="totalPrice" :currency="custCurrency" :mode="mode" @confirm="onConfirm" />
+      <DishModalFooter v-if="!viewOnly" v-model="quantity" :total-price="totalPrice" :currency="custCurrency" :mode="mode" @confirm="onConfirm" />
     </div>
   </FsDialog>
 </template>
@@ -60,6 +60,7 @@ type Props = {
   modifiers: DishModifierGroup[]
   addons: ClientAddon[]
   currency?: string
+  viewOnly?: boolean
   mode?: 'add' | 'edit' | 'order'
   initialQuantity?: number
   initialRemovedIngredients?: string[]

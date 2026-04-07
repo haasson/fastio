@@ -91,6 +91,7 @@
       :modifiers="modalModifiers"
       :addons="modalAddons"
       :max-addons="modalMaxAddons"
+      :view-only="viewOnly"
       :mode="tableMode ? 'order' : 'add'"
       @add="handleModalAdd"
     />
@@ -137,6 +138,7 @@ const orderingEnabled = computed(() => {
   const m = tenant.value?.modules
   return !!m?.delivery || !!m?.pickup
 })
+const viewOnly = computed(() => !orderingEnabled.value && !props.tableMode && !isServices.value)
 
 const categories = computed(() => menuStore.visibleCategories)
 const dishesByCategory = computed(() => menuStore.dishesByCategory)
@@ -233,7 +235,7 @@ function handleAddButton(dish: Dish) {
 function handleCardClick(dish: Dish) {
   if (isServices.value) {
     openRequestModal(dish)
-  } else if (orderingEnabled.value) {
+  } else {
     openDishModal(dish)
   }
 }
