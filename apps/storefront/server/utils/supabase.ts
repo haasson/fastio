@@ -28,7 +28,6 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     siteLayout: row.site_layout as Tenant['siteLayout'],
     siteContent: row.site_content as Tenant['siteContent'],
     contacts: row.contacts as Tenant['contacts'],
-    workingHours: row.working_hours as Tenant['workingHours'],
     workingHoursSchedule: (row.working_hours_schedule as WorkingHoursSchedule | null) ?? null,
     notifications: row.notifications as Tenant['notifications'],
     balance: (row.balance as number) ?? 0,

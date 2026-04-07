@@ -79,7 +79,6 @@ export default defineEventHandler(async (event) => {
         telegram: null,
         whatsapp: null,
       },
-      working_hours: 'Пн–Вс 10:00–22:00',
       notifications: { email, telegramChatId: null },
       subscription: {
         status: 'trial',

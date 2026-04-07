@@ -9,7 +9,7 @@ const makeBranchRow = (overrides: Record<string, unknown> = {}): Record<string, 
   address: 'ул. Ленина 1',
   phone: '+7 999 123-45-67',
   is_active: true,
-  working_hours: { mon: '10:00-22:00' },
+  working_hours_schedule: { default: { open: '10:00', close: '22:00' }, days: {} },
   delivery_min_order: 500,
   delivery_fee: 100,
   notifications: null,
@@ -38,7 +38,7 @@ describe('mapBranch', () => {
   it('маппит рабочие часы как объект', () => {
     const branch = mapBranch(makeBranchRow())
 
-    expect(branch.workingHours).toEqual({ mon: '10:00-22:00' })
+    expect(branch.workingHoursSchedule).toEqual({ default: { open: '10:00', close: '22:00' }, days: {} })
   })
 
   it('маппит координаты', () => {

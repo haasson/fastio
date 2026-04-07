@@ -111,7 +111,6 @@ export type WorkingHoursSchedule = {
 }
 
 export type TenantContacts = {
-  phoneMode: 'shared' | 'per_branch'
   phone: string
   email: string
   address: string
@@ -191,7 +190,6 @@ export type Tenant = {
   siteLayout: SiteLayout
   siteContent: SiteContent
   contacts: TenantContacts
-  workingHours: string
   workingHoursSchedule: WorkingHoursSchedule | null
   notifications: TenantNotifications
   balance: number

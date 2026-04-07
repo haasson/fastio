@@ -43,6 +43,7 @@
               v-model:form="form"
               :max-guests="settings?.maxGuests ?? 20"
               :max-advance-days="settings?.maxAdvanceDays ?? 30"
+              :branches="branches ?? []"
               @next="goToStep2"
             />
 
@@ -73,7 +74,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAsyncData, useNuxtData, useRequestFetch } from 'nuxt/app'
-import type { WorkingHours, ReservationSettings, Tenant } from '@fastio/shared'
+import type { WorkingHours, WorkingHoursSchedule, ReservationSettings, Tenant } from '@fastio/shared'
 import { CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsHeading, FsAlert } from '@fastio/public-ui'
 import PageShell from '~/components/sections/PageShell.vue'
@@ -83,6 +84,8 @@ import BookingStepParams from '~/components/booking/BookingStepParams.vue'
 import BookingStepSlots from '~/components/booking/BookingStepSlots.vue'
 import BookingStepContact from '~/components/booking/BookingStepContact.vue'
 import BookingSuccess from '~/components/booking/BookingSuccess.vue'
+
+type BookingBranch = { id: string; name: string; workingHoursSchedule: WorkingHoursSchedule | null }
 import useBooking from '~/composables/useBooking'
 
 const rfetch = useRequestFetch()
@@ -91,6 +94,21 @@ const { step, form, slots, loading, result, wasAuthenticated, error, fetchSlots,
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const reservationsEnabled = computed(() => tenant.value?.modules?.reservations === true)
+
+const { data: branches } = await useAsyncData<BookingBranch[]>(
+  'booking-branches',
+  async () => {
+    if (!reservationsEnabled.value) return []
+    try {
+      const data = await rfetch<BookingBranch[]>('/api/branches')
+      if (data.length === 1) form.branchId = data[0].id
+      return data
+    } catch {
+      return []
+    }
+  },
+  { default: () => [] },
+)
 
 const { data: settings } = await useAsyncData<ReservationSettings | null>(
   'reservation-settings',
@@ -112,7 +130,8 @@ const STEP_TITLES: Record<1 | 2 | 3, string> = {
 }
 
 const workingHoursForDate = computed<WorkingHours | null>(() => {
-  const schedule = tenant.value?.workingHoursSchedule
+  const selectedBranch = branches.value?.find((b) => b.id === form.branchId)
+  const schedule = selectedBranch?.workingHoursSchedule ?? tenant.value?.workingHoursSchedule
   if (!schedule || !form.date) return null
   const js = new Date(form.date + 'T12:00:00').getDay()
   const isoDay = String(js === 0 ? 7 : js)

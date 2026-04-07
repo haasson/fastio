@@ -1,4 +1,4 @@
-import type { TenantNotifications } from './tenant'
+import type { TenantNotifications, WorkingHoursSchedule } from './tenant'
 
 export type Branch = {
   id: string
@@ -7,7 +7,7 @@ export type Branch = {
   address: string | null
   phone: string | null
   isActive: boolean
-  workingHours: string | null
+  workingHoursSchedule: WorkingHoursSchedule | null
   deliveryMinOrder: number | null
   deliveryFee: number | null
   notifications: TenantNotifications | null

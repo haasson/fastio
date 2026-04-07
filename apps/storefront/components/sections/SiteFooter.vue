@@ -58,7 +58,18 @@
         </a>
       </div>
 
-      <div v-if="tenant?.contacts?.phone || formattedHours" class="footer-contacts">
+      <div v-if="branches.length > 1" class="footer-branches">
+        <div v-for="branch in branches" :key="branch.id" class="footer-branch">
+          <FsText variant="body-sm" class="branch-name">{{ branch.name }}</FsText>
+          <FsText v-if="branch.address" variant="caption" color="muted">{{ branch.address }}</FsText>
+          <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`">{{ branch.phone }}</a>
+          <FsText v-if="branch.workingHoursSchedule" variant="caption" color="muted">
+            {{ formatWorkingHours(branch.workingHoursSchedule) }}
+          </FsText>
+        </div>
+      </div>
+
+      <div v-else-if="tenant?.contacts?.phone || formattedHours" class="footer-contacts">
         <FsText v-if="tenant?.contacts?.phone" variant="body-sm">
           {{ tenant.contacts.phone }}
         </FsText>
@@ -80,9 +91,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
-import type { Tenant } from '@fastio/shared'
+import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { formatWorkingHours } from '@fastio/shared'
 import { Instagram, Send } from 'lucide-vue-next'
 import SfIconVk from '~/components/sf/icons/SfIconVk.vue'
@@ -94,6 +105,15 @@ const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const year = computed(() => new Date().getFullYear())
 const formattedHours = computed(() => formatWorkingHours(tenant.value?.workingHoursSchedule))
+
+type FooterBranch = { id: string; name: string; address: string | null; phone: string | null; workingHoursSchedule: WorkingHoursSchedule | null }
+const branches = ref<FooterBranch[]>([])
+
+onMounted(async () => {
+  try {
+    branches.value = await $fetch<FooterBranch[]>('/api/branches')
+  } catch { /* silent */ }
+})
 
 const hasSocials = computed(() => {
   const c = tenant.value?.contacts
@@ -141,6 +161,37 @@ const hasSocials = computed(() => {
 
   &:hover {
     color: var(--color-text);
+  }
+}
+
+.footer-branches {
+  @include flex-col(16px);
+
+  @include md {
+    margin-left: auto;
+    align-items: flex-end;
+  }
+}
+
+.footer-branch {
+  @include flex-col(2px);
+
+  @include md {
+    align-items: flex-end;
+  }
+}
+
+.branch-name {
+  font-weight: 600;
+}
+
+.branch-phone {
+  @include text-sm;
+  color: var(--color-text);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
   }
 }
 

@@ -90,7 +90,7 @@ const createBranch = async () => {
       address: branchAddress.value?.trim() || null,
       phone: null,
       isActive: true,
-      workingHours: null,
+      workingHoursSchedule: null,
       deliveryMinOrder: null,
       deliveryFee: null,
       notifications: null,

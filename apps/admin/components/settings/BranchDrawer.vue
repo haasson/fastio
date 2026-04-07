@@ -78,13 +78,9 @@
               </div>
             </template>
           </UiSectionHeader>
-          <UiInput
-            v-if="useCustomHours"
-            v-model="form.workingHours"
-            label="Режим работы"
-            type="textarea"
-            :rows="2"
-            placeholder="Пн–Пт 10:00–22:00, Сб–Вс 11:00–21:00"
+          <WorkingHoursEditor
+            v-if="useCustomHours && form.workingHoursSchedule"
+            v-model="form.workingHoursSchedule"
           />
           <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
         </div>
@@ -118,6 +114,7 @@ import {
   UiDrawer,
   UiForm, UiInput, UiSwitch, UiText, UiSectionHeader,
 } from '@fastio/ui'
+import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
 import {
   YandexMap,
   YandexMapDefaultSchemeLayer,
@@ -125,7 +122,7 @@ import {
   YandexMapMarker,
 } from 'vue-yandex-maps'
 
-import type { Branch, BranchFormData } from '@fastio/shared'
+import type { Branch, BranchFormData, WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
@@ -175,13 +172,15 @@ const miniMapSettings = computed(() => {
   return { location: { center, zoom: 14 } }
 })
 
+const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
+
 const defaultForm = (): BranchFormData => ({
   name: '',
   color: BRANCH_COLORS[0],
   address: null,
   phone: null,
   isActive: true,
-  workingHours: null,
+  workingHoursSchedule: null,
   deliveryMinOrder: null,
   deliveryFee: null,
   notifications: null,
@@ -192,11 +191,11 @@ const defaultForm = (): BranchFormData => ({
 
 const form = reactive<BranchFormData>(defaultForm())
 
-const useCustomHours = computed(() => form.workingHours !== null)
+const useCustomHours = computed(() => form.workingHoursSchedule !== null)
 const useCustomNotifications = computed(() => form.notifications !== null)
 
 const toggleCustomHours = (val: boolean) => {
-  form.workingHours = val ? '' : null
+  form.workingHoursSchedule = val ? { ...DEFAULT_SCHEDULE } : null
 }
 const toggleCustomNotifications = (val: boolean) => {
   form.notifications = val ? { email: null, telegramChatId: null } : null
@@ -211,7 +210,7 @@ watch(() => props.modelValue, (val) => {
     form.address = props.branch.address
     form.phone = props.branch.phone
     form.isActive = props.branch.isActive
-    form.workingHours = props.branch.workingHours ?? null
+    form.workingHoursSchedule = props.branch.workingHoursSchedule ?? null
     form.deliveryMinOrder = props.branch.deliveryMinOrder
     form.deliveryFee = props.branch.deliveryFee
     form.notifications = props.branch.notifications ? { ...props.branch.notifications } : null

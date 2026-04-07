@@ -44,6 +44,7 @@ export default function useBooking() {
 
     try {
       const params = new URLSearchParams({ date: form.date, guests: String(form.guestCount) })
+      if (form.branchId) params.set('branchId', form.branchId)
 
       slots.value = await rfetch<Slot[]>(`/api/reservations/slots?${params}`)
     } catch (e: unknown) {

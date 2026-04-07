@@ -40,15 +40,19 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
   const date = query.date as string | undefined
+  const branchId = query.branchId as string | undefined
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw createError({ statusCode: 400, message: 'Параметр date обязателен (YYYY-MM-DD)' })
   }
 
   const supabase = getServerSupabase()
 
-  const [{ data: tenantData }, { data: settingsData }] = await Promise.all([
+  const [{ data: tenantData }, { data: settingsData }, { data: branchData }] = await Promise.all([
     supabase.from('tenants').select('modules, working_hours_schedule, timezone').eq('id', tenantId).single(),
     supabase.from('reservation_settings').select('slot_step, close_buffer_minutes, enabled').eq('tenant_id', tenantId).maybeSingle(),
+    branchId
+      ? supabase.from('branches').select('working_hours_schedule').eq('id', branchId).eq('tenant_id', tenantId).maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
 
   if (!tenantData?.modules?.reservations) {
@@ -58,7 +62,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Бронирование недоступно' })
   }
 
-  const schedule = tenantData.working_hours_schedule as WorkingHoursSchedule | null
+  const branchSchedule = branchData?.working_hours_schedule as WorkingHoursSchedule | null
+  const schedule = branchSchedule ?? (tenantData.working_hours_schedule as WorkingHoursSchedule | null)
   const isoDay = getIsoDayForDate(date)
   const dayHours = schedule ? (schedule.days[isoDay] ?? schedule.default) : { open: '10:00', close: '22:00', closeNextDay: false }
 

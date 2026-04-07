@@ -1,5 +1,19 @@
 <template>
   <div class="params-root">
+    <FsField v-if="branches.length > 1" label="Филиал">
+      <div class="branch-cards">
+        <FsButton
+          v-for="branch in branches"
+          :key="branch.id"
+          :variant="form.branchId === branch.id ? 'primary' : 'secondary'"
+          size="medium"
+          @click="form.branchId = branch.id"
+        >
+          {{ branch.name }}
+        </FsButton>
+      </div>
+    </FsField>
+
     <FsField label="Дата" :error="dateError">
       <div class="dates-scroll">
         <FsButton
@@ -44,11 +58,14 @@ type BookingForm = {
   branchId: string | null
 }
 
+type BookingBranch = { id: string; name: string }
+
 const form = defineModel<BookingForm>('form', { required: true })
 
 const props = defineProps<{
   maxGuests: number
   maxAdvanceDays: number
+  branches: BookingBranch[]
 }>()
 
 const emit = defineEmits<{ next: [] }>()
@@ -83,6 +100,7 @@ const onDateClick = (value: string) => {
 }
 
 const onNext = () => {
+  if (props.branches.length > 1 && !form.value?.branchId) return
   if (!form.value?.date) {
     dateError.value = 'Выберите дату'
     return
@@ -96,6 +114,11 @@ const onNext = () => {
 
 .params-root {
   @include flex-col(16px);
+}
+
+.branch-cards {
+  @include flex-row(8px);
+  flex-wrap: wrap;
 }
 
 .dates-scroll {

@@ -13,25 +13,14 @@
       <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
     </div>
 
-    <div class="phone-block">
-      <UiRadioGroup
-        v-if="!isServices"
-        v-model="form.phoneMode"
-        label="Телефон"
-        :options="phoneModeOptions"
-        vertical
-        :space="6"
-      />
-      <UiInput
-        v-if="form.phoneMode === 'shared' || isServices"
-        v-model="form.phone"
-        name="phone"
-        :label="isServices ? 'Телефон' : undefined"
-        class="phone-input"
-        placeholder="+7 (999) 000-00-00"
-        :rules="[{ type: 'required', message: 'Введите телефон' }, { type: 'phone', message: 'Введите корректный телефон' }]"
-      />
-    </div>
+    <UiInput
+      v-model="form.phone"
+      name="phone"
+      label="Телефон"
+      class="phone-input"
+      placeholder="+7 (999) 000-00-00"
+      :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
+    />
 
     <UiSelect
       v-model:value="form.timezone"
@@ -43,20 +32,7 @@
 
     <UiSectionHeader title="Часы работы" />
 
-    <div class="hours-default">
-      <UiTimepicker v-model="form.scheduleOpen" label="Открытие" />
-      <UiTimepicker v-model="form.scheduleClose" label="Закрытие" />
-    </div>
-
-    <UiCheckbox v-model="form.useCustomDays">Разное время по дням</UiCheckbox>
-
-    <div v-if="form.useCustomDays" class="days-grid">
-      <div v-for="day in DAYS" :key="day.key" class="day-row">
-        <span class="day-name">{{ day.label }}</span>
-        <UiTimepicker v-model="form.days[day.key].open" />
-        <UiTimepicker v-model="form.days[day.key].close" />
-      </div>
-    </div>
+    <WorkingHoursEditor v-model="form.workingHoursSchedule" />
 
     <UiSectionHeader title="Соцсети и мессенджеры" />
 
@@ -76,42 +52,18 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiRadioGroup, useMessage, UiSectionHeader, UiCheckbox, UiTimepicker, UiSelect } from '@fastio/ui'
+import { UiForm, UiInput, UiButton, useMessage, UiSectionHeader, UiSelect } from '@fastio/ui'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { TIMEZONE_OPTIONS } from '@fastio/shared'
-import { computed } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
-
-const DAYS = [
-  { key: '1', label: 'Пн' },
-  { key: '2', label: 'Вт' },
-  { key: '3', label: 'Ср' },
-  { key: '4', label: 'Чт' },
-  { key: '5', label: 'Пт' },
-  { key: '6', label: 'Сб' },
-  { key: '7', label: 'Вс' },
-]
+import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
 
 const tenantStore = useTenantStore()
-const isServices = computed(() => tenantStore.tenant?.businessType === 'services')
 
-const phoneModeOptions = [
-  { value: 'shared', label: 'Один номер для всех филиалов' },
-  { value: 'per_branch', label: 'Разные номера — указываются в каждом филиале' },
-]
-
-const buildDays = (schedule: WorkingHoursSchedule | null) => Object.fromEntries(DAYS.map((d) => {
-  const override = schedule?.days[d.key]
-
-  return [d.key, {
-    open: (override?.open ?? schedule?.default.open ?? '10:00') as string | null,
-    close: (override?.close ?? schedule?.default.close ?? '22:00') as string | null,
-  }]
-}))
+const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
 
 const buildForm = (t: Tenant) => ({
   name: t.name ?? '',
-  phoneMode: t.contacts?.phoneMode ?? 'shared',
   phone: t.contacts?.phone ?? '',
   email: t.contacts?.email ?? '',
   instagram: t.contacts?.instagram ?? '',
@@ -120,10 +72,7 @@ const buildForm = (t: Tenant) => ({
   whatsapp: t.contacts?.whatsapp ?? '',
   max: t.contacts?.max ?? '',
   timezone: t.timezone ?? 'Europe/Moscow',
-  scheduleOpen: (t.workingHoursSchedule?.default.open ?? '10:00') as string | null,
-  scheduleClose: (t.workingHoursSchedule?.default.close ?? '22:00') as string | null,
-  useCustomDays: t.workingHoursSchedule ? Object.keys(t.workingHoursSchedule.days).length > 0 : false,
-  days: buildDays(t.workingHoursSchedule ?? null),
+  workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_SCHEDULE,
 })
 
 const form = reactive(buildForm(tenantStore.tenant!))
@@ -138,23 +87,11 @@ const { success } = useMessage()
 const handleSave = async () => {
   saving.value = true
   try {
-    const days: WorkingHoursSchedule['days'] = {}
-
-    if (form.useCustomDays) {
-      for (const day of DAYS) {
-        days[day.key] = {
-          open: form.days[day.key].open ?? '10:00',
-          close: form.days[day.key].close ?? '22:00',
-        }
-      }
-    }
-
     await tenantStore.update({
       name: form.name,
       timezone: form.timezone,
       contacts: {
-        phoneMode: form.phoneMode as 'shared' | 'per_branch',
-        phone: form.phoneMode === 'shared' ? form.phone : '',
+        phone: form.phone,
         email: form.email,
         address: '',
         instagram: form.instagram || null,
@@ -163,13 +100,7 @@ const handleSave = async () => {
         whatsapp: form.whatsapp || null,
         max: form.max || null,
       },
-      workingHoursSchedule: {
-        default: {
-          open: form.scheduleOpen ?? '10:00',
-          close: form.scheduleClose ?? '22:00',
-        },
-        days,
-      },
+      workingHoursSchedule: form.workingHoursSchedule,
     })
     success('Сохранено')
   } finally {
@@ -199,39 +130,8 @@ const handleSave = async () => {
   }
 }
 
-.phone-block {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .phone-input {
   max-width: 320px;
-}
-
-.hours-default {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-}
-
-.days-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.day-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.day-name {
-  width: 24px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  flex-shrink: 0;
 }
 
 .timezone-select {

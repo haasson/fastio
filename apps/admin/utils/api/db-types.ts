@@ -32,7 +32,6 @@ export type TenantRow = {
   site_layout: Record<string, unknown>
   site_content: SiteContent
   contacts: TenantContacts
-  working_hours: string
   working_hours_schedule: WorkingHoursSchedule | null
   notifications: TenantNotifications
   balance: number
@@ -307,7 +306,7 @@ export type BranchRow = {
   address: string | null
   phone: string | null
   is_active: boolean
-  working_hours: string | null
+  working_hours_schedule: WorkingHoursSchedule | null
   delivery_min_order: number | null
   delivery_fee: number | null
   notifications: TenantNotifications | null

@@ -10,7 +10,8 @@
     <!-- Single branch: info only -->
     <div v-else-if="branches.length === 1" class="branch-info">
       <div v-if="branches[0].address" class="branch-address">{{ branches[0].address }}</div>
-      <div v-if="branches[0].workingHours" class="branch-hours">{{ branches[0].workingHours }}</div>
+      <a v-if="branches[0].phone" class="branch-phone" :href="`tel:${branches[0].phone}`">{{ branches[0].phone }}</a>
+      <div v-if="branches[0].workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(branches[0].workingHoursSchedule) }}</div>
     </div>
 
     <!-- 2-4 branches: cards -->
@@ -24,7 +25,8 @@
         @click="selectBranch(branch.id)"
       >
         <span v-if="branch.address" class="branch-address">{{ branch.address }}</span>
-        <span v-if="branch.workingHours" class="branch-hours">{{ branch.workingHours }}</span>
+        <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`" @click.stop>{{ branch.phone }}</a>
+        <span v-if="branch.workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(branch.workingHoursSchedule) }}</span>
       </button>
     </div>
 
@@ -39,7 +41,8 @@
       <!-- Show details of selected branch -->
       <div v-if="selectedBranch" class="branch-details">
         <div v-if="selectedBranch.address" class="branch-address">{{ selectedBranch.address }}</div>
-        <div v-if="selectedBranch.workingHours" class="branch-hours">{{ selectedBranch.workingHours }}</div>
+        <a v-if="selectedBranch.phone" class="branch-phone" :href="`tel:${selectedBranch.phone}`">{{ selectedBranch.phone }}</a>
+        <div v-if="selectedBranch.workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(selectedBranch.workingHoursSchedule) }}</div>
       </div>
     </div>
 
@@ -51,12 +54,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useCheckoutStore } from '~/stores/checkout'
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
+import { formatWorkingHours } from '@fastio/shared'
+import type { WorkingHoursSchedule } from '@fastio/shared'
 
 type PickupBranch = {
   id: string
   name: string
   address: string | null
-  workingHours: string | null
+  phone: string | null
+  workingHoursSchedule: WorkingHoursSchedule | null
 }
 
 const checkout = useCheckoutStore()
@@ -67,7 +73,7 @@ const error = ref('')
 
 const branchOptions = computed(() =>
   branches.value.map((b) => {
-    const parts = [b.address || b.name, b.workingHours].filter(Boolean)
+    const parts = [b.address || b.name, formatWorkingHours(b.workingHoursSchedule)].filter(Boolean)
     return { value: b.id, label: parts.join(' · ') }
   })
 )
@@ -166,6 +172,16 @@ defineExpose({ isValid })
 .branch-address {
   @include text-xs;
   color: var(--color-text-secondary);
+}
+
+.branch-phone {
+  @include text-xs;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .branch-hours {
