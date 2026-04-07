@@ -152,7 +152,7 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
       comboItems: null,
       addedBy: null,
       confirmedBy: null,
-      status: 'pending',
+      status: 'confirmed',
     }
   }
 

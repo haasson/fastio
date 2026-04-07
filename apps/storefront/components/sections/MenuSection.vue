@@ -280,7 +280,7 @@ function addToCart(dish: Dish) {
     comboItems: null,
     addedBy: null,
     confirmedBy: null,
-    status: 'pending',
+    status: 'confirmed',
   }
   if (props.tableMode) {
     emit('tableOrder', item)
@@ -305,7 +305,7 @@ function addComboToCart(combo: Combo) {
     comboItems: null,
     addedBy: null,
     confirmedBy: null,
-    status: 'pending',
+    status: 'confirmed',
   }
   if (props.tableMode) {
     emit('tableOrder', item)

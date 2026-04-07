@@ -11,7 +11,7 @@
           :discount-amount="checkout.discountAmount"
           :total="checkout.orderTotal"
           :currency="currency"
-          :error="error"
+          :errors="errors"
           :loading="loading"
           @submit="emit('submit')"
         />
@@ -29,11 +29,11 @@ import CheckoutSummary from '~/components/checkout/CheckoutSummary.vue'
 
 type Props = {
   currency: string
-  error?: string
+  errors?: string[]
   loading?: boolean
 }
 
-withDefaults(defineProps<Props>(), { error: '', loading: false })
+withDefaults(defineProps<Props>(), { errors: () => [], loading: false })
 
 const emit = defineEmits<{ submit: [] }>()
 

@@ -95,17 +95,17 @@ onMounted(async () => {
   }
 })
 
-function isValid(): boolean {
+function isValid(): string | null {
   if (branches.value.length === 0) {
     error.value = 'Нет доступных точек самовывоза'
-    return false
+    return error.value
   }
   if (!checkout.form.pickupBranchId) {
     error.value = 'Выберите пункт самовывоза'
-    return false
+    return error.value
   }
   error.value = ''
-  return true
+  return null
 }
 
 defineExpose({ isValid })

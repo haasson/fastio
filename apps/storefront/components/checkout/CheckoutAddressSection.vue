@@ -210,13 +210,15 @@ onMounted(() => {
 })
 
 defineExpose({
-  isValid() {
+  isValid(): string | null {
     addressTouched.value = true
     if (authStore.isAuthenticated && savedAddresses.value.length) {
-      if (useNewAddress.value) return manualInputRef.value?.isValid() ?? false
-      return !!selectedAddressId.value && !checkout.outsideZones
+      if (useNewAddress.value) return manualInputRef.value?.isValid() ?? 'Введите адрес доставки'
+      if (!selectedAddressId.value) return 'Выберите адрес доставки'
+      if (checkout.outsideZones) return 'Адрес вне зоны доставки'
+      return null
     }
-    return manualInputRef.value?.isValid() ?? false
+    return manualInputRef.value?.isValid() ?? 'Введите адрес доставки'
   },
 })
 </script>

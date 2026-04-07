@@ -176,9 +176,11 @@ watch(() => checkout.form.addressCoords, (coords) => {
 }, { immediate: true })
 
 defineExpose({
-  isValid() {
+  isValid(): string | null {
     addressTouched.value = true
-    return !addressError.value && !checkout.outsideZones
+    if (addressError.value) return addressError.value
+    if (checkout.outsideZones) return 'Адрес вне зоны доставки'
+    return null
   },
 })
 </script>

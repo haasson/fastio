@@ -92,7 +92,7 @@
 
           <CheckoutSidebar
             :currency="currency"
-            :error="submitError"
+            :errors="submitErrors"
             :loading="submitting"
             @submit="submitOrder"
           />
@@ -159,20 +159,34 @@ const pickupBranchRef = ref<InstanceType<typeof CheckoutPickupBranch> | null>(nu
 
 function validate(): boolean {
   phoneError.value = ''
+  submitErrors.value = []
 
-  const phoneDigits = checkout.form.customerPhone.replace(/\D/g, '')
-  if (!phoneDigits) { phoneError.value = validationRules.phone.required.message; return false }
-  if (phoneDigits.length < 11) { phoneError.value = validationRules.phone.format.message; return false }
+  const errors: string[] = []
 
-  if (checkout.form.deliveryType === 'pickup') {
-    if (!pickupBranchRef.value || !pickupBranchRef.value.isValid()) {
-      submitError.value = 'Выберите пункт самовывоза'
-      return false
+  if (!authStore.isAuthenticated) {
+    const phoneDigits = checkout.form.customerPhone.replace(/\D/g, '')
+    if (!phoneDigits) {
+      phoneError.value = validationRules.phone.required.message
+      errors.push(validationRules.phone.required.message)
+    } else if (phoneDigits.length < 11) {
+      phoneError.value = validationRules.phone.format.message
+      errors.push(validationRules.phone.format.message)
     }
   }
 
+  if (checkout.form.deliveryType === 'pickup') {
+    const pickupError = pickupBranchRef.value?.isValid()
+    if (pickupError) errors.push(pickupError)
+  }
+
   if (checkout.form.deliveryType === 'delivery') {
-    if (!addressRef.value?.isValid()) return false
+    const addressError = addressRef.value?.isValid()
+    if (addressError) errors.push(addressError)
+  }
+
+  if (errors.length) {
+    submitErrors.value = errors
+    return false
   }
 
   return true
@@ -180,7 +194,7 @@ function validate(): boolean {
 
 // Submit
 const submitting = ref(false)
-const submitError = ref('')
+const submitErrors = ref<string[]>([])
 const idempotencyKey = ref('')
 
 onMounted(async () => {
@@ -212,7 +226,7 @@ async function submitOrder() {
   }
 
   submitting.value = true
-  submitError.value = ''
+  submitErrors.value = []
 
   try {
     const body: Record<string, unknown> = {
@@ -273,7 +287,7 @@ async function submitOrder() {
     await navigateTo(`/order/${result.id}`)
   } catch (err: unknown) {
     const fetchErr = err as { data?: { message?: string } }
-    submitError.value = fetchErr?.data?.message ?? 'Не удалось оформить заказ. Попробуйте ещё раз.'
+    submitErrors.value = [fetchErr?.data?.message ?? 'Не удалось оформить заказ. Попробуйте ещё раз.']
   } finally {
     submitting.value = false
   }

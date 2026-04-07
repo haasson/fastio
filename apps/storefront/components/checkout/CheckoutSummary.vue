@@ -7,7 +7,9 @@
       :total="total"
       :currency="currency"
     />
-    <p v-if="error" class="submit-error">{{ error }}</p>
+    <ul v-if="errors?.length" class="submit-errors">
+      <li v-for="err in errors" :key="err">{{ err }}</li>
+    </ul>
     <FsButton size="large" class="submit-btn" :loading="loading" @click="emit('submit')">
       Оформить заказ
     </FsButton>
@@ -24,12 +26,12 @@ type Props = {
   discountAmount: number
   total: number
   currency: string
-  error?: string
+  errors?: string[]
   loading?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
-  error: '',
+  errors: () => [],
   loading: false,
 })
 
@@ -51,9 +53,14 @@ const emit = defineEmits<{
   width: 100%;
 }
 
-.submit-error {
+.submit-errors {
   @include text-xs;
   color: var(--color-error, #ef4444);
   margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 </style>
