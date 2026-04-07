@@ -6,6 +6,9 @@
 import { computed } from 'vue'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
+
+usePageTitle('Личный кабинет')
 
 const { canManageBilling } = usePermissions()
 

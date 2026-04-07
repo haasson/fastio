@@ -45,7 +45,10 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAppearanceForm, AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
 import type { SiteLayout } from '@fastio/shared'
+
+usePageTitle('Оформление')
 
 const tabs = [
   { value: 'sections', label: 'Секции', icon: 'image' as const },

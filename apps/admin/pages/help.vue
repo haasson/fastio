@@ -9,6 +9,9 @@
 
 <script setup lang="ts">
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
+
+usePageTitle('Помощь')
 
 const tabs = [
   { value: 'tours', label: 'Виртуальные туры' },

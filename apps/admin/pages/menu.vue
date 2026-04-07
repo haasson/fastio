@@ -10,6 +10,7 @@ import { usePermissions } from '~/composables/auth/usePermissions'
 import { useModules } from '~/composables/plan/useModules'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
 
 const tenantStore = useTenantStore()
 
@@ -17,7 +18,9 @@ onMounted(() => tenantStore.init())
 
 const { canManageMenu } = usePermissions()
 const modules = useModules()
-const { isServices, itemsLabel } = useTenantLabels()
+const { isServices, itemsLabel, menuLabel } = useTenantLabels()
+
+usePageTitle(menuLabel)
 
 const tabs = computed(() => [
   { value: 'dishes', label: itemsLabel.value, attrs: { 'data-tour': 'menu-tab-dishes' } },

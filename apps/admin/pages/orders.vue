@@ -9,10 +9,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { usePageTitle } from '~/composables/usePageTitle'
 import { useModules } from '~/composables/plan/useModules'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import type { IconName } from '@fastio/icons'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+
+usePageTitle('Заказы')
 
 const modules = useModules()
 const { canManageTeam } = usePermissions()

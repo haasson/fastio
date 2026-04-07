@@ -6,6 +6,9 @@
 import { onMounted } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
+
+usePageTitle('Акции')
 
 const tenantStore = useTenantStore()
 

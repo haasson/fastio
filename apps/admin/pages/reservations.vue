@@ -8,6 +8,9 @@
 <script setup lang="ts">
 import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
+
+usePageTitle('Бронирования')
 
 const { reset: resetCount } = useNewReservationCounter()
 

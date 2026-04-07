@@ -87,6 +87,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { usePageTitle } from '~/composables/usePageTitle'
 import { UiTitle, UiSegmentedControl, UiSelect } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
@@ -104,6 +105,8 @@ import DashboardActiveOrders from '~/components/dashboard/DashboardActiveOrders.
 import DashboardTables from '~/components/dashboard/DashboardTables.vue'
 import DashboardReservations from '~/components/dashboard/DashboardReservations.vue'
 import DashboardKitchen from '~/components/dashboard/DashboardKitchen.vue'
+
+usePageTitle('Дашборд')
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()

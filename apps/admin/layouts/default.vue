@@ -15,13 +15,7 @@
         <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
 
         <div class="user-info">
-          <UiSelect
-            v-if="branchStore.branches.length > 1"
-            :value="branchStore.currentBranchId ?? ''"
-            :options="branchOptions"
-            class="branch-select"
-            @update:value="handleBranchChange"
-          />
+          <BranchSelector />
 
           <NuxtLink to="/account" class="account-link" @click="sidebarOpen = false">
             <UiIcon name="users" :size="18" />
@@ -49,7 +43,7 @@
         <div class="burger-wrap">
           <UiAppBurger :open="sidebarOpen" @click="sidebarOpen = !sidebarOpen" />
         </div>
-        <UiTitle size="h3">{{ currentPageTitle }}</UiTitle>
+        <UiTitle size="h3">{{ pageTitle }}</UiTitle>
         <UiButton
           type="text"
           size="small"
@@ -71,32 +65,23 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, type Ref } from 'vue'
-import { useRoute, navigateTo } from '#imports'
-import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
-import { useTableCallsChannel } from '~/composables/data/useTableCallsChannel'
-import { useKitchenQueueChannel } from '~/composables/data/useKitchenQueueChannel'
-import { useReservationsChannel } from '~/composables/data/useReservationsChannel'
-import { useSupportChannel } from '~/composables/data/useSupportChannel'
-import { useReservationAlertHandler } from '~/composables/data/useReservationAlertHandler'
-import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
-import { useTableCallAlertHandler } from '~/composables/data/useTableCallAlertHandler'
 import { requestNotificationPermission } from '~/composables/data/useAlerts'
 import { useLocalStorage } from '@vueuse/core'
-import { UiConfigProvider, UiTitle, UiText, UiSelect, UiButton, UiIcon } from '@fastio/ui'
+import { UiConfigProvider, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
+import BranchSelector from '~/components/layout/BranchSelector.vue'
 import OnboardingWizard from '~/components/onboarding/OnboardingWizard.vue'
 import PastDueBanner from '~/components/layout/PastDueBanner.vue'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
 import AiChat from '~/components/ai/AiChat.vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useRealtimeChannels } from '~/composables/useRealtimeChannels'
+import { usePageTitle } from '~/composables/usePageTitle'
 
-const route = useRoute()
 const sidebarOpen = ref(false)
 const collapsed = useLocalStorage('sidebar-collapsed', false)
 
@@ -104,26 +89,9 @@ const isDark = inject<Ref<boolean>>('isDark', ref(false))
 
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
-const branchStore = useBranchStore()
 const { currentTenantId } = storeToRefs(tenantStore)
 
-// Уведомления о новых заказах
-useOrdersChannel(currentTenantId)
-useOrderAlertHandler()
-
-// Вызовы официанта
-useTableCallsChannel(currentTenantId)
-useTableCallAlertHandler()
-
-// Кухонная очередь
-useKitchenQueueChannel(currentTenantId)
-
-// Бронирования
-useReservationsChannel(currentTenantId)
-useReservationAlertHandler()
-
-// Поддержка
-useSupportChannel(currentTenantId)
+useRealtimeChannels(currentTenantId)
 
 // Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
 if (tenantStore.tenant?.businessType !== 'services') {
@@ -134,8 +102,6 @@ const showOnboarding = computed(
   () => !tenantStore.loading && !!tenantStore.tenant && !tenantStore.tenant.onboardingCompleted,
 )
 
-const { menuLabel } = useTenantLabels()
-
 const displayName = computed(() => {
   const name = authStore.user?.user_metadata?.full_name || authStore.user?.email || ''
   const role = tenantStore.currentRoleName ?? ''
@@ -143,66 +109,7 @@ const displayName = computed(() => {
   return role ? `${name} (${role})` : name
 })
 
-// Branch select
-const currentMember = computed(() => tenantStore.memberships.find((m) => m.tenantId === tenantStore.currentTenantId),
-)
-
-const canSeeAll = computed(() => {
-  if (tenantStore.isOwner) return true
-
-  return (currentMember.value?.branchIds ?? []).length === 0
-})
-
-const availableBranches = computed(() => {
-  const memberBranchIds = currentMember.value?.branchIds ?? []
-
-  if (canSeeAll.value) return branchStore.branches
-
-  return branchStore.branches.filter((b) => memberBranchIds.includes(b.id))
-})
-
-const branchOptions = computed(() => {
-  const opts: { label: string; value: string }[] = []
-
-  if (canSeeAll.value && availableBranches.value.length > 1) {
-    opts.push({ label: 'Все филиалы', value: '' })
-  }
-
-  availableBranches.value.forEach((b) => {
-    opts.push({ label: b.name, value: b.id })
-  })
-
-  return opts
-})
-
-const handleBranchChange = (val: string | number | (string | number)[] | null) => {
-  const strVal = String(val ?? '')
-
-  branchStore.setBranch(strVal === '' ? null : strVal)
-}
-
-const currentPageTitle = computed(() => {
-  const pageTitles: [string, string][] = [
-    ['/menu', menuLabel.value],
-    ['/orders', 'Заказы'],
-    ['/kitchen', 'Кухня'],
-    ['/tables', 'Столы'],
-    ['/reservations', 'Бронирования'],
-    ['/promotions', 'Акции'],
-    ['/team/members', 'Команда'],
-    ['/team/roles', 'Роли'],
-    ['/team/branches', 'Филиалы'],
-    ['/content', 'Контент сайта'],
-    ['/appearance', 'Оформление'],
-    ['/settings', 'Настройки'],
-    ['/help', 'Помощь'],
-    ['/account', 'Личный кабинет'],
-    ['/', 'Дашборд'],
-  ]
-  const entry = pageTitles.find(([path]) => route.path === path || route.path.startsWith(`${path}/`))
-
-  return entry?.[1] ?? ''
-})
+const pageTitle = usePageTitle()
 </script>
 
 <style scoped lang="scss">
@@ -300,10 +207,6 @@ const currentPageTitle = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.branch-select {
-  width: 100%;
 }
 
 .account-link {

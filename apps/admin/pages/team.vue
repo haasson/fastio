@@ -12,6 +12,9 @@ import { computed, onMounted } from 'vue'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { useTenantStore } from '~/stores/tenant'
 import { usePermissions } from '~/composables/auth/usePermissions'
+import { usePageTitle } from '~/composables/usePageTitle'
+
+usePageTitle('Команда')
 
 const tenantStore = useTenantStore()
 const { canManageRoles } = usePermissions()

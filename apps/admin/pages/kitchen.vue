@@ -21,6 +21,9 @@ import { useTenantStore } from '~/stores/tenant'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import { realtimeConnected } from '~/composables/data/useOrdersChannel'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
+
+usePageTitle('Кухня')
 
 const { canEditSettings } = usePermissions()
 const isConnected = realtimeConnected

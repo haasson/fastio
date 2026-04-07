@@ -6,6 +6,7 @@
 import { ref, computed, watch, onUnmounted, provide } from 'vue'
 import { useMessage } from '@fastio/ui'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import { usePageTitle } from '~/composables/usePageTitle'
 import type { Table, TableCallType, TableCall, KitchenQueueItem, OrderItem } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
@@ -20,6 +21,8 @@ import { tableCallEvents } from '~/composables/data/useTableCallsChannel'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import { TablesContextKey, TodayReservationsKey } from '~/composables/ui/useTablesContext'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
+
+usePageTitle('Столы')
 
 const tabs = [
   { value: 'list', label: 'Столы' },
