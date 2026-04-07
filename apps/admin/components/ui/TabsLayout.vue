@@ -118,16 +118,5 @@ const goToTab = (tab: string | number) => {
     flex-direction: column;
   }
 
-  :deep(.card) {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-
-    &::after {
-      content: '';
-      display: block;
-      height: 24px;
-    }
-  }
 }
 </style>

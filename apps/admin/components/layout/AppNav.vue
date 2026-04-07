@@ -11,22 +11,13 @@
       <UiIcon :name="item.icon" :size="18" />
       <span>{{ typeof item.label === 'string' ? item.label : item.label.value }}</span>
       <UiCounter
-        v-if="item.to === '/orders' && showOrdersBadge"
-        :value="newOrderCount"
+        v-if="item.counter?.value"
+        :value="item.counter.value"
         type="error"
         size="tiny"
         filled
         class="nav-counter"
-        :class="{ blink: blinkingCounter }"
-      />
-      <UiCounter
-        v-if="item.to === '/reservations' && showReservationsBadge"
-        :value="newReservationCount"
-        type="error"
-        size="tiny"
-        filled
-        class="nav-counter"
-        :class="{ blink: blinkingCounter }"
+        :class="{ blink: item.blink?.value }"
       />
     </NuxtLink>
   </nav>
@@ -34,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ComputedRef } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import { usePermissions } from '~/composables/auth/usePermissions'
@@ -43,10 +34,18 @@ import { useModules } from '~/composables/plan/useModules'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
+import { useUnreadSupportCounter } from '~/composables/data/useUnreadSupportCounter'
 
 defineProps<{ collapsed?: boolean }>()
 
-type NavItem = { to: string; icon: IconName; label: string | ComputedRef<string>; visible?: ComputedRef<boolean> }
+type NavItem = {
+  to: string
+  icon: IconName
+  label: string | ComputedRef<string>
+  visible?: ComputedRef<boolean>
+  counter?: Ref<number> | ComputedRef<number>
+  blink?: ComputedRef<boolean>
+}
 
 const { canManageMenu, canManageOrders, canViewKitchen, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canManageTeam } = usePermissions()
 const modules = useModules()
@@ -54,9 +53,8 @@ const { menuLabel, isServices } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 const { count: newReservationCount } = useNewReservationCounter()
+const { count: unreadSupportCount } = useUnreadSupportCounter()
 
-const showOrdersBadge = computed(() => blinkingCounter.value && newOrderCount.value > 0)
-const showReservationsBadge = computed(() => newReservationCount.value > 0)
 const canSeePromotions = computed(() => canManagePromotions.value && modules.promotions.value.enabled)
 const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.value.enabled || modules.pickup.value.enabled || isServices.value))
 const canSeeKitchen = computed(() => canViewKitchen.value && modules.kitchen.value.enabled)
@@ -64,20 +62,23 @@ const canSeeTables = computed(() => canViewTables.value && modules.dineIn.value.
 const canSeeReservations = computed(() => canViewReservations.value && (modules.reservations?.value?.enabled ?? false))
 const canSeeBranches = computed(() => canManageTeam.value && !isServices.value)
 
+const orderCounter = computed(() => blinkingCounter.value ? newOrderCount.value : 0)
+const orderBlink = computed(() => blinkingCounter.value && newOrderCount.value > 0)
+
 const allNavItems: NavItem[] = [
   { to: '/', icon: 'dashboard', label: 'Дашборд' },
   { to: '/menu', icon: 'dishes', label: menuLabel, visible: canManageMenu },
-  { to: '/orders', icon: 'orders', label: 'Заказы', visible: canSeeOrders },
+  { to: '/orders', icon: 'orders', label: 'Заказы', visible: canSeeOrders, counter: orderCounter, blink: orderBlink },
   { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: canSeeKitchen },
   { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },
-  { to: '/reservations', icon: 'calendar', label: 'Бронирования', visible: canSeeReservations },
+  { to: '/reservations', icon: 'calendar', label: 'Бронирование', visible: canSeeReservations, counter: newReservationCount },
   { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
   { to: '/team/members', icon: 'users', label: 'Команда', visible: computed(() => canManageTeam.value && !isServices.value) },
   { to: '/team/branches', icon: 'mapPin', label: 'Филиалы', visible: canSeeBranches },
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewContent },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
-  { to: '/help', icon: 'help', label: 'Помощь' },
+  { to: '/help', icon: 'help', label: 'Помощь', counter: unreadSupportCount },
 ]
 
 const navItems = computed(() => allNavItems.filter((item) => !item.visible || item.visible.value))

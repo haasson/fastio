@@ -76,6 +76,7 @@ import { useOrdersChannel } from '~/composables/data/useOrdersChannel'
 import { useTableCallsChannel } from '~/composables/data/useTableCallsChannel'
 import { useKitchenQueueChannel } from '~/composables/data/useKitchenQueueChannel'
 import { useReservationsChannel } from '~/composables/data/useReservationsChannel'
+import { useSupportChannel } from '~/composables/data/useSupportChannel'
 import { useReservationAlertHandler } from '~/composables/data/useReservationAlertHandler'
 import { useOrderAlertHandler } from '~/composables/data/useOrderAlertHandler'
 import { useTableCallAlertHandler } from '~/composables/data/useTableCallAlertHandler'
@@ -120,6 +121,9 @@ useKitchenQueueChannel(currentTenantId)
 // Бронирования
 useReservationsChannel(currentTenantId)
 useReservationAlertHandler()
+
+// Поддержка
+useSupportChannel(currentTenantId)
 
 // Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
 if (tenantStore.tenant?.businessType !== 'services') {

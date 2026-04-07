@@ -1,3 +1,4 @@
+import { defineEventHandler } from 'h3'
 import { getAdminClient } from '../utils/adminClient'
 
 export default defineEventHandler(async () => {

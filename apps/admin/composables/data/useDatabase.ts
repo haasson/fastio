@@ -31,6 +31,7 @@ import { bannersApi } from '~/utils/api/banners'
 import { galleriesApi } from '~/utils/api/galleries'
 import { tagsApi } from '~/utils/api/tags'
 import { rolesApi } from '~/utils/api/roles'
+import { supportApi } from '~/utils/api/support'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
@@ -82,5 +83,6 @@ export const useDatabase = () => {
     galleries: bindAll(galleriesApi, sb),
     tags: bindAll(tagsApi, sb),
     roles: bindAll(rolesApi, sb),
+    support: bindAll(supportApi, sb),
   }
 }
