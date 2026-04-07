@@ -58,12 +58,12 @@
         </a>
       </div>
 
-      <div v-if="tenant?.contacts?.phone || tenant?.workingHours" class="footer-contacts">
+      <div v-if="tenant?.contacts?.phone || formattedHours" class="footer-contacts">
         <FsText v-if="tenant?.contacts?.phone" variant="body-sm">
           {{ tenant.contacts.phone }}
         </FsText>
-        <FsText v-if="tenant?.workingHours" variant="body-sm" color="muted">
-          {{ tenant.workingHours }}
+        <FsText v-if="formattedHours" variant="body-sm" color="muted">
+          {{ formattedHours }}
         </FsText>
       </div>
     </div>
@@ -83,6 +83,7 @@
 import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
+import { formatWorkingHours } from '@fastio/shared'
 import { Instagram, Send } from 'lucide-vue-next'
 import SfIconVk from '~/components/sf/icons/SfIconVk.vue'
 import SfIconWhatsapp from '~/components/sf/icons/SfIconWhatsapp.vue'
@@ -92,6 +93,7 @@ import { FsSection, FsText, FsDivider } from '@fastio/public-ui'
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const year = computed(() => new Date().getFullYear())
+const formattedHours = computed(() => formatWorkingHours(tenant.value?.workingHoursSchedule))
 
 const hasSocials = computed(() => {
   const c = tenant.value?.contacts

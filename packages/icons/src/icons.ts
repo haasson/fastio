@@ -59,6 +59,7 @@ import {
   EllipsisVertical,
   LockOpen,
   ExternalLink,
+  CalendarCheck,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -124,6 +125,7 @@ export const iconRegistry = {
   moreVertical: EllipsisVertical,
   unlock: LockOpen,
   externalLink: ExternalLink,
+  calendarCheck: CalendarCheck,
 } as const
 
 export type IconName = keyof typeof iconRegistry

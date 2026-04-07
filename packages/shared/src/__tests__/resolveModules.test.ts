@@ -14,6 +14,7 @@ const allEnabled: TenantModules = {
   branches: true,
   customRoles: true,
   reservations: true,
+  customers: true,
 }
 
 describe('resolveModules', () => {

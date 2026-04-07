@@ -24,13 +24,13 @@
 
       <div class="right">
         <div v-if="header.showPhone || header.showWorkingHours" class="venue-info">
-          <span v-if="header.showWorkingHours" class="venue-hours">{{ tenant?.workingHours }}</span>
+          <span v-if="header.showWorkingHours" class="venue-hours">{{ formattedHours }}</span>
           <a v-if="header.showPhone" class="venue-phone" :href="`tel:${tenant?.contacts?.phone}`">
             {{ tenant?.contacts?.phone }}
           </a>
         </div>
 
-        <HeaderUserMenu v-if="tenant?.businessType !== 'services'" />
+        <HeaderUserMenu v-if="tenant?.modules?.customers" />
 
         <FsBurger v-model="menuOpen" style="--burger-color: var(--primary)" />
       </div>
@@ -58,10 +58,10 @@
         <a v-if="header.showPhone" class="mm-venue-phone" :href="`tel:${tenant?.contacts?.phone}`">
           {{ tenant?.contacts?.phone }}
         </a>
-        <span v-if="header.showWorkingHours" class="mm-venue-hours">{{ tenant?.workingHours }}</span>
+        <span v-if="header.showWorkingHours" class="mm-venue-hours">{{ formattedHours }}</span>
       </div>
 
-      <MobileUserCard v-if="tenant?.businessType !== 'services'" @close="menuOpen = false" />
+      <MobileUserCard v-if="tenant?.modules?.customers" @close="menuOpen = false" />
     </div>
   </FsMobileMenu>
 </template>
@@ -70,7 +70,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, navigateTo } from 'nuxt/app'
 import type { Tenant, SiteLayout } from '@fastio/shared'
-import { featureLabel, isFeatureAvailable } from '@fastio/shared'
+import { featureLabel, isFeatureAvailable, formatWorkingHours } from '@fastio/shared'
 import { FsSection, FsBurger, FsMobileMenu } from '@fastio/public-ui'
 import HeaderUserMenu from '~/components/HeaderUserMenu.vue'
 import MobileUserCard from '~/components/MobileUserCard.vue'
@@ -81,6 +81,8 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+
+const formattedHours = computed(() => formatWorkingHours(props.tenant?.workingHoursSchedule))
 
 const navLinks = computed(() =>
   props.header.navItems

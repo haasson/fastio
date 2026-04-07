@@ -152,6 +152,7 @@ export type TenantModules = {
   dineIn: boolean
   kitchen: boolean
   reservations: boolean
+  customers: boolean
 }
 
 export type OrderNumberFormat = 'counter' | 'prefix_counter' | 'date_counter' | 'prefix_date_counter'
