@@ -1,8 +1,10 @@
 <template>
   <main class="dishes-root">
-    <div v-if="!categoryId" class="no-category">
-      <span>← Выберите категорию</span>
-    </div>
+    <UiEmpty
+      v-if="!categoryId"
+      icon="dishes"
+      text="Выберите категорию"
+    />
 
     <template v-else>
       <UiSectionHeader :title="sectionTitle">
@@ -214,15 +216,6 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
   flex: 1;
   min-height: 0;
   gap: 12px;
-}
-
-.no-category {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-tertiary);
-  font-size: 15px;
 }
 
 .header-left {

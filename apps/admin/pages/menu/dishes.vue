@@ -32,7 +32,7 @@
       :all-tags="tags"
     />
     <MenuDishList
-      v-else-if="!selectedCategory"
+      v-else-if="!selectedCategory && loadedCategories.length > 0"
       :tenant-id="tenantId"
       :category-id="null"
       :categories="loadedCategories"

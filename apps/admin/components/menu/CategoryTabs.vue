@@ -7,19 +7,26 @@
       class="skeleton"
     />
 
-    <UiTabs
-      v-else
-      variant="pill"
-      :model-value="modelValue ?? ''"
-      :tabs="categoryTabs"
-      @update:model-value="$emit('update:modelValue', String($event))"
-    />
+    <template v-else>
+      <UiEmpty
+        v-if="categories.length === 0"
+        icon="layoutGrid"
+        text="Пока нет ни одной категории — создайте первую"
+      />
+      <UiTabs
+        v-else
+        variant="pill"
+        :model-value="modelValue ?? ''"
+        :tabs="categoryTabs"
+        @update:model-value="$emit('update:modelValue', String($event))"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, toRefs, watch } from 'vue'
-import { UiSkeleton, UiTabs } from '@fastio/ui'
+import { UiEmpty, UiSkeleton, UiTabs } from '@fastio/ui'
 import type { Category, DishTagDefinition } from '@fastio/shared'
 import { useCategories } from '~/composables/data/useCategories'
 
