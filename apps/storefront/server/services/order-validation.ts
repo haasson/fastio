@@ -57,13 +57,17 @@ export async function fetchOrderInitialData(
     throw createError({ statusCode: 500, message: 'Не удалось получить данные ресторана' })
   }
 
+  if (!initialStatusData) {
+    throw createError({ statusCode: 500, message: 'Не настроены статусы заказов. Обратитесь в поддержку.' })
+  }
+
   return {
     tenantConfig: {
       deliveryFee: Number(tenantData.delivery_fee),
       deliveryMinOrder: Number(tenantData.delivery_min_order),
       modules: tenantData.modules as Record<string, boolean> | null,
     },
-    initialStatusId: initialStatusData!.id as string,
+    initialStatusId: initialStatusData.id as string,
   }
 }
 
