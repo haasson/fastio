@@ -19,7 +19,14 @@ export function useModifierGroups(tenantId: Ref<string>) {
     if (!tenantId.value) return
     const group = await api.modifiers.add(tenantId.value, data)
 
-    if (group) groups.value.push(group)
+    if (!group) return
+    const existing = groups.value.findIndex((g) => g.id === group.id)
+
+    if (existing !== -1) {
+      groups.value[existing] = group
+    } else {
+      groups.value.push(group)
+    }
   }
 
   const update = async (id: string, data: ModifierGroupFormData) => {
