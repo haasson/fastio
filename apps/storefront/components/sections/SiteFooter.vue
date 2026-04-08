@@ -79,6 +79,15 @@
       </div>
     </div>
 
+    <div v-if="hasDocuments" class="footer-docs">
+      <a v-if="privacyUrl" :href="privacyUrl" target="_blank" rel="noopener noreferrer" class="doc-link">
+        Политика конфиденциальности
+      </a>
+      <a v-if="offerUrl" :href="offerUrl" target="_blank" rel="noopener noreferrer" class="doc-link">
+        Оферта
+      </a>
+    </div>
+
     <FsDivider />
 
     <div class="footer-bottom">
@@ -107,7 +116,12 @@ const year = computed(() => new Date().getFullYear())
 const formattedHours = computed(() => formatWorkingHours(tenant.value?.workingHoursSchedule))
 
 type FooterBranch = { id: string; name: string; address: string | null; phone: string | null; workingHoursSchedule: WorkingHoursSchedule | null }
+
 const branches = ref<FooterBranch[]>([])
+
+const privacyUrl = computed(() => tenant.value?.contacts?.privacyUrl ?? null)
+const offerUrl = computed(() => tenant.value?.contacts?.offerUrl ?? null)
+const hasDocuments = computed(() => !!(privacyUrl.value || offerUrl.value))
 
 onMounted(async () => {
   try {
@@ -186,7 +200,7 @@ const hasSocials = computed(() => {
 }
 
 .branch-phone {
-  @include text-sm;
+  @include text-xs;
   color: var(--color-text);
   text-decoration: none;
 
@@ -201,6 +215,24 @@ const hasSocials = computed(() => {
   @include md {
     margin-left: auto;
     align-items: flex-end;
+  }
+}
+
+.footer-docs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  justify-content: center;
+}
+
+.doc-link {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-text);
+    text-decoration: underline;
   }
 }
 

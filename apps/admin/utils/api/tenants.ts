@@ -90,6 +90,16 @@ export const tenantsApi = {
     await query(sb.from('tenants').update(tenantToDb(data)).eq('id', id))
   },
 
+  async uploadDocument(sb: SupabaseClient, tenantId: string, file: File, slug: 'privacy' | 'offer'): Promise<string> {
+    const path = `${tenantId}/${slug}.pdf`
+
+    await query(sb.storage.from('documents').upload(path, file, { contentType: 'application/pdf', upsert: true }))
+
+    const { publicUrl } = sb.storage.from('documents').getPublicUrl(path).data
+
+    return `${publicUrl}?t=${Date.now()}`
+  },
+
   async uploadAsset(sb: SupabaseClient, tenantId: string, file: File, filename: string): Promise<string> {
     const isSvg = file.type === 'image/svg+xml'
     const blob = isSvg ? file : await optimizeImage(file)

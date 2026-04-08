@@ -119,6 +119,8 @@ export type TenantContacts = {
   telegram: string | null
   whatsapp: string | null
   max: string | null
+  privacyUrl: string | null
+  offerUrl: string | null
 }
 
 export type TenantNotifications = {

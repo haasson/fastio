@@ -56,7 +56,6 @@ watch(() => props.modelValue, (val) => {
   state.close = val.default.close
   state.useCustomDays = Object.keys(val.days).length > 0
   Object.assign(state.days, buildDays(val))
-  // nextTick не нужен — watch(state) проверяет syncing синхронно
   syncing = false
 }, { deep: true })
 
@@ -70,7 +69,7 @@ watch(state, () => {
     }
   }
   emit('update:modelValue', { default: { open: state.open, close: state.close }, days })
-}, { deep: true })
+}, { deep: true, flush: 'sync' })
 </script>
 
 <style scoped lang="scss">
