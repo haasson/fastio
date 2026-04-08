@@ -165,16 +165,11 @@ export default defineEventHandler(async (event) => {
 
       if (!dishModifiers[dishId]) dishModifiers[dishId] = []
 
+      if (!modifiersEnabled) continue
+
       let options = (optionsMap.get(dishId)?.get(groupId) ?? [])
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((o) => ({ ...o, groupName }))
-
-      // Если модуль отключён — оставляем только дефолтную опцию (для отображения и расчёта цены)
-      if (!modifiersEnabled) {
-        const defaultOpt = options.find((o) => o.isDefault)
-        if (!defaultOpt) continue
-        options = [defaultOpt]
-      }
 
       dishModifiers[dishId].push({
         groupId,
