@@ -112,6 +112,7 @@ export default defineEventHandler(async (event) => {
       quantity: item.quantity,
       removed_ingredients: item.removedIngredients ?? [],
       modifiers: item.modifiers ?? [],
+      addons: item.addons ?? [],
       sort_order: i,
       status: deliveryType === 'dine_in' ? 'pending' : 'confirmed',
       added_by: authUserId,

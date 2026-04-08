@@ -175,7 +175,7 @@ function validate(): boolean {
   }
 
   if (checkout.form.deliveryType === 'pickup') {
-    const pickupError = pickupBranchRef.value?.isValid()
+    const pickupError = pickupBranchRef.value?.validate()
     if (pickupError) errors.push(pickupError)
   }
 

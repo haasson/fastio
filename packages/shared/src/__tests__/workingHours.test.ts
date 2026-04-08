@@ -106,6 +106,8 @@ describe('isOpenNow', () => {
     const now = new Date('2026-04-06T12:00:00Z') // 15:00 MSK Mon
     const result = isOpenNow(schedule, 'Europe/Moscow', now)
     expect(result.open).toBe(true)
+    expect(result.closingAt).toBe('22:00')
+    expect(result.minutesUntilClose).toBe(420) // 22:00 - 15:00 = 7h = 420 min
   })
 
   it('закрыто до открытия', () => {
@@ -138,6 +140,8 @@ describe('isOpenNow', () => {
     const now = new Date('2026-04-06T21:30:00Z') // 00:30 MSK Tue Apr 7
     const result = isOpenNow(schedule, 'Europe/Moscow', now)
     expect(result.open).toBe(true)
+    expect(result.closingAt).toBe('03:00')
+    expect(result.minutesUntilClose).toBe(150) // 03:00 - 00:30 = 2.5h = 150 min
   })
 
   it('ночная смена — закрыто после хвоста', () => {
@@ -198,5 +202,16 @@ describe('isOpenNow', () => {
     const now = new Date('2026-04-06T21:00:00Z') // 00:00 MSK Tue
     const result = isOpenNow(schedule, 'Europe/Moscow', now)
     expect(result.open).toBe(true)
+  })
+
+  it('ровно в момент закрытия — считается закрытым', () => {
+    const schedule: WorkingHoursSchedule = {
+      default: { open: '10:00', close: '22:00' },
+      days: {},
+    }
+    const now = new Date('2026-04-06T19:00:00Z') // 22:00 MSK Mon
+    const result = isOpenNow(schedule, 'Europe/Moscow', now)
+    expect(result.open).toBe(false)
+    expect(result.nextChange).toEqual({ day: 'завтра', time: '10:00', offsetDays: 1 })
   })
 })

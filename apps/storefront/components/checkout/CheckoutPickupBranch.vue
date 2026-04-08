@@ -11,7 +11,9 @@
     <div v-else-if="branches.length === 1" class="branch-info" :class="{ disabled: !branchStatuses[0]?.open }">
       <div v-if="branches[0].address" class="branch-address">{{ branches[0].address }}</div>
       <a v-if="branches[0].phone" class="branch-phone" :href="`tel:${branches[0].phone}`">{{ branches[0].phone }}</a>
-      <div v-if="branches[0].workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(branches[0].workingHoursSchedule) }}</div>
+      <div v-if="branchStatuses[0]" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(branchStatuses[0]) }">
+        {{ getOpenStatusText(branchStatuses[0], branches[0].workingHoursSchedule) }}
+      </div>
       <div v-if="branchStatuses[0] && !branchStatuses[0].open && branchStatuses[0].nextChange" class="branch-closed">
         Откроется {{ branchStatuses[0].nextChange.day }} в {{ branchStatuses[0].nextChange.time }}
       </div>
@@ -30,7 +32,9 @@
       >
         <span v-if="branch.address" class="branch-address">{{ branch.address }}</span>
         <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`" @click.stop>{{ branch.phone }}</a>
-        <span v-if="branch.workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(branch.workingHoursSchedule) }}</span>
+        <span v-if="branchStatuses[idx]" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(branchStatuses[idx]!) }">
+          {{ getOpenStatusText(branchStatuses[idx]!, branch.workingHoursSchedule) }}
+        </span>
         <span v-if="!branchStatuses[idx]?.open && branchStatuses[idx]?.nextChange" class="branch-closed">
           Откроется {{ branchStatuses[idx].nextChange!.day }} в {{ branchStatuses[idx].nextChange!.time }}
         </span>
@@ -49,7 +53,9 @@
       <div v-if="selectedBranch" class="branch-details">
         <div v-if="selectedBranch.address" class="branch-address">{{ selectedBranch.address }}</div>
         <a v-if="selectedBranch.phone" class="branch-phone" :href="`tel:${selectedBranch.phone}`">{{ selectedBranch.phone }}</a>
-        <div v-if="selectedBranch.workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(selectedBranch.workingHoursSchedule) }}</div>
+        <div v-if="selectedBranchStatus" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(selectedBranchStatus) }">
+          {{ getOpenStatusText(selectedBranchStatus, selectedBranch.workingHoursSchedule) }}
+        </div>
         <div v-if="selectedBranchStatus && !selectedBranchStatus.open && selectedBranchStatus.nextChange" class="branch-closed">
           Откроется {{ selectedBranchStatus.nextChange.day }} в {{ selectedBranchStatus.nextChange.time }}
         </div>
@@ -61,12 +67,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { useCheckoutStore } from '~/stores/checkout'
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
 import { formatWorkingHours, isOpenNow } from '@fastio/shared'
 import type { WorkingHoursSchedule, Tenant } from '@fastio/shared'
+
+type BranchStatus = ReturnType<typeof isOpenNow>
+
+const CLOSING_SOON_THRESHOLD = 60 // minutes
+
+function isClosingSoon(status: BranchStatus): boolean {
+  return status.open && status.minutesUntilClose !== null && status.minutesUntilClose <= CLOSING_SOON_THRESHOLD
+}
+
+function getOpenStatusText(status: BranchStatus, schedule: WorkingHoursSchedule | null): string | null {
+  if (!status.open) return formatWorkingHours(schedule)
+  if (status.minutesUntilClose !== null && status.minutesUntilClose <= CLOSING_SOON_THRESHOLD) {
+    const mins = status.minutesUntilClose
+    const text = mins >= 60 ? `${Math.floor(mins / 60)} ч` : `${mins} мин`
+    return `Закрываемся через ${text}`
+  }
+  if (status.closingAt) {
+    return `Работаем до ${status.closingAt}`
+  }
+  return formatWorkingHours(schedule)
+}
 
 type PickupBranch = {
   id: string
@@ -83,9 +110,15 @@ const branches = ref<PickupBranch[]>([])
 const loading = ref(true)
 const error = ref('')
 
+// Tick every minute so statuses stay current if the page is left open
+const now = ref(new Date())
+let clockTimer: ReturnType<typeof setInterval>
+onMounted(() => { clockTimer = setInterval(() => { now.value = new Date() }, 60_000) })
+onUnmounted(() => clearInterval(clockTimer))
+
 const branchStatuses = computed(() =>
   branches.value.map((b) =>
-    isOpenNow(b.workingHoursSchedule, tenant.value?.timezone ?? 'Europe/Moscow')
+    isOpenNow(b.workingHoursSchedule, tenant.value?.timezone ?? 'Europe/Moscow', now.value)
   )
 )
 
@@ -115,8 +148,8 @@ onMounted(async () => {
   try {
     branches.value = await $fetch<PickupBranch[]>('/api/branches')
 
-    // Auto-select if single branch
-    if (branches.value.length === 1) {
+    // Auto-select if single open branch
+    if (branches.value.length === 1 && branchStatuses.value[0]?.open) {
       checkout.form.pickupBranchId = branches.value[0].id
     }
   } catch {
@@ -126,7 +159,8 @@ onMounted(async () => {
   }
 })
 
-function isValid(): string | null {
+// Returns error message or null. Also sets error.value for inline display.
+function validate(): string | null {
   if (branches.value.length === 0) {
     error.value = 'Нет доступных точек самовывоза'
     return error.value
@@ -144,7 +178,7 @@ function isValid(): string | null {
   return null
 }
 
-defineExpose({ isValid })
+defineExpose({ validate })
 </script>
 
 <style scoped lang="scss">
@@ -230,6 +264,10 @@ defineExpose({ isValid })
 .branch-hours {
   @include text-xs;
   color: var(--color-text-muted);
+
+  &.closing-soon {
+    color: var(--color-warning);
+  }
 }
 
 .branch-details {

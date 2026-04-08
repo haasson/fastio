@@ -9,6 +9,7 @@ type ClientItem = {
   quantity: number
   removedIngredients: string[]
   modifiers?: { optionId?: string; groupName: string; optionName: string; priceDelta: number }[]
+  addons?: { addonId: string; addonName: string; price: number }[]
 }
 
 export type ServerItem = {
@@ -20,6 +21,7 @@ export type ServerItem = {
   quantity: number
   removedIngredients: string[]
   modifiers?: { groupName: string; optionName: string; priceDelta: number }[]
+  addons?: { addonId: string; addonName: string; price: number }[]
 }
 
 type ValidOption = {
@@ -40,6 +42,12 @@ type DishOptionRow = {
   }
 }
 
+type DishAddonRow = {
+  dish_id: string
+  addon_id: string
+  addons: { id: string; name: string; price: number; active: boolean }
+}
+
 export type ComboItemsMap = Map<string, { dishName: string }[]>
 
 export async function validateAndBuildItems(
@@ -49,11 +57,15 @@ export async function validateAndBuildItems(
 ): Promise<{ serverItems: ServerItem[]; subtotal: number; comboItemsMap: ComboItemsMap }> {
   const dishIds = items.map(item => item.dishId).filter(Boolean) as string[]
 
-  const [{ data: dishes, error: dishesError }, { data: allDishOptions }] = await Promise.all([
+  const [{ data: dishes, error: dishesError }, { data: allDishOptions }, { data: allDishAddons }] = await Promise.all([
     supabase.from('dishes').select('id, price, active, tenant_id').in('id', dishIds),
     supabase
       .from('dish_modifier_options')
       .select('dish_id, option_id, price_delta, modifier_options(id, name, group_id, modifier_groups(name))')
+      .in('dish_id', dishIds),
+    supabase
+      .from('dish_addons')
+      .select('dish_id, addon_id, addons(id, name, price, active)')
       .in('dish_id', dishIds),
   ])
 
@@ -117,6 +129,19 @@ export async function validateAndBuildItems(
     })
   }
 
+  // Build valid addons index: dishId -> addonId -> { name, price }
+  type ValidAddon = { addonId: string; name: string; price: number }
+  const validAddonsMap = new Map<string, Map<string, ValidAddon>>()
+  for (const row of (allDishAddons ?? []) as unknown as DishAddonRow[]) {
+    if (!row.addons?.active) continue
+    if (!validAddonsMap.has(row.dish_id)) validAddonsMap.set(row.dish_id, new Map())
+    validAddonsMap.get(row.dish_id)!.set(row.addon_id, {
+      addonId: row.addons.id,
+      name: row.addons.name,
+      price: Number(row.addons.price),
+    })
+  }
+
   // Build server items with validated prices and modifiers
   const serverItems: ServerItem[] = items.map((item) => {
     const isCombo = !item.dishId && !!item.comboId
@@ -157,6 +182,23 @@ export async function validateAndBuildItems(
       }
     }
 
+    const serverAddons: { addonId: string; addonName: string; price: number }[] = []
+    const dishValidAddons = item.dishId ? validAddonsMap.get(item.dishId) : undefined
+
+    if (item.addons && item.addons.length > 0) {
+      for (const addon of item.addons) {
+        const validAddon = dishValidAddons?.get(addon.addonId)
+        if (!validAddon) {
+          throw createError({ statusCode: 400, message: `Добавка "${addon.addonName}" недоступна для "${item.dishName}"` })
+        }
+        serverAddons.push({
+          addonId: validAddon.addonId,
+          addonName: validAddon.name,
+          price: validAddon.price,
+        })
+      }
+    }
+
     return {
       dishId: item.dishId,
       comboId: item.comboId,
@@ -166,6 +208,7 @@ export async function validateAndBuildItems(
       quantity: item.quantity,
       removedIngredients: item.removedIngredients ?? [],
       ...(serverModifiers.length > 0 ? { modifiers: serverModifiers } : {}),
+      ...(serverAddons.length > 0 ? { addons: serverAddons } : {}),
     }
   })
 

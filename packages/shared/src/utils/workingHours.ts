@@ -59,26 +59,29 @@ export function formatWorkingHours(schedule: WorkingHoursSchedule | null | undef
 
 /**
  * Get current time parts in a given timezone.
+ * Uses numeric day extraction to avoid relying on locale-specific weekday strings.
  */
 function getTimeInTimezone(date: Date, timezone: string): { hours: number; minutes: number; isoDay: number } {
-  const formatter = new Intl.DateTimeFormat('en-US', {
+  const timeParts = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     hour: 'numeric',
     minute: 'numeric',
-    weekday: 'short',
     hour12: false,
-  })
+  }).formatToParts(date)
 
-  const parts = formatter.formatToParts(date)
-  const hours = Number(parts.find(p => p.type === 'hour')!.value)
-  const minutes = Number(parts.find(p => p.type === 'minute')!.value)
-  const weekday = parts.find(p => p.type === 'weekday')!.value
+  const hours = Number(timeParts.find(p => p.type === 'hour')!.value)
+  const minutes = Number(timeParts.find(p => p.type === 'minute')!.value)
 
-  // Map JS weekday abbreviation to ISO day (1=Mon..7=Sun)
-  const weekdayMap: Record<string, number> = {
-    Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7,
-  }
-  const isoDay = weekdayMap[weekday]
+  // Get date string in YYYY-MM-DD format for the given timezone, then derive ISO day
+  const dateStr = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date) // "2026-04-06"
+
+  const jsDay = new Date(`${dateStr}T00:00:00`).getDay() // 0=Sun..6=Sat
+  const isoDay = jsDay === 0 ? 7 : jsDay // 1=Mon..7=Sun
 
   return { hours, minutes, isoDay }
 }
@@ -93,6 +96,8 @@ function getDaySchedule(schedule: WorkingHoursSchedule, isoDay: number): Working
 }
 
 function isOvernight(wh: WorkingHours): boolean {
+  // open === close without allDay is a degenerate config — treat as not overnight
+  if (wh.open === wh.close) return false
   return timeToMinutes(wh.close) < timeToMinutes(wh.open)
 }
 
@@ -103,6 +108,8 @@ function prevIsoDay(isoDay: number): number {
 type IsOpenResult = {
   open: boolean
   nextChange: { day: string; time: string; offsetDays: number } | null
+  closingAt: string | null
+  minutesUntilClose: number | null
 }
 
 /**
@@ -113,8 +120,8 @@ export function isOpenNow(
   timezone: string,
   now?: Date,
 ): IsOpenResult {
-  if (!schedule) return { open: true, nextChange: null }
-  if (schedule.default.allDay) return { open: true, nextChange: null }
+  if (!schedule) return { open: true, nextChange: null, closingAt: null, minutesUntilClose: null }
+  if (schedule.default.allDay) return { open: true, nextChange: null, closingAt: null, minutesUntilClose: null }
 
   const date = now ?? new Date()
   const { hours, minutes, isoDay } = getTimeInTimezone(date, timezone)
@@ -126,15 +133,20 @@ export function isOpenNow(
 
   // 1. Check yesterday's overnight tail
   if (!yesterdaySchedule.dayOff && isOvernight(yesterdaySchedule)) {
-    const yesterdayClose = timeToMinutes(yesterdaySchedule.close)
-    if (currentMinutes < yesterdayClose) {
-      return { open: true, nextChange: null }
+    const yesterdayCloseMin = timeToMinutes(yesterdaySchedule.close)
+    if (currentMinutes < yesterdayCloseMin) {
+      return {
+        open: true,
+        nextChange: null,
+        closingAt: yesterdaySchedule.close,
+        minutesUntilClose: yesterdayCloseMin - currentMinutes,
+      }
     }
   }
 
   // 2. Today is dayOff
   if (todaySchedule.dayOff) {
-    return { open: false, nextChange: findNextOpening(schedule, isoDay, 0) }
+    return { open: false, nextChange: findNextOpening(schedule, isoDay, 0), closingAt: null, minutesUntilClose: null }
   }
 
   const openMin = timeToMinutes(todaySchedule.open)
@@ -143,21 +155,31 @@ export function isOpenNow(
 
   // 3. Before today's opening
   if (currentMinutes < openMin) {
-    return { open: false, nextChange: { day: 'сегодня', time: todaySchedule.open, offsetDays: 0 } }
+    return { open: false, nextChange: { day: 'сегодня', time: todaySchedule.open, offsetDays: 0 }, closingAt: null, minutesUntilClose: null }
   }
 
   // 4. Overnight shift — open until close tomorrow (currentMinutes >= openMin guaranteed by step 3)
   if (overnight) {
-    return { open: true, nextChange: null }
+    return {
+      open: true,
+      nextChange: null,
+      closingAt: todaySchedule.close,
+      minutesUntilClose: 24 * 60 - currentMinutes + closeMin,
+    }
   }
 
   // 5. Regular shift, currently within hours
   if (currentMinutes < closeMin) {
-    return { open: true, nextChange: null }
+    return {
+      open: true,
+      nextChange: null,
+      closingAt: todaySchedule.close,
+      minutesUntilClose: closeMin - currentMinutes,
+    }
   }
 
   // 6. After closing — find next opening
-  return { open: false, nextChange: findNextOpening(schedule, isoDay, 1) }
+  return { open: false, nextChange: findNextOpening(schedule, isoDay, 1), closingAt: null, minutesUntilClose: null }
 }
 
 /**
@@ -170,8 +192,7 @@ function findNextOpening(
   offsetDays: number,
 ): { day: string; time: string; offsetDays: number } | null {
   for (let d = offsetDays; d <= 7; d++) {
-    let checkDay = todayIsoDay + d
-    if (checkDay > 7) checkDay -= 7
+    const checkDay = ((todayIsoDay - 1 + d) % 7) + 1 // wraps 1..7
     const daySchedule = getDaySchedule(schedule, checkDay)
     if (daySchedule.dayOff) continue
 

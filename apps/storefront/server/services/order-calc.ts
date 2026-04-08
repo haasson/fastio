@@ -2,12 +2,16 @@ export type CalcItem = {
   price: number
   quantity: number
   modifiers?: { priceDelta: number }[]
+  addons?: { price: number }[]
 }
 
 export function calcSubtotal(items: CalcItem[]): number {
   return items.reduce(
     (sum, item) =>
-      sum + (item.price + (item.modifiers?.reduce((s, m) => s + m.priceDelta, 0) ?? 0)) * item.quantity,
+      sum + (item.price
+        + (item.modifiers?.reduce((s, m) => s + m.priceDelta, 0) ?? 0)
+        + (item.addons?.reduce((s, a) => s + a.price, 0) ?? 0)
+      ) * item.quantity,
     0,
   )
 }
