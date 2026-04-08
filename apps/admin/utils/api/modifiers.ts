@@ -126,21 +126,24 @@ export const modifiersApi = {
       await query(sb.from('modifier_options').delete().in('id', toDelete))
     }
 
-    // Upsert existing + insert new
-    const toUpsert = data.options.map((opt, i) => ({
-      ...(opt.id && existingIds.has(opt.id) ? { id: opt.id } : {}),
+    // Upsert existing, insert new — separate calls because upsert sends id in columns for all rows
+    const mapped = data.options.map((opt, i) => ({
+      existingId: opt.id && existingIds.has(opt.id) ? opt.id : undefined,
       group_id: id,
       name: opt.name,
       sort_order: i,
       active: opt.active,
-      weight: data.affectsWeight && data.weightMode === 'global' ? (opt.weight ?? null) : null,
+      weight: resolveOptionWeight(data, opt),
     }))
 
+    const toUpsert = mapped.filter((o) => o.existingId).map(({ existingId, ...rest }) => ({ id: existingId!, ...rest }))
+    const toInsert = mapped.filter((o) => !o.existingId).map(({ existingId: _, ...rest }) => rest)
+
     if (toUpsert.length > 0) {
-      await query(
-        sb.from('modifier_options')
-          .upsert(toUpsert, { onConflict: 'id' }),
-      )
+      await query(sb.from('modifier_options').upsert(toUpsert, { onConflict: 'id' }))
+    }
+    if (toInsert.length > 0) {
+      await query(sb.from('modifier_options').insert(toInsert))
     }
 
     // Re-fetch
