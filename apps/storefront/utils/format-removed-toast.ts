@@ -6,10 +6,10 @@ export type RemovedToast = {
 }
 
 const REASON_DESCRIPTION: Record<RemovalReason, string> = {
-  dish_missing: 'блюда больше нет в меню',
-  combo_missing: 'комбо больше нет в меню',
-  modifier_invalid: 'некоторые модификаторы больше недоступны',
-  addon_invalid: 'некоторые добавки больше недоступны',
+  dish_missing: 'Блюда больше нет в меню',
+  combo_missing: 'Комбо больше нет в меню',
+  modifier_invalid: 'Некоторые модификаторы больше недоступны',
+  addon_invalid: 'Некоторые добавки больше недоступны',
 }
 
 export function formatRemovedToasts(removed: RemovedItem[]): RemovedToast[] {
@@ -22,7 +22,7 @@ export function formatRemovedToasts(removed: RemovedItem[]): RemovedToast[] {
     seen.add(key)
 
     toasts.push({
-      title: `${item.dishName} убрано из корзины`,
+      title: `Убрано из корзины: ${item.dishName}`,
       description: REASON_DESCRIPTION[reason],
     })
   }

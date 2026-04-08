@@ -18,8 +18,8 @@ describe('formatRemovedToasts', () => {
     const result = formatRemovedToasts([makeRemoved('Бургер')])
 
     expect(result).toHaveLength(1)
-    expect(result[0].title).toBe('Бургер убрано из корзины')
-    expect(result[0].description).toBe('блюда больше нет в меню')
+    expect(result[0].title).toBe('Убрано из корзины: Бургер')
+    expect(result[0].description).toBe('Блюда больше нет в меню')
   })
 
   it('deduplicates same dish + same reason', () => {
@@ -39,27 +39,27 @@ describe('formatRemovedToasts', () => {
     ])
 
     expect(result).toHaveLength(2)
-    expect(result[0].title).toBe('Бургер убрано из корзины')
-    expect(result[1].title).toBe('Пицца убрано из корзины')
+    expect(result[0].title).toBe('Убрано из корзины: Бургер')
+    expect(result[1].title).toBe('Убрано из корзины: Пицца')
   })
 
   it('shows modifier_invalid reason', () => {
     const result = formatRemovedToasts([makeRemoved('Бургер', 'modifier_invalid')])
 
-    expect(result[0].description).toBe('некоторые модификаторы больше недоступны')
+    expect(result[0].description).toBe('Некоторые модификаторы больше недоступны')
   })
 
   it('shows addon_invalid reason', () => {
     const result = formatRemovedToasts([makeRemoved('Бургер', 'addon_invalid')])
 
-    expect(result[0].description).toBe('некоторые добавки больше недоступны')
+    expect(result[0].description).toBe('Некоторые добавки больше недоступны')
   })
 
   it('shows combo_missing reason', () => {
     const result = formatRemovedToasts([makeRemoved('Комбо Обед', 'combo_missing')])
 
-    expect(result[0].title).toBe('Комбо Обед убрано из корзины')
-    expect(result[0].description).toBe('комбо больше нет в меню')
+    expect(result[0].title).toBe('Убрано из корзины: Комбо Обед')
+    expect(result[0].description).toBe('Комбо больше нет в меню')
   })
 
   it('same dish with different reasons produces separate toasts', () => {
