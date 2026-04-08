@@ -337,7 +337,7 @@ function addComboToCart(combo: Combo) {
   gap: 8px;
 
   @include md { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  @media (min-width: 960px) { grid-template-columns: repeat(3, 1fr); }
+  @include mdl { grid-template-columns: repeat(3, 1fr); }
   @include lg { grid-template-columns: repeat(4, 1fr); gap: 20px; }
 }
 

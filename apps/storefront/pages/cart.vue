@@ -119,14 +119,14 @@ function canEdit(dishId: string | null): boolean {
   grid-template-columns: 1fr;
   gap: 24px;
 
-  @include md {
+  @include mdl {
     grid-template-columns: 1fr 360px;
     align-items: start;
   }
 }
 
 .cart-sidebar {
-  @include md {
+  @include mdl {
     position: sticky;
     top: 80px;
   }
