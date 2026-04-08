@@ -36,7 +36,7 @@ export function useCartReconciler() {
       }
 
       if (result.updated.length > 0) {
-        warning('Цены обновлены', 'Некоторые цены в корзине изменились')
+        warning('Цены блюд изменились', 'Сумма корзины пересчитана')
       }
     },
     { immediate: true },
