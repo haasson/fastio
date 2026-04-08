@@ -7,7 +7,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 export const useCategories = (tenantId: Ref<string>) => {
   const api = useDatabase()
 
-  const { items: categories, loading } = useRealtimeList({
+  const { items: categories, loading, refresh } = useRealtimeList({
     channelKey: computed(() => tenantId.value ? `categories:${tenantId.value}` : null),
     table: 'categories',
     filter: computed(() => `tenant_id=eq.${tenantId.value}`),
@@ -60,5 +60,5 @@ export const useCategories = (tenantId: Ref<string>) => {
     await update(id, { photoUrl: null })
   }
 
-  return { categories, loading, add, update, remove, reorder, updatePhoto, removePhoto }
+  return { categories, loading, add, update, remove, reorder, updatePhoto, removePhoto, refresh }
 }

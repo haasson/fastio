@@ -27,6 +27,7 @@
       :tenant-id="tenantId"
       :category="editingItem"
       :tags="tags"
+      @saved="refresh"
     />
   </div>
 </template>
@@ -46,7 +47,7 @@ import MenuCategoryFormModal from '~/components/menu/CategoryFormModal.vue'
 const tenantStore = useTenantStore()
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
-const { categories, loading, update, remove, reorder } = useCategories(tenantId)
+const { categories, loading, update, remove, reorder, refresh } = useCategories(tenantId)
 const { tags } = useTags(tenantId)
 const { counts } = useDishCounts(tenantId, categories)
 
