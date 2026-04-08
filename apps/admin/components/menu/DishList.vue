@@ -46,52 +46,26 @@
 
               <template v-else>
 
-                <!-- Карточки с DnD -->
-                <VueDraggable
+                <!-- Карточки -->
+                <div
                   v-if="dishView === 'cards'"
-                  v-model="dishes"
                   class="cards-grid"
-                  :animation="180"
-                  ghost-class="card-ghost"
-                  @end="reorderDishes"
                 >
-                  <UiCard
+                  <MenuItemCard
                     v-for="dish in dishes"
                     :key="dish.id"
-                    size="small"
-                    class="dish-card"
-                    :class="{ inactive: !dish.active }"
-                  >
-                    <UiSpace :size="8" vertical>
-                      <div class="card-photo">
-                        <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" />
-                        <UiPhotoPlaceholder v-else size="medium" />
-                      </div>
-                      <span class="dish-name">{{ dish.name }}</span>
-                      <UiSpace :size="4" align="center">
-                        <span class="dish-price">{{ formatPrice(dish.price) }}</span>
-                        <UiTag
-                          v-for="tagId in dish.tags"
-                          :key="tagId"
-                          size="tiny"
-                          empty
-                          round
-                          :style="tagStyle(tagId)"
-                        >{{ tagName(tagId) }}</UiTag>
-                      </UiSpace>
-                      <div class="card-actions">
-                        <UiSwitch
-                          :model-value="dish.active"
-                          @update:model-value="toggleActive(dish.id, $event)"
-                        />
-                        <AppActionsBlock
-                          @edit="openDishModal(dish)"
-                          @delete="confirmDeleteDish(dish.id)"
-                        />
-                      </div>
-                    </UiSpace>
-                  </UiCard>
-                </VueDraggable>
+                    :photo="dish.photos[0]"
+                    :name="dish.name"
+                    :price="dish.price"
+                    :tags="dish.tags"
+                    :active="dish.active"
+                    :tag-name="tagName"
+                    :tag-style="tagStyle"
+                    @click="openDishModal(dish)"
+                    @toggle-active="toggleActive(dish.id, $event)"
+                    @delete="confirmDeleteDish(dish.id)"
+                  />
+                </div>
 
                 <!-- Таблица -->
                 <template v-else-if="dishView === 'table'">
@@ -157,17 +131,15 @@
 import { toRefs, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
-import { VueDraggable } from 'vue-draggable-plus'
 import {
-  UiButton, UiCard, UiDataTable, UiDivider, UiEmpty, UiInput,
-  UiPhotoPlaceholder, UiSectionHeader, UiSegmentedControl, UiSkeleton,
-  UiSpace, UiSwitch, UiTag,
+  UiButton, UiDataTable, UiDivider, UiEmpty, UiInput,
+  UiSectionHeader, UiSegmentedControl, UiSkeleton,
 } from '@fastio/ui'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
+import MenuItemCard from '~/components/menu/ItemCard.vue'
 import MenuDishFormDrawer from '~/components/menu/DishFormDrawer.vue'
 import { useDishes } from '~/composables/data/useDishes'
 import { useDishTable } from '~/composables/ui/useDishTable'
@@ -286,10 +258,6 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 }
 
 // Карточки
-.card-ghost {
-  opacity: 0.35;
-}
-
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -302,53 +270,6 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
   @media (min-width: 1200px) {
     grid-template-columns: repeat(4, 1fr);
   }
-}
-
-.dish-card {
-  cursor: grab;
-
-  &:active { cursor: grabbing; }
-  &.inactive { opacity: 0.5; }
-}
-
-.card-photo {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--color-bg-page);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.dish-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-title);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.dish-price {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-primary);
-  white-space: nowrap;
-}
-
-.card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 // Порядок

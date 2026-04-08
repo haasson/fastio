@@ -1,6 +1,13 @@
 <template>
   <main class="combos-root">
     <UiSectionHeader title="Комбо">
+      <template #left>
+        <UiSegmentedControl
+          v-model="comboView"
+          :items="VIEW_ITEMS"
+          size="medium"
+        />
+      </template>
       <template #right>
         <UiButton
           size="medium"
@@ -17,54 +24,46 @@
       <template v-else>
         <UiEmpty v-if="combos.length === 0" icon="dishes" text="В этой категории пока нет комбо" />
 
-        <VueDraggable
-          v-else
-          v-model="combos"
-          class="cards-grid"
-          :animation="180"
-          ghost-class="card-ghost"
-          @end="reorderCombos"
-        >
-          <UiCard
-            v-for="combo in combos"
-            :key="combo.id"
-            size="small"
-            class="combo-card"
-            :class="{ inactive: !combo.active }"
+        <template v-else>
+          <!-- Карточки -->
+          <div v-if="comboView === 'cards'" class="cards-grid">
+            <MenuItemCard
+              v-for="combo in combos"
+              :key="combo.id"
+              :photo="combo.photos[0]"
+              :name="combo.name"
+              :price="combo.price"
+              :tags="combo.tags"
+              :active="combo.active"
+              :tag-name="tagName"
+              :tag-style="tagStyle"
+              @click="openComboModal(combo)"
+              @toggle-active="toggleActive(combo.id, $event)"
+              @delete="confirmDeleteCombo(combo.id)"
+            />
+          </div>
+
+          <!-- Порядок -->
+          <AppDraggableList
+            v-else-if="comboView === 'order'"
+            v-model="combos"
+            @reorder="reorderCombos"
           >
-            <UiSpace :size="8" vertical>
-              <div class="card-photo">
-                <img v-if="combo.photos[0]" :src="combo.photos[0]" :alt="combo.name" />
-                <UiPhotoPlaceholder v-else size="medium" />
-              </div>
-
-              <span class="combo-name">{{ combo.name }}</span>
-
-              <UiSpace :size="4" align="center">
-                <span class="combo-price">{{ formatPrice(combo.price) }}</span>
-                <UiTag
-                  v-for="tagId in combo.tags"
-                  :key="tagId"
-                  size="tiny"
-                  empty
-                  round
-                  :style="tagStyle(tagId)"
-                >{{ tagName(tagId) }}</UiTag>
-              </UiSpace>
-
-              <div class="card-actions">
-                <UiSwitch
-                  :model-value="combo.active"
-                  @update:model-value="toggleActive(combo.id, $event)"
-                />
-                <AppActionsBlock
-                  @edit="openComboModal(combo)"
-                  @delete="confirmDeleteCombo(combo.id)"
-                />
-              </div>
-            </UiSpace>
-          </UiCard>
-        </VueDraggable>
+            <AppListRow
+              v-for="combo in combos"
+              :key="combo.id"
+              :name="combo.name"
+              :thumb-url="combo.photos[0] ?? null"
+              thumb-width="40px"
+              thumb-height="40px"
+              :disabled="!combo.active"
+            >
+              <template #append>
+                <span class="order-price">{{ formatPrice(combo.price) }}</span>
+              </template>
+            </AppListRow>
+          </AppDraggableList>
+        </template>
       </template>
     </div>
 
@@ -83,11 +82,13 @@
 
 <script setup lang="ts">
 import { toRefs, computed } from 'vue'
-import { VueDraggable } from 'vue-draggable-plus'
-import { UiButton, UiSkeleton, UiSpace, UiTag, UiCard, UiSwitch, UiPhotoPlaceholder, UiSectionHeader, UiEmpty } from '@fastio/ui'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import { useLocalStorage } from '@vueuse/core'
+import { UiButton, UiSkeleton, UiSectionHeader, UiSegmentedControl, UiEmpty } from '@fastio/ui'
 import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
+import AppDraggableList from '~/components/ui/AppDraggableList.vue'
+import AppListRow from '~/components/ui/AppListRow.vue'
+import MenuItemCard from '~/components/menu/ItemCard.vue'
 import MenuComboFormDrawer from '~/components/menu/ComboFormDrawer.vue'
 import { useCombos } from '~/composables/data/useCombos'
 import { useItemManager } from '~/composables/ui/useItemManager'
@@ -127,6 +128,13 @@ const removeCombo = async (...args: Parameters<typeof rawRemoveCombo>) => {
   emit('combosChanged')
 }
 
+const VIEW_ITEMS = [
+  { label: 'Карточки', value: 'cards' },
+  { label: 'Порядок', value: 'order' },
+]
+
+const comboView = useLocalStorage<'cards' | 'order'>('menu:combo-view', 'cards')
+
 const { showSkeleton, modalOpen: comboModalOpen, editingItem: editingCombo, openModal: openComboModal, closeModal: closeComboModal, confirmDelete: confirmDeleteCombo }
   = useItemManager<Combo>({ loading: combosLoading, remove: removeCombo, confirmTitle: 'Удалить комбо?' })
 
@@ -150,10 +158,6 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
   padding-top: 2px;
 }
 
-.card-ghost {
-  opacity: 0.35;
-}
-
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -168,56 +172,12 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
   }
 }
 
-.combo-card {
-  cursor: grab;
-
-  &:active {
-    cursor: grabbing;
-  }
-
-  &.inactive {
-    opacity: 0.5;
-  }
-}
-
-.card-photo {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--color-bg-page);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.combo-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-title);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.combo-price {
+.order-price {
+  flex-shrink: 0;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-primary);
   white-space: nowrap;
-}
-
-.card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 </style>

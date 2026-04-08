@@ -14,33 +14,26 @@
       <template v-else>
         <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="`Нет блюд с тегом «${tagName}»`" />
 
-        <VueDraggable
+        <AppDraggableList
           v-else
           v-model="dishes"
-          class="dish-list"
-          handle=".drag-handle"
-          :animation="180"
-          ghost-class="list-row-ghost"
-          @end="reorderDishes"
+          @reorder="reorderDishes"
         >
-          <div
+          <AppListRow
             v-for="dish in dishes"
             :key="dish.id"
-            class="list-row"
-            :class="{ inactive: !dish.active }"
+            :name="dish.name"
+            :thumb-url="dish.photos[0] ?? null"
+            thumb-width="40px"
+            thumb-height="40px"
+            :disabled="!dish.active"
           >
-            <UiIcon name="grip" class="drag-handle" />
-            <div class="list-photo">
-              <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" />
-              <UiPhotoPlaceholder v-else size="small" />
-            </div>
-            <span class="list-name">{{ dish.name }}</span>
-            <span class="list-price">{{ formatPrice(dish.price) }}</span>
-            <div class="list-actions">
+            <template #append>
+              <span class="order-price">{{ formatPrice(dish.price) }}</span>
               <AppActionsBlock :show-delete="false" @edit="openDishModal(dish)" />
-            </div>
-          </div>
-        </VueDraggable>
+            </template>
+          </AppListRow>
+        </AppDraggableList>
       </template>
     </div>
 
@@ -60,8 +53,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { VueDraggable } from 'vue-draggable-plus'
-import { UiSkeleton, UiIcon, UiPhotoPlaceholder, UiAlert, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import { UiSkeleton, UiAlert, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import AppDraggableList from '~/components/ui/AppDraggableList.vue'
+import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
@@ -148,82 +142,11 @@ const updateDish = async (id: string, data: Partial<DishFormData>) => {
   padding-top: 2px;
 }
 
-.dish-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.list-row-ghost {
-  opacity: 0.35;
-}
-
-.list-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-
-  &.inactive {
-    opacity: 0.5;
-  }
-}
-
-.drag-handle {
-  flex-shrink: 0;
-  color: var(--color-text-tertiary);
-  cursor: grab;
-  width: 16px;
-  height: 16px;
-
-  &:active {
-    cursor: grabbing;
-  }
-}
-
-.list-photo {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--color-bg-page);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.list-name {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-title);
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.list-price {
+.order-price {
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-primary);
   white-space: nowrap;
-}
-
-.list-actions {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
 }
 </style>

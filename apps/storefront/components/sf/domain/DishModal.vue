@@ -130,14 +130,13 @@ function onConfirm() {
 }
 
 .photo {
-  display: none;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-card);
 
   @include md {
-    display: block;
     width: 160px;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    border-radius: var(--radius-card);
     flex-shrink: 0;
   }
 }
