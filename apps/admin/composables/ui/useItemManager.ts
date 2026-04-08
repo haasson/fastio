@@ -9,16 +9,25 @@ type Options = {
   confirmTitle: string
   confirmText?: string
   confirmType?: 'error' | 'warning'
+  beforeDelete?: (id: string) => { alert?: string; disabled?: boolean } | undefined
 }
 
 export function useItemManager<T extends { id: string }>(options: Options) {
-  const { loading, remove, confirmTitle, confirmText = 'Удалить', confirmType = 'error' } = options
+  const { loading, remove, confirmTitle, confirmText = 'Удалить', confirmType = 'error', beforeDelete } = options
   const { confirm } = useConfirm()
   const { showSkeleton } = useDelayedLoading(loading)
   const { isOpen: modalOpen, data: editingItem, open: openModal, close: closeModal } = useDrawer<T>()
 
   const confirmDelete = async (id: string) => {
-    const ok = await confirm({ title: confirmTitle, confirmText, confirmType })
+    const check = beforeDelete?.(id)
+
+    const ok = await confirm({
+      title: confirmTitle,
+      confirmText,
+      confirmType,
+      alert: check?.alert,
+      confirmDisabled: check?.disabled,
+    })
 
     if (ok) await remove(id)
   }

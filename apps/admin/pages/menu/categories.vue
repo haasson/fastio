@@ -55,6 +55,14 @@ const { showSkeleton, modalOpen, editingItem, openModal, confirmDelete } = useIt
   loading,
   remove: async (id: string) => await remove(id),
   confirmTitle: 'Удалить категорию?',
+  beforeDelete: (id) => {
+    const hasDishes = (counts.value[id] ?? 0) > 0
+
+    if (hasDishes) return {
+      alert: 'В этой категории есть блюда. Сначала переместите их в другую категорию.',
+      disabled: true,
+    }
+  },
 })
 
 const toggleActive = (id: string, active: boolean) => update(id, { active })
