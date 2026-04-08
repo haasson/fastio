@@ -29,6 +29,7 @@ import { FsToastProvider } from '@fastio/public-ui'
 import ConfirmDialog from '~/components/ConfirmDialog.vue'
 import { useToast } from '~/composables/useToast'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { useCartReconciler } from '~/composables/useCartReconciler'
 
 const { toasts, dismiss } = useToast()
 
@@ -39,6 +40,8 @@ onMounted(() => {
   cartStore.restore()
   authStore.init()
 })
+
+useCartReconciler()
 
 // Применяем тему тенанта как CSS-переменные
 const route = useRoute()

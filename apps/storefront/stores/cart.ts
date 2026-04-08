@@ -62,6 +62,11 @@ export const useCartStore = defineStore('cart', () => {
     persist()
   }
 
+  function replaceAll(newItems: CartItem[]) {
+    items.value = newItems
+    persist()
+  }
+
   function clear() {
     items.value = []
     persist()
@@ -92,5 +97,5 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  return { items, count, subtotal, restored, add, increment, decrement, remove, replace, setQuantity, clear, restore }
+  return { items, count, subtotal, restored, add, increment, decrement, remove, replace, replaceAll, setQuantity, clear, restore }
 })
