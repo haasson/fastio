@@ -16,46 +16,40 @@
         :rules="[{ required: true, message: 'Введите название' }]"
       />
 
-      <div class="field">
-        <UiText size="small" weight="medium" class="label">Группа</UiText>
-        <UiSelect
-          :value="form.groupType"
-          :options="groupOptions"
-          size="small"
-          @update:value="form.groupType = $event as OrderStatusGroup"
-        />
-        <UiText size="tiny" color="tertiary">
-          Группа определяет поведение заказа в этом статусе
-        </UiText>
-      </div>
+      <UiSelect
+        :value="form.groupType"
+        :options="groupOptions"
+        label="Группа"
+        size="small"
+        @update:value="form.groupType = $event as OrderStatusGroup"
+      />
+      <UiText size="tiny" color="tertiary" class="hint">
+        Группа определяет поведение заказа в этом статусе
+      </UiText>
 
-      <div class="field">
-        <UiText size="small" weight="medium" class="label">Быстрое действие 1</UiText>
-        <UiSelect
-          :value="form.quickAction1"
-          :options="quickActionOptions1"
-          size="small"
-          clearable
-          placeholder="Не задано"
-          @update:value="form.quickAction1 = ($event as string) ?? null"
-        />
-      </div>
+      <UiSelect
+        :value="form.quickAction1"
+        :options="quickActionOptions1"
+        label="Быстрое действие 1"
+        size="small"
+        clearable
+        placeholder="Не задано"
+        @update:value="form.quickAction1 = ($event as string) ?? null"
+      />
 
-      <div class="field">
-        <UiText size="small" weight="medium" class="label">Быстрое действие 2</UiText>
-        <UiSelect
-          :value="form.quickAction2"
-          :options="quickActionOptions2"
-          size="small"
-          clearable
-          :disabled="!form.quickAction1"
-          placeholder="Не задано"
-          @update:value="form.quickAction2 = ($event as string) ?? null"
-        />
-        <UiText size="tiny" color="tertiary">
-          Кнопки перехода в другой статус на карточке заказа (макс. 2)
-        </UiText>
-      </div>
+      <UiSelect
+        :value="form.quickAction2"
+        :options="quickActionOptions2"
+        label="Быстрое действие 2"
+        size="small"
+        clearable
+        :disabled="!form.quickAction1"
+        placeholder="Не задано"
+        @update:value="form.quickAction2 = ($event as string) ?? null"
+      />
+      <UiText size="tiny" color="tertiary" class="hint">
+        Кнопки перехода в другой статус на карточке заказа (макс. 2)
+      </UiText>
     </UiForm>
   </UiModal>
 </template>
@@ -150,5 +144,9 @@ const handleSave = async () => {
 
 .form {
   @include modal-form;
+
+  .hint {
+    margin-top: -12px;
+  }
 }
 </style>
