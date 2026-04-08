@@ -50,7 +50,8 @@ export const validateTenantConfig = (
 
   for (const key of layout.sectionsOrder) {
     const feature = getFeature(key)
-    if (feature?.module && !modules[feature.module]) {
+    const section = layout.sections[key as keyof typeof layout.sections] as { enabled?: boolean } | undefined
+    if (feature?.module && !modules[feature.module] && section?.enabled !== false) {
       issues.push({
         severity: 'error',
         code: `section_module_disabled_${key}`,
