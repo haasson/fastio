@@ -103,6 +103,8 @@ export type SiteLayout = {
 export type WorkingHours = {
   open: string   // "HH:MM"
   close: string  // "HH:MM"
+  dayOff?: boolean   // only in days[n] — this day is a day off, open/close ignored
+  allDay?: boolean   // only in default — 24/7, days and open/close ignored
 }
 
 export type WorkingHoursSchedule = {

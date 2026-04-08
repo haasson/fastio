@@ -34,13 +34,19 @@
           </div>
 
           <div class="cart-sidebar">
+            <FsAlert v-if="closedStatus" type="warning" :icon="Clock" class="closed-alert">
+              Мы сейчас не работаем. Откроемся {{ closedStatus.day }} в {{ closedStatus.time }}
+            </FsAlert>
+            <FsAlert v-else-if="branchLoadError" type="muted" class="closed-alert">
+              Не удалось проверить время работы
+            </FsAlert>
             <FsCard class="summary-card">
               <div class="summary-body">
                 <div class="summary-row">
                   <span class="summary-label">Итого</span>
                   <span class="summary-total">{{ cart.subtotal }} {{ currency }}</span>
                 </div>
-                <FsButton size="large" class="checkout-btn" @click="navigateTo('/checkout')">
+                <FsButton size="large" class="checkout-btn" :disabled="!!closedStatus" @click="navigateTo('/checkout')">
                   Перейти к оформлению
                 </FsButton>
               </div>
@@ -70,14 +76,17 @@
 </template>
 
 <script setup lang="ts">
-import { navigateTo } from 'nuxt/app'
-import { ShoppingCart } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { navigateTo, useNuxtData } from 'nuxt/app'
+import { ShoppingCart, Clock } from 'lucide-vue-next'
+import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
+import { isOpenNow } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { useCartEdit } from '~/composables/useCartEdit'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
-import { FsSection, FsButton, FsSpinner, FsCard } from '@fastio/public-ui'
+import { FsSection, FsButton, FsSpinner, FsCard, FsAlert } from '@fastio/public-ui'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CartItem from '~/components/cart/CartItem.vue'
@@ -87,6 +96,38 @@ const cart = useCartStore()
 const menuStore = useMenuStore()
 const currency = useCurrency()
 const { editKey, editState, openEdit, onItemEdited } = useCartEdit()
+
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+type BranchScheduleInfo = { id: string; workingHoursSchedule: WorkingHoursSchedule | null }
+const branchSchedules = ref<BranchScheduleInfo[]>([])
+const branchLoadError = ref(false)
+
+const closedStatus = computed(() => {
+  const tz = tenant.value?.timezone ?? 'Europe/Moscow'
+  const schedules = branchSchedules.value
+  if (schedules.length === 0) return null
+
+  let earliest: { day: string; time: string; offsetDays: number } | null = null
+  for (const branch of schedules) {
+    const result = isOpenNow(branch.workingHoursSchedule, tz)
+    if (result.open) return null
+    if (result.nextChange && (!earliest
+      || result.nextChange.offsetDays < earliest.offsetDays
+      || (result.nextChange.offsetDays === earliest.offsetDays && result.nextChange.time < earliest.time))) {
+      earliest = result.nextChange
+    }
+  }
+  return earliest
+})
+
+onMounted(async () => {
+  try {
+    branchSchedules.value = await $fetch<BranchScheduleInfo[]>('/api/branches')
+  } catch {
+    branchLoadError.value = true
+  }
+})
 
 function canEdit(dishId: string | null): boolean {
   if (!dishId) return false
@@ -154,6 +195,10 @@ function canEdit(dishId: string | null): boolean {
   font-size: 22px;
   font-weight: 700;
   color: var(--color-text);
+}
+
+.closed-alert {
+  margin-bottom: 12px;
 }
 
 .checkout-btn {

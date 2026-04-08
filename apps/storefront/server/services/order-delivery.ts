@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { DeliveryZone, DeliveryZoneRow } from '@fastio/shared'
-import { findDeliveryZone, mapDeliveryZoneRow } from '@fastio/shared'
+import type { DeliveryZone, DeliveryZoneRow, WorkingHoursSchedule } from '@fastio/shared'
+import { findDeliveryZone, mapDeliveryZoneRow, isOpenNow } from '@fastio/shared'
 import type { DeliveryType, TenantOrderConfig } from './order-validation'
 import { calcDeliveryFee } from './order-calc'
 
@@ -39,6 +39,11 @@ export async function validateTable(
   return { id: tableData.id as string, name: tableData.name as string }
 }
 
+export type TenantScheduleInfo = {
+  workingHoursSchedule: WorkingHoursSchedule | null
+  timezone: string
+}
+
 export async function resolveDelivery(
   supabase: SupabaseClient,
   tenantId: string,
@@ -46,6 +51,7 @@ export async function resolveDelivery(
   body: Record<string, unknown>,
   tenantConfig: TenantOrderConfig,
   subtotal: number,
+  tenantScheduleInfo?: TenantScheduleInfo | null,
 ): Promise<DeliveryResult> {
   let tableRecord: TableRecord | null = null
 
@@ -54,7 +60,7 @@ export async function resolveDelivery(
   }
 
   const [{ data: branchRows }, { data: zoneRows }] = await Promise.all([
-    supabase.from('branches').select('id').eq('tenant_id', tenantId).eq('is_active', true),
+    supabase.from('branches').select('id, working_hours_schedule').eq('tenant_id', tenantId).eq('is_active', true),
     supabase.from('delivery_zones').select('*').eq('tenant_id', tenantId).eq('is_active', true).order('sort_order'),
   ])
 
@@ -96,6 +102,24 @@ export async function resolveDelivery(
 
   if (!branchId && deliveryType !== 'dine_in' && deliveryType !== 'request') {
     throw createError({ statusCode: 400, message: 'Не удалось определить филиал для заказа' })
+  }
+
+  // Check if the branch is currently open
+  if (branchId && deliveryType !== 'dine_in' && tenantScheduleInfo) {
+    const branchRow = branchRows?.find((b) => b.id === branchId)
+    const branchSchedule = (branchRow?.working_hours_schedule as WorkingHoursSchedule | null)
+      ?? tenantScheduleInfo.workingHoursSchedule
+
+    const status = isOpenNow(branchSchedule, tenantScheduleInfo.timezone)
+    if (!status.open) {
+      const when = status.nextChange
+        ? `Откроется ${status.nextChange.day} в ${status.nextChange.time}`
+        : ''
+      throw createError({
+        statusCode: 400,
+        message: `Филиал сейчас закрыт. ${when}`.trim(),
+      })
+    }
   }
 
   const { deliveryFee, minOrder } = calcDeliveryFee({

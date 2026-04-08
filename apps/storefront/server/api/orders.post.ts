@@ -1,4 +1,5 @@
 import { normalizePhone } from '@fastio/shared'
+import type { Tenant } from '@fastio/shared'
 import { getServerSupabase } from '../utils/supabase'
 import { createRateLimiter } from '../utils/rateLimit'
 import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType } from '../services/order-validation'
@@ -38,8 +39,10 @@ export default defineEventHandler(async (event) => {
   const { serverItems, subtotal, comboItemsMap } = await validateAndBuildItems(supabase, tenantId, body.items)
 
   // 4. Доставка: зоны, филиал, стоимость, стол
+  const tenant = event.context.tenant as Tenant | undefined
   const { matchedZone, branchId, deliveryFee, tableRecord } = await resolveDelivery(
     supabase, tenantId, deliveryType, body, tenantConfig, subtotal,
+    { workingHoursSchedule: tenant?.workingHoursSchedule ?? null, timezone: tenant?.timezone ?? 'Europe/Moscow' },
   )
 
   // 5. Промокоды и акции

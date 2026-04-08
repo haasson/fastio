@@ -50,6 +50,10 @@
           <FsAlert v-else-if="addressCheckLoading" type="muted">
             Проверяем адрес...
           </FsAlert>
+          <!-- v-if (not v-else-if): shows alongside zone confirmation alert above -->
+          <FsAlert v-if="branchClosedInfo && !checkout.outsideZones" type="warning" :icon="Clock">
+            Доставка по данному адресу доступна с {{ branchClosedInfo.time }} ({{ branchClosedInfo.day }})
+          </FsAlert>
         </template>
 
         <p v-if="addressError" class="field-error">{{ addressError }}</p>
@@ -70,12 +74,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { Check, X } from 'lucide-vue-next'
-import type { CustomerAddress } from '@fastio/shared'
+import { Check, X, Clock } from 'lucide-vue-next'
+import type { CustomerAddress, Tenant, WorkingHoursSchedule } from '@fastio/shared'
+import { isOpenNow } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'
 import { useAuthStore } from '~/stores/auth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { useNuxtData } from 'nuxt/app'
 import { FsHeading, FsAlert } from '@fastio/public-ui'
 import AddressManualInput from './AddressManualInput.vue'
 
@@ -85,6 +91,8 @@ defineProps<Props>()
 const checkout = useCheckoutStore()
 const cart = useCartStore()
 const authStore = useAuthStore()
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+const branchClosedInfo = ref<{ day: string; time: string } | null>(null)
 
 const manualInputRef = ref<InstanceType<typeof AddressManualInput> | null>(null)
 const savedAddresses = ref<CustomerAddress[]>([])
@@ -153,6 +161,7 @@ function switchToNew() {
   checkout.form.addressCoords = null
   checkout.deliveryZone = null
   checkout.outsideZones = false
+  branchClosedInfo.value = null
 }
 
 function switchToSaved() {
@@ -168,7 +177,7 @@ async function checkAddress(lat: number, lon: number) {
   addressCheckLoading.value = true
   try {
     const result = await $fetch<{
-      zone: { id: string; deliveryFee: number; minOrder: number; freeDeliveryFrom: number | null; effectiveDeliveryFee?: number } | null
+      zone: { id: string; deliveryFee: number; minOrder: number; freeDeliveryFrom: number | null; effectiveDeliveryFee?: number; branchSchedule?: WorkingHoursSchedule | null } | null
       outsideZones?: boolean
     }>('/api/check-address', { method: 'POST', body: { lat, lon, subtotal: cart.subtotal } })
 
@@ -176,18 +185,29 @@ async function checkAddress(lat: number, lon: number) {
       checkout.deliveryZone = result.zone
       checkout.outsideZones = false
       checkout.hasZones = true
+
+      if (result.zone.branchSchedule) {
+        const tz = tenant.value?.timezone ?? 'Europe/Moscow'
+        const status = isOpenNow(result.zone.branchSchedule, tz)
+        branchClosedInfo.value = status.open ? null : status.nextChange
+      } else {
+        branchClosedInfo.value = null
+      }
     } else if (result.outsideZones) {
       checkout.deliveryZone = null
       checkout.outsideZones = true
       checkout.hasZones = true
+      branchClosedInfo.value = null
     } else {
       checkout.deliveryZone = null
       checkout.outsideZones = false
       checkout.hasZones = false
+      branchClosedInfo.value = null
     }
   } catch {
     checkout.deliveryZone = null
     checkout.outsideZones = false
+    branchClosedInfo.value = null
   } finally {
     addressCheckLoading.value = false
   }

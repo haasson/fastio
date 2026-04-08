@@ -1,9 +1,11 @@
 import { getServerSupabase } from '../utils/supabase'
-import type { WorkingHoursSchedule } from '@fastio/shared'
+import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
   const tenantId = event.context.tenantId as string | undefined
   if (!tenantId) throw createError({ statusCode: 404 })
+
+  const tenant = event.context.tenant as Tenant | undefined
 
   const supabase = getServerSupabase()
 
@@ -20,8 +22,8 @@ export default defineEventHandler(async (event) => {
   return (data ?? []).map((row) => ({
     id: row.id,
     name: row.name,
-    address: row.address,
-    phone: row.phone,
-    workingHoursSchedule: (row.working_hours_schedule as WorkingHoursSchedule | null) ?? null,
+    address: row.address ?? tenant?.contacts?.address ?? null,
+    phone: row.phone ?? tenant?.contacts?.phone ?? null,
+    workingHoursSchedule: (row.working_hours_schedule as WorkingHoursSchedule | null) ?? tenant?.workingHoursSchedule ?? null,
   }))
 })

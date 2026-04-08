@@ -8,25 +8,32 @@
     </div>
 
     <!-- Single branch: info only -->
-    <div v-else-if="branches.length === 1" class="branch-info">
+    <div v-else-if="branches.length === 1" class="branch-info" :class="{ disabled: !branchStatuses[0]?.open }">
       <div v-if="branches[0].address" class="branch-address">{{ branches[0].address }}</div>
       <a v-if="branches[0].phone" class="branch-phone" :href="`tel:${branches[0].phone}`">{{ branches[0].phone }}</a>
       <div v-if="branches[0].workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(branches[0].workingHoursSchedule) }}</div>
+      <div v-if="branchStatuses[0] && !branchStatuses[0].open && branchStatuses[0].nextChange" class="branch-closed">
+        Откроется {{ branchStatuses[0].nextChange.day }} в {{ branchStatuses[0].nextChange.time }}
+      </div>
     </div>
 
     <!-- 2-4 branches: cards -->
     <div v-else-if="branches.length <= 4" class="branch-cards">
       <button
-        v-for="branch in branches"
+        v-for="(branch, idx) in branches"
         :key="branch.id"
         type="button"
         class="branch-card"
-        :class="{ selected: checkout.form.pickupBranchId === branch.id }"
+        :class="{ selected: checkout.form.pickupBranchId === branch.id, disabled: !branchStatuses[idx]?.open }"
+        :disabled="!branchStatuses[idx]?.open"
         @click="selectBranch(branch.id)"
       >
         <span v-if="branch.address" class="branch-address">{{ branch.address }}</span>
         <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`" @click.stop>{{ branch.phone }}</a>
         <span v-if="branch.workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(branch.workingHoursSchedule) }}</span>
+        <span v-if="!branchStatuses[idx]?.open && branchStatuses[idx]?.nextChange" class="branch-closed">
+          Откроется {{ branchStatuses[idx].nextChange!.day }} в {{ branchStatuses[idx].nextChange!.time }}
+        </span>
       </button>
     </div>
 
@@ -43,6 +50,9 @@
         <div v-if="selectedBranch.address" class="branch-address">{{ selectedBranch.address }}</div>
         <a v-if="selectedBranch.phone" class="branch-phone" :href="`tel:${selectedBranch.phone}`">{{ selectedBranch.phone }}</a>
         <div v-if="selectedBranch.workingHoursSchedule" class="branch-hours">{{ formatWorkingHours(selectedBranch.workingHoursSchedule) }}</div>
+        <div v-if="selectedBranchStatus && !selectedBranchStatus.open && selectedBranchStatus.nextChange" class="branch-closed">
+          Откроется {{ selectedBranchStatus.nextChange.day }} в {{ selectedBranchStatus.nextChange.time }}
+        </div>
       </div>
     </div>
 
@@ -52,10 +62,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useNuxtData } from 'nuxt/app'
 import { useCheckoutStore } from '~/stores/checkout'
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
-import { formatWorkingHours } from '@fastio/shared'
-import type { WorkingHoursSchedule } from '@fastio/shared'
+import { formatWorkingHours, isOpenNow } from '@fastio/shared'
+import type { WorkingHoursSchedule, Tenant } from '@fastio/shared'
 
 type PickupBranch = {
   id: string
@@ -66,21 +77,35 @@ type PickupBranch = {
 }
 
 const checkout = useCheckoutStore()
+const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const branches = ref<PickupBranch[]>([])
 const loading = ref(true)
 const error = ref('')
 
+const branchStatuses = computed(() =>
+  branches.value.map((b) =>
+    isOpenNow(b.workingHoursSchedule, tenant.value?.timezone ?? 'Europe/Moscow')
+  )
+)
+
 const branchOptions = computed(() =>
-  branches.value.map((b) => {
+  branches.value.map((b, idx) => {
+    const status = branchStatuses.value[idx]
     const parts = [b.address || b.name, formatWorkingHours(b.workingHoursSchedule)].filter(Boolean)
-    return { value: b.id, label: parts.join(' · ') }
+    const label = parts.join(' · ') + (status?.open === false ? ' (закрыто)' : '')
+    return { value: b.id, label, disabled: !status?.open }
   })
 )
 
 const selectedBranch = computed(() =>
   branches.value.find((b) => b.id === checkout.form.pickupBranchId) ?? null
 )
+
+const selectedBranchStatus = computed(() => {
+  const idx = branches.value.findIndex((b) => b.id === checkout.form.pickupBranchId)
+  return idx !== -1 ? branchStatuses.value[idx] : null
+})
 
 function selectBranch(id: string) {
   checkout.form.pickupBranchId = id
@@ -108,6 +133,11 @@ function isValid(): string | null {
   }
   if (!checkout.form.pickupBranchId) {
     error.value = 'Выберите пункт самовывоза'
+    return error.value
+  }
+  const selectedIdx = branches.value.findIndex((b) => b.id === checkout.form.pickupBranchId)
+  if (selectedIdx !== -1 && !branchStatuses.value[selectedIdx]?.open) {
+    error.value = 'Выбранный пункт сейчас закрыт'
     return error.value
   }
   error.value = ''
@@ -139,6 +169,10 @@ defineExpose({ isValid })
   display: flex;
   flex-direction: column;
   gap: 4px;
+
+  &.disabled {
+    opacity: 0.5;
+  }
 }
 
 .branch-cards {
@@ -167,6 +201,15 @@ defineExpose({ isValid })
     border-color: var(--primary);
     background: color-mix(in srgb, var(--primary) 8%, transparent);
   }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      background: transparent;
+    }
+  }
 }
 
 .branch-address {
@@ -194,6 +237,11 @@ defineExpose({ isValid })
   flex-direction: column;
   gap: 4px;
   margin-top: 8px;
+}
+
+.branch-closed {
+  @include text-xs;
+  color: var(--color-error);
 }
 
 .branch-error {

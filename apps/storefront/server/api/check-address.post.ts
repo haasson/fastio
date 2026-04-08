@@ -57,6 +57,18 @@ export default defineEventHandler(async (event) => {
     return { zone: null, outsideZones: true }
   }
 
+  // Fetch branch schedule for the matched zone's branch
+  let branchSchedule = null
+  if (zone.branchId) {
+    const { data: branch } = await supabase
+      .from('branches')
+      .select('working_hours_schedule')
+      .eq('id', zone.branchId)
+      .single()
+
+    branchSchedule = branch?.working_hours_schedule ?? tenant?.workingHoursSchedule ?? null
+  }
+
   return {
     zone: {
       id: zone.id,
@@ -65,6 +77,7 @@ export default defineEventHandler(async (event) => {
       minOrder: zone.minOrder,
       freeDeliveryFrom: zone.freeDeliveryFrom,
       effectiveDeliveryFee: zone.freeDeliveryFrom && zone.freeDeliveryFrom > 0 && subtotal >= zone.freeDeliveryFrom ? 0 : zone.deliveryFee,
+      branchSchedule,
     },
   }
 })
