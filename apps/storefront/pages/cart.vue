@@ -26,7 +26,7 @@
               :item="item"
               :index="i"
               :currency="currency"
-              :can-edit="!!item.dishId"
+              :can-edit="canEdit(item.dishId)"
               @change="cart.setQuantity"
               @remove="cart.remove"
               @edit="openEdit"
@@ -74,6 +74,7 @@ import { onMounted } from 'vue'
 import { navigateTo } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import { useCartStore } from '~/stores/cart'
+import { useMenuStore } from '~/stores/menu'
 import { useCartEdit } from '~/composables/useCartEdit'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
@@ -84,8 +85,19 @@ import CartItem from '~/components/cart/CartItem.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'
 
 const cart = useCartStore()
+const menuStore = useMenuStore()
 const currency = useCurrency()
 const { editKey, editState, openEdit, onItemEdited } = useCartEdit()
+
+function canEdit(dishId: string | null): boolean {
+  if (!dishId) return false
+  const dish = menuStore.allDishes.find(d => d.id === dishId)
+  if (!dish) return false
+  const hasIngredients = dish.ingredients.length > 0
+  const hasModifiers = (menuStore.dishModifiers[dishId] ?? []).length > 0
+  const hasAddons = (menuStore.dishAddons[dishId] ?? []).length > 0
+  return hasIngredients || hasModifiers || hasAddons
+}
 
 onMounted(() => {
   cart.restore()

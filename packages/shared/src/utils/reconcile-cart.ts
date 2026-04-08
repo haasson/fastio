@@ -25,9 +25,16 @@ export type ReconcileMenuData = {
   dishAddons: Record<string, MenuAddon[]>
 }
 
+export type RemovalReason = 'dish_missing' | 'modifier_invalid' | 'addon_invalid'
+
+export type RemovedItem = {
+  item: ReconcileCartItem
+  reason: RemovalReason
+}
+
 export type ReconcileResult = {
   items: ReconcileCartItem[]
-  removed: ReconcileCartItem[]
+  removed: RemovedItem[]
   updated: ReconcileCartItem[]
 }
 
@@ -36,7 +43,7 @@ export function reconcileCart(
   menu: ReconcileMenuData,
 ): ReconcileResult {
   const items: ReconcileCartItem[] = []
-  const removed: ReconcileCartItem[] = []
+  const removed: RemovedItem[] = []
   const updated: ReconcileCartItem[] = []
 
   const dishMap = new Map(menu.dishes.map(d => [d.id, d]))
@@ -51,7 +58,7 @@ export function reconcileCart(
     // 1. Check dish exists in menu
     const dish = item.dishId ? dishMap.get(item.dishId) : null
     if (!dish) {
-      removed.push(item)
+      removed.push({ item, reason: 'dish_missing' })
       continue
     }
 
@@ -65,7 +72,7 @@ export function reconcileCart(
       m => m.optionId && !allOptionIds.has(m.optionId),
     )
     if (hasInvalidModifier) {
-      removed.push(item)
+      removed.push({ item, reason: 'modifier_invalid' })
       continue
     }
 
@@ -75,7 +82,7 @@ export function reconcileCart(
 
     const hasInvalidAddon = item.addons.some(a => !allAddonIds.has(a.addonId))
     if (hasInvalidAddon) {
-      removed.push(item)
+      removed.push({ item, reason: 'addon_invalid' })
       continue
     }
 

@@ -1,28 +1,66 @@
 import { describe, it, expect } from 'vitest'
-import { formatRemovedToast } from '../format-removed-toast'
+import { formatRemovedToasts } from '../format-removed-toast'
+import type { RemovedItem } from '@fastio/shared'
 
-describe('formatRemovedToast', () => {
-  it('returns null for empty array', () => {
-    expect(formatRemovedToast([])).toBeNull()
+function makeRemoved(dishName: string, reason: RemovedItem['reason'] = 'dish_missing'): RemovedItem {
+  return {
+    item: { dishName } as RemovedItem['item'],
+    reason,
+  }
+}
+
+describe('formatRemovedToasts', () => {
+  it('returns empty array for no removals', () => {
+    expect(formatRemovedToasts([])).toEqual([])
   })
 
-  it('shows single dish name', () => {
-    expect(formatRemovedToast(['Бургер'])).toBe('Бургер')
+  it('shows dish name as title with reason', () => {
+    const result = formatRemovedToasts([makeRemoved('Бургер')])
+
+    expect(result).toHaveLength(1)
+    expect(result[0].title).toBe('Бургер')
+    expect(result[0].description).toBe('больше недоступно')
   })
 
-  it('shows two dish names', () => {
-    expect(formatRemovedToast(['Бургер', 'Пицца'])).toBe('Бургер, Пицца')
+  it('deduplicates same dish + same reason', () => {
+    const result = formatRemovedToasts([
+      makeRemoved('Бургер'),
+      makeRemoved('Бургер'),
+      makeRemoved('Бургер'),
+    ])
+
+    expect(result).toHaveLength(1)
   })
 
-  it('shows three dish names', () => {
-    expect(formatRemovedToast(['Бургер', 'Пицца', 'Салат'])).toBe('Бургер, Пицца, Салат')
+  it('shows separate toasts for different dishes', () => {
+    const result = formatRemovedToasts([
+      makeRemoved('Бургер'),
+      makeRemoved('Пицца'),
+    ])
+
+    expect(result).toHaveLength(2)
+    expect(result[0].title).toBe('Бургер')
+    expect(result[1].title).toBe('Пицца')
   })
 
-  it('truncates to 3 and shows remainder', () => {
-    expect(formatRemovedToast(['A', 'B', 'C', 'D', 'E'])).toBe('A, B, C и ещё 2')
+  it('shows modifier_invalid reason', () => {
+    const result = formatRemovedToasts([makeRemoved('Бургер', 'modifier_invalid')])
+
+    expect(result[0].description).toBe('убрано — некоторые модификаторы больше недоступны, добавьте заново')
   })
 
-  it('shows "и ещё 1" for 4 items', () => {
-    expect(formatRemovedToast(['A', 'B', 'C', 'D'])).toBe('A, B, C и ещё 1')
+  it('shows addon_invalid reason', () => {
+    const result = formatRemovedToasts([makeRemoved('Бургер', 'addon_invalid')])
+
+    expect(result[0].description).toBe('убрано — некоторые добавки больше недоступны, добавьте заново')
+  })
+
+  it('same dish with different reasons produces separate toasts', () => {
+    const result = formatRemovedToasts([
+      makeRemoved('Бургер', 'dish_missing'),
+      makeRemoved('Бургер', 'addon_invalid'),
+    ])
+
+    expect(result).toHaveLength(2)
   })
 })

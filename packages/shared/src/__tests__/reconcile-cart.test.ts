@@ -63,7 +63,8 @@ describe('reconcileCart', () => {
 
     expect(result.items).toHaveLength(0)
     expect(result.removed).toHaveLength(1)
-    expect(result.removed[0].dishId).toBe('deleted-dish')
+    expect(result.removed[0].item.dishId).toBe('deleted-dish')
+    expect(result.removed[0].reason).toBe('dish_missing')
   })
 
   it('removes items with null dishId (non-combo)', () => {
@@ -74,6 +75,7 @@ describe('reconcileCart', () => {
 
     expect(result.items).toHaveLength(0)
     expect(result.removed).toHaveLength(1)
+    expect(result.removed[0].reason).toBe('dish_missing')
   })
 
   describe('combo items', () => {
@@ -118,6 +120,7 @@ describe('reconcileCart', () => {
 
       expect(result.items).toHaveLength(0)
       expect(result.removed).toHaveLength(1)
+      expect(result.removed[0].reason).toBe('modifier_invalid')
     })
 
     it('keeps item if modifier optionId is still available', () => {
@@ -229,6 +232,7 @@ describe('reconcileCart', () => {
 
       expect(result.items).toHaveLength(0)
       expect(result.removed).toHaveLength(1)
+      expect(result.removed[0].reason).toBe('addon_invalid')
     })
 
     it('keeps item if addon is still available', () => {
@@ -396,7 +400,8 @@ describe('reconcileCart', () => {
 
       expect(result.items).toHaveLength(3) // dish-1, dish-3, combo
       expect(result.removed).toHaveLength(1) // dish-2
-      expect(result.removed[0].dishId).toBe('dish-2')
+      expect(result.removed[0].item.dishId).toBe('dish-2')
+      expect(result.removed[0].reason).toBe('dish_missing')
       expect(result.updated).toHaveLength(1) // dish-3 price changed
       expect(result.updated[0].dishId).toBe('dish-3')
       expect(result.updated[0].price).toBe(450)
