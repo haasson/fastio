@@ -1,7 +1,7 @@
 <template>
   <div class="category-list-root">
     <UiSkeleton v-if="loading" :height="56" :count="3" />
-    <UiEmpty v-else-if="categories.length === 0" text="Нет категорий" />
+    <UiEmpty v-else-if="categories.length === 0" icon="layoutGrid" text="Категорий пока нет. Создайте первую — она появится в меню." />
     <AppDraggableList v-else v-model="localCategories" @reorder="$emit('reorder', localCategories)">
       <AppListRow
         v-for="cat in localCategories"

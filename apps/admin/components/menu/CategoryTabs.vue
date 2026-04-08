@@ -11,7 +11,7 @@
       <UiEmpty
         v-if="categories.length === 0"
         icon="layoutGrid"
-        text="Пока нет ни одной категории — создайте первую"
+        :text="`Добавлять ${itemsLabelLower} пока некуда — сначала создайте категорию.`"
       />
       <UiTabs
         v-else
@@ -29,6 +29,7 @@ import { computed, toRefs, watch } from 'vue'
 import { UiEmpty, UiSkeleton, UiTabs } from '@fastio/ui'
 import type { Category, DishTagDefinition } from '@fastio/shared'
 import { useCategories } from '~/composables/data/useCategories'
+import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 
 const props = defineProps<{
   tenantId: string
@@ -42,6 +43,7 @@ const emit = defineEmits<{
   'categoriesLoaded': [cats: Category[]]
 }>()
 
+const { itemsLabelLower } = useTenantLabels()
 const { tenantId: tenantIdRef } = toRefs(props)
 
 const { categories, loading: categoriesLoading } = useCategories(tenantIdRef)

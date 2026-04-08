@@ -1,7 +1,7 @@
 <template>
   <div class="tag-list-root">
     <UiSkeleton v-if="loading" :height="56" :count="3" />
-    <UiEmpty v-else-if="tags.length === 0" text="Нет тегов" />
+    <UiEmpty v-else-if="tags.length === 0" icon="hash" text="Тегов пока нет. Создайте первый — он поможет фильтровать позиции." />
     <AppDraggableList v-else v-model="localTags" @reorder="$emit('reorder', localTags)">
       <AppListRow v-for="tag in localTags" :key="tag.id" :name="tag.name">
         <template #name>
