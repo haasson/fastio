@@ -15,7 +15,7 @@ type OptionBindingRow = {
   weight: number | null
   is_default: boolean
   sort_order: number
-  modifier_options: { id: string; name: string; group_id: string }
+  modifier_options: { id: string; name: string; group_id: string; sort_order: number }
 }
 
 export default defineEventHandler(async (event) => {
@@ -93,8 +93,9 @@ export default defineEventHandler(async (event) => {
     dishIds.length > 0
       ? supabase
           .from('dish_modifier_options')
-          .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id)')
+          .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id, sort_order)')
           .in('dish_id', dishIds)
+          .eq('active', true)
           .order('sort_order')
       : Promise.resolve({ data: [] }),
     dishIds.length > 0 && addonsEnabled
@@ -151,7 +152,7 @@ export default defineEventHandler(async (event) => {
         priceDelta: Number(row.price_delta),
         weight: row.weight,
         isDefault: row.is_default,
-        sortOrder: row.sort_order,
+        sortOrder: row.modifier_options.sort_order,
       })
     }
 
@@ -164,10 +165,9 @@ export default defineEventHandler(async (event) => {
 
       if (!dishModifiers[dishId]) dishModifiers[dishId] = []
 
-      let options = (optionsMap.get(dishId)?.get(groupId) ?? []).map((o) => ({
-        ...o,
-        groupName,
-      }))
+      let options = (optionsMap.get(dishId)?.get(groupId) ?? [])
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((o) => ({ ...o, groupName }))
 
       // Если модуль отключён — оставляем только дефолтную опцию (для отображения и расчёта цены)
       if (!modifiersEnabled) {
