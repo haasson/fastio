@@ -199,7 +199,6 @@ const idempotencyKey = ref('')
 
 onMounted(async () => {
   checkout.prefillFromAuth()
-  cart.restore()
 
   if (cart.items.length === 0) {
     await navigateTo('/cart')

@@ -100,9 +100,6 @@ const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 
 const checkOpen = ref(false)
 
-// Загружаем меню
-await useAsyncData('menu', () => rfetch('/api/menu', slugQuery))
-
 // Валидация стола
 const tableData = ref<{ id: string; name: string } | null>(null)
 const tableError = ref<string | null>(null)

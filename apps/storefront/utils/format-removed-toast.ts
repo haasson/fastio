@@ -7,6 +7,7 @@ export type RemovedToast = {
 
 const REASON_TEXT: Record<RemovalReason, string> = {
   dish_missing: 'больше недоступно',
+  combo_missing: 'больше недоступно',
   modifier_invalid: 'убрано — некоторые модификаторы больше недоступны, добавьте заново',
   addon_invalid: 'убрано — некоторые добавки больше недоступны, добавьте заново',
 }

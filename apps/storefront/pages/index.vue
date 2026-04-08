@@ -53,7 +53,6 @@ const rfetch = useRequestFetch()
 const route = useRoute()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 await Promise.all([
-  useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
   useAsyncData('banners', () => rfetch<Banner[]>('/api/banners', slugQuery)),
   useAsyncData('galleries', () => rfetch<Gallery[]>('/api/galleries', slugQuery)),
 ])

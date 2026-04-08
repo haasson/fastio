@@ -18,7 +18,6 @@ import { computed, watch, onMounted } from 'vue'
 import { useRoute, useAsyncData, useHead, useRequestFetch } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
 import { paletteToCssVars } from '@fastio/shared'
-import { useCartStore } from '~/stores/cart'
 import { useAuthStore } from '~/stores/auth'
 import AuthLoginModal from '~/components/auth/AuthLoginModal.vue'
 import AuthRegisterModal from '~/components/auth/AuthRegisterModal.vue'
@@ -29,25 +28,26 @@ import { FsToastProvider } from '@fastio/public-ui'
 import ConfirmDialog from '~/components/ConfirmDialog.vue'
 import { useToast } from '~/composables/useToast'
 import { useAnalytics } from '~/composables/useAnalytics'
-import { reconcileCartItems } from '~/composables/useCartReconciler'
+import { useCartReconciler } from '~/composables/useCartReconciler'
 
 const { toasts, dismiss } = useToast()
 
-// Восстанавливаем корзину из localStorage
-const cartStore = useCartStore()
 const authStore = useAuthStore()
 onMounted(() => {
-  cartStore.restore()
   authStore.init()
-  reconcileCartItems()
 })
+
+useCartReconciler()
 
 // Применяем тему тенанта как CSS-переменные
 const route = useRoute()
 const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 // @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
-const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
+const [{ data: tenant }] = await Promise.all([
+  useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery)),
+  useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
+])
 
 const googleFontLink = computed(() => {
   const theme = tenant.value?.theme

@@ -9,6 +9,13 @@ export type MenuDish = {
   ingredients: { name: string }[]
 }
 
+export type MenuCombo = {
+  id: string
+  name: string
+  price: number
+  photos: string[]
+}
+
 export type MenuAddon = {
   id: string
   name: string
@@ -21,11 +28,12 @@ export type ReconcileCartItem = OrderItem & { photo: string | null }
 
 export type ReconcileMenuData = {
   dishes: MenuDish[]
+  combos: MenuCombo[]
   dishModifiers: Record<string, DishModifierGroup[]>
   dishAddons: Record<string, MenuAddon[]>
 }
 
-export type RemovalReason = 'dish_missing' | 'modifier_invalid' | 'addon_invalid'
+export type RemovalReason = 'dish_missing' | 'combo_missing' | 'modifier_invalid' | 'addon_invalid'
 
 export type RemovedItem = {
   item: ReconcileCartItem
@@ -47,11 +55,29 @@ export function reconcileCart(
   const updated: ReconcileCartItem[] = []
 
   const dishMap = new Map(menu.dishes.map(d => [d.id, d]))
+  const comboMap = new Map(menu.combos.map(c => [c.id, c]))
 
   for (const item of cartItems) {
-    // Skip combo items — pass through unchanged
+    // Combo items — validate combo exists in menu
     if (item.comboId) {
-      items.push(item)
+      const combo = comboMap.get(item.comboId)
+      if (!combo) {
+        removed.push({ item, reason: 'combo_missing' })
+        continue
+      }
+
+      let priceChanged = false
+      if (combo.price !== item.price) priceChanged = true
+
+      const updatedItem: ReconcileCartItem = {
+        ...item,
+        dishName: combo.name,
+        photo: combo.photos[0] ?? null,
+        price: combo.price,
+      }
+
+      items.push(updatedItem)
+      if (priceChanged) updated.push(updatedItem)
       continue
     }
 

@@ -70,7 +70,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { navigateTo } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import { useCartStore } from '~/stores/cart'
@@ -99,9 +98,6 @@ function canEdit(dishId: string | null): boolean {
   return hasIngredients || hasModifiers || hasAddons
 }
 
-onMounted(() => {
-  cart.restore()
-})
 </script>
 
 <style scoped lang="scss">

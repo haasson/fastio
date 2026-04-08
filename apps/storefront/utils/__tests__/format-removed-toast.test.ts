@@ -55,6 +55,13 @@ describe('formatRemovedToasts', () => {
     expect(result[0].description).toBe('убрано — некоторые добавки больше недоступны, добавьте заново')
   })
 
+  it('shows combo_missing reason', () => {
+    const result = formatRemovedToasts([makeRemoved('Комбо Обед', 'combo_missing')])
+
+    expect(result[0].title).toBe('Комбо Обед')
+    expect(result[0].description).toBe('больше недоступно')
+  })
+
   it('same dish with different reasons produces separate toasts', () => {
     const result = formatRemovedToasts([
       makeRemoved('Бургер', 'dish_missing'),

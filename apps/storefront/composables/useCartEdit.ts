@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import { useNuxtData } from 'nuxt/app'
 import type { DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import type { ModalItem } from '~/composables/useDishCustomization'
@@ -38,18 +37,9 @@ export function useCartEdit() {
     maxAddons: null,
   })
 
-  async function ensureMenu() {
-    if (menu.allDishes.length > 0) return
-    const { data } = useNuxtData('menu')
-    if (data.value) return
-    data.value = await $fetch('/api/menu')
-  }
-
-  async function openEdit(index: number) {
+  function openEdit(index: number) {
     const cartItem = cart.items[index]
     if (!cartItem.dishId) return
-
-    await ensureMenu()
 
     const dish = menu.allDishes.find((d) => d.id === cartItem.dishId)
     if (!dish) return

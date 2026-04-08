@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { reconcileCart } from '../utils/reconcile-cart'
-import type { ReconcileCartItem, ReconcileMenuData, MenuDish } from '../utils/reconcile-cart'
+import type { ReconcileCartItem, ReconcileMenuData, MenuDish, MenuCombo } from '../utils/reconcile-cart'
 
 function makeDish(overrides: Partial<MenuDish> = {}): MenuDish {
   return {
@@ -34,9 +34,20 @@ function makeCartItem(overrides: Partial<ReconcileCartItem> = {}): ReconcileCart
   }
 }
 
+function makeCombo(overrides: Partial<MenuCombo> = {}): MenuCombo {
+  return {
+    id: 'combo-1',
+    name: 'Комбо Обед',
+    price: 999,
+    photos: ['combo.jpg'],
+    ...overrides,
+  }
+}
+
 function makeMenu(overrides: Partial<ReconcileMenuData> = {}): ReconcileMenuData {
   return {
     dishes: [makeDish()],
+    combos: [makeCombo()],
     dishModifiers: {},
     dishAddons: {},
     ...overrides,
@@ -79,10 +90,11 @@ describe('reconcileCart', () => {
   })
 
   describe('combo items', () => {
-    it('passes through combo items unchanged', () => {
+    it('keeps combo item when combo exists in menu', () => {
       const comboItem = makeCartItem({
         comboId: 'combo-1',
-        dishId: 'nonexistent',
+        dishId: null,
+        dishName: 'Комбо Обед',
         price: 999,
       })
       const menu = makeMenu()
@@ -90,9 +102,61 @@ describe('reconcileCart', () => {
       const result = reconcileCart([comboItem], menu)
 
       expect(result.items).toHaveLength(1)
-      expect(result.items[0]).toBe(comboItem) // exact same reference
       expect(result.removed).toHaveLength(0)
       expect(result.updated).toHaveLength(0)
+    })
+
+    it('removes combo item when combo is not in menu', () => {
+      const comboItem = makeCartItem({
+        comboId: 'deleted-combo',
+        dishId: null,
+        dishName: 'Удалённое комбо',
+        price: 999,
+      })
+      const menu = makeMenu()
+
+      const result = reconcileCart([comboItem], menu)
+
+      expect(result.items).toHaveLength(0)
+      expect(result.removed).toHaveLength(1)
+      expect(result.removed[0].item.comboId).toBe('deleted-combo')
+      expect(result.removed[0].reason).toBe('combo_missing')
+    })
+
+    it('updates combo price when changed', () => {
+      const comboItem = makeCartItem({
+        comboId: 'combo-1',
+        dishId: null,
+        dishName: 'Комбо Обед',
+        price: 800,
+      })
+      const menu = makeMenu({
+        combos: [makeCombo({ price: 999 })],
+      })
+
+      const result = reconcileCart([comboItem], menu)
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].price).toBe(999)
+      expect(result.updated).toHaveLength(1)
+    })
+
+    it('updates combo name and photo', () => {
+      const comboItem = makeCartItem({
+        comboId: 'combo-1',
+        dishId: null,
+        dishName: 'Old Name',
+        photo: 'old.jpg',
+        price: 999,
+      })
+      const menu = makeMenu({
+        combos: [makeCombo({ name: 'New Name', photos: ['new.jpg'] })],
+      })
+
+      const result = reconcileCart([comboItem], menu)
+
+      expect(result.items[0].dishName).toBe('New Name')
+      expect(result.items[0].photo).toBe('new.jpg')
     })
   })
 
@@ -386,7 +450,8 @@ describe('reconcileCart', () => {
         makeCartItem({ dishId: 'dish-1', price: 500 }), // unchanged
         makeCartItem({ dishId: 'dish-2', price: 300 }), // will be removed (not in menu)
         makeCartItem({ dishId: 'dish-3', price: 400 }), // price changed
-        makeCartItem({ comboId: 'combo-1', dishId: 'whatever', price: 999 }), // combo passthrough
+        makeCartItem({ comboId: 'combo-1', dishId: null, price: 999 }), // combo exists
+        makeCartItem({ comboId: 'combo-gone', dishId: null, price: 500 }), // combo removed
       ]
 
       const menu = makeMenu({
@@ -398,10 +463,12 @@ describe('reconcileCart', () => {
 
       const result = reconcileCart(items, menu)
 
-      expect(result.items).toHaveLength(3) // dish-1, dish-3, combo
-      expect(result.removed).toHaveLength(1) // dish-2
+      expect(result.items).toHaveLength(3) // dish-1, dish-3, combo-1
+      expect(result.removed).toHaveLength(2) // dish-2 + combo-gone
       expect(result.removed[0].item.dishId).toBe('dish-2')
       expect(result.removed[0].reason).toBe('dish_missing')
+      expect(result.removed[1].item.comboId).toBe('combo-gone')
+      expect(result.removed[1].reason).toBe('combo_missing')
       expect(result.updated).toHaveLength(1) // dish-3 price changed
       expect(result.updated[0].dishId).toBe('dish-3')
       expect(result.updated[0].price).toBe(450)
