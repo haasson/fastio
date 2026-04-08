@@ -172,7 +172,7 @@ BEGIN
     '{"delivery":false,"pickup":false,"modifiers":true,"addons":false,"promotions":false,"combos":false,"customRoles":false,"dineIn":true,"kitchen":false,"reservations":false}'::jsonb,
 
     0, 0, '',
-    'RUB', 'Europe/Moscow',
+    '₽', 'Europe/Moscow',
 
     -- seo
     '{"metaTitle":"NEBULA — кальянная","metaDescription":"Кальяны, авторские коктейли, вина и закуски.","ogImage":null,"favicon":null,"robots":"index","googleAnalyticsId":null,"yandexMetrikaId":null}'::jsonb,

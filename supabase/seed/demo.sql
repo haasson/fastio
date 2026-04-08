@@ -328,7 +328,7 @@ BEGIN
 
     500, 150,
     'Бесплатная доставка от 1500 ₽. В зоне 1 — бесплатно. В зоне 2 — 150 ₽. В зоне 3 — 250 ₽.',
-    'RUB', 'Europe/Moscow',
+    '₽', 'Europe/Moscow',
 
     -- seo
     '{"metaTitle":"Большая Ложка — доставка еды","metaDescription":"Роллы, пицца, бургеры с доставкой. Быстро, свежо, вкусно!","ogImage":null,"favicon":null,"robots":"index","googleAnalyticsId":null,"yandexMetrikaId":null}'::jsonb,
@@ -793,7 +793,7 @@ BEGIN
     '{"delivery":false,"pickup":false,"modifiers":true,"addons":false,"promotions":false,"combos":false,"customRoles":false,"dineIn":true,"kitchen":false,"reservations":true}'::jsonb,
 
     0, 0, '',
-    'RUB', 'Europe/Moscow',
+    '₽', 'Europe/Moscow',
 
     '{"metaTitle":"Дымовая — кальянная","metaDescription":"Премиальные кальяны, авторские миксы, живая музыка. Бронируй столик онлайн.","ogImage":null,"favicon":null,"robots":"index","googleAnalyticsId":null,"yandexMetrikaId":null}'::jsonb,
     '{"sourceStatusId":null,"completedStatusMap":{"delivery":null,"pickup":null,"dine_in":null}}'::jsonb,
@@ -1029,7 +1029,7 @@ BEGIN
     '{"delivery":false,"pickup":true,"modifiers":true,"addons":true,"promotions":true,"combos":false,"customRoles":false,"dineIn":true,"kitchen":true,"reservations":true}'::jsonb,
 
     0, 0, '',
-    'RUB', 'Europe/Moscow',
+    '₽', 'Europe/Moscow',
 
     '{"metaTitle":"Крафт Бар — крафтовое пиво в Москве","metaDescription":"Разливное и бутылочное крафтовое пиво, коктейли и отличная еда. Бронируй столик.","ogImage":null,"favicon":null,"robots":"index","googleAnalyticsId":null,"yandexMetrikaId":null}'::jsonb,
     '{"sourceStatusId":null,"completedStatusMap":{"delivery":null,"pickup":null,"dine_in":null}}'::jsonb,
