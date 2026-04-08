@@ -82,6 +82,7 @@ export const useDishModifiersEditor = (
       weight: group.affectsWeight && group.weightMode === 'global' ? (o.weight ?? null) : null,
       isDefault: i === 0,
       sortOrder: i,
+      active: true,
     }))
 
     attachedGroups.value.push({ groupId: group.id, groupName: group.name, sortOrder: attachedGroups.value.length, options })
@@ -93,26 +94,41 @@ export const useDishModifiersEditor = (
 
   const getGroupSourceOptions = (groupId: string) => availableGroups.value.find((g) => g.id === groupId)?.options ?? []
 
-  const isOptionAttached = (groupIndex: number, optionId: string) => attachedGroups.value[groupIndex].options.some((o) => o.optionId === optionId)
+  const isOptionAttached = (groupIndex: number, optionId: string) => attachedGroups.value[groupIndex].options.some((o) => o.optionId === optionId && o.active)
 
-  const getAttachedOption = (groupIndex: number, optionId: string) => attachedGroups.value[groupIndex].options.find((o) => o.optionId === optionId)
+  const getAttachedOption = (groupIndex: number, optionId: string) => attachedGroups.value[groupIndex].options.find((o) => o.optionId === optionId && o.active)
 
   const toggleOption = (groupIndex: number, sourceOpt: { id: string; name: string; weight?: number | null }, checked: boolean) => {
     const group = attachedGroups.value[groupIndex]
+    const existing = group.options.find((o) => o.optionId === sourceOpt.id)
 
     if (checked) {
-      const { affectsWeight, weightMode } = getGroupWeightMode(group.groupId)
-      const weight = affectsWeight && weightMode === 'global' ? (sourceOpt.weight ?? null) : null
+      if (existing) {
+        // Restore previously disabled option with its saved price
+        existing.active = true
+        const activeOptions = group.options.filter((o) => o.active)
 
-      group.options.push({
-        optionId: sourceOpt.id, optionName: sourceOpt.name,
-        groupId: group.groupId, groupName: group.groupName,
-        priceDelta: 0, weight, isDefault: group.options.length === 0, sortOrder: group.options.length,
-      })
+        if (!activeOptions.some((o) => o.isDefault)) existing.isDefault = true
+      } else {
+        const { affectsWeight, weightMode } = getGroupWeightMode(group.groupId)
+        const weight = affectsWeight && weightMode === 'global' ? (sourceOpt.weight ?? null) : null
+
+        group.options.push({
+          optionId: sourceOpt.id, optionName: sourceOpt.name,
+          groupId: group.groupId, groupName: group.groupName,
+          priceDelta: 0, weight, isDefault: group.options.filter((o) => o.active).length === 0, sortOrder: group.options.length,
+          active: true,
+        })
+      }
     } else {
-      group.options = group.options.filter((o) => o.optionId !== sourceOpt.id)
-      if (!group.options.some((o) => o.isDefault) && group.options.length > 0) {
-        group.options[0].isDefault = true
+      if (existing) {
+        existing.active = false
+        existing.isDefault = false
+      }
+      const activeOptions = group.options.filter((o) => o.active)
+
+      if (!activeOptions.some((o) => o.isDefault) && activeOptions.length > 0) {
+        activeOptions[0].isDefault = true
       }
     }
   }

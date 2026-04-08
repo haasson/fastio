@@ -27,6 +27,7 @@ export type DishModifierOption = {
   weight: number | null
   isDefault: boolean
   sortOrder: number
+  active: boolean
 }
 
 export type DishModifierGroup = {

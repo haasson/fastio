@@ -175,10 +175,10 @@ export const dishesApi = {
 
     const optionRows = await query(
       sb.from('dish_modifier_options')
-        .select('option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id)')
+        .select('option_id, price_delta, weight, is_default, sort_order, active, modifier_options(id, name, group_id)')
         .eq('dish_id', dishId)
         .order('sort_order'),
-    ) as unknown as { option_id: string; price_delta: number; weight: number | null; is_default: boolean; sort_order: number; modifier_options: { id: string; name: string; group_id: string } }[]
+    ) as unknown as { option_id: string; price_delta: number; weight: number | null; is_default: boolean; sort_order: number; active: boolean; modifier_options: { id: string; name: string; group_id: string } }[]
 
     const optionsByGroup = new Map<string, DishModifierOption[]>()
 
@@ -195,6 +195,7 @@ export const dishesApi = {
         weight: row.weight,
         isDefault: row.is_default,
         sortOrder: row.sort_order,
+        active: row.active,
       })
       optionsByGroup.set(groupId, arr)
     }
@@ -244,7 +245,7 @@ export const dishesApi = {
       ),
     )
 
-    // Insert option bindings
+    // Insert option bindings (including inactive — to preserve prices across sessions)
     const allOptions = modifierGroups.flatMap((g) => g.options.map((o, i) => ({
       dish_id: dishId,
       option_id: o.optionId,
@@ -252,6 +253,7 @@ export const dishesApi = {
       weight: o.weight ?? null,
       is_default: o.isDefault,
       sort_order: i,
+      active: o.active,
     })))
 
     if (allOptions.length > 0) {
