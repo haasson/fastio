@@ -59,6 +59,12 @@
               thumb-height="40px"
               :disabled="!combo.active"
             >
+              <UiTag
+                v-if="brokenComboIds.has(combo.id)"
+                type="warning"
+                icon="warningRound"
+                size="small"
+              >Скрыто в меню</UiTag>
               <template #append>
                 <span class="order-price">{{ formatPrice(combo.price) }}</span>
               </template>
@@ -84,7 +90,7 @@
 <script setup lang="ts">
 import { toRefs, computed, ref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { UiButton, UiSkeleton, UiSectionHeader, UiSegmentedControl, UiEmpty } from '@fastio/ui'
+import { UiButton, UiSkeleton, UiSectionHeader, UiSegmentedControl, UiEmpty, UiTag } from '@fastio/ui'
 import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
@@ -115,14 +121,16 @@ const brokenComboIds = ref<Set<string>>(new Set())
 const { combos, loading: combosLoading, add: rawAddCombo, update: rawUpdateCombo, remove: rawRemoveCombo, toggleActive, reorder }
   = useCombos(tenantIdRef, categoryIdRef)
 
-watch(combos, async (list) => {
-  if (list.length === 0) {
+const refreshBrokenIds = async () => {
+  if (combos.value.length === 0) {
     brokenComboIds.value = new Set()
 
     return
   }
-  brokenComboIds.value = await api.combos.getComboIdsWithBrokenDishes(list.map((c) => c.id))
-}, { immediate: true })
+  brokenComboIds.value = await api.combos.getComboIdsWithBrokenDishes(combos.value.map((c) => c.id))
+}
+
+watch(combos, refreshBrokenIds, { immediate: true })
 
 const addCombo = async (...args: Parameters<typeof rawAddCombo>) => {
   const combo = await rawAddCombo(...args)
@@ -135,6 +143,7 @@ const addCombo = async (...args: Parameters<typeof rawAddCombo>) => {
 const updateCombo = async (...args: Parameters<typeof rawUpdateCombo>) => {
   await rawUpdateCombo(...args)
   emit('combosChanged')
+  await refreshBrokenIds()
 }
 
 const removeCombo = async (...args: Parameters<typeof rawRemoveCombo>) => {

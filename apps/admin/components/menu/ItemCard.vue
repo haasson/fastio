@@ -9,9 +9,6 @@
       <div class="card-photo">
         <img v-if="photo" :src="photo" :alt="name" />
         <UiPhotoPlaceholder v-else size="medium" />
-        <div v-if="warning" class="card-warning">
-          <UiTag type="warning" icon="warningRound" size="small">Скрыто в меню</UiTag>
-        </div>
       </div>
       <span class="card-name">{{ name }}</span>
       <UiSpace :size="4" align="center">
@@ -25,6 +22,13 @@
           :style="tagStyle(tagId)"
         >{{ tagName(tagId) }}</UiTag>
       </UiSpace>
+      <UiTag
+        v-if="warning"
+        type="warning"
+        icon="warningRound"
+        size="small"
+        class="warning-tag"
+      >Скрыто в меню</UiTag>
       <div class="card-actions">
         <UiSwitch
           :model-value="active"
@@ -72,7 +76,6 @@ const emit = defineEmits<{
 }
 
 .card-photo {
-  position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 12px;
@@ -87,6 +90,10 @@ const emit = defineEmits<{
     height: 100%;
     object-fit: cover;
   }
+}
+
+.warning-tag {
+  align-self: flex-start;
 }
 
 .card-name {
@@ -110,14 +117,5 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.card-warning {
-  position: absolute;
-  bottom: 6px;
-  left: 6px;
-  right: 6px;
-  display: flex;
-  justify-content: center;
 }
 </style>
