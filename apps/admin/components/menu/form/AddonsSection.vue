@@ -20,11 +20,15 @@
         </UiEmpty>
 
         <template v-else>
+          <UiAlert v-if="hasInactiveAddons" type="warning" size="small">
+            Добавки, выделенные жёлтым, отключены в настройках и не будут отображаться гостям
+          </UiAlert>
+
           <div class="tags">
             <UiTag
               v-for="addon in attachedAddons"
               :key="addon.id"
-              type="primary"
+              :type="addon.active ? 'primary' : 'warning'"
               empty
               round
               closable
@@ -102,7 +106,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect, UiInputNumber, UiEditButton } from '@fastio/ui'
+import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect, UiInputNumber, UiEditButton, UiAlert } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import AddonPickerModal from './AddonPickerModal.vue'
@@ -180,8 +184,8 @@ watch(
   { immediate: true },
 )
 
-const attachedAddons = computed(() => props.allAddons.filter((a) => selectedAddonIds.value.has(a.id)),
-)
+const attachedAddons = computed(() => props.allAddons.filter((a) => selectedAddonIds.value.has(a.id)))
+const hasInactiveAddons = computed(() => attachedAddons.value.some((a) => !a.active))
 
 const detachAddon = (id: string) => {
   const next = new Set(selectedAddonIds.value)

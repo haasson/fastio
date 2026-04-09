@@ -33,6 +33,7 @@
                 ✕
               </UiButton>
             </div>
+            <UiAlert v-if="isGroupInactive(attached.groupId)" type="error" size="small">Модификатор отключен в настройках и не будет отображаться для данного блюда</UiAlert>
 
             <div class="options-grid">
               <div v-for="sourceOpt in getGroupSourceOptions(attached.groupId)" :key="sourceOpt.id" class="option-row">
@@ -135,7 +136,7 @@
 
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, useMessage } from '@fastio/ui'
+import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, UiAlert, useMessage } from '@fastio/ui'
 import { useDishModifiersEditor } from '~/composables/menu/useDishModifiersEditor'
 import HintPopover from '~/components/ui/HintPopover.vue'
 
@@ -155,7 +156,7 @@ const {
   loading, availableGroups, attachedGroups, selectedGroupId, copyFromDishId, addMode,
   canAddGroup, hasCopySource, groupSelectOptions, copyDishSelectOptions,
   addGroup, removeGroup, getGroupSourceOptions, getGroupWeightMode, isOptionAttached, getAttachedOption,
-  toggleOption, setDefault, getModifiers,
+  isGroupInactive, toggleOption, setDefault, getModifiers,
   copyFromDish: copyFromDishRaw,
 } = useDishModifiersEditor(tenantId, categoryId, dishId, refreshKey)
 
@@ -194,6 +195,9 @@ defineExpose({ getModifiers })
   padding: 10px 12px;
   background: var(--color-bg-page);
   border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .group-row {

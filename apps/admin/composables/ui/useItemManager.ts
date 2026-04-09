@@ -9,7 +9,7 @@ type Options = {
   confirmTitle: string
   confirmText?: string
   confirmType?: 'error' | 'warning'
-  beforeDelete?: (id: string) => { alert?: string; disabled?: boolean } | undefined
+  beforeDelete?: (id: string) => Promise<{ alert?: string; disabled?: boolean } | undefined> | { alert?: string; disabled?: boolean } | undefined
 }
 
 export function useItemManager<T extends { id: string }>(options: Options) {
@@ -19,7 +19,7 @@ export function useItemManager<T extends { id: string }>(options: Options) {
   const { isOpen: modalOpen, data: editingItem, open: openModal, close: closeModal } = useDrawer<T>()
 
   const confirmDelete = async (id: string) => {
-    const check = beforeDelete?.(id)
+    const check = await beforeDelete?.(id)
 
     const ok = await confirm({
       title: confirmTitle,

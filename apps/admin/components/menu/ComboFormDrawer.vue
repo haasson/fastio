@@ -8,6 +8,13 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
+      <UiAlert v-if="visibilityIssues.length > 0" type="warning">
+        Комбо скрыто в меню по следующим причинам:
+        <ul class="issues-list">
+          <li v-for="issue in visibilityIssues" :key="issue">{{ issue }}</li>
+        </ul>
+      </UiAlert>
+
       <BasicInfoSection
         :photo-url="currentPhotoUrl"
         :name="form.name"
@@ -51,7 +58,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiDrawer, UiForm, UiCollapse } from '@fastio/ui'
+import { UiDrawer, UiForm, UiCollapse, UiAlert } from '@fastio/ui'
 import type { Combo, Category, ComboItemInput, DishTagDefinition } from '@fastio/shared'
 import type { ComboFormData } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -78,6 +85,7 @@ const emit = defineEmits<{
 const api = useDatabase()
 const saving = ref(false)
 const refreshKey = ref(0)
+const visibilityIssues = ref<string[]>([])
 const settingsRef = ref<InstanceType<typeof SettingsSection> | null>(null)
 const formRef = ref()
 
@@ -120,18 +128,21 @@ watch(
       form.description = props.combo.description
       form.price = props.combo.price
 
-      const [tags, items] = await Promise.all([
+      const [tags, items, issues] = await Promise.all([
         api.tags.getComboTagIds(props.combo.id),
         api.combos.getItems(props.combo.id),
+        api.combos.getComboVisibilityIssues(props.combo.id),
       ])
 
       if (currentLoadId !== loadId) return
       form.tags = tags
       form.active = props.combo.active
       form.items = items
+      visibilityIssues.value = issues
     } else {
       originalPhotoUrl.value = null
       currentPhotoUrl.value = null
+      visibilityIssues.value = []
       Object.assign(form, defaultForm())
     }
   },
@@ -195,5 +206,14 @@ const onConfirm = async () => {
   display: flex;
   flex-direction: column;
   gap: 0;
+}
+
+.issues-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  list-style-type: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 </style>

@@ -9,6 +9,9 @@
       <div class="card-photo">
         <img v-if="photo" :src="photo" :alt="name" />
         <UiPhotoPlaceholder v-else size="medium" />
+        <div v-if="warning" class="card-warning">
+          <UiTag type="warning" icon="warningRound" size="small">Скрыто в меню</UiTag>
+        </div>
       </div>
       <span class="card-name">{{ name }}</span>
       <UiSpace :size="4" align="center">
@@ -49,6 +52,7 @@ defineProps<{
   price: number
   tags: string[]
   active: boolean
+  warning?: boolean
   tagName: (id: string) => string
   tagStyle: (id: string) => Record<string, string | undefined>
 }>()
@@ -68,6 +72,7 @@ const emit = defineEmits<{
 }
 
 .card-photo {
+  position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 12px;
@@ -105,5 +110,14 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.card-warning {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  display: flex;
+  justify-content: center;
 }
 </style>

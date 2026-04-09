@@ -137,6 +137,7 @@ import {
   UiButton, UiDataTable, UiDivider, UiEmpty, UiInput,
   UiSectionHeader, UiSegmentedControl, UiSkeleton,
 } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
@@ -147,6 +148,7 @@ import { useDishes } from '~/composables/data/useDishes'
 import { useDishTable } from '~/composables/ui/useDishTable'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import { useTagDisplay } from '~/composables/ui/useTagDisplay'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 const props = defineProps<{
   tenantId: string
@@ -165,8 +167,32 @@ const emptyText = computed(() => `В этой категории пока нет
 
 const { tenantId: tenantIdRef, categoryId: categoryIdRef } = toRefs(props)
 
-const { dishes, loading: dishesLoading, add: rawAddDish, update: rawUpdateDish, remove: rawRemoveDish, toggleActive, reorder }
+const api = useDatabase()
+const { confirm } = useConfirm()
+
+const { dishes, loading: dishesLoading, add: rawAddDish, update: rawUpdateDish, remove: rawRemoveDish, toggleActive: rawToggleActive, reorder }
   = useDishes(tenantIdRef, categoryIdRef)
+
+const getComboWarning = async (dishId: string): Promise<string | undefined> => {
+  const names = await api.combos.getActiveComboNamesByDishId(dishId)
+
+  if (names.length === 0) return undefined
+
+  return `Блюдо входит в комбо: ${names.join(', ')}. Они перестанут отображаться в меню.`
+}
+
+const toggleActive = async (id: string, active: boolean) => {
+  if (!active) {
+    const alert = await getComboWarning(id)
+
+    if (alert) {
+      const ok = await confirm({ title: 'Отключить блюдо?', alert, confirmText: 'Отключить', confirmType: 'warning' })
+
+      if (!ok) return
+    }
+  }
+  await rawToggleActive(id, active)
+}
 
 const addDish = async (...args: Parameters<typeof rawAddDish>) => {
   const dish = await rawAddDish(...args)
@@ -195,7 +221,16 @@ const VIEW_ITEMS = [
 const dishView = useLocalStorage<'cards' | 'table' | 'order'>('menu:dish-view', 'cards')
 
 const { showSkeleton, modalOpen: dishModalOpen, editingItem: editingDish, openModal: openDishModal, closeModal: closeDishModal, confirmDelete: confirmDeleteDish }
-  = useItemManager<Dish>({ loading: dishesLoading, remove: removeDish, confirmTitle: `Удалить ${itemsLabelLower.value}?` })
+  = useItemManager<Dish>({
+    loading: dishesLoading,
+    remove: removeDish,
+    confirmTitle: `Удалить ${itemsLabelLower.value}?`,
+    beforeDelete: async (id) => {
+      const alert = await getComboWarning(id)
+
+      return alert ? { alert } : undefined
+    },
+  })
 
 const reorderDishes = () => reorder(dishes.value)
 

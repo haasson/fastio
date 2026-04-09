@@ -15,6 +15,12 @@
             :category-name="getCategoryName(item.dishId)"
             :modifiers="getSelectedModifierTags(item)"
           >
+            <span v-if="getDishStatus(item.dishId)" class="dish-status" :class="`dish-status--${getDishStatus(item.dishId)}`">
+              {{ getDishStatus(item.dishId) === 'deleted' ? 'удалено' : 'отключено' }}
+            </span>
+            <span v-else-if="getModifierStatus(item)" class="dish-status dish-status--inactive">
+              модификатор отключен
+            </span>
             <span class="item-price">{{ getItemPrice(item) }} ₽</span>
             <UiButton
               type="text"
@@ -67,7 +73,7 @@ import type { Category, ComboItemInput, DishModifierGroup } from '@fastio/shared
 import { useDatabase } from '~/composables/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 
-type DishInfo = { id: string; name: string; categoryId: string; price: number }
+type DishInfo = { id: string; name: string; categoryId: string; price: number; active: boolean }
 
 const props = defineProps<{
   modelValue: ComboItemInput[]
@@ -88,7 +94,15 @@ const dishModifiers = ref<Record<string, DishModifierGroup[]>>({})
 // ─── Lookups ─────────────────────────────────────────────────────────────────
 
 const getDish = (dishId: string) => allDishes.value.find((d) => d.id === dishId)
-const getDishName = (dishId: string) => getDish(dishId)?.name ?? '—'
+const getDishName = (dishId: string) => getDish(dishId)?.name ?? 'Удалённое блюдо'
+const getDishStatus = (dishId: string): 'deleted' | 'inactive' | null => {
+  const dish = getDish(dishId)
+
+  if (!dish) return 'deleted'
+  if (!dish.active) return 'inactive'
+
+  return null
+}
 const getDishPrice = (dishId: string) => getDish(dishId)?.price ?? 0
 const getDishModifiers = (dishId: string): DishModifierGroup[] => dishModifiers.value[dishId] ?? []
 
@@ -96,6 +110,14 @@ const getCategoryName = (dishId: string) => {
   const categoryId = getDish(dishId)?.categoryId
 
   return props.categories.find((c) => c.id === categoryId)?.name ?? null
+}
+
+const getModifierStatus = (item: ComboItemInput): 'inactive' | null => {
+  if (item.modifierOptionIds.length === 0) return null
+  const allOptions = getDishModifiers(item.dishId).flatMap((g) => g.options)
+  const activeOptionIds = new Set(allOptions.filter((o) => o.active).map((o) => o.optionId))
+
+  return item.modifierOptionIds.some((id) => !activeOptionIds.has(id)) ? 'inactive' : null
 }
 
 const getSelectedModifierTags = (item: ComboItemInput) => getDishModifiers(item.dishId)
@@ -180,13 +202,23 @@ watch(
   async () => {
     if (!props.tenantId) return
     loading.value = true
-    const dishes = await api.dishes.listAllActive(props.tenantId)
+    const dishes = await api.dishes.listAllIncludingInactive(props.tenantId)
 
-    allDishes.value = dishes.map((d) => ({ id: d.id, name: d.name, categoryId: d.categoryId, price: d.price }))
+    allDishes.value = dishes.map((d) => ({ id: d.id, name: d.name, categoryId: d.categoryId, price: d.price, active: d.active }))
     await Promise.all(props.modelValue.map((item) => (item.dishId ? loadModifiers(item.dishId) : Promise.resolve())))
     loading.value = false
   },
   { immediate: true },
+)
+
+watch(
+  () => props.modelValue,
+  async (items, old) => {
+    const existingIds = new Set((old ?? []).map((i) => i.dishId))
+    const newItems = items.filter((i) => i.dishId && !existingIds.has(i.dishId))
+
+    await Promise.all(newItems.map((item) => loadModifiers(item.dishId)))
+  },
 )
 </script>
 
@@ -221,6 +253,24 @@ watch(
   min-width: 60px;
   text-align: right;
   flex-shrink: 0;
+}
+
+.dish-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  flex-shrink: 0;
+
+  &--inactive {
+    background: var(--color-warning-light);
+    color: var(--color-warning);
+  }
+
+  &--deleted {
+    background: var(--color-error-light);
+    color: var(--color-error);
+  }
 }
 
 // ─── Totals ───────────────────────────────────────────────────────────────────

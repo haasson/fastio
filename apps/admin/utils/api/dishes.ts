@@ -39,6 +39,14 @@ export const dishesApi = {
     return (data ?? []).map(mapDish)
   },
 
+  async listAllIncludingInactive(sb: SupabaseClient, tenantId: string): Promise<Dish[]> {
+    const data = await query(
+      sb.from('dishes').select('*').eq('tenant_id', tenantId).is('deleted_at', null).order('name'),
+    )
+
+    return (data ?? []).map(mapDish)
+  },
+
   async list(sb: SupabaseClient, tenantId: string, categoryId: string) {
     const data = await query(sb.from('dishes').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).is('deleted_at', null).order('sort_order'))
 
@@ -166,12 +174,14 @@ export const dishesApi = {
   async getDishModifiers(sb: SupabaseClient, dishId: string): Promise<DishModifierGroup[]> {
     const groupRows = await query(
       sb.from('dish_modifier_groups')
-        .select('group_id, sort_order, modifier_groups(id, name)')
+        .select('group_id, sort_order, modifier_groups(id, name, active)')
         .eq('dish_id', dishId)
         .order('sort_order'),
-    ) as unknown as { group_id: string; sort_order: number; modifier_groups: { id: string; name: string } }[]
+    ) as unknown as { group_id: string; sort_order: number; modifier_groups: { id: string; name: string; active: boolean } }[]
 
     if (!groupRows || groupRows.length === 0) return []
+
+    const groupActiveMap = new Map(groupRows.map((g) => [g.group_id, g.modifier_groups.active]))
 
     const optionRows = await query(
       sb.from('dish_modifier_options')
@@ -185,6 +195,7 @@ export const dishesApi = {
     for (const row of optionRows ?? []) {
       const groupId = row.modifier_options.group_id
       const arr = optionsByGroup.get(groupId) ?? []
+      const groupActive = groupActiveMap.get(groupId) ?? true
 
       arr.push({
         optionId: row.option_id,
@@ -195,7 +206,7 @@ export const dishesApi = {
         weight: row.weight,
         isDefault: row.is_default,
         sortOrder: row.sort_order,
-        active: row.active,
+        active: row.active && groupActive,
       })
       optionsByGroup.set(groupId, arr)
     }

@@ -141,6 +141,111 @@ export const combosApi = {
     }))
   },
 
+  async getComboIdsWithBrokenDishes(sb: SupabaseClient, comboIds: string[]): Promise<Set<string>> {
+    if (comboIds.length === 0) return new Set()
+
+    const data = await query(
+      sb.from('combo_items')
+        .select('combo_id, modifier_option_ids, dishes(active, deleted_at)')
+        .in('combo_id', comboIds),
+    ) as Array<{ combo_id: string; modifier_option_ids: string[] | null; dishes: { active: boolean; deleted_at: string | null } | null }> | null
+
+    const broken = new Set<string>()
+    const allOptionIds = new Set<string>()
+
+    for (const row of data ?? []) {
+      if (!row.dishes || !row.dishes.active || row.dishes.deleted_at !== null) {
+        broken.add(row.combo_id)
+      }
+      for (const id of row.modifier_option_ids ?? []) allOptionIds.add(id)
+    }
+
+    if (allOptionIds.size > 0) {
+      const optData = await query(
+        sb.from('modifier_options').select('id, active, modifier_groups(active)').in('id', [...allOptionIds]),
+      ) as Array<{ id: string; active: boolean; modifier_groups: { active: boolean } | null }> | null
+
+      const inactiveIds = new Set(
+        (optData ?? [])
+          .filter((o) => !o.active || o.modifier_groups?.active === false)
+          .map((o) => o.id),
+      )
+
+      for (const row of data ?? []) {
+        if ((row.modifier_option_ids ?? []).some((id) => inactiveIds.has(id))) {
+          broken.add(row.combo_id)
+        }
+      }
+    }
+
+    return broken
+  },
+
+  async getComboVisibilityIssues(sb: SupabaseClient, comboId: string): Promise<string[]> {
+    const items = await query(
+      sb.from('combo_items')
+        .select('modifier_option_ids, dishes(name, active, deleted_at)')
+        .eq('combo_id', comboId),
+    ) as Array<{ modifier_option_ids: string[] | null; dishes: { name: string; active: boolean; deleted_at: string | null } | null }> | null
+
+    if (!items || items.length === 0) return []
+
+    const reasons: string[] = []
+
+    for (const item of items) {
+      if (!item.dishes) {
+        reasons.push('Одно из блюд удалено из базы')
+        continue
+      }
+      if (item.dishes.deleted_at !== null) {
+        reasons.push(`Блюдо «${item.dishes.name}» удалено`)
+      } else if (!item.dishes.active) {
+        reasons.push(`Блюдо «${item.dishes.name}» отключено`)
+      }
+    }
+
+    const allOptionIds = [...new Set(items.flatMap((i) => i.modifier_option_ids ?? []))]
+
+    if (allOptionIds.length > 0) {
+      const optData = await query(
+        sb.from('modifier_options')
+          .select('id, name, active, modifier_groups(name, active)')
+          .in('id', allOptionIds),
+      ) as Array<{ id: string; name: string; active: boolean; modifier_groups: { name: string; active: boolean } | null }> | null
+
+      const optionToDish = new Map<string, string>()
+
+      for (const item of items) {
+        for (const optId of item.modifier_option_ids ?? []) {
+          if (item.dishes?.name) optionToDish.set(optId, item.dishes.name)
+        }
+      }
+
+      for (const opt of optData ?? []) {
+        const dishSuffix = optionToDish.has(opt.id) ? ` (блюдо «${optionToDish.get(opt.id)}»)` : ''
+
+        if (!opt.active) {
+          reasons.push(`Модификатор «${opt.name}» отключён${dishSuffix}`)
+        } else if (opt.modifier_groups?.active === false) {
+          reasons.push(`Группа модификаторов «${opt.modifier_groups.name}» отключена${dishSuffix}`)
+        }
+      }
+    }
+
+    return reasons
+  },
+
+  async getActiveComboNamesByDishId(sb: SupabaseClient, dishId: string): Promise<string[]> {
+    const data = await query(
+      sb.from('combo_items')
+        .select('combos!inner(name)')
+        .eq('dish_id', dishId)
+        .eq('combos.active', true),
+    ) as Array<{ combos: { name: string } }> | null
+
+    return (data ?? []).map((r) => r.combos.name)
+  },
+
   async countsByCategory(sb: SupabaseClient, tenantId: string): Promise<Record<string, number>> {
     const data = await query(sb.from('combos').select('category_id').eq('tenant_id', tenantId))
     const counts: Record<string, number> = {}

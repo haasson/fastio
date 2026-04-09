@@ -19,8 +19,10 @@ export const useDishModifiersEditor = (
   const dishesWithModifiers = ref<Set<string>>(new Set())
   const addMode = ref<'group' | 'copy' | null>(null)
 
-  const unattachedGroups = computed(() => availableGroups.value.filter((g) => !attachedGroups.value.some((a) => a.groupId === g.id)),
+  const unattachedGroups = computed(() => availableGroups.value.filter((g) => !attachedGroups.value.some((a) => a.groupId === g.id) && g.active),
   )
+
+  const isGroupInactive = (groupId: string) => availableGroups.value.find((g) => g.id === groupId)?.active === false
 
   const canAddGroup = computed(() => unattachedGroups.value.length > 0)
 
@@ -177,6 +179,7 @@ export const useDishModifiersEditor = (
     getGroupWeightMode,
     isOptionAttached,
     getAttachedOption,
+    isGroupInactive,
     toggleOption,
     setDefault,
     getModifiers,

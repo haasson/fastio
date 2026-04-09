@@ -255,6 +255,7 @@ defineExpose({ validate })
   @include text-xs;
   color: var(--color-text-secondary);
   text-decoration: none;
+  align-self: flex-start;
 
   &:hover {
     text-decoration: underline;

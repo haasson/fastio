@@ -40,6 +40,7 @@
         <TagsSection v-model="form.tags" :available-tags="tags" />
 
         <DishModifiersSection
+          v-if="modules.modifiers.value.enabled"
           ref="modifiersRef"
           :tenant-id="tenantId"
           :category-id="form.categoryId"
@@ -49,7 +50,7 @@
         />
 
         <AddonsSection
-          v-if="!isServices"
+          v-if="!isServices && modules.addons.value.enabled"
           ref="addonsRef"
           :tenant-id="tenantId"
           :dish-id="dish?.id ?? null"
@@ -97,6 +98,7 @@ import { useTenantStore } from '~/stores/tenant'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import { useDishSave } from '~/composables/data/useDishSave'
 import { useAddons } from '~/composables/data/useAddons'
+import { useModules } from '~/composables/plan/useModules'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
 import TagsSection from '~/components/menu/form/TagsSection.vue'
 import DishModifiersSection from '~/components/menu/form/DishModifiersSection.vue'
@@ -124,6 +126,7 @@ const emit = defineEmits<{
 const { tenantId: tenantIdRef } = toRefs(props)
 const tenantStore = useTenantStore()
 const { isServices } = useTenantLabels()
+const modules = useModules()
 const modalTitle = computed(() => props.dish
   ? (isServices.value ? 'Редактировать услугу' : 'Редактировать блюдо')
   : (isServices.value ? 'Новая услуга' : 'Новое блюдо'))

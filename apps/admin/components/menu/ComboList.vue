@@ -35,6 +35,7 @@
               :price="combo.price"
               :tags="combo.tags"
               :active="combo.active"
+              :warning="brokenComboIds.has(combo.id)"
               :tag-name="tagName"
               :tag-style="tagStyle"
               @click="openComboModal(combo)"
@@ -81,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs, computed } from 'vue'
+import { toRefs, computed, ref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { UiButton, UiSkeleton, UiSectionHeader, UiSegmentedControl, UiEmpty } from '@fastio/ui'
 import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
@@ -93,6 +94,7 @@ import MenuComboFormDrawer from '~/components/menu/ComboFormDrawer.vue'
 import { useCombos } from '~/composables/data/useCombos'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import { useTagDisplay } from '~/composables/ui/useTagDisplay'
+import { useDatabase } from '~/composables/data/useDatabase'
 
 const props = defineProps<{
   tenantId: string
@@ -107,8 +109,20 @@ const emit = defineEmits<{
 
 const { tenantId: tenantIdRef, categoryId: categoryIdRef } = toRefs(props)
 
+const api = useDatabase()
+const brokenComboIds = ref<Set<string>>(new Set())
+
 const { combos, loading: combosLoading, add: rawAddCombo, update: rawUpdateCombo, remove: rawRemoveCombo, toggleActive, reorder }
   = useCombos(tenantIdRef, categoryIdRef)
+
+watch(combos, async (list) => {
+  if (list.length === 0) {
+    brokenComboIds.value = new Set()
+
+    return
+  }
+  brokenComboIds.value = await api.combos.getComboIdsWithBrokenDishes(list.map((c) => c.id))
+}, { immediate: true })
 
 const addCombo = async (...args: Parameters<typeof rawAddCombo>) => {
   const combo = await rawAddCombo(...args)

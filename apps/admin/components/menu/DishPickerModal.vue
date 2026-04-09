@@ -123,12 +123,30 @@
             size="small"
             :type="selectedModifiers[group.groupId] === opt.optionId ? 'primary' : 'default'"
             :secondary="selectedModifiers[group.groupId] !== opt.optionId"
-            hoverable
+            :hoverable="opt.active"
+            :class="{ 'mod-opt-disabled': !opt.active }"
             round
-            @click="selectedModifiers[group.groupId] = opt.optionId"
+            @click="opt.active && (selectedModifiers[group.groupId] = opt.optionId)"
           >
             {{ opt.optionName }}
             <template v-if="opt.priceDelta > 0"> +{{ opt.priceDelta }}₽</template>
+            <span v-if="!opt.active" class="mod-unavailable">недоступно</span>
+          </UiTag>
+        </div>
+      </div>
+
+      <div v-for="ghost in ghostModifierGroups" :key="ghost.groupName" class="mod-group">
+        <div class="section-label">{{ ghost.groupName }}</div>
+        <div class="pills">
+          <UiTag
+            size="small"
+            type="default"
+            secondary
+            round
+          >
+            {{ ghost.optionName }}
+            <template v-if="ghost.priceDelta > 0"> +{{ ghost.priceDelta }}₽</template>
+            <span class="mod-unavailable">удалено</span>
           </UiTag>
         </div>
       </div>
@@ -154,9 +172,7 @@
         </div>
       </template>
 
-      <div v-else-if="showIngredients" class="state-hint">Ингредиенты не заданы</div>
-
-      <template v-if="dishAddons.length">
+      <template v-if="dishAddons.length || ghostAddons.length">
         <div class="section-label">Добавки</div>
         <div class="addon-list">
           <UiCheckbox
@@ -170,6 +186,16 @@
             <span v-if="addon.weight" class="addon-weight">{{ addon.weight }} г</span>
             <span v-if="!addon.active" class="addon-unavailable">недоступно</span>
           </UiCheckbox>
+          <UiCheckbox
+            v-for="addon in ghostAddons"
+            :key="addon.addonId"
+            :model-value="selectedAddonIds.has(addon.addonId)"
+            @update:model-value="selectedAddonIds.has(addon.addonId) ? selectedAddonIds.delete(addon.addonId) : selectedAddonIds.add(addon.addonId)"
+          >
+            {{ addon.addonName }}
+            <span class="addon-price" :class="{ 'addon-price-active': selectedAddonIds.has(addon.addonId) }">+{{ addon.price }} ₽</span>
+            <span class="addon-unavailable">удалено</span>
+          </UiCheckbox>
         </div>
       </template>
     </div>
@@ -177,7 +203,7 @@
     <template #footer>
       <div class="footer">
         <UiButton
-          v-if="step === 'customize'"
+          v-if="step === 'customize' && !editItem"
           type="text"
           icon="chevronLeft"
           @click="step = 'pick'"
@@ -201,6 +227,7 @@ import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput } from '@fastio/u
 import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import type { Addon } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
+import { useModules } from '~/composables/plan/useModules'
 
 export type DishPickerResult = {
   dishId: string | null
@@ -217,7 +244,7 @@ export type DishPickerResult = {
 type EditItem = {
   dishId?: string | null
   comboId?: string | null
-  modifiers?: { groupName: string; optionName: string }[]
+  modifiers?: { groupName: string; optionName: string; priceDelta: number }[]
   removedIngredients?: string[]
   addons?: OrderItemAddon[]
 }
@@ -237,6 +264,7 @@ const emit = defineEmits<{
 }>()
 
 const { loading, categories, allDishes, allCombos, fetchData, getDishModifiers, getDishAddons, listAddons } = useOrderDishPicker(toRef(props, 'tenantId'))
+const modules = useModules()
 
 const step = ref<'pick' | 'customize'>('pick')
 const selectedCatId = ref<string | null>(null)
@@ -246,6 +274,8 @@ const modifierGroups = ref<DishModifierGroup[]>([])
 const selectedModifiers = reactive<Record<string, string>>({})
 const removed = reactive<Record<string, boolean>>({})
 const dishAddons = ref<Addon[]>([])
+const ghostAddons = ref<OrderItemAddon[]>([])
+const ghostModifierGroups = ref<OrderItemModifier[]>([])
 const selectedAddonIds = reactive<Set<string>>(new Set())
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
@@ -288,6 +318,8 @@ watch(
     searchQuery.value = ''
     selectedDish.value = null
     modifierGroups.value = []
+    ghostAddons.value = []
+    ghostModifierGroups.value = []
     Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
     Object.keys(removed).forEach((k) => delete removed[k])
 
@@ -310,18 +342,29 @@ watch(
   },
 )
 
+const loadDishData = async (dishId: string) => {
+  const modifiersEnabled = modules.modifiers.value.enabled
+  const addonsEnabled = modules.addons.value.enabled
+  const [groups, addonIds, allAddons] = await Promise.all([
+    modifiersEnabled ? getDishModifiers(dishId) : Promise.resolve([]),
+    addonsEnabled ? getDishAddons(dishId) : Promise.resolve([]),
+    addonsEnabled ? listAddons() : Promise.resolve([]),
+  ])
+
+  return { groups, addonIds, allAddons }
+}
+
 const prefillDish = async (dish: Dish) => {
   selectedDish.value = dish
-  const [groups, addonIds, allAddons] = await Promise.all([
-    getDishModifiers(dish.id),
-    getDishAddons(dish.id),
-    listAddons(),
-  ])
+  const { groups, addonIds, allAddons } = await loadDishData(dish.id)
 
   modifierGroups.value = groups
   const orderAddonIds = new Set(props.editItem?.addons?.map((a) => a.addonId) ?? [])
 
   dishAddons.value = allAddons.filter((a) => addonIds.includes(a.id) && (a.active || orderAddonIds.has(a.id)))
+  const knownAddonIds = new Set(dishAddons.value.map((a) => a.id))
+
+  ghostAddons.value = (props.editItem?.addons ?? []).filter((a) => !knownAddonIds.has(a.addonId))
   selectedAddonIds.clear()
 
   for (const group of modifierGroups.value) {
@@ -331,15 +374,22 @@ const prefillDish = async (dish: Dish) => {
   }
 
   if (props.editItem?.modifiers?.length) {
+    const matchedGroupNames = new Set<string>()
+
     for (const mod of props.editItem.modifiers) {
       for (const group of modifierGroups.value) {
         if (group.groupName === mod.groupName) {
           const opt = group.options.find((o) => o.optionName === mod.optionName)
 
-          if (opt) selectedModifiers[group.groupId] = opt.optionId
+          if (opt) {
+            selectedModifiers[group.groupId] = opt.optionId
+            matchedGroupNames.add(mod.groupName)
+          }
         }
       }
     }
+
+    ghostModifierGroups.value = props.editItem.modifiers.filter((m) => !matchedGroupNames.has(m.groupName))
   }
 
   props.editItem?.removedIngredients?.forEach((ing) => {
@@ -361,11 +411,7 @@ const selectDish = async (dish: Dish) => {
   Object.keys(removed).forEach((k) => delete removed[k])
   selectedAddonIds.clear()
 
-  const [groups, addonIds, allAddons] = await Promise.all([
-    getDishModifiers(dish.id),
-    getDishAddons(dish.id),
-    listAddons(),
-  ])
+  const { groups, addonIds, allAddons } = await loadDishData(dish.id)
 
   modifierGroups.value = groups
   dishAddons.value = allAddons.filter((a) => addonIds.includes(a.id) && a.active)
@@ -408,6 +454,8 @@ const onConfirm = () => {
     return opt ? [{ groupName: group.groupName, optionName: opt.optionName, priceDelta: opt.priceDelta }] : []
   })
 
+  modifiers.push(...ghostModifierGroups.value)
+
   const removedIngredients = props.showIngredients
     ? removableIngredients.value.filter((i) => removed[i.name]).map((i) => i.name)
     : []
@@ -424,6 +472,10 @@ const onConfirm = () => {
 
       return { addonId: a.id, addonName: a.name, price: original?.price ?? a.price }
     })
+
+  for (const oa of ghostAddons.value) {
+    if (selectedAddonIds.has(oa.addonId)) addons.push(oa)
+  }
 
   emit('select', {
     dishId: selectedDish.value.id,
@@ -683,6 +735,18 @@ const onConfirm = () => {
   font-size: 11px;
   color: var(--color-text-tertiary);
   font-style: italic;
+}
+
+.mod-unavailable {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.mod-opt-disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 // ── Footer ───────────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ type GroupBindingRow = {
   dish_id: string
   group_id: string
   sort_order: number
-  modifier_groups: { id: string; name: string }
+  modifier_groups: { id: string; name: string; active: boolean }
 }
 
 type OptionBindingRow = {
@@ -15,7 +15,7 @@ type OptionBindingRow = {
   weight: number | null
   is_default: boolean
   sort_order: number
-  modifier_options: { id: string; name: string; group_id: string; sort_order: number }
+  modifier_options: { id: string; name: string; group_id: string; sort_order: number; active: boolean }
 }
 
 export default defineEventHandler(async (event) => {
@@ -64,13 +64,13 @@ export default defineEventHandler(async (event) => {
     dish_id: string
     addon_id: string
     sort_order: number
-    addons: { id: string; name: string; weight: number | null; price: number }
+    addons: { id: string; name: string; weight: number | null; price: number; active: boolean }
   }
   type ComboItemRow = {
     combo_id: string
     sort_order: number
     modifier_option_ids: string[]
-    dishes: { name: string; photos: string[] }
+    dishes: { name: string; photos: string[]; active: boolean; deleted_at: string | null }
   }
 
   // Round 2: all secondary queries in parallel — they all depend only on dishIds/comboIds
@@ -86,14 +86,14 @@ export default defineEventHandler(async (event) => {
     dishIds.length > 0
       ? supabase
           .from('dish_modifier_groups')
-          .select('dish_id, group_id, sort_order, modifier_groups(id, name)')
+          .select('dish_id, group_id, sort_order, modifier_groups(id, name, active)')
           .in('dish_id', dishIds)
           .order('sort_order')
       : Promise.resolve({ data: [] }),
     dishIds.length > 0
       ? supabase
           .from('dish_modifier_options')
-          .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id, sort_order)')
+          .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id, sort_order, active)')
           .in('dish_id', dishIds)
           .eq('active', true)
           .order('sort_order')
@@ -101,7 +101,7 @@ export default defineEventHandler(async (event) => {
     dishIds.length > 0 && addonsEnabled
       ? supabase
           .from('dish_addons')
-          .select('dish_id, addon_id, sort_order, addons(id, name, weight, price)')
+          .select('dish_id, addon_id, sort_order, addons(id, name, weight, price, active)')
           .in('dish_id', dishIds)
           .order('sort_order')
           .returns<AddonBindingRow[]>()
@@ -109,7 +109,7 @@ export default defineEventHandler(async (event) => {
     comboIds.length > 0
       ? supabase
           .from('combo_items')
-          .select('combo_id, sort_order, modifier_option_ids, dishes(name, photos)')
+          .select('combo_id, sort_order, modifier_option_ids, dishes(name, photos, active, deleted_at)')
           .in('combo_id', comboIds)
           .order('sort_order')
           .returns<ComboItemRow[]>()
@@ -122,7 +122,18 @@ export default defineEventHandler(async (event) => {
   const groupBindings = groupBindingsResult.data
   const optionBindings = optionBindingsResult.data
   const addonBindings = addonBindingsResult.data
-  const itemRows = comboItemsResult.data
+  const allItemRows = comboItemsResult.data
+
+  // Filter out combos that have any inactive or deleted dish
+  const invalidComboIds = new Set<string>()
+  for (const row of (allItemRows ?? []) as unknown as ComboItemRow[]) {
+    if (!row.dishes || !row.dishes.active || row.dishes.deleted_at !== null) {
+      invalidComboIds.add(row.combo_id)
+    }
+  }
+  let validCombos = combos.filter((c) => !invalidComboIds.has(c.id))
+  const validComboIds = new Set(validCombos.map((c) => c.id))
+  const itemRows = (allItemRows ?? []).filter((r) => validComboIds.has((r as unknown as ComboItemRow).combo_id))
   const tagRows = tagRowsResult.data
   const dishTagRows = dishTagRowsResult.data
   const comboTagRows = comboTagRowsResult.data
@@ -137,6 +148,8 @@ export default defineEventHandler(async (event) => {
     // Supabase infers a complex nested type for relational selects that doesn't match our local types.
     // Safe to cast here: the select() columns exactly match OptionBindingRow fields.
     for (const row of (optionBindings ?? []) as unknown as OptionBindingRow[]) {
+      if (!row.modifier_options.active) continue
+
       const dishId = row.dish_id
       const groupId = row.modifier_options.group_id
 
@@ -165,7 +178,7 @@ export default defineEventHandler(async (event) => {
 
       if (!dishModifiers[dishId]) dishModifiers[dishId] = []
 
-      if (!modifiersEnabled) continue
+      if (!modifiersEnabled || !row.modifier_groups.active) continue
 
       let options = (optionsMap.get(dishId)?.get(groupId) ?? [])
         .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -184,6 +197,7 @@ export default defineEventHandler(async (event) => {
   const dishAddons: Record<string, ClientAddon[]> = {}
 
   for (const row of addonBindings ?? []) {
+    if (!row.addons.active) continue
     if (!dishAddons[row.dish_id]) dishAddons[row.dish_id] = []
     dishAddons[row.dish_id].push({
       id: row.addons.id,
@@ -197,36 +211,54 @@ export default defineEventHandler(async (event) => {
   // Build combo items — needs one more round to resolve modifier option names
   const comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]> = {}
 
-  if (comboIds.length > 0 && itemRows && itemRows.length > 0) {
+  if (validComboIds.size > 0 && itemRows && itemRows.length > 0) {
     // Collect all modifier option IDs to resolve names
     const allOptionIds = new Set<string>()
     for (const row of itemRows) {
       for (const id of row.modifier_option_ids ?? []) allOptionIds.add(id)
     }
 
-    // Resolve option names in one query
+    // Resolve option names and active status in one query
     const optionNames: Record<string, string> = {}
+    const inactiveOptionIds = new Set<string>()
     if (allOptionIds.size > 0) {
       const { data: optData } = await supabase
         .from('modifier_options')
-        .select('id, name')
+        .select('id, name, active, modifier_groups(active)')
         .in('id', [...allOptionIds])
 
       for (const o of optData ?? []) {
         optionNames[o.id] = o.name
+        const groupActive = (o.modifier_groups as { active: boolean } | null)?.active ?? true
+        if (!o.active || !groupActive) inactiveOptionIds.add(o.id)
       }
     }
+
+    // Track combos that have any inactive modifier option
+    const combosWithInactiveModifiers = new Set<string>()
 
     for (const row of itemRows) {
       if (!comboItems[row.combo_id]) comboItems[row.combo_id] = []
       const modNames = (row.modifier_option_ids ?? [])
-        .map((id) => optionNames[id])
+        .map((id) => {
+          if (inactiveOptionIds.has(id)) combosWithInactiveModifiers.add(row.combo_id)
+          return optionNames[id]
+        })
         .filter(Boolean)
       comboItems[row.combo_id].push({
         name: row.dishes.name,
         photo: row.dishes.photos?.[0] ?? null,
         modifier: modNames.length > 0 ? modNames.join(', ') : null,
       })
+    }
+
+    // Remove combos with inactive modifier options from comboItems
+    for (const comboId of combosWithInactiveModifiers) {
+      delete comboItems[comboId]
+    }
+
+    if (combosWithInactiveModifiers.size > 0) {
+      validCombos = validCombos.filter((c) => !combosWithInactiveModifiers.has(c.id))
     }
   }
 
@@ -256,7 +288,7 @@ export default defineEventHandler(async (event) => {
     const tagId = (row as Record<string, unknown>).tag_id as string
     ;(comboTagMap[comboId] ??= []).push(tagId)
   }
-  for (const combo of combos) {
+  for (const combo of validCombos) {
     combo.tags = comboTagMap[combo.id] ?? []
   }
 
@@ -267,7 +299,7 @@ export default defineEventHandler(async (event) => {
   return {
     categories: (categoriesData ?? []).map(mapCategory),
     dishes,
-    combos,
+    combos: validCombos,
     dishModifiers,
     dishAddons,
     comboItems,
