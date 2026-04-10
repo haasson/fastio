@@ -14,7 +14,8 @@ describe('filterDueTenants', () => {
       makeTenant('2', { status: 'active', renewsAt: '2026-05-01T00:00:00Z' }),
     ]
     const result = filterDueTenants(tenants, now)
-    expect(result.map(t => t.id)).toEqual(['1'])
+
+    expect(result.map((t) => t.id)).toEqual(['1'])
   })
 
   it('includes active tenants with renewsAt in the past', () => {
@@ -23,7 +24,8 @@ describe('filterDueTenants', () => {
       makeTenant('2', { status: 'active', renewsAt: '2026-04-07T00:00:00Z' }),
     ]
     const result = filterDueTenants(tenants, now)
-    expect(result.map(t => t.id)).toEqual(['1'])
+
+    expect(result.map((t) => t.id)).toEqual(['1'])
   })
 
   it('includes active tenants with renewsAt exactly now', () => {
@@ -31,7 +33,8 @@ describe('filterDueTenants', () => {
       makeTenant('1', { status: 'active', renewsAt: '2026-04-06T12:00:00Z' }),
     ]
     const result = filterDueTenants(tenants, now)
-    expect(result.map(t => t.id)).toEqual(['1'])
+
+    expect(result.map((t) => t.id)).toEqual(['1'])
   })
 
   it('includes trial tenants with expired trial', () => {
@@ -40,7 +43,8 @@ describe('filterDueTenants', () => {
       makeTenant('2', { status: 'trial', trialEndsAt: '2026-04-10T00:00:00Z' }),
     ]
     const result = filterDueTenants(tenants, now)
-    expect(result.map(t => t.id)).toEqual(['1'])
+
+    expect(result.map((t) => t.id)).toEqual(['1'])
   })
 
   it('does not include trial tenants without trialEndsAt', () => {
@@ -48,6 +52,7 @@ describe('filterDueTenants', () => {
       makeTenant('1', { status: 'trial' }),
     ]
     const result = filterDueTenants(tenants, now)
+
     expect(result).toEqual([])
   })
 
@@ -56,6 +61,7 @@ describe('filterDueTenants', () => {
       makeTenant('1', { status: 'active' }),
     ]
     const result = filterDueTenants(tenants, now)
+
     expect(result).toEqual([])
   })
 
@@ -65,6 +71,7 @@ describe('filterDueTenants', () => {
       makeTenant('2', { status: 'cancelled' }),
     ]
     const result = filterDueTenants(tenants, now)
+
     expect(result).toEqual([])
   })
 
@@ -80,6 +87,7 @@ describe('validateCreateTenantInput', () => {
       slug: 'my-restaurant',
       email: 'test@example.com',
     })
+
     expect(result).toEqual({
       name: 'My Restaurant',
       slug: 'my-restaurant',
@@ -124,6 +132,7 @@ describe('validateCreateTenantInput', () => {
 
   it('allows slug with numbers and hyphens', () => {
     const result = validateCreateTenantInput({ name: 'Test', slug: 'my-restaurant-2', email: 'a@b.c' })
+
     expect(result.slug).toBe('my-restaurant-2')
   })
 

@@ -166,6 +166,7 @@ export default defineEventHandler(async (event) => {
         weight: row.weight,
         isDefault: row.is_default,
         sortOrder: row.modifier_options.sort_order,
+        active: row.modifier_options.active,
       })
     }
 
@@ -180,7 +181,7 @@ export default defineEventHandler(async (event) => {
 
       if (!modifiersEnabled || !row.modifier_groups.active) continue
 
-      let options = (optionsMap.get(dishId)?.get(groupId) ?? [])
+      const options = (optionsMap.get(dishId)?.get(groupId) ?? [])
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((o) => ({ ...o, groupName }))
 
@@ -229,7 +230,7 @@ export default defineEventHandler(async (event) => {
 
       for (const o of optData ?? []) {
         optionNames[o.id] = o.name
-        const groupActive = (o.modifier_groups as { active: boolean } | null)?.active ?? true
+        const groupActive = (o.modifier_groups as unknown as { active: boolean } | null)?.active ?? true
         if (!o.active || !groupActive) inactiveOptionIds.add(o.id)
       }
     }
@@ -254,6 +255,7 @@ export default defineEventHandler(async (event) => {
 
     // Remove combos with inactive modifier options from comboItems
     for (const comboId of combosWithInactiveModifiers) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete comboItems[comboId]
     }
 

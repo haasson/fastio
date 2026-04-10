@@ -197,12 +197,13 @@ async function closeTicket() {
   }
 }
 
-let es: EventSource | null = null
+let es: globalThis.EventSource | null = null
 
 onMounted(async () => {
   await markSeen()
   scrollToBottom()
 
+  // eslint-disable-next-line no-undef
   es = new EventSource(`/api/support/stream?ticketId=${ticketId.value}`)
 
   es.addEventListener('message', async () => {

@@ -7,10 +7,10 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ name?: string; slug?: string; email?: string }>(event)
 
   let name: string, slug: string, email: string
+
   try {
     ({ name, slug, email } = validateCreateTenantInput(body))
-  }
-  catch (err) {
+  } catch (err) {
     throw createError({ statusCode: 400, message: (err as Error).message })
   }
 
@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
 
   // 1. Ищем или создаём пользователя
   const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 })
+
   if (listError) throw createError({ statusCode: 500, message: listError.message })
 
   const existing = users.find((u) => u.email?.toLowerCase() === email.toLowerCase())
@@ -33,6 +34,7 @@ export default defineEventHandler(async (event) => {
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${config.adminUrl}/set-password`,
     })
+
     if (error) throw createError({ statusCode: 500, message: error.message })
     userId = data.user.id
   }
@@ -104,6 +106,7 @@ export default defineEventHandler(async (event) => {
   // 6. Уведомляем существующего пользователя о новом заведении
   if (!isNewUser) {
     const config = useRuntimeConfig()
+
     supabase.functions.invoke('send-new-tenant-email', {
       body: { email, tenantName: name, adminUrl: config.adminUrl },
     }).catch((err) => console.error('Failed to send new tenant notification:', err))

@@ -22,8 +22,8 @@ const makeModifierGroup = (overrides: Partial<DishModifierGroup> & { options?: D
   groupName: 'Размер',
   sortOrder: 0,
   options: [
-    { optionId: 'opt-s', optionName: 'Маленькая', groupId: 'group-1', groupName: 'Размер', priceDelta: 0, isDefault: true, weight: null, sortOrder: 0 },
-    { optionId: 'opt-l', optionName: 'Большая', groupId: 'group-1', groupName: 'Размер', priceDelta: 150, isDefault: false, weight: null, sortOrder: 1 },
+    { optionId: 'opt-s', optionName: 'Маленькая', groupId: 'group-1', groupName: 'Размер', priceDelta: 0, isDefault: true, weight: null, sortOrder: 0, active: true },
+    { optionId: 'opt-l', optionName: 'Большая', groupId: 'group-1', groupName: 'Размер', priceDelta: 150, isDefault: false, weight: null, sortOrder: 1, active: true },
   ],
   ...overrides,
 })
@@ -46,8 +46,8 @@ describe('useDishCustomization', () => {
     it('при отсутствии isDefault выбирается первая опция', () => {
       const group = makeModifierGroup({
         options: [
-          { optionId: 'opt-1', optionName: 'Один', groupId: 'group-1', groupName: 'Размер', priceDelta: 0, isDefault: false, weight: null, sortOrder: 0 },
-          { optionId: 'opt-2', optionName: 'Два', groupId: 'group-1', groupName: 'Размер', priceDelta: 50, isDefault: false, weight: null, sortOrder: 1 },
+          { optionId: 'opt-1', optionName: 'Один', groupId: 'group-1', groupName: 'Размер', priceDelta: 0, isDefault: false, weight: null, sortOrder: 0, active: true },
+          { optionId: 'opt-2', optionName: 'Два', groupId: 'group-1', groupName: 'Размер', priceDelta: 50, isDefault: false, weight: null, sortOrder: 1, active: true },
         ],
       })
       const { selectedModifiers } = useDishCustomization({ item: makeItem(), modifiers: [group], addons: [] })
@@ -71,8 +71,8 @@ describe('useDishCustomization', () => {
           groupId: 'g2',
           groupName: 'Тесто',
           options: [
-            { optionId: 'thin', optionName: 'Тонкое', groupId: 'g2', groupName: 'Тесто', priceDelta: 0, isDefault: true, weight: null, sortOrder: 0 },
-            { optionId: 'thick', optionName: 'Толстое', groupId: 'g2', groupName: 'Тесто', priceDelta: 0, isDefault: false, weight: null, sortOrder: 1 },
+            { optionId: 'thin', optionName: 'Тонкое', groupId: 'g2', groupName: 'Тесто', priceDelta: 0, isDefault: true, weight: null, sortOrder: 0, active: true },
+            { optionId: 'thick', optionName: 'Толстое', groupId: 'g2', groupName: 'Тесто', priceDelta: 0, isDefault: false, weight: null, sortOrder: 1, active: true },
           ],
         }),
       ]
@@ -198,7 +198,7 @@ describe('useDishCustomization', () => {
     it('модификатор с weight → подменяет weight в nutrition', () => {
       const group = makeModifierGroup({
         options: [
-          { optionId: 'opt-l', optionName: 'Большая', groupId: 'group-1', groupName: 'Размер', priceDelta: 150, isDefault: true, weight: 500, sortOrder: 0 },
+          { optionId: 'opt-l', optionName: 'Большая', groupId: 'group-1', groupName: 'Размер', priceDelta: 150, isDefault: true, weight: 500, sortOrder: 0, active: true },
         ],
       })
       const { displayNutrition } = useDishCustomization({

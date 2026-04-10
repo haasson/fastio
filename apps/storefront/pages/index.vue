@@ -1,34 +1,34 @@
 <template>
   <PageShell :show-category-bar="menuDefaultView === 'dishes'">
-    <template #default="{ stickyTotalHeight, layout }">
+    <template #default="{ stickyTotalHeight, layout: shellLayout }">
       <HeroSection
-        v-if="layout.sections.hero.enabled && layout.sectionsOrder.includes('hero')"
+        v-if="shellLayout.sections.hero.enabled && shellLayout.sectionsOrder.includes('hero')"
         id="hero"
-        :hero="layout.sections.hero"
+        :hero="shellLayout.sections.hero"
         :hero-content="content.hero"
         :sticky-height="stickyTotalHeight"
       />
       <BannersSection
-        v-if="layout.sections.banners.enabled && layout.sectionsOrder.includes('banners')"
+        v-if="shellLayout.sections.banners.enabled && shellLayout.sectionsOrder.includes('banners')"
         id="banners"
         :banners="banners ?? []"
-        :settings="layout.sections.banners"
+        :settings="shellLayout.sections.banners"
       />
       <MenuSection
-        v-if="layout.sections.menu.enabled && layout.sectionsOrder.includes('menu')"
+        v-if="shellLayout.sections.menu.enabled && shellLayout.sectionsOrder.includes('menu')"
         id="menu"
         :default-view="menuDefaultView"
-        :dish-description-mode="layout.sections.menu.dishDescriptionMode"
-        :mobile-dish-card="layout.sections.menu.mobileDishCard"
+        :dish-description-mode="shellLayout.sections.menu.dishDescriptionMode"
+        :mobile-dish-card="shellLayout.sections.menu.mobileDishCard"
       />
       <GallerySection
-        v-if="layout.sections.gallery.enabled && layout.sectionsOrder.includes('gallery') && layout.sections.gallery.galleryIds?.length"
+        v-if="shellLayout.sections.gallery.enabled && shellLayout.sectionsOrder.includes('gallery') && shellLayout.sections.gallery.galleryIds?.length"
         id="gallery"
         :galleries="galleries ?? []"
-        :gallery-ids="layout.sections.gallery.galleryIds ?? []"
+        :gallery-ids="shellLayout.sections.gallery.galleryIds ?? []"
       />
       <ReviewsSection
-        v-if="layout.sections.reviews.enabled && layout.sectionsOrder.includes('reviews')"
+        v-if="shellLayout.sections.reviews.enabled && shellLayout.sectionsOrder.includes('reviews')"
         id="reviews"
       />
     </template>

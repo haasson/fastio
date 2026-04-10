@@ -88,7 +88,8 @@ const openIndexes = ref(new Set<number>())
 
 function toggle(index: number) {
   const next = new Set(openIndexes.value)
-  next.has(index) ? next.delete(index) : next.add(index)
+  if (next.has(index)) next.delete(index)
+  else next.add(index)
   openIndexes.value = next
 }
 </script>

@@ -43,8 +43,8 @@ useCartReconciler()
 const route = useRoute()
 const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
-// @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
 const [{ data: tenant }] = await Promise.all([
+  // @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
   useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery)),
   useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
 ])

@@ -87,8 +87,9 @@ import BookingStepSlots from '~/components/booking/BookingStepSlots.vue'
 import BookingStepContact from '~/components/booking/BookingStepContact.vue'
 import BookingSuccess from '~/components/booking/BookingSuccess.vue'
 
-type BookingBranch = { id: string; name: string; workingHoursSchedule: WorkingHoursSchedule | null }
 import useBooking from '~/composables/useBooking'
+
+type BookingBranch = { id: string; name: string; workingHoursSchedule: WorkingHoursSchedule | null }
 
 const rfetch = useRequestFetch()
 const { step, form, slots, loading, result, wasAuthenticated, error, fetchSlots, submit } = useBooking()
