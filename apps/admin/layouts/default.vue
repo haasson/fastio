@@ -9,7 +9,9 @@
           </NuxtLink>
         </div>
 
-        <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
+        <div class="nav-scroll">
+          <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
+        </div>
 
         <div class="user-info">
           <TenantSwitcher />
@@ -181,6 +183,12 @@ const pageTitle = usePageTitle()
 
 .logo-accent {
   color: #e55a25;
+}
+
+.nav-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .collapse-btn {
