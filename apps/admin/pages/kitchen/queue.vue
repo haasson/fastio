@@ -1,5 +1,15 @@
 <template>
   <div class="queue-root">
+    <UiAlert v-if="sourceStatusMissing" type="error" size="small">
+      Не настроен статус для отправки заказов на кухню — блюда доставки и самовывоза не попадут в очередь.
+      <NuxtLink v-if="canEditSettings" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
+    </UiAlert>
+
+    <UiAlert v-else-if="completedStatusMissing.length" type="warning" size="small">
+      Не настроены статусы завершения для: {{ completedStatusMissing.join(', ') }} — заказы не будут автоматически переходить в следующий статус после приготовления.
+      <NuxtLink v-if="canEditSettings" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
+    </UiAlert>
+
     <div v-if="loading" class="queue-loading">
       <UiSkeleton :repeat="6" />
     </div>
@@ -95,12 +105,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted, reactive } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiSkeleton, UiButton, UiEmpty, UiSectionHeader, UiCard } from '@fastio/ui'
+import { UiSkeleton, UiButton, UiEmpty, UiSectionHeader, UiCard, UiAlert } from '@fastio/ui'
 import type { KitchenQueueItem as KitchenQueueItemType, OrderEvent } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useModules } from '~/composables/plan/useModules'
+import { usePermissions } from '~/composables/auth/usePermissions'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import KitchenQueueItem from '~/components/kitchen/KitchenQueueItem.vue'
 import KitchenWorkCard from '~/components/kitchen/KitchenWorkCard.vue'
@@ -110,6 +121,7 @@ const api = useDatabase()
 const tenantStore = useTenantStore()
 const authStore = useAuthStore()
 const modules = useModules()
+const { canEditSettings } = usePermissions()
 const now = useNow({ interval: 30_000 })
 
 const loading = ref(false)
@@ -123,6 +135,22 @@ const hasMultipleDeliveryTypes = computed(() => {
   const active = [modules.delivery?.value?.active, modules.pickup?.value?.active, modules.dineIn?.value?.active].filter(Boolean)
 
   return active.length > 1
+})
+
+const deliveryActive = computed(() => !!modules.delivery?.value?.active)
+const pickupActive = computed(() => !!modules.pickup?.value?.active)
+const hasDeliveryOrPickup = computed(() => deliveryActive.value || pickupActive.value)
+
+const sourceStatusMissing = computed(() => hasDeliveryOrPickup.value && !tenantStore.tenant?.kitchenConfig?.sourceStatusId)
+
+const completedStatusMissing = computed(() => {
+  const map = tenantStore.tenant?.kitchenConfig?.completedStatusMap
+  const missing: string[] = []
+
+  if (deliveryActive.value && !map?.delivery) missing.push('доставки')
+  if (pickupActive.value && !map?.pickup) missing.push('самовывоза')
+
+  return missing
 })
 
 const queueItems = computed(() => items.value.filter((i) => i.status === 'queued'))
@@ -427,6 +455,15 @@ onUnmounted(() => {
   text-decoration: line-through;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ── Config alerts ──
+
+.alert-link {
+  font-weight: 600;
+  margin-left: 4px;
+  text-decoration: underline;
   white-space: nowrap;
 }
 
