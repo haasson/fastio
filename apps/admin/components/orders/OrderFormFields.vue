@@ -67,6 +67,25 @@
         </button>
       </div>
     </div>
+    <template v-if="form.deliveryType === 'delivery' && addressVerified && deliveryInfo">
+      <UiAlert v-if="deliveryInfo.outsideZones" type="error" size="small">
+        Адрес вне зоны доставки
+      </UiAlert>
+      <UiAlert v-else-if="deliveryInfo.belowMinOrder" type="warning" size="small">
+        Минимальная сумма для этого адреса: {{ deliveryInfo.minOrderAmount }} ₽
+      </UiAlert>
+      <template v-else>
+        <UiAlert type="success" size="small">
+          Доставка: <strong>{{ deliveryInfo.effectiveFee === 0 ? 'бесплатно' : `${deliveryInfo.effectiveFee} ₽` }}</strong>
+          <span v-if="deliveryInfo.amountUntilFree > 0" class="zone-hint">
+            (бесплатно от {{ deliveryInfo.freeDeliveryFrom }} ₽, ещё {{ deliveryInfo.amountUntilFree }} ₽)
+          </span>
+        </UiAlert>
+        <UiAlert v-if="deliveryInfo.branchMismatch" type="warning" size="small">
+          Адрес в зоне филиала «{{ deliveryInfo.zoneBranchName }}», текущий филиал: «{{ deliveryInfo.currentBranchName }}»
+        </UiAlert>
+      </template>
+    </template>
   </div>
 
   <!-- Состав заказа -->
@@ -129,6 +148,7 @@ import { ref, computed } from 'vue'
 import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
 import type { Order, DeliveryZone } from '@fastio/shared'
+import type { DeliveryInfo } from '~/composables/delivery/useOrderDelivery'
 import { findDeliveryZone } from '@fastio/shared'
 import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
 import { useModules } from '~/composables/plan/useModules'
@@ -171,6 +191,7 @@ const props = withDefaults(defineProps<{
   zones?: DeliveryZone[]
   branchOptions?: BranchOption[]
   branchId?: string | null
+  deliveryInfo?: DeliveryInfo | null
 }>(), {
   permissions: () => ({}),
   itemsError: '',
@@ -178,10 +199,11 @@ const props = withDefaults(defineProps<{
   zones: () => [],
   branchOptions: () => [],
   branchId: null,
+  deliveryInfo: null,
 })
 
 const emit = defineEmits<{
-  'zone-detected': [zone: DeliveryZone | null]
+  'zone-detected': [zone: DeliveryZone | null, outsideZones: boolean]
   'update:branchId': [value: string | null]
 }>()
 
@@ -194,7 +216,6 @@ const selectedBranchId = computed({
 
 const { suggestions: dadataSuggestions, search: searchDadata, clear: clearDadata, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
 const addressVerified = ref(false)
-const detectedZone = ref<DeliveryZone | null>(null)
 
 const addressRules = computed(() => {
   const rules = [validationRules.address.required]
@@ -207,7 +228,7 @@ const addressRules = computed(() => {
     })
     rules.push({
       type: 'custom' as const,
-      validator: () => !addressVerified.value || detectedZone.value !== null,
+      validator: () => !props.deliveryInfo?.outsideZones,
       message: 'Адрес вне зоны доставки',
     })
   }
@@ -218,7 +239,6 @@ const addressRules = computed(() => {
 const onAddressInput = () => {
   showSuggestions.value = true
   addressVerified.value = false
-  detectedZone.value = null
   searchDadata(props.form.address ?? '')
 }
 
@@ -230,10 +250,15 @@ const pickSuggestion = (s: DadataSuggestion) => {
 
   if (s.data.geo_lat && s.data.geo_lon) {
     const point: [number, number] = [parseFloat(s.data.geo_lon), parseFloat(s.data.geo_lat)]
-    const zone = findDeliveryZone(point, props.zones)
 
-    detectedZone.value = zone
-    emit('zone-detected', zone)
+    if (props.zones.length === 0) {
+      // fixed-режим: зон нет, но нужно пометить адрес как проверенный
+      emit('zone-detected', null, false)
+    } else {
+      const zone = findDeliveryZone(point, props.zones)
+
+      emit('zone-detected', zone, !zone)
+    }
   }
 }
 
@@ -385,6 +410,11 @@ const paymentOptions = PAYMENT_OPTIONS
 
 .address-field {
   position: relative;
+}
+
+.zone-hint {
+  opacity: 0.7;
+  margin-left: 4px;
 }
 
 .suggestions-dropdown {

@@ -33,7 +33,10 @@
             :comment-editable="!isEdit"
             :branch-options="branchOptions"
             :branch-id="selectedBranchId"
+            :zones="activeZones"
+            :delivery-info="deliveryInfo"
             @update:branch-id="selectedBranchId = $event"
+            @zone-detected="onZoneDetected"
           />
 
           <div v-if="isEdit && order?.comment" class="comment-block">
@@ -48,25 +51,7 @@
           name="customer"
           :title="`История клиента · ${customerOrders.length}`"
         >
-          <div class="customer-history">
-            <div
-              v-for="o in customerOrders"
-              :key="o.id"
-              class="history-row"
-              @click="router.push(`/orders/${o.id}`)"
-            >
-              <span class="history-num">#{{ o.orderNumber }}</span>
-              <UiTag
-                v-if="getOrderStatus(o.status)"
-                size="small"
-                round
-                :type="STATUS_GROUP_TAG_TYPES[getOrderStatus(o.status)!.groupType]"
-              >{{ getOrderStatus(o.status)!.name }}</UiTag>
-              <span class="history-items">{{ o.items.map((i) => i.dishName).join(', ') }}</span>
-              <span class="history-total">{{ o.total }} ₽</span>
-              <span class="history-date">{{ formatDate(o.createdAt) }}</span>
-            </div>
-          </div>
+          <OrderCustomerHistory :orders="customerOrders" />
         </UiCollapseItem>
 
         <UiCollapseItem name="history" title="История">
@@ -91,7 +76,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { useRouter } from '#imports'
 import {
   UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
@@ -102,13 +86,14 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useBranchStore } from '~/stores/branch'
-import { useTenantStore } from '~/stores/tenant'
 import { useModules } from '~/composables/plan/useModules'
 import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
+import { useOrderDelivery } from '~/composables/delivery/useOrderDelivery'
 import OrderFormFields from './OrderFormFields.vue'
 import OrderNotesSection from './OrderNotesSection.vue'
 import OrderEventsSection from './OrderEventsSection.vue'
+import OrderCustomerHistory from './OrderCustomerHistory.vue'
 
 const props = defineProps<{
   tenantId: string
@@ -122,12 +107,10 @@ const emit = defineEmits<{
   saved: [order: Order]
 }>()
 
-const router = useRouter()
 const api = useDatabase()
 const { logSaveEvents } = useOrderEventLogger()
 const { statuses } = storeToRefs(useOrderStatusesStore())
 const branchStore = useBranchStore()
-const tenantStore = useTenantStore()
 const modules = useModules()
 const { getStatusColor } = useStatusColor()
 
@@ -232,6 +215,16 @@ watch(() => form.items, (items) => {
 const subtotal = computed(() => form.items.reduce((s, i) => s + getItemUnitPrice(i) * i.quantity, 0))
 const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.deliveryFee)
 
+// ─── Delivery zones ───────────────────────────────────────────────────────────
+
+const { activeZones, deliveryInfo, effectiveDeliveryFee, onZoneDetected } = useOrderDelivery({
+  form, subtotal, selectedBranchId, isEdit,
+})
+
+watch(effectiveDeliveryFee, (fee) => {
+  if (fee !== null) form.deliveryFee = fee
+})
+
 const formPayload = computed(() => ({
   customerName: form.customerName,
   customerPhone: normalizePhone(form.customerPhone),
@@ -268,14 +261,6 @@ watch(
   },
   { immediate: true },
 )
-
-const getOrderStatus = getStatusById
-
-const formatDate = (iso: string) => {
-  const d = new Date(iso)
-
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })
-}
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
 
@@ -347,52 +332,4 @@ defineExpose({ save, saving, isEdit })
   margin-top: 4px;
 }
 
-.customer-history {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.history-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: var(--color-bg-hover);
-  }
-}
-
-.history-num {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-title);
-  min-width: 40px;
-}
-
-.history-items {
-  flex: 1;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.history-total {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-title);
-  white-space: nowrap;
-}
-
-.history-date {
-  font-size: 12px;
-  color: var(--color-text-hint);
-  white-space: nowrap;
-}
 </style>
