@@ -235,12 +235,9 @@ export const ordersApi = {
   },
 
   async update(sb: SupabaseClient, orderId: string, data: OrderUpdateData): Promise<Order | null> {
-    const payload = toOrderPayload(data)
-
-    if (Object.keys(payload).length > 0) {
-      await query(sb.from('orders').update(payload).eq('id', orderId))
-    }
-
+    // Re-insert items BEFORE updating order fields so that the kitchen_queue
+    // trigger (which fires on status change) references the new order_item IDs.
+    // Otherwise CASCADE on order_item_id deletes the just-created queue rows.
     if (data.items) {
       await query(sb.from('order_items').delete().eq('order_id', orderId))
       const rows = toItemRows(orderId, data.items)
@@ -248,6 +245,12 @@ export const ordersApi = {
       if (rows.length > 0) {
         await query(sb.from('order_items').insert(rows))
       }
+    }
+
+    const payload = toOrderPayload(data)
+
+    if (Object.keys(payload).length > 0) {
+      await query(sb.from('orders').update(payload).eq('id', orderId))
     }
 
     const result = await query(
