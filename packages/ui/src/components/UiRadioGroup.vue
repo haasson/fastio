@@ -4,6 +4,7 @@
     :size="size"
     :name="name"
     :rules="rules"
+    :message="message"
     :model-value="selectedValue"
   >
     <n-radio-group
@@ -43,6 +44,7 @@ type RadioOption = {
 
 type Props = {
   label?: string
+  message?: string
   options: RadioOption[]
   vertical?: boolean
   space?: number

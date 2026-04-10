@@ -4,6 +4,7 @@
     :size="size"
     :name="name"
     :rules="rules"
+    :message="message"
     :model-value="checked"
   >
     <n-checkbox
@@ -27,6 +28,7 @@ type CheckboxSize = Exclude<Size, 'tiny'>
 
 type Props = {
   label?: string
+  message?: string
   round?: boolean
   size?: CheckboxSize
   name?: string

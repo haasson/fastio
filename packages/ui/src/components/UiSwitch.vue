@@ -4,6 +4,7 @@
     :size="size"
     :name="name"
     :rules="rules"
+    :message="message"
     :model-value="checked"
   >
     <n-switch
@@ -30,6 +31,7 @@ import type { ValidationRule } from '@fastio/kit'
 
 type Props = {
   label?: string
+  message?: string
   size?: Size
   name?: string
   rules?: ValidationRule[]

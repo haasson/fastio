@@ -5,6 +5,7 @@
       :size="computedSize"
       :name="name"
       :rules="rules"
+      :message="message"
       :model-value="selectedValues"
       v-slot="{ hasError }"
     >
@@ -64,6 +65,7 @@ import type { ValidationRule } from '@fastio/kit'
 
 export type UiSelectProps = {
   label?: string
+  message?: string
   size?: Size
   responsive?: ResponsiveSizeMap
   name?: string

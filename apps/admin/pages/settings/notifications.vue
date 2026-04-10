@@ -9,11 +9,11 @@
             v-model="form.email"
             name="email"
             label="Email для уведомлений"
+            message="На этот адрес придёт письмо при каждом новом заказе"
             type="email"
             placeholder="orders@vasya-pizza.ru"
             :rules="[{ type: 'email', message: 'Некорректный email' }]"
           />
-          <span class="hint">На этот адрес придёт письмо при каждом новом заказе</span>
         </div>
       </div>
 

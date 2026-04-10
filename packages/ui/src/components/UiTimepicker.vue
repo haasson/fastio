@@ -4,6 +4,7 @@
     :size="computedSize"
     :name="name"
     :rules="rules"
+    :message="message"
     :model-value="modelValue"
     v-slot="{ hasError }"
   >
@@ -33,6 +34,7 @@ import type { ValidationRule } from '@fastio/kit'
 
 type Props = {
   label?: string
+  message?: string
   size?: Size
   responsive?: ResponsiveSizeMap
   name?: string

@@ -4,6 +4,7 @@
     :size="computedSize"
     :name="name"
     :rules="rules"
+    :message="message"
     :model-value="value"
     :status="status"
     :feedback="feedback"
@@ -88,6 +89,7 @@ type Props = {
   name?: string
   rules?: ValidationRule[]
   stateless?: boolean
+  message?: string
   status?: 'success' | 'warning' | 'error'
   feedback?: string
   inputmode?: 'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url'

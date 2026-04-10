@@ -38,9 +38,10 @@
           <UiCheckbox
             :model-value="item.status === 'done' || item.status === 'served'"
             @update:model-value="$emit('collectItem', item.id, $event)"
-          />
-          <span class="dish-name" :class="{ 'dish-name--done': item.status === 'done' || item.status === 'served' }">{{ item.dishName }}</span>
-          <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
+          >
+            <span class="dish-name" :class="{ 'dish-name--done': item.status === 'done' || item.status === 'served' }">{{ item.dishName }}</span>
+            <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
+          </UiCheckbox>
         </div>
       </div>
     </div>
@@ -150,6 +151,7 @@ const statusTagType = (status: KitchenQueueStatus) => {
   display: flex;
   align-items: center;
   gap: 8px;
+
 }
 
 .dish-name {

@@ -4,6 +4,7 @@
     :size="computedSize"
     :name="name"
     :rules="rules"
+    :message="message"
     :model-value="modelValue"
     :status="status"
     :feedback="feedback"
@@ -61,6 +62,7 @@ type Props = {
   responsive?: ResponsiveSizeMap
   name?: string
   rules?: ValidationRule[]
+  message?: string
   status?: 'success' | 'warning' | 'error'
   feedback?: string
 }

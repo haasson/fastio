@@ -4,33 +4,27 @@
       <UiSectionHeader title="Настройки доставки" />
 
       <div class="row">
-        <div class="field">
-          <UiInputNumber
-            v-model="form.deliveryMinOrder"
-            label="Минимальная сумма заказа, ₽"
-            :min="0"
-            placeholder="500"
-          />
-          <span class="hint">При сумме ниже — заказ не принимается</span>
-        </div>
-        <div class="field">
-          <UiInputNumber
-            v-model="form.deliveryFee"
-            label="Стоимость доставки, ₽"
-            :min="0"
-            placeholder="150"
-          />
-          <span class="hint">0 — бесплатная доставка</span>
-        </div>
-        <div class="field">
-          <UiInputNumber
-            v-model="form.freeDeliveryFrom"
-            label="Бесплатная доставка от, ₽"
-            :min="0"
-            placeholder="1500"
-          />
-          <span class="hint">0 — без порога бесплатной доставки</span>
-        </div>
+        <UiInputNumber
+          v-model="form.deliveryMinOrder"
+          label="Минимальная сумма заказа, ₽"
+          message="При сумме ниже — заказ не принимается"
+          :min="0"
+          placeholder="500"
+        />
+        <UiInputNumber
+          v-model="form.deliveryFee"
+          label="Стоимость доставки, ₽"
+          message="0 — бесплатная доставка"
+          :min="0"
+          placeholder="150"
+        />
+        <UiInputNumber
+          v-model="form.freeDeliveryFrom"
+          label="Бесплатная доставка от, ₽"
+          message="0 — без порога бесплатной доставки"
+          :min="0"
+          placeholder="1500"
+        />
       </div>
 
       <div class="footer">
@@ -85,17 +79,6 @@ const handleSave = async () => {
 
 .row {
   @include form-row(16px);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.hint {
-  font-size: 12px;
-  color: var(--color-text-secondary);
 }
 
 .footer {

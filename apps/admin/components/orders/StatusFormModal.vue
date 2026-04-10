@@ -20,12 +20,10 @@
         :value="form.groupType"
         :options="groupOptions"
         label="Группа"
+        message="Группа определяет поведение заказа в этом статусе"
         size="small"
         @update:value="form.groupType = $event as OrderStatusGroup"
       />
-      <UiText size="tiny" color="tertiary" class="hint">
-        Группа определяет поведение заказа в этом статусе
-      </UiText>
 
       <UiSelect
         :value="form.quickAction1"
@@ -41,22 +39,20 @@
         :value="form.quickAction2"
         :options="quickActionOptions2"
         label="Быстрое действие 2"
+        message="Кнопки перехода в другой статус на карточке заказа (макс. 2)"
         size="small"
         clearable
         :disabled="!form.quickAction1"
         placeholder="Не задано"
         @update:value="form.quickAction2 = ($event as string) ?? null"
       />
-      <UiText size="tiny" color="tertiary" class="hint">
-        Кнопки перехода в другой статус на карточке заказа (макс. 2)
-      </UiText>
     </UiForm>
   </UiModal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiForm, UiInput, UiText, UiSelect } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiSelect } from '@fastio/ui'
 import type { OrderStatus, OrderStatusGroup } from '@fastio/shared'
 import { STATUS_GROUP_LABELS } from '~/config/order-status-groups'
 
@@ -145,8 +141,5 @@ const handleSave = async () => {
 .form {
   @include modal-form;
 
-  .hint {
-    margin-top: -12px;
-  }
 }
 </style>

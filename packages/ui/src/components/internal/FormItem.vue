@@ -6,6 +6,7 @@
     </div>
     <div v-if="computedError" class="error">{{ computedError }}</div>
     <div v-else-if="feedback && status" class="feedback" :class="`feedback--${status}`">{{ feedback }}</div>
+    <div v-else-if="message" class="message">{{ message }}</div>
   </div>
 </template>
 
@@ -23,6 +24,7 @@ type Props = {
   modelValue?: unknown
   status?: 'success' | 'warning' | 'error'
   feedback?: string
+  message?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -107,10 +109,14 @@ $form-item-sizes: (
     &--error { color: var(--color-error); }
   }
 
+  .message {
+    color: var(--color-text-secondary);
+  }
+
   @each $size, $props in $form-item-sizes {
     &.form-item-#{$size} {
       .label { font-size: map.get($props, 'label-size'); }
-      .error, .feedback {
+      .error, .feedback, .message {
         margin-top: map.get($props, 'error-margin');
         font-size: map.get($props, 'error-size');
       }

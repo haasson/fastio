@@ -11,10 +11,10 @@
         </div>
         <UiInput
           v-model:value="seoForm.metaTitle"
+          message="Отображается в браузере и результатах поиска"
           placeholder="Например: Суши Мастер — заказать суши онлайн"
           :maxlength="80"
         />
-        <span class="hint">Отображается в браузере и результатах поиска</span>
       </div>
 
       <div class="field">
@@ -24,12 +24,12 @@
         </div>
         <UiInput
           v-model:value="seoForm.metaDescription"
+          message="Показывается под заголовком в поисковиках"
           type="textarea"
           :autosize="{ minRows: 3, maxRows: 5 }"
           placeholder="Коротко о вашем заведении — что заказать, как быстро доставляют, что особенного"
           :maxlength="200"
         />
-        <span class="hint">Показывается под заголовком в поисковиках</span>
       </div>
     </div>
 
@@ -104,9 +104,9 @@
         </div>
         <UiInput
           v-model:value="seoForm.googleAnalyticsId"
+          message="Идентификатор Google Analytics 4. Найти можно в настройках GA → Потоки данных"
           placeholder="G-XXXXXXXXXX"
         />
-        <span class="hint">Идентификатор Google Analytics 4. Найти можно в настройках GA → Потоки данных</span>
       </div>
 
       <div class="field">
@@ -115,9 +115,9 @@
         </div>
         <UiInput
           v-model:value="seoForm.yandexMetrikaId"
+          message="Номер счётчика Яндекс.Метрики. Найти можно на metrika.yandex.ru в списке счётчиков"
           placeholder="12345678"
         />
-        <span class="hint">Номер счётчика Яндекс.Метрики. Найти можно на metrika.yandex.ru в списке счётчиков</span>
       </div>
     </div>
   </div>
