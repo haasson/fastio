@@ -1,6 +1,6 @@
 import { findDeliveryZone } from '@fastio/shared'
 import type { DeliveryZone, Tenant } from '@fastio/shared'
-import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
+import { getServerSupabase, mapDeliveryZoneRow, getActiveBranchIds } from '../utils/supabase'
 
 export default defineEventHandler(async (event) => {
   const tenantId = event.context.tenantId as string | undefined
@@ -9,6 +9,16 @@ export default defineEventHandler(async (event) => {
   const tenant = event.context.tenant as Tenant | undefined
   if (tenant && !tenant.modules?.delivery) {
     throw createError({ statusCode: 400, message: 'Доставка отключена' })
+  }
+
+  if (tenant && tenant.deliveryMode === 'fixed') {
+    return {
+      zone: null,
+      fixed: true,
+      deliveryFee: tenant.deliveryFee,
+      freeDeliveryFrom: tenant.freeDeliveryFrom,
+      minOrder: tenant.deliveryMinOrder,
+    }
   }
 
   const body = await readBody(event)
@@ -22,14 +32,7 @@ export default defineEventHandler(async (event) => {
 
   const supabase = getServerSupabase()
 
-  const { data: activeBranches } = await supabase
-    .from('branches')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .eq('is_active', true)
-    .is('archived_at', null)
-
-  const activeBranchIds = (activeBranches ?? []).map((b) => b.id)
+  const activeBranchIds = await getActiveBranchIds(supabase, tenantId)
   if (activeBranchIds.length === 0) return { zone: null }
 
   const { data: rows, error } = await supabase
@@ -44,9 +47,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Ошибка загрузки зон доставки' })
   }
 
-  // Если зон нет — возвращаем null, клиент использует tenant-level fee
   if (!rows || rows.length === 0) {
-    return { zone: null }
+    return { zone: null, outsideZones: true }
   }
 
   const zones: DeliveryZone[] = rows.map(mapDeliveryZoneRow)

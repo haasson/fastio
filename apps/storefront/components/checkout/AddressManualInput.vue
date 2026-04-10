@@ -50,7 +50,10 @@
     </div>
 
     <template v-if="!addressError">
-      <FsAlert v-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
+      <FsAlert v-if="checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
+        Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong>
+      </FsAlert>
+      <FsAlert v-else-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
         Доставка:
         <strong v-if="zoneFee === 0">бесплатно</strong>
         <strong v-else>{{ zoneFee }} {{ currency }}</strong>
@@ -64,13 +67,26 @@
       <FsAlert v-else-if="addressCheckLoading" type="muted">
         Проверяем адрес...
       </FsAlert>
+      <FsAlert v-else-if="addressVerified && !checkout.hasZones" type="success" :icon="Check">
+        Доставка:
+        <strong v-if="fixedFee === 0">бесплатно</strong>
+        <strong v-else>{{ fixedFee }} {{ currency }}</strong>
+        <span v-if="tenantFreeDeliveryFrom > 0 && fixedFee > 0" class="zone-hint">
+          (бесплатно от {{ tenantFreeDeliveryFrom }} {{ currency }})
+        </span>
+      </FsAlert>
     </template>
+    <FsAlert v-if="addressError && !checkout.hasZones && checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
+      Минимальная сумма заказа для доставки: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong>
+    </FsAlert>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Check, X } from 'lucide-vue-next'
+import { useNuxtData } from 'nuxt/app'
+import { Check, X, AlertTriangle } from 'lucide-vue-next'
+import type { Tenant } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'
 import type { DadataSuggestion } from '~/composables/useDadataSuggestions'
@@ -84,6 +100,9 @@ const emit = defineEmits<{ verified: [] }>()
 
 const checkout = useCheckoutStore()
 const cart = useCartStore()
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+const tenantFreeDeliveryFrom = computed(() => tenant.value?.freeDeliveryFrom ?? 0)
+const fixedFee = computed(() => checkout.deliveryFee)
 const { suggestions, search, showSuggestions, hideSuggestionsDelayed, clear: clearSuggestions } = useDadataSuggestions()
 
 const addressVerified = ref(false)
@@ -135,6 +154,13 @@ async function selectAddress(suggestion: DadataSuggestion) {
 }
 
 async function checkAddress(lat: number, lon: number) {
+  if (tenant.value?.deliveryMode === 'fixed') {
+    checkout.deliveryZone = null
+    checkout.outsideZones = false
+    checkout.hasZones = false
+    return
+  }
+
   addressCheckLoading.value = true
   try {
     const result = await $fetch<{

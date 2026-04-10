@@ -134,10 +134,7 @@ const cart = useCartStore()
 const selectedCategoryId = ref<string | null>(null)
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const isServices = computed(() => tenant.value?.businessType === 'services')
-const orderingEnabled = computed(() => {
-  const m = tenant.value?.modules
-  return !!m?.delivery || !!m?.pickup
-})
+const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
 const viewOnly = computed(() => !orderingEnabled.value && !props.tableMode && !isServices.value)
 
 const categories = computed(() => menuStore.visibleCategories)

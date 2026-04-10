@@ -60,13 +60,21 @@ export async function resolveDelivery(
   }
 
   const [{ data: branchRows }, { data: zoneRows }] = await Promise.all([
-    supabase.from('branches').select('id, working_hours_schedule').eq('tenant_id', tenantId).eq('is_active', true),
+    supabase.from('branches').select('id, working_hours_schedule').eq('tenant_id', tenantId).eq('is_active', true).is('archived_at', null),
     supabase.from('delivery_zones').select('*').eq('tenant_id', tenantId).eq('is_active', true).order('sort_order'),
   ])
 
-  const hasZones = zoneRows && zoneRows.length > 0
+  const activeBranchIdSet = new Set((branchRows ?? []).map((b) => b.id as string))
+
+  const filteredZoneRows = zoneRows?.filter((z) => activeBranchIdSet.has(z.branch_id)) ?? []
+  const hasZones = filteredZoneRows.length > 0
   let matchedZone: DeliveryZone | null = null
   let branchId: string | null = null
+
+  // In zones mode, delivery requires at least one zone
+  if (tenantConfig.deliveryMode === 'zones' && !hasZones && deliveryType === 'delivery') {
+    throw createError({ statusCode: 400, message: 'Доставка временно недоступна' })
+  }
 
   if (hasZones && deliveryType === 'delivery') {
     const geoLat = Number(body.geoLat)
@@ -76,7 +84,7 @@ export async function resolveDelivery(
       throw createError({ statusCode: 400, message: 'Для доставки необходимо указать координаты адреса' })
     }
 
-    const zones: DeliveryZone[] = (zoneRows as unknown as DeliveryZoneRow[]).map(mapDeliveryZoneRow)
+    const zones: DeliveryZone[] = (filteredZoneRows as unknown as DeliveryZoneRow[]).map(mapDeliveryZoneRow)
     matchedZone = findDeliveryZone([geoLon, geoLat], zones)
 
     if (!matchedZone) {
@@ -124,9 +132,13 @@ export async function resolveDelivery(
 
   const { deliveryFee, minOrder } = calcDeliveryFee({
     deliveryType,
+    deliveryMode: tenantConfig.deliveryMode,
     matchedZone,
-    tenantDeliveryFee: tenantConfig.deliveryFee,
-    tenantMinOrder: tenantConfig.deliveryMinOrder,
+    tenantDelivery: {
+      deliveryFee: tenantConfig.deliveryFee,
+      freeDeliveryFrom: tenantConfig.freeDeliveryFrom,
+      minOrder: tenantConfig.deliveryMinOrder,
+    },
     subtotal,
   })
 

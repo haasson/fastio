@@ -76,7 +76,7 @@
             />
 
             <CheckoutAddressSection
-              v-if="checkout.form.deliveryType === 'delivery' && tenant?.modules?.delivery"
+              v-if="checkout.form.deliveryType === 'delivery' && tenant?.deliveryAvailable"
               ref="addressRef"
               :currency="currency"
             />
@@ -132,8 +132,7 @@ const { data: tenant } = useNuxtData<Tenant>('tenant')
 const currency = useCurrency()
 
 const showDeliveryTabs = computed(() => {
-  const m = tenant.value?.modules
-  return !!m?.delivery && !!m?.pickup
+  return !!tenant.value?.deliveryAvailable && !!tenant.value?.modules?.pickup
 })
 
 const paymentOptions = [
@@ -198,6 +197,11 @@ const submitErrors = ref<string[]>([])
 const idempotencyKey = ref('')
 
 onMounted(async () => {
+  if (!tenant.value?.orderingEnabled) {
+    await navigateTo('/', { replace: true })
+    return
+  }
+
   checkout.prefillFromAuth()
 
   if (cart.items.length === 0) {
@@ -207,9 +211,10 @@ onMounted(async () => {
 
   idempotencyKey.value = crypto.randomUUID()
 
-  const m = tenant.value?.modules
-  if (m && !m.delivery && m.pickup) checkout.form.deliveryType = 'pickup'
-  else if (m && m.delivery && !m.pickup) checkout.form.deliveryType = 'delivery'
+  const hasDelivery = tenant.value?.deliveryAvailable
+  const hasPickup = tenant.value?.modules?.pickup
+  if (!hasDelivery && hasPickup) checkout.form.deliveryType = 'pickup'
+  else if (hasDelivery && !hasPickup) checkout.form.deliveryType = 'delivery'
 })
 
 async function submitOrder() {

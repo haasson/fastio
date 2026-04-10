@@ -55,10 +55,7 @@ const { count } = storeToRefs(useCartStore())
 const hasCartItems = computed(() => count.value > 0)
 
 const isServices = computed(() => tenant.value?.businessType === 'services')
-const orderingEnabled = computed(() => {
-  const m = tenant.value?.modules
-  return !!m?.delivery || !!m?.pickup
-})
+const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
 const showCartFab = computed(() => !isServices.value && orderingEnabled.value && !['/cart', '/checkout'].includes(route.path))
 const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.modules?.reservations && route.path !== '/booking')
 

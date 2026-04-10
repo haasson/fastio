@@ -22,14 +22,16 @@
           />
           <span class="hint">0 — бесплатная доставка</span>
         </div>
+        <div class="field">
+          <UiInputNumber
+            v-model="form.freeDeliveryFrom"
+            label="Бесплатная доставка от, ₽"
+            :min="0"
+            placeholder="1500"
+          />
+          <span class="hint">0 — без порога бесплатной доставки</span>
+        </div>
       </div>
-
-      <UiSectionHeader title="Условия доставки" />
-
-      <RichTextEditor
-        v-model="form.deliveryDescription"
-        label="Описание условий доставки"
-      />
 
       <div class="footer">
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
@@ -43,7 +45,6 @@ import { ref, reactive, watch } from 'vue'
 import { UiForm, UiButton, UiInputNumber, useMessage, UiSectionHeader } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 
 const props = defineProps<{ tenant: Tenant }>()
 
@@ -52,7 +53,7 @@ const tenantStore = useTenantStore()
 const buildForm = (t: Tenant) => ({
   deliveryMinOrder: (t.deliveryMinOrder ?? null) as number | null,
   deliveryFee: (t.deliveryFee ?? null) as number | null,
-  deliveryDescription: t.deliveryDescription ?? '',
+  freeDeliveryFrom: (t.freeDeliveryFrom ?? null) as number | null,
 })
 
 const form = reactive(buildForm(props.tenant))
@@ -65,7 +66,7 @@ const { success } = useMessage()
 const handleSave = async () => {
   saving.value = true
   try {
-    await tenantStore.update({ deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0, deliveryDescription: form.deliveryDescription })
+    await tenantStore.update({ deliveryMinOrder: form.deliveryMinOrder ?? 0, deliveryFee: form.deliveryFee ?? 0, freeDeliveryFrom: form.freeDeliveryFrom ?? 0 })
     success('Сохранено')
   } finally {
     saving.value = false

@@ -34,24 +34,36 @@
           <AddressManualInput ref="manualInputRef" :currency="currency" @verified="onManualVerified" />
         </div>
 
-        <!-- Зона доставки для сохранённого адреса -->
-        <template v-if="!useNewAddress && selectedAddressId && !addressError">
-          <FsAlert v-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
+        <!-- Статус доставки для сохранённого адреса -->
+        <template v-if="showSavedAddressStatus">
+          <FsAlert v-if="checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
+            Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong>
+          </FsAlert>
+          <template v-else-if="checkout.hasZones">
+            <FsAlert v-if="zoneMatched" type="success" :icon="Check">
+              Доставка:
+              <strong v-if="zoneFee === 0">бесплатно</strong>
+              <strong v-else>{{ zoneFee }} {{ currency }}</strong>
+              <span v-if="checkout.deliveryZone!.freeDeliveryFrom && zoneFee > 0" class="zone-hint">
+                (бесплатно от {{ checkout.deliveryZone!.freeDeliveryFrom }} {{ currency }})
+              </span>
+            </FsAlert>
+            <FsAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
+              Адрес вне зоны доставки
+            </FsAlert>
+            <FsAlert v-else-if="addressCheckLoading" type="muted">
+              Проверяем адрес...
+            </FsAlert>
+          </template>
+          <FsAlert v-else-if="showFixedFee" type="success" :icon="Check">
             Доставка:
-            <strong v-if="zoneFee === 0">бесплатно</strong>
-            <strong v-else>{{ zoneFee }} {{ currency }}</strong>
-            <span v-if="checkout.deliveryZone.freeDeliveryFrom && zoneFee > 0" class="zone-hint">
-              (бесплатно от {{ checkout.deliveryZone.freeDeliveryFrom }} {{ currency }})
+            <strong v-if="fixedFee === 0">бесплатно</strong>
+            <strong v-else>{{ fixedFee }} {{ currency }}</strong>
+            <span v-if="tenantFreeDeliveryFrom > 0 && fixedFee > 0" class="zone-hint">
+              (бесплатно от {{ tenantFreeDeliveryFrom }} {{ currency }})
             </span>
           </FsAlert>
-          <FsAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
-            Адрес вне зоны доставки
-          </FsAlert>
-          <FsAlert v-else-if="addressCheckLoading" type="muted">
-            Проверяем адрес...
-          </FsAlert>
-          <!-- v-if (not v-else-if): shows alongside zone confirmation alert above -->
-          <FsAlert v-if="branchClosedInfo && !checkout.outsideZones" type="warning" :icon="Clock">
+          <FsAlert v-if="branchClosedInfo && zoneMatched && !checkout.belowMinOrder" type="warning" :icon="Clock">
             Доставка по данному адресу доступна с {{ branchClosedInfo.time }} ({{ branchClosedInfo.day }})
           </FsAlert>
         </template>
@@ -74,7 +86,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { Check, X, Clock } from 'lucide-vue-next'
+import { Check, X, Clock, AlertTriangle } from 'lucide-vue-next'
 import type { CustomerAddress, Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { isOpenNow } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
@@ -92,6 +104,8 @@ const checkout = useCheckoutStore()
 const cart = useCartStore()
 const authStore = useAuthStore()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
+const tenantFreeDeliveryFrom = computed(() => tenant.value?.freeDeliveryFrom ?? 0)
+const fixedFee = computed(() => checkout.deliveryFee)
 const branchClosedInfo = ref<{ day: string; time: string } | null>(null)
 
 const manualInputRef = ref<InstanceType<typeof AddressManualInput> | null>(null)
@@ -105,6 +119,20 @@ const useNewAddress = ref(false)
 const LAST_ADDRESS_KEY = 'lastCheckoutAddressId'
 
 const zoneFee = computed(() => checkout.deliveryZone?.effectiveDeliveryFee ?? checkout.deliveryZone?.deliveryFee ?? 0)
+
+// Юзер выбрал сохранённый адрес (не "Другой адрес")
+const usingSavedAddress = computed(() => !useNewAddress.value && !!selectedAddressId.value)
+
+// Можно показывать плашки статуса доставки для сохранённого адреса
+const showSavedAddressStatus = computed(() => usingSavedAddress.value && !addressError.value)
+
+// Зона определена, адрес внутри
+const zoneMatched = computed(() => !!checkout.deliveryZone && !checkout.outsideZones)
+
+// Фикс-режим, проверка завершена
+const showFixedFee = computed(() =>
+  !checkout.hasZones && !addressCheckLoading.value,
+)
 
 const addressError = computed(() => {
   if (!addressTouched.value) return ''
@@ -174,6 +202,14 @@ function onManualVerified() {
 }
 
 async function checkAddress(lat: number, lon: number) {
+  if (tenant.value?.deliveryMode === 'fixed') {
+    checkout.deliveryZone = null
+    checkout.outsideZones = false
+    checkout.hasZones = false
+    branchClosedInfo.value = null
+    return
+  }
+
   addressCheckLoading.value = true
   try {
     const result = await $fetch<{
@@ -233,12 +269,16 @@ defineExpose({
   isValid(): string | null {
     addressTouched.value = true
     if (authStore.isAuthenticated && savedAddresses.value.length) {
-      if (useNewAddress.value) return manualInputRef.value?.isValid() ?? 'Введите адрес доставки'
+      if (useNewAddress.value) {
+        if (!manualInputRef.value) return 'Введите адрес доставки'
+        return manualInputRef.value.isValid()
+      }
       if (!selectedAddressId.value) return 'Выберите адрес доставки'
       if (checkout.outsideZones) return 'Адрес вне зоны доставки'
       return null
     }
-    return manualInputRef.value?.isValid() ?? 'Введите адрес доставки'
+    if (!manualInputRef.value) return 'Введите адрес доставки'
+    return manualInputRef.value.isValid()
   },
 })
 </script>

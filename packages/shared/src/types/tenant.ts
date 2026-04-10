@@ -183,6 +183,8 @@ export type TenantSeo = {
   yandexMetrikaId: string | null
 }
 
+export type DeliveryMode = 'fixed' | 'zones'
+
 export type Tenant = {
   id: string
   name: string
@@ -201,7 +203,11 @@ export type Tenant = {
   modules: TenantModules
   deliveryMinOrder: number
   deliveryFee: number
+  freeDeliveryFrom: number
   deliveryDescription: string
+  deliveryMode: DeliveryMode
+  deliveryAvailable: boolean
+  orderingEnabled: boolean
   currency: string
   timezone: string
   seo: TenantSeo

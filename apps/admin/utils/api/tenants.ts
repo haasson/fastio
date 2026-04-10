@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule } from '@fastio/shared'
+import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
@@ -41,7 +41,11 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     modules: row.modules,
     deliveryMinOrder: row.delivery_min_order,
     deliveryFee: row.delivery_fee,
+    freeDeliveryFrom: row.free_delivery_from ?? 0,
     deliveryDescription: row.delivery_description,
+    deliveryMode: (row.delivery_mode ?? 'zones') as DeliveryMode,
+    deliveryAvailable: false,
+    orderingEnabled: false,
     currency: row.currency,
     timezone: row.timezone,
     seo: { ...defaultSeo(), ...row.seo },
@@ -69,7 +73,9 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   modules: data.modules,
   delivery_min_order: data.deliveryMinOrder,
   delivery_fee: data.deliveryFee,
+  free_delivery_from: data.freeDeliveryFrom,
   delivery_description: data.deliveryDescription,
+  delivery_mode: data.deliveryMode,
   timezone: data.timezone,
   seo: data.seo,
   kitchen_config: data.kitchenConfig,

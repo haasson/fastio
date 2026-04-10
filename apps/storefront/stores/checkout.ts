@@ -81,7 +81,12 @@ export const useCheckoutStore = defineStore('checkout', () => {
   const deliveryFee = computed(() => {
     if (form.deliveryType !== 'delivery') return 0
     if (deliveryZone.value) return deliveryZone.value.effectiveDeliveryFee ?? deliveryZone.value.deliveryFee
-    if (!hasZones.value) return tenant.value?.deliveryFee ?? 0
+    // Fixed mode: use tenant-level fee with free delivery threshold
+    if (tenant.value?.deliveryMode === 'fixed') {
+      const t = tenant.value
+      if (t.freeDeliveryFrom > 0 && useCartStore().subtotal >= t.freeDeliveryFrom) return 0
+      return t.deliveryFee ?? 0
+    }
     return 0
   })
 
@@ -93,6 +98,18 @@ export const useCheckoutStore = defineStore('checkout', () => {
       return Math.round(subtotal * (pr.discount_value ?? 0) / 100)
     }
     return Math.min(pr.discount_value ?? 0, subtotal)
+  })
+
+  const minOrderAmount = computed(() => {
+    if (form.deliveryType !== 'delivery') return 0
+    if (deliveryZone.value) return deliveryZone.value.minOrder
+    if (tenant.value?.deliveryMode === 'fixed') return tenant.value.deliveryMinOrder ?? 0
+    return 0
+  })
+
+  const belowMinOrder = computed(() => {
+    const subtotal = useCartStore().subtotal
+    return subtotal > 0 && minOrderAmount.value > 0 && subtotal < minOrderAmount.value
   })
 
   const orderTotal = computed(() => useCartStore().subtotal - discountAmount.value + deliveryFee.value)
@@ -115,6 +132,8 @@ export const useCheckoutStore = defineStore('checkout', () => {
     clearAddress,
     prefillFromAuth,
     deliveryFee,
+    minOrderAmount,
+    belowMinOrder,
     discountAmount,
     orderTotal,
   }

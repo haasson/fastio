@@ -39,7 +39,9 @@ export type TenantRow = {
   modules: TenantModules
   delivery_min_order: number
   delivery_fee: number
+  free_delivery_from: number
   delivery_description: string
+  delivery_mode: string
   currency: string
   timezone: string
   seo: TenantSeo

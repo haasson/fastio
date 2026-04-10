@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Tenant, Category, CategoryType, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule } from '@fastio/shared'
+import type { Tenant, Category, CategoryType, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode } from '@fastio/shared'
 import { mapDeliveryZoneRow, defaultSeo, resolveModules } from '@fastio/shared'
 
 export function getServerSupabase() {
@@ -35,8 +35,12 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     modules: resolveModules(row.modules as Tenant['modules'], (row.business_type ?? null) as Tenant['businessType']),
     deliveryMinOrder: row.delivery_min_order as number,
     deliveryFee: row.delivery_fee as number,
+    freeDeliveryFrom: (row.free_delivery_from as number) ?? 0,
     businessType: (row.business_type ?? null) as Tenant['businessType'],
     deliveryDescription: row.delivery_description as string,
+    deliveryMode: ((row.delivery_mode as string) ?? 'zones') as DeliveryMode,
+    deliveryAvailable: false,
+    orderingEnabled: false,
     currency: row.currency as string,
     timezone: row.timezone as string,
     seo: { ...defaultSeo(), ...(row.seo as object ?? {}) },
@@ -192,6 +196,19 @@ export function mapCustomerAddress(row: Record<string, unknown>): CustomerAddres
     comment: row.comment as string | null,
     createdAt: row.created_at as string,
   }
+}
+
+export async function getActiveBranchIds(
+  supabase: ReturnType<typeof getServerSupabase>,
+  tenantId: string,
+): Promise<string[]> {
+  const { data } = await supabase
+    .from('branches')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .is('archived_at', null)
+  return (data ?? []).map((b) => b.id as string)
 }
 
 export { mapDeliveryZoneRow }

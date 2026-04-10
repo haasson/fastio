@@ -1,8 +1,18 @@
 <template>
   <div class="zones-root">
     <template v-if="deliveryEnabled">
+      <div class="mode-switch">
+        <UiSegmentedControl
+          :model-value="deliveryMode"
+          :items="modeItems"
+          @update:model-value="switchMode"
+        />
+      </div>
+
+      <SettingsDelivery v-if="deliveryMode === 'fixed'" :tenant="tenantStore.tenant!" />
+
       <!-- Top bar: hint + zone tiles -->
-      <div class="zones-topbar">
+      <div v-if="deliveryMode === 'zones'" class="zones-topbar">
         <UiAlert v-if="branches.length > 1" type="info" icon="mapPin">
           Задавайте зоны и привязывайте их к филиалам, чтобы заказы из этих зон попадали в выбранные филиалы.
           <br />
@@ -41,10 +51,14 @@
             </div>
           </div>
         </div>
+
+        <UiAlert v-if="!zonesLoading && zones.length === 0" type="error" icon="warningRound">
+          Создайте хотя бы одну зону, иначе доставка будет недоступна для клиентов
+        </UiAlert>
       </div>
 
       <!-- Map + optional form sidebar -->
-      <div class="zones-body" :class="{ fullscreen: mapFullscreen }">
+      <div v-if="deliveryMode === 'zones'" class="zones-body" :class="{ fullscreen: mapFullscreen }">
         <div class="zones-map">
           <DeliveryZoneMap
             :zones="activeZones"
@@ -84,7 +98,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiSkeleton, UiAlert } from '@fastio/ui'
+import { UiSkeleton, UiAlert, UiSegmentedControl } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
+import type { DeliveryMode } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
@@ -92,6 +108,7 @@ import { useZoneEditor, type ZoneForm } from '~/composables/delivery/useZoneEdit
 import { useModules } from '~/composables/plan/useModules'
 import DeliveryZoneMap from '~/components/settings/DeliveryZoneMap.vue'
 import DeliveryZonePanel from '~/components/settings/DeliveryZonePanel.vue'
+import SettingsDelivery from '~/components/settings/SettingsDelivery.vue'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
@@ -99,6 +116,43 @@ const { zones, loading: zonesLoading, add: addZone, update: updateZone, remove: 
 const modules = useModules()
 
 const deliveryEnabled = computed(() => modules.delivery.value.enabled)
+
+const modeItems = [
+  { label: 'Фикс. стоимость', value: 'fixed' },
+  { label: 'Зоны доставки', value: 'zones' },
+]
+
+const { confirm } = useConfirm()
+const deliveryMode = computed(() => tenantStore.tenant?.deliveryMode ?? 'zones')
+
+const confirmMessages: Record<string, { title: string; message: string }> = {
+  fixed: {
+    title: 'Переключить на фиксированную стоимость?',
+    message: 'Стоимость доставки будет одинаковой для всех адресов. Зоны доставки перестанут использоваться.',
+  },
+  zones: {
+    title: 'Переключить на зоны доставки?',
+    message: 'Стоимость будет рассчитываться по зонам. Если зон нет — доставка станет недоступна для клиентов.',
+  },
+}
+
+async function switchMode(mode: string | number) {
+  const target = String(mode)
+
+  if (target === deliveryMode.value) return
+
+  const msg = confirmMessages[target]
+  const ok = await confirm({
+    title: msg.title,
+    message: msg.message,
+    confirmText: 'Переключить',
+    confirmType: 'warning',
+  })
+
+  if (!ok) return
+
+  await tenantStore.update({ deliveryMode: target as DeliveryMode })
+}
 
 const branches = computed(() => branchStore.branches)
 const activeBranches = computed(() => branches.value.filter((b) => b.isActive))
@@ -174,6 +228,10 @@ const handleZoneRemove = async () => {
 .zones-root {
   display: flex;
   flex-direction: column;
+}
+
+.mode-switch {
+  padding: 16px 0 0;
 }
 
 // Top bar

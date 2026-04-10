@@ -72,11 +72,17 @@ export function calcPromoDiscount(
   }
 }
 
+export type DeliveryParams = {
+  deliveryFee: number
+  freeDeliveryFrom: number
+  minOrder: number
+}
+
 export type DeliveryFeeInput = {
   deliveryType: string
-  matchedZone: { deliveryFee: number; freeDeliveryFrom: number; minOrder: number } | null
-  tenantDeliveryFee: number
-  tenantMinOrder: number
+  deliveryMode: string
+  matchedZone: DeliveryParams | null
+  tenantDelivery: DeliveryParams
   subtotal: number
 }
 
@@ -84,20 +90,17 @@ export function calcDeliveryFee(input: DeliveryFeeInput): {
   deliveryFee: number
   minOrder: number
 } {
-  const { deliveryType, matchedZone, tenantDeliveryFee, tenantMinOrder, subtotal } = input
+  const { deliveryType, deliveryMode, matchedZone, tenantDelivery, subtotal } = input
 
   if (deliveryType !== 'delivery') {
     return { deliveryFee: 0, minOrder: 0 }
   }
 
-  const zoneDeliveryFee = matchedZone
-    ? (matchedZone.freeDeliveryFrom > 0 && subtotal >= matchedZone.freeDeliveryFrom ? 0 : matchedZone.deliveryFee)
-    : null
+  const params = deliveryMode === 'fixed' ? tenantDelivery : matchedZone
+  if (!params) return { deliveryFee: 0, minOrder: 0 }
 
-  const deliveryFee = zoneDeliveryFee !== null ? zoneDeliveryFee : tenantDeliveryFee
-  const minOrder = matchedZone ? matchedZone.minOrder : tenantMinOrder
-
-  return { deliveryFee, minOrder }
+  const fee = params.freeDeliveryFrom > 0 && subtotal >= params.freeDeliveryFrom ? 0 : params.deliveryFee
+  return { deliveryFee: fee, minOrder: params.minOrder }
 }
 
 export function calcOrderTotal(subtotal: number, discountAmount: number, deliveryFee: number): number {

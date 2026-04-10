@@ -139,9 +139,9 @@ describe('calcDeliveryFee', () => {
   it('returns 0 for pickup', () => {
     const result = calcDeliveryFee({
       deliveryType: 'pickup',
+      deliveryMode: 'zones',
       matchedZone: null,
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 1000,
     })
     expect(result).toEqual({ deliveryFee: 0, minOrder: 0 })
@@ -150,31 +150,64 @@ describe('calcDeliveryFee', () => {
   it('returns 0 for dine_in', () => {
     const result = calcDeliveryFee({
       deliveryType: 'dine_in',
+      deliveryMode: 'zones',
       matchedZone: null,
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 1000,
     })
     expect(result).toEqual({ deliveryFee: 0, minOrder: 0 })
   })
 
-  it('uses tenant fee when no zone', () => {
+  it('fixed mode: uses tenant fee regardless of zone', () => {
     const result = calcDeliveryFee({
       deliveryType: 'delivery',
+      deliveryMode: 'fixed',
       matchedZone: null,
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 1000,
     })
     expect(result).toEqual({ deliveryFee: 200, minOrder: 500 })
   })
 
-  it('uses zone fee when zone matched', () => {
+  it('fixed mode: free delivery when subtotal >= freeDeliveryFrom', () => {
     const result = calcDeliveryFee({
       deliveryType: 'delivery',
+      deliveryMode: 'fixed',
+      matchedZone: null,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 1000, minOrder: 500 },
+      subtotal: 1500,
+    })
+    expect(result).toEqual({ deliveryFee: 0, minOrder: 500 })
+  })
+
+  it('fixed mode: charges fee when subtotal < freeDeliveryFrom', () => {
+    const result = calcDeliveryFee({
+      deliveryType: 'delivery',
+      deliveryMode: 'fixed',
+      matchedZone: null,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 2000, minOrder: 500 },
+      subtotal: 1500,
+    })
+    expect(result).toEqual({ deliveryFee: 200, minOrder: 500 })
+  })
+
+  it('zones mode: returns 0 when no zone matched', () => {
+    const result = calcDeliveryFee({
+      deliveryType: 'delivery',
+      deliveryMode: 'zones',
+      matchedZone: null,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
+      subtotal: 1000,
+    })
+    expect(result).toEqual({ deliveryFee: 0, minOrder: 0 })
+  })
+
+  it('zones mode: uses zone fee when zone matched', () => {
+    const result = calcDeliveryFee({
+      deliveryType: 'delivery',
+      deliveryMode: 'zones',
       matchedZone: { deliveryFee: 300, freeDeliveryFrom: 0, minOrder: 800 },
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 1000,
     })
     expect(result).toEqual({ deliveryFee: 300, minOrder: 800 })
@@ -183,9 +216,9 @@ describe('calcDeliveryFee', () => {
   it('free delivery when subtotal >= freeDeliveryFrom', () => {
     const result = calcDeliveryFee({
       deliveryType: 'delivery',
+      deliveryMode: 'zones',
       matchedZone: { deliveryFee: 300, freeDeliveryFrom: 1000, minOrder: 500 },
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 1500,
     })
     expect(result).toEqual({ deliveryFee: 0, minOrder: 500 })
@@ -194,9 +227,9 @@ describe('calcDeliveryFee', () => {
   it('charges delivery when subtotal < freeDeliveryFrom', () => {
     const result = calcDeliveryFee({
       deliveryType: 'delivery',
+      deliveryMode: 'zones',
       matchedZone: { deliveryFee: 300, freeDeliveryFrom: 2000, minOrder: 500 },
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 1500,
     })
     expect(result).toEqual({ deliveryFee: 300, minOrder: 500 })
@@ -205,9 +238,9 @@ describe('calcDeliveryFee', () => {
   it('free delivery when subtotal equals freeDeliveryFrom exactly', () => {
     const result = calcDeliveryFee({
       deliveryType: 'delivery',
+      deliveryMode: 'zones',
       matchedZone: { deliveryFee: 300, freeDeliveryFrom: 1000, minOrder: 500 },
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 1000,
     })
     expect(result).toEqual({ deliveryFee: 0, minOrder: 500 })
@@ -216,9 +249,9 @@ describe('calcDeliveryFee', () => {
   it('freeDeliveryFrom = 0 means no free delivery threshold', () => {
     const result = calcDeliveryFee({
       deliveryType: 'delivery',
+      deliveryMode: 'zones',
       matchedZone: { deliveryFee: 300, freeDeliveryFrom: 0, minOrder: 500 },
-      tenantDeliveryFee: 200,
-      tenantMinOrder: 500,
+      tenantDelivery: { deliveryFee: 200, freeDeliveryFrom: 0, minOrder: 500 },
       subtotal: 50000,
     })
     expect(result).toEqual({ deliveryFee: 300, minOrder: 500 })

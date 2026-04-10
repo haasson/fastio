@@ -8,7 +8,9 @@ export type PaymentType = typeof VALID_PAYMENT_TYPES[number]
 
 export type TenantOrderConfig = {
   deliveryFee: number
+  freeDeliveryFrom: number
   deliveryMinOrder: number
+  deliveryMode: string
   modules: Record<string, boolean> | null
 }
 
@@ -49,7 +51,7 @@ export async function fetchOrderInitialData(
   tenantId: string,
 ): Promise<OrderInitialData> {
   const [{ data: tenantData, error: tenantError }, { data: initialStatusData }] = await Promise.all([
-    supabase.from('tenants').select('delivery_fee, delivery_min_order, modules').eq('id', tenantId).single(),
+    supabase.from('tenants').select('delivery_fee, free_delivery_from, delivery_min_order, delivery_mode, modules').eq('id', tenantId).single(),
     supabase.from('order_statuses').select('id').eq('tenant_id', tenantId).eq('group_type', 'new').order('position').limit(1).single(),
   ])
 
@@ -64,7 +66,9 @@ export async function fetchOrderInitialData(
   return {
     tenantConfig: {
       deliveryFee: Number(tenantData.delivery_fee),
+      freeDeliveryFrom: Number(tenantData.free_delivery_from ?? 0),
       deliveryMinOrder: Number(tenantData.delivery_min_order),
+      deliveryMode: (tenantData.delivery_mode as string) ?? 'zones',
       modules: tenantData.modules as Record<string, boolean> | null,
     },
     initialStatusId: initialStatusData.id as string,

@@ -122,6 +122,11 @@ const closedStatus = computed(() => {
 })
 
 onMounted(async () => {
+  if (!tenant.value?.orderingEnabled) {
+    await navigateTo('/', { replace: true })
+    return
+  }
+
   try {
     branchSchedules.value = await $fetch<BranchScheduleInfo[]>('/api/branches')
   } catch {
