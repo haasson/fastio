@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { Check, X, AlertTriangle } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
@@ -200,6 +200,11 @@ watch(() => cart.subtotal, () => {
 watch(() => checkout.form.addressCoords, (coords) => {
   if (coords) addressVerified.value = true
 }, { immediate: true })
+
+onMounted(() => {
+  const coords = checkout.form.addressCoords
+  if (coords) checkAddress(coords.lat, coords.lon)
+})
 
 defineExpose({
   isValid(): string | null {
