@@ -73,7 +73,7 @@ const localCategories = ref<Category[]>([])
 
 watch(() => props.categories, (v) => {
   localCategories.value = v.map((c) => ({ ...c }))
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags ?? []))
 const { itemsLabelGen } = useTenantLabels()

@@ -50,7 +50,7 @@ const localStatuses = ref<OrderStatus[]>([])
 
 watch(() => props.statuses, (v) => {
   localStatuses.value = [...v]
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 const quickActionLabels = (status: OrderStatus) => status.quickActions
   .map((id) => props.statuses.find((s) => s.id === id)?.name)
