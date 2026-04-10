@@ -122,9 +122,9 @@
       :categories="props.categories"
       :dish="editingDish"
       :tags="props.tags"
-      :add-dish="addDish"
-      :update-dish="updateDish"
-      @saved="closeDishModal"
+      :add-dish="rawAddDish"
+      :update-dish="rawUpdateDish"
+      @saved="onDishSaved"
     />
   </main>
 </template>
@@ -194,21 +194,13 @@ const toggleActive = async (id: string, active: boolean) => {
   await rawToggleActive(id, active)
 }
 
-const addDish = async (...args: Parameters<typeof rawAddDish>) => {
-  const dish = await rawAddDish(...args)
-
-  emit('dishesChanged')
-
-  return dish
-}
-
-const updateDish = async (...args: Parameters<typeof rawUpdateDish>) => {
-  await rawUpdateDish(...args)
-  emit('dishesChanged')
-}
-
 const removeDish = async (...args: Parameters<typeof rawRemoveDish>) => {
   await rawRemoveDish(...args)
+  emit('dishesChanged')
+}
+
+const onDishSaved = () => {
+  closeDishModal()
   emit('dishesChanged')
 }
 

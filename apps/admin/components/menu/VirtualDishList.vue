@@ -28,40 +28,28 @@
             thumb-height="40px"
             :disabled="!dish.active"
           >
+            <UiText v-if="categoryMap.get(dish.categoryId)" size="small" color="secondary">
+              {{ categoryMap.get(dish.categoryId) }}
+            </UiText>
             <template #append>
               <span class="order-price">{{ formatPrice(dish.price) }}</span>
-              <AppActionsBlock :show-delete="false" @edit="openDishModal(dish)" />
             </template>
           </AppListRow>
         </AppDraggableList>
       </template>
     </div>
 
-    <MenuDishFormDrawer
-      v-if="editingDish"
-      v-model="dishModalOpen"
-      :tenant-id="tenantId"
-      :category-id="editingDish.categoryId"
-      :categories="categories"
-      :dish="editingDish"
-      :tags="allTags"
-      :update-dish="updateDish"
-      @saved="closeDishModal"
-    />
   </main>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiSkeleton, UiAlert, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import { UiSkeleton, UiAlert, UiSectionHeader, UiEmpty, UiText } from '@fastio/ui'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import MenuDishFormDrawer from '~/components/menu/DishFormDrawer.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
-import type { DishFormData } from '~/utils/api/dishes'
 
 const props = defineProps<{
   tenantId: string
@@ -72,6 +60,7 @@ const props = defineProps<{
 }>()
 
 const tagName = computed(() => props.allTags.find((t) => t.id === props.tagId)?.name ?? '')
+const categoryMap = computed(() => new Map(props.categories.map((c) => [c.id, c.name])))
 
 const api = useDatabase()
 const loading = ref(false)
@@ -81,46 +70,32 @@ const loadDishes = async () => {
   if (!props.tenantId || !props.tagId) return
   loading.value = true
 
-  const dishIds = await api.tags.listDishIdsByTag(props.tenantId, props.tagId)
+  try {
+    const dishIds = await api.tags.listDishIdsByTag(props.tenantId, props.tagId)
 
-  if (dishIds.length === 0) {
-    dishes.value = []
+    if (dishIds.length === 0) {
+      dishes.value = []
+
+      return
+    }
+
+    const allActive = await api.dishes.listAllActive(props.tenantId)
+    const dishMap = new Map(allActive.map((d) => [d.id, d]))
+
+    dishes.value = dishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[]
+  } finally {
     loading.value = false
-
-    return
   }
-
-  const allActive = await api.dishes.listAllActive(props.tenantId)
-  const dishMap = new Map(allActive.map((d) => [d.id, d]))
-
-  dishes.value = dishIds.map((id) => dishMap.get(id)).filter(Boolean) as Dish[]
-  loading.value = false
 }
 
 watch([() => props.tenantId, () => props.tagId], () => {
   if (props.tenantId && props.tagId) loadDishes()
 }, { immediate: true })
 
-const dishModalOpen = ref(false)
-const editingDish = ref<Dish | null>(null)
-
-const openDishModal = (dish: Dish) => {
-  editingDish.value = dish
-  dishModalOpen.value = true
-}
-
 const reorderDishes = async () => {
   await api.tags.reorderByTag(props.tenantId, props.tagId, dishes.value.map((d, i) => ({ id: d.id, order: i })))
 }
 
-const closeDishModal = () => {
-  dishModalOpen.value = false
-  loadDishes()
-}
-
-const updateDish = async (id: string, data: Partial<DishFormData>) => {
-  await api.dishes.update(id, data)
-}
 </script>
 
 <style scoped lang="scss">
