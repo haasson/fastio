@@ -1,8 +1,10 @@
 import { ref, computed, watch, type Ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import type { DeliveryZone } from '@fastio/shared'
+import { findDeliveryZone } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
+import { useDeliveryZoneStore } from '~/stores/deliveryZone'
 
 export type DeliveryInfo = {
   outsideZones: boolean
@@ -12,6 +14,7 @@ export type DeliveryInfo = {
   freeDeliveryFrom: number
   amountUntilFree: number
   branchMismatch: boolean
+  branchAutoSwitched: boolean
   zoneBranchName: string
   currentBranchName: string
 }
@@ -24,13 +27,13 @@ type OrderDeliveryOptions = {
   form: OrderDeliveryForm
   subtotal: Ref<number>
   selectedBranchId: Ref<string | null>
-  isEdit: Ref<boolean>
+  canEditBranch: Ref<boolean>
 }
 
-export const useOrderDelivery = ({ form, subtotal, selectedBranchId, isEdit }: OrderDeliveryOptions) => {
+export const useOrderDelivery = ({ form, subtotal, selectedBranchId, canEditBranch }: OrderDeliveryOptions) => {
   const tenantStore = useTenantStore()
   const branchStore = useBranchStore()
-  const { zones } = useAllDeliveryZones()
+  const { zones } = storeToRefs(useDeliveryZoneStore())
 
   const activeBranchIds = computed(() => new Set(branchStore.branches.map((b) => b.id)))
 
@@ -43,17 +46,38 @@ export const useOrderDelivery = ({ form, subtotal, selectedBranchId, isEdit }: O
   const currentZone = ref<DeliveryZone | null>(null)
   const addressOutsideZones = ref(false)
   const addressVerifiedForDelivery = ref(false)
+  const branchSwitchedByZone = ref(false)
+  const deliveryCoords = ref<{ lat: number; lon: number } | null>(null)
 
-  const onZoneDetected = (zone: DeliveryZone | null, outsideZones: boolean) => {
+  const onZoneDetected = (zone: DeliveryZone | null, outsideZones: boolean, coords: [number, number] | null) => {
     currentZone.value = zone
     addressOutsideZones.value = outsideZones
     addressVerifiedForDelivery.value = true
+    branchSwitchedByZone.value = false
+    deliveryCoords.value = coords ? { lat: coords[1], lon: coords[0] } : null
 
-    if (zone) {
-      if (!isEdit.value) {
-        selectedBranchId.value = zone.branchId
-      }
+    if (zone && canEditBranch.value && zone.branchId !== selectedBranchId.value) {
+      selectedBranchId.value = zone.branchId
+      branchSwitchedByZone.value = true
     }
+  }
+
+  const initFromOrder = (lat: number | null, lon: number | null) => {
+    if (lat === null || lon === null) return
+
+    deliveryCoords.value = { lat, lon }
+
+    if (activeZones.value.length === 0) {
+      addressVerifiedForDelivery.value = true
+
+      return
+    }
+
+    const zone = findDeliveryZone([lon, lat], activeZones.value)
+
+    currentZone.value = zone
+    addressOutsideZones.value = !zone
+    addressVerifiedForDelivery.value = true
   }
 
   watch(() => form.deliveryType, () => {
@@ -104,15 +128,16 @@ export const useOrderDelivery = ({ form, subtotal, selectedBranchId, isEdit }: O
     const belowMinOrder = minOrderAmount > 0 && subtotal.value > 0 && subtotal.value < minOrderAmount
     const amountUntilFree = freeDeliveryFrom > 0 && effectiveFee > 0 ? Math.max(0, freeDeliveryFrom - subtotal.value) : 0
 
-    const branchMismatch = !outside && zone !== null && isEdit.value && zone.branchId !== selectedBranchId.value
-    const zoneBranchName = branchMismatch ? (branchStore.branches.find((b) => b.id === zone!.branchId)?.name ?? '') : ''
+    const branchAutoSwitched = !outside && zone !== null && branchSwitchedByZone.value && zone.branchId === selectedBranchId.value
+    const branchMismatch = !outside && zone !== null && zone.branchId !== selectedBranchId.value
+    const zoneBranchName = (branchMismatch || branchAutoSwitched) ? (branchStore.branches.find((b) => b.id === zone!.branchId)?.name ?? '') : ''
     const currentBranchName = branchMismatch ? (branchStore.branches.find((b) => b.id === selectedBranchId.value)?.name ?? '') : ''
 
     return {
       outsideZones: outside, effectiveFee, minOrderAmount, belowMinOrder, freeDeliveryFrom, amountUntilFree,
-      branchMismatch, zoneBranchName, currentBranchName,
+      branchMismatch, branchAutoSwitched, zoneBranchName, currentBranchName,
     }
   })
 
-  return { activeZones, deliveryInfo, effectiveDeliveryFee, onZoneDetected }
+  return { activeZones, deliveryInfo, effectiveDeliveryFee, deliveryCoords, onZoneDetected, initFromOrder }
 }

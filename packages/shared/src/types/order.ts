@@ -79,6 +79,8 @@ export type Order = {
   items: OrderItem[]
   deliveryType: OrderDeliveryType
   address: string | null
+  deliveryLat: number | null
+  deliveryLon: number | null
   comment: string | null
   promoCode: string | null
   discountAmount: number

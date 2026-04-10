@@ -14,6 +14,8 @@ export type DeliveryResult = {
   branchId: string | null
   deliveryFee: number
   tableRecord: TableRecord | null
+  deliveryLat: number | null
+  deliveryLon: number | null
 }
 
 export async function validateTable(
@@ -70,6 +72,8 @@ export async function resolveDelivery(
   const hasZones = filteredZoneRows.length > 0
   let matchedZone: DeliveryZone | null = null
   let branchId: string | null = null
+  let deliveryLat: number | null = null
+  let deliveryLon: number | null = null
 
   // In zones mode, delivery requires at least one zone
   if (tenantConfig.deliveryMode === 'zones' && !hasZones && deliveryType === 'delivery') {
@@ -84,6 +88,9 @@ export async function resolveDelivery(
       throw createError({ statusCode: 400, message: 'Для доставки необходимо указать координаты адреса' })
     }
 
+    deliveryLat = geoLat
+    deliveryLon = geoLon
+
     const zones: DeliveryZone[] = (filteredZoneRows as unknown as DeliveryZoneRow[]).map(mapDeliveryZoneRow)
     matchedZone = findDeliveryZone([geoLon, geoLat], zones)
 
@@ -92,6 +99,17 @@ export async function resolveDelivery(
     }
 
     branchId = matchedZone.branchId
+  }
+
+  // fixed-режим: зон нет, но координаты всё равно сохраняем
+  if (!hasZones && deliveryType === 'delivery') {
+    const lat = Number(body.geoLat)
+    const lon = Number(body.geoLon)
+
+    if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
+      deliveryLat = lat
+      deliveryLon = lon
+    }
   }
 
   // Привязка к филиалу: из body (pickup) или fallback к единственному
@@ -149,5 +167,5 @@ export async function resolveDelivery(
     })
   }
 
-  return { matchedZone, branchId, deliveryFee, tableRecord }
+  return { matchedZone, branchId, deliveryFee, tableRecord, deliveryLat, deliveryLon }
 }

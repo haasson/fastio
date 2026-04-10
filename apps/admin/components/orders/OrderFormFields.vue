@@ -81,7 +81,10 @@
             (бесплатно от {{ deliveryInfo.freeDeliveryFrom }} ₽, ещё {{ deliveryInfo.amountUntilFree }} ₽)
           </span>
         </UiAlert>
-        <UiAlert v-if="deliveryInfo.branchMismatch" type="warning" size="small">
+        <UiAlert v-if="deliveryInfo.branchAutoSwitched" type="info" size="small">
+          Адрес относится к филиалу «{{ deliveryInfo.zoneBranchName }}». Филиал был изменён
+        </UiAlert>
+        <UiAlert v-else-if="deliveryInfo.branchMismatch" type="warning" size="small">
           Адрес в зоне филиала «{{ deliveryInfo.zoneBranchName }}», текущий филиал: «{{ deliveryInfo.currentBranchName }}»
         </UiAlert>
       </template>
@@ -203,7 +206,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  'zone-detected': [zone: DeliveryZone | null, outsideZones: boolean]
+  'zone-detected': [zone: DeliveryZone | null, outsideZones: boolean, coords: [number, number] | null]
   'update:branchId': [value: string | null]
 }>()
 
@@ -215,7 +218,7 @@ const selectedBranchId = computed({
 // ─── DaData address suggestions ─────────────────────────────────────────────
 
 const { suggestions: dadataSuggestions, search: searchDadata, clear: clearDadata, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
-const addressVerified = ref(false)
+const addressVerified = ref(!!props.form.address)
 
 const addressRules = computed(() => {
   const rules = [validationRules.address.required]
@@ -253,11 +256,11 @@ const pickSuggestion = (s: DadataSuggestion) => {
 
     if (props.zones.length === 0) {
       // fixed-режим: зон нет, но нужно пометить адрес как проверенный
-      emit('zone-detected', null, false)
+      emit('zone-detected', null, false, point)
     } else {
       const zone = findDeliveryZone(point, props.zones)
 
-      emit('zone-detected', zone, !zone)
+      emit('zone-detected', zone, !zone, point)
     }
   }
 }

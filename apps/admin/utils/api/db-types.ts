@@ -190,6 +190,8 @@ export type OrderRow = {
   customer_email: string | null
   delivery_type: OrderDeliveryType
   address: string | null
+  delivery_lat: number | null
+  delivery_lon: number | null
   comment: string | null
   promo_code: string | null
   discount_amount: number

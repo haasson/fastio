@@ -98,12 +98,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiSkeleton, UiAlert, UiSegmentedControl } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { DeliveryMode } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
+import { useDeliveryZoneStore } from '~/stores/deliveryZone'
 import { useZoneEditor, type ZoneForm } from '~/composables/delivery/useZoneEditor'
 import { useModules } from '~/composables/plan/useModules'
 import DeliveryZoneMap from '~/components/settings/DeliveryZoneMap.vue'
@@ -112,7 +113,9 @@ import SettingsDelivery from '~/components/settings/SettingsDelivery.vue'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
-const { zones, loading: zonesLoading, add: addZone, update: updateZone, remove: removeZone } = useAllDeliveryZones()
+const deliveryZoneStore = useDeliveryZoneStore()
+const { zones, loading: zonesLoading } = storeToRefs(deliveryZoneStore)
+const { add: addZone, update: updateZone, remove: removeZone } = deliveryZoneStore
 const modules = useModules()
 
 const deliveryEnabled = computed(() => modules.delivery.value.enabled)

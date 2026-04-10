@@ -217,13 +217,25 @@ const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.
 
 // ─── Delivery zones ───────────────────────────────────────────────────────────
 
-const { activeZones, deliveryInfo, effectiveDeliveryFee, onZoneDetected } = useOrderDelivery({
-  form, subtotal, selectedBranchId, isEdit,
+const canEditBranch = computed(() => can.value.editBranch ?? false)
+
+const { activeZones, deliveryInfo, effectiveDeliveryFee, deliveryCoords, onZoneDetected, initFromOrder } = useOrderDelivery({
+  form, subtotal, selectedBranchId, canEditBranch,
 })
 
 watch(effectiveDeliveryFee, (fee) => {
   if (fee !== null) form.deliveryFee = fee
 })
+
+watch(
+  () => props.order,
+  (order) => {
+    if (order?.deliveryType === 'delivery') {
+      initFromOrder(order.deliveryLat, order.deliveryLon)
+    }
+  },
+  { immediate: true },
+)
 
 const formPayload = computed(() => ({
   customerName: form.customerName,
@@ -231,6 +243,8 @@ const formPayload = computed(() => ({
   items: form.items,
   deliveryType: form.deliveryType,
   address: form.address || null,
+  deliveryLat: deliveryCoords.value?.lat ?? null,
+  deliveryLon: deliveryCoords.value?.lon ?? null,
   comment: form.comment || null,
   discountAmount: form.discountAmount,
   promoCode: form.promoCode || null,

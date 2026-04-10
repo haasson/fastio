@@ -14,6 +14,8 @@ export type OrderUpdateData = {
   items?: OrderItem[]
   deliveryType?: OrderDeliveryType
   address?: string | null
+  deliveryLat?: number | null
+  deliveryLon?: number | null
   comment?: string | null
   promoCode?: string | null
   discountAmount?: number
@@ -34,6 +36,8 @@ export type OrderCreateData = {
   items: OrderItem[]
   deliveryType: OrderDeliveryType
   address: string | null
+  deliveryLat?: number | null
+  deliveryLon?: number | null
   comment: string | null
   promoCode: string | null
   discountAmount: number
@@ -81,6 +85,8 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     items: (row.order_items ?? []).map(mapOrderItem),
     deliveryType: row.delivery_type,
     address: row.address,
+    deliveryLat: row.delivery_lat ?? null,
+    deliveryLon: row.delivery_lon ?? null,
     comment: row.comment,
     promoCode: row.promo_code,
     discountAmount: row.discount_amount,
@@ -109,6 +115,8 @@ const toOrderPayload = (data: OrderUpdateData | OrderCreateData): Partial<OrderR
   customer_email: data.customerEmail,
   delivery_type: data.deliveryType,
   address: data.address,
+  delivery_lat: data.deliveryLat,
+  delivery_lon: data.deliveryLon,
   comment: data.comment,
   promo_code: data.promoCode,
   discount_amount: data.discountAmount,

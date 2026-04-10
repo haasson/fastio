@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
   // 4. Доставка: зоны, филиал, стоимость, стол
   const tenant = event.context.tenant as Tenant | undefined
-  const { matchedZone, branchId, deliveryFee, tableRecord } = await resolveDelivery(
+  const { matchedZone, branchId, deliveryFee, tableRecord, deliveryLat, deliveryLon } = await resolveDelivery(
     supabase, tenantId, deliveryType, body, tenantConfig, subtotal,
     { workingHoursSchedule: tenant?.workingHoursSchedule ?? null, timezone: tenant?.timezone ?? 'Europe/Moscow' },
   )
@@ -78,6 +78,8 @@ export default defineEventHandler(async (event) => {
       ...(idempotencyKey && { idempotency_key: idempotencyKey }),
       ...(branchId && { branch_id: branchId }),
       ...(matchedZone && { delivery_zone_id: matchedZone.id }),
+      ...(deliveryLat !== null && { delivery_lat: deliveryLat }),
+      ...(deliveryLon !== null && { delivery_lon: deliveryLon }),
       ...(tableRecord && { table_id: tableRecord.id, table_name: tableRecord.name }),
       ...(customerId && { customer_id: customerId }),
     })
