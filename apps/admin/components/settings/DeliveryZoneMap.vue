@@ -32,7 +32,9 @@
       >
         <div class="branch-marker" :class="{ selected: b.id === selectedBranchId }" :style="{ '--branch-color': b.color }">
           <span class="branch-marker-dot" />
-          <span class="branch-marker-label">{{ b.name }}</span>
+          <div class="branch-marker-pill">
+            <span class="branch-marker-label">{{ b.name }}</span>
+          </div>
         </div>
       </YandexMapMarker>
 
@@ -322,29 +324,38 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
 .branch-marker {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 16px;
-  padding: 4px 10px 4px 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  white-space: nowrap;
   cursor: default;
-  transform: translate(-50%, -100%);
+  // сдвигаем так, чтобы центр точки (5px) совпадал с координатой
+  transform: translate(-50%, -5px);
 
-  &.selected {
+  &.selected .branch-marker-pill {
     border-color: var(--branch-color, #ff5500);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   }
 }
 
 .branch-marker-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--branch-color, #ff5500);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
+}
+
+.branch-marker-pill {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 3px 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
 }
 
 .branch-marker-label {
