@@ -2,15 +2,29 @@
   <UiCard size="large">
     <UiForm @submit="handleSave">
       <div class="form">
-        <div class="field">
-          <UiSelect
-            :value="form.sourceStatusId ?? ''"
-            :options="statusOptions"
-            label="Статус для отправки на кухню"
-            placeholder="Выберите статус"
-            @update:value="form.sourceStatusId = String($event) || null"
-          />
-          <span class="hint">Для доставки и самовывоза: когда заказ переходит в этот статус, блюда появляются в очереди. Заказы со стола попадают на кухню автоматически</span>
+        <div class="row">
+          <div class="field">
+            <UiSelect
+              :value="form.sourceStatusId ?? ''"
+              :options="statusOptions"
+              label="Статус для отправки на кухню"
+              message="Когда заказ переходит в этот статус, блюда появляются в очереди"
+              placeholder="Выберите статус"
+              @update:value="form.sourceStatusId = String($event) || null"
+            />
+          </div>
+
+          <div class="field">
+            <UiSelect
+              :value="form.cookingStatusId ?? ''"
+              :options="statusOptions"
+              label="Статус при начале готовки или сборки"
+              message="Когда повар берёт первое блюдо или сборщик собирает позицию"
+              placeholder="Не менять"
+              clearable
+              @update:value="form.cookingStatusId = ($event as string) ?? null"
+            />
+          </div>
         </div>
 
         <div class="row">
@@ -18,9 +32,11 @@
             <UiSelect
               :value="form.completedStatusMap.delivery ?? ''"
               :options="statusOptions"
-              label="Доставка"
+              label="Готово: доставка"
+              message="Когда все блюда заказа готовы, заказ перейдёт в этот статус"
               placeholder="Не менять"
-              @update:value="form.completedStatusMap.delivery = String($event) || null"
+              clearable
+              @update:value="form.completedStatusMap.delivery = ($event as string) ?? null"
             />
           </div>
 
@@ -28,26 +44,23 @@
             <UiSelect
               :value="form.completedStatusMap.pickup ?? ''"
               :options="statusOptions"
-              label="Самовывоз"
+              label="Готово: самовывоз"
+              message="Когда все блюда заказа готовы, заказ перейдёт в этот статус"
               placeholder="Не менять"
-              @update:value="form.completedStatusMap.pickup = String($event) || null"
+              clearable
+              @update:value="form.completedStatusMap.pickup = ($event as string) ?? null"
             />
           </div>
-
         </div>
 
-        <span class="hint">Когда все блюда заказа готовы, заказ автоматически перейдёт в выбранный статус</span>
-
-        <div class="field">
-          <UiInputNumber
-            v-model="form.urgencyMinutes"
-            label="Порог срочности (минуты)"
-            :min="1"
-            :max="120"
-            :show-button="true"
-          />
-          <span class="hint">Карточки блюд начнут подсвечиваться жёлтым на 66% и красным на 100% этого времени</span>
-        </div>
+        <UiInputNumber
+          v-model="form.urgencyMinutes"
+          label="Порог срочности (минуты)"
+          message="Карточки блюд начнут подсвечиваться жёлтым на 66% и красным на 100% этого времени"
+          :min="1"
+          :max="120"
+          :show-button="true"
+        />
 
         <div class="footer">
           <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
@@ -79,6 +92,7 @@ const statusOptions = computed(() => statuses.value.map((s) => ({ label: s.name,
 
 const form = reactive({
   sourceStatusId: tenant.value?.kitchenConfig?.sourceStatusId ?? null as string | null,
+  cookingStatusId: tenant.value?.kitchenConfig?.cookingStatusId ?? null as string | null,
   completedStatusMap: {
     delivery: tenant.value?.kitchenConfig?.completedStatusMap?.delivery ?? null as string | null,
     pickup: tenant.value?.kitchenConfig?.completedStatusMap?.pickup ?? null as string | null,
@@ -90,6 +104,7 @@ const form = reactive({
 watch(tenant, (t) => {
   if (!t) return
   form.sourceStatusId = t.kitchenConfig?.sourceStatusId ?? null
+  form.cookingStatusId = t.kitchenConfig?.cookingStatusId ?? null
   form.completedStatusMap.delivery = t.kitchenConfig?.completedStatusMap?.delivery ?? null
   form.completedStatusMap.pickup = t.kitchenConfig?.completedStatusMap?.pickup ?? null
   form.completedStatusMap.dine_in = t.kitchenConfig?.completedStatusMap?.dine_in ?? null
@@ -104,6 +119,7 @@ const handleSave = async () => {
     await tenantStore.update({
       kitchenConfig: {
         sourceStatusId: form.sourceStatusId,
+        cookingStatusId: form.cookingStatusId,
         completedStatusMap: form.completedStatusMap,
       },
       kitchenUrgencyMinutes: form.urgencyMinutes,
@@ -131,12 +147,6 @@ const handleSave = async () => {
     flex: 1;
     min-width: 200px;
   }
-}
-
-.hint {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
 }
 
 .footer {

@@ -8,11 +8,13 @@ import { optimizeImage } from '~/utils/imageOptimize'
 
 const DEFAULT_KITCHEN_CONFIG: KitchenConfig = {
   sourceStatusId: null,
+  cookingStatusId: null,
   completedStatusMap: { delivery: null, pickup: null, dine_in: null },
 }
 
 const parseKitchenConfig = (raw: KitchenConfig): KitchenConfig => ({
   sourceStatusId: raw?.sourceStatusId ?? DEFAULT_KITCHEN_CONFIG.sourceStatusId,
+  cookingStatusId: raw?.cookingStatusId ?? null,
   completedStatusMap: {
     delivery: raw?.completedStatusMap?.delivery ?? null,
     pickup: raw?.completedStatusMap?.pickup ?? null,

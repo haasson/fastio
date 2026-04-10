@@ -29,6 +29,7 @@ export type KitchenQueueItem = {
 
 export type KitchenConfig = {
   sourceStatusId: string | null
+  cookingStatusId: string | null
   completedStatusMap: {
     delivery: string | null
     pickup: string | null
