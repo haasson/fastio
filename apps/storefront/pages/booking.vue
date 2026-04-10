@@ -44,6 +44,7 @@
               :max-guests="settings?.maxGuests ?? 20"
               :max-advance-days="settings?.maxAdvanceDays ?? 30"
               :branches="branches ?? []"
+              :schedule="currentSchedule"
               @next="goToStep2"
             />
 
@@ -75,6 +76,7 @@
 import { computed } from 'vue'
 import { useAsyncData, useNuxtData, useRequestFetch } from 'nuxt/app'
 import type { WorkingHours, WorkingHoursSchedule, ReservationSettings, Tenant } from '@fastio/shared'
+import { getDaySchedule, getIsoDayForDate } from '@fastio/shared'
 import { CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsHeading, FsAlert } from '@fastio/public-ui'
 import PageShell from '~/components/sections/PageShell.vue'
@@ -129,13 +131,15 @@ const STEP_TITLES: Record<1 | 2 | 3, string> = {
   3: 'Ваши контакты',
 }
 
-const workingHoursForDate = computed<WorkingHours | null>(() => {
+const currentSchedule = computed<WorkingHoursSchedule | null>(() => {
   const selectedBranch = branches.value?.find((b) => b.id === form.branchId)
-  const schedule = selectedBranch?.workingHoursSchedule ?? tenant.value?.workingHoursSchedule
+  return selectedBranch?.workingHoursSchedule ?? tenant.value?.workingHoursSchedule ?? null
+})
+
+const workingHoursForDate = computed<WorkingHours | null>(() => {
+  const schedule = currentSchedule.value
   if (!schedule || !form.date) return null
-  const js = new Date(form.date + 'T12:00:00').getDay()
-  const isoDay = String(js === 0 ? 7 : js)
-  return schedule.days[isoDay] ?? schedule.default
+  return getDaySchedule(schedule, getIsoDayForDate(form.date))
 })
 
 const goToStep2 = async () => {

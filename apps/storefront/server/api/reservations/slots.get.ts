@@ -1,6 +1,6 @@
 import { getServerSupabase } from '../../utils/supabase'
 import { createRateLimiter } from '../../utils/rateLimit'
-import type { WorkingHoursSchedule } from '@fastio/shared'
+import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 import { getIsoDayForDate, todayInTz, nowTimeInTz } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(30, 60_000)
@@ -65,7 +65,9 @@ export default defineEventHandler(async (event) => {
   const branchSchedule = branchData?.working_hours_schedule as WorkingHoursSchedule | null
   const schedule = branchSchedule ?? (tenantData.working_hours_schedule as WorkingHoursSchedule | null)
   const isoDay = getIsoDayForDate(date)
-  const dayHours = schedule ? (schedule.days[isoDay] ?? schedule.default) : { open: '10:00', close: '22:00', closeNextDay: false }
+  const dayHours: WorkingHours = schedule ? (schedule.days[isoDay] ?? schedule.default) : { open: '10:00', close: '22:00' }
+
+  if (dayHours.dayOff) return []
 
   const slotStep = (settingsData?.slot_step as number | null) ?? 30
   const closeBuffer = (settingsData?.close_buffer_minutes as number | null) ?? 60
@@ -77,7 +79,10 @@ export default defineEventHandler(async (event) => {
   const tenantNow = nowTimeInTz(tenantTz)
 
   const filteredTimes = date === tenantToday
-    ? times.filter(t => t > tenantNow)
+    ? times.filter(t => {
+        const isAfterMidnight = toMinutes(t) < toMinutes(dayHours.open)
+        return isAfterMidnight || t > tenantNow
+      })
     : times
 
   return filteredTimes.map((time) => ({ time, available: true }))

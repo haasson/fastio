@@ -22,6 +22,7 @@
           :variant="form?.date === day.value ? 'primary' : 'secondary'"
           size="medium"
           class="date-btn"
+          :disabled="day.isDayOff"
           @click="onDateClick(day.value)"
         >
           {{ day.dayNum }}
@@ -49,7 +50,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { FsButton, FsField } from '@fastio/public-ui'
-import { formatDateStr } from '@fastio/shared'
+import { formatDateStr, getIsoDayForDate, isDayOff as checkDayOff } from '@fastio/shared'
+import type { WorkingHoursSchedule } from '@fastio/shared'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 
 type BookingForm = {
@@ -66,6 +68,7 @@ const props = defineProps<{
   maxGuests: number
   maxAdvanceDays: number
   branches: BookingBranch[]
+  schedule: WorkingHoursSchedule | null
 }>()
 
 const emit = defineEmits<{ next: [] }>()
@@ -82,11 +85,13 @@ const days = computed(() => {
     d.setDate(today.getDate() + i)
 
     const value = formatDateStr(d.getTime())
+    const isDayOff = checkDayOff(props.schedule, getIsoDayForDate(value))
 
     result.push({
       value,
       dayNum: d.getDate(),
       month: d.toLocaleString('ru-RU', { day: 'numeric', month: 'long' }).replace(/^\d+\s/, ''),
+      isDayOff,
     })
   }
 

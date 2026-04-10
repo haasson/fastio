@@ -91,8 +91,13 @@ function timeToMinutes(time: string): number {
   return h * 60 + m
 }
 
-function getDaySchedule(schedule: WorkingHoursSchedule, isoDay: number): WorkingHours {
+export function getDaySchedule(schedule: WorkingHoursSchedule, isoDay: number | string): WorkingHours {
   return schedule.days[String(isoDay)] ?? schedule.default
+}
+
+export function isDayOff(schedule: WorkingHoursSchedule | null | undefined, isoDay: number | string): boolean {
+  if (!schedule) return false
+  return !!getDaySchedule(schedule, isoDay).dayOff
 }
 
 function isOvernight(wh: WorkingHours): boolean {
