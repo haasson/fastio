@@ -14,12 +14,15 @@ export type DadataSuggestion = {
 export type DadataSuggestionsOptions = {
   proxyUrl: string
   debounce?: number
+  extraBody?: Record<string, unknown> | (() => Record<string, unknown>)
 }
 
 export const useDadataSuggestions = (options: DadataSuggestionsOptions | string) => {
-  const { proxyUrl, debounce = 300 } = typeof options === 'string'
-    ? { proxyUrl: options }
+  const { proxyUrl, debounce = 300, extraBody } = typeof options === 'string'
+    ? { proxyUrl: options } as DadataSuggestionsOptions
     : options
+
+  const resolveExtraBody = () => (typeof extraBody === 'function' ? extraBody() : extraBody ?? {})
 
   const suggestions = ref<DadataSuggestion[]>([])
   const loading = ref(false)
@@ -37,7 +40,7 @@ export const useDadataSuggestions = (options: DadataSuggestionsOptions | string)
       const res = await fetch(proxyUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, ...resolveExtraBody() }),
       })
 
       const json = await res.json()

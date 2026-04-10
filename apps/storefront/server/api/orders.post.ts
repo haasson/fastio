@@ -1,7 +1,7 @@
 import { normalizePhone } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getServerSupabase } from '../utils/supabase'
-import { createRateLimiter } from '../utils/rateLimit'
+import { createRateLimiter } from '@fastio/shared'
 import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType } from '../services/order-validation'
 import { resolveCustomer } from '../services/order-customer'
 import { resolveDelivery } from '../services/order-delivery'

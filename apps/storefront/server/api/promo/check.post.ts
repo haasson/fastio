@@ -1,5 +1,5 @@
 import { getServerSupabase } from '../../utils/supabase'
-import { createRateLimiter } from '../../utils/rateLimit'
+import { createRateLimiter } from '@fastio/shared'
 
 const promoRateLimiter = createRateLimiter(10, 60_000)
 

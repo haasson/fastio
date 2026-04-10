@@ -1,8 +1,6 @@
-import { createRateLimiter } from '@fastio/shared'
+import { defineEventHandler, readBody, createError } from 'h3'
+import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
-
-const perMinuteLimit = createRateLimiter(20, 60_000)
-const per12hLimit = createRateLimiter(250, 12 * 60 * 60 * 1000)
 
 const tenantCoordsCache = new Map<string, { lat: number; lon: number } | null>()
 
@@ -23,29 +21,28 @@ async function getTenantCoords(tenantId: string): Promise<{ lat: number; lon: nu
     : null
 
   tenantCoordsCache.set(tenantId, coords)
+
   return coords
 }
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
-
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
-  const key = `${tenantId}:${ip}`
-  if (!perMinuteLimit.check(key) || !per12hLimit.check(key)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов' })
-  }
-
   const body = await readBody(event)
+  const tenantId = String(body.tenantId ?? '').trim()
+
+  if (!tenantId) throw createError({ statusCode: 400, message: 'tenantId is required' })
+
   const query = String(body.query ?? '').trim()
+
   if (!query || query.length < 3) return { suggestions: [] }
 
   const apiKey = useRuntimeConfig().dadataApiKey
+
   if (!apiKey) throw createError({ statusCode: 500, message: 'DaData API key not configured' })
 
   const coords = await getTenantCoords(tenantId)
 
   const dadataBody: Record<string, unknown> = { query, count: 5 }
+
   if (coords) {
     dadataBody.locations_geo = [{ lat: coords.lat, lon: coords.lon, radius_meters: 50000 }]
   }

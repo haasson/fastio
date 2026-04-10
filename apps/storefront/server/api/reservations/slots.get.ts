@@ -1,5 +1,5 @@
 import { getServerSupabase } from '../../utils/supabase'
-import { createRateLimiter } from '../../utils/rateLimit'
+import { createRateLimiter } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 import { getIsoDayForDate, todayInTz, nowTimeInTz } from '@fastio/shared'
 

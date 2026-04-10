@@ -44,11 +44,11 @@ export default defineNuxtConfig({
     supabaseServiceRoleKey: '',
     telegramBotToken: '',
     adminUrl: '',
+    dadataApiKey: '',
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',
       yandexMapsApiKey: '',
-      dadataApiKey: '',
       telegramBotUsername: '',
     },
   },
