@@ -7,10 +7,10 @@
 
       <template v-else>
         <!-- Список блюд -->
-        <ul v-if="modelValue.length > 0" class="items-list">
+        <ul v-if="displayItems.length > 0" class="items-list">
           <DishItemRow
-            v-for="(item, i) in modelValue"
-            :key="item.dishId || i"
+            v-for="item in displayItems"
+            :key="item.key"
             :name="getDishName(item.dishId)"
             :category-name="getCategoryName(item.dishId)"
             :modifiers="getSelectedModifierTags(item)"
@@ -21,13 +21,22 @@
             <span v-else-if="getModifierStatus(item)" class="dish-status dish-status--inactive">
               модификатор отключен
             </span>
-            <span class="item-price">{{ getItemPrice(item) }} ₽</span>
-            <UiButton
-              type="text"
-              size="small"
-              icon="close"
-              @click="removeItem(i)"
-            />
+            <div class="qty-controls">
+              <UiButton
+                type="text"
+                size="small"
+                icon="minusRound"
+                @click="changeQty(item.key, -1)"
+              />
+              <span class="qty-value">{{ item.quantity }}</span>
+              <UiButton
+                type="text"
+                size="small"
+                icon="plusRound"
+                @click="changeQty(item.key, 1)"
+              />
+            </div>
+            <span class="item-price">{{ getItemPrice(item) * item.quantity }} ₽</span>
           </DishItemRow>
         </ul>
 
@@ -39,12 +48,11 @@
         <DishPickerModal
           v-model="showPicker"
           :tenant-id="tenantId"
-          :excluded-dish-ids="selectedDishIds"
           @select="onAddItem"
         />
 
         <!-- Итого -->
-        <div v-if="modelValue.length > 0" class="totals">
+        <div v-if="displayItems.length > 0" class="totals">
           <div class="total-row">
             <span class="total-label">Сумма блюд</span>
             <span class="total-value">{{ dishesTotal }} ₽</span>
@@ -73,7 +81,7 @@ import type { Category, ComboItemInput, DishModifierGroup } from '@fastio/shared
 import { useDatabase } from '~/composables/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 
-type DishInfo = { id: string; name: string; categoryId: string; price: number; active: boolean }
+type DishInfo = { id: string; name: string; categoryId: string; price: number; active: boolean; deleted?: boolean }
 
 const props = defineProps<{
   modelValue: ComboItemInput[]
@@ -99,6 +107,7 @@ const getDishStatus = (dishId: string): 'deleted' | 'inactive' | null => {
   const dish = getDish(dishId)
 
   if (!dish) return 'deleted'
+  if (dish.deleted) return 'deleted'
   if (!dish.active) return 'inactive'
 
   return null
@@ -125,9 +134,25 @@ const getSelectedModifierTags = (item: ComboItemInput) => getDishModifiers(item.
   .filter((o) => item.modifierOptionIds.includes(o.optionId))
   .map((o) => ({ name: o.optionName, priceDelta: o.priceDelta }))
 
-// ─── Options ──────────────────────────────────────────────────────────────────
+// ─── Display items (grouped by dish + modifiers) ──────────────────────────────
 
-const selectedDishIds = computed(() => props.modelValue.map((item) => item.dishId).filter(Boolean))
+type DisplayItem = ComboItemInput & { key: string; quantity: number }
+
+const itemKey = (item: ComboItemInput) => `${item.dishId}::${[...item.modifierOptionIds].sort().join(',')}`
+
+const displayItems = computed<DisplayItem[]>(() => {
+  const map = new Map<string, DisplayItem>()
+
+  for (const item of props.modelValue) {
+    const key = itemKey(item)
+    const existing = map.get(key)
+
+    if (existing) existing.quantity++
+    else map.set(key, { ...item, key, quantity: 1 })
+  }
+
+  return [...map.values()]
+})
 
 // ─── Totals ───────────────────────────────────────────────────────────────────
 
@@ -141,7 +166,7 @@ const getItemPrice = (item: ComboItemInput) => {
   return base + modifierDelta
 }
 
-const dishesTotal = computed(() => props.modelValue.reduce((sum, item) => sum + getItemPrice(item), 0))
+const dishesTotal = computed(() => displayItems.value.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0))
 
 const discount = computed(() => {
   if (props.comboPrice === null || props.comboPrice <= 0) return null
@@ -188,14 +213,45 @@ const onAddItem = async (result: DishPickerResult) => {
   emit('update:modelValue', [...props.modelValue, { dishId: result.dishId, modifierOptionIds: result.modifierOptionIds }])
 }
 
-const removeItem = (i: number) => {
-  const updated = [...props.modelValue]
+const changeQty = (key: string, delta: number) => {
+  const item = displayItems.value.find((d) => d.key === key)
 
-  updated.splice(i, 1)
-  emit('update:modelValue', updated)
+  if (!item) return
+
+  if (delta > 0) {
+    emit('update:modelValue', [...props.modelValue, { dishId: item.dishId, modifierOptionIds: item.modifierOptionIds }])
+  } else {
+    const updated = [...props.modelValue]
+
+    for (let i = updated.length - 1; i >= 0; i--) {
+      if (itemKey(updated[i]) === key) {
+        updated.splice(i, 1)
+        break
+      }
+    }
+    emit('update:modelValue', updated)
+  }
 }
 
 // ─── Load ──────────────────────────────────────────────────────────────────────
+
+const fetchMissingDishesAndModifiers = async (items: ComboItemInput[]) => {
+  const loadedIds = new Set(allDishes.value.map((d) => d.id))
+  const missingIds = [...new Set(items.map((i) => i.dishId).filter((id) => id && !loadedIds.has(id)))]
+
+  if (missingIds.length > 0) {
+    const fetched = await api.dishes.listByIds(props.tenantId, missingIds)
+
+    allDishes.value = [
+      ...allDishes.value,
+      ...fetched.map((d) => ({ id: d.id, name: d.name, categoryId: d.categoryId, price: d.price, active: false, deleted: true })),
+    ]
+  }
+
+  const uniqueDishIds = [...new Set(items.map((i) => i.dishId).filter(Boolean))]
+
+  await Promise.all(uniqueDishIds.map((id) => loadModifiers(id)))
+}
 
 watch(
   () => props.refreshKey,
@@ -205,7 +261,7 @@ watch(
     const dishes = await api.dishes.listAllIncludingInactive(props.tenantId)
 
     allDishes.value = dishes.map((d) => ({ id: d.id, name: d.name, categoryId: d.categoryId, price: d.price, active: d.active }))
-    await Promise.all(props.modelValue.map((item) => (item.dishId ? loadModifiers(item.dishId) : Promise.resolve())))
+    await fetchMissingDishesAndModifiers(props.modelValue)
     loading.value = false
   },
   { immediate: true },
@@ -217,7 +273,7 @@ watch(
     const existingIds = new Set((old ?? []).map((i) => i.dishId))
     const newItems = items.filter((i) => i.dishId && !existingIds.has(i.dishId))
 
-    await Promise.all(newItems.map((item) => loadModifiers(item.dishId)))
+    await fetchMissingDishesAndModifiers(newItems)
   },
 )
 </script>
@@ -244,6 +300,21 @@ watch(
   border: 1px solid var(--color-border-light);
   border-radius: 10px;
   overflow: hidden;
+}
+
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.qty-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-title);
+  min-width: 18px;
+  text-align: center;
 }
 
 .item-price {

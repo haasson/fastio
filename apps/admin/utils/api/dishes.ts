@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Dish, DishBranchPrice, DishModifierGroup, DishModifierOption } from '@fastio/shared'
+import type { Dish, DishModifierGroup, DishModifierOption } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { DishRow, DishBranchPriceRow } from './db-types'
+import type { DishRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
 import { optimizeImage } from '~/utils/imageOptimize'
 
@@ -42,6 +42,15 @@ export const dishesApi = {
   async listAllIncludingInactive(sb: SupabaseClient, tenantId: string): Promise<Dish[]> {
     const data = await query(
       sb.from('dishes').select('*').eq('tenant_id', tenantId).is('deleted_at', null).order('name'),
+    )
+
+    return (data ?? []).map(mapDish)
+  },
+
+  async listByIds(sb: SupabaseClient, tenantId: string, ids: string[]): Promise<Dish[]> {
+    if (ids.length === 0) return []
+    const data = await query(
+      sb.from('dishes').select('*').eq('tenant_id', tenantId).in('id', ids),
     )
 
     return (data ?? []).map(mapDish)
@@ -119,36 +128,6 @@ export const dishesApi = {
     })
 
     return counts
-  },
-
-  async getBranchPrices(sb: SupabaseClient, dishId: string): Promise<DishBranchPrice[]> {
-    const data = await query(
-      sb.from('dish_branch_prices').select('*').eq('dish_id', dishId),
-    )
-
-    return (data ?? []).map((raw: Record<string, unknown>): DishBranchPrice => {
-      const row = raw as DishBranchPriceRow
-
-      return { dishId: row.dish_id, branchId: row.branch_id, price: row.price, active: row.active }
-    })
-  },
-
-  async setBranchPrices(
-    sb: SupabaseClient,
-    dishId: string,
-    prices: { branchId: string; price: number | null; active: boolean | null }[],
-  ): Promise<void> {
-    await query(sb.from('dish_branch_prices').delete().eq('dish_id', dishId))
-
-    const rows = prices.filter((p) => p.price != null || p.active === false)
-
-    if (rows.length === 0) return
-
-    await query(
-      sb.from('dish_branch_prices').insert(
-        rows.map((p) => ({ dish_id: dishId, branch_id: p.branchId, price: p.price, active: p.active })),
-      ),
-    )
   },
 
   async uploadPhoto(sb: SupabaseClient, tenantId: string, file: File): Promise<string> {

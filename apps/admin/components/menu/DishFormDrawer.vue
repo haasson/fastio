@@ -72,12 +72,10 @@
         <NutritionSection v-if="!isServices" ref="nutritionRef" />
 
         <SettingsSection
-          ref="settingsRef"
           entity="dish"
           :active="form.active"
           :requires-kitchen="form.requiresKitchen"
           :entity-id="dish?.id ?? null"
-          :price="form.price"
           :refresh-key="refreshKey"
           @update:active="form.active = $event"
           @update:requires-kitchen="form.requiresKitchen = $event"
@@ -131,13 +129,12 @@ const modalTitle = computed(() => props.dish
   ? (isServices.value ? 'Редактировать услугу' : 'Редактировать блюдо')
   : (isServices.value ? 'Новая услуга' : 'Новое блюдо'))
 const db = useDatabase()
-const { uploadPhoto, deletePhoto, saveBranchPrices, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
+const { uploadPhoto, deletePhoto, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()
 const { addons: allAddons, loading: addonsLoading, presets, loadPresets } = useAddons(tenantIdRef)
 const branches = computed(() => branchStore.branches)
 
 const formRef = ref()
-const settingsRef = ref<InstanceType<typeof SettingsSection> | null>(null)
 const modifiersRef = ref<InstanceType<typeof DishModifiersSection> | null>(null)
 const addonsRef = ref<InstanceType<typeof AddonsSection> | null>(null)
 const ingredientsRef = ref<InstanceType<typeof IngredientsSection> | null>(null)
@@ -274,7 +271,6 @@ const onConfirm = async () => {
     if (props.dish) {
       await props.updateDish(props.dish.id, data)
       await db.tags.setDishTags(props.dish.id, props.tenantId, form.tags)
-      await saveBranchPrices(props.dish.id, (settingsRef.value?.getSettings() ?? []).map((s) => ({ ...s, dishId: props.dish!.id })))
       await saveDishModifiers(props.dish.id, modifiersRef.value?.getModifiers() ?? [])
       await saveDishAddons(props.dish.id, addonsRef.value?.getAddonIds() ?? [])
     } else if (props.addDish) {
@@ -282,10 +278,6 @@ const onConfirm = async () => {
 
       if (newDish) {
         await db.tags.setDishTags(newDish.id, props.tenantId, form.tags)
-
-        const branchPrices = (settingsRef.value?.getSettings() ?? []).map((s) => ({ ...s, dishId: newDish.id }))
-
-        if (branchPrices.length > 0) await saveBranchPrices(newDish.id, branchPrices)
 
         const modifiers = modifiersRef.value?.getModifiers() ?? []
 

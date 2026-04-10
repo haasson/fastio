@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Combo, ComboFormData, ComboBranchSetting, ComboItemInput } from '@fastio/shared'
+import type { Combo, ComboFormData, ComboItemInput } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { ComboRow, ComboBranchSettingRow } from './db-types'
+import type { ComboRow } from './db-types'
 import { optimizeImage } from '~/utils/imageOptimize'
 
 export const mapCombo = (raw: Record<string, unknown>): Combo => {
@@ -91,25 +91,19 @@ export const combosApi = {
     if (!result) return null
 
     if (data.items !== undefined) {
+      await query(sb.from('combo_items').delete().eq('combo_id', id))
+
       if (data.items.length > 0) {
         await query(
-          sb.from('combo_items').upsert(
+          sb.from('combo_items').insert(
             data.items.map((item, i) => ({
               combo_id: id,
               dish_id: item.dishId,
               sort_order: i,
               modifier_option_ids: item.modifierOptionIds,
             })),
-            { onConflict: 'combo_id,dish_id' },
           ),
         )
-        const dishIds = data.items.map((item) => item.dishId)
-
-        await query(
-          sb.from('combo_items').delete().eq('combo_id', id).not('dish_id', 'in', `(${dishIds.join(',')})`),
-        )
-      } else {
-        await query(sb.from('combo_items').delete().eq('combo_id', id))
       }
     }
 
@@ -257,36 +251,6 @@ export const combosApi = {
     })
 
     return counts
-  },
-
-  async getBranchSettings(sb: SupabaseClient, comboId: string): Promise<ComboBranchSetting[]> {
-    const data = await query(
-      sb.from('combo_branch_settings').select('*').eq('combo_id', comboId),
-    )
-
-    return (data ?? []).map((raw: Record<string, unknown>): ComboBranchSetting => {
-      const row = raw as ComboBranchSettingRow
-
-      return { comboId: row.combo_id, branchId: row.branch_id, price: row.price, active: row.active }
-    })
-  },
-
-  async setBranchSettings(
-    sb: SupabaseClient,
-    comboId: string,
-    settings: { branchId: string; price: number | null; active: boolean | null }[],
-  ): Promise<void> {
-    await query(sb.from('combo_branch_settings').delete().eq('combo_id', comboId))
-
-    const rows = settings.filter((s) => s.price != null || s.active === false)
-
-    if (rows.length === 0) return
-
-    await query(
-      sb.from('combo_branch_settings').insert(
-        rows.map((s) => ({ combo_id: comboId, branch_id: s.branchId, price: s.price, active: s.active })),
-      ),
-    )
   },
 
   async uploadPhoto(sb: SupabaseClient, tenantId: string, file: File): Promise<string> {

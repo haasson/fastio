@@ -22,16 +22,3 @@ export type Branch = {
 
 export type BranchFormData = Omit<Branch, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'archivedAt'>
 
-export type DishBranchPrice = {
-  dishId: string
-  branchId: string
-  price: number | null
-  active: boolean | null
-}
-
-export type ComboBranchSetting = {
-  comboId: string
-  branchId: string
-  price: number | null
-  active: boolean | null
-}

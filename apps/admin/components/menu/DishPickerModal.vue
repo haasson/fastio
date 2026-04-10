@@ -414,6 +414,8 @@ const selectDish = async (dish: Dish) => {
   const { groups, addonIds, allAddons } = await loadDishData(dish.id)
 
   modifierGroups.value = groups
+    .map((g) => ({ ...g, options: g.options.filter((o) => o.active) }))
+    .filter((g) => g.options.length > 0)
   dishAddons.value = allAddons.filter((a) => addonIds.includes(a.id) && a.active)
 
   for (const group of modifierGroups.value) {

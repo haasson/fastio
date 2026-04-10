@@ -152,6 +152,10 @@ export const useDishModifiersEditor = (
       await Promise.all([loadAvailableGroups(), loadCategoryDishes()])
       if (dishId.value) {
         await loadDishModifiers(dishId.value)
+
+        const availableIds = new Set(availableGroups.value.map((g) => g.id))
+
+        attachedGroups.value = attachedGroups.value.filter((g) => availableIds.has(g.groupId))
       } else {
         attachedGroups.value = []
       }

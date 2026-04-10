@@ -43,11 +43,9 @@
         <TagsSection v-model="form.tags" :available-tags="tags" />
 
         <SettingsSection
-          ref="settingsRef"
           entity="combo"
           :active="form.active"
           :entity-id="combo?.id ?? null"
-          :price="form.price"
           :refresh-key="refreshKey"
           @update:active="form.active = $event"
         />
@@ -86,7 +84,6 @@ const api = useDatabase()
 const saving = ref(false)
 const refreshKey = ref(0)
 const visibilityIssues = ref<string[]>([])
-const settingsRef = ref<InstanceType<typeof SettingsSection> | null>(null)
 const formRef = ref()
 
 const originalPhotoUrl = ref<string | null>(null)
@@ -178,13 +175,11 @@ const onConfirm = async () => {
     if (props.combo) {
       await props.updateCombo(props.combo.id, data)
       await api.tags.setComboTags(props.combo.id, props.tenantId, form.tags)
-      await api.combos.setBranchSettings(props.combo.id, settingsRef.value?.getSettings() ?? [])
     } else {
       const created = await props.addCombo(data)
 
       if (created) {
         await api.tags.setComboTags(created.id, props.tenantId, form.tags)
-        await api.combos.setBranchSettings(created.id, settingsRef.value?.getSettings() ?? [])
       }
     }
 

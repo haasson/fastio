@@ -140,20 +140,6 @@ export type DishRow = {
   deleted_at: string | null
 }
 
-export type DishBranchPriceRow = {
-  dish_id: string
-  branch_id: string
-  price: number | null
-  active: boolean | null
-}
-
-export type ComboBranchSettingRow = {
-  combo_id: string
-  branch_id: string
-  price: number | null
-  active: boolean | null
-}
-
 export type OrderItemRow = {
   id: string
   order_id: string
