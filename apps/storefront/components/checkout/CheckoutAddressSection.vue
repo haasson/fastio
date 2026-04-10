@@ -37,7 +37,7 @@
         <!-- Статус доставки для сохранённого адреса -->
         <template v-if="showSavedAddressStatus">
           <FsAlert v-if="checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
-            Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong>
+            Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong> (без учёта доставки)
           </FsAlert>
           <template v-else-if="checkout.hasZones">
             <FsAlert v-if="zoneMatched" type="success" :icon="Check">

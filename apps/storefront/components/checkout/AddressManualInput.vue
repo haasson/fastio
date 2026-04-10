@@ -51,7 +51,7 @@
 
     <template v-if="!addressError">
       <FsAlert v-if="checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
-        Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong>
+        Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong> (без учёта доставки)
       </FsAlert>
       <FsAlert v-else-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
         Доставка:
@@ -77,7 +77,7 @@
       </FsAlert>
     </template>
     <FsAlert v-if="addressError && !checkout.hasZones && checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
-      Минимальная сумма заказа для доставки: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong>
+      Минимальная сумма заказа для доставки: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong> (без учёта доставки)
     </FsAlert>
   </div>
 </template>
