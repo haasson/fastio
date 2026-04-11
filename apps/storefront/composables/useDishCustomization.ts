@@ -7,6 +7,7 @@ export type ComboItemInfo = {
   name: string
   photo: string | null
   modifier: string | null
+  addons: string | null
 }
 
 export type ModalItem = {

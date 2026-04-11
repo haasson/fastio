@@ -17,7 +17,7 @@ type MenuData = {
   combos: Combo[]
   dishModifiers: Record<string, DishModifierGroup[]>
   dishAddons: Record<string, ClientAddon[]>
-  comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]>
+  comboItems: Record<string, { name: string; photo: string | null; modifier: string | null; addons: string | null }[]>
   tagDefinitions: DishTagDefinition[]
   tagDisplayMode: 'text' | 'icon' | 'both'
   maxAddonsDefault: number | null

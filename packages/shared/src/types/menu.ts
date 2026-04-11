@@ -73,6 +73,7 @@ export type ComboItem = {
 export type ComboItemInput = {
   dishId: string
   modifierOptionIds: string[]
+  addonIds?: string[]
 }
 
 export type Combo = {

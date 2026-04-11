@@ -10,7 +10,7 @@
             <UtensilsCrossed :size="18" />
           </div>
           <span class="combo-item-name">
-            {{ ci.name }}<span v-if="ci.modifier" class="combo-item-mod"> · {{ ci.modifier }}</span>
+            {{ ci.name }}<span v-if="ci.modifier" class="combo-item-mod"> · {{ ci.modifier }}</span><span v-if="ci.addons" class="combo-item-mod"> + {{ ci.addons }}</span>
           </span>
         </div>
       </div>

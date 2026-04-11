@@ -69,6 +69,7 @@ export const combosApi = {
             dish_id: item.dishId,
             sort_order: i,
             modifier_option_ids: item.modifierOptionIds,
+            addon_ids: item.addonIds,
           })),
         ),
       )
@@ -101,6 +102,7 @@ export const combosApi = {
               dish_id: item.dishId,
               sort_order: i,
               modifier_option_ids: item.modifierOptionIds,
+              addon_ids: item.addonIds,
             })),
           ),
         )
@@ -126,12 +128,13 @@ export const combosApi = {
 
   async getItems(sb: SupabaseClient, comboId: string): Promise<ComboItemInput[]> {
     const data = await query(
-      sb.from('combo_items').select('dish_id, modifier_option_ids').eq('combo_id', comboId).order('sort_order'),
+      sb.from('combo_items').select('dish_id, modifier_option_ids, addon_ids').eq('combo_id', comboId).order('sort_order'),
     )
 
     return (data ?? []).map((row: Record<string, unknown>) => ({
       dishId: row.dish_id as string,
       modifierOptionIds: (row.modifier_option_ids as string[] | null) ?? [],
+      addonIds: (row.addon_ids as string[] | null) ?? [],
     }))
   },
 

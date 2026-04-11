@@ -121,6 +121,7 @@ export type ComboItemRow = {
   dish_id: string
   sort_order: number
   modifier_option_ids: string[]
+  addon_ids: string[]
 }
 
 export type DishRow = {

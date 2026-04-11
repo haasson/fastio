@@ -14,12 +14,16 @@
             :name="getDishName(item.dishId)"
             :category-name="getCategoryName(item.dishId)"
             :modifiers="getSelectedModifierTags(item)"
+            :addons="getSelectedAddonTags(item)"
           >
             <span v-if="getDishStatus(item.dishId)" class="dish-status" :class="`dish-status--${getDishStatus(item.dishId)}`">
               {{ getDishStatus(item.dishId) === 'deleted' ? 'удалено' : 'отключено' }}
             </span>
             <span v-else-if="getModifierStatus(item)" class="dish-status dish-status--inactive">
               модификатор отключен
+            </span>
+            <span v-else-if="getAddonStatus(item)" class="dish-status dish-status--inactive">
+              добавка отключена
             </span>
             <div class="qty-controls">
               <UiButton
@@ -77,7 +81,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiCollapseItem, UiButton, UiSkeleton } from '@fastio/ui'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
-import type { Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
+import type { Addon, Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 
@@ -98,6 +102,8 @@ const loading = ref(false)
 const showPicker = ref(false)
 const allDishes = ref<DishInfo[]>([])
 const dishModifiers = ref<Record<string, DishModifierGroup[]>>({})
+const allAddons = ref<Addon[]>([])
+const addonsLoaded = ref(false)
 
 // ─── Lookups ─────────────────────────────────────────────────────────────────
 
@@ -129,16 +135,31 @@ const getModifierStatus = (item: ComboItemInput): 'inactive' | null => {
   return item.modifierOptionIds.some((id) => !activeOptionIds.has(id)) ? 'inactive' : null
 }
 
+const getAddonStatus = (item: ComboItemInput): 'inactive' | null => {
+  if (!item.addonIds?.length) return null
+  const activeAddonIds = new Set(allAddons.value.filter((a) => a.active).map((a) => a.id))
+
+  return item.addonIds.some((id) => !activeAddonIds.has(id)) ? 'inactive' : null
+}
+
 const getSelectedModifierTags = (item: ComboItemInput) => getDishModifiers(item.dishId)
   .flatMap((g) => g.options)
   .filter((o) => item.modifierOptionIds.includes(o.optionId))
   .map((o) => ({ name: o.optionName, priceDelta: o.priceDelta }))
 
-// ─── Display items (grouped by dish + modifiers) ──────────────────────────────
+const getSelectedAddonTags = (item: ComboItemInput) => {
+  if (!item.addonIds?.length) return []
+
+  return allAddons.value
+    .filter((a) => item.addonIds!.includes(a.id))
+    .map((a) => ({ name: a.name, price: a.price }))
+}
+
+// ─── Display items (grouped by dish + modifiers + addons) ─────────────────────
 
 type DisplayItem = ComboItemInput & { key: string; quantity: number }
 
-const itemKey = (item: ComboItemInput) => `${item.dishId}::${[...item.modifierOptionIds].sort().join(',')}`
+const itemKey = (item: ComboItemInput) => `${item.dishId}::${[...item.modifierOptionIds].sort().join(',')}::${[...(item.addonIds ?? [])].sort().join(',')}`
 
 const displayItems = computed<DisplayItem[]>(() => {
   const map = new Map<string, DisplayItem>()
@@ -162,8 +183,11 @@ const getItemPrice = (item: ComboItemInput) => {
     .flatMap((g) => g.options)
     .filter((o) => item.modifierOptionIds.includes(o.optionId))
     .reduce((sum, o) => sum + o.priceDelta, 0)
+  const addonsDelta = (item.addonIds ?? [])
+    .map((id) => allAddons.value.find((a) => a.id === id)?.price ?? 0)
+    .reduce((sum, p) => sum + p, 0)
 
-  return base + modifierDelta
+  return base + modifierDelta + addonsDelta
 }
 
 const dishesTotal = computed(() => displayItems.value.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0))
@@ -200,7 +224,13 @@ const discountClass = computed(() => {
 
 // ─── Add / Remove ─────────────────────────────────────────────────────────────
 
-const loadModifiers = async (dishId: string) => {
+const loadAllAddons = async () => {
+  if (addonsLoaded.value) return
+  allAddons.value = await api.addons.list(props.tenantId)
+  addonsLoaded.value = true
+}
+
+const loadDishData = async (dishId: string) => {
   if (!dishId || dishModifiers.value[dishId] !== undefined) return
   const groups = await api.dishes.getDishModifiers(dishId)
 
@@ -209,8 +239,12 @@ const loadModifiers = async (dishId: string) => {
 
 const onAddItem = async (result: DishPickerResult) => {
   if (!result.dishId) return
-  await loadModifiers(result.dishId)
-  emit('update:modelValue', [...props.modelValue, { dishId: result.dishId, modifierOptionIds: result.modifierOptionIds }])
+  await Promise.all([loadDishData(result.dishId), loadAllAddons()])
+  emit('update:modelValue', [...props.modelValue, {
+    dishId: result.dishId,
+    modifierOptionIds: result.modifierOptionIds,
+    addonIds: result.addons.map((a) => a.addonId),
+  }])
 }
 
 const changeQty = (key: string, delta: number) => {
@@ -219,7 +253,7 @@ const changeQty = (key: string, delta: number) => {
   if (!item) return
 
   if (delta > 0) {
-    emit('update:modelValue', [...props.modelValue, { dishId: item.dishId, modifierOptionIds: item.modifierOptionIds }])
+    emit('update:modelValue', [...props.modelValue, { dishId: item.dishId, modifierOptionIds: item.modifierOptionIds, addonIds: item.addonIds }])
   } else {
     const updated = [...props.modelValue]
 
@@ -250,7 +284,10 @@ const fetchMissingDishesAndModifiers = async (items: ComboItemInput[]) => {
 
   const uniqueDishIds = [...new Set(items.map((i) => i.dishId).filter(Boolean))]
 
-  await Promise.all(uniqueDishIds.map((id) => loadModifiers(id)))
+  await Promise.all([
+    loadAllAddons(),
+    ...uniqueDishIds.map((id) => loadDishData(id)),
+  ])
 }
 
 watch(

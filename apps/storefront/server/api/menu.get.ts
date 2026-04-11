@@ -70,6 +70,7 @@ export default defineEventHandler(async (event) => {
     combo_id: string
     sort_order: number
     modifier_option_ids: string[]
+    addon_ids: string[]
     dishes: { name: string; photos: string[]; active: boolean; deleted_at: string | null }
   }
 
@@ -109,7 +110,7 @@ export default defineEventHandler(async (event) => {
     comboIds.length > 0
       ? supabase
           .from('combo_items')
-          .select('combo_id, sort_order, modifier_option_ids, dishes(name, photos, active, deleted_at)')
+          .select('combo_id, sort_order, modifier_option_ids, addon_ids, dishes(name, photos, active, deleted_at)')
           .in('combo_id', comboIds)
           .order('sort_order')
           .returns<ComboItemRow[]>()
@@ -209,14 +210,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Build combo items — needs one more round to resolve modifier option names
-  const comboItems: Record<string, { name: string; photo: string | null; modifier: string | null }[]> = {}
+  // Build combo items — needs one more round to resolve modifier option and addon names
+  const comboItems: Record<string, { name: string; photo: string | null; modifier: string | null; addons: string | null }[]> = {}
 
   if (validComboIds.size > 0 && itemRows && itemRows.length > 0) {
-    // Collect all modifier option IDs to resolve names
+    // Collect all modifier option IDs and addon IDs to resolve names
     const allOptionIds = new Set<string>()
+    const allAddonIds = new Set<string>()
     for (const row of itemRows) {
       for (const id of row.modifier_option_ids ?? []) allOptionIds.add(id)
+      for (const id of row.addon_ids ?? []) allAddonIds.add(id)
     }
 
     // Resolve option names and active status in one query
@@ -235,32 +238,54 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Track combos that have any inactive modifier option
-    const combosWithInactiveModifiers = new Set<string>()
+    // Resolve addon names and active status in one query
+    const addonNames: Record<string, string> = {}
+    const inactiveAddonIds = new Set<string>()
+    if (allAddonIds.size > 0) {
+      const { data: addonData } = await supabase
+        .from('addons')
+        .select('id, name, active')
+        .in('id', [...allAddonIds])
+
+      for (const a of addonData ?? []) {
+        addonNames[a.id] = a.name
+        if (!a.active) inactiveAddonIds.add(a.id)
+      }
+    }
+
+    // Track combos that have any inactive modifier option or addon
+    const combosWithInactiveOptions = new Set<string>()
 
     for (const row of itemRows) {
       if (!comboItems[row.combo_id]) comboItems[row.combo_id] = []
       const modNames = (row.modifier_option_ids ?? [])
         .map((id) => {
-          if (inactiveOptionIds.has(id)) combosWithInactiveModifiers.add(row.combo_id)
+          if (inactiveOptionIds.has(id)) combosWithInactiveOptions.add(row.combo_id)
           return optionNames[id]
+        })
+        .filter(Boolean)
+      const addonNameList = (row.addon_ids ?? [])
+        .map((id) => {
+          if (inactiveAddonIds.has(id)) combosWithInactiveOptions.add(row.combo_id)
+          return addonNames[id]
         })
         .filter(Boolean)
       comboItems[row.combo_id].push({
         name: row.dishes.name,
         photo: row.dishes.photos?.[0] ?? null,
         modifier: modNames.length > 0 ? modNames.join(', ') : null,
+        addons: addonNameList.length > 0 ? addonNameList.join(', ') : null,
       })
     }
 
-    // Remove combos with inactive modifier options from comboItems
-    for (const comboId of combosWithInactiveModifiers) {
+    // Remove combos with inactive modifier options or addons from comboItems
+    for (const comboId of combosWithInactiveOptions) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete comboItems[comboId]
     }
 
-    if (combosWithInactiveModifiers.size > 0) {
-      validCombos = validCombos.filter((c) => !combosWithInactiveModifiers.has(c.id))
+    if (combosWithInactiveOptions.size > 0) {
+      validCombos = validCombos.filter((c) => !combosWithInactiveOptions.has(c.id))
     }
   }
 
