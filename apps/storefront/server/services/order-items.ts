@@ -48,7 +48,7 @@ type DishAddonRow = {
   addons: { id: string; name: string; price: number; active: boolean }
 }
 
-export type ComboItemsMap = Map<string, { dishName: string }[]>
+export type ComboItemsMap = Map<string, { dishName: string; dishId: string | null; categoryName: string | null }[]>
 
 export async function validateAndBuildItems(
   supabase: SupabaseClient,
@@ -82,15 +82,19 @@ export async function validateAndBuildItems(
 
   if (comboIds.length > 0) {
     const [{ data: comboItemRows }, { data: comboRows }] = await Promise.all([
-      supabase.from('combo_items').select('combo_id, dishes(name)').in('combo_id', comboIds).order('sort_order'),
+      supabase.from('combo_items').select('combo_id, dish_id, dishes(name, categories(name))').in('combo_id', comboIds).order('sort_order'),
       supabase.from('combos').select('id, price').in('id', comboIds),
     ])
 
     if (comboItemRows) {
-      for (const row of comboItemRows as unknown as { combo_id: string; dishes: { name: string } | null }[]) {
+      for (const row of comboItemRows as unknown as { combo_id: string; dish_id: string; dishes: { name: string; categories: { name: string } | null } | null }[]) {
         if (!row.dishes) continue
         if (!comboItemsMap.has(row.combo_id)) comboItemsMap.set(row.combo_id, [])
-        comboItemsMap.get(row.combo_id)!.push({ dishName: row.dishes.name })
+        comboItemsMap.get(row.combo_id)!.push({
+          dishName: row.dishes.name,
+          dishId: row.dish_id,
+          categoryName: row.dishes.categories?.name ?? null,
+        })
       }
     }
     if (comboRows) {

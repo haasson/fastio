@@ -108,6 +108,7 @@
 import { computed, ref } from 'vue'
 import { UtensilsCrossed, ChevronLeft } from 'lucide-vue-next'
 import type { Dish, Combo, Tenant } from '@fastio/shared'
+import { isAutoCategory } from '@fastio/shared'
 import { useNuxtData } from 'nuxt/app'
 import { useCartStore, type CartItem } from '~/stores/cart'
 import { useMenuStore, type ClientAddon } from '~/stores/menu'
@@ -185,6 +186,7 @@ function openModal(item: ModalItem) {
 
 function findCategoryName(dishOrComboId: string): string | null {
   for (const cat of categories.value) {
+    if (isAutoCategory(cat)) continue
     const dishes = dishesByCategory.value[cat.id]
     if (dishes?.some(d => d.id === dishOrComboId)) return cat.name
     const combos = combosByCategory.value[cat.id]
@@ -268,7 +270,7 @@ function addToCart(dish: Dish) {
     dishId: dish.id,
     comboId: null,
     dishName: dish.name,
-    categoryName: null,
+    categoryName: findCategoryName(dish.id),
     price: dish.price,
     quantity: 1,
     modifiers: [],
@@ -293,7 +295,7 @@ function addComboToCart(combo: Combo) {
     dishId: null,
     comboId: combo.id,
     dishName: combo.name,
-    categoryName: null,
+    categoryName: findCategoryName(combo.id),
     price: combo.price,
     quantity: 1,
     modifiers: [],

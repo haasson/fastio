@@ -32,8 +32,8 @@
             <UiSelect
               :value="form.completedStatusMap.delivery ?? ''"
               :options="statusOptions"
-              label="Готово: доставка"
-              message="Когда все блюда заказа готовы, заказ перейдёт в этот статус"
+              label="Собрано: доставка"
+              message="Когда сборщик нажмёт «Собрано», заказ перейдёт в этот статус"
               placeholder="Не менять"
               clearable
               @update:value="form.completedStatusMap.delivery = ($event as string) ?? null"
@@ -44,8 +44,8 @@
             <UiSelect
               :value="form.completedStatusMap.pickup ?? ''"
               :options="statusOptions"
-              label="Готово: самовывоз"
-              message="Когда все блюда заказа готовы, заказ перейдёт в этот статус"
+              label="Собрано: самовывоз"
+              message="Когда сборщик нажмёт «Собрано», заказ перейдёт в этот статус"
               placeholder="Не менять"
               clearable
               @update:value="form.completedStatusMap.pickup = ($event as string) ?? null"

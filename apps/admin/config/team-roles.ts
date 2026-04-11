@@ -28,6 +28,7 @@ export const permissionGroups: PermissionGroup[] = [
     label: 'Кухня',
     permissions: [
       { key: 'kitchen.view', label: 'Доступ к кухонной очереди' },
+      { key: 'kitchen.overview', label: 'Обзор всей кухни (для менеджеров)' },
     ],
   },
   {

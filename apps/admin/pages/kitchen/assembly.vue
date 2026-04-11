@@ -1,22 +1,86 @@
 <template>
   <div class="assembly-root">
-    <div v-if="loading" class="assembly-grid">
-      <UiCard v-for="i in 3" :key="i">
-        <UiSkeleton :repeat="4" />
-      </UiCard>
+    <div v-if="loading" class="kanban">
+      <div class="kanban-col">
+        <UiCard v-for="i in 2" :key="i">
+          <UiSkeleton :repeat="4" />
+        </UiCard>
+      </div>
     </div>
 
-    <div v-else-if="orderGroups.length" class="assembly-grid">
-      <KitchenAssemblyCard
-        v-for="group in orderGroups"
-        :key="group.orderId"
-        :order-id="group.orderId"
-        :delivery-type="group.deliveryType"
-        :items="group.items"
-        @assembled="onAssembled(group.orderId)"
-        @collect-item="onCollectItem"
+    <template v-else-if="allOrderGroups.length">
+      <UiTabs
+        v-model="mobilePhase"
+        :tabs="mobilePhaseTabs"
+        class="phase-tabs"
       />
-    </div>
+
+      <div class="kanban">
+        <div class="kanban-col" :class="{ 'hidden-mobile': mobilePhase !== 'cooking' }">
+          <div class="kanban-header">
+            <span class="kanban-title">Готовится на кухне</span>
+            <span class="kanban-count">{{ cookingGroups.length }}</span>
+          </div>
+          <KitchenAssemblyCard
+            v-for="group in cookingGroups"
+            :key="group.orderId"
+            :order-id="group.orderId"
+            :order-number="group.orderNumber"
+            :delivery-type="group.deliveryType"
+            :items="group.items"
+            @collect-item="onCollectItem"
+          />
+          <UiEmpty
+            v-if="!cookingGroups.length"
+            icon="chefHat"
+            text="Всё приготовлено"
+          />
+        </div>
+
+        <div class="kanban-col kanban-col--collecting" :class="{ 'hidden-mobile': mobilePhase !== 'collecting' }">
+          <div class="kanban-header">
+            <span class="kanban-title">Требует сборки</span>
+            <span class="kanban-count kanban-count--orange">{{ collectingGroups.length }}</span>
+          </div>
+          <KitchenAssemblyCard
+            v-for="group in collectingGroups"
+            :key="group.orderId"
+            :order-id="group.orderId"
+            :order-number="group.orderNumber"
+            :delivery-type="group.deliveryType"
+            :items="group.items"
+            @collect-item="onCollectItem"
+          />
+          <UiEmpty
+            v-if="!collectingGroups.length"
+            icon="check"
+            text="Нечего собирать"
+          />
+        </div>
+
+        <div class="kanban-col kanban-col--ready" :class="{ 'hidden-mobile': mobilePhase !== 'ready' }">
+          <div class="kanban-header">
+            <span class="kanban-title">Готово</span>
+            <span class="kanban-count kanban-count--green">{{ readyGroups.length }}</span>
+          </div>
+          <KitchenAssemblyCard
+            v-for="group in readyGroups"
+            :key="group.orderId"
+            :order-id="group.orderId"
+            :order-number="group.orderNumber"
+            :delivery-type="group.deliveryType"
+            :items="group.items"
+            @assembled="onAssembled"
+            @collect-item="onCollectItem"
+          />
+          <UiEmpty
+            v-if="!readyGroups.length"
+            icon="cart"
+            text="Нет собранных заказов"
+          />
+        </div>
+      </div>
+    </template>
 
     <UiEmpty v-else icon="check" text="Нет активных заказов" />
   </div>
@@ -24,8 +88,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { UiCard, UiSkeleton, UiEmpty } from '@fastio/ui'
-import type { KitchenQueueItem } from '@fastio/shared'
+import { UiCard, UiSkeleton, UiEmpty, UiTabs } from '@fastio/ui'
+import { type KitchenQueueItem, getOrderPhase } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
@@ -37,43 +101,51 @@ const api = useDatabase()
 const tenantStore = useTenantStore()
 const authStore = useAuthStore()
 
+const mobilePhase = ref<'cooking' | 'collecting' | 'ready'>('collecting')
+
 const loading = ref(false)
 const items = ref<KitchenQueueItem[]>([])
 
 type OrderGroup = {
   orderId: string
+  orderNumber: string | null
   deliveryType: string
   items: KitchenQueueItem[]
+  phase: 'cooking' | 'collecting' | 'ready'
 }
 
-const orderGroups = computed<OrderGroup[]>(() => {
+const allOrderGroups = computed<OrderGroup[]>(() => {
   const map = new Map<string, OrderGroup>()
 
   for (const item of items.value) {
     let group = map.get(item.orderId)
 
     if (!group) {
-      group = { orderId: item.orderId, deliveryType: item.deliveryType, items: [] }
+      group = { orderId: item.orderId, orderNumber: item.orderNumber, deliveryType: item.deliveryType, items: [], phase: 'ready' }
       map.set(item.orderId, group)
     }
 
     group.items.push(item)
   }
 
-  // All-done orders at the bottom
   const groups = [...map.values()]
 
-  groups.sort((a, b) => {
-    const aDone = a.items.every((i) => i.status === 'done' || i.status === 'served')
-    const bDone = b.items.every((i) => i.status === 'done' || i.status === 'served')
-
-    if (aDone !== bDone) return aDone ? 1 : -1
-
-    return 0
-  })
+  for (const g of groups) {
+    g.phase = getOrderPhase(g.items)
+  }
 
   return groups
 })
+
+const cookingGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'cooking'))
+const collectingGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'collecting'))
+const readyGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'ready'))
+
+const mobilePhaseTabs = computed(() => [
+  { value: 'cooking', label: `Кухня (${cookingGroups.value.length})` },
+  { value: 'collecting', label: `Сборка (${collectingGroups.value.length})` },
+  { value: 'ready', label: `Готово (${readyGroups.value.length})` },
+])
 
 const load = async () => {
   const tenantId = tenantStore.tenant?.id
@@ -92,25 +164,6 @@ watch(() => tenantStore.tenant?.id, (id) => {
   if (id) load()
 }, { immediate: true })
 
-const tryAutoAdvance = async (updatedItem: KitchenQueueItem) => {
-  if (updatedItem.status !== 'done') return
-
-  const orderItems = items.value.filter((i) => i.orderId === updatedItem.orderId)
-  const allDone = orderItems.length > 0 && orderItems.every((i) => i.status === 'done' || i.status === 'served')
-
-  if (!allDone) return
-
-  const deliveryType = updatedItem.deliveryType as 'delivery' | 'pickup'
-  const targetStatusId = tenantStore.tenant?.kitchenConfig?.completedStatusMap?.[deliveryType]
-
-  if (targetStatusId) {
-    await Promise.all([
-      api.orders.updateStatus(updatedItem.orderId, targetStatusId),
-      api.kitchenQueue.serveAllForOrders([updatedItem.orderId], authStore.user!.id),
-    ])
-  }
-}
-
 const onCollectItem = (itemId: string, collected: boolean) => {
   const promise = collected
     ? api.kitchenQueue.complete(itemId)
@@ -119,8 +172,18 @@ const onCollectItem = (itemId: string, collected: boolean) => {
   promise.catch(reportError)
 }
 
-const onAssembled = async (orderId: string) => {
-  await api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id)
+const onAssembled = async (orderId: string, deliveryType: string) => {
+  const targetStatusId = tenantStore.tenant?.kitchenConfig?.completedStatusMap?.[deliveryType as 'delivery' | 'pickup']
+
+  const promises: Promise<unknown>[] = [
+    api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id),
+  ]
+
+  if (targetStatusId) {
+    promises.push(api.orders.updateStatus(orderId, targetStatusId))
+  }
+
+  await Promise.all(promises)
 }
 
 // --- Realtime ---
@@ -143,8 +206,6 @@ const offUpdate = kitchenQueueEvents.onUpdate((item) => {
 
     if (idx !== -1) items.value[idx] = item
     else items.value.push(item)
-
-    tryAutoAdvance(item).catch(reportError)
   }
 })
 
@@ -168,18 +229,80 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-.assembly-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  align-items: start;
+.phase-tabs {
+  @include mq-m {
+    display: none;
+  }
+}
+
+.kanban {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
   @include mq-m {
-    grid-template-columns: repeat(2, 1fr);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: start;
+  }
+}
+
+.kanban-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &.hidden-mobile {
+    display: none;
+
+    @include mq-m {
+      display: flex;
+    }
+  }
+}
+
+.kanban-header {
+  display: none;
+
+  @include mq-m {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--color-border);
+  }
+}
+
+.kanban-col--collecting .kanban-header {
+  border-bottom-color: var(--color-warning);
+}
+
+.kanban-col--ready .kanban-header {
+  border-bottom-color: var(--color-success);
+}
+
+.kanban-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+}
+
+.kanban-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-hint);
+  background: var(--color-bg-subtle);
+  padding: 2px 8px;
+  border-radius: 10px;
+
+  &--orange {
+    color: var(--color-warning);
   }
 
-  @include mq-l {
-    grid-template-columns: repeat(3, 1fr);
+  &--green {
+    color: var(--color-success);
   }
 }
 </style>

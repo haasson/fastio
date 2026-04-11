@@ -6,10 +6,13 @@ import type { KitchenQueueRow } from './db-types'
 export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueItem => {
   const row = raw as KitchenQueueRow
 
+  const orders = (raw as Record<string, unknown>).orders as { order_number: string | null } | null
+
   return {
     id: row.id,
     tenantId: row.tenant_id,
     orderId: row.order_id,
+    orderNumber: orders?.order_number ?? null,
     orderItemId: row.order_item_id,
     dishName: row.dish_name,
     dishId: row.dish_id,
@@ -35,7 +38,7 @@ export const kitchenQueueApi = {
   async listActive(sb: SupabaseClient, tenantId: string): Promise<KitchenQueueItem[]> {
     const data = await query(
       sb.from('kitchen_queue')
-        .select('*')
+        .select('*, orders(order_number)')
         .eq('tenant_id', tenantId)
         .eq('skip_kitchen', false)
         .in('status', ['queued', 'in_progress', 'cancelled'])
@@ -49,7 +52,7 @@ export const kitchenQueueApi = {
   async listForAssembly(sb: SupabaseClient, tenantId: string): Promise<KitchenQueueItem[]> {
     const data = await query(
       sb.from('kitchen_queue')
-        .select('*')
+        .select('*, orders(order_number)')
         .eq('tenant_id', tenantId)
         .neq('delivery_type', 'dine_in')
         .in('status', ['queued', 'in_progress', 'done'])
@@ -64,7 +67,7 @@ export const kitchenQueueApi = {
 
     const data = await query(
       sb.from('kitchen_queue')
-        .select('*, orders!inner(table_id)')
+        .select('*, orders!inner(order_number, table_id)')
         .eq('tenant_id', tenantId)
         .in('status', ['queued', 'in_progress', 'done'])
         .eq('delivery_type', 'dine_in')

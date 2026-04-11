@@ -25,7 +25,7 @@ import { usePageTitle } from '~/composables/usePageTitle'
 
 usePageTitle('Кухня')
 
-const { canEditSettings } = usePermissions()
+const { canEditSettings, canViewKitchen, canViewKitchenOverview } = usePermissions()
 const isConnected = realtimeConnected
 const itemCount = ref(0)
 
@@ -69,8 +69,8 @@ watch(isConnected, (connected) => {
 })
 
 const tabs = computed(() => [
-  { value: 'queue', label: 'Кухня' },
-  { value: 'assembly', label: 'Сборка' },
+  ...(canViewKitchen.value ? [{ value: 'queue', label: 'Кухня' }, { value: 'assembly', label: 'Сборка' }] : []),
+  ...(canViewKitchenOverview.value ? [{ value: 'overview', label: 'Обзор' }] : []),
   ...(canEditSettings.value ? [{ value: 'settings', label: 'Настройки' }] : []),
 ])
 </script>

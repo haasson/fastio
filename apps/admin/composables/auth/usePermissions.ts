@@ -25,6 +25,7 @@ export const usePermissions = () => {
     canManageOrders: can('orders.view'),
     // Kitchen
     canViewKitchen: can('kitchen.view'),
+    canViewKitchenOverview: can('kitchen.overview'),
     // Tables
     canViewTables: can('tables.view'),
     canManageTables: can('tables.manage'),

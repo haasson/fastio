@@ -10,6 +10,16 @@
       <NuxtLink v-if="canEditSettings" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
     </UiAlert>
 
+    <UiSelect
+      v-if="!loading && categoryOptions.length > 1"
+      v-model:value="selectedCategories"
+      multiple
+      :options="categoryOptions"
+      placeholder="Мои категории (все)"
+      class="category-select"
+      clearable
+    />
+
     <div v-if="loading" class="queue-loading">
       <UiSkeleton :repeat="6" />
     </div>
@@ -20,21 +30,6 @@
         <div class="panel queue-panel">
           <div class="panel-header">
             <UiSectionHeader :title="`Очередь (${filteredQueueItems.length})`" />
-
-            <div v-if="availableCategories.length > 1" class="category-filter">
-              <button
-                class="cat-chip"
-                :class="{ active: !selectedCategories.size }"
-                @click="selectedCategories.clear()"
-              >Все</button>
-              <button
-                v-for="cat in availableCategories"
-                :key="cat"
-                class="cat-chip"
-                :class="{ active: selectedCategories.has(cat) }"
-                @click="toggleCategory(cat)"
-              >{{ cat }}</button>
-            </div>
           </div>
 
           <div class="panel-scroll">
@@ -103,10 +98,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, reactive } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiSkeleton, UiButton, UiEmpty, UiSectionHeader, UiCard, UiAlert } from '@fastio/ui'
+import { UiSkeleton, UiButton, UiEmpty, UiSectionHeader, UiCard, UiAlert, UiSelect } from '@fastio/ui'
 import type { KitchenQueueItem as KitchenQueueItemType, OrderEvent } from '@fastio/shared'
+import { isAutoCategory, getKitchenUrgencyLevel, formatKitchenElapsed } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
@@ -158,52 +154,70 @@ const myItems = computed(() => items.value.filter((i) => i.status === 'in_progre
 const cancelledOnBoard = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo === currentUserId.value))
 const hasActiveItems = computed(() => queueItems.value.length > 0 || myItems.value.length > 0 || cancelledOnBoard.value.length > 0)
 
-// --- Category filter ---
+// --- Category filter (persisted per user) ---
 
-const selectedCategories = reactive(new Set<string>())
+const filterStorageKey = computed(() => `kitchen-filter-${currentUserId.value ?? 'anon'}`)
 
-const availableCategories = computed(() => {
-  const cats = new Set<string>()
+const loadSavedFilter = (): string[] => {
+  try {
+    const raw = localStorage.getItem(filterStorageKey.value)
 
-  for (const item of queueItems.value) {
-    if (item.categoryName) cats.add(item.categoryName)
+    return raw ? (JSON.parse(raw) as string[]) : []
+  } catch {
+    return []
   }
-
-  return [...cats].sort()
-})
-
-const toggleCategory = (cat: string) => {
-  if (selectedCategories.has(cat)) selectedCategories.delete(cat)
-  else selectedCategories.add(cat)
 }
 
-const filteredQueueItems = computed(() => {
-  if (!selectedCategories.size) return queueItems.value
+const selectedCategories = ref<string[]>(loadSavedFilter())
 
-  return queueItems.value.filter((i) => i.categoryName && selectedCategories.has(i.categoryName))
+watch(filterStorageKey, () => {
+  selectedCategories.value = loadSavedFilter()
+})
+
+watch(selectedCategories, (val) => {
+  try {
+    localStorage.setItem(filterStorageKey.value, JSON.stringify(val))
+  } catch { /* ignore */ }
+})
+
+// Active regular categories from menu (no combos, no special types)
+const allCategories = ref<string[]>([])
+
+const loadCategories = async () => {
+  const tenantId = tenantStore.tenant?.id
+
+  if (!tenantId) return
+
+  try {
+    const cats = await api.categories.list(tenantId)
+
+    allCategories.value = cats
+      .filter((c) => c.active && c.type === 'regular' && !isAutoCategory(c))
+      .map((c) => c.name)
+      .sort()
+  } catch (e) {
+    reportError(e)
+  }
+}
+
+watch(() => tenantStore.tenant?.id, (id) => {
+  if (id) loadCategories()
+}, { immediate: true })
+
+const categoryOptions = computed(() => allCategories.value.map((name) => ({ label: name, value: name })))
+
+const filteredQueueItems = computed(() => {
+  if (!selectedCategories.value.length) return queueItems.value
+
+  const selected = new Set(selectedCategories.value)
+
+  return queueItems.value.filter((i) => i.categoryName && selected.has(i.categoryName))
 })
 
 // --- Helpers ---
 
-const getUrgencyLevel = (createdAt: string, nowDate: Date, thresholdMin: number): 'normal' | 'warning' | 'critical' => {
-  const elapsedMin = (nowDate.getTime() - new Date(createdAt).getTime()) / 60_000
-
-  if (elapsedMin >= thresholdMin) return 'critical'
-  if (elapsedMin >= thresholdMin * 0.66) return 'warning'
-
-  return 'normal'
-}
-
-const formatKitchenTime = (isoDate: string, nowDate: Date): string => {
-  const min = Math.floor((nowDate.getTime() - new Date(isoDate).getTime()) / 60_000)
-
-  if (min < 1) return '<1 мин'
-  if (min < 60) return `${min} мин`
-  const h = Math.floor(min / 60)
-  const m = min % 60
-
-  return m > 0 ? `${h}ч ${m}м` : `${h}ч`
-}
+const getUrgencyLevel = getKitchenUrgencyLevel
+const formatKitchenTime = formatKitchenElapsed
 
 // --- Load ---
 
@@ -390,34 +404,8 @@ onUnmounted(() => {
   gap: 4px;
 }
 
-.category-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.cat-chip {
-  padding: 4px 10px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-
-  &:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-  }
-
-  &.active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #fff;
-  }
+.category-select {
+  width: 100%;
 }
 
 // ── Cancelled ──

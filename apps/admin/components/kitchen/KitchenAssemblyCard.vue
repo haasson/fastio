@@ -1,7 +1,7 @@
 <template>
   <UiCard class="assembly-card-root" :class="{ 'assembly-card--done': allDone }">
     <div class="header">
-      <span class="order-id">#{{ orderId.slice(0, 6).toUpperCase() }}</span>
+      <span class="order-id">#{{ orderNumber ?? orderId.slice(0, 6).toUpperCase() }}</span>
       <UiTag
         size="small"
         :type="deliveryTagType"
@@ -50,7 +50,7 @@
       v-if="allDone"
       type="success"
       size="small"
-      @click="$emit('assembled')"
+      @click="$emit('assembled', orderId, deliveryType)"
     >Собрано</UiButton>
   </UiCard>
 </template>
@@ -64,12 +64,13 @@ import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/order-option
 
 const props = defineProps<{
   orderId: string
+  orderNumber: string | null
   deliveryType: string
   items: KitchenQueueItem[]
 }>()
 
 defineEmits<{
-  assembled: []
+  assembled: [orderId: string, deliveryType: string]
   collectItem: [id: string, collected: boolean]
 }>()
 

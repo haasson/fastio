@@ -226,6 +226,7 @@ import { ref, computed, reactive, toRef, watch } from 'vue'
 import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput } from '@fastio/ui'
 import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import type { Addon } from '@fastio/shared'
+import { isAutoCategory } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
 import { useModules } from '~/composables/plan/useModules'
 
@@ -465,7 +466,7 @@ const onConfirm = () => {
   const dishCategory = categories.value.find((c) => c.id === selectedDish.value!.categoryId)
   // Если категория виртуальная (tagId != null) — не используем её как categoryName,
   // т.к. блюдо туда попало по тегу, а не как родная категория
-  const categoryName = dishCategory && !dishCategory.tagId ? dishCategory.name : null
+  const categoryName = dishCategory && !isAutoCategory(dishCategory) ? dishCategory.name : null
 
   const addons: OrderItemAddon[] = dishAddons.value
     .filter((a) => selectedAddonIds.has(a.id))

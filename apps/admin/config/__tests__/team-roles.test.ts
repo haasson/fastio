@@ -6,7 +6,7 @@ import { permissionGroups } from '../team-roles'
 const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'menu.view', 'menu.edit', 'menu.delete',
   'orders.view', 'orders.create', 'orders.edit', 'orders.status', 'orders.cancel',
-  'kitchen.view',
+  'kitchen.view', 'kitchen.overview',
   'tables.view', 'tables.manage',
   'reservations.view', 'reservations.manage',
   'promos.view', 'promos.manage',

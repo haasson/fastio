@@ -7,6 +7,7 @@ export type KitchenQueueItem = {
   id: string
   tenantId: string
   orderId: string
+  orderNumber: string | null
   orderItemId: string
   dishName: string
   dishId: string | null

@@ -8,7 +8,7 @@
       @categories-loaded="onCategoriesLoaded"
     />
     <MenuDishList
-      v-if="selectedCategory?.type === 'regular' && !selectedCategory.tagId"
+      v-if="selectedCategory?.type === 'regular' && !isAutoCategory(selectedCategory)"
       :tenant-id="tenantId"
       :category-id="selectedCategoryId"
       :categories="loadedCategories"
@@ -45,6 +45,7 @@
 <script setup lang="ts">
 import { ref, computed, shallowRef } from 'vue'
 import type { Category } from '@fastio/shared'
+import { isAutoCategory } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import useDishCounts from '~/composables/data/useDishCounts'
 import { useTags } from '~/composables/data/useTags'

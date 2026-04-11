@@ -47,7 +47,7 @@ type NavItem = {
   blink?: ComputedRef<boolean>
 }
 
-const { canManageMenu, canManageOrders, canViewKitchen, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canManageTeam } = usePermissions()
+const { canManageMenu, canManageOrders, canViewKitchen, canViewKitchenOverview, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canManageTeam } = usePermissions()
 const modules = useModules()
 const { menuLabel, isServices } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
@@ -57,7 +57,7 @@ const { count: unreadSupportCount } = useUnreadSupportCounter()
 
 const canSeePromotions = computed(() => canManagePromotions.value && modules.promotions.value.enabled)
 const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.value.enabled || modules.pickup.value.enabled || isServices.value))
-const canSeeKitchen = computed(() => canViewKitchen.value && modules.kitchen.value.enabled)
+const canSeeKitchen = computed(() => (canViewKitchen.value || canViewKitchenOverview.value) && modules.kitchen.value.enabled)
 const canSeeTables = computed(() => canViewTables.value && modules.dineIn.value.enabled)
 const canSeeReservations = computed(() => canViewReservations.value && (modules.reservations?.value?.enabled ?? false))
 const canSeeBranches = computed(() => canManageTeam.value && !isServices.value)

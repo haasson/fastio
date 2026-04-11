@@ -1,7 +1,7 @@
 <template>
   <UiCard class="work-card-root" :class="[urgencyClass]">
     <div class="header">
-      <span class="order-id">#{{ item.orderId.slice(0, 6).toUpperCase() }}</span>
+      <span class="order-id">#{{ item.orderNumber ?? item.orderId.slice(0, 6).toUpperCase() }}</span>
       <UiTag
         v-if="showDeliveryType"
         size="small"
