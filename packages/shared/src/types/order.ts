@@ -79,6 +79,10 @@ export type Order = {
   items: OrderItem[]
   deliveryType: OrderDeliveryType
   address: string | null
+  entrance: string | null
+  floor: string | null
+  apartment: string | null
+  intercom: string | null
   deliveryLat: number | null
   deliveryLon: number | null
   comment: string | null

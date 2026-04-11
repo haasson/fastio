@@ -67,6 +67,36 @@
         </button>
       </div>
     </div>
+    <div v-if="form.deliveryType === 'delivery'" class="address-details">
+      <UiInput
+        v-model="form.entrance"
+        label="Подъезд"
+        placeholder="1"
+        :maxlength="10"
+        :disabled="!perms.editAddress"
+      />
+      <UiInput
+        v-model="form.floor"
+        label="Этаж"
+        placeholder="3"
+        :maxlength="10"
+        :disabled="!perms.editAddress"
+      />
+      <UiInput
+        v-model="form.apartment"
+        label="Квартира"
+        placeholder="42"
+        :maxlength="20"
+        :disabled="!perms.editAddress"
+      />
+      <UiInput
+        v-model="form.intercom"
+        label="Домофон"
+        placeholder="42К1234"
+        :maxlength="20"
+        :disabled="!perms.editAddress"
+      />
+    </div>
     <template v-if="form.deliveryType === 'delivery' && addressVerified && deliveryInfo">
       <UiAlert v-if="deliveryInfo.outsideZones" type="error" size="small">
         Адрес вне зоны доставки
@@ -163,6 +193,10 @@ type OrderFormData = {
   customerPhone: string
   deliveryType: Order['deliveryType']
   address: string
+  entrance: string | null
+  floor: string | null
+  apartment: string | null
+  intercom: string | null
   items: Order['items']
   discountAmount?: number
   promoCode?: string
@@ -413,6 +447,16 @@ const paymentOptions = PAYMENT_OPTIONS
 
 .address-field {
   position: relative;
+}
+
+.address-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+
+  @include mq.mq-m {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .zone-hint {

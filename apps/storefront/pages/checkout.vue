@@ -256,12 +256,11 @@ async function submitOrder() {
     }
 
     if (checkout.form.deliveryType === 'delivery') {
-      const addrParts = [checkout.form.address]
-      if (checkout.form.entrance) addrParts.push(`подъезд ${checkout.form.entrance}`)
-      if (checkout.form.floor) addrParts.push(`этаж ${checkout.form.floor}`)
-      if (checkout.form.apartment) addrParts.push(`кв. ${checkout.form.apartment}`)
-      if (checkout.form.intercom) addrParts.push(`домофон ${checkout.form.intercom}`)
-      body.address = addrParts.join(', ')
+      body.address = checkout.form.address
+      body.entrance = checkout.form.entrance || null
+      body.floor = checkout.form.floor || null
+      body.apartment = checkout.form.apartment || null
+      body.intercom = checkout.form.intercom || null
       if (checkout.form.addressCoords) {
         body.geoLat = checkout.form.addressCoords.lat
         body.geoLon = checkout.form.addressCoords.lon

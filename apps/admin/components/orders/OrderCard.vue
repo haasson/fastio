@@ -46,7 +46,7 @@
     <!-- Адрес -->
     <div v-if="order.deliveryType === 'delivery' && order.address" class="address">
       <UiIcon name="mapPin" :size="14" />
-      <span class="address-text">{{ order.address }}</span>
+      <span class="address-text">{{ order.address }}{{ order.apartment ? `, кв. ${order.apartment}` : '' }}</span>
     </div>
 
     <!-- Состав -->

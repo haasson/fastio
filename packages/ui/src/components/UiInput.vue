@@ -20,6 +20,7 @@
       :status="hasError ? 'error' : (status || undefined)"
       v-bind="$attrs"
       :type="effectiveType"
+      :maxlength="resolvedMaxlength"
       :input-props="nativeInputProps"
     >
       <template #prefix v-if="$slots.prefix">
@@ -93,11 +94,13 @@ type Props = {
   status?: 'success' | 'warning' | 'error'
   feedback?: string
   inputmode?: 'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url'
+  maxlength?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   clearable: true,
   size: 'medium',
+  maxlength: 500,
 })
 
 const attrs = useAttrs()
@@ -111,6 +114,11 @@ const nativeInputProps = computed(() => {
 })
 
 const isPasswordType = computed(() => attrs.type === 'password')
+
+const resolvedMaxlength = computed(() => {
+  if (attrs.type === 'textarea') return undefined
+  return props.maxlength
+})
 
 type InputType = 'text' | 'textarea' | 'password'
 
