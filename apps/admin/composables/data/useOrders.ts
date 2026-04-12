@@ -7,8 +7,8 @@ import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
-import { useConfirm } from '@fastio/kit'
 import { reportError } from '~/utils/reportError'
+import { useKitchenStatusBlock } from '~/composables/kitchen/useKitchenStatusBlock'
 
 export type UseOrdersOptions = {
   branchId?: Ref<string | null>
@@ -31,7 +31,7 @@ export function useOrders(
   const api = useDatabase()
   const authStore = useAuthStore()
   const tenantStore = useTenantStore()
-  const { confirm } = useConfirm()
+  const { checkKitchenBlock } = useKitchenStatusBlock()
   const _orders = ref<Order[]>([])
   const loading = ref(false)
   const page = ref(1)
@@ -205,34 +205,10 @@ export function useOrders(
       if (!allowed.some((s) => s.id === newStatusId)) return
     }
 
-    // Check if kitchen has active items and target status is unexpected
-    const kitchenConfig = tenantStore.tenant?.kitchenConfig
-    const kitchenEnabled = tenantStore.tenant?.modules?.kitchen === true && !!kitchenConfig?.sourceStatusId
+    // Block manual status changes while kitchen is active (except cancel)
+    const { blocked } = await checkKitchenBlock(orderId, oldStatusId, newStatus)
 
-    if (kitchenEnabled && kitchenConfig) {
-      const kitchenWhitelist = [
-        kitchenConfig.cookingStatusId,
-        kitchenConfig.completedStatusMap?.delivery,
-        kitchenConfig.completedStatusMap?.pickup,
-        kitchenConfig.completedStatusMap?.dine_in,
-      ].filter(Boolean)
-
-      if (!kitchenWhitelist.includes(newStatusId)) {
-        const activeCount = await api.kitchenQueue.countActiveForOrder(orderId)
-
-        if (activeCount > 0) {
-          const ok = await confirm({
-            title: 'На кухне есть активные блюда',
-            message: `Сейчас готовятся или ожидают приготовления: ${activeCount} шт. Точно сменить статус?`,
-            confirmText: 'Да, сменить',
-            cancelText: 'Отмена',
-            confirmType: 'warning',
-          })
-
-          if (!ok) return
-        }
-      }
-    }
+    if (blocked) return
 
     await api.orders.updateStatus(orderId, newStatusId)
 

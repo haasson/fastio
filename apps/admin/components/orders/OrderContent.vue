@@ -15,7 +15,7 @@
               :items="statusMenuItems"
               trigger="click"
               compact
-              @item-click="form.status = $event"
+              @item-click="onStatusSelect($event)"
             >
               <template #trigger>
                 <UiButton type="default" size="small">Сменить статус</UiButton>
@@ -90,6 +90,7 @@ import { useModules } from '~/composables/plan/useModules'
 import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
 import { useOrderDelivery } from '~/composables/delivery/useOrderDelivery'
+import { useKitchenStatusBlock } from '~/composables/kitchen/useKitchenStatusBlock'
 import OrderFormFields from './OrderFormFields.vue'
 import OrderNotesSection from './OrderNotesSection.vue'
 import OrderEventsSection from './OrderEventsSection.vue'
@@ -126,6 +127,8 @@ const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 
+const { checkKitchenBlock } = useKitchenStatusBlock()
+
 const getStatusById = (statusId: string) => statuses.value.find((s) => s.id === statusId) ?? null
 
 const currentStatus = computed(() => getStatusById(form.status))
@@ -142,6 +145,19 @@ const statusMenuItems = computed(() => {
       color: getStatusColor(s.id),
     }))
 })
+
+const onStatusSelect = async (newStatusId: string) => {
+  if (!props.order) {
+    form.status = newStatusId
+
+    return
+  }
+
+  const newStatus = statuses.value.find((s) => s.id === newStatusId)
+  const { blocked } = await checkKitchenBlock(props.order.id, props.order.status, newStatus)
+
+  if (!blocked) form.status = newStatusId
+}
 
 // ─── Permissions ──────────────────────────────────────────────────────────────
 
