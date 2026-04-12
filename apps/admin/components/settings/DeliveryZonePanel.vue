@@ -60,7 +60,7 @@
         </UiButton>
         <UiButton
           v-if="zoneId"
-          type="text"
+          type="error"
           :loading="removing"
           @click="$emit('remove')"
         >

@@ -217,6 +217,17 @@ const handleZoneSave = async () => {
 
 const handleZoneRemove = async () => {
   if (!selectedZoneId.value) return
+
+  const zoneName = zoneForm.value?.name
+  const ok = await confirm({
+    title: 'Удалить зону?',
+    message: zoneName ? `Зона «${zoneName}» будет удалена без возможности восстановления.` : 'Зона будет удалена без возможности восстановления.',
+    confirmText: 'Удалить',
+    confirmType: 'error',
+  })
+
+  if (!ok) return
+
   zoneRemoving.value = true
   try {
     await removeZone(selectedZoneId.value)
