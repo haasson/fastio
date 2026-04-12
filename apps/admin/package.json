@@ -15,7 +15,7 @@
     "*.{js,ts,vue}": "eslint --fix"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.64",
+    "@ai-sdk/openai": "^3.0.52",
     "@ai-sdk/vue": "^3.0.141",
     "@fastio/icons": "workspace:*",
     "@fastio/kit": "workspace:*",

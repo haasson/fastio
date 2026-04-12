@@ -80,23 +80,8 @@ export function useAiChat() {
 
         const chunk = decoder.decode(value, { stream: true })
 
-        // AI SDK data stream protocol: lines like "0:text\n"
-        for (const line of chunk.split('\n')) {
-          if (!line) continue
-
-          // Text delta: 0:"text content"
-          if (line.startsWith('0:')) {
-            try {
-              const text = JSON.parse(line.slice(2))
-
-              assistantMessage.content += text
-              // Trigger reactivity
-              messages.value = [...messages.value]
-            } catch {
-              // skip malformed chunks
-            }
-          }
-        }
+        assistantMessage.content += chunk
+        messages.value = [...messages.value]
       }
     } catch (err: unknown) {
       if ((err as Error).name !== 'AbortError') {

@@ -40,7 +40,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
 
   runtimeConfig: {
-    anthropicApiKey: '',
+    openaiApiKey: '',
     supabaseServiceRoleKey: '',
     telegramBotToken: '',
     adminUrl: '',

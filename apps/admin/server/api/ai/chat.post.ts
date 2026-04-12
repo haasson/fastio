@@ -1,27 +1,27 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { useRuntimeConfig } from '#imports'
-import { createAnthropic } from '@ai-sdk/anthropic'
+import { createOpenAI } from '@ai-sdk/openai'
 import { streamText } from 'ai'
 
 export default defineEventHandler(async (event) => {
   const { messages, context } = await readBody(event)
 
   const config = useRuntimeConfig(event)
-  const apiKey = config.anthropicApiKey
+  const apiKey = config.openaiApiKey
 
   if (!apiKey) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'ANTHROPIC_API_KEY is not configured',
+      statusMessage: 'OPENAI_API_KEY is not configured',
     })
   }
 
-  const anthropic = createAnthropic({ apiKey })
+  const openai = createOpenAI({ apiKey })
 
   const systemPrompt = buildSystemPrompt(context)
 
   const result = streamText({
-    model: anthropic('claude-haiku-4-5-20251001'),
+    model: openai('gpt-4o-mini'),
     system: systemPrompt,
     messages,
     maxOutputTokens: 1024,
