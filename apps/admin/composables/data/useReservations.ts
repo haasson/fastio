@@ -148,8 +148,8 @@ export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | nu
     return res
   }
 
-  const complete = async (id: string) => {
-    await api.reservations.complete(id)
+  const complete = async (id: string, seatedAt?: string) => {
+    await api.reservations.complete(id, seatedAt)
     await refresh()
   }
 

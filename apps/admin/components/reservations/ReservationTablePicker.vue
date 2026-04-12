@@ -38,7 +38,7 @@
 import { computed } from 'vue'
 import { UiAlert, UiChip, UiText } from '@fastio/ui'
 import type { Reservation, Table } from '@fastio/shared'
-import { todayStr, dateStrToTs, formatDateMonthDay } from '@fastio/shared'
+import { todayInTz, dateStrToTs, formatDateMonthDay } from '@fastio/shared'
 
 const props = defineProps<{
   modelValue: string | null
@@ -47,13 +47,14 @@ const props = defineProps<{
   dayReservations: Reservation[]
   guestCount: number
   reservedDate: string
+  timezone: string
 }>()
 
 defineEmits<{
   'update:modelValue': [value: string | null]
 }>()
 
-const isToday = computed(() => props.reservedDate === todayStr())
+const isToday = computed(() => props.reservedDate === todayInTz(props.timezone))
 
 // tableId → список времён занятости
 const tableBookings = computed((): Map<string, string[]> => {

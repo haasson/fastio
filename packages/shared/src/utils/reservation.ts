@@ -18,6 +18,7 @@ export const mapReservation = (raw: Record<string, unknown>): Reservation => ({
   confirmedBy: raw.confirmed_by as string | null,
   confirmedAt: raw.confirmed_at as string | null,
   seatedAt: raw.seated_at as string | null,
+  completedAt: raw.completed_at as string | null,
   cancelledAt: raw.cancelled_at as string | null,
   cancelReason: raw.cancel_reason as string | null,
   createdAt: raw.created_at as string,

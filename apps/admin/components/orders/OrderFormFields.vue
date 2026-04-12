@@ -18,6 +18,7 @@
         placeholder="+7 999 000 00 00"
         :rules="[validationRules.phone.required, validationRules.phone.format]"
         :disabled="!perms.editCustomer"
+        callable
       />
     </div>
   </div>

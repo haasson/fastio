@@ -45,6 +45,7 @@
               :max-advance-days="settings?.maxAdvanceDays ?? 30"
               :branches="branches ?? []"
               :schedule="currentSchedule"
+              :timezone="tenant?.timezone ?? 'Europe/Moscow'"
               @next="goToStep2"
             />
 

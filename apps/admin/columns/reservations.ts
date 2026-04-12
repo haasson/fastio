@@ -16,7 +16,7 @@ const dateColumn = {
   width: 160,
   sorter: (a: Reservation, b: Reservation) => `${a.reservedDate} ${a.reservedTime}`.localeCompare(`${b.reservedDate} ${b.reservedTime}`),
   render: (row: Reservation) => {
-    const d = new Date(`${row.reservedDate}T12:00:00`)
+    const d = new Date(`${row.reservedDate}T12:00:00Z`)
     const weekday = d.toLocaleDateString('ru-RU', { weekday: 'short' })
 
     return h('div', { style: 'line-height: 1.3' }, [

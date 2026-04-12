@@ -5,7 +5,10 @@
     </p>
 
     <div v-if="loading" class="slots-loading">
-      <FsSkeleton :repeat="8" />
+      <p class="slots-loading-label">Проверяем доступные слоты...</p>
+      <div class="slots-grid">
+        <FsSkeleton v-for="n in 8" :key="n" variant="rect" height="40px" rounded />
+      </div>
     </div>
 
     <template v-else-if="slots.length">
@@ -103,5 +106,10 @@ const onNext = () => {
 
 .slots-loading {
   @include flex-col(8px);
+}
+
+.slots-loading-label {
+  @include text-caption;
+  color: var(--color-text-secondary);
 }
 </style>

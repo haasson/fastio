@@ -29,12 +29,14 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiCard, UiText, UiTitle, UiButton, UiSkeleton } from '@fastio/ui'
 import type { Reservation } from '@fastio/shared'
+import { todayInTz } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reservationEvents } from '~/composables/data/useReservationsChannel'
 
 type Props = {
   tenantId: string
   branchId: string | null
+  timezone: string
 }
 
 const props = defineProps<Props>()
@@ -47,7 +49,7 @@ const fetchReservations = async () => {
   loading.value = true
   try {
     reservations.value = await api.reservations.list(props.tenantId, {
-      date: new Date().toISOString().slice(0, 10),
+      date: todayInTz(props.timezone),
       branchId: props.branchId ?? undefined,
     })
   } finally {

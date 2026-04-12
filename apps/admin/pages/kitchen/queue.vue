@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiSkeleton, UiEmpty, UiSectionHeader, UiAlert, UiSelect } from '@fastio/ui'
+import { UiSkeleton, UiEmpty, UiSectionHeader, UiAlert, UiSelect, UiButton } from '@fastio/ui'
 import type { KitchenQueueItem as KitchenQueueItemType, OrderEvent } from '@fastio/shared'
 import { isAutoCategory, getKitchenUrgencyLevel, formatKitchenElapsed } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'

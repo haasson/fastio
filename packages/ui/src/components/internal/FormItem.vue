@@ -1,6 +1,9 @@
 <template>
   <div class="form-item" :class="formItemClasses">
-    <label v-if="computedLabel" v-html="computedLabel" class="label" />
+    <div v-if="computedLabel || $slots['label-suffix']" class="label">
+      <span v-if="computedLabel" v-html="computedLabel" />
+      <slot name="label-suffix" />
+    </div>
     <div class="control">
       <slot :has-error="hasError" />
     </div>
@@ -90,6 +93,8 @@ $form-item-sizes: (
   flex-direction: column;
 
   .label {
+    display: flex;
+    align-items: center;
     margin-bottom: 6px;
     color: var(--color-text);
   }

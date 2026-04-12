@@ -70,6 +70,7 @@
           v-if="modules.reservations?.value.enabled"
           :tenant-id="tenantId"
           :branch-id="selectedBranchId"
+          :timezone="tenantStore.tenant?.timezone ?? 'Europe/Moscow'"
         />
         <DashboardKitchen
           v-if="modules.kitchen?.value.enabled"

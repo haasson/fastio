@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { FsButton, FsField } from '@fastio/public-ui'
-import { formatDateStr, getIsoDayForDate, isDayOff as checkDayOff } from '@fastio/shared'
+import { todayInTz, addDaysToDateStr, getIsoDayForDate, isDayOff as checkDayOff } from '@fastio/shared'
 import type { WorkingHoursSchedule } from '@fastio/shared'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 
@@ -70,6 +70,7 @@ const props = defineProps<{
   maxAdvanceDays: number
   branches: BookingBranch[]
   schedule: WorkingHoursSchedule | null
+  timezone: string
 }>()
 
 const emit = defineEmits<{ next: [] }>()
@@ -78,20 +79,17 @@ const dateError = ref('')
 
 const days = computed(() => {
   const result = []
-  const today = new Date()
+  const todayStr = todayInTz(props.timezone)
 
   for (let i = 0; i < props.maxAdvanceDays; i++) {
-    const d = new Date(today)
-
-    d.setDate(today.getDate() + i)
-
-    const value = formatDateStr(d.getTime())
+    const value = addDaysToDateStr(todayStr, i)
     const isDayOff = checkDayOff(props.schedule, getIsoDayForDate(value))
+    const d = new Date(`${value}T12:00:00Z`)
 
     result.push({
       value,
-      dayNum: d.getDate(),
-      month: d.toLocaleString('ru-RU', { day: 'numeric', month: 'long' }).replace(/^\d+\s/, ''),
+      dayNum: d.getUTCDate(),
+      month: new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' }).format(d),
       isDayOff,
     })
   }

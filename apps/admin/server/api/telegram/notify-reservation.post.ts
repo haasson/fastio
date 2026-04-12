@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const supabase = getServerSupabase()
 
   const [{ data: tenant }, { data: reservation }] = await Promise.all([
-    supabase.from('tenants').select('notifications').eq('id', tenantId).single(),
+    supabase.from('tenants').select('notifications, timezone').eq('id', tenantId).single(),
     supabase
       .from('reservations')
       .select('guest_name, guest_phone, guest_count, reserved_date, reserved_time, comment, table_name')
@@ -31,8 +31,9 @@ export default defineEventHandler(async (event) => {
 
   if (!chatId || !reservation) return { ok: true }
 
-  const date = new Date(`${reservation.reserved_date}T${reservation.reserved_time}`)
-  const dateStr = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+  const tz = tenant.timezone ?? 'Europe/Moscow'
+  const dateStr = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: tz })
+    .format(new Date(`${reservation.reserved_date}T12:00:00Z`))
   const timeStr = reservation.reserved_time.slice(0, 5)
 
   let text = `📅 <b>Новое бронирование</b>\n\n`

@@ -19,6 +19,7 @@ export type Reservation = {
   confirmedBy: string | null
   confirmedAt: string | null
   seatedAt: string | null
+  completedAt: string | null
   cancelledAt: string | null
   cancelReason: string | null
   createdAt: string

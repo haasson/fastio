@@ -92,6 +92,7 @@
           :day-reservations="dayReservations"
           :guest-count="form.guestCount"
           :reserved-date="form.reservedDate"
+          :timezone="tenantStore.tenant?.timezone ?? 'Europe/Moscow'"
         />
       </template>
 
@@ -112,6 +113,10 @@
           <template v-if="reservation.seatedAt">
             <UiText size="small" color="secondary">Посажен</UiText>
             <UiText size="small">{{ formatDt(reservation.seatedAt) }}</UiText>
+          </template>
+          <template v-if="reservation.completedAt">
+            <UiText size="small" color="secondary">{{ reservation.tableId ? 'Стол закрыт' : 'Завершена' }}</UiText>
+            <UiText size="small">{{ formatDt(reservation.completedAt) }}</UiText>
           </template>
           <template v-if="reservation.cancelledAt">
             <UiText size="small" color="secondary">Отменена</UiText>
@@ -138,7 +143,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useModules } from '~/composables/plan/useModules'
-import { formatDateStr } from '@fastio/shared'
+import { formatDateStr, todayInTz, nowTimeInTz } from '@fastio/shared'
 import {
   RESERVATION_STATUS_LABELS as STATUS_LABELS,
   RESERVATION_STATUS_TYPES as STATUS_TYPES,
@@ -258,13 +263,6 @@ const isReadOnly = computed(() => {
   return ['completed', 'cancelled', 'no_show'].includes(props.reservation.status)
 })
 
-const isToday = computed(() => {
-  if (!props.reservation) return false
-  const today = new Date().toISOString().slice(0, 10)
-
-  return props.reservation.reservedDate === today
-})
-
 const drawerActions = computed<DrawerAction[]>(() => {
   const r = props.reservation
 
@@ -295,7 +293,7 @@ const drawerActions = computed<DrawerAction[]>(() => {
     }
 
     return [
-      { text: 'Посадить', type: 'primary', actionType: 'confirm', loading: saving.value, disabled: !isToday.value },
+      { text: 'Посадить', type: 'primary', actionType: 'confirm', loading: saving.value },
       { text: 'Отменить бронь', type: 'error', actionType: 'decline' },
     ]
   }
@@ -347,11 +345,34 @@ const onSave = async () => {
       })
       success('Бронь обновлена')
     } else if (r.status === 'confirmed') {
-      if (!isToday.value) {
-        error('Посадить можно только в день брони')
+      const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+      const nowDate = todayInTz(tz)
+      const nowTime = nowTimeInTz(tz)
+      const toMs = (date: string, time: string) => {
+        const [y, mo, d] = date.split('-').map(Number)
+        const [h, m] = time.split(':').map(Number)
 
-        return false
+        return Date.UTC(y, mo - 1, d, h, m)
       }
+      const minutesUntil = Math.round((toMs(r.reservedDate, r.reservedTime) - toMs(nowDate, nowTime)) / 60000)
+
+      if (minutesUntil > 0) {
+        const hours = Math.floor(minutesUntil / 60)
+        const mins = minutesUntil % 60
+        const timeLabel = hours > 0
+          ? `${hours} ч ${mins > 0 ? `${mins} мин` : ''}`.trim()
+          : `${mins} мин`
+
+        const ok = await confirm({
+          title: 'Посадить раньше времени?',
+          message: `До начала бронирования ещё ${timeLabel}. Вы действительно хотите посадить гостя?`,
+          confirmText: 'Посадить',
+          confirmType: 'primary',
+        })
+
+        if (!ok) return false
+      }
+
       if (selectedTableId.value) {
         const table = tables.value.find((t) => t.id === selectedTableId.value)
 
@@ -366,9 +387,12 @@ const onSave = async () => {
           return false
         }
         await api.tables.setOpen(selectedTableId.value, true)
+        await reservationsStore.seat(r.id)
+        success('Гость посажен, стол открыт')
+      } else {
+        await reservationsStore.complete(r.id, new Date().toISOString())
+        success('Гость посажен')
       }
-      await reservationsStore.seat(r.id)
-      success(selectedTableId.value ? 'Гость посажен, стол открыт' : 'Гость посажен')
     }
 
     emit('update:modelValue', false)

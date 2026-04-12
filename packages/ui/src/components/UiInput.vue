@@ -8,8 +8,11 @@
     :model-value="value"
     :status="status"
     :feedback="feedback"
-    v-slot="{ hasError }"
   >
+    <template v-if="callable && cleanPhone" #label-suffix>
+      <a :href="`tel:${cleanPhone}`" class="callable-link">Позвонить</a>
+    </template>
+    <template #default="{ hasError }">
     <n-input
       v-model:value="value"
       v-maska="phoneMask"
@@ -68,6 +71,7 @@
         />
       </template>
     </n-input>
+    </template>
   </form-item>
 </template>
 
@@ -95,6 +99,7 @@ type Props = {
   feedback?: string
   inputmode?: 'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url'
   maxlength?: number
+  callable?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -135,6 +140,12 @@ const togglePasswordVisibility = () => {
 const computedSize = useResponsiveSize({
   size: props.size,
   responsive: props.responsive,
+})
+
+const cleanPhone = computed(() => {
+  if (!value.value) return null
+  const digits = value.value.replace(/\D/g, '')
+  return digits.length >= 11 ? `+${digits}` : null
 })
 
 const hasPhoneValidation = computed(() => {
@@ -201,6 +212,18 @@ defineOptions({
 </script>
 
 <style scoped lang="scss">
+.callable-link {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--color-primary);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .password-toggle {
   display: inline-flex;
   align-items: center;

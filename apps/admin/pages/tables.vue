@@ -8,7 +8,7 @@ import { useMessage } from '@fastio/ui'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 import type { Table, TableCallType, TableCall, KitchenQueueItem, OrderItem } from '@fastio/shared'
-import { pluralize } from '@fastio/shared'
+import { pluralize, todayInTz } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -388,7 +388,7 @@ const onGlobalTagsUpdated = (tags: string[]) => {
 
 // ── Today's reservations ─────────────────────────────────────
 const todayReservations = computed(() => {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayInTz(tenantStore.tenant?.timezone ?? 'Europe/Moscow')
 
   return reservationsStore.reservations.filter(
     (r) => r.reservedDate === today && (r.status === 'confirmed' || r.status === 'pending' || r.status === 'seated'),

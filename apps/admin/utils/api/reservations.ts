@@ -8,7 +8,7 @@ const SELECT_FIELDS = `
   guest_name, guest_phone, guest_email, guest_count,
   reserved_date, reserved_time, comment, status,
   table_id, table_name,
-  confirmed_by, confirmed_at, seated_at,
+  confirmed_by, confirmed_at, seated_at, completed_at,
   cancelled_at, cancel_reason,
   created_at, updated_at
 `.trim()
@@ -125,11 +125,15 @@ export const reservationsApi = {
     return result ? toReservation(result) : null
   },
 
-  async complete(sb: SupabaseClient, id: string): Promise<void> {
+  async complete(sb: SupabaseClient, id: string, seatedAt?: string): Promise<void> {
+    const now = new Date().toISOString()
+
     await query(
       sb.from('reservations').update({
         status: 'completed',
-        updated_at: new Date().toISOString(),
+        completed_at: now,
+        ...(seatedAt !== undefined ? { seated_at: seatedAt } : {}),
+        updated_at: now,
       }).eq('id', id),
     )
   },
