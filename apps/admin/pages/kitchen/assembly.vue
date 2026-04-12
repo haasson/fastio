@@ -165,11 +165,23 @@ watch(() => tenantStore.tenant?.id, (id) => {
 }, { immediate: true })
 
 const onCollectItem = (itemId: string, collected: boolean) => {
+  const idx = items.value.findIndex((i) => i.id === itemId)
+
+  if (idx === -1) return
+
+  const prev = items.value[idx]
+  const optimisticStatus = collected ? 'done' as const : 'queued' as const
+
+  items.value[idx] = { ...prev, status: optimisticStatus }
+
   const promise = collected
     ? api.kitchenQueue.complete(itemId)
     : api.kitchenQueue.uncollect(itemId)
 
-  promise.catch(reportError)
+  promise.catch((err) => {
+    items.value[idx] = prev
+    reportError(err)
+  })
 }
 
 const onAssembled = async (orderId: string, deliveryType: string) => {

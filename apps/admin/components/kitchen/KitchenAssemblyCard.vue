@@ -42,6 +42,34 @@
             <span class="dish-name" :class="{ 'dish-name--done': item.status === 'done' || item.status === 'served' }">{{ item.dishName }}</span>
             <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
           </UiCheckbox>
+          <div v-if="hasCustomizations(item)" class="tags">
+            <UiTag
+              v-for="mod in item.modifiers"
+              :key="`m-${mod.optionName}`"
+              size="small"
+              round
+            >
+              {{ mod.optionName }}
+            </UiTag>
+            <UiTag
+              v-for="addon in item.addons"
+              :key="`a-${addon.addonName}`"
+              size="small"
+              type="primary"
+              round
+            >
+              + {{ addon.addonName }}
+            </UiTag>
+            <UiTag
+              v-for="ing in item.removedIngredients"
+              :key="`r-${ing}`"
+              size="small"
+              type="error"
+              round
+            >
+              − {{ ing }}
+            </UiTag>
+          </div>
         </div>
       </div>
     </div>
@@ -90,6 +118,8 @@ const allDone = computed(() => props.items.length > 0 && doneCount.value === pro
 
 const deliveryIcon = computed(() => (DELIVERY_TYPE_ICONS[props.deliveryType] ?? 'cart') as IconName)
 const deliveryTagType = computed(() => props.deliveryType === 'delivery' ? 'primary' as const : 'success' as const)
+
+const hasCustomizations = (item: KitchenQueueItem) => item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
 
 const statusTagType = (status: KitchenQueueStatus) => {
   if (status === 'done' || status === 'served') return 'success' as const
@@ -151,8 +181,8 @@ const statusTagType = (status: KitchenQueueStatus) => {
 .dish-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-
 }
 
 .dish-name {
@@ -169,5 +199,12 @@ const statusTagType = (status: KitchenQueueStatus) => {
 .combo-hint {
   font-size: 12px;
   color: var(--color-text-hint);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 24px;
 }
 </style>
