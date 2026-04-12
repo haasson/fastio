@@ -79,6 +79,23 @@
             text="Нет собранных заказов"
           />
         </div>
+
+        <div v-if="cancelledGroups.length" class="kanban-col kanban-col--cancelled" :class="{ 'hidden-mobile': mobilePhase !== 'cancelled' }">
+          <div class="kanban-header">
+            <span class="kanban-title">Отменено</span>
+            <span class="kanban-count kanban-count--red">{{ cancelledGroups.length }}</span>
+          </div>
+          <KitchenAssemblyCard
+            v-for="group in cancelledGroups"
+            :key="group.orderId"
+            :order-id="group.orderId"
+            :order-number="group.orderNumber"
+            :delivery-type="group.deliveryType"
+            :items="group.items"
+            :cancelled="true"
+            @dismissed="onDismissed"
+          />
+        </div>
       </div>
     </template>
 
@@ -96,12 +113,13 @@ import { useAuthStore } from '~/stores/auth'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import KitchenAssemblyCard from '~/components/kitchen/KitchenAssemblyCard.vue'
 import { reportError } from '~/utils/reportError'
+import { mergeRealtimeItem } from '~/utils/api/kitchen-queue'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()
 const authStore = useAuthStore()
 
-const mobilePhase = ref<'cooking' | 'collecting' | 'ready'>('collecting')
+const mobilePhase = ref<'cooking' | 'collecting' | 'ready' | 'cancelled'>('collecting')
 
 const loading = ref(false)
 const items = ref<KitchenQueueItem[]>([])
@@ -111,7 +129,7 @@ type OrderGroup = {
   orderNumber: string | null
   deliveryType: string
   items: KitchenQueueItem[]
-  phase: 'cooking' | 'collecting' | 'ready'
+  phase: 'cooking' | 'collecting' | 'ready' | 'cancelled'
 }
 
 const allOrderGroups = computed<OrderGroup[]>(() => {
@@ -140,12 +158,21 @@ const allOrderGroups = computed<OrderGroup[]>(() => {
 const cookingGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'cooking'))
 const collectingGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'collecting'))
 const readyGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'ready'))
+const cancelledGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'cancelled'))
 
-const mobilePhaseTabs = computed(() => [
-  { value: 'cooking', label: `Кухня (${cookingGroups.value.length})` },
-  { value: 'collecting', label: `Сборка (${collectingGroups.value.length})` },
-  { value: 'ready', label: `Готово (${readyGroups.value.length})` },
-])
+const mobilePhaseTabs = computed(() => {
+  const tabs = [
+    { value: 'cooking', label: `Кухня (${cookingGroups.value.length})` },
+    { value: 'collecting', label: `Сборка (${collectingGroups.value.length})` },
+    { value: 'ready', label: `Готово (${readyGroups.value.length})` },
+  ]
+
+  if (cancelledGroups.value.length) {
+    tabs.push({ value: 'cancelled', label: `Отменено (${cancelledGroups.value.length})` })
+  }
+
+  return tabs
+})
 
 const load = async () => {
   const tenantId = tenantStore.tenant?.id
@@ -184,6 +211,11 @@ const onCollectItem = (itemId: string, collected: boolean) => {
   })
 }
 
+const onDismissed = async (orderId: string) => {
+  items.value = items.value.filter((i) => i.orderId !== orderId)
+  await api.kitchenQueue.dismissCancelledOrder(orderId)
+}
+
 const onAssembled = async (orderId: string, deliveryType: string) => {
   const targetStatusId = tenantStore.tenant?.kitchenConfig?.completedStatusMap?.[deliveryType as 'delivery' | 'pickup']
 
@@ -216,7 +248,7 @@ const offUpdate = kitchenQueueEvents.onUpdate((item) => {
   } else {
     const idx = items.value.findIndex((i) => i.id === item.id)
 
-    if (idx !== -1) items.value[idx] = item
+    if (idx !== -1) items.value[idx] = mergeRealtimeItem(item, items.value[idx])
     else items.value.push(item)
   }
 })
@@ -254,7 +286,7 @@ onUnmounted(() => {
 
   @include mq-m {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     align-items: start;
   }
 }
@@ -293,6 +325,10 @@ onUnmounted(() => {
   border-bottom-color: var(--color-success);
 }
 
+.kanban-col--cancelled .kanban-header {
+  border-bottom-color: var(--color-error);
+}
+
 .kanban-title {
   font-size: 14px;
   font-weight: 700;
@@ -315,6 +351,10 @@ onUnmounted(() => {
 
   &--green {
     color: var(--color-success);
+  }
+
+  &--red {
+    color: var(--color-error);
   }
 }
 </style>

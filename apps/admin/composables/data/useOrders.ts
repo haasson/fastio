@@ -1,11 +1,13 @@
 import { computed, ref, watch, onUnmounted, type Ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import type { Order, OrderStatus } from '@fastio/shared'
+import { getAllowedStatuses } from '@fastio/shared'
 import type { OrderFilter } from '~/utils/api/orders'
 import { orderEvents } from '~/composables/data/useOrdersChannel'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
+import { useConfirm } from '@fastio/kit'
 import { reportError } from '~/utils/reportError'
 
 export type UseOrdersOptions = {
@@ -29,6 +31,7 @@ export function useOrders(
   const api = useDatabase()
   const authStore = useAuthStore()
   const tenantStore = useTenantStore()
+  const { confirm } = useConfirm()
   const _orders = ref<Order[]>([])
   const loading = ref(false)
   const page = ref(1)
@@ -173,11 +176,48 @@ export function useOrders(
     const i = _orders.value.findIndex((o) => o.id === orderId)
     const oldStatusId = i !== -1 ? _orders.value[i].status : null
 
+    // Validate transition is allowed
+    const oldStatus = statuses.value.find((s) => s.id === oldStatusId)
+    const newStatus = statuses.value.find((s) => s.id === newStatusId)
+
+    if (oldStatus && newStatus) {
+      const allowed = getAllowedStatuses(oldStatus.groupType, statuses.value)
+
+      if (!allowed.some((s) => s.id === newStatusId)) return
+    }
+
+    // Check if kitchen has active items and target status is unexpected
+    const kitchenConfig = tenantStore.tenant?.kitchenConfig
+    const kitchenEnabled = tenantStore.tenant?.modules?.kitchen === true && !!kitchenConfig?.sourceStatusId
+
+    if (kitchenEnabled && kitchenConfig) {
+      const kitchenWhitelist = [
+        kitchenConfig.cookingStatusId,
+        kitchenConfig.completedStatusMap?.delivery,
+        kitchenConfig.completedStatusMap?.pickup,
+        kitchenConfig.completedStatusMap?.dine_in,
+      ].filter(Boolean)
+
+      if (!kitchenWhitelist.includes(newStatusId)) {
+        const activeCount = await api.kitchenQueue.countActiveForOrder(orderId)
+
+        if (activeCount > 0) {
+          const ok = await confirm({
+            title: 'На кухне есть активные блюда',
+            message: `Сейчас готовятся или ожидают приготовления: ${activeCount} шт. Точно сменить статус?`,
+            confirmText: 'Да, сменить',
+            cancelText: 'Отмена',
+            confirmType: 'warning',
+          })
+
+          if (!ok) return
+        }
+      }
+    }
+
     await api.orders.updateStatus(orderId, newStatusId)
 
     // Clean up kitchen queue when order reaches a terminal state
-    const newStatus = statuses.value.find((s) => s.id === newStatusId)
-
     if (newStatus?.groupType === 'cancelled') {
       api.kitchenQueue.cancelForOrders([orderId]).catch(reportError)
     } else if (newStatus?.groupType === 'completed') {
@@ -185,8 +225,6 @@ export function useOrders(
     }
 
     if (authStore.user && oldStatusId) {
-      const oldStatus = statuses.value.find((s) => s.id === oldStatusId)
-
       api.orderEvents.add({
         orderId,
         tenantId: tenantId.value,

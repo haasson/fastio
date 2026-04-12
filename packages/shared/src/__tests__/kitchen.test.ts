@@ -127,4 +127,40 @@ describe('getOrderPhase', () => {
   it('одно блюдо queued → cooking', () => {
     expect(getOrderPhase([makeItem({ status: 'queued' })])).toBe('cooking')
   })
+
+  it('все блюда отменены → cancelled', () => {
+    const items = [
+      makeItem({ status: 'cancelled' }),
+      makeItem({ status: 'cancelled' }),
+    ]
+
+    expect(getOrderPhase(items)).toBe('cancelled')
+  })
+
+  it('одно cancelled, другое done → ready', () => {
+    const items = [
+      makeItem({ status: 'cancelled' }),
+      makeItem({ status: 'done' }),
+    ]
+
+    expect(getOrderPhase(items)).toBe('ready')
+  })
+
+  it('одно cancelled, другое in_progress → cooking', () => {
+    const items = [
+      makeItem({ status: 'cancelled' }),
+      makeItem({ status: 'in_progress' }),
+    ]
+
+    expect(getOrderPhase(items)).toBe('cooking')
+  })
+
+  it('кухонное done, skipKitchen cancelled → ready (cancelled не блокирует)', () => {
+    const items = [
+      makeItem({ status: 'done', skipKitchen: false }),
+      makeItem({ status: 'cancelled', skipKitchen: true }),
+    ]
+
+    expect(getOrderPhase(items)).toBe('ready')
+  })
 })

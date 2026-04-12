@@ -1,9 +1,9 @@
 <template>
   <UiCard class="work-card-root" :class="[urgencyClass]">
     <div class="header">
-      <span class="order-id">#{{ item.orderNumber ?? item.orderId.slice(0, 6).toUpperCase() }}</span>
+      <span class="order-id">#{{ item.orderNumber }}</span>
       <UiTag
-        v-if="showDeliveryType"
+        v-if="showDeliveryType && !cancelled"
         size="small"
         :type="deliveryTagType"
         empty
@@ -13,6 +13,13 @@
         {{ DELIVERY_TYPE_LABELS[item.deliveryType] }}
       </UiTag>
       <UiTag
+        v-if="cancelled"
+        size="small"
+        type="error"
+        round
+      >Отменено</UiTag>
+      <UiTag
+        v-else
         size="small"
         :type="urgencyTagType"
         :empty="urgencyLevel === 'normal'"
@@ -65,8 +72,13 @@
     </div>
 
     <div class="footer">
-      <UiButton type="default" @click="$emit('unclaim')">Вернуть</UiButton>
-      <UiButton type="success" class="btn-done" @click="$emit('complete')">Готово</UiButton>
+      <template v-if="cancelled">
+        <UiButton type="error" class="btn-dismiss" @click="$emit('dismiss')">Убрать</UiButton>
+      </template>
+      <template v-else>
+        <UiButton type="default" @click="$emit('unclaim')">Вернуть</UiButton>
+        <UiButton type="success" class="btn-done" @click="$emit('complete')">Готово</UiButton>
+      </template>
     </div>
   </UiCard>
 </template>
@@ -84,16 +96,19 @@ const props = defineProps<{
   cookingElapsed: string
   urgencyLevel: 'normal' | 'warning' | 'critical'
   showDeliveryType?: boolean
+  cancelled?: boolean
 }>()
 
 defineEmits<{
   complete: []
   unclaim: []
+  dismiss: []
 }>()
 
 const hasCustomizations = computed(() => props.item.modifiers.length > 0 || props.item.addons.length > 0 || props.item.removedIngredients.length > 0)
 
 const urgencyClass = computed(() => {
+  if (props.cancelled) return 'card--cancelled'
   if (props.urgencyLevel === 'critical') return 'card--critical'
   if (props.urgencyLevel === 'warning') return 'card--warning'
 
@@ -118,6 +133,11 @@ const urgencyTagType = computed(() => {
 
   &.card--warning { border: 1.5px solid var(--color-warning); }
   &.card--critical { border: 1.5px solid var(--color-error); }
+  &.card--cancelled {
+    border: 1.5px solid var(--color-error);
+    background: var(--color-error-bg);
+    opacity: 0.85;
+  }
 }
 
 .header {
@@ -162,6 +182,10 @@ const urgencyTagType = computed(() => {
 }
 
 .btn-done {
+  flex: 1;
+}
+
+.btn-dismiss {
   flex: 1;
 }
 

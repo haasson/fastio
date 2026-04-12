@@ -25,27 +25,29 @@
         @update:value="form.groupType = $event as OrderStatusGroup"
       />
 
-      <UiSelect
-        :value="form.quickAction1"
-        :options="quickActionOptions1"
-        label="Быстрое действие 1"
-        size="small"
-        clearable
-        placeholder="Не задано"
-        @update:value="form.quickAction1 = ($event as string) ?? null"
-      />
+      <template v-if="allowedTargets.length">
+        <UiSelect
+          :value="form.quickAction1"
+          :options="quickActionOptions1"
+          label="Быстрое действие 1"
+          size="small"
+          clearable
+          placeholder="Не задано"
+          @update:value="form.quickAction1 = ($event as string) ?? null"
+        />
 
-      <UiSelect
-        :value="form.quickAction2"
-        :options="quickActionOptions2"
-        label="Быстрое действие 2"
-        message="Кнопки перехода в другой статус на карточке заказа (макс. 2)"
-        size="small"
-        clearable
-        :disabled="!form.quickAction1"
-        placeholder="Не задано"
-        @update:value="form.quickAction2 = ($event as string) ?? null"
-      />
+        <UiSelect
+          :value="form.quickAction2"
+          :options="quickActionOptions2"
+          label="Быстрое действие 2"
+          message="Кнопки перехода в другой статус на карточке заказа (макс. 2)"
+          size="small"
+          clearable
+          :disabled="!form.quickAction1"
+          placeholder="Не задано"
+          @update:value="form.quickAction2 = ($event as string) ?? null"
+        />
+      </template>
     </UiForm>
   </UiModal>
 </template>
@@ -54,6 +56,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiSelect } from '@fastio/ui'
 import type { OrderStatus, OrderStatusGroup } from '@fastio/shared'
+import { getAllowedStatuses } from '@fastio/shared'
 import { STATUS_GROUP_LABELS } from '~/config/order-status-groups'
 
 const props = defineProps<{
@@ -99,21 +102,23 @@ const groupOptions = (Object.keys(STATUS_GROUP_LABELS) as OrderStatusGroup[]).ma
   value: key,
 }))
 
-const quickActionOptions1 = computed(() => {
+watch(() => form.value.groupType, () => {
+  form.value.quickAction1 = null
+  form.value.quickAction2 = null
+})
+
+const allowedTargets = computed(() => {
   const currentId = props.status?.id
 
-  return props.allStatuses
+  return getAllowedStatuses(form.value.groupType, props.allStatuses)
     .filter((s) => s.id !== currentId)
-    .map((s) => ({ label: s.name, value: s.id }))
 })
 
-const quickActionOptions2 = computed(() => {
-  const currentId = props.status?.id
+const quickActionOptions1 = computed(() => allowedTargets.value.map((s) => ({ label: s.name, value: s.id })))
 
-  return props.allStatuses
-    .filter((s) => s.id !== currentId && s.id !== form.value.quickAction1)
-    .map((s) => ({ label: s.name, value: s.id }))
-})
+const quickActionOptions2 = computed(() => allowedTargets.value
+  .filter((s) => s.id !== form.value.quickAction1)
+  .map((s) => ({ label: s.name, value: s.id })))
 
 const actions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },

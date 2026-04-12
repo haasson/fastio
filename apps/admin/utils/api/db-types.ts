@@ -289,6 +289,7 @@ export type KitchenQueueRow = {
   completed_at: string | null
   served_at: string | null
   served_by: string | null
+  dismissed_at: string | null
   skip_kitchen: boolean
   created_at: string
 }

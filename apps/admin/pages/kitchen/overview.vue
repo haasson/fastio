@@ -32,6 +32,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import { DELIVERY_TYPE_LABELS } from '~/config/order-options'
+import { mergeRealtimeItem } from '~/utils/api/kitchen-queue'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()
@@ -238,7 +239,7 @@ const columns = computed((): DataTableColumns<KitchenQueueItem> => [
     title: 'Заказ',
     key: 'orderId',
     width: 90,
-    render: (row) => h(UiText, { size: 'tiny', style: 'color: var(--color-text-hint)' }, () => `#${row.orderNumber ?? row.orderId.slice(0, 6).toUpperCase()}`),
+    render: (row) => h(UiText, { size: 'tiny', style: 'color: var(--color-text-hint)' }, () => `#${row.orderNumber}`),
   },
 ])
 
@@ -251,7 +252,7 @@ const offInsert = kitchenQueueEvents.onInsert((item) => {
 const offUpdate = kitchenQueueEvents.onUpdate((item) => {
   const idx = items.value.findIndex((i) => i.id === item.id)
 
-  if (idx !== -1) items.value[idx] = item
+  if (idx !== -1) items.value[idx] = mergeRealtimeItem(item, items.value[idx])
   else items.value.push(item)
 })
 

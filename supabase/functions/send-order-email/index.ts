@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       to: [{ email: tenant.notifications.email }],
       from: { email: 'noreply@fastio.ru' },
-      subject: `Новый заказ #${(order.id as string).slice(0, 6).toUpperCase()}`,
+      subject: `Новый заказ #${order.order_number ?? order.id}`,
       content: [{
         type: 'text/plain',
         value: [

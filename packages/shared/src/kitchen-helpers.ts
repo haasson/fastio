@@ -3,9 +3,12 @@ import type { KitchenQueueItem } from './types/kitchen'
 export const isKitchenItemDone = (item: KitchenQueueItem): boolean =>
   item.status === 'done' || item.status === 'served'
 
-export const getOrderPhase = (items: KitchenQueueItem[]): 'cooking' | 'collecting' | 'ready' => {
-  if (items.every(isKitchenItemDone)) return 'ready'
-  if (items.filter((i) => !i.skipKitchen).every(isKitchenItemDone)) return 'collecting'
+export const getOrderPhase = (items: KitchenQueueItem[]): 'cooking' | 'collecting' | 'ready' | 'cancelled' => {
+  const activeItems = items.filter((i) => i.status !== 'cancelled')
+
+  if (activeItems.length === 0) return 'cancelled'
+  if (activeItems.every(isKitchenItemDone)) return 'ready'
+  if (activeItems.filter((i) => !i.skipKitchen).every(isKitchenItemDone)) return 'collecting'
 
   return 'cooking'
 }

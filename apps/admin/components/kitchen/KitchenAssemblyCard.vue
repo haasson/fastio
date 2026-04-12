@@ -1,8 +1,9 @@
 <template>
-  <UiCard class="assembly-card-root" :class="{ 'assembly-card--done': allDone }">
+  <UiCard class="assembly-card-root" :class="{ 'assembly-card--done': allDone, 'assembly-card--cancelled': cancelled }">
     <div class="header">
-      <span class="order-id">#{{ orderNumber ?? orderId.slice(0, 6).toUpperCase() }}</span>
+      <span class="order-id">#{{ orderNumber }}</span>
       <UiTag
+        v-if="!cancelled"
         size="small"
         :type="deliveryTagType"
         empty
@@ -11,7 +12,13 @@
       >
         {{ DELIVERY_TYPE_LABELS[deliveryType] }}
       </UiTag>
-      <span class="progress">{{ doneCount }}/{{ items.length }}</span>
+      <UiTag
+        v-if="cancelled"
+        size="small"
+        type="error"
+        round
+      >Заказ отменён</UiTag>
+      <span class="progress">{{ doneCount }}/{{ activeItems.length }}</span>
     </div>
 
     <div v-if="kitchenItems.length" class="section">
@@ -25,7 +32,7 @@
           >
             {{ STATUS_LABELS[item.status] }}
           </UiTag>
-          <span class="dish-name">{{ item.dishName }}</span>
+          <span class="dish-name" :class="{ 'dish-name--cancelled': item.status === 'cancelled' }">{{ item.dishName }}</span>
           <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
         </div>
       </div>
@@ -71,11 +78,22 @@
             </UiTag>
           </div>
         </div>
+        <div v-for="item in cancelledSelfCollectItems" :key="item.id" class="dish-row">
+          <UiTag size="small" type="error" round>{{ STATUS_LABELS.cancelled }}</UiTag>
+          <span class="dish-name dish-name--cancelled">{{ item.dishName }}</span>
+          <span v-if="item.comboName" class="combo-hint">({{ item.comboName }})</span>
+        </div>
       </div>
     </div>
 
     <UiButton
-      v-if="allDone"
+      v-if="cancelled"
+      type="default"
+      size="small"
+      @click="$emit('dismissed', orderId)"
+    >Убрать</UiButton>
+    <UiButton
+      v-else-if="allDone"
       type="success"
       size="small"
       @click="$emit('assembled', orderId, deliveryType)"
@@ -95,11 +113,13 @@ const props = defineProps<{
   orderNumber: string | null
   deliveryType: string
   items: KitchenQueueItem[]
+  cancelled?: boolean
 }>()
 
 defineEmits<{
   assembled: [orderId: string, deliveryType: string]
   collectItem: [id: string, collected: boolean]
+  dismissed: [orderId: string]
 }>()
 
 const STATUS_LABELS: Record<KitchenQueueStatus, string> = {
@@ -111,10 +131,12 @@ const STATUS_LABELS: Record<KitchenQueueStatus, string> = {
 }
 
 const kitchenItems = computed(() => props.items.filter((i) => !i.skipKitchen))
-const selfCollectItems = computed(() => props.items.filter((i) => i.skipKitchen))
+const selfCollectItems = computed(() => props.items.filter((i) => i.skipKitchen && i.status !== 'cancelled'))
+const cancelledSelfCollectItems = computed(() => props.items.filter((i) => i.skipKitchen && i.status === 'cancelled'))
 
+const activeItems = computed(() => props.items.filter((i) => i.status !== 'cancelled'))
 const doneCount = computed(() => props.items.filter((i) => i.status === 'done' || i.status === 'served').length)
-const allDone = computed(() => props.items.length > 0 && doneCount.value === props.items.length)
+const allDone = computed(() => activeItems.value.length > 0 && activeItems.value.every((i) => i.status === 'done' || i.status === 'served'))
 
 const deliveryIcon = computed(() => (DELIVERY_TYPE_ICONS[props.deliveryType] ?? 'cart') as IconName)
 const deliveryTagType = computed(() => props.deliveryType === 'delivery' ? 'primary' as const : 'success' as const)
@@ -136,6 +158,12 @@ const statusTagType = (status: KitchenQueueStatus) => {
 
   &.assembly-card--done {
     border: 1.5px solid var(--color-success);
+  }
+
+  &.assembly-card--cancelled {
+    border: 1.5px solid var(--color-error);
+    background: var(--color-error-bg);
+    opacity: 0.85;
   }
 }
 
@@ -193,6 +221,11 @@ const statusTagType = (status: KitchenQueueStatus) => {
   &--done {
     text-decoration: line-through;
     color: var(--color-text-hint);
+  }
+
+  &--cancelled {
+    text-decoration: line-through;
+    color: var(--color-error);
   }
 }
 

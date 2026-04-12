@@ -80,7 +80,7 @@ import {
   UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone, normalizePhone } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, normalizePhone, getAllowedStatuses } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
@@ -131,14 +131,17 @@ const getStatusById = (statusId: string) => statuses.value.find((s) => s.id === 
 const currentStatus = computed(() => getStatusById(form.status))
 const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
 
-const statusMenuItems = computed(() => statuses.value
-  .filter((s) => s.id !== form.status)
-  .map((s) => ({
-    name: s.id,
-    label: s.name,
-    color: getStatusColor(s.id),
-  })),
-)
+const statusMenuItems = computed(() => {
+  const group = currentStatus.value?.groupType ?? 'new'
+
+  return getAllowedStatuses(group, statuses.value)
+    .filter((s) => s.id !== form.status)
+    .map((s) => ({
+      name: s.id,
+      label: s.name,
+      color: getStatusColor(s.id),
+    }))
+})
 
 // ─── Permissions ──────────────────────────────────────────────────────────────
 

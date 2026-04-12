@@ -3,6 +3,13 @@ import type { KitchenQueueItem } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { KitchenQueueRow } from './db-types'
 
+/** Realtime events don't include joined data, so orderNumber arrives as null.
+ *  Merge with the existing item to preserve the value from the initial REST load. */
+export const mergeRealtimeItem = (incoming: KitchenQueueItem, existing: KitchenQueueItem): KitchenQueueItem => ({
+  ...incoming,
+  orderNumber: incoming.orderNumber ?? existing.orderNumber,
+})
+
 export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueItem => {
   const row = raw as KitchenQueueRow
 
@@ -29,6 +36,7 @@ export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueI
     completedAt: row.completed_at,
     servedAt: row.served_at,
     servedBy: row.served_by ?? null,
+    dismissedAt: row.dismissed_at,
     skipKitchen: row.skip_kitchen,
     createdAt: row.created_at,
   }
@@ -45,8 +53,8 @@ export const kitchenQueueApi = {
         .order('created_at', { ascending: true }),
     )
 
-    // Cancelled without assignee (was in queue) — no need to show
-    return (data ?? []).map(mapKitchenQueueItem).filter((i) => !(i.status === 'cancelled' && !i.assignedTo))
+    // Cancelled that were already dismissed — no need to show
+    return (data ?? []).map(mapKitchenQueueItem).filter((i) => !(i.status === 'cancelled' && i.dismissedAt))
   },
 
   async listForAssembly(sb: SupabaseClient, tenantId: string): Promise<KitchenQueueItem[]> {
@@ -55,11 +63,11 @@ export const kitchenQueueApi = {
         .select('*, orders(order_number)')
         .eq('tenant_id', tenantId)
         .neq('delivery_type', 'dine_in')
-        .in('status', ['queued', 'in_progress', 'done'])
+        .in('status', ['queued', 'in_progress', 'done', 'cancelled'])
         .order('created_at', { ascending: true }),
     )
 
-    return (data ?? []).map(mapKitchenQueueItem)
+    return (data ?? []).map(mapKitchenQueueItem).filter((i) => !(i.status === 'cancelled' && i.dismissedAt))
   },
 
   async listActiveForTable(sb: SupabaseClient, tenantId: string, tableIds: string[]): Promise<(KitchenQueueItem & { tableId: string })[]> {
@@ -79,6 +87,17 @@ export const kitchenQueueApi = {
       ...mapKitchenQueueItem(row),
       tableId: (row as { orders: { table_id: string } }).orders.table_id,
     }))
+  },
+
+  async countActiveForOrder(sb: SupabaseClient, orderId: string): Promise<number> {
+    const { count, error } = await sb.from('kitchen_queue')
+      .select('*', { count: 'exact', head: true })
+      .eq('order_id', orderId)
+      .in('status', ['queued', 'in_progress'])
+
+    if (error) throw new Error(error.message)
+
+    return count ?? 0
   },
 
   async claim(sb: SupabaseClient, id: string, userId: string): Promise<void> {
@@ -102,6 +121,24 @@ export const kitchenQueueApi = {
       sb.from('kitchen_queue')
         .update({ status: 'queued', assigned_to: null, assigned_at: null })
         .eq('id', id),
+    )
+  },
+
+  async dismissCancelled(sb: SupabaseClient, id: string): Promise<void> {
+    await query(
+      sb.from('kitchen_queue')
+        .update({ dismissed_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('status', 'cancelled'),
+    )
+  },
+
+  async dismissCancelledOrder(sb: SupabaseClient, orderId: string): Promise<void> {
+    await query(
+      sb.from('kitchen_queue')
+        .update({ dismissed_at: new Date().toISOString() })
+        .eq('order_id', orderId)
+        .eq('status', 'cancelled'),
     )
   },
 

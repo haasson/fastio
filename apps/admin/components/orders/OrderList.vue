@@ -117,7 +117,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { UiButton, UiDataTable, UiEmpty, UiPagination, UiSectionHeader, UiSegmentedControl, UiSelect, UiSkeleton } from '@fastio/ui'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import type { Order } from '@fastio/shared'
-import { formatPhone } from '@fastio/shared'
+import { formatPhone, getAllowedStatuses } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderDrawer from '~/components/orders/OrderDrawer.vue'
 import { useOrders } from '~/composables/data/useOrders'
@@ -235,7 +235,16 @@ watch(
 // Bulk смена статуса
 const bulkStatusId = ref<string | null>(null)
 const bulkUpdating = ref(false)
-const statusOptions = computed(() => statuses.value.map((s) => ({ label: s.name, value: s.id })))
+const statusOptions = computed(() => {
+  if (!checkedRowKeys.value.length) return []
+
+  const selectedOrders = orders.value.filter((o) => checkedRowKeys.value.includes(o.id))
+  const groups = selectedOrders.map((o) => o.statusGroup ?? 'new')
+  const allowedSets = groups.map((g) => getAllowedStatuses(g, statuses.value))
+  const intersection = allowedSets.reduce((acc, set) => acc.filter((s) => set.some((x) => x.id === s.id)))
+
+  return intersection.map((s) => ({ label: s.name, value: s.id }))
+})
 
 const applyBulkStatus = async () => {
   if (!bulkStatusId.value) return
@@ -255,7 +264,7 @@ const exportCsv = () => {
   const selected = orders.value.filter((o) => checkedRowKeys.value.includes(o.id))
   const headers = ['#', 'Клиент', 'Телефон', 'Состав', 'Сумма', 'Доставка', 'Оплата', 'Дата']
   const rows = selected.map((o) => [
-    o.id.slice(0, 6).toUpperCase(),
+    o.orderNumber ?? o.id,
     o.customerName,
     formatPhone(o.customerPhone),
     o.items.map((i) => `${i.dishName} x${i.quantity}`).join('; '),
