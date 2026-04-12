@@ -8,11 +8,18 @@
 </template>
 
 <script setup lang="ts">
-import { provide, onMounted } from 'vue'
+import { provide, onMounted, computed } from 'vue'
 import { useDark } from '@vueuse/core'
-import { navigateTo } from '#imports'
+import { navigateTo, useHead } from '#imports'
 import { UiConfigProvider, UiConfirmModal } from '@fastio/ui'
 import { INVITE_PENDING_KEY } from '~/utils/constants'
+import { useTenantStore } from '~/stores/tenant'
+
+const tenantStore = useTenantStore()
+
+useHead({
+  title: computed(() => tenantStore.tenant?.name ? `${tenantStore.tenant.name} — Fastio` : 'Fastio'),
+})
 
 const isDark = useDark({
   attribute: 'data-theme',

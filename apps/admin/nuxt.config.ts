@@ -18,6 +18,11 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      charset: 'utf-8',
+      title: 'Fastio — Панель управления',
+      meta: [
+        { name: 'description', content: 'Управляйте меню, заказами, бронированиями и настройками вашего заведения' },
+      ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
