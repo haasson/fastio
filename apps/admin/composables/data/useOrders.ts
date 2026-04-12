@@ -41,6 +41,7 @@ export function useOrders(
   const statuses = options.statuses ?? ref([])
 
   const orders = computed(() => _orders.value)
+  const realtimeVersion = ref(0)
 
   const shouldInclude = (order: Order) => {
     if (filter.value === null) return false
@@ -144,26 +145,44 @@ export function useOrders(
     if (page.value === 1 && !_orders.value.find((o) => o.id === order.id)) {
       _orders.value.unshift(order)
       total.value++
+      realtimeVersion.value++
     }
   })
 
   const offUpdate = orderEvents.onUpdate((order) => {
     const idx = _orders.value.findIndex((o) => o.id === order.id)
+    const included = shouldInclude(order)
 
-    if (idx === -1) return
-    if (!shouldInclude(order)) {
+    if (idx === -1) {
+      if (included) {
+        if (hasActiveFilters()) {
+          pendingUpdate.value = true
+        } else if (page.value === 1) {
+          _orders.value.unshift(order)
+          total.value++
+        }
+        realtimeVersion.value++
+      }
+
+      return
+    }
+    if (!included) {
       _orders.value.splice(idx, 1)
       total.value = Math.max(0, total.value - 1)
     } else {
       _orders.value[idx] = order
     }
+    realtimeVersion.value++
   })
 
   const offDelete = orderEvents.onDelete(({ id }) => {
     const existed = _orders.value.some((o) => o.id === id)
 
     _orders.value = _orders.value.filter((o) => o.id !== id)
-    if (existed) total.value = Math.max(0, total.value - 1)
+    if (existed) {
+      total.value = Math.max(0, total.value - 1)
+      realtimeVersion.value++
+    }
   })
 
   onUnmounted(() => {
@@ -255,5 +274,5 @@ export function useOrders(
     fetchOrders()
   }
 
-  return { orders, loading, updateStatus, page, total, pendingUpdate, refresh }
+  return { orders, loading, updateStatus, page, total, pendingUpdate, refresh, realtimeVersion }
 }

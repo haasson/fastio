@@ -181,6 +181,7 @@ const {
   total,
   pendingUpdate,
   refresh,
+  realtimeVersion,
 } = useOrders(tenantIdRef, statusIdRef, {
   branchId: branchIdRef,
   statuses: computed(() => statuses.value),
@@ -193,6 +194,8 @@ const {
   sortDir,
   pageSize,
 })
+
+watch(realtimeVersion, () => emit('ordersChanged'))
 
 const updatingIds = reactive(new Set<string>())
 
