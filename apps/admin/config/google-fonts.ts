@@ -96,3 +96,10 @@ export const fontFamilyCSS = (value: string): string => {
 
 /** Строит URL для подключения шрифта из Google Fonts */
 export const googleFontUrl = (family: string, weights = '400;500;600;700'): string => `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weights}&display=swap`
+
+/** Строит батч-URL для одновременной загрузки нескольких Google Fonts */
+export const googleFontsBatchUrl = (families: string[], weights = '400;500;600;700'): string => {
+  const params = families.map((f) => `family=${encodeURIComponent(f)}:wght@${weights}`).join('&')
+
+  return `https://fonts.googleapis.com/css2?${params}&display=swap`
+}

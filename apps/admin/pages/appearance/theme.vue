@@ -59,6 +59,7 @@
       <UiSelect
         v-model:value="themeForm.fontFamily"
         :options="fontOptions"
+        :render-label="renderFontLabel"
         label="Шрифт текста"
         filterable
       />
@@ -71,6 +72,7 @@
       <UiSelect
         v-model:value="themeForm.headingFontFamily"
         :options="fontOptions"
+        :render-label="renderFontLabel"
         label="Шрифт заголовков"
         filterable
       />
@@ -100,10 +102,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onUnmounted, ref, watch } from 'vue'
+import { computed, h, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiIcon, UiSectionHeader } from '@fastio/ui'
+import type { SelectOption } from 'naive-ui'
 import { themePresets, fontOptions } from '~/config/theme-presets'
-import { isGoogleFontValue, fontFamilyCSS, googleFontUrl } from '~/config/google-fonts'
+import { GOOGLE_FONTS, isGoogleFontValue, fontFamilyCSS, googleFontsBatchUrl } from '~/config/google-fonts'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 import { getPresetPalette } from '@fastio/shared'
 import type { TenantThemePreset } from '@fastio/shared'
@@ -112,10 +115,25 @@ const form = inject(AppearanceFormKey)!
 const themeForm = form.themeForm
 const presets = themePresets
 
-// ─── font preview ─────────────────────────────────────────────────────────────
+// ─── font loading ─────────────────────────────────────────────────────────────
 
-const loadedFonts = new Set<string>()
-const loadedLinks: ReturnType<typeof document.createElement>[] = []
+const batchFontLink = ref<ReturnType<typeof document.createElement> | null>(null)
+
+onMounted(() => {
+  const families = GOOGLE_FONTS.map((f) => f.family)
+  const link = document.createElement('link')
+
+  link.rel = 'stylesheet'
+  link.href = googleFontsBatchUrl(families, '400')
+  document.head.appendChild(link)
+  batchFontLink.value = link
+})
+
+onUnmounted(() => {
+  batchFontLink.value?.remove()
+})
+
+// ─── font preview ─────────────────────────────────────────────────────────────
 
 const fontPreviewStyle = computed(() => {
   const value = themeForm.fontFamily
@@ -133,23 +151,15 @@ const headingFontPreviewStyle = computed(() => {
   return { fontFamily: fontFamilyCSS(value) }
 })
 
-const loadGoogleFont = (value: string) => {
-  if (!value || !isGoogleFontValue(value) || loadedFonts.has(value)) return
-  loadedFonts.add(value)
-  const link = document.createElement('link')
+// ─── font select render ───────────────────────────────────────────────────────
 
-  link.rel = 'stylesheet'
-  link.href = googleFontUrl(value)
-  document.head.appendChild(link)
-  loadedLinks.push(link)
+const renderFontLabel = (option: SelectOption) => {
+  const value = option.value as string
+
+  if (!value || !isGoogleFontValue(value)) return option.label as string
+
+  return h('span', { style: { fontFamily: fontFamilyCSS(value) } }, option.label as string)
 }
-
-onUnmounted(() => {
-  loadedLinks.forEach((link) => link.remove())
-})
-
-watch(() => themeForm.fontFamily, loadGoogleFont, { immediate: true })
-watch(() => themeForm.headingFontFamily, loadGoogleFont, { immediate: true })
 
 // ─── preset activation ────────────────────────────────────────────────────────
 
