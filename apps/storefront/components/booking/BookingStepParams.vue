@@ -10,6 +10,7 @@
           @click="form.branchId = branch.id"
         >
           {{ branch.name }}
+          <template v-if="branch.address" #sub>{{ branch.address }}</template>
         </FsButton>
       </div>
     </FsField>
@@ -60,7 +61,7 @@ type BookingForm = {
   branchId: string | null
 }
 
-type BookingBranch = { id: string; name: string }
+type BookingBranch = { id: string; name: string; address: string | null }
 
 const form = defineModel<BookingForm>('form', { required: true })
 
