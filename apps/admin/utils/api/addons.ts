@@ -169,6 +169,18 @@ export const addonsApi = {
 
   // ---- Dish addons ----
 
+  async getDishesThatHaveAddons(sb: SupabaseClient, dishIds: string[]): Promise<string[]> {
+    if (dishIds.length === 0) return []
+    const data = await query(
+      sb.from('dish_addons')
+        .select('dish_id')
+        .in('dish_id', dishIds),
+    )
+    const ids = new Set((data ?? []).map((r) => r.dish_id))
+
+    return dishIds.filter((id) => ids.has(id))
+  },
+
   async getDishAddons(sb: SupabaseClient, dishId: string): Promise<string[]> {
     const data = await query(
       sb.from('dish_addons')

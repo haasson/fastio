@@ -81,7 +81,7 @@
         :data="tableData"
         :row-key="(row: Order) => row.id"
         :checked-row-keys="checkedRowKeys"
-        :row-props="(row: Order) => ({ style: 'cursor: pointer', onClick: () => openEditModal(row) })"
+        :row-props="getRowProps"
         :bordered="false"
         size="small"
         @update:sorter="handleSorterChange"
@@ -223,6 +223,14 @@ const getBranchName = (branchId: string | null | undefined) => {
 
   return branchStore.branches.find((b) => b.id === branchId)?.name
 }
+
+const getRowProps = (row: Order) => ({
+  style: 'cursor: pointer',
+  onClick: (e: MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.n-checkbox')) return
+    openEditModal(row)
+  },
+})
 
 const { isOpen: modalOpen, data: modalOrder, open: openModal } = useDrawer<Order>()
 const openEditModal = (order: Order) => openModal(order)

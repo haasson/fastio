@@ -52,8 +52,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { UiCollapseItem, UiInput, UiButton, UiText, UiSelect } from '@fastio/ui'
+import { UiCollapseItem, UiInput, UiButton, UiText, UiSelect, useMessage } from '@fastio/ui'
 import type { DishIngredient } from '@fastio/shared'
+import { pluralize } from '@fastio/shared'
+import { useConfirm } from '@fastio/kit'
 import HintPopover from '~/components/ui/HintPopover.vue'
 
 const props = defineProps<{
@@ -61,6 +63,9 @@ const props = defineProps<{
 }>()
 
 const ingredients = reactive<DishIngredient[]>([])
+
+const { success } = useMessage()
+const { confirm } = useConfirm()
 
 const addMode = ref<'copy' | null>(null)
 const copyFromDishId = ref<string | null>(null)
@@ -73,11 +78,27 @@ const copyDishSelectOptions = computed(() => copySourceDishes.value.map((d) => (
 
 const hasCopySource = computed(() => copyDishSelectOptions.value.length > 0)
 
-const copyFromDish = () => {
+const copyFromDish = async () => {
   const dish = props.categoryDishes.find((d) => d.id === copyFromDishId.value)
 
   if (!dish) return
-  ingredients.splice(0, ingredients.length, ...dish.ingredients.map((i) => ({ ...i })))
+  const copied = dish.ingredients.map((i) => ({ ...i }))
+  const newNames = new Set(copied.map((i) => i.name.trim().toLowerCase()))
+  const hasLosses = ingredients.some((i) => i.name.trim() && !newNames.has(i.name.trim().toLowerCase()))
+
+  if (hasLosses) {
+    const ok = await confirm({
+      title: 'Заменить ингредиенты?',
+      message: 'Некоторые текущие ингредиенты не входят в список скопированных и будут удалены.',
+      confirmText: 'Заменить',
+      confirmType: 'warning',
+    })
+
+    if (!ok) return
+  }
+
+  ingredients.splice(0, ingredients.length, ...copied)
+  success(`Скопировано ${copied.length} ${pluralize(copied.length, 'ингредиент', 'ингредиента', 'ингредиентов')}`)
   copyFromDishId.value = null
   addMode.value = null
 }
@@ -87,7 +108,7 @@ const init = (items: DishIngredient[]) => ingredients.splice(0, ingredients.leng
 const add = () => ingredients.push({ name: '' })
 const remove = (i: number) => ingredients.splice(i, 1)
 
-defineExpose({ init, getIngredients: (): DishIngredient[] => [...ingredients] })
+defineExpose({ init, getIngredients: (): DishIngredient[] => ingredients.filter((i) => i.name.trim() !== '') })
 </script>
 
 <style scoped lang="scss">

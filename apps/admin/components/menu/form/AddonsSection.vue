@@ -106,8 +106,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect, UiInputNumber, UiEditButton, UiAlert } from '@fastio/ui'
+import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect, UiInputNumber, UiEditButton, UiAlert, useMessage } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
+import { pluralize } from '@fastio/shared'
+import { useConfirm } from '@fastio/kit'
 import { useDatabase } from '~/composables/data/useDatabase'
 import AddonPickerModal from './AddonPickerModal.vue'
 import HintPopover from '~/components/ui/HintPopover.vue'
@@ -125,6 +127,8 @@ const props = defineProps<{
 }>()
 
 const api = useDatabase()
+const { success } = useMessage()
+const { confirm } = useConfirm()
 
 const selectedAddonIds = ref(new Set<string>())
 const showPicker = ref(false)
@@ -153,17 +157,51 @@ const confirmMax = () => {
 }
 const addMode = ref<'copy' | null>(null)
 const copyFromDishId = ref<string | null>(null)
+const dishesWithAddons = ref<Set<string>>(new Set())
 
-const copyDishSelectOptions = computed(() => props.categoryDishes.map((d) => ({ label: d.name, value: d.id })),
+watch(
+  () => props.categoryDishes,
+  async (dishes) => {
+    if (dishes.length === 0) {
+      dishesWithAddons.value = new Set()
+
+      return
+    }
+    const ids = await api.addons.getDishesThatHaveAddons(dishes.map((d) => d.id))
+
+    dishesWithAddons.value = new Set(ids)
+  },
+  { immediate: true },
+)
+
+const copyDishSelectOptions = computed(() => props.categoryDishes
+  .filter((d) => dishesWithAddons.value.has(d.id))
+  .map((d) => ({ label: d.name, value: d.id })),
 )
 
 const hasCopySource = computed(() => copyDishSelectOptions.value.length > 0)
 
 const copyFromDish = async () => {
   if (!copyFromDishId.value) return
-  const ids = await api.addons.getDishAddons(copyFromDishId.value)
+  const rawIds = await api.addons.getDishAddons(copyFromDishId.value)
+  const activeAddonIds = new Set(props.allAddons.filter((a) => a.active).map((a) => a.id))
+  const ids = rawIds.filter((id) => activeAddonIds.has(id))
+  const newIds = new Set(ids)
+  const hasLosses = [...selectedAddonIds.value].some((id) => !newIds.has(id))
 
-  selectedAddonIds.value = new Set(ids)
+  if (hasLosses) {
+    const ok = await confirm({
+      title: 'Заменить добавки?',
+      message: 'Некоторые текущие добавки не входят в список скопированных и будут удалены.',
+      confirmText: 'Заменить',
+      confirmType: 'warning',
+    })
+
+    if (!ok) return
+  }
+
+  selectedAddonIds.value = newIds
+  success(`Скопировано ${ids.length} ${pluralize(ids.length, 'добавка', 'добавки', 'добавок')}`)
   copyFromDishId.value = null
   addMode.value = null
 }
