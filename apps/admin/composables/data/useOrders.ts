@@ -206,9 +206,15 @@ export function useOrders(
     }
 
     // Block manual status changes while kitchen is active (except cancel)
-    const { blocked } = await checkKitchenBlock(orderId, oldStatusId, newStatus)
+    const order = _orders.value.find((o) => o.id === orderId)
 
-    if (blocked) return
+    if (!order) {
+      console.warn(`[useOrders] order ${orderId} not found in local list, skipping kitchen check`)
+    } else {
+      const { blocked } = await checkKitchenBlock(order, newStatus?.groupType)
+
+      if (blocked) return
+    }
 
     await api.orders.updateStatus(orderId, newStatusId)
 

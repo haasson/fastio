@@ -104,4 +104,7 @@ export type Order = {
   acceptedBy: string | null
   createdAt: string
   updatedAt: string
+  kitchenQueuedAt: string | null
+  kitchenCompletedAt: string | null
+  visitedStatuses: string[]
 }

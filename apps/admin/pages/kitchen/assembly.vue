@@ -221,6 +221,7 @@ const onAssembled = async (orderId: string, deliveryType: string) => {
 
   const promises: Promise<unknown>[] = [
     api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id),
+    api.orders.markKitchenCompleted(orderId),
   ]
 
   if (targetStatusId) {

@@ -118,6 +118,9 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     acceptedBy: row.accepted_by ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    kitchenQueuedAt: row.kitchen_queued_at ?? null,
+    kitchenCompletedAt: row.kitchen_completed_at ?? null,
+    visitedStatuses: row.visited_statuses ?? [],
   }
 }
 
@@ -360,6 +363,14 @@ export const ordersApi = {
 
   async updateStatus(sb: SupabaseClient, orderId: string, status: string) {
     await query(sb.from('orders').update({ status }).eq('id', orderId))
+  },
+
+  async markKitchenCompleted(sb: SupabaseClient, orderId: string): Promise<void> {
+    await query(
+      sb.from('orders')
+        .update({ kitchen_completed_at: new Date().toISOString() })
+        .eq('id', orderId),
+    )
   },
 
   async create(sb: SupabaseClient, data: OrderCreateData): Promise<Order | null> {

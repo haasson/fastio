@@ -89,17 +89,6 @@ export const kitchenQueueApi = {
     }))
   },
 
-  async countActiveForOrder(sb: SupabaseClient, orderId: string): Promise<number> {
-    const { count, error } = await sb.from('kitchen_queue')
-      .select('*', { count: 'exact', head: true })
-      .eq('order_id', orderId)
-      .in('status', ['queued', 'in_progress'])
-
-    if (error) throw new Error(error.message)
-
-    return count ?? 0
-  },
-
   async claim(sb: SupabaseClient, id: string, userId: string): Promise<void> {
     await query(
       sb.from('kitchen_queue')

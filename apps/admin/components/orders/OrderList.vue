@@ -117,7 +117,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { UiButton, UiDataTable, UiEmpty, UiPagination, UiSectionHeader, UiSegmentedControl, UiSelect, UiSkeleton } from '@fastio/ui'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import type { Order } from '@fastio/shared'
-import { formatPhone, getAllowedStatuses } from '@fastio/shared'
+import { formatPhone, getAllowedStatuses, getKitchenAutoStatuses } from '@fastio/shared'
 import OrderCard from '~/components/orders/OrderCard.vue'
 import OrderDrawer from '~/components/orders/OrderDrawer.vue'
 import { useOrders } from '~/composables/data/useOrders'
@@ -125,6 +125,7 @@ import { DEFAULT_PAGE_SIZE } from '~/utils/api/orders'
 import { storeToRefs } from 'pinia'
 import { useBranchStore } from '~/stores/branch'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useTenantStore } from '~/stores/tenant'
 import useDrawer from '~/composables/ui/useDrawer'
 import { useOrderTable, COLUMN_OPTIONS } from '~/composables/ui/useOrderTable'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS } from '~/config/order-options'
@@ -142,6 +143,7 @@ const emit = defineEmits<{
 const { tenantId: tenantIdRef, statusId: statusIdRef, branchId: branchIdRef } = toRefs(props)
 
 const branchStore = useBranchStore()
+const tenantStore = useTenantStore()
 const { statuses } = storeToRefs(useOrderStatusesStore())
 
 const searchInput = ref('')
@@ -238,6 +240,10 @@ watch(
 // Bulk смена статуса
 const bulkStatusId = ref<string | null>(null)
 const bulkUpdating = ref(false)
+
+const kitchenAutoStatuses = computed(() => getKitchenAutoStatuses(tenantStore.tenant?.kitchenConfig),
+)
+
 const statusOptions = computed(() => {
   if (!checkedRowKeys.value.length) return []
 
@@ -246,7 +252,9 @@ const statusOptions = computed(() => {
   const allowedSets = groups.map((g) => getAllowedStatuses(g, statuses.value))
   const intersection = allowedSets.reduce((acc, set) => acc.filter((s) => set.some((x) => x.id === s.id)))
 
-  return intersection.map((s) => ({ label: s.name, value: s.id }))
+  return intersection
+    .filter((s) => !kitchenAutoStatuses.value.includes(s.id))
+    .map((s) => ({ label: s.name, value: s.id }))
 })
 
 const applyBulkStatus = async () => {

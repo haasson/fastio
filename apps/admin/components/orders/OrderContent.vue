@@ -80,17 +80,19 @@ import {
   UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone, normalizePhone, getAllowedStatuses } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, normalizePhone, getAllowedStatuses, getKitchenAutoStatuses } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useModules } from '~/composables/plan/useModules'
 import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
 import { useOrderDelivery } from '~/composables/delivery/useOrderDelivery'
 import { useKitchenStatusBlock } from '~/composables/kitchen/useKitchenStatusBlock'
+import { useConfirm } from '@fastio/kit'
 import OrderFormFields from './OrderFormFields.vue'
 import OrderNotesSection from './OrderNotesSection.vue'
 import OrderEventsSection from './OrderEventsSection.vue'
@@ -111,6 +113,7 @@ const emit = defineEmits<{
 const api = useDatabase()
 const { logSaveEvents } = useOrderEventLogger()
 const { statuses } = storeToRefs(useOrderStatusesStore())
+const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const modules = useModules()
 const { getStatusColor } = useStatusColor()
@@ -128,17 +131,22 @@ const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 // ─── Status ───────────────────────────────────────────────────────────────────
 
 const { checkKitchenBlock } = useKitchenStatusBlock()
+const { confirm } = useConfirm()
 
 const getStatusById = (statusId: string) => statuses.value.find((s) => s.id === statusId) ?? null
 
 const currentStatus = computed(() => getStatusById(form.status))
 const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
 
+const kitchenAutoStatuses = computed(() => getKitchenAutoStatuses(tenantStore.tenant?.kitchenConfig),
+)
+
 const statusMenuItems = computed(() => {
   const group = currentStatus.value?.groupType ?? 'new'
 
   return getAllowedStatuses(group, statuses.value)
     .filter((s) => s.id !== form.status)
+    .filter((s) => !kitchenAutoStatuses.value.includes(s.id))
     .map((s) => ({
       name: s.id,
       label: s.name,
@@ -154,9 +162,23 @@ const onStatusSelect = async (newStatusId: string) => {
   }
 
   const newStatus = statuses.value.find((s) => s.id === newStatusId)
-  const { blocked } = await checkKitchenBlock(props.order.id, props.order.status, newStatus)
+  const { blocked } = await checkKitchenBlock(props.order, newStatus?.groupType)
 
-  if (!blocked) form.status = newStatusId
+  if (blocked) return
+
+  if (props.order.visitedStatuses.includes(newStatusId)) {
+    const confirmed = await confirm({
+      title: 'Возврат в предыдущий статус',
+      message: `Заказ уже был в статусе «${newStatus?.name ?? newStatusId}». Вы уверены, что хотите вернуть его обратно?`,
+      confirmText: 'Да, вернуть',
+      cancelText: 'Отмена',
+      confirmType: 'warning',
+    })
+
+    if (confirmed !== true) return
+  }
+
+  form.status = newStatusId
 }
 
 // ─── Permissions ──────────────────────────────────────────────────────────────

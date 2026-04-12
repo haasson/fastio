@@ -215,6 +215,9 @@ export type OrderRow = {
   accepted_by: string | null
   created_at: string
   updated_at: string
+  kitchen_queued_at: string | null
+  kitchen_completed_at: string | null
+  visited_statuses: string[] | null
   order_items?: OrderItemRow[]
 }
 
