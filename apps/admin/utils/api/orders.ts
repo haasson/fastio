@@ -326,12 +326,17 @@ export const ordersApi = {
     tableId: string,
     match: { dishName: string; modifiers: OrderItemModifier[]; addons: OrderItemAddon[]; removedIngredients: string[] },
     excludeStatusIds: string[],
+    openedAt?: string,
   ): Promise<{ id: string; orderId: string } | null> {
     let q = sb
       .from('order_items')
-      .select('id, order_id, modifiers, addons, removed_ingredients, orders!inner(table_id, status)')
+      .select('id, order_id, modifiers, addons, removed_ingredients, orders!inner(table_id, status, created_at)')
       .eq('dish_name', match.dishName)
       .eq('orders.table_id', tableId)
+
+    if (openedAt) {
+      q = q.gte('orders.created_at', openedAt)
+    }
 
     if (excludeStatusIds.length) {
       q = q.not('orders.status', 'in', `(${excludeStatusIds.join(',')})`)

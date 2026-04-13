@@ -1,15 +1,34 @@
 <template>
-  <TabsLayout :tabs="tabs" base-path="/tables" prevent-compact />
+  <div>
+    <TabsLayout :tabs="tabs" base-path="/tables" prevent-compact />
+
+    <TableCheckoutModal
+      v-model="checkoutModalOpen"
+      :table="checkoutTable"
+      :session="checkoutTable ? tableSums[checkoutTable.id] : undefined"
+      :kitchen-dishes="checkoutTable ? (kitchenDishes[checkoutTable.id] ?? []) : []"
+      :ready-dishes="checkoutTable ? (readyDishes[checkoutTable.id] ?? []) : []"
+      :loading="checkoutLoading"
+      @confirm="onCheckoutConfirmed"
+      @remove-dish="(item) => checkoutTable && onRemoveDish(checkoutTable, item)"
+      @confirm-item="(itemId) => checkoutTable && onConfirmItem(itemId, checkoutTable.id)"
+      @reject-item="(itemId) => checkoutTable && onRejectItem(itemId, checkoutTable.id)"
+      @confirm-all="checkoutTable && onConfirmAllItems(checkoutTable.id)"
+      @mark-served="onMarkServed"
+      @cancel-kitchen="onCancelKitchen"
+      @serve-kitchen="onServeKitchen"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted, provide } from 'vue'
 import { useMessage } from '@fastio/ui'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
+import TableCheckoutModal from '~/components/tables/TableCheckoutModal.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
-import type { Table, TableCallType, TableCall, KitchenQueueItem, OrderItem } from '@fastio/shared'
-import { pluralize, todayInTz } from '@fastio/shared'
-import { useConfirm } from '@fastio/kit'
+import type { Table, TableCallType, TableCall, KitchenQueueItem } from '@fastio/shared'
+import { todayInTz } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useReservationsStore } from '~/stores/reservations'
@@ -39,7 +58,6 @@ const orderStatusesStore = useOrderStatusesStore()
 const userId = computed(() => authStore.user?.id ?? null)
 const { statuses } = storeToRefs(orderStatusesStore)
 const { success, warning } = useMessage()
-const { confirm } = useConfirm()
 
 const tenantId = computed(() => tenantStore.currentTenantId)
 
@@ -47,6 +65,11 @@ const cancelledStatusIds = computed(() => statuses.value
   .filter((s) => s.groupType === 'cancelled')
   .map((s) => s.id),
 )
+
+// ── Checkout modal ────────────────────────────────────────────
+const checkoutModalOpen = ref(false)
+const checkoutTable = ref<Table | null>(null)
+const checkoutLoading = ref(false)
 
 // ── State ─────────────────────────────────────────────────────
 const tables = ref<Table[]>([])
@@ -240,55 +263,31 @@ const toggleOpen = async (table: Table) => {
   }
 }
 
-const checkout = async (table: Table) => {
-  const sum = tableSums.value[table.id]?.sum
-  const allKitchenItems = kitchenDishes.value[table.id] ?? []
-  const activeKitchen = allKitchenItems.filter((i) => i.status === 'queued' || i.status === 'in_progress')
-  const doneKitchen = allKitchenItems.filter((i) => i.status === 'done')
-  const count = activeKitchen.length
+const checkout = (table: Table) => {
+  checkoutTable.value = table
+  checkoutModalOpen.value = true
+}
 
-  if (count) {
-    const orderIds = [...new Set(allKitchenItems.map((i) => i.orderId))]
-    const result = await confirm({
-      title: `На кухне ещё ${count} ${pluralize(count, 'блюдо', 'блюда', 'блюд')}`,
-      message: `Стол будет закрыт${sum ? ` · ${sum} ₽` : ''}. Что делать с блюдами?`,
-      confirmText: 'Отменить готовку',
-      confirmType: 'error',
-      cancelText: 'Всё подано',
-      cancelType: 'success',
-      reverseActions: true,
-    })
+const onCheckoutConfirmed = async (discountAmount: number) => {
+  const table = checkoutTable.value
 
-    if (result === null) return
+  if (!table) return
 
-    if (result) {
-      await api.kitchenQueue.cancelForOrders(orderIds)
-      if (doneKitchen.length) {
-        const doneOrderIds = [...new Set(doneKitchen.map((i) => i.orderId))]
+  checkoutLoading.value = true
 
-        await api.kitchenQueue.serveAllForOrders(doneOrderIds, userId.value!)
-      }
-    } else {
-      await api.kitchenQueue.serveAllForOrders(orderIds, userId.value!)
+  try {
+    await toggleOpen(table)
+
+    checkoutModalOpen.value = false
+
+    // Скидка применяется после закрытия стола — если toggleOpen упадёт,
+    // скидка не будет записана, и при повторе не задвоится
+    if (discountAmount > 0 && table.openedAt) {
+      await api.tables.applyDiscount(table.id, table.openedAt, discountAmount, cancelledStatusIds.value)
     }
-  } else {
-    const ok = await confirm({
-      title: `Расчёт: ${table.name}`,
-      message: `Стол будет закрыт${sum ? ` · ${sum} ₽` : ''}. Все заказы останутся в истории.`,
-      confirmText: 'Закрыть стол',
-      confirmType: 'warning',
-    })
-
-    if (!ok) return
-
-    if (doneKitchen.length) {
-      const doneOrderIds = [...new Set(doneKitchen.map((i) => i.orderId))]
-
-      await api.kitchenQueue.serveAllForOrders(doneOrderIds, userId.value!)
-    }
+  } finally {
+    checkoutLoading.value = false
   }
-
-  await toggleOpen(table)
 }
 
 const onMarkServed = async (dishId: string) => {
@@ -304,8 +303,44 @@ const onMarkServed = async (dishId: string) => {
   await api.kitchenQueue.markServed(dishId, userId.value!)
 }
 
+const onCancelKitchen = async (ids: string[], charged: boolean) => {
+  if (!checkoutTable.value) return
+  const tableId = checkoutTable.value.id
+
+  const prevKq = kitchenDishes.value[tableId] ?? []
+
+  kitchenDishes.value[tableId] = prevKq.filter((i) => !ids.includes(i.id))
+  if (!kitchenDishes.value[tableId]?.length) delete kitchenDishes.value[tableId]
+
+  try {
+    await api.kitchenQueue.cancelItems(ids, charged)
+    reloadKitchenDishes()
+  } catch {
+    kitchenDishes.value[tableId] = prevKq
+    warning('Не удалось отменить блюдо')
+  }
+}
+
+const onServeKitchen = async (ids: string[]) => {
+  if (!checkoutTable.value || !userId.value) return
+  const tableId = checkoutTable.value.id
+
+  const prevKq = kitchenDishes.value[tableId] ?? []
+
+  kitchenDishes.value[tableId] = prevKq.filter((i) => !ids.includes(i.id))
+  if (!kitchenDishes.value[tableId]?.length) delete kitchenDishes.value[tableId]
+
+  try {
+    await api.kitchenQueue.serveItems(ids, userId.value)
+    reloadKitchenDishes()
+  } catch {
+    kitchenDishes.value[tableId] = prevKq
+    warning('Не удалось подать блюдо')
+  }
+}
+
 const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
-  const item = await api.orders.findTableItem(table.id, sessionItem, cancelledStatusIds.value)
+  const item = await api.orders.findTableItem(table.id, sessionItem, cancelledStatusIds.value, table.openedAt ?? undefined)
 
   if (!item) {
     warning('Блюдо не найдено')

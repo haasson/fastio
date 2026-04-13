@@ -52,6 +52,7 @@ export type UiMenuDropdownItem = {
   label?: string
   name: string
   icon?: IconName
+  iconColor?: string
   color?: string
   link?: string
   onClick?: () => void

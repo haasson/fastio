@@ -38,6 +38,7 @@ export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueI
     servedBy: row.served_by ?? null,
     dismissedAt: row.dismissed_at,
     skipKitchen: row.skip_kitchen,
+    charged: row.charged,
     createdAt: row.created_at,
   }
 }
@@ -154,6 +155,24 @@ export const kitchenQueueApi = {
       sb.from('kitchen_queue')
         .update({ status: 'served', served_at: new Date().toISOString(), served_by: userId })
         .eq('id', id),
+    )
+  },
+
+  async cancelItems(sb: SupabaseClient, ids: string[], charged: boolean = false): Promise<void> {
+    if (!ids.length) return
+    await query(
+      sb.from('kitchen_queue')
+        .update({ status: 'cancelled', charged })
+        .in('id', ids),
+    )
+  },
+
+  async serveItems(sb: SupabaseClient, ids: string[], userId: string): Promise<void> {
+    if (!ids.length) return
+    await query(
+      sb.from('kitchen_queue')
+        .update({ status: 'served', served_at: new Date().toISOString(), served_by: userId })
+        .in('id', ids),
     )
   },
 
