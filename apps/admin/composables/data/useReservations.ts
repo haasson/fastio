@@ -1,4 +1,4 @@
-import { computed, ref, watch, onUnmounted, getCurrentInstance, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import type { Reservation, ReservationFormData, ReservationStatus } from '@fastio/shared'
 import { reservationEvents } from '~/composables/data/useReservationsChannel'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -47,14 +47,14 @@ export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | nu
     return result
   })
 
-  const offInsert = reservationEvents.onInsert((r) => {
+  reservationEvents.onInsert((r) => {
     if (branchId.value && r.branchId !== branchId.value) return
     if (!reservations.value.find((x) => x.id === r.id)) {
       reservations.value.unshift(r)
     }
   })
 
-  const offUpdate = reservationEvents.onUpdate((r) => {
+  reservationEvents.onUpdate((r) => {
     if (!RESERVATION_ACTIVE_STATUSES.includes(r.status)) {
       reservations.value = reservations.value.filter((x) => x.id !== r.id)
 
@@ -66,17 +66,9 @@ export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | nu
     if (idx !== -1) reservations.value[idx] = r
   })
 
-  const offDelete = reservationEvents.onDelete(({ id }) => {
+  reservationEvents.onDelete(({ id }) => {
     reservations.value = reservations.value.filter((x) => x.id !== id)
   })
-
-  if (getCurrentInstance()) {
-    onUnmounted(() => {
-      offInsert()
-      offUpdate()
-      offDelete()
-    })
-  }
 
   const refresh = fetch
 
