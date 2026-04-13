@@ -28,7 +28,7 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
 .setting-toggle {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 
   &.align-end {
     justify-content: space-between;
@@ -40,18 +40,18 @@ defineEmits<{ 'update:modelValue': [value: boolean] }>()
 .content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .label {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text);
-  line-height: 1.4;
+  line-height: var(--line-height-base);
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  line-height: 1.4;
+  line-height: var(--line-height-base);
 }
 </style>

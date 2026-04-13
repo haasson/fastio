@@ -86,8 +86,8 @@ const addonsTotal = computed(() => props.addons?.reduce((s, a) => s + a.price, 0
 .dish-item-row-root {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-bg-card);
 
   & + & {
@@ -100,40 +100,40 @@ const addonsTotal = computed(() => props.addons?.reduce((s, a) => s + a.price, 0
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--space-4);
 }
 
 .row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-8);
   min-width: 0;
 }
 
 .title-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   min-width: 0;
   flex: 1;
 }
 
 .category {
   flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   background: var(--color-bg-subtle);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-4);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -144,7 +144,7 @@ const addonsTotal = computed(() => props.addons?.reduce((s, a) => s + a.price, 0
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
   flex: 1;
 }
 
@@ -154,8 +154,8 @@ const addonsTotal = computed(() => props.addons?.reduce((s, a) => s + a.price, 0
 
 .row-label {
   flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
 
   &.remove {
     color: var(--color-error);
@@ -168,20 +168,20 @@ const addonsTotal = computed(() => props.addons?.reduce((s, a) => s + a.price, 0
 
 .row-price {
   flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   white-space: nowrap;
 
   &.delta {
-    font-weight: 400;
+    font-weight: var(--font-weight-regular);
   }
 }
 
 .controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-shrink: 0;
 }
 </style>

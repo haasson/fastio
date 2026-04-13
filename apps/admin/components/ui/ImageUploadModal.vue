@@ -272,13 +272,13 @@ watch(() => props.modelValue, (shown) => {
 <style scoped lang="scss">
 .zone {
   border: 1.5px dashed var(--color-border);
-  border-radius: 8px;
-  padding: 32px 16px;
+  border-radius: var(--radius-8);
+  padding: var(--space-32) var(--space-16);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-8);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 
@@ -291,9 +291,9 @@ watch(() => props.modelValue, (shown) => {
 
 .url-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   align-items: stretch;
-  margin-top: 12px;
+  margin-top: var(--space-12);
   width: 100%;
 
   :deep(:first-child) {
@@ -311,7 +311,7 @@ watch(() => props.modelValue, (shown) => {
   aspect-ratio: 4 / 3;
   min-height: 300px;
   max-height: 60vh;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 }
 
@@ -325,12 +325,12 @@ watch(() => props.modelValue, (shown) => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .footer-right {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   margin-left: auto;
 }
 </style>

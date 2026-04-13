@@ -20,7 +20,7 @@ import { UiPopover, UiIcon } from '@fastio/ui'
 .hint-icon {
   color: var(--color-text-secondary);
   cursor: default;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   flex-shrink: 0;
 }
 </style>

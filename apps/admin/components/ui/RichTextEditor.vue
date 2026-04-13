@@ -208,18 +208,18 @@ onBeforeUnmount(() => editor.value?.destroy())
 .editor-root {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
 }
 
 .editor-wrap {
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   transition: border-color 0.2s;
 
@@ -231,8 +231,8 @@ onBeforeUnmount(() => editor.value?.destroy())
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 6px 8px;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-8);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
   flex-wrap: wrap;
@@ -244,12 +244,12 @@ onBeforeUnmount(() => editor.value?.destroy())
   justify-content: center;
   min-width: 28px;
   height: 28px;
-  padding: 0 6px;
+  padding: 0 var(--space-4);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-4);
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-base);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 
@@ -259,19 +259,19 @@ onBeforeUnmount(() => editor.value?.destroy())
   }
 
   &.active {
-    background: var(--color-primary-light, rgba(var(--color-primary-rgb, 99 102 241) / 0.12));
+    background: var(--color-primary-light);
     color: var(--color-primary);
   }
 }
 
 .font-size-select {
   height: 28px;
-  padding: 0 6px;
+  padding: 0 var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: 5px;
+  border-radius: var(--radius-4);
   background: var(--color-bg);
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   cursor: pointer;
   outline: none;
 
@@ -285,7 +285,7 @@ onBeforeUnmount(() => editor.value?.destroy())
   width: 1px;
   height: 18px;
   background: var(--color-border);
-  margin: 0 4px;
+  margin: 0 var(--space-4);
 }
 
 .color-swatch {
@@ -307,10 +307,10 @@ onBeforeUnmount(() => editor.value?.destroy())
 }
 
 .content {
-  padding: 12px 14px;
+  padding: var(--space-12);
   min-height: 140px;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-loose);
   color: var(--color-text);
 
   :deep(.ProseMirror) {
@@ -319,25 +319,25 @@ onBeforeUnmount(() => editor.value?.destroy())
     zoom: 0.55;
 
     h1 {
-      font-size: 22px;
-      font-weight: 700;
-      margin: 14px 0 6px;
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      margin: var(--space-12) 0 var(--space-4);
     }
 
     h2 {
-      font-size: 17px;
-      font-weight: 600;
-      margin: 12px 0 6px;
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      margin: var(--space-12) 0 var(--space-4);
     }
 
     h3 {
-      font-size: 15px;
-      font-weight: 600;
-      margin: 10px 0 4px;
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      margin: var(--space-8) 0 var(--space-4);
     }
 
     p {
-      margin: 0 0 6px;
+      margin: 0 0 var(--space-4);
 
       &:last-child {
         margin-bottom: 0;
@@ -345,25 +345,25 @@ onBeforeUnmount(() => editor.value?.destroy())
     }
 
     ul {
-      padding-left: 20px;
-      margin: 4px 0 8px;
+      padding-left: var(--space-20);
+      margin: var(--space-4) 0 var(--space-8);
       list-style: disc;
     }
 
     ol {
-      padding-left: 20px;
-      margin: 4px 0 8px;
+      padding-left: var(--space-20);
+      margin: var(--space-4) 0 var(--space-8);
       list-style: decimal;
     }
 
     li {
-      margin-bottom: 2px;
+      margin-bottom: var(--space-4);
       display: list-item;
     }
 
     p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
-      color: var(--color-text-placeholder, var(--color-text-secondary));
+      color: var(--color-text-secondary);
       pointer-events: none;
       float: left;
       height: 0;

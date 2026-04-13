@@ -21,11 +21,11 @@ defineEmits<{ click: [] }>()
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
+  gap: var(--space-4);
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-4);
   width: 32px;
   height: 32px;
 
@@ -34,7 +34,7 @@ defineEmits<{ click: [] }>()
     width: 22px;
     height: 2px;
     background: var(--grey-800);
-    border-radius: 2px;
+    border-radius: var(--radius-4);
     transition: transform 0.2s, opacity 0.2s;
     transform-origin: center;
   }

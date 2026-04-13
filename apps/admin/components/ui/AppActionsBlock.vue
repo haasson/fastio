@@ -64,18 +64,18 @@ defineEmits<{
 .actions-block-root {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
 
   &.size-small {
-    gap: 8px;
+    gap: var(--space-8);
   }
 
   &.size-medium {
-    gap: 12px;
+    gap: var(--space-12);
   }
 
   &.size-large {
-    gap: 16px;
+    gap: var(--space-16);
   }
 }
 </style>

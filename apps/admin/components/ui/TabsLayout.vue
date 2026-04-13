@@ -68,13 +68,13 @@ const goToTab = (tab: string | number) => {
 .tabs-layout {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .tabs-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 
   :slotted(*) {
     margin-left: auto;
@@ -88,7 +88,7 @@ const goToTab = (tab: string | number) => {
 .with-sidebar .content-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: var(--space-16);
   flex: 1;
   min-height: 0;
 

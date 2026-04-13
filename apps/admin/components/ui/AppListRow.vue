@@ -54,9 +54,9 @@ const thumbStyle = computed(() => ({
 .row-root {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
 
@@ -76,7 +76,7 @@ const thumbStyle = computed(() => ({
 }
 
 .thumb {
-  border-radius: 4px;
+  border-radius: var(--radius-4);
   overflow: hidden;
   flex-shrink: 0;
   border: 1px solid var(--color-border);
@@ -103,7 +103,7 @@ const thumbStyle = computed(() => ({
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 .name {

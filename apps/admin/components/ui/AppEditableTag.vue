@@ -86,19 +86,19 @@ const emit = defineEmits<{
   flex-shrink: 0;
   width: 14px;
   height: 14px;
-  margin-right: 2px;
+  margin-right: var(--space-4);
   cursor: grab;
 
   &:active { cursor: grabbing; }
 }
 
 .count {
-  margin-left: 6px;
+  margin-left: var(--space-8);
 }
 
 .actions {
   display: flex;
-  gap: 2px;
-  margin-left: 2px;
+  gap: var(--space-4);
+  margin-left: var(--space-4);
 }
 </style>

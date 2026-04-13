@@ -22,19 +22,19 @@ const iconSize = computed(() => props.size === 'small' ? 28 : 32)
 .brand-root {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 
   .text {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     color: var(--color-title);
   }
 
   &.size-medium .text {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
   }
 
   &.size-small .text {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
   }
 }
 </style>

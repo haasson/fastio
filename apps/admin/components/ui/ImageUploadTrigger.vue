@@ -124,15 +124,15 @@ onUnmounted(() => {
 
 .zone {
   border: 1.5px dashed var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-8);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
-  padding: 28px 16px;
+  padding: var(--space-24) var(--space-16);
 
   .trigger-root--compact & {
     width: 100%;
@@ -149,7 +149,7 @@ onUnmounted(() => {
 .preview {
   position: relative;
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   cursor: pointer;
 
@@ -182,7 +182,7 @@ onUnmounted(() => {
 }
 
 .compact-label {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 

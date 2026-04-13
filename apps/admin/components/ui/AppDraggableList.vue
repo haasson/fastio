@@ -26,7 +26,7 @@ defineEmits<{
 .list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 :deep(.item-ghost) {

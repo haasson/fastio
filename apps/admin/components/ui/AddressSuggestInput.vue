@@ -72,20 +72,20 @@ const pick = (s: DadataSuggestion) => {
   z-index: 20;
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  margin-top: 4px;
+  margin-top: var(--space-4);
   overflow: hidden;
 }
 
 .suggestion-item {
   display: block;
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--space-8) var(--space-12);
   border: none;
   background: none;
   text-align: left;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
   cursor: pointer;
   transition: background 0.1s;

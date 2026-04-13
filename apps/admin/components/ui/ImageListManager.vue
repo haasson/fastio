@@ -173,19 +173,19 @@ const onReorderDrop = (targetIndex: number) => {
 .image-list-root {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .card {
   position: relative;
   height: 66px;
-  border-radius: 6px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   border: 1.5px solid var(--color-border);
   cursor: grab;
@@ -239,7 +239,7 @@ const onReorderDrop = (targetIndex: number) => {
   bottom: 4px;
   right: 4px;
   display: flex;
-  gap: 3px;
+  gap: var(--space-4);
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -248,9 +248,9 @@ const onReorderDrop = (targetIndex: number) => {
   width: 22px;
   height: 22px;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-4);
   background: rgba(0, 0, 0, 0.6);
-  color: #fff;
+  color: var(--color-white);
   display: flex;
   align-items: center;
   justify-content: center;
