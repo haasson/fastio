@@ -142,52 +142,52 @@ watch(form, () => {
 .hero-options-root {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: var(--space-24);
   align-items: start;
 }
 
 .col {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-hint);
 }
 
 .color-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .color-picker {
   width: 42px;
   height: 42px;
   border: none;
-  border-radius: 10px;
-  padding: 2px;
+  border-radius: var(--radius-8);
+  padding: var(--space-4);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .color-value {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   font-family: monospace;
 }

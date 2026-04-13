@@ -35,7 +35,7 @@ const open = ref(false)
 <style scoped lang="scss">
 .row-root {
   border-top: 1px solid var(--color-border);
-  padding: 16px 0;
+  padding: var(--space-16) 0;
 
   &:first-child {
     border-top: none;
@@ -46,13 +46,13 @@ const open = ref(false)
 .inner {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 
   &.clickable {
     cursor: pointer;
@@ -62,8 +62,8 @@ const open = ref(false)
 
 .label {
   flex: 1;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
 }
 
@@ -80,10 +80,10 @@ const open = ref(false)
 
 .options {
   border: 1px dashed var(--color-border);
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: var(--radius-8);
+  padding: var(--space-12);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 </style>

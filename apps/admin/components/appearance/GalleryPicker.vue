@@ -104,21 +104,21 @@ const onReorder = () => {
 .picker-root {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .selected-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 .selected-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: 6px;
+  gap: var(--space-8);
+  padding: var(--space-8);
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-border);
   background: var(--color-bg);
 }
@@ -135,7 +135,7 @@ const onReorder = () => {
 
 .item-name {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text);
 }
 
@@ -147,8 +147,8 @@ const onReorder = () => {
   border: none;
   cursor: pointer;
   color: var(--color-text-secondary);
-  padding: 2px;
-  border-radius: 3px;
+  padding: var(--space-4);
+  border-radius: var(--radius-4);
   flex-shrink: 0;
   transition: color 0.15s;
 
@@ -156,7 +156,7 @@ const onReorder = () => {
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 

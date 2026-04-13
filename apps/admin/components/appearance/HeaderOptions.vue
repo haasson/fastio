@@ -151,18 +151,18 @@ const updateAction = (key: string, action: 'scroll' | 'navigate') => {
 .header-options-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-hint);
 }
 
@@ -173,13 +173,13 @@ const updateAction = (key: string, action: 'scroll' | 'navigate') => {
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .nav-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .add-select {
@@ -190,15 +190,15 @@ const updateAction = (key: string, action: 'scroll' | 'navigate') => {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: var(--space-8);
+  padding: var(--space-8);
   background: var(--color-bg);
 
   & + & {
@@ -218,8 +218,8 @@ const updateAction = (key: string, action: 'scroll' | 'navigate') => {
 
 .nav-item-label {
   flex: 1;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
   min-width: 0;
   overflow: hidden;
@@ -233,7 +233,7 @@ const updateAction = (key: string, action: 'scroll' | 'navigate') => {
 }
 
 .action-hint {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   flex-shrink: 0;
 }

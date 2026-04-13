@@ -37,18 +37,18 @@ const resolvedGradients = computed(() => heroGradients.map((g) => ({
 .gradient-picker-root {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-4);
   background: none;
   border: 2px solid transparent;
-  border-radius: 10px;
-  padding: 3px;
+  border-radius: var(--radius-8);
+  padding: var(--space-4);
   cursor: pointer;
   transition: border-color 0.15s;
 
@@ -64,11 +64,11 @@ const resolvedGradients = computed(() => heroGradients.map((g) => ({
 .preview {
   width: 100%;
   height: 52px;
-  border-radius: 6px;
+  border-radius: var(--radius-8);
 }
 
 .name {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-hint);
 }
 </style>

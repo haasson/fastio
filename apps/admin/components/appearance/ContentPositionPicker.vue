@@ -22,13 +22,13 @@ const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
   display: grid;
   grid-template-columns: repeat(3, var(--cell-size, 32px));
   grid-template-rows: repeat(3, var(--cell-size, 32px));
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 /* Light variant — для вставки поверх тёмного/градиентного фона */
 .light .cell {
   border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 4px;
+  border-radius: var(--radius-4);
   background: rgba(255, 255, 255, 0.15);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
@@ -39,7 +39,7 @@ const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
   }
 
   &.selected {
-    border-color: white;
+    border-color: var(--color-white);
     background: rgba(255, 255, 255, 0.6);
   }
 }
@@ -47,7 +47,7 @@ const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
 /* Default variant — для настроек на светлом фоне */
 .cell {
   border: 2px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-4);
   background: var(--color-bg-card);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;

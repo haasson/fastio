@@ -168,6 +168,9 @@ const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.se
 </script>
 
 <style scoped lang="scss">
+/* Декоративный мини-превью storefront'а — все размеры и радиусы здесь
+   подбираются визуально под масштаб скелетона, не под шкалу токенов */
+/* stylelint-disable scale-unlimited/declaration-strict-value */
 .page-preview {
   border: 1px solid var(--color-border);
   border-radius: 12px;
@@ -488,4 +491,5 @@ const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.se
 
   &--short { width: 60%; }
 }
+/* stylelint-enable scale-unlimited/declaration-strict-value */
 </style>
