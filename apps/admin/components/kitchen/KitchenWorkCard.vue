@@ -129,7 +129,7 @@ const urgencyTagType = computed(() => {
 
 <style scoped lang="scss">
 .work-card-root {
-  gap: 10px;
+  gap: var(--space-8);
 
   &.card--warning { border: 1.5px solid var(--color-warning); }
   &.card--critical { border: 1.5px solid var(--color-error); }
@@ -143,12 +143,12 @@ const urgencyTagType = computed(() => {
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .order-id {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-hint);
   flex: 1;
 }
@@ -160,25 +160,25 @@ const urgencyTagType = computed(() => {
 .dish-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .dish-name {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .footer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .btn-done {

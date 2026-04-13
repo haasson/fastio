@@ -154,7 +154,7 @@ const statusTagType = (status: KitchenQueueStatus) => {
 
 <style scoped lang="scss">
 .assembly-card-root {
-  gap: 10px;
+  gap: var(--space-8);
 
   &.assembly-card--done {
     border: 1.5px solid var(--color-success);
@@ -170,31 +170,31 @@ const statusTagType = (status: KitchenQueueStatus) => {
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .order-id {
-  font-size: 14px;
-  font-weight: 800;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
   flex: 1;
 }
 
 .progress {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-hint);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .section-title {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--color-text-hint);
@@ -203,19 +203,19 @@ const statusTagType = (status: KitchenQueueStatus) => {
 .dishes {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .dish-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .dish-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
 
   &--done {
@@ -230,14 +230,14 @@ const statusTagType = (status: KitchenQueueStatus) => {
 }
 
 .combo-hint {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-hint);
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding-left: 24px;
+  gap: var(--space-4);
+  padding-left: var(--space-24);
 }
 </style>

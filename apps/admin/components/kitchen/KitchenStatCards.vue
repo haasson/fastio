@@ -42,7 +42,7 @@ defineEmits<{
 .stat-cards-root {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
+  gap: var(--space-12);
 
   @include mq-m {
     display: flex;
@@ -51,8 +51,8 @@ defineEmits<{
 
 .stat {
   align-items: center;
-  gap: 4px;
-  padding: 16px 20px;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-20);
   transition: all 0.2s;
 
   &.active {
@@ -77,10 +77,12 @@ defineEmits<{
 }
 
 .stat-value {
+  /* stylelint-disable scale-unlimited/declaration-strict-value */
   font-size: 28px;
-  font-weight: 700;
-  color: var(--color-title);
   line-height: 1;
+  /* stylelint-enable scale-unlimited/declaration-strict-value */
+  font-weight: var(--font-weight-bold);
+  color: var(--color-title);
 
   &--green { color: var(--color-success); }
   &--orange { color: var(--color-warning); }
@@ -88,7 +90,7 @@ defineEmits<{
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-hint);
 }
 </style>

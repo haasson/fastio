@@ -55,14 +55,14 @@ const urgencyTagType = computed(() => {
 .row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .name {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   overflow: hidden;
   text-overflow: ellipsis;
