@@ -158,26 +158,27 @@ watch(
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .ai-chat-root {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: var(--space-24);
+  right: var(--space-24);
   z-index: 200;
 }
 
 .fab {
+  @include flex-center;
+
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border: none;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-white);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: background 0.2s, transform 0.2s;
+  transition: background var(--transition-base), transform var(--transition-base);
 
   &:hover {
     background: var(--color-primary-hover);
@@ -199,7 +200,7 @@ watch(
   max-height: calc(100vh - 120px);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: var(--radius-16);
   box-shadow: var(--box-shadow);
   display: flex;
   flex-direction: column;
@@ -207,31 +208,28 @@ watch(
 }
 
 .panel-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 16px;
+  @include flex-row(var(--space-8));
+
+  padding: var(--space-12) var(--space-16);
   border-bottom: 1px solid var(--color-border);
   color: var(--color-primary);
 }
 
 .panel-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
 .clear-btn {
+  @include flex-row(0);
+  @include button-reset;
+
   margin-left: auto;
-  background: none;
-  border: none;
   color: var(--color-text-secondary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  transition: color 0.15s, background 0.15s;
+  padding: var(--space-4);
+  border-radius: var(--radius-8);
+  transition: color var(--transition-fast), background var(--transition-fast);
 
   &:hover {
     color: var(--color-error);
@@ -240,9 +238,9 @@ watch(
 }
 
 .disclaimer {
-  padding: 8px 16px;
-  font-size: 11px;
-  line-height: 1.4;
+  padding: var(--space-8) var(--space-16);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
   color: var(--color-text-secondary);
   text-align: center;
   border-bottom: 1px solid var(--color-border);
@@ -260,28 +258,26 @@ watch(
 }
 
 .messages {
+  @include flex-col(var(--space-12));
+
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  padding: var(--space-16);
 }
 
 .empty {
-  display: flex;
-  flex-direction: column;
+  @include flex-col(var(--space-12));
+
   align-items: center;
   justify-content: center;
-  gap: 12px;
   height: 100%;
   text-align: center;
-  padding: 24px;
+  padding: var(--space-24);
 }
 
 .empty-text {
   color: var(--color-text-hint);
-  line-height: 1.5;
+  line-height: var(--line-height-loose);
 }
 
 .message {
@@ -292,8 +288,8 @@ watch(
 
     .bubble {
       background: var(--color-primary);
-      color: #fff;
-      border-radius: 16px 16px 4px 16px;
+      color: var(--color-white);
+      border-radius: var(--radius-16) var(--radius-16) var(--radius-4) var(--radius-16);
     }
   }
 
@@ -303,31 +299,30 @@ watch(
     .bubble {
       background: var(--color-bg-subtle);
       color: var(--color-text);
-      border-radius: 16px 16px 16px 4px;
+      border-radius: var(--radius-16) var(--radius-16) var(--radius-16) var(--radius-4);
     }
   }
 }
 
 .bubble {
   max-width: 85%;
-  padding: 10px 14px;
-  font-size: 13px;
-  line-height: 1.5;
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-loose);
   word-break: break-word;
   white-space: pre-wrap;
 }
 
 .typing {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  padding: 12px 18px;
+  @include flex-row(var(--space-4));
+
+  padding: var(--space-12) var(--space-16);
 }
 
 .dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--color-text-secondary);
   animation: typing-bounce 1.4s infinite ease-in-out;
 
@@ -352,12 +347,11 @@ watch(
 }
 
 .message-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  @include flex-row(var(--space-8));
+
+  padding: var(--space-8) var(--space-12);
   background: var(--color-error-light);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
 }
 
 .error-text {
@@ -365,12 +359,11 @@ watch(
 }
 
 .retry-btn {
-  background: none;
-  border: none;
+  @include button-reset;
+
   color: var(--color-primary);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   white-space: nowrap;
 
   &:hover {
@@ -379,23 +372,22 @@ watch(
 }
 
 .input-area {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
+  @include flex-row(var(--space-8));
+
+  padding: var(--space-12);
   border-top: 1px solid var(--color-border);
 }
 
 .chat-input {
   flex: 1;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-base);
   background: var(--color-bg-card);
   color: var(--color-text);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--transition-fast);
 
   &::placeholder {
     color: var(--color-text-secondary);
@@ -407,17 +399,15 @@ watch(
 }
 
 .send-btn {
+  @include flex-center;
+  @include button-reset;
+
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: none;
+  border-radius: var(--radius-8);
   background: var(--color-primary);
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, opacity 0.15s;
+  color: var(--color-white);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
   flex-shrink: 0;
 
   &:hover:not(:disabled) {
@@ -434,7 +424,7 @@ watch(
   white-space: normal;
 
   :deep(p) {
-    margin: 0 0 8px;
+    margin: 0 0 var(--space-8);
 
     &:last-child {
       margin-bottom: 0;
@@ -451,35 +441,31 @@ watch(
   }
 
   :deep(ul), :deep(ol) {
-    margin: 4px 0;
-    padding-left: 20px;
-  }
-
-  :deep(li) {
-    margin: 2px 0;
+    margin: var(--space-4) 0;
+    padding-left: var(--space-20);
   }
 
   :deep(strong) {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   :deep(code) {
     background: var(--color-bg-subtle);
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: var(--space-4);
+    border-radius: var(--radius-4);
+    font-size: var(--font-size-sm);
   }
 }
 
 // Transition
 .chat-panel-enter-active,
 .chat-panel-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity var(--transition-base) ease, transform var(--transition-base) ease;
 }
 
 .chat-panel-enter-from,
 .chat-panel-leave-to {
   opacity: 0;
-  transform: translateY(12px) scale(0.95);
+  transform: translateY(var(--space-12)) scale(0.95);
 }
 </style>
