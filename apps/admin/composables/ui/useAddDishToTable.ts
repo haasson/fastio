@@ -63,15 +63,17 @@ export default function useAddDishToTable(getTenantId: () => string | null) {
 
     const modifiersDelta = (result.modifiers ?? []).reduce((sum, m) => sum + (m.priceDelta ?? 0), 0)
     const addonsDelta = (result.addons ?? []).reduce((sum, a) => sum + (a.price ?? 0), 0)
-    const totalPrice = result.price + modifiersDelta + addonsDelta
+    const unitPrice = result.price + modifiersDelta + addonsDelta
+    const totalPrice = unitPrice * result.quantity
 
     await createTableOrder({
       dishId: result.dishId,
       comboId: result.comboId ?? null,
       dishName: result.dishName,
       categoryName: result.categoryName,
-      price: totalPrice,
-      quantity: 1,
+      price: unitPrice,
+      quantity: result.quantity,
+      customizable: result.customizable,
       removedIngredients: result.removedIngredients,
       modifiers: result.modifiers,
       addons: result.addons,

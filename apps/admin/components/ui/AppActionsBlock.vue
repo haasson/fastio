@@ -6,7 +6,8 @@
       type="text"
       :size="size"
       icon="pencil"
-      icon-bg="color-primary"
+      :icon-bg="disableEdit ? 'color-text-tertiary' : 'color-primary'"
+      :disabled="disableEdit"
       title="Редактировать"
       @click="$emit('edit')"
     />
@@ -39,6 +40,7 @@ import { UiButton } from '@fastio/ui'
 type Props = {
   size?: 'tiny' | 'small' | 'medium' | 'large'
   showEdit?: boolean
+  disableEdit?: boolean
   showCopy?: boolean
   showDelete?: boolean
 }
@@ -46,6 +48,7 @@ type Props = {
 withDefaults(defineProps<Props>(), {
   size: 'medium',
   showEdit: true,
+  disableEdit: false,
   showCopy: false,
   showDelete: true,
 })

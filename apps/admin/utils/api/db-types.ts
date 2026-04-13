@@ -156,6 +156,7 @@ export type OrderItemRow = {
   removed_ingredients: string[]
   modifiers: OrderItemModifier[]
   addons: OrderItemAddon[]
+  customizable: boolean | null
   sort_order: number
   completed_at: string | null
   combo_items: { dishName: string }[] | null

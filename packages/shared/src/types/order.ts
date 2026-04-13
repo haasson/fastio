@@ -35,6 +35,7 @@ export type OrderItem = {
   removedIngredients: string[]
   modifiers: OrderItemModifier[]
   addons: OrderItemAddon[]
+  customizable?: boolean
   sortOrder?: number
   completedAt: string | null
   comboItems: { dishName: string }[] | null

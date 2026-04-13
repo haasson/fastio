@@ -36,6 +36,7 @@
         <AppActionsBlock
           v-if="!readonly"
           size="small"
+          :disable-edit="!isItemEditable(item)"
           @edit="openEditItem(idx)"
           @delete="removeItem(idx)"
         />
@@ -77,8 +78,6 @@ import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPi
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 import useDrawer from '~/composables/ui/useDrawer'
 
-const { confirm } = useConfirm()
-
 const props = defineProps<{
   items: OrderItem[]
   tenantId: string
@@ -88,6 +87,15 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:items': [items: OrderItem[]]
 }>()
+
+const { confirm } = useConfirm()
+
+const isItemEditable = (item: OrderItem) => {
+  if (item.customizable !== undefined) return item.customizable
+
+  // Фолбэк для айтемов из БД (без поля customizable): считаем редактируемым, если есть хоть что-то
+  return item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
+}
 
 const { isOpen: addDishModalOpen, data: editingItemIndex, open: openAddDishModal, close: closeAddDishModal } = useDrawer<number>()
 
@@ -147,7 +155,8 @@ const onPickerSelect = (result: DishPickerResult) => {
     dishName: result.dishName,
     categoryName: result.categoryName,
     price: result.price,
-    quantity: isEdit ? props.items[editingItemIndex.value!].quantity : 1,
+    quantity: isEdit ? props.items[editingItemIndex.value!].quantity : result.quantity,
+    customizable: isEdit ? props.items[editingItemIndex.value!].customizable : result.customizable,
     removedIngredients: result.removedIngredients,
     modifiers: result.modifiers,
     addons: result.addons,
@@ -167,7 +176,7 @@ const onPickerSelect = (result: DishPickerResult) => {
       const key = itemKey(item)
       const existing = item.dishId ? items.find((i) => itemKey(i) === key) : undefined
 
-      if (existing) existing.quantity += 1
+      if (existing) existing.quantity += result.quantity
       else items.push({ ...item })
     })
   }

@@ -32,71 +32,35 @@
         </div>
 
         <div class="list">
-          <template v-if="searchQuery">
-            <div v-if="!searchResults.length" class="state">Ничего не найдено</div>
-            <button
-              v-for="dish in searchResults"
-              :key="dish.id"
-              class="item"
-              @click="selectDish(dish)"
-            >
-              <div class="item-photo">
-                <img
-                  v-if="dish.photos[0]"
-                  :src="dish.photos[0]"
-                  :alt="dish.name"
-                  class="item-img"
-                />
-                <div v-else class="item-no-photo" />
-              </div>
-              <span class="item-name">{{ dish.name }}</span>
-              <span class="item-price">{{ dish.price }} ₽</span>
-              <UiIcon name="chevronRight" :size="14" class="item-arrow" />
-            </button>
-          </template>
-          <template v-else-if="selectedCatId === 'combos'">
-            <button
-              v-for="combo in allCombos"
-              :key="combo.id"
-              class="item"
-              @click="selectCombo(combo)"
-            >
-              <div class="item-photo">
-                <img
-                  v-if="combo.photos[0]"
-                  :src="combo.photos[0]"
-                  :alt="combo.name"
-                  class="item-img"
-                />
-                <div v-else class="item-no-photo" />
-              </div>
-              <span class="item-name">{{ combo.name }}</span>
-              <span class="item-price">{{ combo.price }} ₽</span>
-              <UiIcon name="chevronRight" :size="14" class="item-arrow" />
-            </button>
-          </template>
-          <template v-else>
-            <div v-if="!currentDishes.length" class="state">Нет блюд</div>
-            <button
-              v-for="dish in currentDishes"
-              :key="dish.id"
-              class="item"
-              @click="selectDish(dish)"
-            >
-              <div class="item-photo">
-                <img
-                  v-if="dish.photos[0]"
-                  :src="dish.photos[0]"
-                  :alt="dish.name"
-                  class="item-img"
-                />
-                <div v-else class="item-no-photo" />
-              </div>
-              <span class="item-name">{{ dish.name }}</span>
-              <span class="item-price">{{ dish.price }} ₽</span>
-              <UiIcon name="chevronRight" :size="14" class="item-arrow" />
-            </button>
-          </template>
+          <div v-if="listEmptyMessage" class="state">{{ listEmptyMessage }}</div>
+          <div
+            v-for="entry in displayItems"
+            :key="entry.data.id"
+            class="item"
+          >
+            <div class="item-photo">
+              <img
+                v-if="entry.data.photos[0]"
+                :src="entry.data.photos[0]"
+                :alt="entry.data.name"
+                class="item-img"
+              />
+              <div v-else class="item-no-photo" />
+            </div>
+            <span class="item-name">{{ entry.data.name }}</span>
+            <span class="item-price">{{ entry.data.price }} ₽</span>
+            <div class="item-controls">
+              <UiStepper
+                :model-value="dishQty[entry.data.id] ?? 1"
+                :min="1"
+                size="small"
+                @update:model-value="dishQty[entry.data.id] = $event"
+              />
+              <UiButton size="small" type="primary" @click="onSelectItem(entry)">
+                Добавить
+              </UiButton>
+            </div>
+          </div>
         </div>
       </template>
     </div>
@@ -198,6 +162,7 @@
           </UiCheckbox>
         </div>
       </template>
+
     </div>
 
     <template #footer>
@@ -223,12 +188,14 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, toRef, watch } from 'vue'
-import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput } from '@fastio/ui'
+import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput, UiStepper } from '@fastio/ui'
 import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import type { Addon } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
 import { useModules } from '~/composables/plan/useModules'
+
+type PickerListItem = { type: 'dish'; data: Dish } | { type: 'combo'; data: Combo }
 
 export type DishPickerResult = {
   dishId: string | null
@@ -236,6 +203,8 @@ export type DishPickerResult = {
   dishName: string
   categoryName: string | null
   price: number
+  quantity: number
+  customizable: boolean
   modifierOptionIds: string[]
   modifiers: OrderItemModifier[]
   removedIngredients: string[]
@@ -278,6 +247,9 @@ const dishAddons = ref<Addon[]>([])
 const ghostAddons = ref<OrderItemAddon[]>([])
 const ghostModifierGroups = ref<OrderItemModifier[]>([])
 const selectedAddonIds = reactive<Set<string>>(new Set())
+const quantity = ref(1)
+const isCustomizable = ref(false)
+const dishQty = reactive<Record<string, number>>({})
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 
@@ -301,6 +273,21 @@ const searchResults = computed(() => {
 
 const removableIngredients = computed(() => selectedDish.value?.ingredients ?? [])
 
+const displayItems = computed((): PickerListItem[] => {
+  if (searchQuery.value) return searchResults.value.map((d) => ({ type: 'dish' as const, data: d }))
+  if (selectedCatId.value === 'combos') return allCombos.value.map((c) => ({ type: 'combo' as const, data: c }))
+
+  return currentDishes.value.map((d) => ({ type: 'dish' as const, data: d }))
+})
+
+const listEmptyMessage = computed(() => {
+  if (displayItems.value.length) return null
+  if (searchQuery.value) return 'Ничего не найдено'
+  if (selectedCatId.value !== 'combos') return 'Нет блюд'
+
+  return 'Нет комбо'
+})
+
 const modalTitle = computed(() => {
   if (step.value === 'pick') return 'Выберите блюдо'
   if (props.editItem) return 'Изменить состав'
@@ -323,6 +310,9 @@ watch(
     ghostModifierGroups.value = []
     Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
     Object.keys(removed).forEach((k) => delete removed[k])
+    Object.keys(dishQty).forEach((k) => delete dishQty[k])
+    quantity.value = 1
+    isCustomizable.value = false
 
     if (!allDishes.value.length) await fetchData()
 
@@ -406,8 +396,16 @@ const prefillDish = async (dish: Dish) => {
 
 // ─── Select ───────────────────────────────────────────────────────────────────
 
-const selectDish = async (dish: Dish) => {
+const onSelectItem = (entry: PickerListItem) => {
+  const qty = dishQty[entry.data.id] ?? 1
+
+  if (entry.type === 'dish') selectDish(entry.data, qty)
+  else selectCombo(entry.data, qty)
+}
+
+const selectDish = async (dish: Dish, qty = 1) => {
   selectedDish.value = dish
+  quantity.value = qty
   Object.keys(selectedModifiers).forEach((k) => delete selectedModifiers[k])
   Object.keys(removed).forEach((k) => delete removed[k])
   selectedAddonIds.clear()
@@ -425,20 +423,26 @@ const selectDish = async (dish: Dish) => {
     if (def) selectedModifiers[group.groupId] = def.optionId
   }
 
-  if (props.showIngredients || modifierGroups.value.length > 0 || dishAddons.value.length > 0) {
+  const hasOptions = (props.showIngredients && removableIngredients.value.length > 0) || modifierGroups.value.length > 0 || dishAddons.value.length > 0
+
+  isCustomizable.value = hasOptions
+
+  if (hasOptions) {
     step.value = 'customize'
   } else {
     onConfirm()
   }
 }
 
-const selectCombo = (combo: Combo) => {
+const selectCombo = (combo: Combo, qty = 1) => {
   emit('select', {
     dishId: null,
     comboId: combo.id,
     dishName: combo.name,
     categoryName: 'Комбо',
     price: combo.price,
+    quantity: qty,
+    customizable: false,
     modifierOptionIds: [],
     modifiers: [],
     removedIngredients: [],
@@ -486,6 +490,8 @@ const onConfirm = () => {
     dishName: selectedDish.value.name,
     categoryName,
     price: selectedDish.value.price,
+    quantity: quantity.value,
+    customizable: isCustomizable.value,
     modifierOptionIds,
     modifiers,
     removedIngredients,
@@ -553,19 +559,17 @@ const onConfirm = () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-radius: 10px;
   background: transparent;
-  border: 1px solid transparent;
-  cursor: pointer;
-  text-align: left;
-  width: 100%;
-  transition: background 0.1s, border-color 0.1s;
+  border: 1px solid var(--color-border-light);
+}
 
-  &:hover {
-    background: var(--color-bg-hover);
-    border-color: var(--color-border);
-  }
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .item-photo {
@@ -607,11 +611,6 @@ const onConfirm = () => {
   color: var(--color-primary);
   white-space: nowrap;
   flex-shrink: 0;
-}
-
-.item-arrow {
-  flex-shrink: 0;
-  color: var(--color-text-tertiary);
 }
 
 // ── Шаг 2 ───────────────────────────────────────────────────────────────────
