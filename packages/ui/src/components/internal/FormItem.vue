@@ -100,8 +100,7 @@ $form-item-sizes: (
   }
 
   .control {
-    display: flex;
-    flex-direction: column;
+    display: block;
   }
 
   .error {

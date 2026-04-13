@@ -1,4 +1,4 @@
-import { getServerSupabase, getAuthSupabase } from '../../utils/supabase'
+import { getServerSupabase, getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
 import { createRateLimiter, todayInTz, addDaysToDateStr } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(5, 60_000)
@@ -59,9 +59,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const minGuests = settings?.min_guests ?? 1
-  const maxGuests = settings?.max_guests ?? 20
   const maxAdvanceDays = settings?.max_advance_days ?? 30
   const autoConfirm = settings?.auto_confirm ?? false
+  const maxGuests = await resolveMaxGuests(supabase, tenantId, settings ?? {})
 
   // Validate guest count
   if (body.guestCount < minGuests || body.guestCount > maxGuests) {

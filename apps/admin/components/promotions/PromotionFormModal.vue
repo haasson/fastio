@@ -122,9 +122,7 @@
         <UiDatepicker v-model="form.activeTo" label="Активна до" />
       </div>
 
-      <div class="switch-row">
-        <UiSwitch v-model="form.active" label="Активна" />
-      </div>
+      <UiSwitch v-model="form.active" label="Активна" />
     </UiForm>
 
     <DishPickerModal
@@ -298,10 +296,6 @@ const onConfirm = () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-}
-
-.switch-row {
-  align-self: flex-start;
 }
 
 .weekdays-label {

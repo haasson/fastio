@@ -58,13 +58,11 @@
         />
       </div>
 
-      <div class="switch-row">
-        <UiSwitch
-          :model-value="form.active"
-          label="Активна"
-          @update:model-value="form.active = $event"
-        />
-      </div>
+      <UiSwitch
+        :model-value="form.active"
+        label="Активна"
+        @update:model-value="form.active = $event"
+      />
     </UiForm>
   </UiModal>
 </template>
@@ -208,7 +206,4 @@ const handleSave = async () => {
   @include modal-form;
 }
 
-.switch-row {
-  align-self: flex-start;
-}
 </style>

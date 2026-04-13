@@ -222,4 +222,31 @@ export async function getActiveBranchIds(
   return (data ?? []).map((b) => b.id as string)
 }
 
+export async function resolveMaxGuests(
+  supabase: ReturnType<typeof getServerSupabase>,
+  tenantId: string,
+  settings: { max_guests?: number | null, max_guests_auto?: boolean | null },
+): Promise<number> {
+  const maxGuestsAuto = settings.max_guests_auto ?? false
+  let maxGuests = (settings.max_guests as number) ?? 20
+
+  if (maxGuestsAuto) {
+    const { data: tableData } = await supabase
+      .from('tables')
+      .select('capacity')
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .not('capacity', 'is', null)
+      .order('capacity', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (tableData?.capacity) {
+      maxGuests = tableData.capacity as number
+    }
+  }
+
+  return maxGuests
+}
+
 export { mapDeliveryZoneRow }

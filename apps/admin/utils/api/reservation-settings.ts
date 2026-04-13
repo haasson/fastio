@@ -11,6 +11,7 @@ const mapSettings = (raw: Record<string, unknown>): ReservationSettings => ({
   maxAdvanceDays: raw.max_advance_days as number,
   minGuests: raw.min_guests as number,
   maxGuests: raw.max_guests as number,
+  maxGuestsAuto: (raw.max_guests_auto as boolean) ?? false,
   autoConfirm: raw.auto_confirm as boolean,
 })
 
@@ -40,6 +41,7 @@ export const reservationSettingsApi = {
     if (data.maxAdvanceDays !== undefined) payload.max_advance_days = data.maxAdvanceDays
     if (data.minGuests !== undefined) payload.min_guests = data.minGuests
     if (data.maxGuests !== undefined) payload.max_guests = data.maxGuests
+    if (data.maxGuestsAuto !== undefined) payload.max_guests_auto = data.maxGuestsAuto
     if (data.autoConfirm !== undefined) payload.auto_confirm = data.autoConfirm
 
     const result = await query(

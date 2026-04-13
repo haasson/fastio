@@ -34,6 +34,23 @@
         class="buffer-select"
       />
 
+      <UiSectionHeader title="Количество гостей" />
+      <div class="guests-row">
+        <UiInputNumber
+          v-model:value="form.maxGuests"
+          label="Максимум гостей"
+          :min="1"
+          :max="500"
+          :show-button="true"
+          :disabled="form.maxGuestsAuto && hasDineIn"
+        />
+        <UiSwitch
+          v-if="hasDineIn"
+          v-model:value="form.maxGuestsAuto"
+          label="Авто: брать вместимость самого большого стола"
+        />
+      </div>
+
       <div class="footer">
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
       </div>
@@ -43,7 +60,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiAlert, UiButton, UiForm, UiInputNumber, UiSectionHeader, UiSelect, useMessage } from '@fastio/ui'
+import { UiAlert, UiButton, UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiSwitch, useMessage } from '@fastio/ui'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -70,9 +87,12 @@ const form = reactive({
   slotStep: 30,
   maxAdvanceDays: 30,
   closeBufferMinutes: 60,
+  maxGuests: 20,
+  maxGuestsAuto: false,
 })
 
 const hasSchedule = computed(() => !!tenantStore.tenant?.workingHoursSchedule)
+const hasDineIn = computed(() => !!tenantStore.tenant?.modules?.dineIn)
 
 watch(() => tenantStore.currentTenantId, async (id) => {
   if (!id) return
@@ -82,6 +102,8 @@ watch(() => tenantStore.currentTenantId, async (id) => {
     form.slotStep = data.slotStep
     form.maxAdvanceDays = data.maxAdvanceDays
     form.closeBufferMinutes = data.closeBufferMinutes
+    form.maxGuests = data.maxGuests
+    form.maxGuestsAuto = data.maxGuestsAuto
   }
 }, { immediate: true })
 
@@ -122,6 +144,12 @@ const handleSave = async () => {
 
 .buffer-select {
   max-width: 260px;
+}
+
+.guests-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
 }
 
 .footer {

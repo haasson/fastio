@@ -58,9 +58,7 @@
         <UiDatepicker v-model="form.activeTo" label="Активен до" />
       </div>
 
-      <div class="switch-row">
-        <UiSwitch v-model="form.active" label="Активен" />
-      </div>
+      <UiSwitch v-model="form.active" label="Активен" />
     </UiForm>
   </UiModal>
 </template>
@@ -162,7 +160,4 @@ const onConfirm = () => {
   gap: 10px;
 }
 
-.switch-row {
-  align-self: flex-start;
-}
 </style>

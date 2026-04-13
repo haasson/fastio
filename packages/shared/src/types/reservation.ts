@@ -46,6 +46,7 @@ export type ReservationSettings = {
   maxAdvanceDays: number
   minGuests: number
   maxGuests: number
+  maxGuestsAuto: boolean      // if true, maxGuests is derived from largest table capacity
   autoConfirm: boolean
 }
 

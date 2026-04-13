@@ -20,9 +20,7 @@
         <span v-if="imageError" class="field-error">Загрузите изображение</span>
       </div>
 
-      <div class="switch-row">
-        <UiSwitch v-model="form.enabled" label="Активен" />
-      </div>
+      <UiSwitch v-model="form.enabled" label="Активен" />
 
       <UiSelect
         v-model:value="linkType"
@@ -199,10 +197,6 @@ const onConfirm = () => {
 
 .form {
   @include modal-form;
-}
-
-.switch-row {
-  align-self: flex-start;
 }
 
 .field-error {

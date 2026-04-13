@@ -46,6 +46,7 @@
             name="reservedDate"
             :disabled="formDisabled"
             :rules="[{ type: 'required', message: 'Укажите дату' }]"
+            :is-date-disabled="isDateDisabled"
           />
           <UiTimepicker
             v-model="reservedTimeVal"
@@ -234,6 +235,14 @@ watch(() => props.reservation, (r) => {
   showCancelReason.value = false
   isEditing.value = false
 }, { immediate: true })
+
+const isDateDisabled = (ts: number) => {
+  const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+  const today = todayInTz(tz) // "YYYY-MM-DD"
+  const dateStr = formatDateStr(ts) // "YYYY-MM-DD"
+
+  return dateStr < today
+}
 
 // Bridge: "YYYY-MM-DD" string ↔ timestamp (UiDatepicker)
 const reservedDateTs = computed<number | null>({
