@@ -109,7 +109,7 @@ const createBranch = async () => {
 .step-branch-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .hint {
@@ -119,13 +119,13 @@ const createBranch = async () => {
 .fields {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .done-card {
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .done-icon {
@@ -134,7 +134,7 @@ const createBranch = async () => {
 }
 
 .done-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .done-address {

@@ -64,7 +64,7 @@ const recommendations: { icon: IconName; label: string; path: string; hint: stri
 .step-complete-root {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-24);
 }
 
 .celebration {
@@ -72,37 +72,40 @@ const recommendations: { icon: IconName; label: string; path: string; hint: stri
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
+// Декоративный emoji-баннер: размер не на типографической шкале.
+/* stylelint-disable scale-unlimited/declaration-strict-value */
 .big-emoji {
   font-size: 48px;
   line-height: 1;
 }
+/* stylelint-enable scale-unlimited/declaration-strict-value */
 
 .subtitle {
   color: var(--color-text-secondary);
 }
 
 .rec-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-8);
   display: block;
 }
 
 .rec-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .rec-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
   text-decoration: none;
   color: var(--color-text);
   transition: background 0.15s;
@@ -121,11 +124,11 @@ const recommendations: { icon: IconName; label: string; path: string; hint: stri
 .rec-body {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--space-4);
 }
 
 .rec-label {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .rec-hint {

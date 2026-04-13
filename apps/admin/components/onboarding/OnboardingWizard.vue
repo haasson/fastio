@@ -191,20 +191,20 @@ const finish = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-24);
   overflow-y: auto;
 }
 
 .wizard-card {
   max-width: 480px;
-  gap: 32px;
+  gap: var(--space-32);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
 }
 
 .progress {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .progress-dot {
@@ -231,7 +231,7 @@ const finish = async () => {
 .nav {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .spacer {

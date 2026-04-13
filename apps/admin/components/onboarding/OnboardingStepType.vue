@@ -77,7 +77,7 @@ const options: { type: BusinessType; icon: IconName; title: string; desc: string
 .step-type-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .hint {
@@ -87,16 +87,16 @@ const options: { type: BusinessType; icon: IconName; title: string; desc: string
 .options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .option {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  gap: var(--space-16);
+  padding: var(--space-16);
   border: 1.5px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   background: var(--color-bg-card);
   cursor: pointer;
   text-align: left;
@@ -121,11 +121,11 @@ const options: { type: BusinessType; icon: IconName; title: string; desc: string
 .option-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 .option-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
 }
 

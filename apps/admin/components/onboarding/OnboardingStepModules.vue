@@ -93,7 +93,7 @@ const toggle = (key: ModuleKey) => {
 .step-modules-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .hint {
@@ -103,16 +103,16 @@ const toggle = (key: ModuleKey) => {
 .options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .option {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  gap: var(--space-16);
+  padding: var(--space-16);
   border: 1.5px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   background: var(--color-bg-card);
   cursor: pointer;
   text-align: left;
@@ -128,21 +128,24 @@ const toggle = (key: ModuleKey) => {
   }
 }
 
+// Декоративный icon-emoji: размер не на типографической шкале.
+/* stylelint-disable scale-unlimited/declaration-strict-value */
 .option-icon {
   font-size: 28px;
   line-height: 1;
   flex-shrink: 0;
 }
+/* stylelint-enable scale-unlimited/declaration-strict-value */
 
 .option-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
   flex: 1;
 }
 
 .option-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
 }
 

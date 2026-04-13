@@ -75,7 +75,7 @@ defineExpose({
 .step-info-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .hint {
@@ -85,6 +85,6 @@ defineExpose({
 .fields {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 </style>
