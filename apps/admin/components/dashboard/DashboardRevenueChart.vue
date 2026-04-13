@@ -89,7 +89,7 @@ const chartOptions = computed(() => ({
 
 <style scoped>
 .chart-card {
-  gap: 8px;
+  gap: var(--space-8);
   overflow: hidden;
 }
 
@@ -98,7 +98,7 @@ const chartOptions = computed(() => ({
 }
 
 .chart-wrap {
-  margin: 0 -8px -8px;
+  margin: 0 calc(-1 * var(--space-8)) calc(-1 * var(--space-8));
 }
 
 .chart-placeholder {

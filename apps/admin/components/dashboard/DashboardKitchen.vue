@@ -74,7 +74,7 @@ const hasItems = computed(() => queuedCount.value + inProgressCount.value > 0)
 
 <style scoped>
 .kitchen-root {
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .header {
@@ -90,13 +90,13 @@ const hasItems = computed(() => queuedCount.value + inProgressCount.value > 0)
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .group-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .group-label {
@@ -108,7 +108,7 @@ const hasItems = computed(() => queuedCount.value + inProgressCount.value > 0)
 }
 
 .empty {
-  padding: 16px 0;
+  padding: var(--space-16) 0;
   display: flex;
   justify-content: center;
 }

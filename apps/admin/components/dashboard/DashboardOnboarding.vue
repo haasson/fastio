@@ -21,15 +21,15 @@ import { UiCard, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
 .onboarding-root {
   align-items: center;
   text-align: center;
-  padding: 40px 24px;
-  gap: 12px;
+  padding: var(--space-32) var(--space-24);
+  gap: var(--space-12);
 }
 
 .icon-wrap {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
-  background: var(--color-primary-light, rgba(99, 102, 241, 0.1));
+  border-radius: var(--radius-16);
+  background: var(--color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,6 +49,6 @@ import { UiCard, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
 }
 
 .actions {
-  margin-top: 8px;
+  margin-top: var(--space-8);
 }
 </style>

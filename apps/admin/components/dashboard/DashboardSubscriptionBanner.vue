@@ -79,10 +79,10 @@ const actionLabel = computed(() => status.value === 'suspended' ? 'Пополн�
 .sub-banner {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-size: 14px;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-20);
+  border-radius: var(--radius-12);
+  font-size: var(--font-size-md);
 }
 
 .banner-warning {

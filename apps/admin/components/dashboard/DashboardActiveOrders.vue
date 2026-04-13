@@ -92,7 +92,7 @@ const hasOrders = computed(() => activeGroups.value.some((g) => g.count > 0))
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .active-orders-root {
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .header {
@@ -108,13 +108,13 @@ const hasOrders = computed(() => activeGroups.value.some((g) => g.count > 0))
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .group-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .group-label {
@@ -130,7 +130,7 @@ const hasOrders = computed(() => activeGroups.value.some((g) => g.count > 0))
 }
 
 .empty {
-  padding: 16px 0;
+  padding: var(--space-16) 0;
   display: flex;
   justify-content: center;
 }

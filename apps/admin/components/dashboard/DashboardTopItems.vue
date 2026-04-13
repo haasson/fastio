@@ -119,7 +119,7 @@ const chartOptions = computed(() => ({
 
 <style scoped>
 .chart-card {
-  gap: 8px;
+  gap: var(--space-8);
   overflow: hidden;
 }
 
@@ -127,7 +127,7 @@ const chartOptions = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .label {

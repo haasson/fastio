@@ -58,7 +58,7 @@ const ordersCountWord = computed(() => pluralize(props.ordersCount, 'заказ'
 .stats-root {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 
   @include mq-m {
     grid-template-columns: repeat(3, 1fr);
@@ -66,7 +66,7 @@ const ordersCountWord = computed(() => pluralize(props.ordersCount, 'заказ'
 }
 
 .stat-card {
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .label {
@@ -74,11 +74,11 @@ const ordersCountWord = computed(() => pluralize(props.ordersCount, 'заказ'
 }
 
 .value {
-  margin: 4px 0;
+  margin: var(--space-4) 0;
 }
 
 .value-placeholder {
-  margin: 4px 0;
+  margin: var(--space-4) 0;
 }
 
 .sub {
@@ -86,7 +86,7 @@ const ordersCountWord = computed(() => pluralize(props.ordersCount, 'заказ'
 }
 
 .count {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
 }
 </style>

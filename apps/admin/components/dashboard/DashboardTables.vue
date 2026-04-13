@@ -78,7 +78,7 @@ const occupancyRate = computed(() => totalTables.value > 0 ? Math.round((openTab
 
 <style scoped>
 .tables-root {
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .header {
@@ -94,14 +94,14 @@ const occupancyRate = computed(() => totalTables.value > 0 ? Math.round((openTab
 .stat-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 .stat-label {
@@ -123,7 +123,7 @@ const occupancyRate = computed(() => totalTables.value > 0 ? Math.round((openTab
 }
 
 .empty {
-  padding: 8px 0;
+  padding: var(--space-8) 0;
   display: flex;
   justify-content: center;
 }
