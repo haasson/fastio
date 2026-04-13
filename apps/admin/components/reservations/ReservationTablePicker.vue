@@ -117,18 +117,18 @@ const selectedTableWarning = computed(() => {
 .picker-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-8);
 }
 </style>

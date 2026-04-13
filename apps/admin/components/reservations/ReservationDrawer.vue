@@ -455,31 +455,31 @@ const formatDt = (iso: string) => {
 .content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 4px 0;
+  gap: var(--space-16);
+  padding: var(--space-4) 0;
 }
 
 .status-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: 120px 1fr;
-  gap: 6px 12px;
+  gap: var(--space-8) var(--space-12);
 }
 </style>

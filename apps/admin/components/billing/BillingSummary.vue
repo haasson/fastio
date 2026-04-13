@@ -48,7 +48,7 @@ const formatDate = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { 
 .billing-summary {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: var(--space-16);
 
   @include mq-m {
     grid-template-columns: repeat(3, 1fr);
@@ -58,7 +58,7 @@ const formatDate = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { 
 .summary-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .summary-label {

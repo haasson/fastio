@@ -68,14 +68,14 @@ onMounted(() => load())
 
 <style scoped>
 .tx-title {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-16);
 }
 
 .tx-table {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   min-width: 500px;
 }
@@ -83,10 +83,10 @@ onMounted(() => load())
 .tx-row {
   display: grid;
   grid-template-columns: 120px 110px 120px 1fr;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
   align-items: center;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   border-bottom: 1px solid var(--color-border);
 
   &:last-child {
@@ -94,16 +94,16 @@ onMounted(() => load())
   }
 
   &.tx-header {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     background: var(--color-bg-page);
-    font-size: 13px;
+    font-size: var(--font-size-base);
     color: var(--color-text-secondary);
   }
 }
 
 .tx-positive {
   color: var(--color-success);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .tx-negative {
@@ -119,7 +119,7 @@ onMounted(() => load())
 
 .state-msg {
   color: var(--color-text-hint);
-  padding: 24px 0;
+  padding: var(--space-24) 0;
   text-align: center;
 }
 </style>
