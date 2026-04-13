@@ -101,11 +101,11 @@ const onConfirm = () => {
 .interval-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .field-label {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
 }
 </style>

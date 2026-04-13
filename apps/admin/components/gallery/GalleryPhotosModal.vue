@@ -149,13 +149,13 @@ const modalActions = computed((): ModalAction[] => [
 .photos-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .hint {
@@ -169,7 +169,7 @@ const modalActions = computed((): ModalAction[] => [
 .grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .photo-item {
@@ -177,7 +177,7 @@ const modalActions = computed((): ModalAction[] => [
   height: 120px;
   flex: 0 0 auto;
   min-width: 80px;
-  border-radius: 6px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   border: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
@@ -196,12 +196,13 @@ const modalActions = computed((): ModalAction[] => [
   left: 4px;
   z-index: 2;
   cursor: grab;
-  color: #fff;
+  color: var(--color-white);
   background: rgba(0, 0, 0, 0.4);
-  border-radius: 3px;
-  padding: 2px;
+  border-radius: var(--radius-4);
+  padding: var(--space-4);
   display: flex;
   align-items: center;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1;
 
   &:active { cursor: grabbing; }
@@ -233,10 +234,10 @@ const modalActions = computed((): ModalAction[] => [
   z-index: 2;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border: none;
   background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  color: var(--color-white);
   cursor: pointer;
   display: flex;
   align-items: center;
