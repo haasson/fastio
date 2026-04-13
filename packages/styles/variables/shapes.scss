@@ -1,4 +1,10 @@
 :root {
-  //--border-radius-default: 8px;
-  //--border-radius-card: 16px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-full: 999px;
+
+  --radius-default: var(--radius-8);
+  --radius-card: var(--radius-12);
 }

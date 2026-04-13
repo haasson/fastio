@@ -1,12 +1,24 @@
 @use '../mixins/media-queries' as *;
 
 :root {
-  --section-paddings: 0 16px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 320ms ease;
+
+  --section-paddings: 0 var(--space-16);
   --section-width: 100%;
   --header-height: 64px;
 
   @include mq-m {
-    --section-paddings: 0 32px;
+    --section-paddings: 0 var(--space-32);
     --section-width: var(--breakpoint-m);
   }
 

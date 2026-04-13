@@ -1,0 +1,53 @@
+// Готовые комбо-паттерны: radius + padding + (опционально) border/shadow.
+// Используем эти миксины вместо того чтобы собирать те же тройки вручную.
+
+// Строка списка / инпута / мелкой карточки.
+// По частоте: radius 8 + padding 8 12 — самый массовый паттерн в админке.
+@mixin surface-row {
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+}
+
+// Карточка контента.
+@mixin surface-card {
+  padding: var(--space-16);
+  border-radius: var(--radius-12);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+}
+
+// Крупная панель: модалка, hero, онбординг.
+@mixin surface-hero {
+  padding: var(--space-24);
+  border-radius: var(--radius-16);
+  background: var(--color-bg-card);
+}
+
+// Типографика-пресеты (font-size + weight + line-height).
+@mixin text-body {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-loose);
+}
+
+@mixin text-body-strong {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-loose);
+}
+
+@mixin text-caption {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-base);
+  color: var(--color-text-secondary);
+}
+
+@mixin text-heading {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-base);
+  color: var(--color-title);
+}
