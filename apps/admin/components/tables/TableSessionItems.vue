@@ -202,43 +202,43 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 .session-items-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .session-items-root--compact {
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .items {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .item-wrap + .item-wrap {
   border-top: 1px dashed var(--color-border);
-  padding-top: 4px;
+  padding-top: var(--space-4);
 }
 
 .session-items-root--compact .item-wrap + .item-wrap {
-  padding-top: 3px;
+  padding-top: var(--space-4);
 }
 
 .item-wrap--pending {
   background: var(--color-warning-light);
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: var(--radius-8);
+  padding: var(--space-4) var(--space-8);
 }
 
 .session-items-root--compact .item-wrap--pending {
-  border-radius: 4px;
-  padding: 3px 4px;
+  border-radius: var(--radius-4);
+  padding: var(--space-4);
 }
 
 .item-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 
   .item-confirm { flex-shrink: 0; color: var(--color-success); }
   .item-reject  { flex-shrink: 0; color: var(--color-error); }
@@ -246,12 +246,12 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 }
 
 .session-items-root--compact .item-row {
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .item-name {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -259,23 +259,23 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 }
 
 .session-items-root--compact .item-name {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 .item-price {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-hint);
   flex-shrink: 0;
   white-space: nowrap;
 }
 
 .session-items-root--compact .item-price {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 .item-total {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   flex-shrink: 0;
   min-width: 60px;
@@ -283,23 +283,23 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 }
 
 .session-items-root--compact .item-total {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   min-width: 50px;
 }
 
 .item-extras {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding-left: 2px;
+  gap: var(--space-4);
+  padding-left: var(--space-4);
 }
 
 .session-items-root--compact .item-extras {
-  gap: 3px;
+  gap: var(--space-4);
 }
 
 .extra {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 
   &--addon   { color: var(--color-primary); }
@@ -307,44 +307,44 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 }
 
 .session-items-root--compact .extra {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
 }
 
 .cooking-block {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-bg-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
 }
 
 .session-items-root--compact .cooking-block {
-  gap: 3px;
-  padding: 6px 8px;
-  border-radius: 6px;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  border-radius: var(--radius-8);
 }
 
 .cooking-header {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--color-text-hint);
 }
 
 .session-items-root--compact .cooking-header {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
 }
 
 .cooking-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .session-items-root--compact .cooking-row {
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .cooking-dot {
@@ -361,52 +361,52 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 .cooking-name {
   flex: 1;
   min-width: 0;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-title);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.cooking-qty    { font-size: 13px; color: var(--color-text-hint); flex-shrink: 0; }
-.cooking-price  { font-size: 13px; font-weight: 600; color: var(--color-title); flex-shrink: 0; }
+.cooking-qty    { font-size: var(--font-size-base); color: var(--color-text-hint); flex-shrink: 0; }
+.cooking-price  { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--color-title); flex-shrink: 0; }
 .cooking-menu { flex-shrink: 0; color: var(--color-text-hint); }
 
-.session-items-root--compact .cooking-name  { font-size: 12px; }
-.session-items-root--compact .cooking-qty   { font-size: 12px; }
-.session-items-root--compact .cooking-price { font-size: 12px; }
+.session-items-root--compact .cooking-name  { font-size: var(--font-size-sm); }
+.session-items-root--compact .cooking-qty   { font-size: var(--font-size-sm); }
+.session-items-root--compact .cooking-price { font-size: var(--font-size-sm); }
 
 .ready-dishes {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-success-light);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-success);
 }
 
 .session-items-root--compact .ready-dishes {
-  gap: 4px;
-  padding: 6px 8px;
-  border-radius: 6px;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  border-radius: var(--radius-8);
 }
 
 .ready-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .session-items-root--compact .ready-item {
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .ready-name {
   flex: 1;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-title);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -414,34 +414,34 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 }
 
 .session-items-root--compact .ready-name {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 .stats {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
+  padding-top: var(--space-8);
   border-top: 1px solid var(--color-border);
 }
 
-.stat-orders { font-size: 13px; color: var(--color-text-hint); }
+.stat-orders { font-size: var(--font-size-base); color: var(--color-text-hint); }
 
 .stat-sum {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
 }
 
-.session-items-root--compact .stat-orders { font-size: 12px; }
-.session-items-root--compact .stat-sum    { font-size: 16px; }
+.session-items-root--compact .stat-orders { font-size: var(--font-size-sm); }
+.session-items-root--compact .stat-sum    { font-size: var(--font-size-lg); }
 
 .expand-btn {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-primary);
   background: none;
   border: none;
-  padding: 2px 0;
+  padding: var(--space-4) 0;
   cursor: pointer;
   text-align: left;
 }

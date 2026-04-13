@@ -87,24 +87,24 @@ const openedAgo = computed(() => props.table?.openedAt ? formatRelativeTime(prop
 .detail-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 4px 0;
+  gap: var(--space-16);
+  padding: var(--space-4) 0;
 }
 
 .calls {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-warning-light);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-warning);
 }
 
 .call-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .call-icon {
@@ -114,8 +114,8 @@ const openedAgo = computed(() => props.table?.openedAt ? formatRelativeTime(prop
 
 .call-name {
   flex: 1;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-title);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -123,7 +123,7 @@ const openedAgo = computed(() => props.table?.openedAt ? formatRelativeTime(prop
 }
 
 .call-time {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-hint);
   flex-shrink: 0;
 }

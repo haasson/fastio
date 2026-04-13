@@ -172,40 +172,40 @@ const handleDelete = async () => {
 .edit-modal-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .field-label {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
+  padding: var(--space-4) 0;
 }
 
 .toggle-label {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .delete-section {
   display: flex;
   justify-content: center;
-  padding-top: 4px;
+  padding-top: var(--space-4);
   border-top: 1px solid var(--color-border);
 }
 </style>

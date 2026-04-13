@@ -130,7 +130,7 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 <style scoped lang="scss">
 .table-card {
   border: 1.5px solid var(--color-border);
-  gap: 10px;
+  gap: var(--space-8);
   height: 100%;
 
   &--open {
@@ -146,13 +146,13 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .card-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   min-width: 0;
   flex: 1;
 }
@@ -160,7 +160,7 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 .card-icon { color: var(--color-text-hint); flex-shrink: 0; }
 
 .card-name {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -174,29 +174,29 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 .card-cap {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 11px;
+  gap: var(--space-4);
+  font-size: var(--font-size-xs);
   color: var(--color-text-hint);
   background: var(--color-bg-subtle);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-4);
   flex-shrink: 0;
 }
 
 .calls {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 6px 8px;
+  gap: var(--space-4);
+  padding: var(--space-8);
   background: var(--color-warning-light);
-  border-radius: 6px;
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-warning);
 }
 
 .call-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .call-icon {
@@ -206,8 +206,8 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 
 .call-name {
   flex: 1;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--color-title);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -215,14 +215,14 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 }
 
 .call-time {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-hint);
   flex-shrink: 0;
 }
 
 .card-opened {
   color: var(--color-success);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 .table-card--ready {
@@ -232,7 +232,7 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 
 .card-btns {
   display: flex;
-  gap: 6px;
+  gap: var(--space-8);
   > * { flex: 1; }
 }
 </style>

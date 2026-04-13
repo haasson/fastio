@@ -111,25 +111,25 @@ const submitNewType = () => {
 .call-settings-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .section-title {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-12);
 }
 
 .type-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
 }
 
 .type-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
+  gap: var(--space-8);
+  padding: var(--space-8) 0;
 }
 
 .type-name {
@@ -138,7 +138,7 @@ const submitNewType = () => {
 
 .type-add {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   align-items: flex-start;
 }
 
@@ -149,16 +149,16 @@ const submitNewType = () => {
 .call-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .call-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-bg-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-border);
 }
 
@@ -167,13 +167,13 @@ const submitNewType = () => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 .call-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
@@ -183,7 +183,7 @@ const submitNewType = () => {
 }
 
 .call-table {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .call-type {

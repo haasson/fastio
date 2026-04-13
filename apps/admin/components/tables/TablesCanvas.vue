@@ -492,6 +492,10 @@ const placeTable = (table: Table) => {
 </script>
 
 <style scoped lang="scss">
+/* Канвас редактора расстановки столов — все размеры (resize/rotate handles,
+   смещения -3/-5/-6px, shadow-mix с #000) подобраны под геометрию сцены,
+   а не под шкалу дизайн-токенов */
+/* stylelint-disable scale-unlimited/declaration-strict-value, color-no-hex */
 .canvas-root {
   position: relative;
   height: calc(100vh - 60px - 48px - 40px - 24px);
@@ -724,5 +728,6 @@ const placeTable = (table: Table) => {
     cursor: grabbing;
   }
 }
+/* stylelint-enable scale-unlimited/declaration-strict-value, color-no-hex */
 
 </style>

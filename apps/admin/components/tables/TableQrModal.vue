@@ -175,22 +175,22 @@ const downloadPdf = async () => {
 .qr-modal-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .qr-preview-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .qr-preview {
   display: flex;
   justify-content: center;
-  padding: 12px;
+  padding: var(--space-12);
   background: var(--color-bg-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 
   :deep(canvas) {
@@ -201,34 +201,34 @@ const downloadPdf = async () => {
 }
 
 .qr-table-name {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .pdf-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-top: 16px;
+  gap: var(--space-12);
+  padding-top: var(--space-16);
   border-top: 1px solid var(--color-border);
 }
 
 .section-title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .mode-switch {
   display: flex;
   gap: 0;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 }
 
 .mode-btn {
   flex: 1;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 500;
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   background: var(--color-bg);
   border: none;
   cursor: pointer;
@@ -241,14 +241,14 @@ const downloadPdf = async () => {
 
   &--active {
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-white);
   }
 }
 
 .copies-single {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .copies-label {
@@ -258,7 +258,7 @@ const downloadPdf = async () => {
 .copies-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
   max-height: 250px;
   overflow-y: auto;
 }
@@ -266,16 +266,16 @@ const downloadPdf = async () => {
 .copies-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-8);
   background: var(--color-bg-subtle);
 }
 
 .copies-name {
   flex: 1;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -154,7 +154,7 @@ watch(() => props.modelValue, (open) => {
 .checkout-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .divider {
@@ -165,11 +165,11 @@ watch(() => props.modelValue, (open) => {
 .discount-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .discount-label {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text-hint);
   flex-shrink: 0;
 }
@@ -177,7 +177,7 @@ watch(() => props.modelValue, (open) => {
 .discount-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   margin-left: auto;
 }
 
@@ -185,9 +185,9 @@ watch(() => props.modelValue, (open) => {
   width: 80px;
   height: 30px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 0 10px;
-  font-size: 14px;
+  border-radius: var(--radius-8);
+  padding: 0 var(--space-8);
+  font-size: var(--font-size-md);
   color: var(--color-title);
   background: var(--color-bg);
   outline: none;
@@ -206,36 +206,36 @@ watch(() => props.modelValue, (open) => {
 .total-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .total-original {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-hint);
   text-decoration: line-through;
 }
 
 .total-discount {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-error);
 }
 
 .total-label {
   flex: 1;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
 .total-sum {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
 }
 
 .checkout-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
 
   > * {
     flex: 1;
