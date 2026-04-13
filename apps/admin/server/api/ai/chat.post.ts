@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
 
   const openai = createOpenAI({ apiKey })
 
-  const knowledge = await loadKnowledge()
+  const knowledge = await loadKnowledge(currentRoute)
   const tenantContext = await fetchTenantContext(tenantId, userId)
   const systemPrompt = buildSystemPrompt(knowledge, tenantContext, currentRoute)
   const tools = createAiTools(tenantId, userId)
@@ -73,6 +73,13 @@ function buildSystemPrompt(
   sections.push(
     '',
     '---',
+    '',
+    'КРИТИЧЕСКИ ВАЖНО — «Столы» и «Бронирования» это ДВА РАЗНЫХ независимых модуля:',
+    '• «Заказ со стола» (раздел /tables) = обслуживание гостей в зале ПРЯМО СЕЙЧАС: сессии, добавление блюд, расчёт, QR-коды, вызовы официанта. НЕ связан с бронированием.',
+    '• «Бронирование столов» (раздел /reservations) = предварительная бронь на будущее: дата, время, гости. НЕ связан с обслуживанием за столами.',
+    '• Эти модули включаются/выключаются ОТДЕЛЬНО. Можно иметь столы без бронирования и бронирование без столов.',
+    '• Когда спрашивают про «столы» — отвечай ТОЛЬКО про раздел /tables (сессии, блюда, расчёт). НИКОГДА не упоминай бронирование, если не спросили.',
+    '• Когда спрашивают про «бронирование» — отвечай ТОЛЬКО про раздел /reservations. НИКОГДА не упоминай сессии столов.',
     '',
     'Правила:',
     '- Ты — AI-ассистент платформы Fastio. Отвечай ТОЛЬКО на вопросы о Fastio, админ-панели и публичном сайте.',
