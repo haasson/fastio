@@ -145,6 +145,7 @@ useHead(computed(() => ({
   --z-sticky: 100;
   --z-mobile-menu: 200;
   --z-header: 300;
+  --z-dropdown: 350;
   --header-height: 56px;
 
   @media (min-width: 768px) {

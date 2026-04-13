@@ -30,6 +30,8 @@ const tabs = computed(() => {
   if (canManageTeam.value) result.push({ value: 'statuses', label: 'Статусы', icon: 'list' })
   if (modules.delivery.value.active) result.push({ value: 'delivery', label: 'Доставка', icon: 'bike' })
   if (canManageTeam.value) result.push({ value: 'order-number', label: 'Нумерация', icon: 'hash' })
+  if (canManageTeam.value && (modules.delivery.value.active || modules.pickup.value.active))
+    result.push({ value: 'settings', label: 'Настройки', icon: 'calendar' })
 
   return result
 })

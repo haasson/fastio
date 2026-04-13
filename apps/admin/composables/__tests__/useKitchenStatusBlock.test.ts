@@ -56,6 +56,7 @@ const makeOrder = (overrides: Partial<Order> = {}): Order => ({
   updatedAt: '',
   kitchenQueuedAt: null,
   kitchenCompletedAt: null,
+  scheduledAt: null,
   visitedStatuses: [],
   ...overrides,
 })

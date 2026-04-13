@@ -106,5 +106,6 @@ export type Order = {
   updatedAt: string
   kitchenQueuedAt: string | null
   kitchenCompletedAt: string | null
+  scheduledAt: string | null
   visitedStatuses: string[]
 }

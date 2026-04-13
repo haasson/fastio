@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, inject, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, inject, provide, onMounted, onBeforeUnmount } from 'vue'
 import { validateValue } from '@fastio/kit'
 import type { ValidationRule, FormContext } from '@fastio/kit'
 import FsLabel from './FsLabel.vue'
@@ -33,6 +33,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const formContext = inject<FormContext | null>('fs-form-context', null)
+
+provide('fs-field-label', computed(() => props.label ?? null))
 
 const internalError = ref<string | null>(null)
 const touched = ref(false)

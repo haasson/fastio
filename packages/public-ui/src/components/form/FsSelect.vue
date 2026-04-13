@@ -1,13 +1,7 @@
 <template>
-  <SelectRoot
-    :model-value="stringValue"
-    :disabled="disabled"
-    @update:model-value="onValueChange"
-  >
-    <SelectTrigger
-      class="select-trigger"
-      :class="[`size-${size}`, { 'is-error': error, 'is-disabled': disabled }]"
-    >
+  <!-- Desktop: reka-ui dropdown -->
+  <SelectRoot v-if="!isMobile" :model-value="stringValue" :disabled="disabled" @update:model-value="onValueChange">
+    <SelectTrigger class="select-trigger" :class="[`size-${size}`, { 'is-error': error, 'is-disabled': disabled }]">
       <SelectValue :placeholder="placeholder" class="select-value" />
       <SelectIcon class="select-icon">
         <ChevronDown :size="16" />
@@ -33,9 +27,45 @@
       </SelectContent>
     </SelectPortal>
   </SelectRoot>
+
+  <!-- Mobile: bottom sheet -->
+  <template v-else>
+    <button
+      type="button"
+      class="select-trigger"
+      :class="[`size-${size}`, { 'is-error': error, 'is-disabled': disabled }]"
+      :disabled="disabled"
+      @click="sheetOpen = true"
+    >
+      <span class="select-value" :class="{ 'is-placeholder': !modelValue }">
+        {{ selectedLabel ?? placeholder }}
+      </span>
+      <span class="select-icon">
+        <ChevronDown :size="16" />
+      </span>
+    </button>
+
+    <FsDrawer v-model="sheetOpen" :title="sheetTitle" size="md" side="bottom">
+      <div class="sheet-list">
+        <button
+          v-for="option in options"
+          :key="option.value"
+          type="button"
+          class="sheet-item"
+          :class="{ 'is-selected': String(option.value) === stringValue, 'is-disabled': option.disabled }"
+          :disabled="option.disabled"
+          @click="selectMobile(option.value)"
+        >
+          <span>{{ option.label }}</span>
+          <Check v-if="String(option.value) === stringValue" :size="14" class="sheet-check" />
+        </button>
+      </div>
+    </FsDrawer>
+  </template>
 </template>
+
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
 import {
   SelectRoot,
   SelectTrigger,
@@ -48,6 +78,7 @@ import {
   SelectIcon,
 } from 'reka-ui'
 import { ChevronDown, Check } from 'lucide-vue-next'
+import FsDrawer from '../overlay/FsDrawer.vue'
 
 type Option = {
   value: string | number
@@ -58,6 +89,7 @@ type Option = {
 type Props = {
   modelValue?: string | number | null
   placeholder?: string
+  label?: string
   disabled?: boolean
   error?: boolean
   size?: 'small' | 'medium' | 'large'
@@ -76,15 +108,47 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number]
 }>()
 
+const isMobile = ref(false)
+const sheetOpen = ref(false)
+
+let mq: MediaQueryList | null = null
+
+function onMqChange(e: MediaQueryListEvent) {
+  isMobile.value = e.matches
+}
+
+onMounted(() => {
+  mq = window.matchMedia('(max-width: 639px)')
+  isMobile.value = mq.matches
+  mq.addEventListener('change', onMqChange)
+})
+
+onBeforeUnmount(() => {
+  mq?.removeEventListener('change', onMqChange)
+})
+
 function onValueChange(value: string) {
   emit('update:modelValue', value)
 }
+
+function selectMobile(value: string | number) {
+  emit('update:modelValue', value)
+  sheetOpen.value = false
+}
+
+const fieldLabel = inject<ReturnType<typeof computed<string | null>>>('fs-field-label', computed(() => null))
+const sheetTitle = computed(() => props.label ?? fieldLabel.value ?? undefined)
 
 const stringValue = computed(() =>
   props.modelValue !== null && props.modelValue !== undefined
     ? String(props.modelValue)
     : undefined,
 )
+
+const selectedLabel = computed(() => {
+  if (!stringValue.value) return null
+  return props.options.find(o => String(o.value) === stringValue.value)?.label ?? null
+})
 </script>
 
 <!-- Trigger: scoped -->
@@ -106,6 +170,7 @@ const stringValue = computed(() =>
   padding: 0 var(--ctrl-px);
   font-size: var(--ctrl-fs);
   gap: var(--ctrl-gap);
+  text-align: left;
 
   &:focus {
     border-color: var(--primary);
@@ -134,7 +199,8 @@ const stringValue = computed(() =>
   white-space: nowrap;
   text-overflow: ellipsis;
 
-  &[data-placeholder] {
+  &[data-placeholder],
+  &.is-placeholder {
     color: var(--color-text-muted);
   }
 }
@@ -149,6 +215,50 @@ const stringValue = computed(() =>
   [data-state='open'] & {
     transform: rotate(180deg);
   }
+}
+
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 4px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border-light, var(--color-border));
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.1s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.is-selected {
+    color: var(--primary);
+    font-weight: 500;
+  }
+
+  &.is-disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.sheet-check {
+  flex-shrink: 0;
+  color: var(--primary);
 }
 </style>
 
@@ -166,7 +276,7 @@ const stringValue = computed(() =>
     0 8px 24px rgba(0, 0, 0, 0.10);
   z-index: var(--z-dropdown);
   min-width: var(--reka-select-trigger-width);
-  max-height: var(--reka-select-content-available-height);
+  max-height: min(var(--reka-select-content-available-height), 280px);
   overflow: hidden;
 
   &[data-state='open'] {

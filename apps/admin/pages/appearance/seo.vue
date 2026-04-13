@@ -81,16 +81,13 @@
 
     <!-- Индексация -->
     <div class="group">
-      <div class="robots-row">
-        <div>
-          <div class="label">Индексация поисковиками</div>
-          <div class="hint">Разрешить Google и Яндексу находить и показывать ваш сайт</div>
-        </div>
-        <UiSwitch
-          :model-value="seoForm.robots === 'index'"
-          @update:model-value="seoForm.robots = $event ? 'index' : 'noindex'"
-        />
-      </div>
+      <SettingToggle
+        :model-value="seoForm.robots === 'index'"
+        label="Индексация поисковиками"
+        hint="Разрешить Google и Яндексу находить и показывать ваш сайт"
+        align="end"
+        @update:model-value="seoForm.robots = $event ? 'index' : 'noindex'"
+      />
     </div>
 
     <div class="divider" />
@@ -128,6 +125,7 @@ import { computed, inject } from 'vue'
 import { UiInput, UiSwitch, UiSectionHeader } from '@fastio/ui'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
+import SettingToggle from '~/components/ui/SettingToggle.vue'
 
 const form = inject(AppearanceFormKey)!
 const seoForm = form.seoForm
@@ -225,10 +223,4 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
   margin: 0;
 }
 
-.robots-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
 </style>

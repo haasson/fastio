@@ -81,6 +81,34 @@
               :currency="currency"
             />
 
+            <!-- Timing -->
+            <section v-if="schedulingEnabled" class="form-section">
+              <FsHeading as="h6" class="section-title">Время</FsHeading>
+              <FsRadioGroup
+                v-model="checkout.form.schedulingMode"
+                :options="schedulingOptions"
+                orientation="vertical"
+              />
+              <div v-if="checkout.form.schedulingMode === 'scheduled'" class="schedule-fields">
+                <FsField label="Дата">
+                  <FsSelect
+                    v-model="checkout.form.scheduledDate"
+                    :options="dateOptions"
+                    placeholder="Выберите дату"
+                    @update:model-value="checkout.form.scheduledTime = ''"
+                  />
+                </FsField>
+                <FsField label="Время">
+                  <FsSelect
+                    v-model="checkout.form.scheduledTime"
+                    :options="timeSlots"
+                    placeholder="Выберите время"
+                    :disabled="!checkout.form.scheduledDate"
+                  />
+                </FsField>
+              </div>
+            </section>
+
             <!-- Payment -->
             <section class="form-section">
               <FsHeading as="h6" class="section-title">Оплата</FsHeading>
@@ -108,6 +136,7 @@ import { useNuxtData, navigateTo } from 'nuxt/app'
 import { Truck, PersonStanding } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
+import { todayInTz, nowTimeInTz, addDaysToDateStr, localDateTimeToUtcIso, isAsapAvailable, timeToMinutes, getAvailableSlots, formatDateWeekday } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useAuthStore } from '~/stores/auth'
@@ -115,7 +144,7 @@ import { useConfirm } from '~/composables/useConfirm'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
-import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup } from '@fastio/public-ui'
+import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup, FsSelect } from '@fastio/public-ui'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CheckoutAddressSection from '~/components/checkout/CheckoutAddressSection.vue'
 import CheckoutPickupBranch from '~/components/checkout/CheckoutPickupBranch.vue'
@@ -139,6 +168,73 @@ const paymentOptions = [
   { value: 'card', label: 'Картой при получении' },
   { value: 'cash', label: 'Наличными' },
 ]
+
+const schedulingEnabled = computed(() => tenant.value?.orderSchedulingConfig?.enabled ?? false)
+
+const asapAvailable = computed(() => {
+  const cfg = tenant.value?.orderSchedulingConfig
+  if (!cfg) return true
+  return isAsapAvailable(tenant.value?.workingHoursSchedule, cfg.closeBufferMinutes, tenantTz.value)
+})
+
+const schedulingOptions = computed(() => [
+  { value: 'asap', label: 'Как можно скорее', disabled: !asapAvailable.value },
+  { value: 'scheduled', label: 'К определённому времени' },
+])
+
+const tenantTz = computed(() => tenant.value?.timezone ?? 'Europe/Moscow')
+
+const leadMinutes = computed(() => {
+  const cfg = tenant.value?.orderSchedulingConfig
+  if (!cfg) return 30
+  return checkout.form.deliveryType === 'delivery' ? cfg.deliveryLeadMinutes : cfg.pickupLeadMinutes
+})
+
+const slotStep = computed(() => tenant.value?.orderSchedulingConfig?.slotStep ?? 30)
+
+const getSlotsForDate = (dateStr: string, nowMinutes: number | null) =>
+  getAvailableSlots(dateStr, tenant.value?.workingHoursSchedule, {
+    step: slotStep.value,
+    leadMinutes: leadMinutes.value,
+    closeBufferMinutes: tenant.value?.orderSchedulingConfig?.closeBufferMinutes ?? 30,
+    nowMinutes,
+  })
+
+const dateOptions = computed(() => {
+  const tz = tenantTz.value
+  const today = todayInTz(tz)
+  const daysAhead = tenant.value?.orderSchedulingConfig?.daysAhead ?? 3
+  const nowMinutes = timeToMinutes(nowTimeInTz(tz))
+
+  return Array.from({ length: daysAhead }, (_, i) => {
+    const dateStr = addDaysToDateStr(today, i)
+    const nowMin = i === 0 ? nowMinutes : null
+    return {
+      value: dateStr,
+      label: i === 0 ? 'Сегодня' : formatDateWeekday(dateStr),
+      disabled: getSlotsForDate(dateStr, nowMin).length === 0,
+    }
+  })
+})
+
+const timeSlots = computed(() => {
+  const dateStr = checkout.form.scheduledDate
+  if (!dateStr) return []
+
+  const tz = tenantTz.value
+  const today = todayInTz(tz)
+  const isToday = dateStr === today
+
+  const nowMinutes = isToday ? timeToMinutes(nowTimeInTz(tz)) : null
+
+  return getSlotsForDate(dateStr, nowMinutes)
+})
+
+watch(asapAvailable, (available) => {
+  if (!available && checkout.form.schedulingMode === 'asap') {
+    checkout.form.schedulingMode = 'scheduled'
+  }
+}, { immediate: true })
 
 function setDeliveryType(type: 'delivery' | 'pickup') {
   checkout.form.deliveryType = type
@@ -181,6 +277,11 @@ function validate(): boolean {
   if (checkout.form.deliveryType === 'delivery') {
     const addressError = addressRef.value?.isValid()
     if (addressError) errors.push(addressError)
+  }
+
+  if (checkout.form.schedulingMode === 'scheduled') {
+    if (!checkout.form.scheduledDate) errors.push('Выберите дату доставки')
+    else if (!checkout.form.scheduledTime) errors.push('Выберите время доставки')
   }
 
   if (errors.length) {
@@ -275,6 +376,14 @@ async function submitOrder() {
       body.promoCode = checkout.form.promoCode.trim()
     }
 
+    if (checkout.form.schedulingMode === 'scheduled' && checkout.form.scheduledDate && checkout.form.scheduledTime) {
+      const rawTime = checkout.form.scheduledTime
+      const isNextDay = rawTime.endsWith('+1')
+      const timeStr = isNextDay ? rawTime.slice(0, -2) : rawTime
+      const dateStr = isNextDay ? addDaysToDateStr(checkout.form.scheduledDate, 1) : checkout.form.scheduledDate
+      body.scheduledAt = localDateTimeToUtcIso(dateStr, timeStr, tenantTz.value)
+    }
+
     const headers: Record<string, string> = {}
     if (authStore.isAuthenticated) {
       const supabase = useSupabaseClient()
@@ -305,7 +414,7 @@ async function submitOrder() {
   grid-template-columns: 1fr;
   gap: 24px;
 
-  @include md {
+  @include mdl {
     grid-template-columns: 1fr 380px;
     align-items: start;
   }
@@ -366,6 +475,13 @@ async function submitOrder() {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.schedule-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .customer-info {

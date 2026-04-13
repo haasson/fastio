@@ -1,4 +1,5 @@
 import type { WorkingHours, WorkingHoursSchedule } from '../types/tenant'
+import { timeToMinutes } from './timezone'
 
 const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 const DAY_NAMES_PREPOSITIONAL = ['в понедельник', 'во вторник', 'в среду', 'в четверг', 'в пятницу', 'в субботу', 'в воскресенье']
@@ -84,11 +85,6 @@ function getTimeInTimezone(date: Date, timezone: string): { hours: number; minut
   const isoDay = jsDay === 0 ? 7 : jsDay // 1=Mon..7=Sun
 
   return { hours, minutes, isoDay }
-}
-
-function timeToMinutes(time: string): number {
-  const [h, m] = time.split(':').map(Number)
-  return h * 60 + m
 }
 
 export function getDaySchedule(schedule: WorkingHoursSchedule, isoDay: number | string): WorkingHours {

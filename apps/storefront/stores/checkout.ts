@@ -34,6 +34,9 @@ type CheckoutForm = {
   intercom: string
   promoCode: string
   pickupBranchId: string | null
+  schedulingMode: 'asap' | 'scheduled'
+  scheduledDate: string
+  scheduledTime: string
 }
 
 const FORM_DEFAULTS: CheckoutForm = {
@@ -50,6 +53,9 @@ const FORM_DEFAULTS: CheckoutForm = {
   intercom: '',
   promoCode: '',
   pickupBranchId: null,
+  schedulingMode: 'asap',
+  scheduledDate: '',
+  scheduledTime: '',
 }
 
 export const useCheckoutStore = defineStore('checkout', () => {

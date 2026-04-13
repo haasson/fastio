@@ -46,7 +46,7 @@
                   <span class="summary-label">Итого</span>
                   <span class="summary-total">{{ cart.subtotal }} {{ currency }}</span>
                 </div>
-                <FsButton size="large" class="checkout-btn" :disabled="!!closedStatus" @click="navigateTo('/checkout')">
+                <FsButton size="large" class="checkout-btn" :disabled="!!closedStatus && !schedulingEnabled" @click="navigateTo('/checkout')">
                   Перейти к оформлению
                 </FsButton>
               </div>
@@ -98,6 +98,8 @@ const currency = useCurrency()
 const { editKey, editState, openEdit, onItemEdited } = useCartEdit()
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+const schedulingEnabled = computed(() => tenant.value?.orderSchedulingConfig?.enabled ?? false)
 
 type BranchScheduleInfo = { id: string; workingHoursSchedule: WorkingHoursSchedule | null }
 const branchSchedules = ref<BranchScheduleInfo[]>([])

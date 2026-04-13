@@ -1,6 +1,5 @@
 import { getServerSupabase, getAuthSupabase } from '../../utils/supabase'
-import { createRateLimiter } from '@fastio/shared'
-import { todayInTz, addDaysToDateStr } from '@fastio/shared'
+import { createRateLimiter, todayInTz, addDaysToDateStr } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 

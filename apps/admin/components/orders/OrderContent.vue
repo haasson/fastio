@@ -80,7 +80,7 @@ import {
   UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone, normalizePhone, getAllowedStatuses, getKitchenAutoStatuses } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, normalizePhone, getAllowedStatuses, getKitchenAutoStatuses, formatDateStr, dateStrToTs, localDateTimeToUtcIso, utcIsoToLocalDateTime } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
@@ -196,28 +196,47 @@ const can = computed(() => {
     editDeliveryFee: g === 'new' || g === 'in_progress',
     editPayment: g === 'new' || g === 'in_progress',
     editBranch: g === 'new',
+    editScheduling: g === 'new',
   }
 })
 
 // ─── Form ─────────────────────────────────────────────────────────────────────
 
-const buildEditForm = (o: Order) => ({
-  status: o.status,
-  customerName: o.customerName,
-  customerPhone: formatPhone(o.customerPhone),
-  deliveryType: o.deliveryType,
-  address: o.address ?? '',
-  entrance: o.entrance ?? null,
-  floor: o.floor ?? null,
-  apartment: o.apartment ?? null,
-  intercom: o.intercom ?? null,
-  items: o.items.map((i) => ({ ...i })),
-  discountAmount: o.discountAmount,
-  promoCode: o.promoCode ?? '',
-  deliveryFee: o.deliveryFee,
-  comment: o.comment ?? '',
-  paymentType: o.paymentType,
-})
+const buildEditForm = (o: Order) => {
+  let schedulingMode: 'asap' | 'scheduled' = 'asap'
+  let scheduledDate: number | null = null
+  let scheduledTime: string | null = null
+
+  if (o.scheduledAt) {
+    schedulingMode = 'scheduled'
+    const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+    const { dateStr, timeStr } = utcIsoToLocalDateTime(o.scheduledAt, tz)
+
+    scheduledDate = dateStrToTs(dateStr)
+    scheduledTime = timeStr
+  }
+
+  return {
+    status: o.status,
+    customerName: o.customerName,
+    customerPhone: formatPhone(o.customerPhone),
+    deliveryType: o.deliveryType,
+    address: o.address ?? '',
+    entrance: o.entrance ?? null,
+    floor: o.floor ?? null,
+    apartment: o.apartment ?? null,
+    intercom: o.intercom ?? null,
+    items: o.items.map((i) => ({ ...i })),
+    discountAmount: o.discountAmount,
+    promoCode: o.promoCode ?? '',
+    deliveryFee: o.deliveryFee,
+    comment: o.comment ?? '',
+    paymentType: o.paymentType,
+    schedulingMode,
+    scheduledDate,
+    scheduledTime,
+  }
+}
 
 const buildCreateForm = () => ({
   status: statuses.value.find((s) => s.groupType === 'new')?.id ?? statuses.value[0]?.id ?? '',
@@ -235,6 +254,9 @@ const buildCreateForm = () => ({
   deliveryFee: 0,
   comment: '',
   paymentType: 'cash' as Order['paymentType'],
+  schedulingMode: 'asap' as 'asap' | 'scheduled',
+  scheduledDate: null as number | null,
+  scheduledTime: null as string | null,
 })
 
 const form = reactive(buildCreateForm())
@@ -263,6 +285,17 @@ watch(() => form.items, (items) => {
 
 const subtotal = computed(() => form.items.reduce((s, i) => s + getItemUnitPrice(i) * i.quantity, 0))
 const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.deliveryFee)
+
+// ─── Scheduled time ───────────────────────────────────────────────────────────
+
+const scheduledAt = computed<string | null>(() => {
+  if (form.schedulingMode !== 'scheduled' || !form.scheduledDate || !form.scheduledTime) return null
+
+  const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+  const dateStr = formatDateStr(form.scheduledDate)
+
+  return localDateTimeToUtcIso(dateStr, form.scheduledTime, tz)
+})
 
 // ─── Delivery zones ───────────────────────────────────────────────────────────
 
@@ -307,6 +340,7 @@ const formPayload = computed(() => ({
   status: form.status,
   paymentType: form.paymentType,
   branchId: selectedBranchId.value,
+  scheduledAt: scheduledAt.value,
 }))
 
 // ─── Customer history ─────────────────────────────────────────────────────────

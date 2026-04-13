@@ -122,6 +122,23 @@
     </template>
   </div>
 
+  <!-- Время -->
+  <div v-if="form.deliveryType !== 'dine_in'" class="block">
+    <div class="block-label">Время</div>
+    <div :class="{ 'field-disabled': !perms.editScheduling }">
+      <UiSegmentedControl v-model="form.schedulingMode" :items="schedulingItems" size="medium" />
+    </div>
+    <div v-if="form.schedulingMode === 'scheduled'" class="schedule-row">
+      <UiDatepicker v-model="form.scheduledDate" label="Дата" :disabled="!perms.editScheduling" />
+      <UiTimepicker
+        v-model="form.scheduledTime"
+        label="Время"
+        :minute-step="30"
+        :disabled="!perms.editScheduling"
+      />
+    </div>
+  </div>
+
   <!-- Состав заказа -->
   <div class="block">
     <div class="block-label">Состав</div>
@@ -179,7 +196,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert } from '@fastio/ui'
+import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, UiDatepicker, UiTimepicker } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
 import type { Order, DeliveryZone } from '@fastio/shared'
 import type { DeliveryInfo } from '~/composables/delivery/useOrderDelivery'
@@ -204,6 +221,9 @@ type OrderFormData = {
   deliveryFee: number
   comment: string
   paymentType: Order['paymentType']
+  schedulingMode: 'asap' | 'scheduled'
+  scheduledDate: number | null
+  scheduledTime: string | null
 }
 
 type Permissions = {
@@ -214,6 +234,7 @@ type Permissions = {
   editDeliveryFee?: boolean
   editPayment?: boolean
   editBranch?: boolean
+  editScheduling?: boolean
 }
 
 type BranchOption = { label: string; value: string }
@@ -308,7 +329,13 @@ const perms = computed(() => ({
   editDeliveryFee: props.permissions.editDeliveryFee ?? true,
   editPayment: props.permissions.editPayment ?? true,
   editBranch: props.permissions.editBranch ?? true,
+  editScheduling: props.permissions.editScheduling ?? true,
 }))
+
+const schedulingItems = [
+  { label: 'Как можно скорее', value: 'asap' },
+  { label: 'К определённому времени', value: 'scheduled' },
+]
 
 const modules = useModules()
 const deliveryEnabled = computed(() => modules.delivery.value.active)
@@ -463,6 +490,12 @@ const paymentOptions = PAYMENT_OPTIONS
 .zone-hint {
   opacity: 0.7;
   margin-left: 4px;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .suggestions-dropdown {

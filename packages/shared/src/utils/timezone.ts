@@ -56,6 +56,129 @@ export function addDaysToDateStr(dateStr: string, days: number): string {
 }
 
 /**
+ * Конвертирует наивную дату + время в таймзоне тенанта в UTC ISO string.
+ * dateStr: "YYYY-MM-DD", timeStr: "HH:mm", timezone: IANA.
+ */
+export function localDateTimeToUtcIso(dateStr: string, timeStr: string, timezone: string): string {
+  const [y, mo, d] = dateStr.split('-').map(Number)
+  const [h, m] = timeStr.split(':').map(Number)
+
+  // Шаг 1: "прощупываем" UTC-момент, взяв желаемую дату+время как UTC
+  const probe = new Date(Date.UTC(y, mo - 1, d, h, m, 0))
+
+  // Шаг 2: смотрим, какое местное время в timezone соответствует этому UTC-моменту
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  })
+  const parts = fmt.formatToParts(probe)
+  const get = (type: string) => +parts.find(p => p.type === type)!.value
+  const localAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+
+  // Шаг 3: разница — это UTC-смещение таймзоны в этот момент
+  const offset = probe.getTime() - localAsUtc
+
+  // Шаг 4: реальный UTC = желаемое местное (как UTC) + смещение
+  return new Date(probe.getTime() + offset).toISOString()
+}
+
+/**
+ * Конвертирует UTC ISO string в наивную дату + время в таймзоне тенанта.
+ * Возвращает { dateStr: "YYYY-MM-DD", timeStr: "HH:mm" }.
+ */
+export function utcIsoToLocalDateTime(isoStr: string, timezone: string): { dateStr: string; timeStr: string } {
+  const d = new Date(isoStr)
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+    hour12: false,
+  })
+  const parts = fmt.formatToParts(d)
+  const get = (type: string) => parts.find(p => p.type === type)!.value
+
+  return {
+    dateStr: `${get('year')}-${get('month')}-${get('day')}`,
+    timeStr: `${get('hour')}:${get('minute')}`,
+  }
+}
+
+/** "HH:MM" → минуты от начала суток */
+export function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+/** Минуты (в т.ч. > 1440 для overnight) → "HH:MM", нормализованное */
+export function minutesToTimeStr(minutes: number): string {
+  const m = ((minutes % 1440) + 1440) % 1440
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+}
+
+/**
+ * Генерирует временные слоты между open и close с шагом step.
+ * Корректно обрабатывает overnight-расписание (close < open).
+ * closeBufferMinutes — сколько минут до закрытия обрезаем слоты.
+ * Возвращает { timeStr: "HH:MM", nextDay: boolean }[].
+ */
+export function generateTimeSlots(
+  open: string,
+  close: string,
+  step: number,
+  closeBufferMinutes = 0,
+): { timeStr: string; nextDay: boolean }[] {
+  const openMin = timeToMinutes(open)
+  let closeMin = timeToMinutes(close)
+  const overnight = closeMin <= openMin
+  if (overnight) closeMin += 1440
+
+  const effectiveClose = closeMin - closeBufferMinutes
+  const startMin = Math.ceil(openMin / step) * step
+  const slots: { timeStr: string; nextDay: boolean }[] = []
+
+  for (let m = startMin; m <= effectiveClose; m += step) {
+    slots.push({ timeStr: minutesToTimeStr(m), nextDay: overnight && m >= 1440 })
+  }
+  return slots
+}
+
+/**
+ * Проверяет, доступен ли ASAP-заказ прямо сейчас.
+ * Учитывает рабочие часы, overnight, буфер до закрытия.
+ */
+export function isAsapAvailable(
+  schedule: import('../types/tenant').WorkingHoursSchedule | null | undefined,
+  closeBufferMinutes: number,
+  timezone: string,
+): boolean {
+  if (!schedule) return true
+  if (schedule.default.allDay) return true
+
+  const today = todayInTz(timezone)
+  const [nowH, nowM] = nowTimeInTz(timezone).split(':').map(Number)
+  const nowMinutes = nowH * 60 + nowM
+
+  const isoDay = Number(getIsoDayForDate(today))
+  const day = schedule.days[String(isoDay)] ?? schedule.default
+  if (day.dayOff) return false
+
+  const openMin = timeToMinutes(day.open)
+  const rawCloseMin = timeToMinutes(day.close)
+  const overnight = rawCloseMin <= openMin
+
+  const isOpen = overnight
+    ? (nowMinutes >= openMin || nowMinutes < rawCloseMin)
+    : (nowMinutes >= openMin && nowMinutes < rawCloseMin)
+  if (!isOpen) return false
+
+  const closeMin = overnight ? 1440 + rawCloseMin : rawCloseMin
+  const effectiveNow = overnight && nowMinutes < rawCloseMin ? nowMinutes + 1440 : nowMinutes
+  return effectiveNow + closeBufferMinutes < closeMin
+}
+
+/**
  * Список популярных таймзон для селектора.
  * Формат: IANA timezone → человекочитаемое название.
  *

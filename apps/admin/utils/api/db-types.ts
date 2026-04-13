@@ -50,6 +50,7 @@ export type TenantRow = {
   order_number_config: OrderNumberConfig | null
   max_addons_default: number | null
   onboarding_completed: boolean
+  order_scheduling_config: Record<string, unknown>
   created_at: string
 }
 
@@ -217,6 +218,7 @@ export type OrderRow = {
   updated_at: string
   kitchen_queued_at: string | null
   kitchen_completed_at: string | null
+  scheduled_at: string | null
   visited_statuses: string[] | null
   order_items?: OrderItemRow[]
 }

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, parseSchedulingConfig } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
@@ -56,6 +56,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     orderNumberConfig: (row.order_number_config as OrderNumberConfig | null) ?? null,
     maxAddonsDefault: row.max_addons_default ?? null,
     onboardingCompleted: row.onboarding_completed,
+    orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config ?? {}),
     createdAt: row.created_at,
   }
 }
@@ -85,6 +86,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   order_number_config: data.orderNumberConfig,
   max_addons_default: data.maxAddonsDefault,
   onboarding_completed: data.onboardingCompleted,
+  order_scheduling_config: data.orderSchedulingConfig as Record<string, unknown> | undefined,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {

@@ -9,16 +9,6 @@
         @focus="showSuggestions = true"
         @blur="hideSuggestionsDelayed(); addressTouched = true"
       />
-      <FsIconButton
-        v-if="checkout.form.address"
-        aria-label="Очистить адрес"
-        variant="ghost"
-        size="small"
-        class="address-clear"
-        @click="checkout.clearAddress(); addressVerified = false"
-      >
-        <X :size="14" />
-      </FsIconButton>
 
       <FsDropdownList
         v-if="showSuggestions"
@@ -85,13 +75,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
-import { Check, X, AlertTriangle } from 'lucide-vue-next'
+import { Check, AlertTriangle } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'
 import type { DadataSuggestion } from '~/composables/useDadataSuggestions'
 import { useDadataSuggestions } from '~/composables/useDadataSuggestions'
-import { FsInput, FsIconButton, FsAlert, FsDropdownList, FsField } from '@fastio/public-ui'
+import { FsInput, FsAlert, FsDropdownList, FsField } from '@fastio/public-ui'
 import { validationRules } from '@fastio/kit'
 
 type Props = { currency: string }
@@ -227,13 +217,6 @@ defineExpose({
 
 .address-input-wrap {
   position: relative;
-}
-
-.address-clear {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 .zone-hint {

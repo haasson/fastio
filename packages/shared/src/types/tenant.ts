@@ -185,6 +185,37 @@ export type TenantSeo = {
 
 export type DeliveryMode = 'fixed' | 'zones'
 
+export type OrderSchedulingConfig = {
+  enabled: boolean
+  slotStep: number
+  daysAhead: number
+  deliveryLeadMinutes: number
+  pickupLeadMinutes: number
+  closeBufferMinutes: number
+}
+
+export const DEFAULT_SCHEDULING_CONFIG: OrderSchedulingConfig = {
+  enabled: false,
+  slotStep: 30,
+  daysAhead: 3,
+  deliveryLeadMinutes: 60,
+  pickupLeadMinutes: 30,
+  closeBufferMinutes: 30,
+}
+
+export function parseSchedulingConfig(raw: Record<string, unknown> | null | undefined): OrderSchedulingConfig {
+  const d = DEFAULT_SCHEDULING_CONFIG
+  if (!raw) return { ...d }
+  return {
+    enabled: (raw.enabled as boolean) ?? d.enabled,
+    slotStep: (raw.slotStep as number) ?? d.slotStep,
+    daysAhead: (raw.daysAhead as number) ?? d.daysAhead,
+    deliveryLeadMinutes: (raw.deliveryLeadMinutes as number) ?? d.deliveryLeadMinutes,
+    pickupLeadMinutes: (raw.pickupLeadMinutes as number) ?? d.pickupLeadMinutes,
+    closeBufferMinutes: (raw.closeBufferMinutes as number) ?? d.closeBufferMinutes,
+  }
+}
+
 export type Tenant = {
   id: string
   name: string
@@ -216,5 +247,6 @@ export type Tenant = {
   orderNumberConfig: OrderNumberConfig | null
   maxAddonsDefault: number | null
   onboardingCompleted: boolean
+  orderSchedulingConfig: OrderSchedulingConfig
   createdAt: string
 }

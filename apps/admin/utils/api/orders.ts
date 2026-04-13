@@ -29,6 +29,7 @@ export type OrderUpdateData = {
   status?: string
   paymentType?: 'cash' | 'card' | 'online'
   branchId?: string | null
+  scheduledAt?: string | null
 }
 
 export type OrderCreateData = {
@@ -57,6 +58,7 @@ export type OrderCreateData = {
   tableId?: string | null
   tableName?: string | null
   idempotencyKey?: string | null
+  scheduledAt?: string | null
 }
 
 export type OrderFilter = string | null
@@ -120,6 +122,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     updatedAt: row.updated_at,
     kitchenQueuedAt: row.kitchen_queued_at ?? null,
     kitchenCompletedAt: row.kitchen_completed_at ?? null,
+    scheduledAt: row.scheduled_at ?? null,
     visitedStatuses: row.visited_statuses ?? [],
   }
 }
@@ -145,6 +148,7 @@ const toOrderPayload = (data: OrderUpdateData | OrderCreateData): Partial<OrderR
   branch_id: data.branchId,
   status: data.status,
   payment_type: data.paymentType,
+  scheduled_at: data.scheduledAt,
 }) as Partial<OrderRow>
 
 const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id'>[] => items.map((item, i) => ({

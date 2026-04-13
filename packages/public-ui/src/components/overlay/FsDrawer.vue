@@ -117,8 +117,8 @@ const rightSizeStyle = computed(() => {
   right: 0;
   background: var(--color-surface);
   border-radius: var(--radius-card) var(--radius-card) 0 0;
-  padding: 0 20px 20px;
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  padding: 0 20px 0;
+  padding-bottom: env(safe-area-inset-bottom);
   z-index: var(--z-modal, 400);
   max-height: 90vh;
   outline: none;

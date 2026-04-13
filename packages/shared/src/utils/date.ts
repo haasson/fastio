@@ -6,6 +6,10 @@ export const formatDate = (iso: string): string =>
 export const formatDateShort = (iso: string): string =>
   new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
 
+/** "пн, 15 мар" — короткий день недели + дата */
+export const formatDateWeekday = (dateStr: string): string =>
+  new Date(dateStr + 'T12:00:00').toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' })
+
 /** "1 марта 2024" — полный месяц. Принимает ISO string или timestamp. */
 export const formatDateLong = (isoOrTs: string | number): string =>
   new Date(isoOrTs).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -49,6 +53,13 @@ export const tsToIso = (ts: number | null): string | null =>
  * Относительное время: "только что", "5 мин назад", "2 ч назад",
  * или полная дата для старых событий.
  */
+/** "30 мин", "1 ч", "1 ч 30 мин" — человекочитаемая длительность в минутах */
+export function formatMinutes(m: number): string {
+  if (m < 60) return `${m} мин`
+  if (m % 60 === 0) return `${m / 60} ч`
+  return `${Math.floor(m / 60)} ч ${m % 60} мин`
+}
+
 export const formatRelativeTime = (isoDate: string, now: Date): string => {
   const diff = now.getTime() - new Date(isoDate).getTime()
   const min = Math.floor(diff / 60_000)

@@ -1,7 +1,6 @@
-import { normalizePhone } from '@fastio/shared'
+import { normalizePhone, createRateLimiter } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getServerSupabase } from '../utils/supabase'
-import { createRateLimiter } from '@fastio/shared'
 import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType } from '../services/order-validation'
 import { resolveCustomer } from '../services/order-customer'
 import { resolveDelivery } from '../services/order-delivery'
@@ -52,7 +51,17 @@ export default defineEventHandler(async (event) => {
 
   const total = calcOrderTotal(subtotal, discountAmount, deliveryFee)
 
-  // 6. Создание заказа
+  // 6. Валидация scheduledAt
+  let validScheduledAt: string | null = null
+  if (typeof body.scheduledAt === 'string' && body.scheduledAt) {
+    const ts = Date.parse(body.scheduledAt)
+    if (Number.isNaN(ts) || ts < Date.now()) {
+      throw createError({ statusCode: 400, message: 'Некорректная дата предзаказа' })
+    }
+    validScheduledAt = new Date(ts).toISOString()
+  }
+
+  // 7. Создание заказа
   const idempotencyKey = typeof body.idempotencyKey === 'string' && body.idempotencyKey.trim()
     ? body.idempotencyKey.trim()
     : null
@@ -86,6 +95,7 @@ export default defineEventHandler(async (event) => {
       ...(deliveryLon !== null && { delivery_lon: deliveryLon }),
       ...(tableRecord && { table_id: tableRecord.id, table_name: tableRecord.name }),
       ...(customerId && { customer_id: customerId }),
+      ...(validScheduledAt ? { scheduled_at: validScheduledAt } : {}),
     })
     .select('id, order_number')
     .single()

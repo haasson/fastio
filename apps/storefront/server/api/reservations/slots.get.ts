@@ -1,33 +1,8 @@
 import { getServerSupabase } from '../../utils/supabase'
-import { createRateLimiter } from '@fastio/shared'
+import { createRateLimiter, getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
-import { getIsoDayForDate, todayInTz, nowTimeInTz } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(30, 60_000)
-
-function toMinutes(time: string): number {
-  const [h, m] = time.split(':').map(Number)
-  return h * 60 + m
-}
-
-function minutesToTime(minutes: number): string {
-  const m = ((minutes % 1440) + 1440) % 1440
-  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
-}
-
-function generateSlots(open: string, close: string, step: number, bufferMinutes: number): string[] {
-  const openMin = toMinutes(open)
-  const closeMin = toMinutes(close) + (toMinutes(close) <= toMinutes(open) ? 1440 : 0)
-  const lastSlot = closeMin - bufferMinutes
-
-  const slots: string[] = []
-  let cur = openMin
-  while (cur <= lastSlot) {
-    slots.push(minutesToTime(cur))
-    cur += step
-  }
-  return slots
-}
 
 export default defineEventHandler(async (event) => {
   const tenantId = event.context.tenantId as string | undefined
@@ -72,18 +47,17 @@ export default defineEventHandler(async (event) => {
   const slotStep = (settingsData?.slot_step as number | null) ?? 30
   const closeBuffer = (settingsData?.close_buffer_minutes as number | null) ?? 60
 
-  const times = generateSlots(dayHours.open, dayHours.close, slotStep, closeBuffer)
+  const slots = generateTimeSlots(dayHours.open, dayHours.close, slotStep, closeBuffer)
 
   const tenantTz = (tenantData.timezone as string) ?? 'Europe/Moscow'
   const tenantToday = todayInTz(tenantTz)
-  const tenantNow = nowTimeInTz(tenantTz)
+  const tenantNowMin = date === tenantToday ? timeToMinutes(nowTimeInTz(tenantTz)) : null
 
-  const filteredTimes = date === tenantToday
-    ? times.filter(t => {
-        const isAfterMidnight = toMinutes(t) < toMinutes(dayHours.open)
-        return isAfterMidnight || t > tenantNow
-      })
-    : times
+  const filtered = slots.filter(({ timeStr, nextDay }) => {
+    if (tenantNowMin === null) return true
+    const slotMin = timeToMinutes(timeStr) + (nextDay ? 1440 : 0)
+    return slotMin > tenantNowMin
+  })
 
-  return filteredTimes.map((time) => ({ time, available: true }))
+  return filtered.map(({ timeStr }) => ({ time: timeStr, available: true }))
 })

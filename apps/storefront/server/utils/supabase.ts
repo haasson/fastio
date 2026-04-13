@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Tenant, Category, CategoryType, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode } from '@fastio/shared'
-import { mapDeliveryZoneRow, defaultSeo, resolveModules } from '@fastio/shared'
+import { mapDeliveryZoneRow, defaultSeo, resolveModules, parseSchedulingConfig } from '@fastio/shared'
 
 export function getServerSupabase() {
   const config = useRuntimeConfig()
@@ -49,6 +49,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     orderNumberConfig: (row.order_number_config as OrderNumberConfig | null) ?? null,
     maxAddonsDefault: (row.max_addons_default as number | null) ?? null,
     onboardingCompleted: (row.onboarding_completed as boolean) ?? false,
+    orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config as Record<string, unknown> | null),
     createdAt: row.created_at as string,
   }
 }
@@ -156,6 +157,10 @@ export function mapOrder(row: Record<string, unknown>): Order {
     acceptedBy: (row.accepted_by as string | null) ?? null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
+    kitchenQueuedAt: (row.kitchen_queued_at as string | null) ?? null,
+    kitchenCompletedAt: (row.kitchen_completed_at as string | null) ?? null,
+    scheduledAt: (row.scheduled_at as string | null) ?? null,
+    visitedStatuses: (row.visited_statuses as string[] | null) ?? [],
   }
 }
 
