@@ -34,6 +34,16 @@ export const membersApi = {
     })
   },
 
+  async countWithCustomRole(sb: SupabaseClient, tenantId: string): Promise<number> {
+    const { count } = await sb
+      .from('tenant_members')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .not('role_id', 'is', null)
+
+    return count ?? 0
+  },
+
   async updateRole(sb: SupabaseClient, memberId: string, roleId: string) {
     await query(sb.from('tenant_members').update({ role_id: roleId }).eq('id', memberId))
   },

@@ -119,6 +119,28 @@ export const checkModuleDisable = async (
     }
   }
 
+  if (moduleKey === 'customRoles') {
+    const count = await api.members.countWithCustomRole(tenantId)
+
+    if (count > 0) {
+      issues.push({
+        severity: 'blocker',
+        message: `Нельзя выключить: у ${count} ${count === 1 ? 'сотрудника' : 'сотрудников'} назначены кастомные роли. Переведи их на стандартные роли в разделе Команда.`,
+      })
+    }
+  }
+
+  if (moduleKey === 'kitchen') {
+    const count = await api.kitchenQueue.countActive(tenantId)
+
+    if (count > 0) {
+      issues.push({
+        severity: 'blocker',
+        message: `Нельзя выключить: в очереди кухни есть незавершённые позиции (${count}). Дождись выполнения или очисти очередь.`,
+      })
+    }
+  }
+
   if (moduleKey === 'promotions') {
     const banners = await api.banners.list(tenantId)
     const linked = banners.filter((b) => b.promotionId !== null)

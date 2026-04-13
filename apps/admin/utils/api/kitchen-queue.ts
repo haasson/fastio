@@ -43,6 +43,16 @@ export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueI
 }
 
 export const kitchenQueueApi = {
+  async countActive(sb: SupabaseClient, tenantId: string): Promise<number> {
+    const { count } = await sb
+      .from('kitchen_queue')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .in('status', ['queued', 'in_progress'])
+
+    return count ?? 0
+  },
+
   async listActive(sb: SupabaseClient, tenantId: string): Promise<KitchenQueueItem[]> {
     const data = await query(
       sb.from('kitchen_queue')
