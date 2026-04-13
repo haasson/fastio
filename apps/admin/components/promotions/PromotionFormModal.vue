@@ -283,45 +283,45 @@ const onConfirm = () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .time-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .dates-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .weekdays-label {
   display: block;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-8);
 }
 
 .weekday-buttons {
   display: flex;
-  gap: 6px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
 .free-item {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .dish-select-label {
   display: block;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-8);
 }
 
 .dish-list {
@@ -329,18 +329,18 @@ const onConfirm = () => {
   padding: 0;
   margin: 0;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 }
 
 .weekday-btn {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   border: 1.5px solid var(--color-border);
   background: none;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
