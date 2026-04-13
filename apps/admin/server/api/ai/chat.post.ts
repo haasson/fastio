@@ -1,10 +1,18 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { createOpenAI } from '@ai-sdk/openai'
-import { streamText } from 'ai'
+import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from 'ai'
+import { loadKnowledge } from '~/server/ai/loadKnowledge'
+import { fetchTenantContext, formatContextForPrompt, type AiContext } from '~/server/ai/fetchContext'
+import { createAiTools } from '~/server/ai/tools'
 
 export default defineEventHandler(async (event) => {
-  const { messages, context } = await readBody(event)
+  const { messages, tenantId, userId, currentRoute } = await readBody<{
+    messages: UIMessage[]
+    tenantId: string
+    userId: string
+    currentRoute?: string
+  }>(event)
 
   const config = useRuntimeConfig(event)
   const apiKey = config.openaiApiKey
@@ -16,77 +24,76 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (!tenantId || !userId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'tenantId and userId are required',
+    })
+  }
+
   const openai = createOpenAI({ apiKey })
 
-  const systemPrompt = buildSystemPrompt(context)
+  const knowledge = await loadKnowledge()
+  const tenantContext = await fetchTenantContext(tenantId, userId)
+  const systemPrompt = buildSystemPrompt(knowledge, tenantContext, currentRoute)
+  const tools = createAiTools(tenantId, userId)
 
   const result = streamText({
-    model: openai('gpt-4o-mini'),
+    model: openai('gpt-4.1-nano'),
     system: systemPrompt,
-    messages,
+    messages: await convertToModelMessages(messages),
+    tools,
+    stopWhen: stepCountIs(3),
     maxOutputTokens: 1024,
   })
 
-  return result.toTextStreamResponse()
+  return result.toUIMessageStreamResponse()
 })
 
-function buildSystemPrompt(context?: { tenantName?: string; businessType?: string; currentRoute?: string }) {
+function buildSystemPrompt(
+  knowledge: string,
+  context: AiContext,
+  currentRoute?: string,
+): string {
+  const contextText = formatContextForPrompt(context)
+
   const sections = [
-    `Ты — ИИ-ассистент в админ-панели Fastio, SaaS-платформы для ресторанов, кафе, магазинов и сервисных компаний.`,
-    `Твоя задача — помогать пользователям работать с админкой: объяснять функции, помогать настраивать меню, заказы и другие разделы.`,
+    knowledge,
     '',
-    `Возможности платформы Fastio:`,
-    `- Управление меню (блюда, категории, модификаторы, добавки)`,
-    `- Приём и управление заказами (доставка, самовывоз)`,
-    `- Кухонный модуль (отслеживание готовности блюд)`,
-    `- Столы и бронирования`,
-    `- Акции и промокоды`,
-    `- Управление контентом сайта (баннеры, галереи, страницы)`,
-    `- Настройка оформления и темы сайта`,
-    `- Управление командой и филиалами`,
-    `- Настройки уведомлений (email, Telegram)`,
+    '---',
     '',
-    `Разделы админки:`,
-    `- / — Дашборд (обзор статистики)`,
-    `- /menu — Управление меню (категории, блюда, модификаторы, добавки)`,
-    `- /orders — Заказы`,
-    `- /kitchen — Кухня`,
-    `- /tables — Столы`,
-    `- /reservations — Бронирования`,
-    `- /promotions — Акции`,
-    `- /team/members — Команда`,
-    `- /team/branches — Филиалы`,
-    `- /content — Контент сайта`,
-    `- /appearance — Оформление`,
-    `- /settings — Настройки`,
+    'Контекст текущего пользователя:',
+    contextText,
   ]
 
-  if (context?.tenantName) {
-    sections.push('', `Текущий тенант: ${context.tenantName}`)
-  }
-
-  if (context?.businessType) {
-    const labels: Record<string, string> = {
-      food: 'Общепит (ресторан/кафе)',
-      retail: 'Розничная торговля',
-      services: 'Услуги',
-    }
-
-    sections.push(`Тип бизнеса: ${labels[context.businessType] || context.businessType}`)
-  }
-
-  if (context?.currentRoute) {
-    sections.push(`Пользователь сейчас находится в разделе: ${context.currentRoute}`)
+  if (currentRoute) {
+    sections.push(`Текущий раздел: ${currentRoute}`)
   }
 
   sections.push(
     '',
-    `Правила:`,
-    `- Отвечай кратко, дружелюбно и по делу`,
-    `- Используй русский язык`,
-    `- Если не знаешь ответа — честно скажи об этом`,
-    `- Давай практические советы, привязанные к конкретным разделам админки`,
-    `- Не придумывай функции, которых нет в платформе`,
+    '---',
+    '',
+    'Правила:',
+    '- Ты — AI-ассистент платформы Fastio. Отвечай ТОЛЬКО на вопросы о Fastio, админ-панели и публичном сайте.',
+    '- На любые вопросы, не связанные с Fastio (анекдоты, погода, программирование и т.д.) — вежливо откажи: "Я могу помочь только с вопросами по Fastio. Чем могу помочь в админке?"',
+    '- Отвечай кратко, дружелюбно и по делу. Используй русский язык.',
+    '- Давай ссылки на разделы админки в формате markdown: [Название](/путь). ВСЕГДА используй самый конкретный URL из базы знаний. Например, для категорий — [Категории](/menu/categories), а НЕ [Меню](/menu). Для настроек модулей — [Модули](/settings/modules), а НЕ [Настройки](/settings).',
+    '- Давай полный и исчерпывающий ответ сразу. НЕ предлагай "рассказать подробнее", "показать пошаговую инструкцию" и т.п. Если вопрос требует пошаговых действий — просто дай их. Не байти на продолжение разговора.',
+    '',
+    'Твои возможности и ограничения:',
+    '- Ты УМЕЕШЬ: отвечать на вопросы текстом, давать пошаговые инструкции текстом, давать ссылки на разделы админки, создавать обращения в поддержку (инструмент createSupportTicket).',
+    '- Ты НЕ УМЕЕШЬ: показывать скриншоты, запускать туры, вносить изменения в настройки, создавать/редактировать данные (блюда, заказы, категории и т.д.), отправлять email или сообщения.',
+    '- НИКОГДА не предлагай то, чего не умеешь. Не говори "могу показать скриншот", "давай запущу тур", "могу настроить за тебя". Если пользователь просит что-то сделать — объясни текстом как это сделать самому.',
+    '- В платформе есть интерактивные туры (пошаговые обучающие гиды прямо в интерфейсе). Ты не можешь их запускать, но можешь предложить пройти тур: дай ссылку [Виртуальные туры](/help/tours). Если вопрос касается создания категории/блюда/модификаторов/добавок — упомяни что есть тур на эту тему.',
+    '- Учитывай включённые/выключенные модули. Если модуль ВКЛЮЧЁН — просто отвечай на вопрос, НЕ упоминай что модуль включён, не объясняй что такое модули. Если модуль ВЫКЛЮЧЕН — объясни что он выключен и как включить: [Настройки → Модули](/settings/modules).',
+    '- Учитывай тариф. Если модуль заблокирован тарифом — объясни какой тариф нужен и как перейти: [Биллинг](/account/billing)',
+    '- Учитывай роль и пермишены. Если у пользователя нет доступа к разделу — объясни что нужно обратиться к владельцу/администратору.',
+    '- Не придумывай функции, которых нет в платформе. Отвечай только на основе базы знаний.',
+    '- Если не можешь помочь — предложи создать обращение в поддержку. Опиши что напишешь и дождись подтверждения пользователя перед вызовом инструмента createSupportTicket.',
+    '- НИКОГДА не вызывай createSupportTicket без явного согласия пользователя.',
+    '- При описании действий используй точные названия кнопок и элементов интерфейса из базы знаний. Например: «нажмите кнопку «Добавить категорию»», а не «создайте категорию». Названия кнопок оборачивай в «кавычки-ёлочки».',
+    '- Форматируй ответы в markdown: жирный текст, списки, ссылки.',
   )
 
   return sections.join('\n')

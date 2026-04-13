@@ -1,117 +1,51 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from '#imports'
+import { Chat } from '@ai-sdk/vue'
+import { DefaultChatTransport } from 'ai'
 import { useTenantStore } from '~/stores/tenant'
-
-type Message = {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
+import { useAuthStore } from '~/stores/auth'
 
 export function useAiChat() {
   const route = useRoute()
   const tenantStore = useTenantStore()
+  const authStore = useAuthStore()
 
-  const messages = ref<Message[]>([])
   const input = ref('')
-  const isLoading = ref(false)
-  const error = ref<Error | null>(null)
 
-  let abortController: AbortController | null = null
+  const chat = new Chat({
+    transport: new DefaultChatTransport({
+      api: '/api/ai/chat',
+      body: () => ({
+        tenantId: tenantStore.currentTenantId,
+        userId: authStore.user?.id,
+        currentRoute: route.path,
+      }),
+    }),
+  })
 
-  async function handleSubmit() {
+  const messages = computed(() => chat.messages)
+  const status = computed(() => chat.status)
+  const error = computed(() => chat.error)
+  const isLoading = computed(() => chat.status === 'submitted' || chat.status === 'streaming')
+
+  function handleSubmit() {
     const text = input.value.trim()
 
     if (!text || isLoading.value) return
-
-    error.value = null
     input.value = ''
+    chat.sendMessage({ text })
+  }
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: text,
-    }
-
-    messages.value.push(userMessage)
-
-    const assistantMessage: Message = {
-      id: crypto.randomUUID(),
-      role: 'assistant',
-      content: '',
-    }
-
-    messages.value.push(assistantMessage)
-
-    isLoading.value = true
-    abortController = new AbortController()
-
-    try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: messages.value
-            .filter((m) => m.content)
-            .map((m) => ({ role: m.role, content: m.content })),
-          context: {
-            tenantName: tenantStore.tenant?.name,
-            businessType: tenantStore.tenant?.businessType,
-            currentRoute: route.path,
-          },
-        }),
-        signal: abortController.signal,
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const reader = response.body?.getReader()
-
-      if (!reader) throw new Error('No response body')
-
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { done, value } = await reader.read()
-
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-
-        assistantMessage.content += chunk
-        messages.value = [...messages.value]
-      }
-    } catch (err: unknown) {
-      if ((err as Error).name !== 'AbortError') {
-        error.value = err as Error
-        // Remove empty assistant message on error
-        if (!assistantMessage.content) {
-          messages.value = messages.value.filter((m) => m.id !== assistantMessage.id)
-        }
-      }
-    } finally {
-      isLoading.value = false
-      abortController = null
-    }
+  function reload() {
+    chat.regenerate()
   }
 
   function stop() {
-    abortController?.abort()
+    chat.stop()
   }
 
-  async function reload() {
-    // Remove last assistant message and resend
-    const lastUserIdx = messages.value.findLastIndex((m) => m.role === 'user')
-
-    if (lastUserIdx === -1) return
-
-    const lastUserMessage = messages.value[lastUserIdx]
-
-    messages.value = messages.value.slice(0, lastUserIdx)
-    input.value = lastUserMessage.content
-    await handleSubmit()
+  function clearMessages() {
+    chat.messages = []
   }
 
   return {
@@ -119,8 +53,10 @@ export function useAiChat() {
     input,
     handleSubmit,
     isLoading,
+    status,
     error,
     reload,
     stop,
+    clearMessages,
   }
 }

@@ -98,6 +98,9 @@ importers:
       apexcharts:
         specifier: ^5.10.4
         version: 5.10.4
+      dompurify:
+        specifier: ^3.3.3
+        version: 3.3.3
       driver.js:
         specifier: ^1.4.0
         version: 1.4.0
@@ -107,6 +110,9 @@ importers:
       lucide-vue-next:
         specifier: ^0.575.0
         version: 0.575.0(vue@3.5.29(typescript@5.9.3))
+      marked:
+        specifier: ^18.0.0
+        version: 18.0.0
       naive-ui:
         specifier: ^2.42.0
         version: 2.43.2(vue@3.5.29(typescript@5.9.3))
@@ -134,7 +140,13 @@ importers:
       vue3-apexcharts:
         specifier: ^1.11.1
         version: 1.11.1(apexcharts@5.10.4)(vue@3.5.29(typescript@5.9.3))
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
+      '@types/dompurify':
+        specifier: ^3.2.0
+        version: 3.2.0
       '@types/qrcode':
         specifier: ^1.5.6
         version: 1.5.6
@@ -4536,6 +4548,11 @@ packages:
 
   markdown-it@14.1.1:
     resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
+    hasBin: true
+
+  marked@18.0.0:
+    resolution: {integrity: sha512-2e7Qiv/HJSXj8rDEpgTvGKsP8yYtI9xXHKDnrftrmnrJPaFNM7VRb2YCzWaX4BP1iCJ/XPduzDJZMFoqTCcIMA==}
+    engines: {node: '>= 20'}
     hasBin: true
 
   maska@3.2.0:
@@ -10932,6 +10949,8 @@ snapshots:
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
+
+  marked@18.0.0: {}
 
   maska@3.2.0: {}
 

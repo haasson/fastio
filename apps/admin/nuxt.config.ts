@@ -44,6 +44,12 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
 
+  nitro: {
+    serverAssets: [
+      { baseName: 'ai-knowledge', dir: './server/ai/knowledge' },
+    ],
+  },
+
   runtimeConfig: {
     openaiApiKey: '',
     supabaseServiceRoleKey: '',

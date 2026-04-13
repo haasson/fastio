@@ -16,6 +16,10 @@
           </button>
         </div>
 
+        <div class="disclaimer">
+          AI может ошибаться. Если не помог — напишите в <a href="/help/support" @click.prevent="goToSupport">поддержку</a>
+        </div>
+
         <div ref="messagesRef" class="messages">
           <div v-if="messages.length === 0" class="empty">
             <UiIcon name="sparkles" :size="32" color="var(--color-primary)" />
@@ -30,7 +34,16 @@
             class="message"
             :class="message.role"
           >
-            <div class="bubble">{{ message.content }}</div>
+            <div
+              v-if="message.role === 'user'"
+              class="bubble"
+            >{{ messageText(message) }}</div>
+            <div
+              v-else
+              class="bubble markdown-body"
+              @click="handleLinkClick"
+              v-html="renderMarkdown(messageText(message))"
+            />
           </div>
 
           <div v-if="isLoading" class="message assistant">
@@ -69,13 +82,60 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
+import { Marked } from 'marked'
+import DOMPurify from 'dompurify'
+import type { UIMessage } from 'ai'
+import { useRouter } from '#imports'
 import { UiIcon, UiText } from '@fastio/ui'
 import { useAiChat } from '~/composables/useAiChat'
+import useTour from '~/composables/useTour'
 
 const isOpen = ref(false)
-const messagesRef = ref<HTMLElement>()
+const { isActive: isTourActive } = useTour()
 
-const { messages, input, handleSubmit, isLoading, error, reload } = useAiChat()
+watch(isTourActive, (active) => {
+  if (active) isOpen.value = false
+})
+const messagesRef = ref<HTMLElement>()
+const router = useRouter()
+
+const { messages, input, handleSubmit, isLoading, error, reload, clearMessages } = useAiChat()
+
+const md = new Marked({ breaks: true, gfm: true })
+
+function messageText(m: UIMessage): string {
+  if (!m.parts) return ''
+
+  return m.parts
+    .filter((p): p is Extract<typeof p, { type: 'text' }> => p.type === 'text')
+    .map((p) => p.text)
+    .join('')
+}
+
+function renderMarkdown(text: string): string {
+  if (!text) return ''
+  const html = md.parse(text, { async: false }) as string
+
+  return DOMPurify.sanitize(html, { ADD_ATTR: ['target'] })
+}
+
+function handleLinkClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  const anchor = target.closest('a')
+
+  if (!anchor) return
+  const href = anchor.getAttribute('href')
+
+  if (href && href.startsWith('/')) {
+    event.preventDefault()
+    router.push(href)
+  }
+}
+
+function goToSupport() {
+  router.push('/help/support')
+  isOpen.value = false
+}
 
 function onSubmit() {
   if (!input.value.trim()) return
@@ -83,7 +143,7 @@ function onSubmit() {
 }
 
 function clearChat() {
-  messages.value = []
+  clearMessages()
 }
 
 watch(
@@ -176,6 +236,26 @@ watch(
   &:hover {
     color: var(--color-error);
     background: var(--color-error-light);
+  }
+}
+
+.disclaimer {
+  padding: 8px 16px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: none;
+    }
   }
 }
 
@@ -347,6 +427,47 @@ watch(
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+  }
+}
+
+.markdown-body {
+  white-space: normal;
+
+  :deep(p) {
+    margin: 0 0 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  :deep(a) {
+    color: var(--color-primary);
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  :deep(ul), :deep(ol) {
+    margin: 4px 0;
+    padding-left: 20px;
+  }
+
+  :deep(li) {
+    margin: 2px 0;
+  }
+
+  :deep(strong) {
+    font-weight: 600;
+  }
+
+  :deep(code) {
+    background: var(--color-bg-subtle);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 12px;
   }
 }
 
