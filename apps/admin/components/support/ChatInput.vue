@@ -108,23 +108,23 @@ const removeImage = (index: number) => {
 <style scoped lang="scss">
 .chat-input-root {
   border-top: 1px solid var(--color-border);
-  padding: 12px 16px;
+  padding: var(--space-12) var(--space-16);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
   background: var(--color-bg-card);
 }
 
 .previews {
   display: flex;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .mini-thumb {
   position: relative;
   width: 48px;
   height: 48px;
-  border-radius: 6px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 
   img {
@@ -141,10 +141,11 @@ const removeImage = (index: number) => {
   width: 16px;
   height: 16px;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 11px;
+  color: var(--color-white);
+  font-size: var(--font-size-xs);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -155,7 +156,7 @@ const removeImage = (index: number) => {
 .input-row {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .attach {
@@ -165,7 +166,7 @@ const removeImage = (index: number) => {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   cursor: pointer;
   color: var(--color-text-secondary);
   transition: color 0.15s;
@@ -179,10 +180,10 @@ const removeImage = (index: number) => {
   flex: 1;
   resize: none;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
-  line-height: 1.5;
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-loose);
   font-family: inherit;
   background: var(--color-bg-card);
   color: var(--color-text);
@@ -207,9 +208,9 @@ const removeImage = (index: number) => {
   width: 36px;
   height: 36px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-white);
   cursor: pointer;
   transition: opacity 0.15s;
 

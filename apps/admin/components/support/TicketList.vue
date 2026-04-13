@@ -69,7 +69,7 @@ defineEmits<{
 .ticket-list-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .header {
@@ -80,7 +80,7 @@ defineEmits<{
 .list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .active {
@@ -90,7 +90,7 @@ defineEmits<{
 .row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .main {
@@ -98,13 +98,13 @@ defineEmits<{
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .top {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .subject,
@@ -119,6 +119,6 @@ defineEmits<{
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: var(--space-4);
 }
 </style>

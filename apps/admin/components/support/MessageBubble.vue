@@ -38,24 +38,24 @@ defineProps<{
 
     .bubble {
       background: var(--color-primary-light);
-      border-radius: 16px 16px 4px 16px;
+      border-radius: var(--radius-16) var(--radius-16) var(--radius-4) var(--radius-16);
     }
   }
 
   &:not(.mine) {
     .bubble {
       background: var(--color-bg-page);
-      border-radius: 16px 16px 16px 4px;
+      border-radius: var(--radius-16) var(--radius-16) var(--radius-16) var(--radius-4);
     }
   }
 }
 
 .bubble {
   max-width: 75%;
-  padding: 10px 14px;
+  padding: var(--space-8) var(--space-12);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .body {
@@ -65,14 +65,14 @@ defineProps<{
 
 .images {
   display: flex;
-  gap: 6px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
 .image-link {
   width: 120px;
   height: 90px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 
   img {
@@ -84,8 +84,8 @@ defineProps<{
 
 .time {
   align-self: flex-end;
-  font-size: 12px;
-  line-height: 1.3;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
   color: var(--color-text-secondary);
 }
 </style>

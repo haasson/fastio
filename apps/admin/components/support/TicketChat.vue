@@ -154,8 +154,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
@@ -164,16 +164,16 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   min-width: 0;
 }
 
 .messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: var(--space-16);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 </style>

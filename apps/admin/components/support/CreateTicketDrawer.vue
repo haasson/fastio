@@ -144,18 +144,18 @@ const onSubmit = async () => {
 .create-ticket-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .images-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .images-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
@@ -163,7 +163,7 @@ const onSubmit = async () => {
   position: relative;
   width: 72px;
   height: 72px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 
   img {
@@ -180,10 +180,11 @@ const onSubmit = async () => {
   width: 20px;
   height: 20px;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 14px;
+  color: var(--color-white);
+  font-size: var(--font-size-md);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -194,7 +195,7 @@ const onSubmit = async () => {
 .attach-btn {
   width: 72px;
   height: 72px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   border: 1px dashed var(--color-border);
   display: flex;
   align-items: center;
