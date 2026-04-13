@@ -44,11 +44,11 @@ const daysWord = computed(() => pluralize(daysLeft.value, 'день', 'дня', 
 .past-due-banner {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 24px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-24);
   background: var(--color-warning-light);
   color: var(--color-text);
-  font-size: 14px;
+  font-size: var(--font-size-md);
   border-bottom: 1px solid var(--color-warning);
 }
 

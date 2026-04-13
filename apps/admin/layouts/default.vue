@@ -110,24 +110,28 @@ const pageTitle = usePageTitle()
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/layout' as *;
 
 .layout-root {
   --topbar-height: 60px;
-  --content-padding: 24px;
+  --content-padding: var(--space-24);
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+
   display: flex;
   min-height: 100vh;
   background: var(--color-bg-page);
 }
 
 .sidebar {
-  width: 240px;
+  width: var(--sidebar-width);
   flex-shrink: 0;
   background: var(--grey-900);
   border-right: 1px solid var(--grey-700);
   color: var(--grey-300);
   display: flex;
   flex-direction: column;
-  padding: 0 0 16px;
+  padding: 0 0 var(--space-16);
   position: fixed;
   top: 0;
   left: 0;
@@ -157,22 +161,24 @@ const pageTitle = usePageTitle()
 }
 
 .sidebar-header {
-  display: flex;
-  align-items: center;
+  @include flex-row(0);
+
   height: var(--topbar-height);
-  padding: 0 16px;
+  padding: 0 var(--space-16);
   border-bottom: 1px solid var(--grey-700);
   flex-shrink: 0;
 }
 
 .logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  @include flex-row(var(--space-8));
+
   text-decoration: none;
   color: var(--grey-50);
 }
 
+// Логотип — отдельный кейс: специфичный шрифт Unbounded, нестандартный размер/вес.
+// Шкала text-* сюда не подходит, оставляем литералы.
+/* stylelint-disable scale-unlimited/declaration-strict-value */
 .logo-text {
   font-family: 'Unbounded', sans-serif;
   font-weight: 800;
@@ -180,9 +186,10 @@ const pageTitle = usePageTitle()
   line-height: 1;
   color: var(--grey-50);
 }
+/* stylelint-enable scale-unlimited/declaration-strict-value */
 
 .logo-accent {
-  color: #e55a25;
+  color: var(--orange-600);
 }
 
 .nav-scroll {
@@ -220,20 +227,18 @@ const pageTitle = usePageTitle()
 }
 
 .user-info {
-  padding: 12px 16px 4px;
+  @include flex-col(var(--space-8));
+
+  padding: var(--space-12) var(--space-16) var(--space-4);
   border-top: 1px solid var(--grey-700);
   margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .account-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 10px;
+  @include flex-row(var(--space-8));
+
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
   text-decoration: none;
   color: var(--grey-400);
   transition: background 0.15s, color 0.15s;
@@ -252,7 +257,7 @@ const pageTitle = usePageTitle()
 
 .user-tenant {
   display: block;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--grey-50);
   white-space: nowrap;
   overflow: hidden;
@@ -277,7 +282,7 @@ const pageTitle = usePageTitle()
 
 .sidebar-collapsed {
   .sidebar {
-    width: 64px;
+    width: var(--sidebar-width-collapsed);
   }
 
   .sidebar-header {
@@ -290,7 +295,7 @@ const pageTitle = usePageTitle()
   }
 
   .user-info {
-    padding: 12px 8px 4px;
+    padding: var(--space-12) var(--space-8) var(--space-4);
   }
 
   .user-info .switcher-root,
@@ -301,7 +306,7 @@ const pageTitle = usePageTitle()
 
   .account-link {
     justify-content: center;
-    padding: 10px 0;
+    padding: var(--space-8) 0;
   }
 }
 
@@ -324,24 +329,23 @@ const pageTitle = usePageTitle()
   transition: margin-left 0.25s ease;
 
   @include mq-m {
-    margin-left: 240px;
+    margin-left: var(--sidebar-width);
   }
 }
 
 .sidebar-collapsed .main {
   @include mq-m {
-    margin-left: 64px;
+    margin-left: var(--sidebar-width-collapsed);
   }
 }
 
 .topbar {
+  @include flex-row(var(--space-16));
+
   height: var(--topbar-height);
   background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 0 24px;
+  padding: 0 var(--space-24);
   position: sticky;
   top: 0;
   z-index: 50;

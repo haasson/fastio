@@ -90,25 +90,24 @@ defineExpose({ navItems })
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/layout' as *;
 
 .nav {
+  @include flex-col(var(--space-4));
+
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px 0;
+  padding: var(--space-8) var(--space-12) 0;
 }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  @include flex-row(var(--space-12));
+
   height: 38px;
-  padding: 0 12px;
-  border-radius: 10px;
+  padding: 0 var(--space-12);
+  border-radius: var(--radius-8);
   color: var(--grey-400);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   white-space: nowrap;
   overflow: hidden;
   text-decoration: none;
