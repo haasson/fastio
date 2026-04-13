@@ -55,7 +55,7 @@
         </div>
       </UiForm>
 
-      <div v-if="!isNew" class="delete-section">
+      <div v-if="!isNew && !table?.isOpen" class="delete-section">
         <UiButton type="error" size="small" @click="handleDelete">
           Удалить стол
         </UiButton>
