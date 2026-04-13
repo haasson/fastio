@@ -291,7 +291,7 @@ onMounted(() => load())
   }
 
   :deep(.member-invited-by) {
-    color: var(--color-text-tertiary);
+    color: var(--color-text-secondary);
   }
 
 }

@@ -17,7 +17,7 @@
         @dragleave="dragging = false"
         @drop.prevent="onDrop"
       >
-        <UiIcon name="image" :size="32" color="var(--color-text-tertiary)" />
+        <UiIcon name="image" :size="32" color="var(--color-text-secondary)" />
         <UiText size="small" color="var(--color-text-secondary)">
           Перетащите или нажмите для загрузки
         </UiText>

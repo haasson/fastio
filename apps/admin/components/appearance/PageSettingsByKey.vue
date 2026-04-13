@@ -155,6 +155,6 @@ const deliveryDescriptionOptions = [
 
 .coming-soon {
   font-size: 13px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 </style>

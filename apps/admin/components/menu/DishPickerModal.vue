@@ -513,7 +513,7 @@ const onConfirm = () => {
 
 .state {
   font-size: 13px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   padding: 40px 0;
   text-align: center;
 }
@@ -690,7 +690,7 @@ const onConfirm = () => {
   text-transform: none;
   letter-spacing: 0;
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .pills {
@@ -706,7 +706,7 @@ const onConfirm = () => {
 
 .state-hint {
   font-size: 13px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .addon-list {
@@ -729,20 +729,20 @@ const onConfirm = () => {
 .addon-weight {
   margin-left: 4px;
   font-size: 12px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .addon-unavailable {
   margin-left: 6px;
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   font-style: italic;
 }
 
 .mod-unavailable {
   margin-left: 4px;
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   font-style: italic;
 }
 

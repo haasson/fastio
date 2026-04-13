@@ -152,7 +152,7 @@ async function handleActionClick(action: DrawerAction) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: color 0.3s;
 

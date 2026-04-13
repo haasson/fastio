@@ -219,7 +219,7 @@ const handleActionClick = async (action: ModalAction) => {
 }
 
 .title-hint {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: help;
   transition: color 0.2s;
 
@@ -232,7 +232,7 @@ const handleActionClick = async (action: ModalAction) => {
   position: absolute;
   top: 16px;
   right: 16px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: color 0.3s;
 

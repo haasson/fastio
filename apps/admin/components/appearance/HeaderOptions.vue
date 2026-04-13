@@ -207,7 +207,7 @@ const updateAction = (key: string, action: 'scroll' | 'navigate') => {
 }
 
 .drag-handle {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: grab;
   flex-shrink: 0;
 
@@ -234,12 +234,12 @@ const updateAction = (key: string, action: 'scroll' | 'navigate') => {
 
 .action-hint {
   font-size: 12px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   flex-shrink: 0;
 }
 
 .remove-btn {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
   transition: color 0.15s;

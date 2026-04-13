@@ -129,7 +129,7 @@ const themeVars = computed(() => {
   const vars = paletteToCssVars(props.theme.palette)
 
   vars['--color-bg-card'] = props.theme.palette.surface
-  vars['--color-text-tertiary'] = props.theme.palette.textMuted
+  vars['--color-text-secondary'] = props.theme.palette.textMuted
   vars['--preview-btn-radius'] = btnRadiusMap[props.theme.buttonRadius] ?? '6px'
 
   return vars
@@ -237,7 +237,7 @@ const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.se
   &--bold {
     width: 36px;
     height: 5px;
-    background: var(--color-text-tertiary);
+    background: var(--color-text-secondary);
   }
 }
 
@@ -317,7 +317,7 @@ const heroContentStyle = computed(() => heroContentPositionStyle(props.layout.se
   height: 6px;
   width: 40%;
   border-radius: 3px;
-  background: var(--color-text-tertiary);
+  background: var(--color-text-secondary);
   margin-bottom: 6px;
 }
 

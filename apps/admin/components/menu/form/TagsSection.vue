@@ -13,7 +13,7 @@
         <component :is="getIcon(tag.icon)" :size="14" :stroke-width="2.5" />
         <span>{{ tag.name }}</span>
       </button>
-      <UiText v-if="availableTags.length === 0" size="small" style="color: var(--color-text-tertiary)">
+      <UiText v-if="availableTags.length === 0" size="small" style="color: var(--color-text-secondary)">
         Нет доступных тегов. Создайте теги во вкладке «Теги».
       </UiText>
     </div>
@@ -74,7 +74,7 @@ const chipStyle = (tag: DishTagDefinition) => {
   user-select: none;
 
   &:hover {
-    border-color: var(--chip-color, var(--color-text-tertiary));
+    border-color: var(--chip-color, var(--color-text-secondary));
   }
 
   &.active {

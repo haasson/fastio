@@ -24,7 +24,7 @@ export const buildModifierColumns = (deps: Deps): DataTableColumns<ModifierGroup
       key: 'options',
       render: (row) => {
         if (!row.options.length) {
-          return h(UiText, { size: 'tiny', style: 'color: var(--color-text-tertiary)' }, () => 'Нет опций')
+          return h(UiText, { size: 'tiny', style: 'color: var(--color-text-secondary)' }, () => 'Нет опций')
         }
 
         return h('div', { class: 'options-cell' },

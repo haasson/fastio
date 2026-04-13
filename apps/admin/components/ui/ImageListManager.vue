@@ -25,7 +25,7 @@
           @click="openReplaceModal(i)"
         />
         <div v-else class="card-empty" @click="openReplaceModal(i)">
-          <UiIcon name="image" :size="16" color="var(--color-text-tertiary)" />
+          <UiIcon name="image" :size="16" color="var(--color-text-secondary)" />
         </div>
         <div v-if="!item.enabled" class="dim" />
         <div class="actions">
@@ -49,7 +49,7 @@
       </div>
 
       <div class="card card--add" @click="openAddModal">
-        <UiIcon name="plus" :size="20" color="var(--color-text-tertiary)" />
+        <UiIcon name="plus" :size="20" color="var(--color-text-secondary)" />
       </div>
     </div>
 

@@ -248,7 +248,7 @@ const onConfirm = async () => {
 
 .drag-handle {
   flex-shrink: 0;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: grab;
 }
 </style>

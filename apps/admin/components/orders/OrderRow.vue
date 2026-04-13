@@ -137,7 +137,7 @@ const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} 
 
 .time {
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .total {

@@ -243,7 +243,7 @@ watch(
   padding: 8px 16px;
   font-size: 11px;
   line-height: 1.4;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   text-align: center;
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -398,7 +398,7 @@ watch(
   transition: border-color 0.15s;
 
   &::placeholder {
-    color: var(--color-text-tertiary);
+    color: var(--color-text-secondary);
   }
 
   &:focus {

@@ -34,7 +34,7 @@
       :style="previewStyle"
       @click="showModal = true"
     >
-      <UiIcon name="plus" :size="compact ? 24 : 32" color="var(--color-text-tertiary)" />
+      <UiIcon name="plus" :size="compact ? 24 : 32" color="var(--color-text-secondary)" />
       <span v-if="compact" class="compact-label">Фото</span>
       <UiText v-else size="small" color="var(--color-text-secondary)">Добавить фото</UiText>
     </div>
@@ -183,7 +183,7 @@ onUnmounted(() => {
 
 .compact-label {
   font-size: 10px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .remove-btn {

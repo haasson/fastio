@@ -265,7 +265,7 @@ const onConfirm = async () => {
 }
 
 .inherit-hint {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .coords-block {

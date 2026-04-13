@@ -53,7 +53,7 @@ const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
   transition: border-color 0.15s, background 0.15s;
 
   &:hover {
-    border-color: var(--color-text-tertiary);
+    border-color: var(--color-text-secondary);
   }
 
   &.selected {

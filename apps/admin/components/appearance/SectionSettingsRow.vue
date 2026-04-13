@@ -68,7 +68,7 @@ const open = ref(false)
 }
 
 .arrow {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   transition: transform 0.2s;
   flex-shrink: 0;
   transform: rotate(-90deg);

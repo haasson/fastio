@@ -6,7 +6,7 @@
       type="text"
       :size="size"
       icon="pencil"
-      :icon-bg="disableEdit ? 'color-text-tertiary' : 'color-primary'"
+      :icon-bg="disableEdit ? 'color-text-secondary' : 'color-primary'"
       :disabled="disableEdit"
       title="Редактировать"
       @click="$emit('edit')"

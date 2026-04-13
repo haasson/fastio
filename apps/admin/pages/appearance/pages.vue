@@ -195,7 +195,7 @@ const removePage = async (key: string) => {
 }
 
 .drag-handle {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: grab;
   flex-shrink: 0;
   line-height: 1;
@@ -218,7 +218,7 @@ const removePage = async (key: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
   padding: 2px;
@@ -231,7 +231,7 @@ const removePage = async (key: string) => {
 }
 
 .arrow {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   transition: transform 0.2s;
   transform: rotate(-90deg);
   flex-shrink: 0;
@@ -249,7 +249,7 @@ const removePage = async (key: string) => {
 
 .empty-hint {
   font-size: 13px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   margin: 0;
   padding: 10px 12px;
   border: 1px solid var(--color-border);

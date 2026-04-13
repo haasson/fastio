@@ -18,7 +18,7 @@ import { UiPopover, UiIcon } from '@fastio/ui'
 
 <style scoped lang="scss">
 .hint-icon {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: default;
   font-size: 14px;
   flex-shrink: 0;

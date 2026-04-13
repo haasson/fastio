@@ -26,5 +26,5 @@ withDefaults(defineProps<{ text?: string; icon?: IconName }>(), {
   padding: 40px 24px;
   text-align: center;
 }
-.icon, .text { color: var(--color-text-tertiary); }
+.icon, .text { color: var(--color-text-secondary); }
 </style>

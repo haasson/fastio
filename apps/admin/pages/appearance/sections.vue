@@ -246,7 +246,7 @@ const removeSection = async (key: string) => {
 }
 
 .drag-handle {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: grab;
   flex-shrink: 0;
   line-height: 1;
@@ -269,7 +269,7 @@ const removeSection = async (key: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
   padding: 2px;
@@ -282,7 +282,7 @@ const removeSection = async (key: string) => {
 }
 
 .arrow {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   transition: transform 0.2s;
   transform: rotate(-90deg);
   flex-shrink: 0;
@@ -300,7 +300,7 @@ const removeSection = async (key: string) => {
 
 .empty-hint {
   font-size: 13px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   margin: 0;
   padding: 10px 12px;
   border-top: 1px solid var(--color-border);

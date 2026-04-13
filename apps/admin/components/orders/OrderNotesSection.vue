@@ -110,7 +110,7 @@ watch(
 
 .notes-empty {
   font-size: 13px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .note {
@@ -137,7 +137,7 @@ watch(
 
 .note-time {
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .note-text {

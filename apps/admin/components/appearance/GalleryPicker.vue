@@ -125,7 +125,7 @@ const onReorder = () => {
 
 .drag-handle {
   cursor: grab;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -146,7 +146,7 @@ const onReorder = () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   padding: 2px;
   border-radius: 3px;
   flex-shrink: 0;
@@ -157,7 +157,7 @@ const onReorder = () => {
 
 .hint {
   font-size: 12px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .link {

@@ -200,7 +200,7 @@ const onSubmit = async () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   transition: border-color 0.15s, color 0.15s;
 
   &:hover {

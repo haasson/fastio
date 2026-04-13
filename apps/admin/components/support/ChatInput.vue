@@ -167,7 +167,7 @@ const removeImage = (index: number) => {
   height: 36px;
   border-radius: 8px;
   cursor: pointer;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   transition: color 0.15s;
 
   &:hover {
@@ -195,7 +195,7 @@ const removeImage = (index: number) => {
   }
 
   &::placeholder {
-    color: var(--color-text-tertiary);
+    color: var(--color-text-secondary);
   }
 }
 

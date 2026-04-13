@@ -10,7 +10,7 @@
         alt=""
       />
       <div v-else class="thumb-empty">
-        <UiIcon name="image" :size="14" color="var(--color-text-tertiary)" />
+        <UiIcon name="image" :size="14" color="var(--color-text-secondary)" />
       </div>
     </div>
 
@@ -69,7 +69,7 @@ const thumbStyle = computed(() => ({
 
 .drag-handle {
   cursor: grab;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   flex-shrink: 0;
 
   &:active { cursor: grabbing; }

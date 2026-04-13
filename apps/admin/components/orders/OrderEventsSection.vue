@@ -209,7 +209,7 @@ watch(() => props.refreshKey, refresh)
 
 .empty {
   font-size: 13px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .event-text {
@@ -238,7 +238,7 @@ watch(() => props.refreshKey, refresh)
 }
 
 .item-qty {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 
@@ -248,12 +248,12 @@ watch(() => props.refreshKey, refresh)
 }
 
 .field-old {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   text-decoration: line-through;
 }
 
 .field-arrow {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   font-size: 11px;
 }
 
@@ -312,11 +312,11 @@ watch(() => props.refreshKey, refresh)
 
 .event-sep {
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .event-time {
   font-size: 11px;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 </style>

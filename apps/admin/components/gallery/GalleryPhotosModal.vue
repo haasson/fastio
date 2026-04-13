@@ -16,7 +16,7 @@
         >
           Добавить фото
         </UiButton>
-        <UiText size="tiny" color="var(--color-text-tertiary)" class="hint">
+        <UiText size="tiny" color="var(--color-text-secondary)" class="hint">
           Одно фото — с кадрированием, несколько — загрузятся как есть
         </UiText>
         <input
@@ -66,7 +66,7 @@
         </div>
 
         <div v-if="uploading" class="photo-item photo-item--loading">
-          <UiIcon name="image" :size="20" color="var(--color-text-tertiary)" />
+          <UiIcon name="image" :size="20" color="var(--color-text-secondary)" />
         </div>
       </VueDraggable>
     </div>
@@ -223,7 +223,7 @@ const modalActions = computed((): ModalAction[] => [
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .delete-btn {
