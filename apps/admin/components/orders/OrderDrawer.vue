@@ -78,7 +78,7 @@ const onSaved = (order: Order) => emit('saved', order)
 
 <style scoped lang="scss">
 .new-tab-icon {
-  margin-left: 6px;
+  margin-left: var(--space-8);
   color: var(--color-text-hint);
   cursor: pointer;
   transition: color 0.15s;

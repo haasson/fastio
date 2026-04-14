@@ -188,7 +188,7 @@ const onPickerSelect = (result: DishPickerResult) => {
 .section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .items-list {
@@ -196,20 +196,20 @@ const onPickerSelect = (result: DishPickerResult) => {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-border-light);
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 }
 
 .qty-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-shrink: 0;
 }
 
 .qty-value {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   min-width: 18px;
   text-align: center;
@@ -220,8 +220,8 @@ const onPickerSelect = (result: DishPickerResult) => {
 }
 
 .item-price {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
   min-width: 60px;
   text-align: right;
@@ -229,6 +229,6 @@ const onPickerSelect = (result: DishPickerResult) => {
 }
 
 .add-dish-row {
-  margin-top: 4px;
+  margin-top: var(--space-4);
 }
 </style>

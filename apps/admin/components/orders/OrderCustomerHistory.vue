@@ -48,15 +48,15 @@ const formatDate = (iso: string) => {
 .customer-history-root {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 .history-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
-  border-radius: 6px;
+  gap: var(--space-8);
+  padding: var(--space-8);
+  border-radius: var(--radius-8);
   cursor: pointer;
   transition: background 0.15s;
 
@@ -66,15 +66,15 @@ const formatDate = (iso: string) => {
 }
 
 .history-num {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
   min-width: 40px;
 }
 
 .history-items {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,14 +82,14 @@ const formatDate = (iso: string) => {
 }
 
 .history-total {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   white-space: nowrap;
 }
 
 .history-date {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-hint);
   white-space: nowrap;
 }

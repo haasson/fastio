@@ -90,12 +90,12 @@ watch(
 .section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .section-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--color-text-secondary);
@@ -104,21 +104,21 @@ watch(
 .notes-thread {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
   min-height: 32px;
 }
 
 .notes-empty {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
 }
 
 .note {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
   background: var(--color-bg-subtle);
   border-left: 3px solid var(--grey-400);
 }
@@ -126,22 +126,22 @@ watch(
 .note-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .note-author {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
 .note-time {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .note-text {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
   white-space: pre-wrap;
 }
@@ -149,7 +149,7 @@ watch(
 .add-note {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
   align-items: stretch;
 
   :deep(.n-button) {

@@ -420,17 +420,17 @@ defineExpose({ save, saving, isEdit })
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .status-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .comment-block {
-  margin-top: 4px;
+  margin-top: var(--space-4);
 }
 
 </style>

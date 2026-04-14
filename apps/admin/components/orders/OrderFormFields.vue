@@ -352,16 +352,16 @@ const paymentOptions = PAYMENT_OPTIONS
 
 .block {
   border: 1px dashed var(--color-border);
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: var(--radius-8);
+  padding: var(--space-12);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .block-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--color-text-secondary);
@@ -370,13 +370,13 @@ const paymentOptions = PAYMENT_OPTIONS
 .fields-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .delivery-first-row {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 
   @include mq.mq-m {
     flex-direction: row;
@@ -399,35 +399,35 @@ const paymentOptions = PAYMENT_OPTIONS
 }
 
 .items-error {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-error);
-  margin-top: -4px;
+  margin-top: calc(-1 * var(--space-4));
 }
 
 .totals {
   background: var(--color-bg-subtle);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .total-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .total-key {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
 }
 
 .total-val {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
@@ -436,7 +436,7 @@ const paymentOptions = PAYMENT_OPTIONS
 }
 
 .promo-code {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
@@ -445,19 +445,19 @@ const paymentOptions = PAYMENT_OPTIONS
 }
 
 .total-final {
-  padding-top: 8px;
-  margin-top: 2px;
+  padding-top: var(--space-8);
+  margin-top: var(--space-4);
   border-top: 1px solid var(--color-border-light);
 
   .total-key {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-title);
   }
 
   .total-val {
-    font-size: 16px;
-    font-weight: 800;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
   }
 }
 
@@ -465,8 +465,8 @@ const paymentOptions = PAYMENT_OPTIONS
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding-top: 4px;
+  gap: var(--space-8);
+  padding-top: var(--space-4);
 }
 
 .payment-select {
@@ -480,7 +480,7 @@ const paymentOptions = PAYMENT_OPTIONS
 .address-details {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: var(--space-8);
 
   @include mq.mq-m {
     grid-template-columns: repeat(4, 1fr);
@@ -489,13 +489,13 @@ const paymentOptions = PAYMENT_OPTIONS
 
 .zone-hint {
   opacity: 0.7;
-  margin-left: 4px;
+  margin-left: var(--space-4);
 }
 
 .schedule-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .suggestions-dropdown {
@@ -506,20 +506,20 @@ const paymentOptions = PAYMENT_OPTIONS
   z-index: 20;
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  margin-top: 4px;
+  margin-top: var(--space-4);
   overflow: hidden;
 }
 
 .suggestion-item {
   display: block;
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--space-8) var(--space-12);
   border: none;
   background: none;
   text-align: left;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
   cursor: pointer;
   transition: background 0.1s;

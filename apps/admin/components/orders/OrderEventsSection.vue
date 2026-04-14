@@ -208,22 +208,22 @@ watch(() => props.refreshKey, refresh)
 }
 
 .empty {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
 }
 
 .event-text {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
 .item-badge {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   width: 16px;
   text-align: center;
   flex-shrink: 0;
@@ -239,11 +239,11 @@ watch(() => props.refreshKey, refresh)
 
 .item-qty {
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 .field-label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
 }
 
@@ -254,12 +254,12 @@ watch(() => props.refreshKey, refresh)
 
 .field-arrow {
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 .field-new {
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .event-text-block {
@@ -270,25 +270,25 @@ watch(() => props.refreshKey, refresh)
 .customized-details {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-top: 1px;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .detail-line {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
 }
 
 .detail-label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
 }
 
 .detail-sign {
-  font-weight: 700;
-  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xs);
   width: 12px;
   text-align: center;
   flex-shrink: 0;
@@ -300,23 +300,23 @@ watch(() => props.refreshKey, refresh)
 .event-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 1px;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .event-actor {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
 }
 
 .event-sep {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .event-time {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 </style>

@@ -41,6 +41,6 @@ const statusTabs = computed(() => statuses.value.map((s) => ({
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 </style>

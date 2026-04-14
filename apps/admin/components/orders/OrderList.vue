@@ -349,24 +349,24 @@ const { columns } = useOrderTable({
 .order-list-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .selection-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-primary-light);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   flex-wrap: wrap;
 }
 
 .selection-count {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
-  margin-right: 4px;
+  margin-right: var(--space-4);
 }
 
 .bulk-status-select {
@@ -374,11 +374,11 @@ const { columns } = useOrderTable({
 }
 
 .pending-banner {
-  padding: 10px 16px;
+  padding: var(--space-8) var(--space-16);
   background: var(--color-warning-light);
   border: 1px solid var(--color-warning);
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: var(--radius-8);
+  font-size: var(--font-size-base);
   color: var(--color-text);
   cursor: pointer;
   text-align: center;
@@ -391,7 +391,7 @@ const { columns } = useOrderTable({
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: var(--space-12);
   align-items: start;
 
   @include mq-m {
@@ -400,32 +400,32 @@ const { columns } = useOrderTable({
 }
 
 :deep(.customer-name) {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
 :deep(.customer-phone) {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
 :deep(.col-time) {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 :deep(.col-total) {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
 }
 
 :deep(.col-actions) {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 </style>

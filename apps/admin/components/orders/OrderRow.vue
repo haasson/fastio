@@ -77,20 +77,20 @@ const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} 
 .row-root {
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
   min-width: 0;
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-shrink: 0;
 }
 
 .number {
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
   font-variant-numeric: tabular-nums;
 }
@@ -98,14 +98,14 @@ const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} 
 .customer {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--space-4);
   flex-shrink: 0;
   width: 150px;
 }
 
 .customer-name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   white-space: nowrap;
   overflow: hidden;
@@ -113,13 +113,13 @@ const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} 
 }
 
 .customer-phone {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .items-summary {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -130,19 +130,19 @@ const itemsSummary = computed(() => props.order.items.map((i) => `${i.dishName} 
 .right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   flex-shrink: 0;
   margin-left: auto;
 }
 
 .time {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .total {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
   min-width: 60px;
   text-align: right;

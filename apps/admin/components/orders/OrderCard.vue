@@ -140,19 +140,19 @@ const absoluteTime = computed(() => {
 
 <style scoped lang="scss">
 .card-root {
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .header-top {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 
   .time {
     margin-left: auto;
@@ -162,19 +162,19 @@ const absoluteTime = computed(() => {
 .header-tags {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
 .number {
-  font-size: 15px;
-  font-weight: 800;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
   font-variant-numeric: tabular-nums;
 }
 
 .time {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   cursor: default;
 }
@@ -182,21 +182,21 @@ const absoluteTime = computed(() => {
 .customer {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .customer-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
 .address {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
   overflow: hidden;
 }
 
@@ -209,14 +209,14 @@ const absoluteTime = computed(() => {
 .items-section {
   border-top: 1px solid var(--color-border-light);
   border-bottom: 1px solid var(--color-border-light);
-  padding: 8px 0;
+  padding: var(--space-8) 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .items-label {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
@@ -224,45 +224,45 @@ const absoluteTime = computed(() => {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--space-4);
 }
 
 .item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .item-name {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
 }
 
 .item-qty {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .item-price {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   min-width: 70px;
   text-align: right;
 }
 
 .item-more {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .discount,
 .comment {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .discount {
@@ -278,38 +278,38 @@ const absoluteTime = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-top: 2px;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
 }
 
 .total-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .total-label {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
 }
 
 .total {
-  font-size: 17px;
-  font-weight: 800;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
 }
 
 .payment-type {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--space-4);
 }
 
 .actions {
   display: flex;
-  gap: 6px;
+  gap: var(--space-8);
   width: 100%;
 }
 
