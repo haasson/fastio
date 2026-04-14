@@ -2,6 +2,7 @@ import { getServerSupabase } from '~/server/utils/supabase'
 
 export type AiContext = {
   tenantName: string
+  siteUrl: string
   businessType: string | null
   plan: string
   modules: Record<string, boolean>
@@ -11,6 +12,8 @@ export type AiContext = {
 
 type TenantRow = {
   name: string | null
+  slug: string
+  custom_domain: string | null
   business_type: string | null
   subscription: { plan?: string } | null
   modules: Record<string, boolean> | null
@@ -31,7 +34,7 @@ export async function fetchTenantContext(
 
   const [tenantResult, memberResult] = await Promise.all([
     sb.from('tenants')
-      .select('name, business_type, subscription, modules')
+      .select('name, slug, custom_domain, business_type, subscription, modules')
       .eq('id', tenantId)
       .single<TenantRow>(),
     sb.from('tenant_members')
@@ -55,8 +58,15 @@ export async function fetchTenantContext(
   const rawRole = member?.tenant_roles ?? null
   const role: RoleRow | null = Array.isArray(rawRole) ? rawRole[0] ?? null : rawRole
 
+  const siteUrl = tenant?.custom_domain
+    ? `https://${tenant.custom_domain}`
+    : tenant?.slug
+      ? `https://${tenant.slug}.fastio.ru`
+      : ''
+
   return {
     tenantName: tenant?.name ?? '',
+    siteUrl,
     businessType: tenant?.business_type ?? null,
     plan: tenant?.subscription?.plan ?? 'start',
     modules: tenant?.modules ?? {},
@@ -83,6 +93,10 @@ export function formatContextForPrompt(ctx: AiContext): string {
   const lines: string[] = []
 
   lines.push(`Тенант: ${ctx.tenantName}`)
+
+  if (ctx.siteUrl) {
+    lines.push(`Публичный сайт: ${ctx.siteUrl}`)
+  }
 
   const bizLabels: Record<string, string> = {
     food: 'Общепит (ресторан/кафе)',

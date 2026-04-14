@@ -47,7 +47,7 @@ export async function loadKnowledge(currentRoute?: string): Promise<string> {
     : null
 
   if (matchedSection) {
-    const relevantKeys = new Set(['_intro.md', ...matchedSection.map((s) => `${s}.md`)])
+    const relevantKeys = new Set(['_intro.md', '_links.md', ...matchedSection.map((s) => `${s}.md`)])
     const parts: string[] = []
 
     for (const [key, content] of files) {
