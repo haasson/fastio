@@ -23,18 +23,16 @@ definePageMeta({ layout: 'default' })
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .suspended-root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   min-height: 60vh;
 }
 
 .suspended-content {
-  display: flex;
-  flex-direction: column;
+  @include flex-col(var(--space-16));
   align-items: center;
-  gap: var(--space-16);
   text-align: center;
   max-width: 480px;
   padding: var(--space-20);

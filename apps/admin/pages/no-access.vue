@@ -35,11 +35,11 @@ const logout = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .no-access-root {
+  @include flex-center;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--color-bg-page);
   padding: var(--space-16);
 }

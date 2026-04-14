@@ -153,19 +153,16 @@ const hasMultipleOrderTypes = computed(() => [
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .dashboard-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
   padding-bottom: var(--space-32);
 }
 
 .controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   flex-wrap: wrap;
 }
 
