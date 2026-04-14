@@ -175,16 +175,14 @@ const handleRestore = async (branch: Branch) => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .branches-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .branch-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
+  @include flex-row(var(--space-12));
   padding: var(--space-12) 0;
   border-bottom: 1px solid var(--color-border-light);
 
@@ -194,17 +192,13 @@ const handleRestore = async (branch: Branch) => {
 }
 
 .branch-info {
+  @include flex-col(var(--space-4));
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
 }
 
 .branch-name-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
 }
 
 .branch-name {
@@ -217,9 +211,7 @@ const handleRestore = async (branch: Branch) => {
 }
 
 .branch-warning {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
 }
 
 .branch-warning-text {
@@ -228,9 +220,7 @@ const handleRestore = async (branch: Branch) => {
 }
 
 .branch-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
 }
 
 .branch-action {

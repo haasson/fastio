@@ -116,16 +116,14 @@ const formatPermissionsSummary = (permissions: RolePermissions) => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .roles-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .roles-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 .role-card {
@@ -133,16 +131,11 @@ const formatPermissionsSummary = (permissions: RolePermissions) => {
 }
 
 .role-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-8);
+  @include flex-between;
 }
 
 .role-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
 }
 
 .role-name {

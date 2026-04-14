@@ -59,12 +59,11 @@ const handleLogout = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .profile-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-24);
+  @include flex-col(var(--space-24));
 }
 
 .profile-grid {

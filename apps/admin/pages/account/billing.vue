@@ -11,9 +11,9 @@ import TransactionHistory from '~/components/billing/TransactionHistory.vue'
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .billing-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-24);
+  @include flex-col(var(--space-24));
 }
 </style>

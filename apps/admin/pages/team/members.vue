@@ -265,25 +265,21 @@ onMounted(() => load())
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .team-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-32);
+  @include flex-col(var(--space-32));
 }
 
 .invite-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
 }
 
 .members-table {
   margin-top: var(--space-4);
 
   :deep(.member-cell) {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+    @include flex-col(var(--space-4));
   }
 
   :deep(.member-name) {
@@ -297,8 +293,6 @@ onMounted(() => load())
 }
 
 .branch-checkboxes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 </style>
