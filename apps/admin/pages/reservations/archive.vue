@@ -153,7 +153,7 @@ fetch()
 .archive-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .pagination {
