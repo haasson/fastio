@@ -128,12 +128,11 @@ const onIssuesDismiss = () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .modules-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
+  @include flex-col(var(--space-20));
 }
 
 .modules-grid {

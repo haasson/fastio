@@ -248,6 +248,7 @@ const copyCode = () => {
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/form' as *;
+@use '@fastio/styles/mixins/layout' as *;
 
 .form {
   @include modal-form;
@@ -270,16 +271,11 @@ const copyCode = () => {
 }
 
 .prefs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
 }
 
 .pref {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-16);
+  @include flex-between(var(--space-16));
 }
 
 .pref-label {
@@ -289,9 +285,7 @@ const copyCode = () => {
 }
 
 .tg-block {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
+  @include flex-row(var(--space-12));
   padding: var(--space-12);
   background: var(--color-bg-page);
   border-radius: var(--radius-12);
@@ -321,9 +315,7 @@ const copyCode = () => {
 }
 
 .tg-steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
   font-size: var(--font-size-md);
   /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1.6;
@@ -334,9 +326,7 @@ const copyCode = () => {
 }
 
 .tg-code {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   padding: var(--space-8) var(--space-12);
   background: var(--color-bg-page);
   border-radius: var(--radius-8);
@@ -350,16 +340,11 @@ const copyCode = () => {
 }
 
 .tg-status-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-8);
+  @include flex-between;
 }
 
 .tg-waiting {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
@@ -370,10 +355,8 @@ const copyCode = () => {
 }
 
 .tg-success {
-  display: flex;
-  flex-direction: column;
+  @include flex-col;
   align-items: center;
-  gap: var(--space-8);
   padding: var(--space-16) 0;
   text-align: center;
 }

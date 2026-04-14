@@ -217,12 +217,11 @@ const handleSave = async () => {
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/form' as *;
+@use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
+  @include flex-col(var(--space-20));
   max-width: 680px;
 }
 
@@ -245,15 +244,11 @@ const handleSave = async () => {
 }
 
 .docs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 .doc-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   flex-wrap: wrap;
 }
 
