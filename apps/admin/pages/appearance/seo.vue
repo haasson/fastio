@@ -135,29 +135,22 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .seo-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
+  @include flex-col(var(--space-20));
 }
 
 .group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 .field-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-8);
+  @include flex-between;
 }
 
 .label {
@@ -196,9 +189,8 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 }
 
 .favicon-row {
-  display: flex;
+  @include flex-row(var(--space-16));
   align-items: flex-start;
-  gap: var(--space-16);
 }
 
 .favicon-upload {
@@ -211,9 +203,7 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 }
 
 .favicon-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 .favicon-desc {

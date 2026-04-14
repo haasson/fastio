@@ -184,10 +184,10 @@ const removeSection = async (key: string) => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .sections-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 .mt {
@@ -213,9 +213,7 @@ const removeSection = async (key: string) => {
 }
 
 .section-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   padding: var(--space-8) var(--space-12);
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
@@ -267,9 +265,7 @@ const removeSection = async (key: string) => {
 }
 
 .action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   color: var(--color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;

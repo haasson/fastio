@@ -233,25 +233,19 @@ const cardShadowOptions = [
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
+  @include flex-col(var(--space-20));
 }
 
 .group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 .presets-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
+  @include flex-between(var(--space-12));
 }
 
 .page-nav {
@@ -260,9 +254,7 @@ const cardShadowOptions = [
 }
 
 .nav-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   width: 30px;
   height: 30px;
   border-radius: var(--radius-8);
@@ -296,9 +288,7 @@ const cardShadowOptions = [
 // ─── theme card ───────────────────────────────────────────────────────────────
 
 .theme-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
   padding: var(--space-8);
   border: 2px solid var(--p-border, var(--color-border));
   border-radius: var(--radius-8);
@@ -426,9 +416,7 @@ const cardShadowOptions = [
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 .label {
