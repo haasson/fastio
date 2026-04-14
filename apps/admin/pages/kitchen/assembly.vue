@@ -266,12 +266,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .assembly-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .phase-tabs {
@@ -281,9 +280,7 @@ onUnmounted(() => {
 }
 
 .kanban {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
+  @include flex-col(var(--space-20));
 
   @include mq-m {
     display: grid;
@@ -293,9 +290,7 @@ onUnmounted(() => {
 }
 
 .kanban-col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
 
   &.hidden-mobile {
     display: none;
@@ -310,9 +305,7 @@ onUnmounted(() => {
   display: none;
 
   @include mq-m {
-    display: flex;
-    align-items: center;
-    gap: var(--space-8);
+    @include flex-row;
     padding-bottom: var(--space-8);
     border-bottom: 2px solid var(--color-border);
   }

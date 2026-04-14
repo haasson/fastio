@@ -337,27 +337,22 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .queue-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 
 .queue-loading {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
 }
 
 .queue-layout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -379,11 +374,9 @@ onUnmounted(() => {
 }
 
 .panel-header {
+  @include flex-col;
   flex-shrink: 0;
   padding-bottom: var(--space-8);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
 }
 
 .panel-scroll {
@@ -396,9 +389,7 @@ onUnmounted(() => {
 // ── Queue panel ──
 
 .queue-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  @include flex-col(var(--space-4));
 }
 
 .category-select {

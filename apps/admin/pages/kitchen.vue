@@ -76,10 +76,10 @@ const tabs = computed(() => [
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .tabs-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   margin-left: auto;
 }
 

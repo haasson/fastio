@@ -268,24 +268,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .overview-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .loading {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  @include flex-col;
 }
 
 // ── Table cells ──
 
 .dish-cell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  @include flex-col(var(--space-4));
   padding: var(--space-4) 0;
 }
 
