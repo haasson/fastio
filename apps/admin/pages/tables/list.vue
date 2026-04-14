@@ -149,7 +149,7 @@ const openQr = (table: Table) => {
 .list-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .list-header {
@@ -160,6 +160,6 @@ const openQr = (table: Table) => {
 .table-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 340px));
-  gap: 12px;
+  gap: var(--space-12);
 }
 </style>

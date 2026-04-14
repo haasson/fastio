@@ -135,13 +135,13 @@ const columns = buildPromoCodeColumns({
 .tab-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .search {
@@ -155,7 +155,7 @@ const columns = buildPromoCodeColumns({
 
 :deep(.promo-code-text) {
   font-family: monospace;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   letter-spacing: 0.04em;
 }
 </style>

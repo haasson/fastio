@@ -34,7 +34,7 @@
       >
         <template #name>
           <span>{{ linkLabel(banner) }}</span>
-          <UiTag v-if="isBroken(banner)" type="warning" style="margin-left: 8px">
+          <UiTag v-if="isBroken(banner)" type="warning" style="margin-left: var(--space-8)">
             {{ isBroken(banner) }}
           </UiTag>
         </template>
@@ -176,7 +176,7 @@ const handleRemove = async (banner: Banner) => {
 .tab-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {

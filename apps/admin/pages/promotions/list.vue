@@ -136,13 +136,13 @@ const columns = buildPromotionColumns({
 .tab-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .search {
@@ -157,11 +157,11 @@ const columns = buildPromotionColumns({
 :deep(.promo-title-cell) {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 :deep(.promo-title) {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
 }
 </style>

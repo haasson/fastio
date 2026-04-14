@@ -114,10 +114,11 @@ onUnmounted(() => {
 
 .layout {
   display: flex;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   gap: 1px;
   background: var(--color-border);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   overflow: hidden;
   flex: 1;
   min-height: 400px;
@@ -128,7 +129,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   overflow-y: auto;
   background: var(--color-bg-page);
-  padding: 12px;
+  padding: var(--space-12);
 }
 
 .chat {

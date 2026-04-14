@@ -66,9 +66,9 @@ const launchTour = async (tour: Tour) => {
 .tour-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 4px;
-  border-radius: 6px;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-4);
+  border-radius: var(--radius-8);
   cursor: pointer;
 
   &:hover {
@@ -81,6 +81,7 @@ const launchTour = async (tour: Tour) => {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   gap: 1px;
 }
 

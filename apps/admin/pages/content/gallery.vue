@@ -190,7 +190,7 @@ const handleReorderPhotos = async (photos: Gallery['photos']) => {
 .tab-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {
@@ -201,26 +201,26 @@ const handleReorderPhotos = async (photos: Gallery['photos']) => {
 .gallery-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
 .usage-tags {
   display: flex;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .photos-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-4);
   transition: color 0.15s, background 0.15s;
 
   &:hover {

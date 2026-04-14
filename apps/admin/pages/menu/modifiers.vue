@@ -96,7 +96,7 @@ const columns = buildModifierColumns({
 .modifiers-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {
@@ -107,6 +107,6 @@ const columns = buildModifierColumns({
 :deep(.options-cell) {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-4);
 }
 </style>

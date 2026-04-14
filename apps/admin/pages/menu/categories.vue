@@ -72,7 +72,7 @@ const toggleActive = (id: string, active: boolean) => update(id, { active })
 .categories-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {
