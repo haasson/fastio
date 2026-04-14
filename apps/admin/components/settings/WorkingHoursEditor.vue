@@ -101,36 +101,36 @@ watch(state, () => {
 .hours-editor-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .hours-default {
   display: flex;
   align-items: flex-end;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .days-grid {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .day-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .day-name {
   width: 24px;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   flex-shrink: 0;
 }
 
 .day-off-label {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-muted);
   flex: 1;
 }

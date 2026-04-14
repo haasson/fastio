@@ -134,7 +134,7 @@ const onSave = () => {
 .zone-panel-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .zone-panel-header {
@@ -146,6 +146,6 @@ const onSave = () => {
 .zone-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 </style>

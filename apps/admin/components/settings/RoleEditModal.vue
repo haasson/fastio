@@ -129,33 +129,33 @@ const handleSave = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .permission-groups {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .perm-group {
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
 }
 
 .group-header {
-  margin-bottom: 6px;
+  margin-bottom: var(--space-8);
 }
 
 .group-label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .group-items {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-left: 24px;
+  gap: var(--space-4);
+  padding-left: var(--space-24);
 }
 </style>

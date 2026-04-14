@@ -289,6 +289,10 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   min-height: 400px;
 }
 
+/* Оверлеи mapbox-карты — brand-оранжевый (#ff5500), подложки маркеров
+   и draw-точек. Все цвета/размеры подобраны под геометрию карты,
+   не под шкалу токенов */
+/* stylelint-disable scale-unlimited/declaration-strict-value, color-no-hex */
 .map-draw-btn {
   position: absolute;
   top: 16px;
@@ -387,5 +391,6 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
     box-shadow: 0 0 0 6px rgba(255, 85, 0, 0.25), 0 1px 4px rgba(0, 0, 0, 0.3);
   }
 }
+/* stylelint-enable scale-unlimited/declaration-strict-value, color-no-hex */
 
 </style>

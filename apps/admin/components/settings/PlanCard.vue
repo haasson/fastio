@@ -62,24 +62,26 @@ defineEmits<{ select: [] }>()
 .plan-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .plan-description {
   color: var(--color-text-secondary);
-  margin-top: 8px;
+  margin-top: var(--space-8);
 }
 
 .plan-price {
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  margin-top: 12px;
+  gap: var(--space-4);
+  margin-top: var(--space-12);
 }
 
 .price-value {
+  /* Hero-размер заголовка цены */
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
 }
 

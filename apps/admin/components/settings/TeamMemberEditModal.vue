@@ -114,12 +114,12 @@ const handleSave = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .branch-checkboxes {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 </style>

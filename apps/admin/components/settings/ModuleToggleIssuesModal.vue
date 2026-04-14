@@ -53,6 +53,6 @@ const actions = computed(() => {
 .issues-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 </style>

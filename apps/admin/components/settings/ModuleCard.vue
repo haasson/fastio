@@ -40,7 +40,7 @@ defineEmits<{ toggle: [value: boolean] }>()
 
 <style scoped lang="scss">
 .module-card {
-  gap: 16px;
+  gap: var(--space-16);
   border: 1.5px solid var(--color-border-light);
 
   &.locked {
@@ -51,7 +51,7 @@ defineEmits<{ toggle: [value: boolean] }>()
 .top {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .icon {
@@ -60,7 +60,7 @@ defineEmits<{ toggle: [value: boolean] }>()
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   background: var(--color-primary-light);
   color: var(--color-primary);
   flex-shrink: 0;
@@ -74,17 +74,17 @@ defineEmits<{ toggle: [value: boolean] }>()
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .name {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .desc {
   color: var(--color-text-hint);
-  line-height: 1.4;
+  line-height: var(--line-height-base);
 }
 
 .footer {

@@ -74,7 +74,7 @@ const handleSave = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .row {

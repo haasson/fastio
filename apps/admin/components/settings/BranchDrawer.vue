@@ -237,15 +237,15 @@ const onConfirm = async () => {
 .branch-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 4px 0 12px;
+  gap: var(--space-12);
+  padding: var(--space-4) 0 var(--space-12);
 }
 
 .active-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border-light);
   border-bottom: 1px solid var(--color-border-light);
 }
@@ -253,15 +253,15 @@ const onConfirm = async () => {
 .override-block {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 0;
+  gap: var(--space-8);
+  padding: var(--space-12) 0;
   border-top: 1px solid var(--color-border-light);
 }
 
 .override-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .inherit-hint {
@@ -271,16 +271,16 @@ const onConfirm = async () => {
 .coords-block {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .coords-label {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .coords-map {
   height: 200px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   border: 1px solid var(--color-border-light);
 }
@@ -289,8 +289,8 @@ const onConfirm = async () => {
   width: 14px;
   height: 14px;
   background: var(--color-primary);
-  border: 2px solid #fff;
-  border-radius: 50%;
+  border: 2px solid var(--color-white);
+  border-radius: var(--radius-full);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transform: translate(-50%, -50%);
 }
