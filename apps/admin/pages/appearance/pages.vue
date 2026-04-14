@@ -154,18 +154,18 @@ const removePage = async (key: string) => {
 .pages-root {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .mt {
-  margin-top: 16px;
+  margin-top: var(--space-16);
 }
 
 .page-list {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 }
 
@@ -177,8 +177,8 @@ const removePage = async (key: string) => {
 .page-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
   cursor: pointer;
@@ -198,6 +198,7 @@ const removePage = async (key: string) => {
   color: var(--color-text-secondary);
   cursor: grab;
   flex-shrink: 0;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1;
   display: flex;
   align-items: center;
@@ -209,8 +210,8 @@ const removePage = async (key: string) => {
 
 .item-label {
   flex: 1;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
 }
 
@@ -221,8 +222,8 @@ const removePage = async (key: string) => {
   color: var(--color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  padding: 2px;
-  border-radius: 4px;
+  padding: var(--space-4);
+  border-radius: var(--radius-4);
   transition: color 0.15s;
 
   &:hover {
@@ -242,17 +243,18 @@ const removePage = async (key: string) => {
 }
 
 .item-options {
-  padding: 12px 14px 12px 36px;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  padding: var(--space-12) var(--space-12) var(--space-12) 36px;
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
 }
 
 .empty-hint {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--space-8) var(--space-12);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
 }
 </style>

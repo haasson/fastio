@@ -138,36 +138,36 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 .seo-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .field-label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
 }
 
 .counter {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-hint);
   flex-shrink: 0;
 
@@ -181,9 +181,9 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-hint);
-  line-height: 1.4;
+  line-height: var(--line-height-base);
 }
 
 .divider {
@@ -198,7 +198,7 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
 .favicon-row {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .favicon-upload {
@@ -206,20 +206,20 @@ const descLen = computed(() => seoForm.metaDescription?.length ?? 0)
   height: 80px;
   flex-shrink: 0;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   overflow: hidden;
 }
 
 .favicon-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .favicon-desc {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-hint);
-  line-height: 1.4;
+  line-height: var(--line-height-base);
   margin: 0;
 }
 
