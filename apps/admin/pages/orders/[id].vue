@@ -74,18 +74,18 @@ const onSaved = (updated: Order) => {
 .order-page-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .page-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .page-title {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;

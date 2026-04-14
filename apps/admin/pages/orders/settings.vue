@@ -131,7 +131,7 @@ const handleSave = async () => {
 .settings-root {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-24);
   max-width: 680px;
 }
 
@@ -141,7 +141,7 @@ const handleSave = async () => {
 
 .row {
   display: grid;
-  gap: 14px;
+  gap: var(--space-12);
 
   &.row-half {
     grid-template-columns: 1fr 1fr;
@@ -153,13 +153,13 @@ const handleSave = async () => {
 }
 
 .section-hint {
-  margin-top: -8px;
-  font-size: 12px;
+  margin-top: calc(-1 * var(--space-8));
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  line-height: 1.5;
+  line-height: var(--line-height-loose);
 }
 
 .footer {
-  padding-top: 4px;
+  padding-top: var(--space-4);
 }
 </style>

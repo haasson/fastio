@@ -55,7 +55,7 @@ const handleSave = async (data: { name: string; groupType: OrderStatusGroup; qui
 .statuses-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .toolbar {

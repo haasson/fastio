@@ -182,40 +182,40 @@ const handleSave = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
   max-width: 680px;
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .preview {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
   background: var(--color-bg-soft);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-border-light);
 }
 
 .preview-label {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
 .preview-value {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   font-family: monospace;
   color: var(--color-primary);
 }
 
 .footer {
-  padding-top: 4px;
+  padding-top: var(--space-4);
 }
 </style>

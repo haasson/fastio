@@ -56,6 +56,6 @@ watch(newOrderCount, fetchCounts)
 .orders-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 </style>

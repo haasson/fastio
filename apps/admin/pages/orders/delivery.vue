@@ -245,32 +245,32 @@ const handleZoneRemove = async () => {
 }
 
 .mode-switch {
-  padding: 16px 0 0;
+  padding: var(--space-16) 0 0;
 }
 
 // Top bar
 .zones-topbar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 0;
+  gap: var(--space-12);
+  padding: var(--space-16) 0;
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
 
 .zones-tiles {
   display: flex;
-  gap: 10px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
 .branch-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
   border: 1.5px dashed var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-8);
 
   &.empty {
     border-color: var(--color-error);
@@ -278,8 +278,8 @@ const handleZoneRemove = async () => {
 }
 
 .branch-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -287,15 +287,15 @@ const handleZoneRemove = async () => {
 .branch-zones {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .zone-tile {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 8px;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-8);
   border: 1.5px solid transparent;
   background: none;
   cursor: pointer;
@@ -320,15 +320,16 @@ const handleZoneRemove = async () => {
 }
 
 .no-zones {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-hint);
   font-style: italic;
 }
 
 .zone-tile-name {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1;
 }
 
@@ -360,8 +361,8 @@ const handleZoneRemove = async () => {
   right: 16px;
   width: 340px;
   max-height: calc(100% - 32px);
-  padding: 20px;
-  border-radius: 14px;
+  padding: var(--space-20);
+  border-radius: var(--radius-12);
   overflow-y: auto;
   background: var(--color-bg-card);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14), 0 1px 4px rgba(0, 0, 0, 0.08);
