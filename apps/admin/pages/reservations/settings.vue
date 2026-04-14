@@ -124,11 +124,10 @@ const handleSave = async () => {
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/form' as *;
+@use '@fastio/styles/mixins/layout' as *;
 
 .settings-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-24);
+  @include flex-col(var(--space-24));
   max-width: 680px;
 }
 
@@ -147,9 +146,8 @@ const handleSave = async () => {
 }
 
 .guests-row {
-  display: flex;
+  @include flex-row(var(--space-20));
   align-items: flex-end;
-  gap: var(--space-20);
 }
 
 .footer {
