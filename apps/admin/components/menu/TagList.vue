@@ -62,13 +62,13 @@ const getIcon = (name: string) => (icons as Record<string, unknown>)[name] ?? ic
 .tag-list-root {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .name-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .preview {
@@ -77,7 +77,7 @@ const getIcon = (name: string) => (icons as Record<string, unknown>)[name] ?? ic
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--radius-8);
   flex-shrink: 0;
 }
 </style>

@@ -55,20 +55,20 @@ const chipStyle = (tag: DishTagDefinition) => {
 .tags-section-root {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 99px;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-full);
   border: 1.5px solid var(--color-border);
   background: var(--color-fill-quaternary);
   color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all 0.15s;
   user-select: none;

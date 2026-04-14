@@ -67,9 +67,9 @@ const categoryTabs = computed(() => categories.value.map((c) => ({
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
+  gap: var(--space-8);
+  padding-bottom: var(--space-8);
+  margin-bottom: var(--space-8);
   border-bottom: 1px dashed var(--color-border);
 }
 

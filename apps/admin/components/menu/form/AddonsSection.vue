@@ -242,32 +242,32 @@ defineExpose({ getAddonIds, getMaxAddons })
 .content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .loading {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .add-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .add-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .add-select {
@@ -277,8 +277,8 @@ defineExpose({ getAddonIds, getMaxAddons })
 .max-addons-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 4px;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
 }
 
 .max-addons-input {

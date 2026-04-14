@@ -120,13 +120,13 @@ const handleConfirm = () => {
 .content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .picker-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
   max-height: 300px;
   overflow-y: auto;
 }
@@ -134,7 +134,7 @@ const handleConfirm = () => {
 .preset-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
   max-height: 300px;
   overflow-y: auto;
 }
@@ -143,8 +143,8 @@ const handleConfirm = () => {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-border);
   background: transparent;
   cursor: pointer;
@@ -162,7 +162,7 @@ const handleConfirm = () => {
 
 .preset-addons {
   display: block;
-  margin-top: 2px;
+  margin-top: var(--space-4);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

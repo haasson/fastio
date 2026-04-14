@@ -138,30 +138,30 @@ defineEmits<{
 .basic-info-section-root {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: var(--space-12);
 
   @include mq-m {
     grid-template-columns: 200px 1fr;
-    gap: 24px;
+    gap: var(--space-24);
   }
 }
 
 .section-title {
   @include section-title;
-  padding-top: 4px;
+  padding-top: var(--space-4);
 }
 
 .col-photo,
 .col-main {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: var(--space-8);
 
   @include mq-m {
     grid-template-columns: 1fr 120px;
@@ -171,7 +171,7 @@ defineEmits<{
 .category-row {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .category-select {
@@ -182,7 +182,7 @@ defineEmits<{
 .weight-group {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
+  gap: var(--space-8);
   flex-shrink: 0;
 }
 

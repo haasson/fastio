@@ -104,7 +104,7 @@ const reorderDishes = async () => {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .hint-banner {
@@ -114,13 +114,13 @@ const reorderDishes = async () => {
 .list-wrap {
   overflow-y: auto;
   flex: 1;
-  padding-top: 2px;
+  padding-top: var(--space-4);
 }
 
 .order-price {
   flex-shrink: 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   white-space: nowrap;
 }

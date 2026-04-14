@@ -153,7 +153,7 @@ const handleSave = async () => {
 .icon-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .icon-btn {
@@ -162,7 +162,7 @@ const handleSave = async () => {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   border: 2px solid transparent;
   background: var(--color-fill-quaternary);
   color: var(--color-text-secondary);
@@ -183,7 +183,7 @@ const handleSave = async () => {
 .color-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .color-btn {
@@ -213,11 +213,11 @@ const handleSave = async () => {
 .tag-preview {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-8);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   width: fit-content;
 }
 </style>

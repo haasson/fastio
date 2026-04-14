@@ -78,7 +78,7 @@ const emit = defineEmits<{
 .card-photo {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   overflow: hidden;
   background: var(--color-bg-page);
   display: flex;
@@ -97,8 +97,8 @@ const emit = defineEmits<{
 }
 
 .card-name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -107,8 +107,8 @@ const emit = defineEmits<{
 }
 
 .card-price {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   white-space: nowrap;
 }

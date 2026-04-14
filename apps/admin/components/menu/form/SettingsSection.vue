@@ -46,12 +46,12 @@ const kitchenEnabled = computed(() => modules.kitchen.value.enabled)
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
 }
 
 .label {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text);
 }
 </style>

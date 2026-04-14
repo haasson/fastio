@@ -125,6 +125,6 @@ const handleSave = async () => {
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 }
 </style>

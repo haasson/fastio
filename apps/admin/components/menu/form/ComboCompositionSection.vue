@@ -319,13 +319,13 @@ watch(
 .content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .loading {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 // ─── List ─────────────────────────────────────────────────────────────────────
@@ -335,28 +335,28 @@ watch(
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-border-light);
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   overflow: hidden;
 }
 
 .qty-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   flex-shrink: 0;
 }
 
 .qty-value {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   min-width: 18px;
   text-align: center;
 }
 
 .item-price {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   min-width: 60px;
   text-align: right;
@@ -364,10 +364,10 @@ watch(
 }
 
 .dish-status {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 5px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-4);
   flex-shrink: 0;
 
   &--inactive {
@@ -384,28 +384,28 @@ watch(
 // ─── Totals ───────────────────────────────────────────────────────────────────
 
 .totals {
-  padding: 10px 12px;
+  padding: var(--space-8) var(--space-12);
   background: var(--color-bg-page);
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .total-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--font-size-base);
 
   &.is-saving .total-value {
     color: var(--color-success);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   &.is-markup .total-value {
     color: var(--color-warning);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 }
 
@@ -414,6 +414,6 @@ watch(
 }
 
 .total-value {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 </style>

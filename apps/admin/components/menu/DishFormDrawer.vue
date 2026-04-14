@@ -302,10 +302,10 @@ const onConfirm = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .sections {
-  margin-top: 4px;
+  margin-top: var(--space-4);
 }
 </style>

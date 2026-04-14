@@ -198,7 +198,7 @@ const onConfirm = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-12);
 }
 
 .section-title {
@@ -208,37 +208,37 @@ const onConfirm = async () => {
 .switch-row {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .weight-mode-block {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .weight-mode-label {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .options-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .options-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .option-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .weight-input {

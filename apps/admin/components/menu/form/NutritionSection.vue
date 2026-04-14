@@ -71,7 +71,7 @@ defineExpose({ init, getKbju })
 .nutrition-section-root {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--space-8);
 
   @include mq-m {
     grid-template-columns: repeat(4, minmax(0, 1fr));

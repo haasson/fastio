@@ -83,12 +83,12 @@ const { itemsLabelGen } = useTenantLabels()
 .category-list-root {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .name-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 </style>

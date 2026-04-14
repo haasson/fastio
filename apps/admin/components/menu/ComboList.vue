@@ -172,19 +172,19 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .grid-wrap {
   overflow-y: auto;
   flex: 1;
-  padding-top: 2px;
+  padding-top: var(--space-4);
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: var(--space-8);
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
@@ -197,8 +197,8 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 
 .order-price {
   flex-shrink: 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   white-space: nowrap;
 }

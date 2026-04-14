@@ -507,30 +507,30 @@ const onConfirm = () => {
 .pick-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
   min-height: 400px;
 }
 
 .state {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
-  padding: 40px 0;
+  padding: var(--space-32) 0;
   text-align: center;
 }
 
 .cats {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .cat {
-  padding: 5px 12px;
-  border-radius: 20px;
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-full);
   border: 1.5px solid var(--color-border);
   background: transparent;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
@@ -543,14 +543,14 @@ const onConfirm = () => {
   &.active {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #fff;
+    color: var(--color-white);
   }
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
   max-height: 460px;
   overflow-y: auto;
 }
@@ -558,9 +558,9 @@ const onConfirm = () => {
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 10px;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
   background: transparent;
   border: 1px solid var(--color-border-light);
 }
@@ -568,7 +568,7 @@ const onConfirm = () => {
 .item-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   flex-shrink: 0;
 }
 
@@ -576,7 +576,7 @@ const onConfirm = () => {
   flex-shrink: 0;
   width: 52px;
   height: 52px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   background: var(--color-bg-page);
 }
@@ -596,8 +596,8 @@ const onConfirm = () => {
 
 .item-name {
   flex: 1;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   min-width: 0;
   white-space: nowrap;
@@ -606,8 +606,8 @@ const onConfirm = () => {
 }
 
 .item-price {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   white-space: nowrap;
   flex-shrink: 0;
@@ -618,24 +618,24 @@ const onConfirm = () => {
 .customize-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
   min-height: 120px;
 }
 
 .dish-summary {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: var(--space-12);
+  padding: var(--space-12);
   background: var(--color-bg-subtle);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
 }
 
 .summary-photo {
   flex-shrink: 0;
   width: 52px;
   height: 52px;
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   background: var(--color-bg-page);
 
@@ -656,69 +656,69 @@ const onConfirm = () => {
 .summary-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .summary-name {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
 }
 
 .summary-price {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
 }
 
 .mod-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .section-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--color-text-secondary);
 }
 
 .section-hint {
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   text-transform: none;
   letter-spacing: 0;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .ing-icon {
   flex-shrink: 0;
-  margin-right: 4px;
+  margin-right: var(--space-4);
 }
 
 .state-hint {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
 }
 
 .addon-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .addon-price {
-  margin-left: 6px;
-  font-size: 12px;
-  font-weight: 600;
+  margin-left: var(--space-8);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
 
   &.addon-price-active {
@@ -727,21 +727,21 @@ const onConfirm = () => {
 }
 
 .addon-weight {
-  margin-left: 4px;
-  font-size: 12px;
+  margin-left: var(--space-4);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .addon-unavailable {
-  margin-left: 6px;
-  font-size: 11px;
+  margin-left: var(--space-8);
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   font-style: italic;
 }
 
 .mod-unavailable {
-  margin-left: 4px;
-  font-size: 11px;
+  margin-left: var(--space-4);
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   font-style: italic;
 }
@@ -758,12 +758,12 @@ const onConfirm = () => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .footer-right {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   margin-left: auto;
 }
 </style>

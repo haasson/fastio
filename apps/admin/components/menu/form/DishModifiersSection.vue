@@ -178,13 +178,13 @@ defineExpose({ getModifiers })
 .content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .loading {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .empty a {
@@ -192,31 +192,31 @@ defineExpose({ getModifiers })
 }
 
 .attached-group {
-  padding: 10px 12px;
+  padding: var(--space-8) var(--space-12);
   background: var(--color-bg-page);
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .group-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-8);
 }
 
 .options-grid {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .option-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .price-input,
@@ -228,13 +228,13 @@ defineExpose({ getModifiers })
 .add-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .add-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .add-select {

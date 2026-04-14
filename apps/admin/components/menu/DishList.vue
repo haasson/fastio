@@ -242,13 +242,13 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .search {
@@ -258,13 +258,13 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 .content-wrap {
   overflow-y: auto;
   flex: 1;
-  padding-top: 2px;
+  padding-top: var(--space-4);
 }
 
 .content-inner {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .dishes-fade-enter-active,
@@ -281,7 +281,7 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: var(--space-8);
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
@@ -295,8 +295,8 @@ const { tagName, tagStyle } = useTagDisplay(computed(() => props.tags))
 // Порядок
 .order-price {
   flex-shrink: 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   white-space: nowrap;
 }

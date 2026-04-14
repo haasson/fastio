@@ -194,7 +194,7 @@ const onConfirm = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .sections {
@@ -204,11 +204,11 @@ const onConfirm = async () => {
 }
 
 .issues-list {
-  margin: 6px 0 0;
-  padding-left: 18px;
+  margin: var(--space-8) 0 0;
+  padding-left: var(--space-16);
   list-style-type: disc;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 </style>

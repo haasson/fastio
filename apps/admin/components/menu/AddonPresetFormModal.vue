@@ -120,13 +120,13 @@ const handleSave = async () => {
 }
 
 .checkboxes-label {
-  margin-bottom: -8px;
+  margin-bottom: calc(-1 * var(--space-8));
 }
 
 .checkboxes {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
   max-height: 240px;
   overflow-y: auto;
 }
