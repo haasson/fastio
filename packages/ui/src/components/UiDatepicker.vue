@@ -91,7 +91,7 @@ defineOptions({
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 :global(.n-date-panel-month__fast-prev),
 :global(.n-date-panel-month__fast-next) {
   opacity: 0;

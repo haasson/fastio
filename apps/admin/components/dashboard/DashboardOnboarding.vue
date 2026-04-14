@@ -17,7 +17,7 @@
 import { UiCard, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .onboarding-root {
   align-items: center;
   text-align: center;

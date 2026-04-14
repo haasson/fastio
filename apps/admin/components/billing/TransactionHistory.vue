@@ -66,7 +66,7 @@ defineExpose({ reload: load })
 onMounted(() => load())
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .tx-title {
   margin-bottom: var(--space-16);
 }

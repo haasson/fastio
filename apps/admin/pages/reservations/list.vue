@@ -78,7 +78,7 @@ const searchedData = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .list-root {
   display: flex;
   flex-direction: column;

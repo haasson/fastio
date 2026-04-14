@@ -75,7 +75,7 @@ const message = computed(() => {
 const actionLabel = computed(() => status.value === 'suspended' ? 'Пополнить' : 'Подробнее')
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .sub-banner {
   display: flex;
   align-items: center;

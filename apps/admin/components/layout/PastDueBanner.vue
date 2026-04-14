@@ -40,7 +40,7 @@ const daysLeft = computed(() => {
 const daysWord = computed(() => pluralize(daysLeft.value, 'день', 'дня', 'дней'))
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .past-due-banner {
   display: flex;
   align-items: center;

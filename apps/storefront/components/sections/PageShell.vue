@@ -67,7 +67,7 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page-shell-root {
   display: flex;
   flex-direction: column;

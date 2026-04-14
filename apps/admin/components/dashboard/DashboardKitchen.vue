@@ -72,7 +72,7 @@ const inProgressCount = computed(() => items.value.filter((i) => i.status === 'i
 const hasItems = computed(() => queuedCount.value + inProgressCount.value > 0)
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .kitchen-root {
   gap: var(--space-12);
 }

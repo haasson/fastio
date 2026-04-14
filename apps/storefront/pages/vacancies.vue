@@ -20,7 +20,7 @@ import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .stub {
   margin-top: 32px;
 }

@@ -77,7 +77,7 @@ const chartOptions = computed(() => ({
 }))
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .chart-card {
   gap: var(--space-8);
   overflow: hidden;

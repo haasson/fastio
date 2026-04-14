@@ -47,7 +47,7 @@ const iconSize = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .placeholder-root {
   width: 100%;
   height: 100%;

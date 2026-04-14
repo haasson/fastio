@@ -145,7 +145,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .page-root {
   padding: 32px;
 }

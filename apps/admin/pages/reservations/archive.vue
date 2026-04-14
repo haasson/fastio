@@ -149,7 +149,7 @@ watch(() => branchStore.currentBranchId, resetAndFetch)
 fetch()
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .archive-root {
   display: flex;
   flex-direction: column;

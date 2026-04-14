@@ -10,7 +10,7 @@ import BillingSummary from '~/components/billing/BillingSummary.vue'
 import TransactionHistory from '~/components/billing/TransactionHistory.vue'
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .billing-root {
   display: flex;
   flex-direction: column;

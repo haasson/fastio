@@ -22,7 +22,7 @@ import { UiCard, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
 definePageMeta({ layout: 'default' })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .suspended-root {
   display: flex;
   align-items: center;

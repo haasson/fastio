@@ -76,7 +76,7 @@ const occupancyRate = computed(() => totalTables.value > 0 ? Math.round((openTab
 )
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .tables-root {
   gap: var(--space-12);
 }
