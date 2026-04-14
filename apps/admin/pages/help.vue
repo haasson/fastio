@@ -3,7 +3,6 @@
     :tabs="tabs"
     base-path="/help"
     full-height
-    prevent-compact
   />
 </template>
 

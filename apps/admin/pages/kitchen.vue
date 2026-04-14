@@ -1,5 +1,5 @@
 <template>
-  <TabsLayout :tabs="tabs" base-path="/kitchen" prevent-compact>
+  <TabsLayout :tabs="tabs" base-path="/kitchen">
     <template #extra>
       <div class="tabs-meta">
         <span class="tabs-count">{{ itemCount }} в работе</span>

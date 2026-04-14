@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TabsLayout :tabs="tabs" base-path="/tables" prevent-compact />
+    <TabsLayout :tabs="tabs" base-path="/tables" />
 
     <TableCheckoutModal
       v-model="checkoutModalOpen"

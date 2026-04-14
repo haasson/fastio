@@ -5,7 +5,6 @@
         v-if="!hideSingle || tabs.length > 1"
         :model-value="activeTab"
         :tabs="tabs"
-        :prevent-compact="preventCompact"
         @update:model-value="goToTab"
       />
       <slot name="extra" />
@@ -39,7 +38,6 @@ const props = defineProps<{
   card?: boolean
   fullHeight?: boolean
   hideSingle?: boolean
-  preventCompact?: boolean
   rootTab?: string
 }>()
 
