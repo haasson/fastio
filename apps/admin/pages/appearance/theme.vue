@@ -238,25 +238,25 @@ const cardShadowOptions = [
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .presets-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .page-nav {
   display: flex;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .nav-btn {
@@ -265,7 +265,7 @@ const cardShadowOptions = [
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   color: var(--color-text);
@@ -286,7 +286,7 @@ const cardShadowOptions = [
 .presets {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-8);
 
   @include mq-m {
     grid-template-columns: repeat(4, 1fr);
@@ -298,10 +298,10 @@ const cardShadowOptions = [
 .theme-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 6px;
+  gap: var(--space-8);
+  padding: var(--space-8);
   border: 2px solid var(--p-border, var(--color-border));
-  border-radius: 10px;
+  border-radius: var(--radius-8);
   background: var(--p-bg, var(--color-bg));
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -318,15 +318,18 @@ const cardShadowOptions = [
 }
 
 .card-name {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--p-text, var(--color-text));
   opacity: 0.65;
   text-align: center;
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
 }
 
 // ─── mini wireframe ───────────────────────────────────────────────────────────
+// Декоративный скелетон превью темы — пиксель-точные размеры (2/3/4/5/6px),
+// не ложатся на spacing/radius-токены.
+/* stylelint-disable scale-unlimited/declaration-strict-value */
 
 .mini {
   display: flex;
@@ -399,19 +402,21 @@ const cardShadowOptions = [
   border: 1px solid var(--p-border);
 }
 
+/* stylelint-enable scale-unlimited/declaration-strict-value */
+
 // ─── misc ─────────────────────────────────────────────────────────────────────
 
 .font-preview {
-  padding: 10px 14px;
+  padding: var(--space-8) var(--space-12);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: var(--radius-8);
+  font-size: var(--font-size-md);
   color: var(--color-text-secondary);
   background: var(--color-bg-card);
 
   &--heading {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
   }
 }
 
@@ -423,12 +428,12 @@ const cardShadowOptions = [
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-hint);
 }
 </style>
