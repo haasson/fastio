@@ -119,38 +119,38 @@ const formatPermissionsSummary = (permissions: RolePermissions) => {
 .roles-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .roles-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .role-card {
-  padding: 12px 16px;
+  padding: var(--space-12) var(--space-16);
 }
 
 .role-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .role-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .role-name {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .role-perms {
   color: var(--color-text-secondary);
-  margin-top: 4px;
+  margin-top: var(--space-4);
 }
 </style>

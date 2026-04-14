@@ -178,14 +178,14 @@ const handleRestore = async (branch: Branch) => {
 .branches-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .branch-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0;
+  gap: var(--space-12);
+  padding: var(--space-12) 0;
   border-bottom: 1px solid var(--color-border-light);
 
   &.archived {
@@ -198,17 +198,17 @@ const handleRestore = async (branch: Branch) => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-4);
 }
 
 .branch-name-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .branch-name {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .branch-address,
@@ -219,18 +219,18 @@ const handleRestore = async (branch: Branch) => {
 .branch-warning {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
 }
 
 .branch-warning-text {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-error);
 }
 
 .branch-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .branch-action {
@@ -242,7 +242,7 @@ const handleRestore = async (branch: Branch) => {
 }
 
 .branch-warning-link {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-primary);
   text-decoration: none;
 

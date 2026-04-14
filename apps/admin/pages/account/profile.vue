@@ -64,13 +64,13 @@ const handleLogout = async () => {
 .profile-root {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-24);
 }
 
 .profile-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: var(--space-16);
 
   @include mq-m {
     grid-template-columns: repeat(3, 1fr);
@@ -79,11 +79,11 @@ const handleLogout = async () => {
 
 .label {
   color: var(--color-text-hint);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-4);
   display: block;
 }
 
 .logout-section {
-  padding-top: 8px;
+  padding-top: var(--space-8);
 }
 </style>

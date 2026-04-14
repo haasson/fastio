@@ -268,26 +268,26 @@ onMounted(() => load())
 .team-root {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: var(--space-32);
 }
 
 .invite-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .members-table {
-  margin-top: 4px;
+  margin-top: var(--space-4);
 
   :deep(.member-cell) {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-4);
   }
 
   :deep(.member-name) {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   :deep(.member-invited-by) {
@@ -299,6 +299,6 @@ onMounted(() => load())
 .branch-checkboxes {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 </style>

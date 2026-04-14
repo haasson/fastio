@@ -14,6 +14,6 @@ import TransactionHistory from '~/components/billing/TransactionHistory.vue'
 .billing-root {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-24);
 }
 </style>
