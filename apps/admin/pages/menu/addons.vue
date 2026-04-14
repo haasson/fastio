@@ -230,23 +230,18 @@ const presetColumns = buildAddonPresetColumns({
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .addons-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
+  @include flex-between(var(--space-12));
 }
 
 .max-addons-setting {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
+  @include flex-row(var(--space-12));
 }
 
 .max-addons-input {

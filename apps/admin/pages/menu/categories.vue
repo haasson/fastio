@@ -69,10 +69,10 @@ const toggleActive = (id: string, active: boolean) => update(id, { active })
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .categories-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .toolbar {

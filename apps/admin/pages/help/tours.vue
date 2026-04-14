@@ -54,6 +54,8 @@ const launchTour = async (tour: Tour) => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .tours-root {
   max-width: 560px;
 }
@@ -64,9 +66,7 @@ const launchTour = async (tour: Tour) => {
 }
 
 .tour-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
+  @include flex-row(var(--space-12));
   padding: var(--space-8) var(--space-4);
   border-radius: var(--radius-8);
   cursor: pointer;
@@ -86,8 +86,6 @@ const launchTour = async (tour: Tour) => {
 }
 
 .tour-row-desc {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  @include text-ellipsis;
 }
 </style>

@@ -187,10 +187,10 @@ const handleReorderPhotos = async (photos: Gallery['photos']) => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .tab-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .toolbar {
@@ -199,9 +199,7 @@ const handleReorderPhotos = async (photos: Gallery['photos']) => {
 }
 
 .gallery-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   flex-wrap: wrap;
 }
 
@@ -211,9 +209,7 @@ const handleReorderPhotos = async (photos: Gallery['photos']) => {
 }
 
 .photos-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  @include flex-row(var(--space-4));
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   background: none;
