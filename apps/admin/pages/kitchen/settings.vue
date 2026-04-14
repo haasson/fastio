@@ -140,7 +140,7 @@ const handleSave = async () => {
 
 .row {
   display: flex;
-  gap: 16px;
+  gap: var(--space-16);
   flex-wrap: wrap;
 
   .field {
@@ -150,6 +150,6 @@ const handleSave = async () => {
 }
 
 .footer {
-  padding-top: 8px;
+  padding-top: var(--space-8);
 }
 </style>

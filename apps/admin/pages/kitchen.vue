@@ -79,12 +79,12 @@ const tabs = computed(() => [
 .tabs-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   margin-left: auto;
 }
 
 .tabs-count {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-hint);
   white-space: nowrap;
 }

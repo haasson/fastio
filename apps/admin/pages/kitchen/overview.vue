@@ -271,13 +271,13 @@ onUnmounted(() => {
 .overview-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .loading {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 // ── Table cells ──
@@ -285,12 +285,12 @@ onUnmounted(() => {
 .dish-cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px 0;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
 }
 
 .dish-name {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .urgency-dot {

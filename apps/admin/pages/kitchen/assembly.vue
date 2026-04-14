@@ -271,7 +271,7 @@ onUnmounted(() => {
 .assembly-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .phase-tabs {
@@ -283,7 +283,7 @@ onUnmounted(() => {
 .kanban {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 
   @include mq-m {
     display: grid;
@@ -295,7 +295,7 @@ onUnmounted(() => {
 .kanban-col {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 
   &.hidden-mobile {
     display: none;
@@ -312,8 +312,8 @@ onUnmounted(() => {
   @include mq-m {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding-bottom: 8px;
+    gap: var(--space-8);
+    padding-bottom: var(--space-8);
     border-bottom: 2px solid var(--color-border);
   }
 }
@@ -331,20 +331,20 @@ onUnmounted(() => {
 }
 
 .kanban-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--color-text-secondary);
 }
 
 .kanban-count {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-hint);
   background: var(--color-bg-subtle);
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-8);
 
   &--orange {
     color: var(--color-warning);

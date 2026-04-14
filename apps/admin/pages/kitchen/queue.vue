@@ -342,7 +342,7 @@ onUnmounted(() => {
 .queue-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -351,13 +351,13 @@ onUnmounted(() => {
 .queue-loading {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .queue-layout {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-16);
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -365,7 +365,7 @@ onUnmounted(() => {
   @include mq-m {
     display: grid;
     grid-template-columns: 320px 1fr;
-    gap: 20px;
+    gap: var(--space-20);
   }
 }
 
@@ -380,17 +380,17 @@ onUnmounted(() => {
 
 .panel-header {
   flex-shrink: 0;
-  padding-bottom: 8px;
+  padding-bottom: var(--space-8);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .panel-scroll {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-  padding-right: 4px;
+  padding-right: var(--space-4);
 }
 
 // ── Queue panel ──
@@ -398,7 +398,7 @@ onUnmounted(() => {
 .queue-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 .category-select {
@@ -408,8 +408,8 @@ onUnmounted(() => {
 // ── Config alerts ──
 
 .alert-link {
-  font-weight: 600;
-  margin-left: 4px;
+  font-weight: var(--font-weight-semibold);
+  margin-left: var(--space-4);
   text-decoration: underline;
   white-space: nowrap;
 }
@@ -419,7 +419,7 @@ onUnmounted(() => {
 .work-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 
   @include mq-m {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
