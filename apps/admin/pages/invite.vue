@@ -86,7 +86,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   background: var(--color-bg-page);
-  padding: 16px;
+  padding: var(--space-16);
 }
 
 .auth-card {
@@ -94,7 +94,7 @@ onMounted(async () => {
 }
 
 .brand {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-32);
 }
 
 .state {

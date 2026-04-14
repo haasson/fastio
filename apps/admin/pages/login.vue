@@ -16,7 +16,7 @@
 
         <template v-if="resetSent">
           <UiAlert type="info">Ссылка для сброса пароля отправлена на {{ resetEmail }}. Проверьте почту.</UiAlert>
-          <UiButton style="margin-top: 16px" block @click="forgotMode = false">Назад к входу</UiButton>
+          <UiButton style="margin-top: var(--space-16)" block @click="forgotMode = false">Назад к входу</UiButton>
         </template>
 
         <UiForm
@@ -179,7 +179,7 @@ const handleReset = async () => {
   align-items: center;
   justify-content: center;
   background: var(--color-bg-page);
-  padding: 16px;
+  padding: var(--space-16);
 }
 
 .auth-card {
@@ -187,11 +187,11 @@ const handleReset = async () => {
 }
 
 .brand {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-32);
 }
 
 .title {
-  margin: 0 0 28px;
+  margin: 0 0 var(--space-24);
 }
 
 .form {

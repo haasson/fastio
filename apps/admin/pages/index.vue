@@ -158,14 +158,14 @@ const hasMultipleOrderTypes = computed(() => [
 .dashboard-root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 32px;
+  gap: var(--space-16);
+  padding-bottom: var(--space-32);
 }
 
 .controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
@@ -176,7 +176,7 @@ const hasMultipleOrderTypes = computed(() => [
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 
   @include mq-l {
     grid-template-columns: 1fr auto;
@@ -195,7 +195,7 @@ const hasMultipleOrderTypes = computed(() => [
 .live-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 
   @include mq-m {
     grid-template-columns: repeat(2, 1fr);

@@ -34,10 +34,10 @@ definePageMeta({ layout: 'default' })
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-16);
   text-align: center;
   max-width: 480px;
-  padding: 20px;
+  padding: var(--space-20);
 }
 
 .suspended-icon {

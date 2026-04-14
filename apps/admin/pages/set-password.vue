@@ -6,7 +6,7 @@
       <UiTitle size="h3" class="title">{{ title }}</UiTitle>
       <UiText size="small" class="subtitle">{{ subtitle }}</UiText>
 
-      <UiAlert v-if="emailConfirmSent" type="info" style="margin-bottom: 16px">
+      <UiAlert v-if="emailConfirmSent" type="info" style="margin-bottom: var(--space-16)">
         Проверьте почту — отправили письмо для подтверждения регистрации
       </UiAlert>
 
@@ -186,7 +186,7 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   background: var(--color-bg-page);
-  padding: 16px;
+  padding: var(--space-16);
 }
 
 .auth-card {
@@ -194,16 +194,16 @@ const handleSubmit = async () => {
 }
 
 .brand {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-32);
 }
 
 .title {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-8);
 }
 
 .subtitle {
   display: block;
-  margin: 0 0 28px;
+  margin: 0 0 var(--space-24);
   color: var(--color-text-secondary);
 }
 </style>

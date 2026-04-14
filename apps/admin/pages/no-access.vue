@@ -41,30 +41,30 @@ const logout = async () => {
   align-items: center;
   justify-content: center;
   background: var(--color-bg-page);
-  padding: 16px;
+  padding: var(--space-16);
 }
 
 .card {
   background: var(--color-bg-card);
-  border-radius: 16px;
-  padding: 40px 32px;
+  border-radius: var(--radius-16);
+  padding: var(--space-32) var(--space-32);
   width: 100%;
   max-width: 400px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .brand {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-32);
 }
 
 .title {
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-16);
 }
 
 .message {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text-secondary);
-  line-height: 1.5;
-  margin: 0 0 24px;
+  line-height: var(--line-height-loose);
+  margin: 0 0 var(--space-24);
 }
 </style>
