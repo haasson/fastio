@@ -133,13 +133,13 @@ const onIssuesDismiss = () => {
 .modules-root {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
 }
 
 .modules-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 
   @include mq-m {
     grid-template-columns: repeat(2, 1fr);

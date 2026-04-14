@@ -255,7 +255,7 @@ const copyCode = () => {
 
 .row {
   display: flex;
-  gap: 16px;
+  gap: var(--space-16);
 
   .field {
     flex: 1;
@@ -264,37 +264,37 @@ const copyCode = () => {
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  line-height: 1.5;
+  line-height: var(--line-height-loose);
 }
 
 .prefs {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-12);
 }
 
 .pref {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-16);
 }
 
 .pref-label {
-  font-weight: 500;
-  margin-bottom: 2px;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-4);
   display: block;
 }
 
 .tg-block {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
+  gap: var(--space-12);
+  padding: var(--space-12);
   background: var(--color-bg-page);
-  border-radius: 12px;
+  border-radius: var(--radius-12);
 }
 
 .tg-icon {
@@ -309,22 +309,23 @@ const copyCode = () => {
 }
 
 .tg-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--grey-800);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-4);
 }
 
 .tg-desc {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .tg-steps {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  font-size: 14px;
+  gap: var(--space-12);
+  font-size: var(--font-size-md);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1.6;
 
   p {
@@ -335,14 +336,14 @@ const copyCode = () => {
 .tg-code {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
   background: var(--color-bg-page);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
 
   code {
     flex: 1;
-    font-size: 15px;
+    font-size: var(--font-size-md);
     font-family: monospace;
     user-select: all;
   }
@@ -352,19 +353,19 @@ const copyCode = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .tg-waiting {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: var(--space-8);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .tg-hint {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -372,8 +373,8 @@ const copyCode = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 0;
+  gap: var(--space-8);
+  padding: var(--space-16) 0;
   text-align: center;
 }
 
@@ -382,7 +383,7 @@ const copyCode = () => {
 }
 
 .tg-success-text {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .spinner {

@@ -222,14 +222,14 @@ const handleSave = async () => {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-20);
   max-width: 680px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: var(--space-12);
 
   @include mq-m {
     grid-template-columns: 1fr 1fr;
@@ -247,18 +247,18 @@ const handleSave = async () => {
 .docs {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-8);
 }
 
 .doc-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 
 .doc-label {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text);
   min-width: 220px;
 }
@@ -266,8 +266,8 @@ const handleSave = async () => {
 .doc-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
+  gap: var(--space-4);
+  font-size: var(--font-size-base);
   color: var(--color-primary);
   text-decoration: none;
 
@@ -290,8 +290,8 @@ const handleSave = async () => {
   color: var(--color-text-muted);
   display: flex;
   align-items: center;
-  padding: 2px;
-  border-radius: 4px;
+  padding: var(--space-4);
+  border-radius: var(--radius-4);
 
   &:hover { color: var(--color-danger); }
 }
