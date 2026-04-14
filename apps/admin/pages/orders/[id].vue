@@ -71,16 +71,14 @@ const onSaved = (updated: Order) => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .order-page-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
+  @include flex-col(var(--space-20));
 }
 
 .page-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
+  @include flex-row(var(--space-12));
 }
 
 .page-title {

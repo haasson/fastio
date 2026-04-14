@@ -178,11 +178,10 @@ const handleSave = async () => {
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/form' as *;
+@use '@fastio/styles/mixins/layout' as *;
 
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
+  @include flex-col(var(--space-20));
   max-width: 680px;
 }
 
@@ -193,9 +192,7 @@ const handleSave = async () => {
 }
 
 .preview {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
+  @include flex-row(var(--space-12));
   padding: var(--space-12) var(--space-16);
   background: var(--color-bg-soft);
   border-radius: var(--radius-8);

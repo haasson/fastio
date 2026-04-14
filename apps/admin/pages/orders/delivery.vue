@@ -239,6 +239,8 @@ const handleZoneRemove = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .zones-root {
   display: flex;
   flex-direction: column;
@@ -250,9 +252,7 @@ const handleZoneRemove = async () => {
 
 // Top bar
 .zones-topbar {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
+  @include flex-col(var(--space-12));
   padding: var(--space-16) 0;
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
@@ -265,9 +265,7 @@ const handleZoneRemove = async () => {
 }
 
 .branch-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   padding: var(--space-8) var(--space-12);
   border: 1.5px dashed var(--color-border);
   border-radius: var(--radius-8);
@@ -285,15 +283,11 @@ const handleZoneRemove = async () => {
 }
 
 .branch-zones {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
 }
 
 .zone-tile {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  @include flex-row;
   padding: var(--space-4) var(--space-8);
   border-radius: var(--radius-8);
   border: 1.5px solid transparent;

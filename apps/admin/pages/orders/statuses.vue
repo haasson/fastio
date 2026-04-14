@@ -52,10 +52,10 @@ const handleSave = async (data: { name: string; groupType: OrderStatusGroup; qui
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/layout' as *;
+
 .statuses-root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-16);
+  @include flex-col(var(--space-16));
 }
 
 .toolbar {
