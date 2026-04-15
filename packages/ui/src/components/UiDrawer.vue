@@ -137,14 +137,14 @@ async function handleActionClick(action: DrawerAction) {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .drawer-title {
   display: flex;
   align-items: center;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
 }
 
@@ -164,7 +164,7 @@ async function handleActionClick(action: DrawerAction) {
 .footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-8);
   padding: 0;
 }
 </style>

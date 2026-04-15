@@ -26,8 +26,9 @@ const titleClasses = computed(() => ({
 <style scoped lang="scss">
 @use '@fastio/styles/mixins' as *;
 
+/* stylelint-disable scale-unlimited/declaration-strict-value */
 .title {
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
   color: var(--color-title);
 
   &:where(.title--dark-side) {
@@ -42,7 +43,7 @@ const titleClasses = computed(() => ({
   &:where(.title--h1.title--responsive) {
     @include mq-l {
       @include secondary-font(40);
-      line-height: 1.2;
+      line-height: var(--line-height-tight);
     }
   }
 
@@ -61,33 +62,33 @@ const titleClasses = computed(() => ({
   &:where(.title--h3) {
     font-size: 18px;
     line-height: 1.33;
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
   }
 
   &:where(.title--h3.title--responsive) {
     @include mq-l {
-      font-size: 20px;
-      line-height: 1.4;
+      font-size: var(--font-size-xl);
+      line-height: var(--line-height-base);
     }
   }
 
   &:where(.title--h4) {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     line-height: 1.37;
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
   }
 
   &:where(.title--h4.title--responsive) {
     @include mq-l {
-      font-size: 20px;
-      line-height: 1.4;
+      font-size: var(--font-size-xl);
+      line-height: var(--line-height-base);
     }
   }
 
   &:where(.title--h5) {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     line-height: 1.37;
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
   }
 
   &:where(.title--h5.title--responsive) {
@@ -97,4 +98,5 @@ const titleClasses = computed(() => ({
     }
   }
 }
+/* stylelint-enable */
 </style>

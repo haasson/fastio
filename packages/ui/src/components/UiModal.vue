@@ -206,15 +206,15 @@ const handleActionClick = async (action: ModalAction) => {
   flex-direction: column;
   max-height: 90vh;
   position: relative;
-  padding: 24px;
+  padding: var(--space-24);
   background-color: var(--color-white);
-  border-radius: 16px;
+  border-radius: var(--radius-16);
 }
 
 .title {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-8);
   margin: 0;
 }
 
@@ -242,22 +242,22 @@ const handleActionClick = async (action: ModalAction) => {
 }
 
 .content {
-  margin-top: 16px;
+  margin-top: var(--space-16);
   overflow-y: auto;
   flex: 1;
   min-height: 0;
 }
 
 .footer {
-  margin-top: 20px;
+  margin-top: var(--space-20);
 }
 
 .modal-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
 
   @include mq-l {
-    gap: 12px;
+    gap: var(--space-12);
   }
 
   > * {

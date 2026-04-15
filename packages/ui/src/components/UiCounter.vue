@@ -27,7 +27,6 @@ $counter-types: (
   'warning': ('bg': var(--color-warning-light), 'color': var(--yellow-600)),
   'error':   ('bg': var(--color-error-light), 'color': var(--red-500)),
 );
-
 $counter-sizes: (
   'tiny':   ('font-size': 11px, 'padding': 1px 5px, 'border-radius': 5px),
   'small':  ('font-size': 12px, 'padding': 2px 6px, 'border-radius': 6px),
@@ -38,9 +37,10 @@ $counter-sizes: (
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   white-space: nowrap;
   flex-shrink: 0;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1;
 
   @each $size, $props in $counter-sizes {
@@ -59,8 +59,8 @@ $counter-sizes: (
 
     &.counter--#{$type}.counter--solid {
       background: map.get($props, 'color');
-      color: #fff;
-      border-radius: 9999px;
+      color: var(--color-white);
+      border-radius: var(--radius-full);
     }
 
     &.counter--#{$type}.counter--filled {

@@ -22,8 +22,8 @@ withDefaults(defineProps<{ text?: string; icon?: IconName }>(), {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 40px 24px;
+  gap: var(--space-8);
+  padding: var(--space-32) var(--space-24);
   text-align: center;
 }
 .icon, .text { color: var(--color-text-secondary); }

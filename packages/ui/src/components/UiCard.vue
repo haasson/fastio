@@ -27,7 +27,7 @@ withDefaults(defineProps<UiCardProps>(), {
 .card {
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
+  border-radius: var(--radius-12);
   background-color: var(--color-bg-card);
   border: none;
   text-align: left;
@@ -44,16 +44,16 @@ withDefaults(defineProps<UiCardProps>(), {
     }
   }
 
-  &:where(.size-small) { padding: 12px; }
-  &:where(.size-medium) { padding: 16px; }
-  &:where(.size-large) { padding: 20px; }
+  &:where(.size-small) { padding: var(--space-12); }
+  &:where(.size-medium) { padding: var(--space-16); }
+  &:where(.size-large) { padding: var(--space-20); }
 
   @include mq-l {
-    border-radius: 16px;
+    border-radius: var(--radius-16);
 
-    &:where(.size-small) { padding: 14px; }
-    &:where(.size-medium) { padding: 20px; }
-    &:where(.size-large) { padding: 24px; }
+    &:where(.size-small) { padding: var(--space-12); }
+    &:where(.size-medium) { padding: var(--space-20); }
+    &:where(.size-large) { padding: var(--space-24); }
   }
 }
 </style>

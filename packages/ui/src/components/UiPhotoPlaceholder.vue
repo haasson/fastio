@@ -54,7 +54,9 @@ const iconSize = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* stylelint-disable scale-unlimited/declaration-strict-value, color-no-hex */
   background: linear-gradient(145deg, #f8f9fb 0%, #eef0f4 100%);
   color: #c0c7d1;
+  /* stylelint-enable */
 }
 </style>

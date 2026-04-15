@@ -87,19 +87,19 @@ defineExpose({
 .ui-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 
   @include mq-l {
-    gap: 12px;
+    gap: var(--space-12);
   }
 }
 
 .form-error {
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
   background: var(--color-error-light);
   color: var(--color-error);
-  font-size: 14px;
+  font-size: var(--font-size-md);
 }
 
 .form-error-enter-active,

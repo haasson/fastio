@@ -145,7 +145,7 @@ onUnmounted(() => {
   max-height: var(--bottom-sheet-max-height, 70vh);
   margin: 0 auto;
   background: var(--color-bg-card);
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--radius-16) var(--radius-16) 0 0;
 }
 
 .drawer-handle {
@@ -153,9 +153,9 @@ onUnmounted(() => {
   flex-shrink: 0;
   width: 68px;
   height: 3px;
-  margin: 20px auto;
+  margin: var(--space-20) auto;
   background: var(--grey-300);
-  border-radius: 16px;
+  border-radius: var(--radius-16);
 
   &::before {
     content: '';
@@ -171,7 +171,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 0 16px 16px;
+  padding: 0 var(--space-16) var(--space-16);
 
   @include safe-area-bottom(16px);
 }
@@ -188,24 +188,24 @@ onUnmounted(() => {
   position: sticky;
   top: 0;
   z-index: 10;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-12);
   background: var(--color-white);
 }
 
 .title {
-  padding: 0 16px;
-  margin-bottom: 12px;
+  padding: 0 var(--space-16);
+  margin-bottom: var(--space-12);
 }
 
 .visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
-  margin: -1px;
+  margin: calc(-1 * 1px);
   padding: 0;
   border: 0;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 </style>

@@ -213,8 +213,8 @@ defineOptions({
 
 <style scoped lang="scss">
 .callable-link {
-  margin-left: 6px;
-  font-size: 12px;
+  margin-left: var(--space-8);
+  font-size: var(--font-size-sm);
   color: var(--color-primary);
   text-decoration: none;
   cursor: pointer;

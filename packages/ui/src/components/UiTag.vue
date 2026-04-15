@@ -119,7 +119,7 @@ const iconSize = computed(() => {
 :deep(.n-tag__content) {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
 }
 
 :deep(.n-tag__border) {
@@ -127,10 +127,11 @@ const iconSize = computed(() => {
 }
 
 .tag-close {
-  margin-left: 2px;
+  margin-left: var(--space-4);
   padding: 0 !important;
   min-width: unset !important;
   height: unset !important;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1 !important;
 }
 

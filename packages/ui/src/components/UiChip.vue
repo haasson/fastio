@@ -32,9 +32,9 @@ defineEmits<{
 .chip-root {
   display: inline-flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 6px 10px;
-  border-radius: 8px;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-8);
+  border-radius: var(--radius-8);
   border: 1.5px solid var(--chip-border);
   background: var(--chip-bg);
   cursor: pointer;
@@ -59,40 +59,40 @@ defineEmits<{
   }
 
   &.chip--success {
-    --chip-bg: #52c41a0d;
-    --chip-border: #52c41a33;
-    --chip-accent: #52c41a;
+    --chip-bg: var(--color-success-light);
+    --chip-border: color-mix(in srgb, var(--color-success) 20%, transparent);
+    --chip-accent: var(--color-success);
   }
 
   &.chip--warning {
-    --chip-bg: #faad140d;
-    --chip-border: #faad1433;
-    --chip-accent: #faad14;
+    --chip-bg: var(--color-warning-light);
+    --chip-border: color-mix(in srgb, var(--color-warning) 20%, transparent);
+    --chip-accent: var(--color-warning);
   }
 
   &.chip--error {
-    --chip-bg: #ff4d4f0d;
-    --chip-border: #ff4d4f33;
-    --chip-accent: #ff4d4f;
+    --chip-bg: var(--color-error-light);
+    --chip-border: color-mix(in srgb, var(--color-error) 20%, transparent);
+    --chip-accent: var(--color-error);
   }
 
   &.chip--info {
-    --chip-bg: #1677ff0d;
-    --chip-border: #1677ff33;
-    --chip-accent: #1677ff;
+    --chip-bg: var(--color-primary-light);
+    --chip-border: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    --chip-accent: var(--color-primary);
   }
 }
 
 .chip-label {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.3;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
   color: var(--color-text);
 }
 
 .chip-sub {
-  font-size: 11px;
-  line-height: 1.2;
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
   color: var(--color-text-secondary);
 }
 </style>

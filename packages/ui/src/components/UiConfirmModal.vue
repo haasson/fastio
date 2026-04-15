@@ -49,12 +49,12 @@ const actions = computed<ModalAction[]>(() => {
 <style scoped lang="scss">
 .confirm-message {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-loose);
   color: var(--color-text);
 }
 
 .confirm-alert {
-  margin-top: 12px;
+  margin-top: var(--space-12);
 }
 </style>

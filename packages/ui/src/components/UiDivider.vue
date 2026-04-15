@@ -36,8 +36,8 @@ withDefaults(defineProps<Props>(), {
   :deep(.n-divider__title) {
     margin: 0;
     padding-inline: 24px;
-    font-size: 16px;
-    font-weight: 400;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-regular);
   }
 }
 </style>

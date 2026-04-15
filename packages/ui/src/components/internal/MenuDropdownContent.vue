@@ -95,13 +95,13 @@ function onItemClick(item: UiMenuDropdownItem) {
 @use '@fastio/styles/mixins' as *;
 
 .header {
-  margin-bottom: 12px;
-  padding-bottom: 12px;
+  margin-bottom: var(--space-12);
+  padding-bottom: var(--space-12);
   border-bottom: 1px solid var(--color-border);
 }
 
 .footer {
-  padding: 12px 16px;
+  padding: var(--space-12) var(--space-16);
 }
 
 .items {
@@ -109,17 +109,17 @@ function onItemClick(item: UiMenuDropdownItem) {
   flex-direction: column;
 
   @include mq-xl {
-    gap: 4px;
+    gap: var(--space-4);
   }
 }
 
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-12);
   height: 48px;
-  padding: 0 12px;
-  border-radius: 8px;
+  padding: 0 var(--space-12);
+  border-radius: var(--radius-8);
   cursor: pointer;
   transition: background-color 0.2s;
 
@@ -134,8 +134,8 @@ function onItemClick(item: UiMenuDropdownItem) {
 
   &:where(.item--compact) {
     height: 34px;
-    padding: 0 10px;
-    gap: 8px;
+    padding: 0 var(--space-8);
+    gap: var(--space-8);
   }
 }
 
@@ -159,20 +159,21 @@ function onItemClick(item: UiMenuDropdownItem) {
 
 .item-label {
   font-family: var(--main-font);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   line-height: 1;
   color: var(--color-text);
 
   @include mq-xl {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
   }
 }
 
 .divider {
   position: relative;
   height: 1px;
-  margin: 12px 0;
+  margin: var(--space-12) 0;
   background-color: var(--color-border);
 }
 
@@ -181,11 +182,11 @@ function onItemClick(item: UiMenuDropdownItem) {
   top: 50%;
   left: 50%;
   max-width: calc(100% - 16px);
-  padding: 0 8px;
+  padding: 0 var(--space-8);
   background-color: var(--color-white);
   font-family: var(--main-font);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;

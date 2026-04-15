@@ -225,7 +225,7 @@ const toggle = () => {
 }
 
 .button-wrapper {
-  margin-top: 24px;
+  margin-top: var(--space-24);
 }
 
 .toggle-button {

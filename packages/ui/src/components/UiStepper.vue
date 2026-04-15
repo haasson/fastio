@@ -46,7 +46,7 @@ defineEmits<{
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-8);
   overflow: hidden;
   background: var(--color-bg-card);
 }
@@ -74,7 +74,7 @@ defineEmits<{
 
 .stepper-value {
   text-align: center;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-title);
   flex-shrink: 0;
   user-select: none;
@@ -88,7 +88,7 @@ defineEmits<{
 
   .stepper-value {
     min-width: 24px;
-    font-size: 13px;
+    font-size: var(--font-size-base);
   }
 }
 
@@ -100,7 +100,7 @@ defineEmits<{
 
   .stepper-value {
     min-width: 30px;
-    font-size: 14px;
+    font-size: var(--font-size-md);
   }
 }
 </style>

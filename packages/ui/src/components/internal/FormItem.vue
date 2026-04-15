@@ -95,7 +95,7 @@ $form-item-sizes: (
   .label {
     display: flex;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: var(--space-8);
     color: var(--color-text);
   }
 

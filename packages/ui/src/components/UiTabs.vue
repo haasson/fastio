@@ -197,13 +197,13 @@ const handleTabClick = (value: string | number) => {
 }
 
 .tab-count {
-  margin-left: 6px;
+  margin-left: var(--space-8);
 }
 
 .tabs-line {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid var(--n-border-color, #e0e0e6);
+  border-bottom: 1px solid var(--color-border);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -216,31 +216,31 @@ const handleTabClick = (value: string | number) => {
 .tab-line-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  margin-bottom: calc(-1 * 1px);
   cursor: pointer;
-  color: var(--n-text-color-3, #999);
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
   font-family: inherit;
   transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
 
   &:hover {
-    color: var(--n-text-color, #333);
+    color: var(--color-text);
   }
 
   &.active {
-    color: var(--color-primary, #18a058);
-    border-bottom-color: var(--color-primary, #18a058);
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
   }
 
   .tab-count {
-    margin-left: 2px;
+    margin-left: var(--space-4);
   }
 }
 </style>

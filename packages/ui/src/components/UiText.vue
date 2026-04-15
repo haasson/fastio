@@ -37,34 +37,36 @@ const textClasses = computed(() => ({
     color: var(--grey-50);
   }
 
+  /* stylelint-disable scale-unlimited/declaration-strict-value */
   &:where(.text--tiny) {
-    font-size: 12px;
+    font-size: var(--font-size-sm);
     line-height: 1.33;
 
     @include mq-l {
-      font-size: 14px;
+      font-size: var(--font-size-md);
       line-height: 1.42;
     }
   }
 
   &:where(.text--small) {
-    font-size: 14px;
+    font-size: var(--font-size-md);
     line-height: 1.42;
 
     @include mq-l {
-      font-size: 16px;
-      line-height: 1.5;
+      font-size: var(--font-size-lg);
+      line-height: var(--line-height-loose);
     }
   }
 
   &:where(.text--medium) {
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-loose);
 
     @include mq-l {
       font-size: 18px;
       line-height: 1.33;
     }
   }
+  /* stylelint-enable */
 }
 </style>

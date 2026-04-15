@@ -45,6 +45,6 @@ const emit = defineEmits<{
 }
 
 .segmented-control-root :deep(.n-tabs-tab) {
-  padding: 6px 16px;
+  padding: var(--space-8) var(--space-16);
 }
 </style>

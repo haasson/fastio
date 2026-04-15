@@ -15,13 +15,13 @@ defineOptions({
   // Внешняя обводка — как у карточки
   :deep(.n-data-table-wrapper) {
     border: 1px solid var(--color-border);
-    border-radius: 10px;
+    border-radius: var(--radius-8);
     overflow: hidden;
   }
 
   :deep(.n-data-table-td),
   :deep(.n-data-table-th) {
-    font-size: 13px;
+    font-size: var(--font-size-base);
   }
 
   // Заголовок: выделенный фон + чёткая нижняя граница
@@ -29,7 +29,7 @@ defineOptions({
     background-color: var(--color-bg-subtle) !important;
     border-bottom: 1px solid var(--color-border) !important;
     color: var(--color-text-hint);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   // Ячейки тела: лёгкий разделитель
