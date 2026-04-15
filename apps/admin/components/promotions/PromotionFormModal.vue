@@ -136,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiSelect, UiDatepicker, UiTimepicker, UiAlert, UiButton } from '@fastio/ui'
 import type { Promotion, PromotionFormData, PromotionConditions } from '@fastio/shared'
 import { isoToTs, tsToIso } from '@fastio/shared'
@@ -203,11 +203,13 @@ const defaultForm = (): FormState => ({
 })
 
 const form = reactive(defaultForm())
+let initializing = false
 
 watch(
   () => props.modelValue,
-  (val) => {
+  async (val) => {
     if (!val) return
+    initializing = true
     if (props.promotion) {
       form.title = props.promotion.title
       form.type = props.promotion.type
@@ -220,10 +222,13 @@ watch(
     } else {
       Object.assign(form, defaultForm())
     }
+    await nextTick()
+    initializing = false
   },
 )
 
 watch(() => form.type, () => {
+  if (initializing) return
   form.conditions = {}
 })
 
