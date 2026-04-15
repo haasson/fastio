@@ -26,6 +26,7 @@ const DEFAULT_ROLES: Record<string, RolePermissions> = {
     'content.view': true, 'content.edit': true,
     'team.view': true, 'team.manage': true, 'roles.manage': true,
     'settings.view': true, 'settings.edit': true,
+    'audit_log.view': true,
     'analytics.view': true,
   },
   'Менеджер зала': {
@@ -67,6 +68,7 @@ const ALL_PERMISSIONS: PermissionKey[] = [
   'team.view', 'team.manage',
   'roles.manage',
   'settings.view', 'settings.edit',
+  'audit_log.view',
   'analytics.view',
   'billing.manage',
 ]

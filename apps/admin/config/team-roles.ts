@@ -1,4 +1,5 @@
 import type { PermissionKey } from '@fastio/shared'
+import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
 
 export type PermissionGroup = {
   label: string
@@ -72,6 +73,7 @@ export const permissionGroups: PermissionGroup[] = [
     permissions: [
       { key: 'settings.view', label: 'Просмотр настроек' },
       { key: 'settings.edit', label: 'Редактирование настроек' },
+      ...(AUDIT_LOG_ENABLED ? [{ key: 'audit_log.view' as PermissionKey, label: 'Просмотр журнала действий' }] : []),
     ],
   },
   {

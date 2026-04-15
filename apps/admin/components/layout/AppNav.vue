@@ -29,6 +29,7 @@ import type { ComputedRef, Ref } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import { usePermissions } from '~/composables/auth/usePermissions'
+import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
 import { useModules } from '~/composables/plan/useModules'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
@@ -47,7 +48,7 @@ type NavItem = {
   blink?: ComputedRef<boolean>
 }
 
-const { canManageMenu, canManageOrders, canViewKitchen, canViewKitchenOverview, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canManageTeam } = usePermissions()
+const { canManageMenu, canManageOrders, canViewKitchen, canViewKitchenOverview, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canViewAuditLog, canManageTeam } = usePermissions()
 const modules = useModules()
 const { menuLabel, isServices } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
@@ -78,6 +79,7 @@ const allNavItems: NavItem[] = [
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewContent },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
+  ...(AUDIT_LOG_ENABLED ? [{ to: '/audit-log', icon: 'list' as const, label: 'Журнал действий', visible: canViewAuditLog }] : []),
   { to: '/help', icon: 'help', label: 'Помощь', counter: unreadSupportCount },
 ]
 

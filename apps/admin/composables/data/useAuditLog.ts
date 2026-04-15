@@ -1,0 +1,37 @@
+import type { AddAuditLogParams, AuditLog } from '@fastio/shared'
+import { useAuthStore } from '~/stores/auth'
+import { useTenantStore } from '~/stores/tenant'
+import { useDatabase } from '~/composables/data/useDatabase'
+import { reportError } from '~/utils/reportError'
+import type { AuditLogsListParams } from '~/utils/api/audit-logs'
+import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
+
+type LogParams = Omit<AddAuditLogParams, 'tenantId' | 'actorId' | 'actorName' | 'actorRole'>
+
+export const useAuditLog = () => {
+  const api = useDatabase()
+  const authStore = useAuthStore()
+  const tenantStore = useTenantStore()
+
+  const log = (params: LogParams) => {
+    if (!AUDIT_LOG_ENABLED) return
+    if (!authStore.user || !tenantStore.tenant) return
+
+    api.auditLogs.add({
+      tenantId: tenantStore.tenant.id,
+      actorId: authStore.user.id,
+      actorName: authStore.user.user_metadata?.full_name || authStore.user.email || null,
+      actorRole: tenantStore.currentRoleName ?? null,
+      ...params,
+    }).catch(reportError)
+  }
+
+  const list = async (params: AuditLogsListParams = {}): Promise<AuditLog[]> => {
+    if (!AUDIT_LOG_ENABLED) return []
+    if (!tenantStore.tenant) return []
+
+    return api.auditLogs.list(tenantStore.tenant.id, params)
+  }
+
+  return { log, list }
+}

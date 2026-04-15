@@ -45,6 +45,7 @@ export const usePermissions = () => {
     // Settings
     canViewSettings: can('settings.view'),
     canEditSettings: can('settings.edit'),
+    canViewAuditLog: can('audit_log.view'),
     // Analytics
     canViewAnalytics: can('analytics.view'),
     // Billing

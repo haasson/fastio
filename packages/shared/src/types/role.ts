@@ -9,6 +9,7 @@ export type PermissionKey =
   | 'team.view' | 'team.manage'
   | 'roles.manage'
   | 'settings.view' | 'settings.edit'
+  | 'audit_log.view'
   | 'analytics.view'
   | 'billing.manage'
 
