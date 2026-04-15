@@ -36,10 +36,12 @@
 
       <UiInputNumber
         v-model="form.minOrderAmount"
-        label="Минимальная сумма заказа"
+        name="minOrderAmount"
+        :label="form.discountType === 'fixed' ? 'Минимальная сумма заказа *' : 'Минимальная сумма заказа'"
         :min="0"
-        placeholder="Без ограничений"
-        :clearable="true"
+        :placeholder="form.discountType === 'fixed' ? `Не меньше ${form.discountValue}₽` : 'Без ограничений'"
+        :clearable="form.discountType !== 'fixed'"
+        :rules="minOrderRules"
       >
         <template #suffix>₽</template>
       </UiInputNumber>
@@ -67,6 +69,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiDatepicker } from '@fastio/ui'
 import type { PromoCode, PromoCodeFormData } from '@fastio/shared'
+import type { ValidationRule } from '@fastio/kit'
 import { isoToTs, tsToIso } from '@fastio/shared'
 
 const props = defineProps<{
@@ -87,6 +90,19 @@ const discountTypeOptions = [
   { value: 'fixed', label: 'Фиксированная сумма (₽)' },
 ]
 
+const minOrderRules = computed<ValidationRule[]>(() => {
+  if (form.discountType !== 'fixed') return []
+
+  return [
+    { type: 'required', message: 'Укажите минимальную сумму заказа' },
+    {
+      type: 'custom',
+      validator: (v: number | null) => v !== null && v !== undefined && v >= form.discountValue,
+      message: `Минимальная сумма должна быть не меньше размера скидки (${form.discountValue}₽)`,
+    },
+  ]
+})
+
 const modalActions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
   { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: props.saving },
@@ -101,7 +117,7 @@ const defaultForm = (): FormState => ({
   code: '',
   discountType: 'percent',
   discountValue: 10,
-  minOrderAmount: null,
+  minOrderAmount: 0,
   usageLimit: null,
   activeFrom: null,
   activeTo: null,

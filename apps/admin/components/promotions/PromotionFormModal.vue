@@ -25,10 +25,12 @@
 
       <!-- Условия по типу -->
       <UiInputNumber
-        v-if="form.type === 'min_order'"
+        v-if="showMinOrderField"
         v-model="form.conditions.minOrderAmount"
-        label="Минимальная сумма заказа *"
-        :min="1"
+        name="minOrderAmount"
+        :label="minOrderRequired ? 'Минимальная сумма заказа *' : 'Минимальная сумма заказа'"
+        :min="0"
+        :rules="minOrderRules"
       >
         <template #suffix>₽</template>
       </UiInputNumber>
@@ -139,6 +141,7 @@
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiSelect, UiDatepicker, UiTimepicker, UiAlert, UiButton } from '@fastio/ui'
 import type { Promotion, PromotionFormData, PromotionConditions } from '@fastio/shared'
+import type { ValidationRule } from '@fastio/kit'
 import { isoToTs, tsToIso } from '@fastio/shared'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
@@ -161,7 +164,7 @@ const typeOptions = [
   { value: 'min_order', label: 'Скидка от суммы заказа' },
   { value: 'happy_hour', label: 'Happy hour (по времени)' },
   { value: 'weekday', label: 'По дням недели' },
-  { value: 'free_item', label: 'Блюдо в подарок' },
+  { value: 'free_item', label: 'Блюдо в подарок', disabled: true },
   { value: 'first_order', label: 'На первый заказ', disabled: true },
 ]
 
@@ -169,6 +172,23 @@ const discountTypeOptions = [
   { value: 'percent', label: 'Процент (%)' },
   { value: 'fixed', label: 'Фиксированная сумма (₽)' },
 ]
+
+const showMinOrderField = computed(() => ['min_order', 'happy_hour', 'weekday'].includes(form.type))
+
+const minOrderRequired = computed(() => form.discountType === 'fixed')
+
+const minOrderRules = computed<ValidationRule[]>(() => {
+  if (form.discountType !== 'fixed') return []
+
+  return [
+    { type: 'required', message: 'Укажите минимальную сумму заказа' },
+    {
+      type: 'custom',
+      validator: (v: number | null) => v !== null && v !== undefined && v >= form.discountValue,
+      message: `Минимальная сумма должна быть не меньше размера скидки (${form.discountValue}₽)`,
+    },
+  ]
+})
 
 const weekdays = [
   { value: 1, label: 'Пн' },
@@ -196,7 +216,7 @@ const defaultForm = (): FormState => ({
   type: 'min_order',
   discountType: 'percent',
   discountValue: 10,
-  conditions: {},
+  conditions: { minOrderAmount: 0 },
   activeFrom: null,
   activeTo: null,
   active: true,
@@ -229,7 +249,7 @@ watch(
 
 watch(() => form.type, () => {
   if (initializing) return
-  form.conditions = {}
+  form.conditions = { minOrderAmount: 0 }
 })
 
 const toggleWeekday = (day: number) => {
@@ -259,8 +279,8 @@ const clearFreeDish = () => {
 
 const buildConditions = (): PromotionConditions => {
   if (form.type === 'min_order') return { minOrderAmount: form.conditions.minOrderAmount }
-  if (form.type === 'happy_hour') return { timeFrom: form.conditions.timeFrom ?? undefined, timeTo: form.conditions.timeTo ?? undefined }
-  if (form.type === 'weekday') return { weekdays: form.conditions.weekdays }
+  if (form.type === 'happy_hour') return { timeFrom: form.conditions.timeFrom ?? undefined, timeTo: form.conditions.timeTo ?? undefined, minOrderAmount: form.conditions.minOrderAmount || undefined }
+  if (form.type === 'weekday') return { weekdays: form.conditions.weekdays, minOrderAmount: form.conditions.minOrderAmount || undefined }
   if (form.type === 'free_item') return { minOrderAmount: form.conditions.minOrderAmount, freeDishId: form.conditions.freeDishId, freeDishName: form.conditions.freeDishName, freeDishCategoryName: form.conditions.freeDishCategoryName, freeDishModifiers: form.conditions.freeDishModifiers }
 
   return {}
