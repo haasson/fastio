@@ -22,6 +22,7 @@ export type OrderUpdateData = {
   deliveryLon?: number | null
   comment?: string | null
   promoCode?: string | null
+  promotionId?: string | null
   discountAmount?: number
   subtotal?: number
   deliveryFee?: number
@@ -49,6 +50,7 @@ export type OrderCreateData = {
   deliveryLon?: number | null
   comment: string | null
   promoCode: string | null
+  promotionId?: string | null
   discountAmount: number
   subtotal: number
   deliveryFee: number
@@ -104,6 +106,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     deliveryLon: row.delivery_lon ?? null,
     comment: row.comment,
     promoCode: row.promo_code,
+    promotionId: row.promotion_id ?? null,
     discountAmount: row.discount_amount,
     subtotal: row.subtotal,
     deliveryFee: row.delivery_fee,
@@ -142,9 +145,10 @@ const toOrderPayload = (data: OrderUpdateData | OrderCreateData): Partial<OrderR
   delivery_lon: data.deliveryLon,
   comment: data.comment,
   promo_code: data.promoCode,
+  ...(data.promotionId !== undefined && { promotion_id: data.promotionId }),
   discount_amount: data.discountAmount,
   subtotal: data.subtotal,
-  delivery_fee: data.deliveryFee,
+  delivery_fee: data.deliveryFee ?? 0,
   total: data.total,
   branch_id: data.branchId,
   status: data.status,

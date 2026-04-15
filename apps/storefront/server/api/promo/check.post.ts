@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const code = String(body.code ?? '').trim()
   const subtotal = Number(body.subtotal ?? 0)
+  const scheduledAt = typeof body.scheduledAt === 'string' && body.scheduledAt ? body.scheduledAt : null
 
   if (!code) throw createError({ statusCode: 400, message: 'Промокод обязателен' })
   if (!Number.isFinite(subtotal) || subtotal < 0) {
@@ -27,6 +28,7 @@ export default defineEventHandler(async (event) => {
     p_tenant_id: tenantId,
     p_code: code,
     p_subtotal: subtotal,
+    ...(scheduledAt && { p_delivery_time: scheduledAt }),
   })
 
   if (error) {

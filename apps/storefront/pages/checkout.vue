@@ -115,7 +115,7 @@
               <FsRadioGroup v-model="checkout.form.paymentType" :options="paymentOptions" orientation="vertical" />
             </section>
 
-            <CheckoutPromoSection v-if="tenant?.modules?.promotions" :currency="currency" />
+            <CheckoutPromoSection v-if="tenant?.modules?.promotions" />
           </div>
 
           <CheckoutSidebar

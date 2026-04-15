@@ -201,6 +201,7 @@ export type OrderRow = {
   delivery_lon: number | null
   comment: string | null
   promo_code: string | null
+  promotion_id: string | null
   discount_amount: number
   subtotal: number
   delivery_fee: number

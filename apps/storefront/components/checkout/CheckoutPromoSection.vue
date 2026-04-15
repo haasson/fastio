@@ -10,52 +10,29 @@
     <div v-if="checkout.promoResult" class="promo-result">
       <template v-if="checkout.promoResult.valid">
         <Check :size="14" class="promo-icon ok" />
-        Скидка {{ promoLabel }}: −{{ checkout.discountAmount }} {{ currency }}
+        Промокод принят
       </template>
       <template v-else>
         <X :size="14" class="promo-icon err" />
-        Промокод недействителен
+        {{ checkout.promoResult.error ?? 'Промокод недействителен' }}
       </template>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { Check, X } from 'lucide-vue-next'
-import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
 import { FsHeading, FsInput, FsButton } from '@fastio/public-ui'
 
-type Props = {
-  currency: string
-}
-
-const props = defineProps<Props>()
-
 const checkout = useCheckoutStore()
-const cart = useCartStore()
-
 const loading = ref(false)
 
-const promoLabel = computed(() => {
-  const pr = checkout.promoResult
-  if (!pr?.valid) return ''
-  if (pr.discount_type === 'percent') return `${pr.discount_value}%`
-  return `${pr.discount_value} ${props.currency}`
-})
-
 async function checkPromo() {
-  if (!checkout.form.promoCode.trim()) return
   loading.value = true
   try {
-    const result = await $fetch('/api/promo/check', {
-      method: 'POST',
-      body: { code: checkout.form.promoCode.trim(), subtotal: cart.subtotal },
-    })
-    checkout.promoResult = result as typeof checkout.promoResult
-  } catch {
-    checkout.promoResult = { valid: false }
+    await checkout.applyPromoCode()
   } finally {
     loading.value = false
   }

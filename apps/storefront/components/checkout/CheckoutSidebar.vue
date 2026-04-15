@@ -9,6 +9,7 @@
           :subtotal="cart.subtotal"
           :delivery-fee="checkout.deliveryFee"
           :discount-amount="checkout.discountAmount"
+          :discount-label="discountLabel"
           :total="checkout.orderTotal"
           :currency="currency"
           :errors="errors"
@@ -21,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
 import { FsHeading, FsCard, FsDivider } from '@fastio/public-ui'
@@ -39,6 +41,12 @@ const emit = defineEmits<{ submit: [] }>()
 
 const cart = useCartStore()
 const checkout = useCheckoutStore()
+
+const discountLabel = computed(() => {
+  const d = checkout.appliedDiscount
+  if (!d) return null
+  return d.isBestPick ? `${d.label} · лучшая из скидок` : d.label
+})
 </script>
 
 <style scoped lang="scss">

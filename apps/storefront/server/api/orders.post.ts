@@ -44,14 +44,7 @@ export default defineEventHandler(async (event) => {
     { workingHoursSchedule: tenant?.workingHoursSchedule ?? null, timezone: tenant?.timezone ?? 'Europe/Moscow' },
   )
 
-  // 5. Промокоды и акции
-  const { discountAmount, appliedPromoCode, appliedPromotionId, freeItemPromo } = await resolvePromo(
-    supabase, tenantId, body.promoCode ?? null, subtotal,
-  )
-
-  const total = calcOrderTotal(subtotal, discountAmount, deliveryFee)
-
-  // 6. Валидация scheduledAt
+  // 5. Валидация scheduledAt (нужна до проверки промо, чтобы передать время доставки)
   let validScheduledAt: string | null = null
   if (typeof body.scheduledAt === 'string' && body.scheduledAt) {
     const ts = Date.parse(body.scheduledAt)
@@ -60,6 +53,13 @@ export default defineEventHandler(async (event) => {
     }
     validScheduledAt = new Date(ts).toISOString()
   }
+
+  // 6. Промокоды и акции — валидируем против времени доставки (предзаказ) или текущего времени
+  const { discountAmount, appliedPromoCode, appliedPromotionId, freeItemPromo } = await resolvePromo(
+    supabase, tenantId, body.promoCode ?? null, subtotal, validScheduledAt,
+  )
+
+  const total = calcOrderTotal(subtotal, discountAmount, deliveryFee)
 
   // 7. Создание заказа
   const idempotencyKey = typeof body.idempotencyKey === 'string' && body.idempotencyKey.trim()

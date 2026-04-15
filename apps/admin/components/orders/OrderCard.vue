@@ -64,7 +64,10 @@
 
     <!-- Промокод / скидка -->
     <div v-if="order.discountAmount > 0" class="discount">
-      <UiIcon name="promotions" :size="14" /> Скидка по промокоду <strong>{{ order.promoCode }}</strong>: −{{ order.discountAmount }} ₽
+      <UiIcon name="promotions" :size="14" />
+      <template v-if="order.promoCode">Промокод <strong>{{ order.promoCode }}</strong></template>
+      <template v-else>Акция</template>
+      : −{{ order.discountAmount }} ₽
     </div>
 
     <!-- Комментарий -->

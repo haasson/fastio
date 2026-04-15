@@ -140,6 +140,7 @@ export function mapOrder(row: Record<string, unknown>): Order {
     deliveryLon: (row.delivery_lon as number | null) ?? null,
     comment: row.comment as string | null,
     promoCode: row.promo_code as string | null,
+    promotionId: (row.promotion_id as string | null) ?? null,
     discountAmount: row.discount_amount as number,
     subtotal: row.subtotal as number,
     deliveryFee: row.delivery_fee as number,

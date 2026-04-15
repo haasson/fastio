@@ -88,6 +88,7 @@ export type Order = {
   deliveryLon: number | null
   comment: string | null
   promoCode: string | null
+  promotionId: string | null
   discountAmount: number
   subtotal: number
   deliveryFee: number

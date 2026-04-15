@@ -35,6 +35,11 @@
             :branch-id="selectedBranchId"
             :zones="activeZones"
             :delivery-info="deliveryInfo"
+            :promo-options="promoOptions"
+            :selected-promo-value="selectedPromoValue"
+            :promo-error="promoError"
+            :best-promo-hint="bestPromoHint"
+            @promo-select="onPromoSelect"
             @update:branch-id="selectedBranchId = $event"
             @zone-detected="onZoneDetected"
           />
@@ -80,7 +85,7 @@ import {
   UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone, normalizePhone, getAllowedStatuses, getKitchenAutoStatuses, formatDateStr, dateStrToTs, localDateTimeToUtcIso, utcIsoToLocalDateTime } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, normalizePhone, formatDateStr, dateStrToTs, localDateTimeToUtcIso, utcIsoToLocalDateTime } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
@@ -88,11 +93,11 @@ import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useModules } from '~/composables/plan/useModules'
-import { useStatusColor } from '~/composables/ui/useStatusColor'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
 import { useOrderDelivery } from '~/composables/delivery/useOrderDelivery'
-import { useKitchenStatusBlock } from '~/composables/kitchen/useKitchenStatusBlock'
-import { useConfirm } from '@fastio/kit'
+import { useOrderStatus } from '~/composables/data/useOrderStatus'
+import { useOrderPromo } from '~/composables/data/useOrderPromo'
+import { useOrderCustomerHistory } from '~/composables/data/useOrderCustomerHistory'
 import OrderFormFields from './OrderFormFields.vue'
 import OrderNotesSection from './OrderNotesSection.vue'
 import OrderEventsSection from './OrderEventsSection.vue'
@@ -116,9 +121,9 @@ const { statuses } = storeToRefs(useOrderStatusesStore())
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const modules = useModules()
-const { getStatusColor } = useStatusColor()
 
 const isEdit = computed(() => !!props.order)
+const orderRef = computed(() => props.order)
 
 const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
 const selectedBranchId = ref<string | null>(null)
@@ -127,78 +132,6 @@ const saving = ref(false)
 const notesRefreshKey = ref(0)
 const itemsError = ref('')
 const formRef = ref<InstanceType<typeof UiForm> | null>(null)
-
-// ─── Status ───────────────────────────────────────────────────────────────────
-
-const { checkKitchenBlock } = useKitchenStatusBlock()
-const { confirm } = useConfirm()
-
-const getStatusById = (statusId: string) => statuses.value.find((s) => s.id === statusId) ?? null
-
-const currentStatus = computed(() => getStatusById(form.status))
-const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
-
-const kitchenAutoStatuses = computed(() => getKitchenAutoStatuses(tenantStore.tenant?.kitchenConfig),
-)
-
-const statusMenuItems = computed(() => {
-  const group = currentStatus.value?.groupType ?? 'new'
-
-  return getAllowedStatuses(group, statuses.value)
-    .filter((s) => s.id !== form.status)
-    .filter((s) => !kitchenAutoStatuses.value.includes(s.id))
-    .map((s) => ({
-      name: s.id,
-      label: s.name,
-      color: getStatusColor(s.id),
-    }))
-})
-
-const onStatusSelect = async (newStatusId: string) => {
-  if (!props.order) {
-    form.status = newStatusId
-
-    return
-  }
-
-  const newStatus = statuses.value.find((s) => s.id === newStatusId)
-  const { blocked } = await checkKitchenBlock(props.order, newStatus?.groupType)
-
-  if (blocked) return
-
-  if (props.order.visitedStatuses.includes(newStatusId)) {
-    const confirmed = await confirm({
-      title: 'Возврат в предыдущий статус',
-      message: `Заказ уже был в статусе «${newStatus?.name ?? newStatusId}». Вы уверены, что хотите вернуть его обратно?`,
-      confirmText: 'Да, вернуть',
-      cancelText: 'Отмена',
-      confirmType: 'warning',
-    })
-
-    if (confirmed !== true) return
-  }
-
-  form.status = newStatusId
-}
-
-// ─── Permissions ──────────────────────────────────────────────────────────────
-
-const can = computed(() => {
-  if (!isEdit.value) return {}
-
-  const g = statusGroup.value
-
-  return {
-    editCustomer: g === 'new' || g === 'in_progress',
-    editDeliveryType: g === 'new',
-    editAddress: g === 'new',
-    editItems: g === 'new',
-    editDeliveryFee: g === 'new' || g === 'in_progress',
-    editPayment: g === 'new' || g === 'in_progress',
-    editBranch: g === 'new',
-    editScheduling: g === 'new',
-  }
-})
 
 // ─── Form ─────────────────────────────────────────────────────────────────────
 
@@ -281,8 +214,6 @@ watch(() => form.items, (items) => {
   if (items.length) itemsError.value = ''
 })
 
-// ─── Computed totals ──────────────────────────────────────────────────────────
-
 const subtotal = computed(() => form.items.reduce((s, i) => s + getItemUnitPrice(i) * i.quantity, 0))
 const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.deliveryFee)
 
@@ -290,12 +221,14 @@ const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.
 
 const scheduledAt = computed<string | null>(() => {
   if (form.schedulingMode !== 'scheduled' || !form.scheduledDate || !form.scheduledTime) return null
-
   const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
-  const dateStr = formatDateStr(form.scheduledDate)
 
-  return localDateTimeToUtcIso(dateStr, form.scheduledTime, tz)
+  return localDateTimeToUtcIso(formatDateStr(form.scheduledDate), form.scheduledTime, tz)
 })
+
+const { currentStatus, statusMenuItems, can, onStatusSelect } = useOrderStatus(orderRef, isEdit, form)
+const { promoOptions, selectedPromoValue, autoPromotionId, promoError, bestPromoHint, onPromoSelect } = useOrderPromo(props.tenantId, orderRef, isEdit, form, subtotal, scheduledAt)
+const { customerOrders } = useOrderCustomerHistory(props.tenantId, orderRef)
 
 // ─── Delivery zones ───────────────────────────────────────────────────────────
 
@@ -334,6 +267,7 @@ const formPayload = computed(() => ({
   comment: form.comment || null,
   discountAmount: form.discountAmount,
   promoCode: form.promoCode || null,
+  promotionId: autoPromotionId.value,
   subtotal: subtotal.value,
   deliveryFee: form.deliveryFee,
   total: total.value,
@@ -342,26 +276,6 @@ const formPayload = computed(() => ({
   branchId: selectedBranchId.value,
   scheduledAt: scheduledAt.value,
 }))
-
-// ─── Customer history ─────────────────────────────────────────────────────────
-
-const customerOrders = ref<Order[]>([])
-
-watch(
-  () => props.order?.customerPhone,
-  async (phone) => {
-    if (!phone || !props.order) {
-      customerOrders.value = []
-
-      return
-    }
-    const { orders } = await api.orders.list(props.tenantId, null, { search: phone, pageSize: 20 })
-
-    if (props.order?.customerPhone !== phone) return
-    customerOrders.value = orders.filter((o) => o.id !== props.order!.id)
-  },
-  { immediate: true },
-)
 
 // ─── Save ─────────────────────────────────────────────────────────────────────
 
@@ -395,8 +309,6 @@ const save = async (): Promise<boolean | void> => {
         tenantId: props.tenantId,
         ...formPayload.value,
         branchId,
-        promoCode: null,
-        discountAmount: 0,
         tableId: props.tableId ?? null,
         tableName: props.tableName ?? null,
       })

@@ -4,6 +4,7 @@
       :subtotal="subtotal"
       :delivery-fee="deliveryFee"
       :discount-amount="discountAmount"
+      :discount-label="discountLabel"
       :total="total"
       :currency="currency"
     />
@@ -24,6 +25,7 @@ type Props = {
   subtotal: number
   deliveryFee: number
   discountAmount: number
+  discountLabel?: string | null
   total: number
   currency: string
   errors?: string[]

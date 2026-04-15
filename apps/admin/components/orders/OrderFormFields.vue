@@ -156,9 +156,22 @@
         <span class="total-key">Сумма</span>
         <span class="total-val">{{ subtotal }} ₽</span>
       </div>
-      <div v-if="(form.discountAmount ?? 0) > 0" class="total-line">
-        <span class="total-key">Скидка <span class="promo-code">{{ form.promoCode }}</span></span>
-        <span class="total-val discount">−{{ form.discountAmount }} ₽</span>
+      <div v-if="promoOptions.length" class="total-line">
+        <span class="total-key">Скидка / акция</span>
+        <div class="promo-right">
+          <UiSelect
+            :value="selectedPromoValue"
+            :options="promoOptions"
+            :message="promoError ?? undefined"
+            filterable
+            class="promo-select"
+            @update:value="emit('promo-select', $event != null ? String($event) : null)"
+          />
+          <span v-if="(form.discountAmount ?? 0) > 0" class="total-val discount">−{{ form.discountAmount }} ₽</span>
+        </div>
+      </div>
+      <div v-if="bestPromoHint" class="promo-hint">
+        {{ bestPromoHint.text }} · <button type="button" class="promo-hint-apply" @click="emit('promo-select', bestPromoHint.value)">Применить</button>
       </div>
       <div v-if="deliveryEnabled || isDeliveryOrder" class="total-line">
         <span class="total-key">Стоимость доставки</span>
@@ -251,6 +264,10 @@ const props = withDefaults(defineProps<{
   branchOptions?: BranchOption[]
   branchId?: string | null
   deliveryInfo?: DeliveryInfo | null
+  promoOptions?: { label: string; value: string }[]
+  selectedPromoValue?: string | null
+  promoError?: string | null
+  bestPromoHint?: { text: string; value: string } | null
 }>(), {
   permissions: () => ({}),
   itemsError: '',
@@ -259,11 +276,16 @@ const props = withDefaults(defineProps<{
   branchOptions: () => [],
   branchId: null,
   deliveryInfo: null,
+  promoOptions: () => [],
+  selectedPromoValue: null,
+  promoError: null,
+  bestPromoHint: null,
 })
 
 const emit = defineEmits<{
   'zone-detected': [zone: DeliveryZone | null, outsideZones: boolean, coords: [number, number] | null]
   'update:branchId': [value: string | null]
+  'promo-select': [value: string | null]
 }>()
 
 const selectedBranchId = computed({
@@ -440,6 +462,33 @@ const paymentOptions = PAYMENT_OPTIONS
   color: var(--color-title);
 }
 
+.promo-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.promo-select {
+  width: 260px;
+}
+
+.promo-hint {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+.promo-hint-apply {
+  all: unset;
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .fee-input {
   width: 90px;
 }
@@ -470,7 +519,7 @@ const paymentOptions = PAYMENT_OPTIONS
 }
 
 .payment-select {
-  width: 180px;
+  width: 260px;
 }
 
 .address-field {

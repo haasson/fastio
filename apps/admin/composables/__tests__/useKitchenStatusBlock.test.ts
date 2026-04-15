@@ -37,6 +37,7 @@ const makeOrder = (overrides: Partial<Order> = {}): Order => ({
   deliveryLon: null,
   comment: null,
   promoCode: null,
+  promotionId: null,
   discountAmount: 0,
   subtotal: 0,
   deliveryFee: 0,
