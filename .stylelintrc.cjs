@@ -17,6 +17,20 @@ module.exports = {
       files: ['**/*.vue'],
       customSyntax: 'postcss-html',
     },
+    {
+      // Storefront/landing/public-ui — семантические токены (--primary, --radius-btn,
+      // --section-spacing), а не шкальные. Дизайнерские точечные значения тут норма,
+      // насильно натягивать --space-N бессмысленно.
+      files: [
+        'apps/storefront/**/*.{vue,scss,css}',
+        'apps/landing/**/*.{vue,scss,css}',
+        'packages/public-ui/**/*.{vue,scss,css}',
+      ],
+      rules: {
+        'scale-unlimited/declaration-strict-value': null,
+        'color-no-hex': null,
+      },
+    },
   ],
   rules: {
     'color-no-hex': [true, { severity: 'warning' }],
