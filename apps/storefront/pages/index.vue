@@ -1,5 +1,5 @@
 <template>
-  <PageShell :show-category-bar="menuDefaultView === 'dishes'">
+  <PageShell show-category-bar>
     <template #default="{ stickyTotalHeight, layout: shellLayout }">
       <HeroSection
         v-if="shellLayout.sections.hero.enabled && shellLayout.sectionsOrder.includes('hero')"

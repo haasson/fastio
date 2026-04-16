@@ -1,8 +1,7 @@
 <template>
-  <PageShell :show-category-bar="menuDefaultView === 'dishes'">
+  <PageShell show-category-bar>
     <template #default>
       <MenuSection
-        :default-view="menuDefaultView"
         :dish-description-mode="layout.pageSettings.menu.dishDescriptionMode"
         :mobile-dish-card="layout.pageSettings.menu.mobileDishCard"
       />
@@ -26,5 +25,4 @@ const layout = computed(() =>
   deepMerge(defaultSiteLayout(), (tenant.value?.siteLayout ?? {}) as Partial<SiteLayout>)
 )
 
-const menuDefaultView = computed(() => layout.value.pageSettings.menu.defaultView)
 </script>
