@@ -396,6 +396,7 @@ async function submitOrder() {
     const result = await $fetch<{ id: string; orderNumber: string | null }>('/api/orders', { method: 'POST', body, headers })
 
     cart.clear()
+    checkout.clearPromo()
     await navigateTo(`/order/${result.id}`)
   } catch (err: unknown) {
     const fetchErr = err as { data?: { message?: string } }
