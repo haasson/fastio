@@ -1,8 +1,13 @@
 <template>
-  <div class="slider-root">
+  <div ref="rootRef" class="slider-root">
     <div ref="viewportRef" class="viewport">
       <div class="slides">
-        <div v-for="photo in gallery.photos" :key="photo.id" class="slide">
+        <div
+          v-for="(photo, index) in gallery.photos"
+          :key="photo.id"
+          class="slide"
+          :data-pswp-index="index"
+        >
           <img :src="photo.url" alt="" class="slide-img" loading="lazy" >
         </div>
       </div>
@@ -11,14 +16,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import useEmblaCarousel from 'embla-carousel-vue'
 import AutoplayPlugin from 'embla-carousel-autoplay'
 import type { Gallery } from '@fastio/shared'
+import usePhotoSwipe from '~/composables/usePhotoSwipe'
 
 const props = defineProps<{
   gallery: Gallery
 }>()
+
+const rootRef = ref<HTMLElement | null>(null)
+const photos = computed(() => props.gallery.photos)
+
+usePhotoSwipe(rootRef, photos)
 
 const plugins = computed(() => {
   if (!props.gallery.autoplay) return []
@@ -55,6 +66,7 @@ onBeforeUnmount(() => emblaApi.value?.destroy())
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-card);
   overflow: hidden;
+  cursor: pointer;
 
   @include md {
     flex: 0 0 auto;

@@ -16,7 +16,7 @@
   />
 
   <div v-else-if="sectionKey === 'banners'" class="fields-wrap">
-    <span class="banners-hint">Баннеры управляются в разделе <RouterLink to="/promotions" class="banners-link">Акции → Баннеры</RouterLink></span>
+    <span class="banners-hint">Баннеры управляются в разделе <RouterLink to="/content/banners" class="banners-link">Контент → Баннеры</RouterLink></span>
     <div class="field">
       <label class="field-label">Размер баннера</label>
       <UiSegmentedControl
