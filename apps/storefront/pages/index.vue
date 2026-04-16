@@ -1,36 +1,38 @@
 <template>
   <PageShell show-category-bar>
     <template #default="{ stickyTotalHeight, layout: shellLayout }">
-      <HeroSection
-        v-if="shellLayout.sections.hero.enabled && shellLayout.sectionsOrder.includes('hero')"
-        id="hero"
-        :hero="shellLayout.sections.hero"
-        :hero-content="content.hero"
-        :sticky-height="stickyTotalHeight"
-      />
-      <BannersSection
-        v-if="shellLayout.sections.banners.enabled && shellLayout.sectionsOrder.includes('banners')"
-        id="banners"
-        :banners="banners ?? []"
-        :settings="shellLayout.sections.banners"
-      />
-      <MenuSection
-        v-if="shellLayout.sections.menu.enabled && shellLayout.sectionsOrder.includes('menu')"
-        id="menu"
-        :default-view="menuDefaultView"
-        :dish-description-mode="shellLayout.sections.menu.dishDescriptionMode"
-        :mobile-dish-card="shellLayout.sections.menu.mobileDishCard"
-      />
-      <GallerySection
-        v-if="shellLayout.sections.gallery.enabled && shellLayout.sectionsOrder.includes('gallery') && shellLayout.sections.gallery.galleryIds?.length"
-        id="gallery"
-        :galleries="galleries ?? []"
-        :gallery-ids="shellLayout.sections.gallery.galleryIds ?? []"
-      />
-      <ReviewsSection
-        v-if="shellLayout.sections.reviews.enabled && shellLayout.sectionsOrder.includes('reviews')"
-        id="reviews"
-      />
+      <template v-for="key in shellLayout.sectionsOrder" :key="key">
+        <HeroSection
+          v-if="key === 'hero' && shellLayout.sections.hero.enabled"
+          id="hero"
+          :hero="shellLayout.sections.hero"
+          :hero-content="content.hero"
+          :sticky-height="stickyTotalHeight"
+        />
+        <BannersSection
+          v-else-if="key === 'banners' && shellLayout.sections.banners.enabled"
+          id="banners"
+          :banners="banners ?? []"
+          :settings="shellLayout.sections.banners"
+        />
+        <MenuSection
+          v-else-if="key === 'menu' && shellLayout.sections.menu.enabled"
+          id="menu"
+          :default-view="menuDefaultView"
+          :dish-description-mode="shellLayout.sections.menu.dishDescriptionMode"
+          :mobile-dish-card="shellLayout.sections.menu.mobileDishCard"
+        />
+        <GallerySection
+          v-else-if="key === 'gallery' && shellLayout.sections.gallery.enabled && shellLayout.sections.gallery.galleryIds?.length"
+          id="gallery"
+          :galleries="galleries ?? []"
+          :gallery-ids="shellLayout.sections.gallery.galleryIds ?? []"
+        />
+        <ReviewsSection
+          v-else-if="key === 'reviews' && shellLayout.sections.reviews.enabled"
+          id="reviews"
+        />
+      </template>
     </template>
   </PageShell>
 </template>
