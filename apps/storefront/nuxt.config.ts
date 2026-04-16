@@ -11,7 +11,7 @@ export default defineNuxtConfig({
 
   ssr: true,
 
-  css: ['~/assets/styles/main.scss'],
+  css: ['~/assets/styles/main.scss', 'photoswipe/style.css'],
 
   components: false,
 

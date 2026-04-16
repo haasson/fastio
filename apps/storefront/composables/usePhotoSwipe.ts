@@ -1,6 +1,5 @@
 import { onBeforeUnmount, onMounted, type Ref } from 'vue'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
-import 'photoswipe/style.css'
 import type { GalleryPhoto } from '@fastio/shared'
 
 function getImageSize(url: string): Promise<{ width: number; height: number }> {
