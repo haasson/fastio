@@ -23,6 +23,34 @@
         <HeaderOptions />
       </div>
 
+      <div v-for="key in structuralOrder" :key="key" class="section-group">
+        <div
+          class="section-item section-item--locked"
+          :class="{ 'section-item--expanded': openKeys.has(key) }"
+          @click="toggle(key)"
+        >
+          <span class="lock-gap" />
+          <span class="item-label">{{ featureLabel(key, businessType) }}</span>
+          <UiIcon
+            name="chevronRound"
+            :size="20"
+            class="arrow"
+            :class="{ open: openKeys.has(key) }"
+          />
+          <span class="action-btn" @click.stop="removeSection(key)">
+            <UiIcon name="close" :size="14" />
+          </span>
+        </div>
+        <div v-if="openKeys.has(key)" class="item-options">
+          <SectionSettingsByKey
+            :section-key="key"
+            :form="siteLayoutForm"
+            :content-form="form.contentForm"
+            :pending-hero-bg="form.onPendingHeroBg"
+          />
+        </div>
+      </div>
+
       <VueDraggable
         v-model="order"
         group="sections"
@@ -126,13 +154,21 @@ const toggle = (key: string) => {
   else openKeys.add(key)
 }
 
+// Структурные секции — фиксированная позиция, не драгаются
+const structuralOrder = computed(() => STRUCTURAL_SECTIONS.filter(
+  (k) => isAvailable(k) && siteLayoutForm.sectionsOrder.includes(k as SectionKey),
+),
+)
+
 const order = computed({
-  get: () => siteLayoutForm.sectionsOrder.filter((k) => isAvailable(k)),
+  get: () => siteLayoutForm.sectionsOrder.filter(
+    (k) => isAvailable(k) && !STRUCTURAL_SECTIONS.includes(k as SectionKey),
+  ),
   set: (val: string[]) => {
-    // Вставляем недоступные ключи на их оригинальные позиции,
+    // Вставляем недоступные не-структурные ключи на их оригинальные позиции,
     // чтобы при включении модуля секция не уехала в конец
     const all = siteLayoutForm.sectionsOrder
-    const hidden = all.filter((k) => !isAvailable(k))
+    const hidden = all.filter((k) => !isAvailable(k) && !STRUCTURAL_SECTIONS.includes(k as SectionKey))
     const result = [...val] as SectionKey[]
 
     for (const key of hidden) {
@@ -141,22 +177,36 @@ const order = computed({
       result.splice(Math.min(origIdx, result.length), 0, key)
     }
 
-    siteLayoutForm.sectionsOrder = result
+    // Структурные секции всегда идут первыми в своём порядке
+    const structural = all.filter((k) => STRUCTURAL_SECTIONS.includes(k as SectionKey))
+
+    siteLayoutForm.sectionsOrder = [...structural, ...result]
   },
 })
 
 // setter пустой — VueDraggable вызывает его при drag, но реальное обновление идёт через order
 const disabledKeys = computed({
-  get: () => SECTION_KEYS.filter((k) => isAvailable(k) && !order.value.includes(k)),
+  get: () => SECTION_KEYS.filter((k) => isAvailable(k) && !siteLayoutForm.sectionsOrder.includes(k as SectionKey)),
   set: () => {},
 })
 
 const addSection = (key: string) => {
-  if (order.value.includes(key as SectionKey)) return
-  siteLayoutForm.sectionsOrder = [...siteLayoutForm.sectionsOrder, key as SectionKey]
+  if (siteLayoutForm.sectionsOrder.includes(key as SectionKey)) return
+
   const section = siteLayoutForm.sections[key as SectionKey] as { enabled: boolean } | undefined
 
   if (section) section.enabled = true
+
+  if (STRUCTURAL_SECTIONS.includes(key as SectionKey)) {
+    // Структурные секции всегда первые, в порядке определённом STRUCTURAL_SECTIONS
+    const nonStructural = siteLayoutForm.sectionsOrder.filter((k) => !STRUCTURAL_SECTIONS.includes(k as SectionKey))
+    const structural = [...siteLayoutForm.sectionsOrder.filter((k) => STRUCTURAL_SECTIONS.includes(k as SectionKey)), key as SectionKey]
+      .sort((a, b) => STRUCTURAL_SECTIONS.indexOf(a as SectionKey) - STRUCTURAL_SECTIONS.indexOf(b as SectionKey))
+
+    siteLayoutForm.sectionsOrder = [...structural, ...nonStructural]
+  } else {
+    siteLayoutForm.sectionsOrder = [...siteLayoutForm.sectionsOrder, key as SectionKey]
+  }
 }
 
 const removeSection = async (key: string) => {
