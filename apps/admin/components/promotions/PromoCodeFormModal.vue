@@ -70,7 +70,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiDatepicker } from '@fastio/ui'
 import type { PromoCode, PromoCodeFormData } from '@fastio/shared'
 import type { ValidationRule } from '@fastio/kit'
-import { isoToTs, tsToIso } from '@fastio/shared'
+import { isoToTs, tsToIso, tsToIsoEndOfDay } from '@fastio/shared'
 
 const props = defineProps<{
   modelValue: boolean
@@ -155,7 +155,7 @@ const onConfirm = () => {
     minOrderAmount: form.minOrderAmount ?? null,
     usageLimit: form.usageLimit ?? null,
     activeFrom: tsToIso(form.activeFrom),
-    activeTo: tsToIso(form.activeTo),
+    activeTo: tsToIsoEndOfDay(form.activeTo),
     active: form.active,
   })
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { dateStrToTs, formatDateStr, isoToTs, tsToIso, todayStr } from '../utils/date'
+import { dateStrToTs, formatDateStr, isoToTs, tsToIso, tsToIsoEndOfDay, todayStr } from '../utils/date'
 
 describe('dateStrToTs', () => {
   it('конвертирует YYYY-MM-DD в timestamp полудня', () => {
@@ -53,6 +53,24 @@ describe('tsToIso', () => {
 
   it('null → null', () => {
     expect(tsToIso(null)).toBeNull()
+  })
+})
+
+describe('tsToIsoEndOfDay', () => {
+  it('выставляет время 23:59:59.999 local time', () => {
+    const ts = new Date('2026-04-16T00:00:00').getTime() // полночь local
+    const result = tsToIsoEndOfDay(ts)
+    const d = new Date(result!)
+    expect(d.getFullYear()).toBe(2026)
+    expect(d.getMonth()).toBe(3) // апрель = 3
+    expect(d.getDate()).toBe(16)
+    expect(d.getHours()).toBe(23)
+    expect(d.getMinutes()).toBe(59)
+    expect(d.getSeconds()).toBe(59)
+  })
+
+  it('null → null', () => {
+    expect(tsToIsoEndOfDay(null)).toBeNull()
   })
 })
 

@@ -142,7 +142,7 @@ import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiSelect, UiDatepicker, UiTimepicker, UiAlert, UiButton } from '@fastio/ui'
 import type { Promotion, PromotionFormData, PromotionConditions } from '@fastio/shared'
 import type { ValidationRule } from '@fastio/kit'
-import { isoToTs, tsToIso } from '@fastio/shared'
+import { isoToTs, tsToIso, tsToIsoEndOfDay } from '@fastio/shared'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 
@@ -296,7 +296,7 @@ const onConfirm = () => {
     discountValue: form.discountValue,
     conditions: buildConditions(),
     activeFrom: tsToIso(form.activeFrom),
-    activeTo: tsToIso(form.activeTo),
+    activeTo: tsToIsoEndOfDay(form.activeTo),
     active: form.active,
   })
 

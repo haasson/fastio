@@ -50,6 +50,18 @@ export const tsToIso = (ts: number | null): string | null =>
   ts ? new Date(ts).toISOString() : null
 
 /**
+ * timestamp (ms) → ISO string конца дня (23:59:59.999 local time).
+ * Используется для active_to в акциях/промокодах: пикер возвращает полночь,
+ * но акция должна работать весь выбранный день, а не умирать в 00:00.
+ */
+export const tsToIsoEndOfDay = (ts: number | null): string | null => {
+  if (!ts) return null
+  const d = new Date(ts)
+  d.setHours(23, 59, 59, 999)
+  return d.toISOString()
+}
+
+/**
  * Относительное время: "только что", "5 мин назад", "2 ч назад",
  * или полная дата для старых событий.
  */
