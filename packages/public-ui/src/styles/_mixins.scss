@@ -43,27 +43,31 @@
 }
 
 @mixin text-xs($weight: 400) {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: $weight;
   line-height: 1.5;
+  @include lg { font-size: 12px; }
 }
 
 @mixin text-caption($weight: 400) {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: $weight;
   line-height: 1.5;
+  @include lg { font-size: 14px; }
 }
 
 @mixin text-body-sm($weight: 400) {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: $weight;
   line-height: 1.6;
+  @include lg { font-size: 16px; }
 }
 
 @mixin text-body($weight: 400) {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: $weight;
   line-height: 1.6;
+  @include lg { font-size: 18px; }
 }
 
 @mixin text-label {
