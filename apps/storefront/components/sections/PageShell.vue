@@ -35,6 +35,7 @@ import SiteFooter from '~/components/sections/SiteFooter.vue'
 import { useCartStore } from '~/stores/cart'
 import SfCartFab from '~/components/sf/domain/SfCartFab.vue'
 import SfBookingFab from '~/components/sf/domain/SfBookingFab.vue'
+import useLegalCompliance from '~/composables/useLegalCompliance'
 
 withDefaults(defineProps<{
   showCategoryBar?: boolean
@@ -54,10 +55,13 @@ const layout = computed(() =>
 const { count } = storeToRefs(useCartStore())
 const hasCartItems = computed(() => count.value > 0)
 
+const { legalInfoComplete } = useLegalCompliance()
+
 const isServices = computed(() => tenant.value?.businessType === 'services')
 const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
-const showCartFab = computed(() => !isServices.value && orderingEnabled.value && !['/cart', '/checkout'].includes(route.path))
-const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.modules?.reservations && route.path !== '/booking')
+const effectiveOrderingEnabled = computed(() => orderingEnabled.value && legalInfoComplete.value)
+const showCartFab = computed(() => !isServices.value && effectiveOrderingEnabled.value && !['/cart', '/checkout'].includes(route.path))
+const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.modules?.reservations && legalInfoComplete.value && route.path !== '/booking')
 
 const headerRef = useTemplateRef('headerRef')
 const { height: headerHeight } = useElementSize(headerRef)

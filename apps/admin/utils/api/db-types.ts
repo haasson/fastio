@@ -51,6 +51,7 @@ export type TenantRow = {
   max_addons_default: number | null
   onboarding_completed: boolean
   order_scheduling_config: Record<string, unknown>
+  legal_info: Record<string, unknown> | null
   created_at: string
 }
 

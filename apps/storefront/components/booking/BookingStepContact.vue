@@ -30,6 +30,10 @@
     <FsButton type="submit" variant="primary" size="large" :loading="loading">
       Забронировать
     </FsButton>
+    <p v-if="legalInfoComplete" class="consent-note">
+      Нажимая кнопку «Забронировать», вы соглашаетесь с
+      <a href="/privacy" target="_blank">обработкой персональных данных</a>
+    </p>
 
     <FsButton variant="ghost" size="small" @click="$emit('back')">← Назад</FsButton>
   </FsForm>
@@ -38,6 +42,9 @@
 <script setup lang="ts">
 import { FsButton, FsField, FsForm, FsInput, FsTextarea } from '@fastio/public-ui'
 import { validationRules } from '@fastio/kit'
+import useLegalCompliance from '~/composables/useLegalCompliance'
+
+const { legalInfoComplete } = useLegalCompliance()
 
 type BookingForm = {
   guestName: string
@@ -59,5 +66,9 @@ defineEmits<{ submit: []; back: [] }>()
 
 .fs-form {
   @include flex-col(16px);
+}
+
+.consent-note {
+  @include consent-note;
 }
 </style>

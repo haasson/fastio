@@ -57,6 +57,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     maxAddonsDefault: row.max_addons_default ?? null,
     onboardingCompleted: row.onboarding_completed,
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config ?? {}),
+    legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
     createdAt: row.created_at,
   }
 }
@@ -87,6 +88,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   max_addons_default: data.maxAddonsDefault,
   onboarding_completed: data.onboardingCompleted,
   order_scheduling_config: data.orderSchedulingConfig as Record<string, unknown> | undefined,
+  legal_info: data.legalInfo,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {

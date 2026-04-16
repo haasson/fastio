@@ -14,12 +14,19 @@
     <FsButton size="large" class="submit-btn" :loading="loading" @click="emit('submit')">
       Оформить заказ
     </FsButton>
+    <p v-if="legalInfoComplete" class="consent-note">
+      Нажимая кнопку «Оформить заказ», вы соглашаетесь с
+      <a href="/privacy" target="_blank">обработкой персональных данных</a>
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { FsButton } from '@fastio/public-ui'
 import SfOrderTotals from '~/components/sf/domain/SfOrderTotals.vue'
+import useLegalCompliance from '~/composables/useLegalCompliance'
+
+const { legalInfoComplete } = useLegalCompliance()
 
 type Props = {
   subtotal: number
@@ -64,5 +71,9 @@ const emit = defineEmits<{
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.consent-note {
+  @include consent-note;
 }
 </style>

@@ -32,6 +32,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Эти страницы обрабатывают авторизацию самостоятельно
   if (to.path === '/invite' || to.path === '/set-password' || to.path === '/no-access') return
 
+  // Публичные документы — доступны без авторизации
+  if (to.path.startsWith('/legal/')) return
+
   if (!authStore.isAuthenticated && to.path !== '/login') {
     return navigateTo('/login')
   }

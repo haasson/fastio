@@ -89,6 +89,7 @@ import BookingStepContact from '~/components/booking/BookingStepContact.vue'
 import BookingSuccess from '~/components/booking/BookingSuccess.vue'
 
 import useBooking from '~/composables/useBooking'
+import useLegalCompliance from '~/composables/useLegalCompliance'
 
 type BookingBranch = { id: string; name: string; address: string | null; workingHoursSchedule: WorkingHoursSchedule | null }
 
@@ -97,7 +98,8 @@ const { step, form, slots, loading, result, wasAuthenticated, error, fetchSlots,
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
-const reservationsEnabled = computed(() => tenant.value?.modules?.reservations === true)
+const { legalInfoComplete } = useLegalCompliance()
+const reservationsEnabled = computed(() => tenant.value?.modules?.reservations === true && legalInfoComplete.value)
 
 const { data: branches } = await useAsyncData<BookingBranch[]>(
   'booking-branches',

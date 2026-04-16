@@ -52,7 +52,7 @@
                 :combo-id="combo.id"
                 :hide-stepper="tableMode"
                 :is-services="isServices"
-                :ordering-enabled="orderingEnabled"
+                :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
                 @add="addComboToCart(combo)"
@@ -67,7 +67,7 @@
                 :has-modifiers="hasModifiers(dish)"
                 :hide-stepper="tableMode"
                 :is-services="isServices"
-                :ordering-enabled="orderingEnabled"
+                :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
                 @add="handleAddButton(dish)"
@@ -113,6 +113,7 @@ import { useNuxtData } from 'nuxt/app'
 import { useCartStore, type CartItem } from '~/stores/cart'
 import { useMenuStore, type ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
+import useLegalCompliance from '~/composables/useLegalCompliance'
 import { FsSection, FsCard, FsHeading, FsText } from '@fastio/public-ui'
 import SfDishCard from '~/components/sf/domain/SfDishCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
@@ -135,8 +136,10 @@ const cart = useCartStore()
 const selectedCategoryId = ref<string | null>(null)
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const isServices = computed(() => tenant.value?.businessType === 'services')
+const { legalInfoComplete } = useLegalCompliance()
 const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
-const viewOnly = computed(() => !orderingEnabled.value && !props.tableMode && !isServices.value)
+const effectiveOrderingEnabled = computed(() => orderingEnabled.value && legalInfoComplete.value)
+const viewOnly = computed(() => !effectiveOrderingEnabled.value && !props.tableMode && !isServices.value)
 
 const categories = computed(() => menuStore.visibleCategories)
 const dishesByCategory = computed(() => menuStore.dishesByCategory)

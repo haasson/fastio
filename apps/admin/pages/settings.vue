@@ -29,6 +29,7 @@ const tabs = computed(() => {
     { value: 'contacts', label: 'Общее', icon: 'settings' as const },
     { value: 'modules', label: 'Модули', icon: 'puzzle' as const },
     { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
+    { value: 'legal', label: 'Юридические', icon: 'fileText' as const },
   ]
 
   return isServices.value ? all.filter((t) => t.value !== 'modules') : all

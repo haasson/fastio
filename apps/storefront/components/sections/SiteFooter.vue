@@ -80,9 +80,9 @@
     </div>
 
     <div v-if="hasDocuments" class="footer-docs">
-      <a v-if="privacyUrl" :href="privacyUrl" target="_blank" rel="noopener noreferrer" class="doc-link">
+      <NuxtLink v-if="hasPrivacy" to="/privacy" target="_blank" class="doc-link">
         Политика конфиденциальности
-      </a>
+      </NuxtLink>
       <a v-if="offerUrl" :href="offerUrl" target="_blank" rel="noopener noreferrer" class="doc-link">
         Оферта
       </a>
@@ -102,8 +102,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
+import { NuxtLink } from '#components'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
-import { formatWorkingHours } from '@fastio/shared'
+import { formatWorkingHours, isLegalInfoComplete } from '@fastio/shared'
 import { Instagram, Send } from 'lucide-vue-next'
 import SfIconVk from '~/components/sf/icons/SfIconVk.vue'
 import SfIconWhatsapp from '~/components/sf/icons/SfIconWhatsapp.vue'
@@ -119,9 +120,9 @@ type FooterBranch = { id: string; name: string; address: string | null; phone: s
 
 const branches = ref<FooterBranch[]>([])
 
-const privacyUrl = computed(() => tenant.value?.contacts?.privacyUrl ?? null)
+const hasPrivacy = computed(() => isLegalInfoComplete(tenant.value?.legalInfo))
 const offerUrl = computed(() => tenant.value?.contacts?.offerUrl ?? null)
-const hasDocuments = computed(() => !!(privacyUrl.value || offerUrl.value))
+const hasDocuments = computed(() => hasPrivacy.value || !!offerUrl.value)
 
 onMounted(async () => {
   try {

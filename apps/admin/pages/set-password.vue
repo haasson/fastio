@@ -42,6 +42,19 @@
             { type: 'custom', validator: (val) => val === form.password, message: 'Пароли не совпадают' },
           ]"
         />
+        <UiCheckbox
+          v-if="isTenant"
+          v-model:checked="form.agreed"
+          name="agreed"
+          :rules="[{ type: 'custom', validator: (val) => val === true, message: 'Необходимо принять условия' }]"
+        >
+          Принимаю
+          <a href="/legal/oferta" target="_blank" class="doc-link">оферту</a>
+          и
+          <a href="/legal/privacy" target="_blank" class="doc-link">политику конфиденциальности</a>
+          FastIO
+        </UiCheckbox>
+
         <UiButton
           submit
           type="primary"
@@ -59,7 +72,7 @@
 import { reactive, ref, computed } from 'vue'
 import { definePageMeta, useRoute, navigateTo } from '#imports'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert } from '@fastio/ui'
+import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert, UiCheckbox } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/utils/constants'
 
@@ -72,11 +85,13 @@ const inviteToken = route.query.token as string | undefined
 const inviteEmail = route.query.email as string | undefined
 const isRecovery = !!sessionStorage.getItem(RECOVERY_PENDING_KEY)
 
-const form = reactive({ name: '', password: '', passwordConfirm: '' })
+const form = reactive({ name: '', password: '', passwordConfirm: '', agreed: false })
 const error = ref('')
 const loading = ref(false)
 const emailConfirmSent = ref(false)
 
+const isInvite = !!(inviteToken && inviteEmail)
+const isTenant = !isRecovery && !isInvite
 const showNameField = computed(() => !isRecovery)
 
 const title = computed(() => {
@@ -205,5 +220,14 @@ const handleSubmit = async () => {
   display: block;
   margin: 0 0 var(--space-24);
   color: var(--color-text-secondary);
+}
+
+.doc-link {
+  color: var(--color-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 </style>

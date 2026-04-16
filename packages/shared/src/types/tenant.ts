@@ -112,6 +112,19 @@ export type WorkingHoursSchedule = {
   days: Record<string, WorkingHours>  // key: "1"=Mon .. "7"=Sun (ISO), only overrides
 }
 
+export type TenantLegalInfo = {
+  legalName: string
+  inn: string
+  ogrn: string
+  legalAddress: string
+  privacyEmail: string
+}
+
+export function isLegalInfoComplete(legalInfo: TenantLegalInfo | null | undefined): boolean {
+  if (!legalInfo) return false
+  return !!(legalInfo.legalName?.trim() && legalInfo.inn?.trim() && legalInfo.ogrn?.trim() && legalInfo.legalAddress?.trim() && legalInfo.privacyEmail?.trim())
+}
+
 export type TenantContacts = {
   phone: string
   email: string
@@ -121,7 +134,6 @@ export type TenantContacts = {
   telegram: string | null
   whatsapp: string | null
   max: string | null
-  privacyUrl: string | null
   offerUrl: string | null
 }
 
@@ -248,5 +260,6 @@ export type Tenant = {
   maxAddonsDefault: number | null
   onboardingCompleted: boolean
   orderSchedulingConfig: OrderSchedulingConfig
+  legalInfo: TenantLegalInfo | null
   createdAt: string
 }

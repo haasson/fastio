@@ -77,3 +77,18 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+
+@mixin consent-note {
+  @include text-xs;
+  color: var(--color-text-muted);
+  margin: 0;
+  text-align: center;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover { color: var(--color-text); }
+  }
+}
