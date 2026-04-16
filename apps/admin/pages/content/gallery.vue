@@ -1,5 +1,6 @@
 <template>
   <div class="tab-root">
+    <AppStorefrontAlert feature-key="gallery" />
     <div class="toolbar">
       <UiButton
         type="primary"
@@ -94,6 +95,7 @@ import { useGalleries } from '~/composables/data/useGalleries'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
+import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 import GalleryFormModal from '~/components/gallery/GalleryFormModal.vue'
 import GalleryPhotosModal from '~/components/gallery/GalleryPhotosModal.vue'
 

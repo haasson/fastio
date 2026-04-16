@@ -20,22 +20,42 @@
           <em>I</em>
         </button>
         <div class="sep" />
-        <button
-          v-for="level in headingLevels"
-          :key="level"
-          type="button"
-          class="tool"
-          :class="{ active: editor?.isActive('heading', { level }) }"
-          @click="editor?.chain().focus().toggleHeading({ level }).run()"
+
+        <!-- Нехиро: семантический дропдаун стилей -->
+        <select
+          v-if="!hero"
+          class="style-select"
+          :value="activeBlockStyle"
+          @change="setBlockStyle"
         >
-          H{{ level }}
-        </button>
-        <div class="sep" />
-        <select class="font-size-select" :value="activeFontSize" @change="setFontSize">
-          <option value="">Размер</option>
-          <option v-for="size in fontSizes" :key="size.value" :value="size.value">{{ size.label }}</option>
+          <option value="paragraph">Текст</option>
+          <option value="body-sm">Мелкий</option>
+          <option value="caption">Подпись</option>
+          <option value="h2">Заголовок 1</option>
+          <option value="h3">Заголовок 2</option>
+          <option value="h4">Заголовок 3</option>
         </select>
+
+        <!-- Хиро: кнопка H1 + дропдаун размеров -->
+        <template v-if="hero">
+          <button
+            type="button"
+            class="tool"
+            :class="{ active: editor?.isActive('heading', { level: 1 }) }"
+            @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
+          >
+            H1
+          </button>
+          <div class="sep" />
+          <select class="font-size-select" :value="activeFontSize" @change="setFontSize">
+            <option value="">Размер</option>
+            <option v-for="size in fontSizes" :key="size.value" :value="size.value">{{ size.label }}</option>
+          </select>
+        </template>
+
         <div class="sep" />
+
+        <!-- Цвета из палитры (везде) -->
         <button
           v-for="color in themeColors"
           :key="color.stored"
@@ -46,6 +66,18 @@
           :title="color.label"
           @click="editor?.chain().focus().setColor(color.stored).run()"
         />
+
+        <!-- Произвольный колорпикер (только хиро) -->
+        <label v-if="hero" class="color-picker-wrap" title="Произвольный цвет">
+          <input
+            type="color"
+            class="color-picker-input"
+            :value="activeColorHex"
+            @input="setPickerColor"
+          />
+          <span class="color-picker-icon">&#x1F308;</span>
+        </label>
+
         <button
           v-if="hasCustomColor"
           type="button"
@@ -53,6 +85,7 @@
           title="Сбросить цвет"
           @click="editor?.chain().focus().unsetColor().run()"
         >✕</button>
+
         <div class="sep" />
         <button
           type="button"
@@ -82,14 +115,57 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import { TextStyle, FontSize } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
-import { Extension } from '@tiptap/core'
+import { Extension, Node, mergeAttributes } from '@tiptap/core'
 import { THEME_PRESETS } from '@fastio/shared'
-
-type Level = 1 | 2 | 3 | 4 | 5 | 6
 import type { ThemePalette } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 
+// Типизированный параграф с attribute `variant` — рендерится как <p> или <p class="rt-body-sm"|"rt-caption">
+const TypedParagraph = Node.create({
+  name: 'paragraph',
+  priority: 1000,
+  group: 'block',
+  content: 'inline*',
+  addAttributes() {
+    return {
+      variant: {
+        default: null,
+        parseHTML: (el) => {
+          const cls = [...(el as HTMLElement).classList].find(
+            (c) => c === 'rt-body-sm' || c === 'rt-caption',
+          )
+
+          if (cls === 'rt-body-sm') return 'body-sm'
+          if (cls === 'rt-caption') return 'caption'
+
+          return null
+        },
+        renderHTML: (attrs) => (attrs.variant ? { class: `rt-${attrs.variant}` } : {}),
+      },
+    }
+  },
+  parseHTML() {
+    return [{ tag: 'p' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['p', mergeAttributes(HTMLAttributes), 0]
+  },
+  addCommands() {
+    return {
+      setParagraph:
+        () => ({ commands }) => commands.setNode(this.name),
+    }
+  },
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Alt-0': () => this.editor.commands.setParagraph(),
+    }
+  },
+})
+
+// Hero-режим: Enter создаёт <br>, а не новый <p>
 const EnterAsBr = Extension.create({
+  name: 'enterAsBr',
   addKeyboardShortcuts() {
     return {
       Enter: () => this.editor.commands.setHardBreak(),
@@ -100,10 +176,8 @@ const EnterAsBr = Extension.create({
 const props = defineProps<{
   modelValue: string
   label?: string
-  headingLevels?: Level[]
+  hero?: boolean
 }>()
-
-const headingLevels = computed((): Level[] => props.headingLevels ?? [1, 2, 3])
 
 const tenantStore = useTenantStore()
 
@@ -162,36 +236,116 @@ const fontSizes = [
   { label: '56px', value: '56px' },
   { label: '64px', value: '64px' },
   { label: '72px', value: '72px' },
+  { label: '80px', value: '80px' },
+  { label: '96px', value: '96px' },
+  { label: '120px', value: '120px' },
+  { label: '144px', value: '144px' },
 ]
+
+const baseExtensions = [
+  StarterKit.configure({ paragraph: false }),
+  TypedParagraph,
+  TextStyle,
+  FontSize,
+  Color,
+]
+const extensions = props.hero ? [...baseExtensions, EnterAsBr] : baseExtensions
 
 const editor = useEditor({
   content: props.modelValue,
-  extensions: [StarterKit, TextStyle, FontSize, Color, EnterAsBr],
+  extensions,
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
   },
 })
 
-const activeColor = computed(() => editor.value?.getAttributes('textStyle').color ?? null,
-)
+// ─── Цвет ────────────────────────────────────────────────────────────────────
+
+const activeColor = computed(() => editor.value?.getAttributes('textStyle').color ?? null)
 
 const hasCustomColor = computed(() => !!activeColor.value)
 
+const activeColorHex = computed(() => {
+  const c = activeColor.value
+
+  if (!c) return '#000000'
+  if (c.startsWith('var(')) {
+    if (typeof window === 'undefined') return '#000000'
+    const match = c.match(/var\((--[^)]+)\)/)
+
+    if (!match) return '#000000'
+    const resolved = getComputedStyle(document.body).getPropertyValue(match[1]).trim()
+
+    return resolved || '#000000'
+  }
+
+  return c
+})
+
+const setPickerColor = (e: Event) => {
+  const val = (e.target as HTMLInputElement).value
+
+  editor.value?.chain().focus().setColor(val).run()
+}
+
+// ─── Размер шрифта (только хиро) ─────────────────────────────────────────────
+
 const activeFontSize = computed(() => {
   if (!editor.value) return ''
-  const attrs = editor.value.getAttributes('textStyle')
 
-  return attrs.fontSize ?? ''
+  return editor.value.getAttributes('textStyle').fontSize ?? ''
 })
 
 const setFontSize = (e: Event) => {
-  // eslint-disable-next-line no-undef
   const val = (e.target as HTMLSelectElement).value
 
   if (!val) {
     editor.value?.chain().focus().unsetFontSize().run()
   } else {
     editor.value?.chain().focus().setFontSize(val).run()
+  }
+}
+
+// ─── Блочный стиль (только нехиро) ───────────────────────────────────────────
+
+const activeBlockStyle = computed(() => {
+  if (!editor.value) return 'paragraph'
+  if (editor.value.isActive('heading', { level: 2 })) return 'h2'
+  if (editor.value.isActive('heading', { level: 3 })) return 'h3'
+  if (editor.value.isActive('heading', { level: 4 })) return 'h4'
+  const variant = editor.value.getAttributes('paragraph').variant
+
+  if (variant === 'body-sm') return 'body-sm'
+  if (variant === 'caption') return 'caption'
+
+  return 'paragraph'
+})
+
+const setBlockStyle = (e: Event) => {
+  const val = (e.target as HTMLSelectElement).value
+
+  if (!editor.value) return
+
+  const chain = editor.value.chain().focus()
+
+  switch (val) {
+    case 'h2':
+      chain.updateAttributes('paragraph', { variant: null }).setHeading({ level: 2 }).run()
+      break
+    case 'h3':
+      chain.updateAttributes('paragraph', { variant: null }).setHeading({ level: 3 }).run()
+      break
+    case 'h4':
+      chain.updateAttributes('paragraph', { variant: null }).setHeading({ level: 4 }).run()
+      break
+    case 'body-sm':
+      chain.setParagraph().updateAttributes('paragraph', { variant: 'body-sm' }).run()
+      break
+    case 'caption':
+      chain.setParagraph().updateAttributes('paragraph', { variant: 'caption' }).run()
+      break
+    default:
+      chain.setParagraph().updateAttributes('paragraph', { variant: null }).run()
   }
 }
 
@@ -264,6 +418,7 @@ onBeforeUnmount(() => editor.value?.destroy())
   }
 }
 
+.style-select,
 .font-size-select {
   height: 28px;
   padding: 0 var(--space-4);
@@ -306,42 +461,93 @@ onBeforeUnmount(() => editor.value?.destroy())
   }
 }
 
+.color-picker-wrap {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover .color-picker-icon {
+    transform: scale(1.2);
+  }
+}
+
+.color-picker-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+}
+
+.color-picker-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  line-height: 1;
+  pointer-events: none;
+  transition: transform 0.1s;
+  user-select: none;
+}
+
 .content {
   padding: var(--space-12);
   min-height: 140px;
-  font-size: var(--font-size-md);
   line-height: var(--line-height-loose);
   color: var(--color-text);
 
   :deep(.ProseMirror) {
     outline: none;
     min-height: 120px;
-    zoom: 0.55;
 
-    h1 {
-      font-size: var(--font-size-xl);
-      font-weight: var(--font-weight-bold);
-      margin: var(--space-12) 0 var(--space-4);
+    p {
+      margin: 0 0 var(--space-8);
+      font-size: 18px;
+      line-height: 1.7;
+
+      &:last-child { margin-bottom: 0; }
+    }
+
+    p.rt-body-sm {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    p.rt-caption {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--color-text-muted);
     }
 
     h2 {
-      font-size: var(--font-size-lg);
-      font-weight: var(--font-weight-semibold);
-      margin: var(--space-12) 0 var(--space-4);
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.25;
+      font-family: var(--heading-font-family, var(--font-family, inherit));
+      margin: 0 0 var(--space-8);
     }
 
     h3 {
-      font-size: var(--font-size-md);
-      font-weight: var(--font-weight-semibold);
-      margin: var(--space-8) 0 var(--space-4);
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.3;
+      font-family: var(--heading-font-family, var(--font-family, inherit));
+      margin: 0 0 var(--space-8);
     }
 
-    p {
-      margin: 0 0 var(--space-4);
-
-      &:last-child {
-        margin-bottom: 0;
-      }
+    h4 {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+      font-family: var(--heading-font-family, var(--font-family, inherit));
+      margin: 0 0 var(--space-8);
     }
 
     ul {
@@ -371,3 +577,4 @@ onBeforeUnmount(() => editor.value?.destroy())
   }
 }
 </style>
+

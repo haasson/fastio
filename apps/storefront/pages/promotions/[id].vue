@@ -12,8 +12,7 @@
           </div>
         </div>
 
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div v-if="promo.content" class="rich-content" v-html="promo.content" />
+        <FsRichContent v-if="promo.content" :html="promo.content" />
       </StorePageLayout>
     </FsSection>
   </PageShell>
@@ -22,7 +21,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAsyncData, useRequestFetch, useRoute, createError } from 'nuxt/app'
-import { FsSection, FsText } from '@fastio/public-ui'
+import { FsSection, FsText, FsRichContent } from '@fastio/public-ui'
 import PageShell from '~/components/sections/PageShell.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 
@@ -60,8 +59,6 @@ const copyCode = async () => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/styles/mixins' as *;
-
 .code-block {
   display: flex;
   flex-direction: column;
@@ -107,27 +104,6 @@ const copyCode = async () => {
   &.copied {
     background: var(--primary);
     color: #fff;
-  }
-}
-
-.rich-content {
-  :deep(h1), :deep(h2), :deep(h3) {
-    margin: 0.75em 0 0.25em;
-    line-height: 1.3;
-  }
-
-  :deep(p) {
-    margin: 0.5em 0;
-    line-height: 1.6;
-  }
-
-  :deep(ul), :deep(ol) {
-    padding-left: 1.5em;
-    margin: 0.5em 0;
-  }
-
-  :deep(li) {
-    margin: 0.25em 0;
   }
 }
 </style>

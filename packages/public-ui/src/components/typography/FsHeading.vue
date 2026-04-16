@@ -2,17 +2,22 @@
   <component
     :is="as"
     class="heading-root"
-    :class="[`align-${align}`, `color-${color}`]"
+    :class="[`size-${effectiveSize}`, `align-${align}`, `color-${color}`]"
     :style="weight ? { fontWeight: weight } : undefined"
   >
     <slot />
   </component>
 </template>
 <script setup lang="ts">
+import { computed } from 'vue'
+
+type HeadingSize = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+
 type Props = {
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+  as?: HeadingSize
+  size?: HeadingSize
   align?: 'left' | 'center' | 'right'
-  color?: 'default' | 'primary' | 'muted'
+  color?: 'default' | 'primary' | 'muted' | 'inherit'
   weight?: 400 | 500 | 600 | 700 | 800
 }
 
@@ -21,6 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
   align: 'left',
   color: 'default',
 })
+
+const effectiveSize = computed((): HeadingSize => props.size ?? props.as ?? 'h2')
 </script>
 <style scoped lang="scss">
 @use '../../styles/mixins' as *;
@@ -36,12 +43,13 @@ const props = withDefaults(defineProps<Props>(), {
 .align-right  { text-align: right; }
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
-.color-default { color: var(--color-text); }
-.color-primary { color: var(--primary); }
-.color-muted   { color: var(--color-text-muted); }
+.color-default  { color: var(--color-text); }
+.color-primary  { color: var(--primary); }
+.color-muted    { color: var(--color-text-muted); }
+.color-inherit  { color: inherit; }
 
-// ─── Sizes по тегу ───────────────────────────────────────────────────────────
-h1.heading-root {
+// ─── Sizes по классу ─────────────────────────────────────────────────────────
+.size-h1 {
   font-size: 32px;
   line-height: 1.2;
   font-weight: 700;
@@ -49,7 +57,7 @@ h1.heading-root {
   @include lg { font-size: 48px; line-height: 1.15; }
 }
 
-h2.heading-root {
+.size-h2 {
   font-size: 26px;
   line-height: 1.25;
   font-weight: 700;
@@ -57,7 +65,7 @@ h2.heading-root {
   @include lg { font-size: 36px; line-height: 1.2; }
 }
 
-h3.heading-root {
+.size-h3 {
   font-size: 22px;
   line-height: 1.3;
   font-weight: 600;
@@ -65,7 +73,7 @@ h3.heading-root {
   @include lg { font-size: 28px; line-height: 1.25; }
 }
 
-h4.heading-root {
+.size-h4 {
   font-size: 18px;
   line-height: 1.35;
   font-weight: 600;
@@ -73,8 +81,8 @@ h4.heading-root {
   @include lg { font-size: 22px; line-height: 1.3; }
 }
 
-h5.heading-root,
-h6.heading-root {
+.size-h5,
+.size-h6 {
   font-size: 16px;
   line-height: 1.4;
   font-weight: 600;

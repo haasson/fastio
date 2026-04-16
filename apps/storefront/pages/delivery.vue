@@ -4,11 +4,7 @@
       <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" current="Доставка">
         <!-- manual: rich text от тенанта -->
         <template v-if="descriptionMode === 'manual'">
-          <div
-            v-if="manualText"
-            class="manual-text"
-            v-html="sanitizedManualText"
-          />
+          <FsRichContent v-if="manualText" :html="manualText" />
           <SfEmptyState
             v-else
             title="Информация о доставке"
@@ -50,12 +46,11 @@ import { Truck } from 'lucide-vue-next'
 import { useNuxtData, useAsyncData, useRequestFetch, useRoute } from 'nuxt/app'
 import type { DeliveryZone, Tenant } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, deepMerge, isPresetDark } from '@fastio/shared'
-import { FsSection, FsText } from '@fastio/public-ui'
+import { FsSection, FsText, FsRichContent } from '@fastio/public-ui'
 import PageShell from '~/components/sections/PageShell.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import { useCurrency } from '~/composables/useCurrency'
-import { useSafeHtml } from '~/composables/useSafeHtml'
 import { buildDeliveryText, formatZoneConditions } from '~/utils/deliveryText'
 
 const DeliveryMapView = defineAsyncComponent(() => import('~/components/delivery/DeliveryMapView.vue'))
@@ -86,8 +81,6 @@ const showMap = computed(() => layout.value.pageSettings.delivery?.showMap ?? fa
 const isDark = computed(() => isPresetDark(tenant.value?.theme?.preset ?? ''))
 const manualText = computed(() => content.value.delivery?.manualText ?? '')
 
-const sanitizedManualText = useSafeHtml(manualText)
-
 const autoText = computed(() =>
   buildDeliveryText(zones.value ?? [], tenant.value!, currency.value),
 )
@@ -108,17 +101,6 @@ const mapDescription = computed(() => {
 </script>
 
 <style scoped lang="scss">
-.manual-text {
-  line-height: 1.7;
-  color: var(--color-text);
-
-  :deep(p) { margin: 0 0 12px; }
-  :deep(p:last-child) { margin-bottom: 0; }
-  :deep(ul), :deep(ol) { padding-left: 20px; margin: 0 0 12px; }
-  :deep(h2), :deep(h3) { margin: 0 0 8px; }
-  :deep(a) { color: var(--color-primary); }
-}
-
 .auto-text {
   white-space: pre-line;
 }

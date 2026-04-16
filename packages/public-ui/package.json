@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "node-html-parser": "^6.1.13",
     "@fastio/icons": "workspace:*",
     "@fastio/kit": "workspace:*",
     "@fastio/styles": "workspace:*",

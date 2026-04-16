@@ -1,5 +1,6 @@
 <template>
   <div class="tab-root">
+    <AppStorefrontAlert feature-key="banners" />
     <div class="toolbar">
       <UiButton
         type="primary"
@@ -78,6 +79,7 @@ import { usePromoCodes } from '~/composables/data/usePromoCodes'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
+import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 import BannerFormModal from '~/components/promotions/BannerFormModal.vue'
 
 const tenantStore = useTenantStore()

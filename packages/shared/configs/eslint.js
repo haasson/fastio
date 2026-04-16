@@ -24,6 +24,7 @@ const vueGlobals = {
   CustomEvent: 'readonly',
   HTMLElement: 'readonly',
   HTMLInputElement: 'readonly',
+  HTMLSelectElement: 'readonly',
   Element: 'readonly',
   NodeList: 'readonly',
   DOMRect: 'readonly',

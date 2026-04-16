@@ -1,6 +1,7 @@
 <template>
   <div class="zones-root">
     <template v-if="deliveryEnabled">
+      <AppStorefrontAlert feature-key="delivery" />
       <div class="mode-switch">
         <UiSegmentedControl
           :model-value="deliveryMode"
@@ -107,6 +108,7 @@ import { useBranchStore } from '~/stores/branch'
 import { useDeliveryZoneStore } from '~/stores/deliveryZone'
 import { useZoneEditor, type ZoneForm } from '~/composables/delivery/useZoneEditor'
 import { useModules } from '~/composables/plan/useModules'
+import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 import DeliveryZoneMap from '~/components/settings/DeliveryZoneMap.vue'
 import DeliveryZonePanel from '~/components/settings/DeliveryZonePanel.vue'
 import SettingsDelivery from '~/components/settings/SettingsDelivery.vue'

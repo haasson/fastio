@@ -16,16 +16,6 @@
           <label class="label">Выравнивание текста</label>
           <UiSegmentedControl v-model="form.contentAlign" :items="alignOptions" />
         </div>
-
-        <div class="field">
-          <label class="label">Текст</label>
-          <RichTextEditor
-            :model-value="heroContent.text ?? ''"
-            :colors="paletteColors"
-            :heading-levels="[1]"
-            @update:model-value="heroContent.text = $event"
-          />
-        </div>
       </div>
 
       <div class="col">
@@ -62,6 +52,15 @@
         </div>
       </div>
     </div>
+
+    <div class="field">
+      <label class="label">Текст</label>
+      <RichTextEditor
+        :model-value="heroContent.text ?? ''"
+        hero
+        @update:model-value="heroContent.text = $event"
+      />
+    </div>
   </div>
 </template>
 
@@ -88,22 +87,6 @@ const { heroContent, onPendingHeroBg } = toRefs(props)
 
 const appearanceForm = inject(AppearanceFormKey)
 const palette = computed(() => appearanceForm?.themeForm.palette ?? null)
-
-const paletteColors = computed(() => {
-  const p = palette.value
-
-  if (!p) return ['#ffffff', '#000000']
-
-  return [
-    '#ffffff',
-    '#000000',
-    p.primary,
-    p.text,
-    p.textSecondary,
-    p.bg,
-    p.surface,
-  ].filter(Boolean) as string[]
-})
 
 const sizeOptions = [
   { value: 'fullscreen', label: 'На весь экран' },

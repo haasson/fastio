@@ -3,6 +3,7 @@
 // Typography
 export { default as FsHeading } from './components/typography/FsHeading.vue'
 export { default as FsText } from './components/typography/FsText.vue'
+export { default as FsRichContent } from './components/typography/FsRichContent.vue'
 
 // Base
 export { default as FsButton } from './components/base/FsButton.vue'

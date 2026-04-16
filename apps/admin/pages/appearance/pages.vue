@@ -152,6 +152,7 @@ const removePage = async (key: string) => {
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/layout' as *;
+@use '@fastio/styles/mixins/accordion' as *;
 
 .pages-root {
   @include flex-col;
@@ -162,11 +163,7 @@ const removePage = async (key: string) => {
 }
 
 .page-list {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-8);
-  overflow: hidden;
+  @include accordion-list;
 }
 
 .page-group {
@@ -175,16 +172,7 @@ const removePage = async (key: string) => {
 }
 
 .page-item {
-  @include flex-row;
-  padding: var(--space-8) var(--space-12);
-  background: var(--color-bg);
-  border-top: 1px solid var(--color-border);
-  cursor: pointer;
-  user-select: none;
-
-  &--expanded {
-    background: var(--color-surface);
-  }
+  @include accordion-item;
 }
 
 .page-list > .page-group:first-child > .page-item,
@@ -193,56 +181,23 @@ const removePage = async (key: string) => {
 }
 
 .drag-handle {
-  color: var(--color-text-secondary);
-  cursor: grab;
-  flex-shrink: 0;
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  line-height: 1;
-  display: flex;
-  align-items: center;
-
-  &:active {
-    cursor: grabbing;
-  }
+  @include accordion-drag-handle;
 }
 
 .item-label {
-  flex: 1;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text);
+  @include accordion-item-label;
 }
 
 .action-btn {
-  @include flex-center;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  flex-shrink: 0;
-  padding: var(--space-4);
-  border-radius: var(--radius-4);
-  transition: color 0.15s;
-
-  &:hover {
-    color: var(--color-text);
-  }
+  @include accordion-action-btn;
 }
 
 .arrow {
-  color: var(--color-text-secondary);
-  transition: transform 0.2s;
-  transform: rotate(-90deg);
-  flex-shrink: 0;
-
-  &.open {
-    transform: rotate(0deg);
-  }
+  @include accordion-arrow;
 }
 
 .item-options {
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  padding: var(--space-12) var(--space-12) var(--space-12) 36px;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
+  @include accordion-options;
 }
 
 .empty-hint {

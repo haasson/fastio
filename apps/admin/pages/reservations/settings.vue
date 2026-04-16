@@ -1,5 +1,6 @@
 <template>
   <div class="settings-root">
+    <AppStorefrontAlert feature-key="booking" />
     <UiAlert v-if="!hasSchedule" type="warning">
       Расписание работы не настроено — перейди в
       <a href="/settings/contacts">Настройки → Контакты</a>
@@ -63,6 +64,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { UiAlert, UiButton, UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiSwitch, useMessage } from '@fastio/ui'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
+import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 
 const SLOT_STEP_OPTIONS = [
   { label: '15 мин', value: 15 },
