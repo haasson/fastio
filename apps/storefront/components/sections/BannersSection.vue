@@ -50,10 +50,15 @@ const props = defineProps<{
 
 const visibleBanners = computed(() => props.banners.filter(b => b.enabled))
 
+const normalizeUrl = (url: string): string => {
+  if (/^https?:\/\//i.test(url)) return url
+  return `https://${url}`
+}
+
 const bannerHref = (banner: Banner): string | null => {
   if (banner.promotionId || banner.promoCodeId) return `/promotions/${banner.id}`
   if (banner.page) return `/${banner.page}`
-  if (banner.link) return banner.link
+  if (banner.link) return normalizeUrl(banner.link)
   return null
 }
 
