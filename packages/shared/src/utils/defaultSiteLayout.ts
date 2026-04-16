@@ -20,7 +20,7 @@ export const defaultSiteLayout = (): SiteLayout => ({
   sections: {
     categoryBar: { enabled: true, overflow: 'scroll' },
     hero: {
-      enabled: true,
+      enabled: false,
       size: 'fullscreen',
       bgType: 'none',
       overlayColor: '#000000',
