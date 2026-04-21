@@ -36,11 +36,22 @@ import { ref, computed } from 'vue'
 import { UiButton, UiText } from '@fastio/ui'
 import { UiIcon } from '@fastio/icons'
 import useTour from '~/composables/useTour'
+import { useModules } from '~/composables/plan/useModules'
 import { TOURS, TOUR_CATEGORIES } from '~/tours/index'
 import type { Tour } from '~/tours/index'
 
+const modules = useModules()
+
 const categoriesWithTours = computed(() => TOUR_CATEGORIES
-  .map((cat) => ({ ...cat, tours: TOURS.filter((t) => t.category === cat.id) }))
+  .map((cat) => ({
+    ...cat,
+    tours: TOURS.filter((t) => {
+      if (t.category !== cat.id) return false
+      if (t.moduleRequired) return modules[t.moduleRequired]?.value.enabled ?? false
+
+      return true
+    }),
+  }))
   .filter((cat) => cat.tours.length > 0),
 )
 

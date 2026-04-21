@@ -1,4 +1,5 @@
 import type { TourStep } from '~/composables/useTour'
+import type { ModuleKey } from '~/config/modules'
 import { getOnboardingSteps } from '~/tours/onboardingTour'
 import { getCategoryTourSteps } from '~/tours/categoryTour'
 import { getDishTourSteps } from '~/tours/dishTour'
@@ -27,6 +28,7 @@ export type Tour = {
   title: string
   description: string
   category: string
+  moduleRequired?: ModuleKey
   getSteps: () => TourStep[]
 }
 
@@ -55,6 +57,7 @@ export const TOURS: Tour[] = [
   {
     id: 'modifiers',
     category: 'menu',
+    moduleRequired: 'modifiers',
     title: 'Как работают модификаторы',
     description: 'Размер, бортик, прожарка — как создавать группы вариантов для блюд.',
     getSteps: getModifierTourSteps,
@@ -62,6 +65,7 @@ export const TOURS: Tour[] = [
   {
     id: 'addons',
     category: 'menu',
+    moduleRequired: 'addons',
     title: 'Как работают добавки',
     description: 'Соусы, топпинги, дополнительные ингредиенты — и пресеты для быстрого назначения.',
     getSteps: getAddonTourSteps,
@@ -97,6 +101,7 @@ export const TOURS: Tour[] = [
   {
     id: 'delivery',
     category: 'orders',
+    moduleRequired: 'delivery',
     title: 'Зоны доставки',
     description: 'Фиксированная стоимость или зоны на карте с индивидуальными условиями.',
     getSteps: getDeliveryTourSteps,
