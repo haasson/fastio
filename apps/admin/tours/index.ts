@@ -4,6 +4,7 @@ import { getCategoryTourSteps } from '~/tours/categoryTour'
 import { getDishTourSteps } from '~/tours/dishTour'
 import { getModifierTourSteps } from '~/tours/modifierTour'
 import { getAddonTourSteps } from '~/tours/addonTour'
+import { getTagsTourSteps } from '~/tours/tagsTour'
 import { getOrdersTourSteps } from '~/tours/ordersTour'
 import { getStatusesTourSteps } from '~/tours/statusesTour'
 import { getOrderNumberTourSteps } from '~/tours/orderNumberTour'
@@ -64,6 +65,13 @@ export const TOURS: Tour[] = [
     title: 'Как работают добавки',
     description: 'Соусы, топпинги, дополнительные ингредиенты — и пресеты для быстрого назначения.',
     getSteps: getAddonTourSteps,
+  },
+  {
+    id: 'tags',
+    category: 'menu',
+    title: 'Как работают теги',
+    description: 'Острое, вегетарианское, новинка — как создавать и назначать метки на блюда.',
+    getSteps: getTagsTourSteps,
   },
   {
     id: 'orders',

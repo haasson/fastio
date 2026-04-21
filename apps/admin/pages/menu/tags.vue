@@ -1,18 +1,25 @@
 <template>
   <div class="tags-root">
     <div class="toolbar">
-      <UiButton type="primary" icon="plus" @click="openModal(null)">
+      <UiButton
+        type="primary"
+        icon="plus"
+        data-tour="add-tag"
+        @click="openModal(null)"
+      >
         Добавить тег
       </UiButton>
     </div>
 
-    <MenuTagList
-      :tags="tags"
-      :loading="showSkeleton"
-      @edit="openModal"
-      @delete="confirmDelete"
-      @reorder="reorder"
-    />
+    <div data-tour="tags-list">
+      <MenuTagList
+        :tags="tags"
+        :loading="showSkeleton"
+        @edit="openModal"
+        @delete="confirmDelete"
+        @reorder="reorder"
+      />
+    </div>
 
     <MenuTagFormModal
       v-model="modalOpen"

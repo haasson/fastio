@@ -27,7 +27,7 @@ const tabs = computed(() => [
   ...(canManageMenu.value ? [{ value: 'categories', label: 'Категории', attrs: { 'data-tour': 'menu-tab-categories' } }] : []),
   ...(!isServices.value && canManageMenu.value && modules.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы', attrs: { 'data-tour': 'menu-tab-modifiers' } }] : []),
   ...(!isServices.value && canManageMenu.value && modules.addons.value.enabled ? [{ value: 'addons', label: 'Добавки', attrs: { 'data-tour': 'menu-tab-addons' } }] : []),
-  ...(canManageMenu.value ? [{ value: 'tags', label: 'Теги' }] : []),
+  ...(canManageMenu.value ? [{ value: 'tags', label: 'Теги', attrs: { 'data-tour': 'menu-tab-tags' } }] : []),
 ])
 
 const route = useRoute()

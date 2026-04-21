@@ -8,15 +8,17 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
-      <UiInput
-        v-model="form.name"
-        name="name"
-        label="Название"
-        placeholder="Острое"
-        :rules="[{ required: true, message: 'Введите название' }]"
-      />
+      <div data-tour="tag-name">
+        <UiInput
+          v-model="form.name"
+          name="name"
+          label="Название"
+          placeholder="Острое"
+          :rules="[{ required: true, message: 'Введите название' }]"
+        />
+      </div>
 
-      <div class="field">
+      <div class="field" data-tour="tag-icon">
         <UiText size="small" weight="medium" class="label">Иконка</UiText>
         <div class="icon-grid">
           <button
@@ -32,7 +34,7 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" data-tour="tag-color">
         <UiText size="small" weight="medium" class="label">Цвет</UiText>
         <div class="color-grid">
           <button
@@ -49,7 +51,7 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" data-tour="tag-preview">
         <UiText size="small" weight="medium" class="label">Превью</UiText>
         <div class="tag-preview" :style="previewStyle">
           <component :is="getIcon(form.icon)" :size="14" />
@@ -103,7 +105,7 @@ watch(
 
 const actions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, buttonProps: { 'data-tour': 'tag-save' } },
 ])
 
 const previewStyle = computed(() => {
