@@ -16,7 +16,10 @@
           </div>
           <div class="card-body">
             <span class="card-title">{{ item.title }}</span>
-            <span class="card-desc">{{ item.desc }}</span>
+            <span class="card-desc" v-html="item.desc" />
+            <a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer" class="card-link">
+              {{ item.linkLabel }}
+            </a>
           </div>
         </div>
       </div>
@@ -33,7 +36,7 @@
 
 <script setup lang="ts">
 import { FsButton } from '@fastio/public-ui'
-import { Lightbulb, MapIcon, Headphones, PlayCircle, Bot, Wand2 } from 'lucide-vue-next'
+import { Lightbulb, MapIcon, Headphones, PlayCircle, Bot, BookOpen } from 'lucide-vue-next'
 import SectionHeader from './SectionHeader.vue'
 import type { Component } from 'vue'
 
@@ -42,6 +45,8 @@ type Item = {
   title: string
   desc: string
   featured?: boolean
+  link?: string
+  linkLabel?: string
 }
 
 const items: Item[] = [
@@ -71,9 +76,11 @@ const items: Item[] = [
     desc: 'Спросите что угодно — как работает доставка, почему не принимаются заказы, как настроить промокод.',
   },
   {
-    icon: Wand2,
-    title: 'Ваши идеи → новый функционал за дни',
-    desc: 'Написали об идее в поддержку — через пару дней уже пользуетесь. Мы прислушиваемся к каждому клиенту и выпускаем обновления быстро. Без доплат.',
+    icon: BookOpen,
+    title: 'База знаний с подробными инструкциями',
+    desc: 'Все возможности платформы описаны пошагово с&nbsp;примерами. Найдёте ответ на любой вопрос за&nbsp;минуту — без звонков в поддержку.',
+    link: 'https://help.fastio.ru/',
+    linkLabel: 'Открыть базу знаний →',
     featured: true,
   },
 ]
@@ -218,5 +225,16 @@ const items: Item[] = [
   margin: 0;
 }
 
+.card-link {
+  display: inline-block;
+  margin-top: 4px;
+  @include text-caption(600);
+  color: var(--ln-accent);
+  text-decoration: none;
+  transition: opacity 0.15s;
 
+  &:hover {
+    opacity: 0.8;
+  }
+}
 </style>

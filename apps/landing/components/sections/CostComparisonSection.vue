@@ -33,7 +33,7 @@
         <div class="card card-fastio">
           <div class="card-header">
             <span class="card-tag good">Fastio</span>
-            <span class="card-subtitle">Готово к работе за 1 день</span>
+            <span class="card-subtitle">Готово к работе за&nbsp;1&nbsp;день</span>
           </div>
           <ul class="items">
             <li v-for="item in fastioItems" :key="item.label" class="item">

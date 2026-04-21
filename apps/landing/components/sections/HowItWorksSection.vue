@@ -2,7 +2,7 @@
   <section id="how-it-works" class="how-root">
     <div class="container">
       <SectionHeader label="Как подключиться">
-        <template #heading>Сайт с онлайн-заказами за 1 день</template>
+        <template #heading>Сайт с онлайн-заказами за&nbsp;1&nbsp;день</template>
         <template #subtitle>Никакой самостоятельной настройки с нуля — менеджер помогает и отвечает на вопросы.</template>
       </SectionHeader>
 

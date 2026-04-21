@@ -12,6 +12,17 @@
         >
           {{ link.label }}
         </a>
+        <span class="nav-divider" />
+        <a
+          v-for="link in externalLinks"
+          :key="link.href"
+          :href="link.href"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="nav-link nav-link-external"
+        >
+          {{ link.label }}
+        </a>
       </nav>
 
       <FsButton as="a" href="#contact" variant="primary" class="cta-desktop cta-accent">
@@ -28,6 +39,17 @@
         v-for="link in navLinks"
         :key="link.href"
         :href="link.href"
+        class="mobile-nav-link"
+        @click="menuOpen = false"
+      >
+        {{ link.label }}
+      </a>
+      <a
+        v-for="link in externalLinks"
+        :key="link.href"
+        :href="link.href"
+        target="_blank"
+        rel="noopener noreferrer"
         class="mobile-nav-link"
         @click="menuOpen = false"
       >
@@ -56,6 +78,10 @@ const navLinks: NavLink[] = [
   { label: 'Как это работает', href: '#how-it-works' },
   { label: 'Тарифы', href: '#pricing' },
   { label: 'FAQ', href: '#faq' },
+]
+
+const externalLinks: NavLink[] = [
+  { label: 'База знаний', href: 'https://help.fastio.ru/' },
 ]
 
 const scrolled = ref(false)
@@ -140,6 +166,22 @@ onUnmounted(() => {
 
   &:hover {
     color: var(--ln-white);
+  }
+}
+
+.nav-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--ln-border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.nav-link-external {
+  color: rgba(245, 243, 238, 0.5);
+
+  &:hover {
+    color: rgba(245, 243, 238, 0.85);
   }
 }
 

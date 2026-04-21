@@ -1,21 +1,20 @@
 <template>
   <section id="hero" class="hero-root">
     <div class="container">
-      <span class="label">Платформа для бизнеса</span>
-
       <h1 class="title">
-        Сайт с онлайн-заказами и платформа управления бизнесом — <em>в одном сервисе</em>
+        Запустите сайт с онлайн-заказами <em>за&nbsp;1&nbsp;день</em>
       </h1>
 
       <div class="hero-body">
         <div class="hero-text">
           <p class="subtitle">
-            Запускаете за 1 день: принимайте заказы, управляйте меню и акциями, следите за аналитикой.
-            Для кафе, ресторанов, салонов — от 2&nbsp;490&nbsp;₽/мес.
+            Полноценный сайт с онлайн-заказами, доставкой, меню и&nbsp;акциями — подключаем через менеджера за&nbsp;1&nbsp;день.
+            Управляйте всем из одной панели: заказы, аналитика, команда.
+            Для кафе, ресторанов, фастфуда — от&nbsp;2&nbsp;490&nbsp;₽/мес.
           </p>
 
           <div class="price-hint">
-            <span class="price-hint-old">от 200 000 ₽ у агентства</span>
+            <span class="price-hint-old">от&nbsp;200&nbsp;000&nbsp;₽ у&nbsp;агентства</span>
             <span class="price-hint-arrow">→</span>
             <span class="price-hint-new">2 490 ₽/мес в Fastio</span>
           </div>
@@ -30,7 +29,7 @@
           </div>
 
           <p class="trust">
-            Подключаем за 1 день через менеджера — быстро и без лишних вопросов
+            Подключаем за&nbsp;1&nbsp;день через менеджера — быстро и&nbsp;без лишних вопросов
           </p>
         </div>
 
