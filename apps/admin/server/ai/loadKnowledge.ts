@@ -5,7 +5,7 @@ let cachedAiFiles: Map<string, string> | null = null
 let cachedKbFiles: Map<string, string> | null = null
 
 async function loadStorageFiles(storageName: string): Promise<Map<string, string>> {
-  const storage = useStorage(`assets:${storageName}`)
+  const storage = useStorage(storageName)
   const keys = (await storage.getKeys()).filter((k: string) => k.endsWith('.md')).sort()
   const result = new Map<string, string>()
 

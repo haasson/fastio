@@ -17,7 +17,7 @@
         </div>
 
         <div class="disclaimer">
-          AI может ошибаться. Если не помог — напишите в <a href="/help/support" @click.prevent="goToSupport">поддержку</a>
+          AI может ошибаться. Загляните в <a :href="helpUrl" target="_blank" rel="noopener">базу знаний</a> или напишите в <a href="/help/support" @click.prevent="goToSupport">поддержку</a>
         </div>
 
         <div ref="messagesRef" class="messages">
@@ -85,7 +85,7 @@ import { ref, watch, nextTick } from 'vue'
 import { Marked } from 'marked'
 import DOMPurify from 'dompurify'
 import type { UIMessage } from 'ai'
-import { useRouter } from '#imports'
+import { useRouter, useRuntimeConfig } from '#imports'
 import { UiIcon, UiText } from '@fastio/ui'
 import { useAiChat } from '~/composables/useAiChat'
 import useTour from '~/composables/useTour'
@@ -98,6 +98,7 @@ watch(isTourActive, (active) => {
 })
 const messagesRef = ref<HTMLElement>()
 const router = useRouter()
+const helpUrl = useRuntimeConfig().public.helpUrl
 
 const { messages, input, handleSubmit, isLoading, error, reload, clearMessages } = useAiChat()
 
@@ -443,6 +444,23 @@ watch(
   :deep(ul), :deep(ol) {
     margin: var(--space-4) 0;
     padding-left: var(--space-20);
+  }
+
+  :deep(ul) {
+    list-style: disc;
+  }
+
+  :deep(ol) {
+    list-style: decimal;
+  }
+
+  :deep(li) {
+    margin-bottom: var(--space-4);
+
+    ul {
+      list-style: circle;
+      margin: var(--space-4) 0;
+    }
   }
 
   :deep(strong) {

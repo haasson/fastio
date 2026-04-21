@@ -1,7 +1,25 @@
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
+
+const rootDir = dirname(fileURLToPath(import.meta.url))
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
   devServer: { port: 4710 },
+
+  nitro: {
+    storage: {
+      'ai-knowledge': {
+        driver: 'fs',
+        base: resolve(rootDir, 'server/ai/knowledge'),
+      },
+      'kb': {
+        driver: 'fs',
+        base: resolve(rootDir, '../../packages/kb/content'),
+      },
+    },
+  },
 
   routeRules: {
     '/kitchen': { redirect: '/kitchen/queue' },
@@ -43,13 +61,6 @@ export default defineNuxtConfig({
   modules: ['@pinia/nuxt', '@vueuse/nuxt', '@sentry/nuxt/module'],
 
   css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
-
-  nitro: {
-    serverAssets: [
-      { baseName: 'ai-knowledge', dir: './server/ai/knowledge' },
-      { baseName: 'kb', dir: '../../packages/kb/content' },
-    ],
-  },
 
   runtimeConfig: {
     openaiApiKey: '',
