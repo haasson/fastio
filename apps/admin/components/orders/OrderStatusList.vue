@@ -6,6 +6,7 @@
       :tabs="statusTabs"
       @update:model-value="$emit('update:modelValue', String($event))"
     />
+    <span v-if="statusTabs.length" data-tour="order-statuses-ready" />
   </div>
 </template>
 

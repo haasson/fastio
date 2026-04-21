@@ -19,7 +19,7 @@ export const getDishTourSteps = (): TourStep[] => [
   highlight({
     target: '.categories-root',
     title: 'Категории',
-    description: 'Блюда всегда привязаны к категории. Выберите нужную — список блюд откроется справа.',
+    description: 'Блюда всегда привязаны к категории. Если выбрать нужную — список её блюд откроется справа.',
     side: 'bottom',
   }),
   clickAndWait({
@@ -31,7 +31,7 @@ export const getDishTourSteps = (): TourStep[] => [
   formField({
     target: 'dish-photo',
     title: 'Фото',
-    description: 'Загрузите фото блюда. Конверсия в заказ заметно выше когда есть хорошее фото.',
+    description: 'Здесь загружается фото блюда. Конверсия в заказ заметно выше когда есть хорошее фото.',
   }),
   highlight({
     target: 'dish-main-fields',
@@ -48,6 +48,6 @@ export const getDishTourSteps = (): TourStep[] => [
   saveButton({
     target: 'dish-save',
     title: 'Сохранить',
-    description: 'Нажмите «Сохранить» — блюдо сразу появится в меню на сайте.',
+    description: 'Кнопка сохраняет блюдо — оно сразу появится в меню на сайте.',
   }),
 ]

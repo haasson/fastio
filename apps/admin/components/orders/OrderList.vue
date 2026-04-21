@@ -6,6 +6,7 @@
           v-model="orderView"
           :items="[{ label: 'Карточки', value: 'cards' }, { label: 'Таблица', value: 'list' }]"
           size="medium"
+          data-tour="order-view"
         />
       </template>
       <template #right>
@@ -13,6 +14,7 @@
           type="primary"
           size="medium"
           icon="plus"
+          data-tour="add-order"
           @click="openCreateModal()"
         >Новый заказ</UiButton>
       </template>

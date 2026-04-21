@@ -87,7 +87,12 @@
       </span>
     </div>
 
-    <div v-if="quickActionStatuses.length" class="actions" @click.stop>
+    <div
+      v-if="quickActionStatuses.length"
+      class="actions"
+      data-tour="order-quick-actions"
+      @click.stop
+    >
       <UiButton
         v-for="target in quickActionStatuses"
         :key="target.id"

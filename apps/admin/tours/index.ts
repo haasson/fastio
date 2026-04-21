@@ -4,6 +4,7 @@ import { getCategoryTourSteps } from '~/tours/categoryTour'
 import { getDishTourSteps } from '~/tours/dishTour'
 import { getModifierTourSteps } from '~/tours/modifierTour'
 import { getAddonTourSteps } from '~/tours/addonTour'
+import { getOrdersTourSteps } from '~/tours/ordersTour'
 
 export type TourCategory = {
   id: string
@@ -13,6 +14,7 @@ export type TourCategory = {
 export const TOUR_CATEGORIES: TourCategory[] = [
   { id: 'basics', title: 'Начало работы' },
   { id: 'menu', title: 'Меню' },
+  { id: 'orders', title: 'Заказы' },
 ]
 
 export type Tour = {
@@ -58,5 +60,12 @@ export const TOURS: Tour[] = [
     title: 'Как работают добавки',
     description: 'Соусы, топпинги, дополнительные ингредиенты — и пресеты для быстрого назначения.',
     getSteps: getAddonTourSteps,
+  },
+  {
+    id: 'orders',
+    category: 'orders',
+    title: 'Как работать с заказами',
+    description: 'Статусы, карточки заказов, быстрая смена статуса и создание заказа вручную.',
+    getSteps: getOrdersTourSteps,
   },
 ]

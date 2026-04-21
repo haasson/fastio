@@ -43,6 +43,6 @@ export const getCategoryTourSteps = (): TourStep[] => [
   saveButton({
     target: 'category-save',
     title: 'Сохранить',
-    description: 'Нажмите «Сохранить» — категория появится в списке и на сайте.',
+    description: 'Кнопка сохраняет категорию — она сразу появится в списке и на сайте.',
   }),
 ]
