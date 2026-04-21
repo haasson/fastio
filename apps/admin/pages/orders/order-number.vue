@@ -2,50 +2,57 @@
   <UiForm class="form" @submit="handleSave">
     <UiSectionHeader title="Нумерация заказов" />
 
-    <UiRadioGroup
-      v-model="form.format"
-      label="Формат номера"
-      :options="formatOptions"
-      vertical
-      :space="6"
-    />
-
-    <UiRadioGroup
-      v-model="form.scope"
-      label="Нумерация"
-      :options="scopeOptions"
-      vertical
-      :space="6"
-    />
-
-    <template v-if="showPrefix">
-      <UiAlert v-if="form.scope === 'per_branch'" type="info">
-        Префиксы задаются в настройках каждого филиала
-      </UiAlert>
-      <UiInput
-        v-else
-        v-model="form.prefix"
-        label="Префикс"
-        placeholder="ORD"
+    <div data-tour="order-format">
+      <UiRadioGroup
+        v-model="form.format"
+        label="Формат номера"
+        :options="formatOptions"
+        vertical
+        :space="6"
       />
-    </template>
+    </div>
 
-    <UiRadioGroup
-      v-if="showDateFormat"
-      v-model="form.dateFormat"
-      label="Формат даты"
-      :options="dateFormatOptions"
-      :space="6"
-    />
+    <div data-tour="order-scope">
+      <UiRadioGroup
+        v-model="form.scope"
+        label="Нумерация"
+        :options="scopeOptions"
+        vertical
+        :space="6"
+      />
 
-    <UiRadioGroup
-      v-model="form.resetPeriod"
-      label="Сброс счётчика"
-      :options="resetPeriodOptions"
-      :space="6"
-    />
+      <template v-if="showPrefix">
+        <UiAlert v-if="form.scope === 'per_branch'" type="info">
+          Префиксы задаются в настройках каждого филиала
+        </UiAlert>
+        <UiInput
+          v-else
+          v-model="form.prefix"
+          label="Префикс"
+          placeholder="ORD"
+        />
+      </template>
+    </div>
 
-    <div class="row">
+    <div v-if="showDateFormat" data-tour="order-date-format">
+      <UiRadioGroup
+        v-model="form.dateFormat"
+        label="Формат даты"
+        :options="dateFormatOptions"
+        :space="6"
+      />
+    </div>
+
+    <div data-tour="order-reset">
+      <UiRadioGroup
+        v-model="form.resetPeriod"
+        label="Сброс счётчика"
+        :options="resetPeriodOptions"
+        :space="6"
+      />
+    </div>
+
+    <div data-tour="order-pad" class="row">
       <UiInputNumber
         v-model="form.padLength"
         label="Нули слева"
@@ -183,6 +190,10 @@ const handleSave = async () => {
 .form {
   @include flex-col(var(--space-20));
   max-width: 680px;
+}
+
+[data-tour="order-scope"] {
+  @include flex-col(var(--space-12));
 }
 
 .row {

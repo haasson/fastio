@@ -3,15 +3,17 @@
     <UiForm class="form" @submit="handleSave">
       <UiSectionHeader title="Предзаказ" />
 
-      <SettingToggle
-        v-model="form.enabled"
-        label="Разрешить заказ ко времени"
-        hint="Клиент сможет выбрать — «как можно скорее» или к конкретному времени. Если выключено, заказ всегда оформляется как можно скорее."
-      />
+      <div data-tour="preorder-toggle">
+        <SettingToggle
+          v-model="form.enabled"
+          label="Разрешить заказ ко времени"
+          hint="Клиент сможет выбрать — «как можно скорее» или к конкретному времени. Если выключено, заказ всегда оформляется как можно скорее."
+        />
+      </div>
 
       <template v-if="form.enabled">
         <UiSectionHeader title="Доступные даты" />
-        <div class="row row-half">
+        <div data-tour="preorder-slots" class="row row-half">
           <UiInputNumber
             v-model:value="form.daysAhead"
             label="Дней вперёд"
@@ -27,7 +29,7 @@
         </div>
 
         <UiSectionHeader title="Буферы" />
-        <div class="row row-three">
+        <div data-tour="preorder-buffers" class="row row-three">
           <UiSelect
             v-model:value="form.closeBufferMinutes"
             label="Буфер при закрытии"

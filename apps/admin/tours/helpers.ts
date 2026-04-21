@@ -110,3 +110,45 @@ export const clickMenuTabStep = (opts: {
     },
   }
 }
+
+export const navigateToOrdersStep = (waitTarget: string): TourStep => {
+  const waitSel = toSelector(waitTarget)
+
+  return {
+    element: 'a[href="/orders"]',
+    popover: {
+      title: 'Раздел «Заказы»',
+      description: 'Переходим в раздел Заказы. Нажмите «Далее».',
+      side: 'right',
+      align: 'center',
+    },
+    onNext: async () => {
+      document.querySelector<HTMLElement>('a[href="/orders"]')?.click()
+      await waitForElement(waitSel)
+    },
+  }
+}
+
+export const clickOrdersTabStep = (opts: {
+  target: string
+  title: string
+  description: string
+  waitTarget: string
+}): TourStep => {
+  const sel = toSelector(opts.target)
+  const waitSel = toSelector(opts.waitTarget)
+
+  return {
+    element: sel,
+    popover: {
+      title: opts.title,
+      description: opts.description,
+      side: 'bottom',
+      align: 'start',
+    },
+    onNext: async () => {
+      document.querySelector<HTMLElement>(sel)?.click()
+      await waitForElement(waitSel)
+    },
+  }
+}

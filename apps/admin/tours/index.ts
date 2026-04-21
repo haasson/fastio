@@ -5,6 +5,10 @@ import { getDishTourSteps } from '~/tours/dishTour'
 import { getModifierTourSteps } from '~/tours/modifierTour'
 import { getAddonTourSteps } from '~/tours/addonTour'
 import { getOrdersTourSteps } from '~/tours/ordersTour'
+import { getStatusesTourSteps } from '~/tours/statusesTour'
+import { getOrderNumberTourSteps } from '~/tours/orderNumberTour'
+import { getDeliveryTourSteps } from '~/tours/deliveryTour'
+import { getOrderSettingsTourSteps } from '~/tours/orderSettingsTour'
 
 export type TourCategory = {
   id: string
@@ -67,5 +71,33 @@ export const TOURS: Tour[] = [
     title: 'Как работать с заказами',
     description: 'Статусы, карточки заказов, быстрая смена статуса и создание заказа вручную.',
     getSteps: getOrdersTourSteps,
+  },
+  {
+    id: 'order-statuses',
+    category: 'orders',
+    title: 'Настройка статусов',
+    description: 'Создавайте свои статусы, задавайте им группы и быстрые действия.',
+    getSteps: getStatusesTourSteps,
+  },
+  {
+    id: 'order-number',
+    category: 'orders',
+    title: 'Нумерация заказов',
+    description: 'Формат номера заказа: счётчик, дата, префикс, сброс.',
+    getSteps: getOrderNumberTourSteps,
+  },
+  {
+    id: 'delivery',
+    category: 'orders',
+    title: 'Зоны доставки',
+    description: 'Фиксированная стоимость или зоны на карте с индивидуальными условиями.',
+    getSteps: getDeliveryTourSteps,
+  },
+  {
+    id: 'order-settings',
+    category: 'orders',
+    title: 'Предзаказ',
+    description: 'Разрешите клиентам выбирать время заказа — настройте слоты и буферы.',
+    getSteps: getOrderSettingsTourSteps,
   },
 ]

@@ -8,24 +8,28 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <UiForm ref="formRef" class="form">
-      <UiInput
-        v-model="form.name"
-        name="name"
-        label="Название"
-        placeholder="В работе"
-        :rules="[{ required: true, message: 'Введите название' }]"
-      />
+      <div data-tour="status-form-name">
+        <UiInput
+          v-model="form.name"
+          name="name"
+          label="Название"
+          placeholder="В работе"
+          :rules="[{ required: true, message: 'Введите название' }]"
+        />
+      </div>
 
-      <UiSelect
-        :value="form.groupType"
-        :options="groupOptions"
-        label="Группа"
-        message="Группа определяет поведение заказа в этом статусе"
-        size="small"
-        @update:value="form.groupType = $event as OrderStatusGroup"
-      />
+      <div data-tour="status-form-group">
+        <UiSelect
+          :value="form.groupType"
+          :options="groupOptions"
+          label="Группа"
+          message="Группа определяет поведение заказа в этом статусе"
+          size="small"
+          @update:value="form.groupType = $event as OrderStatusGroup"
+        />
+      </div>
 
-      <template v-if="allowedTargets.length">
+      <div v-if="allowedTargets.length" data-tour="status-form-actions" class="actions-group">
         <UiSelect
           :value="form.quickAction1"
           :options="quickActionOptions1"
@@ -47,7 +51,7 @@
           placeholder="Не задано"
           @update:value="form.quickAction2 = ($event as string) ?? null"
         />
-      </template>
+      </div>
     </UiForm>
   </UiModal>
 </template>
@@ -145,6 +149,11 @@ const handleSave = async () => {
 
 .form {
   @include modal-form;
+}
 
+.actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
 }
 </style>

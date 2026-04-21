@@ -1,12 +1,18 @@
 <template>
   <div class="statuses-root">
     <div class="toolbar">
-      <UiButton type="primary" icon="plus" @click="openModal(null)">
+      <UiButton
+        data-tour="orders-statuses-add"
+        type="primary"
+        icon="plus"
+        @click="openModal(null)"
+      >
         Добавить статус
       </UiButton>
     </div>
 
     <OrdersStatusList
+      data-tour="orders-status-list"
       :statuses="statuses"
       :loading="showSkeleton"
       @edit="openModal"

@@ -27,7 +27,7 @@
           Не у всех филиалов заданы зоны доставки — заказы в них можно оформить только на самовывоз
         </UiAlert>
 
-        <div class="zones-tiles">
+        <div data-tour="delivery-zone-tiles" class="zones-tiles">
           <UiSkeleton v-if="zonesLoading" text :repeat="2" />
 
           <div
