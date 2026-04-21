@@ -6,6 +6,7 @@
     "dev:storefront": "turbo run dev --filter=storefront",
     "dev:admin": "turbo run dev --filter=admin",
     "dev:backoffice": "turbo run dev --filter=@fastio/backoffice",
+    "dev:help": "turbo run dev --filter=@fastio/help",
     "dev:landing": "turbo run dev --filter=@fastio/landing",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",

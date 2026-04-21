@@ -44,7 +44,18 @@
         <div class="burger-wrap">
           <UiAppBurger :open="sidebarOpen" @click="sidebarOpen = !sidebarOpen" />
         </div>
-        <UiTitle size="h3">{{ pageTitle }}</UiTitle>
+        <div class="page-title-wrap">
+          <UiTitle size="h3">{{ pageTitle }}</UiTitle>
+          <a
+            v-if="kbUrl"
+            :href="kbUrl"
+            target="_blank"
+            class="kb-btn"
+            title="База знаний"
+          >
+            <UiIcon name="graduationCap" :size="15" />
+          </a>
+        </div>
         <UiButton
           type="text"
           size="small"
@@ -66,6 +77,8 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, type Ref } from 'vue'
+import { useRoute, useRuntimeConfig } from '#imports'
+import { KB_ROUTES } from '@fastio/kb'
 import { requestNotificationPermission } from '~/composables/data/useAlerts'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
@@ -106,6 +119,18 @@ const userName = computed(() => authStore.user?.user_metadata?.full_name || auth
 const userRole = computed(() => tenantStore.currentRoleName ?? '')
 
 const pageTitle = usePageTitle()
+
+const route = useRoute()
+const helpBaseUrl = useRuntimeConfig().public.helpUrl
+
+const kbUrl = computed(() => {
+  const path = route.path === '/' ? '/dashboard' : route.path
+  const matched = KB_ROUTES.find((r) => path.startsWith(r.route))
+
+  if (!matched?.kbSection) return null
+
+  return `${helpBaseUrl}/${matched.kbSection}`
+})
 </script>
 
 <style scoped lang="scss">
@@ -349,6 +374,30 @@ const pageTitle = usePageTitle()
   position: sticky;
   top: 0;
   z-index: 50;
+}
+
+.page-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.kb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-6);
+  color: var(--color-text-hint);
+  opacity: 0.55;
+  text-decoration: none;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+
+  &:hover {
+    opacity: 1;
+    background: var(--color-bg-hover);
+  }
 }
 
 .theme-btn {

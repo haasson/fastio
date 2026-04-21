@@ -18,6 +18,7 @@
     "@ai-sdk/openai": "^3.0.52",
     "@ai-sdk/vue": "^3.0.141",
     "@fastio/icons": "workspace:*",
+    "@fastio/kb": "workspace:*",
     "@fastio/kit": "workspace:*",
     "@fastio/shared": "workspace:*",
     "@fastio/styles": "workspace:*",

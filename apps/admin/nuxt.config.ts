@@ -47,6 +47,7 @@ export default defineNuxtConfig({
   nitro: {
     serverAssets: [
       { baseName: 'ai-knowledge', dir: './server/ai/knowledge' },
+      { baseName: 'kb', dir: '../../packages/kb/content' },
     ],
   },
 
@@ -61,6 +62,7 @@ export default defineNuxtConfig({
       supabaseAnonKey: '',
       yandexMapsApiKey: '',
       telegramBotUsername: '',
+      helpUrl: 'https://help.fastio.ru',
     },
   },
 })

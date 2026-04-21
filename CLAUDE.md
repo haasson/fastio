@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # FastFood SaaS — Инструкции для AI
 
 ## Сбор информации
@@ -56,3 +60,107 @@
 Правила коммитов описаны в `../ai-frontend/COMMIT.md`. Читай этот файл только когда юзер просит сделать коммит, не раньше.
 
 > Формат задачи `DE-xxxx` из COMMIT.md к этому проекту не относится — используй `no-refs` если номера задачи нет.
+
+### ⛔ ОБЯЗАТЕЛЬНО ПЕРЕД КАЖДЫМ КОММИТОМ: актуализировать базу знаний
+
+Файлы KB: `packages/kb/content/*.md` (структура: `packages/kb/src/index.ts`)
+
+**Правило:** если в коммите есть изменения в `apps/admin/pages/`, `apps/admin/components/`, `apps/storefront/` или `packages/shared/` — обязательно проверить и при необходимости обновить соответствующий KB-файл в том же коммите.
+
+- Изменили функционал раздела → обновить его KB-файл
+- Добавили новую страницу/фичу → добавить в KB
+- Удалили или переименовали → убрать из KB
+
+**Коммитить без подтверждения актуальности KB — запрещено.** Не спрашивай пользователя, нужно ли — просто делай это автоматически.
+
+---
+
+## Команды
+
+```bash
+pnpm dev                  # admin + storefront одновременно
+pnpm dev:admin            # только admin (порт 4710)
+pnpm dev:storefront       # только storefront
+pnpm dev:help             # только база знаний (порт 4712)
+pnpm build                # сборка всего монорепо через Turborepo
+pnpm typecheck            # проверка типов
+pnpm lint                 # ESLint по всему монорепо
+pnpm lint:style           # Stylelint для .vue/.scss в admin и packages
+pnpm test                 # vitest (watch)
+pnpm test:run             # vitest (однократно)
+pnpm supabase:start       # запустить локальный Supabase (нужен Docker)
+pnpm supabase:stop
+pnpm supabase:studio      # UI для базы данных
+```
+
+Запуск одного теста: `pnpm vitest run apps/admin/composables/__tests__/foo.test.ts`
+
+---
+
+## Архитектура монорепо
+
+```
+apps/
+  admin/       — Nuxt 3, SPA (SSR off), панель администратора, порт 4710
+  storefront/  — Nuxt 3, SSR on, витрина покупателя
+  help/        — Nuxt 3, SSR on, база знаний (публичная), порт 4712
+packages/
+  shared/      — @fastio/shared: TypeScript-типы (menu, order, tenant, promotion…)
+  ui/          — @fastio/ui: UI-компоненты на базе Naive UI
+  icons/       — @fastio/icons: иконки
+  styles/      — @fastio/styles: общие стили
+  kb/          — @fastio/kb: структура и markdown-контент базы знаний
+supabase/
+  migrations/  — SQL-миграции (schema, RLS, realtime)
+  functions/   — Edge Functions (Deno): send-order-email, payment-webhook, add-custom-domain
+```
+
+Монорепо управляется через **pnpm workspaces** + **Turborepo**. Auto-import в Nuxt **отключён** — всё импортировать явно.
+
+---
+
+## Архитектура admin-приложения
+
+**Паттерн работы с данными:** `pages` → `composables/data/*` → `utils/api/*` → Supabase
+
+- `utils/api/*.ts` — низкоуровневые CRUD-функции (прямые запросы к Supabase)
+- `composables/data/useDatabase.ts` — агрегирует все API-модули в один объект; используй `useDatabase()` вместо прямых импортов
+- `composables/data/useRealtimeList.ts` — универсальный composable для списка с realtime-подпиской (fetch + Supabase channel)
+- `composables/data/useRealtimeWatch.ts` — то же самое, но для одного объекта
+
+**Stores (Pinia, setup API):**
+- `auth.ts` — текущий Supabase User
+- `tenant.ts` — текущий тенант + переключение между тенантами; инициализируется через `tenantApi.init()`
+- `branch.ts` — текущий филиал; управляется из `tenantStore`
+
+**Страницы и модули (все в `pages/`):**
+- `/` — дашборд (статистика)
+- `/menu` — категории, блюда, модификаторы, теги, комбо
+- `/orders` — заказы, настройка статусов, номер заказа, доставка
+- `/kitchen` — очередь кухни, оверлей сборки, настройки
+- `/reservations` — бронирования, настройки
+- `/tables` — столы, вызовы
+- `/promotions` — акции, промокоды
+- `/appearance` — секции, страницы, тема, SEO
+- `/content` — баннеры, галерея, вакансии, отзывы
+- `/settings` — контакты, уведомления, категории доставки, модули, юридические, аддоны
+- `/team` — участники, роли, филиалы
+- `/account` — профиль, биллинг
+- `/help` — туры, поддержка
+
+**Модули** (`apps/admin/config/modules.ts`): функциональность включается/выключается через `TenantModules`. Перед отключением модуля `moduleToggleChecks.ts` проверяет наличие активных зависимостей (заказов, бронирований, открытых столов и т.д.).
+
+**Permissions:** `useTenantStore().currentPermissions` — объект с булевыми флагами; `usePermissions()` — composable-обёртка для компонентов.
+
+**Realtime:** все списки в реальном времени через Supabase Realtime channels. Каналы создаются в composables `composables/data/*Channel.ts`, агрегируются в `useRealtimeChannels.ts`.
+
+---
+
+## Пакет @fastio/ui
+
+Компоненты оборачивают Naive UI. **Перед использованием любого компонента читай его исходник** в `packages/ui/src/components/UiFoo.vue` — не угадывай пропсы.
+
+Для любого card-like блока (border + padding + border-radius) → `<UiCard>`.
+Для типографики → `<UiText>` / `<UiTitle>`, не `<p>`/`<span>`/`<h*>`.
+
+Миксины медиа-запросов: `@use '@fastio/styles/mixins/media-queries' as mq`.

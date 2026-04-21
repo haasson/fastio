@@ -60,6 +60,7 @@ import {
   LockOpen,
   ExternalLink,
   CalendarCheck,
+  GraduationCap,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -126,6 +127,7 @@ export const iconRegistry = {
   unlock: LockOpen,
   externalLink: ExternalLink,
   calendarCheck: CalendarCheck,
+  graduationCap: GraduationCap,
 } as const
 
 export type IconName = keyof typeof iconRegistry

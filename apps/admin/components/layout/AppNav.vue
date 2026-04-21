@@ -73,7 +73,7 @@ const allNavItems: NavItem[] = [
   { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: canSeeKitchen },
   { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },
   { to: '/reservations', icon: 'calendar', label: 'Бронирование', visible: canSeeReservations, counter: newReservationCount },
-  { to: '/promotions', icon: 'promotions', label: 'Акции', visible: canSeePromotions },
+  { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: canSeePromotions },
   { to: '/team/members', icon: 'users', label: 'Команда', visible: computed(() => canManageTeam.value && !isServices.value) },
   { to: '/team/branches', icon: 'mapPin', label: 'Филиалы', visible: canSeeBranches },
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
