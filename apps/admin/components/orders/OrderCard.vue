@@ -15,7 +15,11 @@
           round
           :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
         >{{ currentStatus.name }}</UiTag>
+        <span class="time" :title="absoluteTime">{{ relativeTime }}</span>
+      </div>
+      <div v-if="showDeliveryType || branchName" class="header-meta">
         <UiTag
+          v-if="showDeliveryType"
           size="small"
           :type="order.deliveryType === 'delivery' ? 'primary' : 'success'"
           empty
@@ -24,10 +28,8 @@
         >
           {{ order.tableName ?? DELIVERY_TYPE_LABELS[order.deliveryType] }}
         </UiTag>
-        <span class="time" :title="absoluteTime">{{ relativeTime }}</span>
-      </div>
-      <div v-if="branchName" class="header-tags">
         <UiTag
+          v-if="branchName"
           size="small"
           type="primary"
           empty
@@ -118,6 +120,7 @@ import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-stat
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { useOrderCard } from '~/composables/ui/useOrderCard'
+import { useTenantStore } from '~/stores/tenant'
 
 const props = defineProps<{
   order: Order
@@ -132,6 +135,13 @@ const emit = defineEmits<{
 
 const { currentStatus, quickActionStatuses, relativeTime }
   = useOrderCard(toRef(props, 'order'))
+
+const tenantStore = useTenantStore()
+const showDeliveryType = computed(() => {
+  const modules = tenantStore.tenant?.modules
+
+  return !!(modules?.delivery && modules?.pickup)
+})
 
 const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')
 
@@ -161,13 +171,15 @@ const absoluteTime = computed(() => {
   display: flex;
   align-items: center;
   gap: var(--space-8);
+  flex-wrap: wrap;
 
   .time {
     margin-left: auto;
+    flex-shrink: 0;
   }
 }
 
-.header-tags {
+.header-meta {
   display: flex;
   align-items: center;
   gap: var(--space-8);
@@ -175,10 +187,11 @@ const absoluteTime = computed(() => {
 }
 
 .number {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   color: var(--color-title);
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .time {
