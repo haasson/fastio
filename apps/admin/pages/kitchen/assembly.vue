@@ -15,8 +15,8 @@
         class="phase-tabs"
       />
 
-      <div class="kanban">
-        <div class="kanban-col" :class="{ 'hidden-mobile': mobilePhase !== 'cooking' }">
+      <div class="kanban" data-tour="kitchen-kanban">
+        <div class="kanban-col" data-tour="kitchen-assembly-cooking" :class="{ 'hidden-mobile': mobilePhase !== 'cooking' }">
           <div class="kanban-header">
             <span class="kanban-title">Готовится на кухне</span>
             <span class="kanban-count">{{ cookingGroups.length }}</span>
@@ -24,6 +24,7 @@
           <KitchenAssemblyCard
             v-for="group in cookingGroups"
             :key="group.orderId"
+            data-tour="kitchen-assembly-card"
             :order-id="group.orderId"
             :order-number="group.orderNumber"
             :delivery-type="group.deliveryType"
@@ -37,7 +38,7 @@
           />
         </div>
 
-        <div class="kanban-col kanban-col--collecting" :class="{ 'hidden-mobile': mobilePhase !== 'collecting' }">
+        <div class="kanban-col kanban-col--collecting" data-tour="kitchen-assembly-collecting" :class="{ 'hidden-mobile': mobilePhase !== 'collecting' }">
           <div class="kanban-header">
             <span class="kanban-title">Требует сборки</span>
             <span class="kanban-count kanban-count--orange">{{ collectingGroups.length }}</span>
@@ -45,6 +46,7 @@
           <KitchenAssemblyCard
             v-for="group in collectingGroups"
             :key="group.orderId"
+            data-tour="kitchen-assembly-card"
             :order-id="group.orderId"
             :order-number="group.orderNumber"
             :delivery-type="group.deliveryType"
@@ -58,7 +60,7 @@
           />
         </div>
 
-        <div class="kanban-col kanban-col--ready" :class="{ 'hidden-mobile': mobilePhase !== 'ready' }">
+        <div class="kanban-col kanban-col--ready" data-tour="kitchen-assembly-ready" :class="{ 'hidden-mobile': mobilePhase !== 'ready' }">
           <div class="kanban-header">
             <span class="kanban-title">Готово</span>
             <span class="kanban-count kanban-count--green">{{ readyGroups.length }}</span>
@@ -66,6 +68,7 @@
           <KitchenAssemblyCard
             v-for="group in readyGroups"
             :key="group.orderId"
+            data-tour="kitchen-assembly-card"
             :order-id="group.orderId"
             :order-number="group.orderNumber"
             :delivery-type="group.deliveryType"

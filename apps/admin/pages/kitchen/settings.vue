@@ -3,7 +3,7 @@
     <UiForm @submit="handleSave">
       <div class="form">
         <div class="row">
-          <div class="field">
+          <div class="field" data-tour="kitchen-setting-source-status">
             <UiSelect
               :value="form.sourceStatusId ?? ''"
               :options="statusOptions"
@@ -14,7 +14,7 @@
             />
           </div>
 
-          <div class="field">
+          <div class="field" data-tour="kitchen-setting-cooking-status">
             <UiSelect
               :value="form.cookingStatusId ?? ''"
               :options="statusOptions"
@@ -27,7 +27,7 @@
           </div>
         </div>
 
-        <div class="row">
+        <div class="row" data-tour="kitchen-setting-completed-map">
           <div v-if="deliveryActive" class="field">
             <UiSelect
               :value="form.completedStatusMap.delivery ?? ''"
@@ -60,6 +60,7 @@
           :min="1"
           :max="120"
           :show-button="true"
+          data-tour="kitchen-setting-urgency"
         />
 
         <div class="footer">

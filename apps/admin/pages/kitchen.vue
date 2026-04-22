@@ -69,9 +69,18 @@ watch(isConnected, (connected) => {
 })
 
 const tabs = computed(() => [
-  ...(canViewKitchen.value ? [{ value: 'queue', label: 'Кухня' }, { value: 'assembly', label: 'Сборка' }] : []),
-  ...(canViewKitchenOverview.value ? [{ value: 'overview', label: 'Обзор' }] : []),
-  ...(canEditSettings.value ? [{ value: 'settings', label: 'Настройки' }] : []),
+  ...(canViewKitchen.value
+    ? [
+        { value: 'queue', label: 'Кухня', attrs: { 'data-tour': 'kitchen-tab-queue' } },
+        { value: 'assembly', label: 'Сборка', attrs: { 'data-tour': 'kitchen-tab-assembly' } },
+      ]
+    : []),
+  ...(canViewKitchenOverview.value
+    ? [{ value: 'overview', label: 'Обзор', attrs: { 'data-tour': 'kitchen-tab-overview' } }]
+    : []),
+  ...(canEditSettings.value
+    ? [{ value: 'settings', label: 'Настройки', attrs: { 'data-tour': 'kitchen-tab-settings' } }]
+    : []),
 ])
 </script>
 

@@ -1,5 +1,6 @@
 import type { TourStep } from '~/composables/useTour'
 import type { ModuleKey } from '~/config/modules'
+import type { PermissionKey } from '@fastio/shared'
 import { getOnboardingSteps } from '~/tours/onboardingTour'
 import { getCategoryTourSteps } from '~/tours/categoryTour'
 import { getDishTourSteps } from '~/tours/dishTour'
@@ -11,6 +12,10 @@ import { getStatusesTourSteps } from '~/tours/statusesTour'
 import { getOrderNumberTourSteps } from '~/tours/orderNumberTour'
 import { getDeliveryTourSteps } from '~/tours/deliveryTour'
 import { getOrderSettingsTourSteps } from '~/tours/orderSettingsTour'
+import { getKitchenQueueTourSteps } from '~/tours/kitchenQueueTour'
+import { getKitchenAssemblyTourSteps } from '~/tours/kitchenAssemblyTour'
+import { getKitchenOverviewTourSteps } from '~/tours/kitchenOverviewTour'
+import { getKitchenSettingsTourSteps } from '~/tours/kitchenSettingsTour'
 
 export type TourCategory = {
   id: string
@@ -21,6 +26,7 @@ export const TOUR_CATEGORIES: TourCategory[] = [
   { id: 'basics', title: 'Начало работы' },
   { id: 'menu', title: 'Меню' },
   { id: 'orders', title: 'Заказы' },
+  { id: 'kitchen', title: 'Кухня' },
 ]
 
 export type Tour = {
@@ -29,6 +35,7 @@ export type Tour = {
   description: string
   category: string
   moduleRequired?: ModuleKey
+  permissionRequired?: PermissionKey
   getSteps: () => TourStep[]
 }
 
@@ -112,5 +119,41 @@ export const TOURS: Tour[] = [
     title: 'Предзаказ',
     description: 'Разрешите клиентам выбирать время заказа — настройте слоты и буферы.',
     getSteps: getOrderSettingsTourSteps,
+  },
+  {
+    id: 'kitchen-queue',
+    category: 'kitchen',
+    moduleRequired: 'kitchen',
+    permissionRequired: 'kitchen.view',
+    title: 'Кухонная очередь',
+    description: 'Рабочее место повара: берёте блюдо из очереди, готовите, отмечаете готовым.',
+    getSteps: getKitchenQueueTourSteps,
+  },
+  {
+    id: 'kitchen-assembly',
+    category: 'kitchen',
+    moduleRequired: 'kitchen',
+    permissionRequired: 'kitchen.view',
+    title: 'Сборка заказов',
+    description: 'Как собирать заказы на выдаче и переводить их в финальный статус.',
+    getSteps: getKitchenAssemblyTourSteps,
+  },
+  {
+    id: 'kitchen-overview',
+    category: 'kitchen',
+    moduleRequired: 'kitchen',
+    permissionRequired: 'kitchen.overview',
+    title: 'Обзор кухни',
+    description: 'Вид для менеджера: все блюда в работе, срочные и критичные.',
+    getSteps: getKitchenOverviewTourSteps,
+  },
+  {
+    id: 'kitchen-settings',
+    category: 'kitchen',
+    moduleRequired: 'kitchen',
+    permissionRequired: 'settings.edit',
+    title: 'Настройки кухни',
+    description: 'Привязка очереди к статусам заказов и настройка порога срочности.',
+    getSteps: getKitchenSettingsTourSteps,
   },
 ]

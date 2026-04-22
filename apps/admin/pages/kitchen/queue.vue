@@ -1,5 +1,5 @@
 <template>
-  <div class="queue-root">
+  <div class="queue-root" data-tour="kitchen-queue">
     <UiAlert v-if="sourceStatusMissing" type="error" size="small">
       Не настроен статус для отправки заказов на кухню — блюда доставки и самовывоза не попадут в очередь.
       <NuxtLink v-if="canEditSettings" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
@@ -18,6 +18,7 @@
       placeholder="Мои категории (все)"
       class="category-select"
       clearable
+      data-tour="kitchen-queue-filter"
     />
 
     <div v-if="loading" class="queue-loading">
@@ -27,7 +28,7 @@
     <template v-else-if="hasActiveItems">
       <div class="queue-layout">
         <!-- Queue (narrow left panel) -->
-        <div class="panel queue-panel">
+        <div class="panel queue-panel" data-tour="kitchen-queue-panel">
           <div class="panel-header">
             <UiSectionHeader :title="`Очередь (${filteredQueueItems.length})`" />
           </div>
@@ -38,6 +39,7 @@
                 v-for="item in filteredQueueItems"
                 :key="item.id"
                 :item="item"
+                data-tour="kitchen-queue-item"
                 :elapsed="formatKitchenTime(item.createdAt, now)"
                 :urgency-level="getUrgencyLevel(item.createdAt, now, urgencyMinutes)"
                 @claim="claimDish(item)"
@@ -48,7 +50,7 @@
         </div>
 
         <!-- My dishes (wide right panel) -->
-        <div class="panel work-panel">
+        <div class="panel work-panel" data-tour="kitchen-work-panel">
           <div class="panel-header">
             <UiSectionHeader :title="`Мои блюда (${myItems.length})`" />
           </div>
@@ -59,6 +61,7 @@
                 v-for="item in cancelledOnBoard"
                 :key="item.id"
                 :item="item"
+                data-tour="kitchen-work-card"
                 :elapsed="formatKitchenTime(item.createdAt, now)"
                 :cooking-elapsed="formatKitchenTime(item.assignedAt ?? item.createdAt, now)"
                 :urgency-level="'normal'"
@@ -70,6 +73,7 @@
                 v-for="item in myItems"
                 :key="item.id"
                 :item="item"
+                data-tour="kitchen-work-card"
                 :elapsed="formatKitchenTime(item.createdAt, now)"
                 :cooking-elapsed="formatKitchenTime(item.assignedAt ?? item.createdAt, now)"
                 :urgency-level="getUrgencyLevel(item.createdAt, now, urgencyMinutes)"

@@ -1,5 +1,5 @@
 <template>
-  <div class="overview-root">
+  <div class="overview-root" data-tour="kitchen-overview">
     <KitchenStatCards :items="statCards" @select="onStatSelect" />
 
     <div v-if="loading" class="loading">

@@ -37,17 +37,20 @@ import { UiButton, UiText } from '@fastio/ui'
 import { UiIcon } from '@fastio/icons'
 import useTour from '~/composables/useTour'
 import { useModules } from '~/composables/plan/useModules'
+import { usePermissions } from '~/composables/auth/usePermissions'
 import { TOURS, TOUR_CATEGORIES } from '~/tours/index'
 import type { Tour } from '~/tours/index'
 
 const modules = useModules()
+const { can } = usePermissions()
 
 const categoriesWithTours = computed(() => TOUR_CATEGORIES
   .map((cat) => ({
     ...cat,
     tours: TOURS.filter((t) => {
       if (t.category !== cat.id) return false
-      if (t.moduleRequired) return modules[t.moduleRequired]?.value.enabled ?? false
+      if (t.moduleRequired && !(modules[t.moduleRequired]?.value.enabled ?? false)) return false
+      if (t.permissionRequired && !can(t.permissionRequired).value) return false
 
       return true
     }),

@@ -1,5 +1,5 @@
 <template>
-  <div class="stat-cards-root">
+  <div class="stat-cards-root" data-tour="kitchen-stat-cards">
     <UiCard
       v-for="item in items"
       :key="item.key"
@@ -7,6 +7,7 @@
       clickable
       class="stat"
       :class="[item.variant && `stat--${item.variant}`, { active: item.active }]"
+      :data-tour="item.variant ? `kitchen-stat-${item.variant}` : undefined"
       @click="$emit('select', item.key)"
     >
       <span class="stat-value" :class="item.color && `stat-value--${item.color}`">{{ item.value }}</span>
