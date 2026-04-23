@@ -39,9 +39,12 @@
           v-model:delivery="form.delivery"
           v-model:pickup="form.pickup"
           v-model:dine-in="form.dineIn"
+          :menu-style="form.menuStyle"
         />
         <OnboardingStepComplete
           v-else-if="currentStep === 'complete'"
+          :business-type="form.businessType"
+          :menu-style="form.menuStyle"
         />
       </div>
 
@@ -112,7 +115,7 @@ const form = reactive({
 
 const stepList = computed<StepName[]>(() => {
   if (form.businessType === 'services') {
-    return ['type', 'info', 'complete']
+    return ['type', 'info', 'branch', 'complete']
   }
 
   return ['type', 'menuStyle', 'info', 'branch', 'modules', 'complete']

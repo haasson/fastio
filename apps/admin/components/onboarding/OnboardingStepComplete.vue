@@ -29,35 +29,44 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { UiTitle, UiText, UiIcon } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
+import type { BusinessType, MenuStyle } from '@fastio/shared'
 
-const recommendations: { icon: IconName; label: string; path: string; hint: string }[] = [
-  {
-    icon: 'settings',
-    label: 'Рабочие часы',
-    path: '/settings/contacts',
-    hint: 'Нужны для корректного бронирования',
-  },
-  {
-    icon: 'dishes',
-    label: 'Меню',
-    path: '/content/menu',
-    hint: 'Добавьте категории и товары',
-  },
-  {
-    icon: 'layoutGrid',
-    label: 'Логотип',
-    path: '/appearance/theme',
-    hint: 'Загрузите лого вашего заведения',
-  },
-  {
-    icon: 'fileText',
-    label: 'Контент сайта',
-    path: '/content',
-    hint: 'Настройте тексты и изображения',
-  },
-]
+const props = defineProps<{
+  businessType: BusinessType | null
+  menuStyle: MenuStyle
+}>()
+
+type Rec = { icon: IconName; label: string; path: string; hint: string }
+
+const recommendations = computed<Rec[]>(() => {
+  if (props.businessType === 'services') {
+    return [
+      { icon: 'settings', label: 'Рабочие часы', path: '/settings/contacts', hint: 'Нужны для корректной записи к специалистам' },
+      { icon: 'dishes', label: 'Услуги', path: '/menu', hint: 'Добавьте услуги и специалистов' },
+      { icon: 'layoutGrid', label: 'Логотип', path: '/appearance/theme', hint: 'Загрузите лого вашей компании' },
+      { icon: 'fileText', label: 'Контент сайта', path: '/content', hint: 'Настройте тексты и изображения' },
+    ]
+  }
+
+  if (props.menuStyle === 'catalog') {
+    return [
+      { icon: 'cart', label: 'Каталог', path: '/menu', hint: 'Добавьте разделы и товары' },
+      { icon: 'layoutGrid', label: 'Логотип', path: '/appearance/theme', hint: 'Загрузите лого вашего магазина' },
+      { icon: 'fileText', label: 'Контент сайта', path: '/content', hint: 'Настройте тексты и изображения' },
+      { icon: 'settings', label: 'Рабочие часы', path: '/settings/contacts', hint: 'Укажите время работы для сайта' },
+    ]
+  }
+
+  return [
+    { icon: 'dishes', label: 'Меню', path: '/menu', hint: 'Добавьте категории и блюда' },
+    { icon: 'settings', label: 'Рабочие часы', path: '/settings/contacts', hint: 'Нужны для корректного бронирования столиков' },
+    { icon: 'layoutGrid', label: 'Логотип', path: '/appearance/theme', hint: 'Загрузите лого вашего заведения' },
+    { icon: 'fileText', label: 'Контент сайта', path: '/content', hint: 'Настройте тексты и изображения' },
+  ]
+})
 </script>
 
 <style scoped lang="scss">

@@ -34,6 +34,7 @@ const props = defineProps<{
   delivery: boolean
   pickup: boolean
   dineIn: boolean
+  menuStyle: 'food' | 'catalog'
 }>()
 
 const emit = defineEmits<{
@@ -44,29 +45,33 @@ const emit = defineEmits<{
 
 type ModuleKey = 'delivery' | 'pickup' | 'dineIn'
 
-const options = computed(() => [
-  {
-    key: 'delivery' as ModuleKey,
-    emoji: '🚗',
-    title: 'Доставка',
-    desc: 'Курьер привозит заказ клиенту',
-    value: props.delivery,
-  },
-  {
-    key: 'pickup' as ModuleKey,
-    emoji: '🏃',
-    title: 'Самовывоз',
-    desc: 'Клиент забирает заказ сам',
-    value: props.pickup,
-  },
-  {
-    key: 'dineIn' as ModuleKey,
-    emoji: '🍽️',
-    title: 'За столиком',
-    desc: 'Заказ и оплата прямо в заведении',
-    value: props.dineIn,
-  },
-])
+const options = computed(() => {
+  const all: { key: ModuleKey; emoji: string; title: string; desc: string; value: boolean }[] = [
+    {
+      key: 'delivery',
+      emoji: '🚗',
+      title: 'Доставка',
+      desc: 'Курьер привозит заказ клиенту',
+      value: props.delivery,
+    },
+    {
+      key: 'pickup',
+      emoji: '🏃',
+      title: 'Самовывоз',
+      desc: 'Клиент забирает заказ сам',
+      value: props.pickup,
+    },
+    {
+      key: 'dineIn',
+      emoji: '🍽️',
+      title: 'За столиком',
+      desc: 'Заказ и оплата прямо в заведении',
+      value: props.dineIn,
+    },
+  ]
+
+  return props.menuStyle === 'catalog' ? all.filter((o) => o.key !== 'dineIn') : all
+})
 
 const showError = ref(false)
 
