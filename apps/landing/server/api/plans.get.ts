@@ -7,8 +7,6 @@ export default defineEventHandler(async (): Promise<LandingPlanRow[]> => {
   const config = useRuntimeConfig()
   const { supabaseUrl, supabaseAnonKey } = config.public
 
-  console.log('[plans.get] url:', supabaseUrl, 'key:', supabaseAnonKey?.slice(0, 20))
-
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error('[plans.get] NUXT_PUBLIC_SUPABASE_URL / NUXT_PUBLIC_SUPABASE_ANON_KEY не заданы — секция тарифов будет пустой')
     return []
