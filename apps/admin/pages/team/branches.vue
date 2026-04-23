@@ -1,11 +1,15 @@
 <template>
   <div class="branches-root">
-    <UiAlert v-if="branchLimitReached" type="info" icon="mapPin">
+    <UiAlert v-if="isVenueMode" type="info" icon="sparkles">
+      Хотите открыть несколько точек? На тарифе Pro можно добавить любое количество филиалов и управлять ими отдельно.
+      <NuxtLink to="/account/billing" class="upsell-link">Сменить тариф</NuxtLink>
+    </UiAlert>
+    <UiAlert v-else-if="branchLimitReached" type="info" icon="mapPin">
       На вашем тарифе доступно {{ maxBranches }} {{ branchLimitLabel }}. Обновите тариф для добавления новых точек.
     </UiAlert>
 
-    <UiSectionHeader title="Филиалы">
-      <template #right>
+    <UiSectionHeader :title="isVenueMode ? 'Заведение' : 'Филиалы'">
+      <template v-if="!isVenueMode" #right>
         <UiButton
           type="primary"
           icon="plus"
@@ -43,6 +47,7 @@
             @click="openEdit(branch)"
           />
           <UiIcon
+            v-if="branches.length > 1"
             name="archive"
             :size="18"
             class="branch-action danger"
@@ -108,6 +113,9 @@ const { zones } = storeToRefs(useDeliveryZoneStore())
 const modules = useModules()
 
 const { branchLimitReached, maxBranches, branchLimitLabel } = useBranchLimit()
+// Модуль филиалов недоступен на текущем тарифе — у тенанта одна точка,
+// рендерим страницу как настройки заведения (без списка, без добавления, с апселлом).
+const isVenueMode = computed(() => modules.branches.value.locked)
 const deliveryEnabled = computed(() => modules.delivery.value.enabled)
 const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
@@ -179,6 +187,15 @@ const handleRestore = async (branch: Branch) => {
 
 .branches-root {
   @include flex-col(var(--space-16));
+}
+
+.upsell-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  margin-left: var(--space-4);
+
+  &:hover { text-decoration: underline; }
 }
 
 .branch-row {

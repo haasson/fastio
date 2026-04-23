@@ -66,7 +66,8 @@ const canSeeReservations = computed(() => {
   return access.isServices.value ? access.services.value : access.reservations.value
 })
 const canSeeTeam = computed(() => canManageTeam.value && access.team.value)
-const canSeeBranches = computed(() => canManageTeam.value && access.branches.value)
+const canSeeBranchPage = computed(() => canManageTeam.value)
+const branchNavLabel = computed(() => access.branches.value ? 'Филиалы' : 'Заведение')
 
 const orderCounter = computed(() => blinkingCounter.value ? newOrderCount.value : 0)
 const orderBlink = computed(() => blinkingCounter.value && newOrderCount.value > 0)
@@ -80,7 +81,7 @@ const allNavItems: NavItem[] = [
   { to: '/reservations', icon: 'calendar', label: reservationsLabel, visible: canSeeReservations, counter: newReservationCount },
   { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: canSeePromotions },
   { to: '/team/members', icon: 'users', label: 'Команда', visible: canSeeTeam },
-  { to: '/team/branches', icon: 'mapPin', label: 'Филиалы', visible: canSeeBranches },
+  { to: '/team/branches', icon: 'mapPin', label: branchNavLabel, visible: canSeeBranchPage },
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewContent },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },

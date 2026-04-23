@@ -48,14 +48,30 @@
         </UiText>
         <UiText v-else size="tiny" class="coords-hint">Введите адрес — точка появится автоматически</UiText>
       </div>
-      <template v-if="hasMultipleBranches">
-        <UiInput
-          v-model="form.phone"
-          label="Телефон"
-          placeholder="+7 (900) 000-00-00"
-          :rules="[validationRules.phone.format]"
-        />
+      <UiInput
+        v-model="form.phone"
+        label="Телефон"
+        placeholder="+7 (900) 000-00-00"
+        :rules="[validationRules.phone.format]"
+      />
 
+      <div class="override-block">
+        <UiSectionHeader title="Часы работы">
+          <template #right>
+            <div class="override-toggle">
+              <UiText size="tiny">Своё расписание</UiText>
+              <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
+            </div>
+          </template>
+        </UiSectionHeader>
+        <WorkingHoursEditor
+          v-if="useCustomHours && form.workingHoursSchedule"
+          v-model="form.workingHoursSchedule"
+        />
+        <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
+      </div>
+
+      <template v-if="hasMultipleBranches">
         <UiInput
           v-model="form.orderNumberPrefix"
           label="Префикс номера заказа"
@@ -67,41 +83,6 @@
         <div class="active-row">
           <UiText size="small">Филиал активен</UiText>
           <UiSwitch v-model="form.isActive" />
-        </div>
-
-        <div class="override-block">
-          <UiSectionHeader title="Часы работы">
-            <template #right>
-              <div class="override-toggle">
-                <UiText size="tiny">Своё расписание</UiText>
-                <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
-              </div>
-            </template>
-          </UiSectionHeader>
-          <WorkingHoursEditor
-            v-if="useCustomHours && form.workingHoursSchedule"
-            v-model="form.workingHoursSchedule"
-          />
-          <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
-        </div>
-
-        <div class="override-block">
-          <UiSectionHeader title="Уведомления">
-            <template #right>
-              <div class="override-toggle">
-                <UiText size="tiny">Свои уведомления</UiText>
-                <UiSwitch :model-value="useCustomNotifications" @update:model-value="toggleCustomNotifications" />
-              </div>
-            </template>
-          </UiSectionHeader>
-          <template v-if="useCustomNotifications && form.notifications">
-            <UiInput
-              v-model="form.notifications.telegramChatId"
-              label="Telegram Chat ID"
-              placeholder="-100123456789"
-            />
-          </template>
-          <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
         </div>
       </template>
     </UiForm>
@@ -192,13 +173,9 @@ const defaultForm = (): BranchFormData => ({
 const form = reactive<BranchFormData>(defaultForm())
 
 const useCustomHours = computed(() => form.workingHoursSchedule !== null)
-const useCustomNotifications = computed(() => form.notifications !== null)
 
 const toggleCustomHours = (val: boolean) => {
   form.workingHoursSchedule = val ? { ...DEFAULT_SCHEDULE } : null
-}
-const toggleCustomNotifications = (val: boolean) => {
-  form.notifications = val ? { email: null, telegramChatId: null } : null
 }
 
 watch(() => props.modelValue, (val) => {

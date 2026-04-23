@@ -39,10 +39,12 @@
         </UiButton>
         <UiPopover
           v-else-if="card.isDowngrade"
-          content="Для понижения тарифа обратитесь в поддержку"
           trigger="hover"
         >
-          <UiButton type="default" disabled class="plan-btn">Перейти</UiButton>
+          <template #trigger>
+            <UiButton type="default" disabled class="plan-btn">Перейти</UiButton>
+          </template>
+          Для понижения тарифа обратитесь в <RouterLink to="/help/support">поддержку</RouterLink>
         </UiPopover>
         <UiButton
           v-else
