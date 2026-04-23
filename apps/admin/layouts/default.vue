@@ -7,10 +7,19 @@
           <NuxtLink to="/" class="logo">
             <span class="logo-text">Fast<span class="logo-accent">io</span></span>
           </NuxtLink>
+          <a
+            v-if="siteUrl"
+            :href="siteUrl"
+            target="_blank"
+            class="site-link"
+            title="Открыть сайт"
+          >
+            <UiIcon name="externalLink" :size="15" />
+          </a>
         </div>
 
         <div class="nav-scroll">
-          <AppNav :collapsed="collapsed" @navigate="sidebarOpen = false" />
+          <AppNav :collapsed="collapsed && !sidebarOpen" @navigate="sidebarOpen = false" />
         </div>
 
         <div class="user-info">
@@ -18,7 +27,7 @@
           <BranchSelector />
 
           <NuxtLink to="/account" class="account-link" @click="sidebarOpen = false">
-            <UiIcon name="users" :size="18" />
+            <UiIcon v-if="showAccountIcon" name="users" :size="18" />
             <div class="user-names">
               <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
               <UiText size="tiny" class="user-name">{{ userName }}</UiText>
@@ -110,6 +119,16 @@ useRealtimeChannels(currentTenantId)
 if (tenantStore.tenant?.businessType !== 'services') {
   requestNotificationPermission()
 }
+
+const siteUrl = computed(() => {
+  const t = tenantStore.tenant
+
+  if (!t) return null
+
+  return t.customDomain ? `https://${t.customDomain}` : `https://${t.slug}.fastio.ru`
+})
+
+const showAccountIcon = computed(() => collapsed.value && !sidebarOpen.value)
 
 const showOnboarding = computed(
   () => !tenantStore.loading && !!tenantStore.tenant && !tenantStore.tenant.onboardingCompleted,
@@ -217,6 +236,20 @@ const kbUrl = computed(() => {
   color: var(--orange-600);
 }
 
+.site-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  color: var(--grey-500);
+  text-decoration: none;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--grey-200);
+  }
+}
+
 .nav-scroll {
   flex: 1;
   min-height: 0;
@@ -315,7 +348,8 @@ const kbUrl = computed(() => {
     padding: 0;
   }
 
-  .logo-text {
+  .logo-text,
+  .site-link {
     display: none;
   }
 
@@ -332,6 +366,23 @@ const kbUrl = computed(() => {
   .account-link {
     justify-content: center;
     padding: var(--space-8) 0;
+  }
+
+  .sidebar.open {
+    width: var(--sidebar-width);
+
+    .logo-text { display: block; }
+    .site-link { display: inline-flex; }
+    .user-info { padding: var(--space-12) var(--space-16) var(--space-4); }
+
+    .user-info .switcher-root,
+    .user-info .branch-selector-root,
+    .user-names { display: revert; }
+
+    .account-link {
+      justify-content: flex-start;
+      padding: var(--space-8) var(--space-12);
+    }
   }
 }
 

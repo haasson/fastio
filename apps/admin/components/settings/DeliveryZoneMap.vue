@@ -91,6 +91,12 @@
       {{ drawing ? 'Отменить' : '+ Нарисовать зону' }}
     </button>
 
+    <!-- Draw hint -->
+    <div v-if="drawing" class="draw-hint">
+      <template v-if="drawPoints.length === 0">Кликните на карту, чтобы поставить первую точку зоны</template>
+      <template v-else>Чтобы замкнуть зону, кликните на первую её точку</template>
+    </div>
+
   </div>
 </template>
 
@@ -295,8 +301,8 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 /* stylelint-disable scale-unlimited/declaration-strict-value, color-no-hex */
 .map-draw-btn {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  right: 52px;
   z-index: 10;
   padding: 8px 16px;
   border-radius: 8px;
@@ -393,4 +399,20 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 }
 /* stylelint-enable scale-unlimited/declaration-strict-value, color-no-hex */
 
+.draw-hint {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  padding: 8px 16px;
+  border-radius: 8px;
+  /* stylelint-disable scale-unlimited/declaration-strict-value, color-no-hex */
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  /* stylelint-enable scale-unlimited/declaration-strict-value, color-no-hex */
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+}
 </style>

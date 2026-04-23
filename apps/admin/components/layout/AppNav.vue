@@ -81,7 +81,7 @@ const allNavItems: NavItem[] = [
   { to: '/reservations', icon: 'calendar', label: reservationsLabel, visible: canSeeReservations, counter: newReservationCount },
   { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: canSeePromotions },
   { to: '/team/members', icon: 'users', label: 'Команда', visible: canSeeTeam },
-  { to: '/team/branches', icon: 'mapPin', label: branchNavLabel, visible: canSeeBranchPage },
+  { to: '/branches', icon: 'mapPin', label: branchNavLabel, visible: canSeeBranchPage },
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewContent },
   { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },

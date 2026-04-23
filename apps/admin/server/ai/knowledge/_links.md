@@ -39,7 +39,7 @@
 | Команда | /team |
 | Сотрудники | /team/members |
 | Роли | /team/roles |
-| Филиалы | /team/branches |
+| Филиалы | /branches |
 | Оформление | /appearance |
 | Секции | /appearance/sections |
 | Страницы | /appearance/pages |

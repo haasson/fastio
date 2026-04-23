@@ -36,7 +36,7 @@ withDefaults(defineProps<Props>(), {
 .divider-root {
   &:not(.with-title):not(.vertical) {
     width: 100%;
-    height: 2px;
+    height: 1px;
     margin: var(--space-16) 0;
     background-color: var(--color-border);
   }
@@ -68,7 +68,7 @@ withDefaults(defineProps<Props>(), {
 
     .line {
       flex: 1;
-      height: 2px;
+      height: 1px;
       background-color: var(--color-border);
     }
 

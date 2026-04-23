@@ -8,11 +8,10 @@
     />
 
     <template v-else>
-      <UiEmpty
-        v-if="categories.length === 0"
-        icon="layoutGrid"
-        :text="`Добавлять ${itemsLabelLower} пока некуда — сначала создайте категорию.`"
-      />
+      <UiEmpty v-if="categories.length === 0" icon="layoutGrid">
+        Добавлять {{ itemsLabelLower }} пока некуда — сначала
+        <RouterLink to="/menu/categories" class="link">создайте категорию</RouterLink>.
+      </UiEmpty>
       <UiTabs
         v-else
         variant="pill"
@@ -75,5 +74,10 @@ const categoryTabs = computed(() => categories.value.map((c) => ({
 
 .skeleton {
   padding: 0;
+}
+
+.link {
+  color: var(--color-primary);
+  text-decoration: underline;
 }
 </style>

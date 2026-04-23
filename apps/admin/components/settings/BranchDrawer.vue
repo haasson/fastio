@@ -48,30 +48,30 @@
         </UiText>
         <UiText v-else size="tiny" class="coords-hint">Введите адрес — точка появится автоматически</UiText>
       </div>
-      <UiInput
-        v-model="form.phone"
-        label="Телефон"
-        placeholder="+7 (900) 000-00-00"
-        :rules="[validationRules.phone.format]"
-      />
-
-      <div class="override-block">
-        <UiSectionHeader title="Часы работы">
-          <template #right>
-            <div class="override-toggle">
-              <UiText size="tiny">Своё расписание</UiText>
-              <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
-            </div>
-          </template>
-        </UiSectionHeader>
-        <WorkingHoursEditor
-          v-if="useCustomHours && form.workingHoursSchedule"
-          v-model="form.workingHoursSchedule"
-        />
-        <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
-      </div>
-
       <template v-if="hasMultipleBranches">
+        <UiInput
+          v-model="form.phone"
+          label="Телефон"
+          placeholder="+7 (900) 000-00-00"
+          :rules="[validationRules.phone.format]"
+        />
+
+        <div class="override-block">
+          <UiSectionHeader title="Часы работы">
+            <template #right>
+              <div class="override-toggle">
+                <UiText size="tiny">Своё расписание</UiText>
+                <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
+              </div>
+            </template>
+          </UiSectionHeader>
+          <WorkingHoursEditor
+            v-if="useCustomHours && form.workingHoursSchedule"
+            v-model="form.workingHoursSchedule"
+          />
+          <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
+        </div>
+
         <UiInput
           v-model="form.orderNumberPrefix"
           label="Префикс номера заказа"

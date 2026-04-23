@@ -8,18 +8,16 @@
       На вашем тарифе доступно {{ maxBranches }} {{ branchLimitLabel }}. Обновите тариф для добавления новых точек.
     </UiAlert>
 
-    <UiSectionHeader :title="isVenueMode ? 'Заведение' : 'Филиалы'">
-      <template v-if="!isVenueMode" #right>
-        <UiButton
-          type="primary"
-          icon="plus"
-          size="small"
-          :disabled="branchLimitReached"
-          :title="branchLimitReached ? 'Лимит филиалов на вашем тарифе' : undefined"
-          @click="openAdd"
-        >Добавить</UiButton>
-      </template>
-    </UiSectionHeader>
+    <div v-if="!isVenueMode" class="header-actions">
+      <UiButton
+        type="primary"
+        icon="plus"
+        size="small"
+        :disabled="branchLimitReached"
+        :title="branchLimitReached ? 'Лимит филиалов на вашем тарифе' : undefined"
+        @click="openAdd"
+      >Добавить</UiButton>
+    </div>
 
     <UiSkeleton v-if="loading" text :repeat="3" />
 
@@ -91,6 +89,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, UiSectionHeader, UiAlert } from '@fastio/ui'
+import { usePageTitle } from '~/composables/usePageTitle'
 import { useConfirm } from '@fastio/kit'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
@@ -116,6 +115,8 @@ const { branchLimitReached, maxBranches, branchLimitLabel } = useBranchLimit()
 // Модуль филиалов недоступен на текущем тарифе — у тенанта одна точка,
 // рендерим страницу как настройки заведения (без списка, без добавления, с апселлом).
 const isVenueMode = computed(() => modules.branches.value.locked)
+
+usePageTitle(computed(() => isVenueMode.value ? 'Заведение' : 'Филиалы'))
 const deliveryEnabled = computed(() => modules.delivery.value.enabled)
 const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
@@ -187,6 +188,11 @@ const handleRestore = async (branch: Branch) => {
 
 .branches-root {
   @include flex-col(var(--space-16));
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .upsell-link {
