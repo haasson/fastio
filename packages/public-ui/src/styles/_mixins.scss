@@ -1,3 +1,5 @@
+@forward '@fastio/styles/mixins/safe-area';
+
 @mixin md { @media (min-width: 768px) { @content; } }
 @mixin lg { @media (min-width: 1280px) { @content; } }
 @mixin xl { @media (min-width: 1536px) { @content; } }
@@ -83,5 +85,3 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-
-@forward '@fastio/styles/mixins/safe-area';
