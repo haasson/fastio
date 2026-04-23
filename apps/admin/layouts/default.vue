@@ -106,6 +106,7 @@ import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 import { useRealtimeChannels } from '~/composables/useRealtimeChannels'
 import { usePageTitle } from '~/composables/usePageTitle'
+import { useStorefrontUrl } from '~/composables/useStorefrontUrl'
 
 const sidebarOpen = ref(false)
 const collapsed = useLocalStorage('sidebar-collapsed', false)
@@ -123,13 +124,7 @@ if (tenantStore.tenant?.businessType !== 'services') {
   requestNotificationPermission()
 }
 
-const siteUrl = computed(() => {
-  const t = tenantStore.tenant
-
-  if (!t) return null
-
-  return t.customDomain ? `https://${t.customDomain}` : `https://${t.slug}.fastio.ru`
-})
+const { baseUrl: siteUrl } = useStorefrontUrl()
 
 const showAccountIcon = computed(() => collapsed.value && !sidebarOpen.value)
 

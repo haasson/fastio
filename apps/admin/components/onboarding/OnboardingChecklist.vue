@@ -13,7 +13,8 @@
     <OnboardingPanel
       :show="open"
       :steps="steps"
-      :percent="progressPercent"
+      :completed="progress.completed"
+      :total="progress.total"
       :subtitle="subtitle"
       :all-completed="allCompleted"
       @update:show="(v: boolean) => (open = v)"
@@ -64,17 +65,10 @@ const open = ref(false)
 const dismissModal = ref(false)
 const resetModal = ref(false)
 
-const progressPercent = computed(() => {
-  if (progress.value.total === 0) return 0
-
-  return Math.round((progress.value.completed / progress.value.total) * 100)
-})
-
 const subtitle = computed(() => {
   if (allCompleted.value) return 'Все шаги пройдены — витрина готова.'
-  const remaining = progress.value.total - progress.value.completed
 
-  return `Осталось ${remaining} из ${progress.value.total} шагов до запуска`
+  return `Пройдено ${progress.value.completed} из ${progress.value.total} шагов до запуска`
 })
 
 const togglePanel = () => {
@@ -82,7 +76,9 @@ const togglePanel = () => {
 }
 
 const handleStepGo = async (step: OnboardingStepView) => {
-  open.value = false
+  // Внешние ссылки (витрина) открываются в новой вкладке — дровер оставляем открытым,
+  // чтобы после проверки было удобно нажать «Дальше».
+  if (!step.externalTarget) open.value = false
   await actions.goToStep(step)
 }
 

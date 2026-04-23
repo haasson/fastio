@@ -7,12 +7,24 @@
     :show-mask="false"
     :mask-closable="false"
     :z-index="50"
+    header-align="start"
     @update:model-value="(v: boolean) => emit('update:show', v)"
   >
     <template #title>
       <div class="title-block">
         <UiTitle size="h5">Чек-лист запуска</UiTitle>
         <UiText size="tiny" class="subtitle">{{ subtitle }}</UiText>
+        <template v-if="!allCompleted">
+          <OnboardingProgressBar :total="total" :completed="completed" />
+          <UiText size="tiny" class="legend">
+            Кнопка <strong>«Дальше»</strong> просто двигает вас по шагам — неважно, сделали
+            вы что-то или уже умеете. Клик по
+            <span class="legend-icon"><UiIcon name="graduationCap" :size="12" /></span>
+            откроет статью в базе знаний, а
+            <span class="legend-icon"><UiIcon name="sparkles" :size="12" /></span>
+            запустит короткий тур.
+          </UiText>
+        </template>
       </div>
     </template>
 
@@ -36,17 +48,6 @@
     </div>
 
     <div v-else class="body">
-      <OnboardingProgressBar :percent="percent" />
-
-      <UiText size="tiny" class="legend">
-        Кнопка <strong>«Дальше»</strong> просто двигает вас по шагам — неважно, сделали
-        вы что-то или уже умеете. Клик по
-        <span class="legend-icon"><UiIcon name="graduationCap" :size="12" /></span>
-        откроет статью в базе знаний, а
-        <span class="legend-icon"><UiIcon name="sparkles" :size="12" /></span>
-        запустит короткий тур.
-      </UiText>
-
       <div class="steps">
         <OnboardingStepItem
           v-for="step in steps"
@@ -82,7 +83,8 @@ import type { OnboardingStepView } from '~/composables/useOnboarding'
 defineProps<{
   show: boolean
   steps: OnboardingStepView[]
-  percent: number
+  completed: number
+  total: number
   subtitle: string
   allCompleted: boolean
 }>()
@@ -103,9 +105,10 @@ const emit = defineEmits<{
 .title-block {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-8);
   flex: 1;
   min-width: 0;
+  padding: var(--space-4) 0;
 }
 
 .subtitle {

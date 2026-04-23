@@ -18,7 +18,7 @@
         :native-scrollbar="false"
       >
         <template #header>
-          <div class="drawer-header">
+          <div class="drawer-header" :class="`drawer-header--align-${headerAlign}`">
             <div class="drawer-title">
               <slot name="title">{{ title }}</slot>
             </div>
@@ -85,6 +85,8 @@ export type UiDrawerProps = {
   maskClosable?: boolean
   /** Фиксированный z-index; если задан — layerManager не используется. */
   zIndex?: number
+  /** Выравнивание содержимого шапки по оси Y. `start` нужен, если title — многострочный блок. */
+  headerAlign?: 'center' | 'start'
   actions?: DrawerAction[]
   onConfirm?: () => boolean | void | Promise<boolean | void>
   onDecline?: () => boolean | void | Promise<boolean | void>
@@ -96,6 +98,7 @@ const props = withDefaults(defineProps<UiDrawerProps>(), {
   placement: 'right',
   showMask: true,
   maskClosable: true,
+  headerAlign: 'center',
 })
 
 const { m: isDesktop } = useBreakpoints()
@@ -148,9 +151,16 @@ async function handleActionClick(action: DrawerAction) {
 <style scoped lang="scss">
 .drawer-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   width: 100%;
+
+  &--align-center {
+    align-items: center;
+  }
+
+  &--align-start {
+    align-items: flex-start;
+  }
 }
 
 .header-right {

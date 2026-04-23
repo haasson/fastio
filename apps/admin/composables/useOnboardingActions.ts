@@ -1,5 +1,6 @@
 import { useRouter, useRuntimeConfig } from '#imports'
 import { useOnboarding, type OnboardingStepView } from '~/composables/useOnboarding'
+import { useStorefrontUrl } from '~/composables/useStorefrontUrl'
 import useTour from '~/composables/useTour'
 import { TOURS } from '~/tours'
 
@@ -12,14 +13,20 @@ export const useOnboardingActions = () => {
   const router = useRouter()
   const helpUrl = (useRuntimeConfig().public.helpUrl as string | undefined) ?? ''
   const onboarding = useOnboarding()
+  const { baseUrl: storefrontBaseUrl } = useStorefrontUrl()
   const tour = useTour()
 
   const openKb = (kbRoute: string | undefined) => {
     if (!kbRoute || !helpUrl) return
-    window.open(`${helpUrl}${kbRoute}`, '_blank')
+    window.open(`${helpUrl}${kbRoute}`, '_blank', 'noopener,noreferrer')
   }
 
   const goToStep = async (step: OnboardingStepView) => {
+    if (step.externalTarget === 'storefront') {
+      window.open(storefrontBaseUrl.value, '_blank', 'noopener,noreferrer')
+
+      return
+    }
     if (!step.route) return
     await router.push(step.route)
   }

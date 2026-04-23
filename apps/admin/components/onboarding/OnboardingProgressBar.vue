@@ -1,32 +1,41 @@
 <template>
   <div
     class="progress-root"
-    :aria-valuenow="percent"
+    :aria-valuenow="completed"
     aria-valuemin="0"
-    aria-valuemax="100"
+    :aria-valuemax="total"
+    aria-label="Прогресс онбординга"
     role="progressbar"
   >
-    <span class="bar" :style="{ width: `${percent}%` }" />
+    <span
+      v-for="i in total"
+      :key="i"
+      class="pill"
+      :class="{ filled: i <= completed }"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ percent: number }>()
+defineProps<{ total: number; completed: number }>()
 </script>
 
 <style scoped lang="scss">
 .progress-root {
+  display: flex;
+  gap: var(--space-4);
   width: 100%;
-  height: 3px;
-  background: var(--color-border);
-  border-radius: var(--radius-4);
-  overflow: hidden;
 }
 
-.bar {
-  display: block;
-  height: 100%;
-  background: var(--color-primary);
-  transition: width var(--transition-base);
+.pill {
+  flex: 1;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-base);
+
+  &.filled {
+    background: var(--color-primary);
+  }
 }
 </style>

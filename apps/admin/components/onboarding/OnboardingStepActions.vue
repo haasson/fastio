@@ -1,7 +1,7 @@
 <template>
   <div class="actions-root">
     <UiButton
-      v-if="step.ctaLabel && step.route"
+      v-if="step.ctaLabel && (step.route || step.externalTarget)"
       type="primary"
       size="small"
       @click="emit('go', step)"
