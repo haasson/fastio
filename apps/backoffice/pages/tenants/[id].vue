@@ -22,6 +22,8 @@
         <div class="info-grid">
           <div><span class="label">Слаг:</span> {{ tenant.slug }}</div>
           <div><span class="label">Email владельца:</span> {{ tenant.ownerEmail }}</div>
+          <div><span class="label">Тип бизнеса:</span> {{ tenant.businessType ?? '—' }}</div>
+          <div v-if="tenant.businessType === 'retail'"><span class="label">Стиль меню:</span> {{ tenant.menuStyle }}</div>
           <div><span class="label">Статус подписки:</span> <NTag :type="statusType" size="small">{{ tenant.subscription?.status }}</NTag></div>
           <div><span class="label">Текущий тариф:</span> {{ currentPlanName }}</div>
           <div><span class="label">Баланс:</span> <strong :class="{ 'balance-low': tenant.balance <= 0 }">{{ tenant.balance }} ₽</strong></div>
@@ -177,6 +179,8 @@ type TenantDetail = {
   name: string
   slug: string
   ownerEmail: string
+  businessType: string | null
+  menuStyle: string
   subscription: { status: string; plan: string; renewsAt?: string; pastDueAt?: string; priceOverride?: number | null }
   balance: number
   createdAt: string
@@ -289,6 +293,19 @@ const handleResetPriceOverride = async () => {
 const changePlanLoading = ref<string | null>(null)
 
 const handleChangePlan = async (planKey: string) => {
+  const targetPlan = tenant.value?.plans?.find((p) => p.key === planKey)
+  const currentPlan = tenant.value?.plans?.find((p) => p.key === tenant.value?.subscription?.plan)
+
+  if (!targetPlan) return
+
+  const isUpgrade = (targetPlan.sort_order ?? 0) > (currentPlan?.sort_order ?? 0)
+  const priceLabel = targetPlan.price > 0 ? `${targetPlan.price} ₽` : 'Бесплатно'
+  const message = isUpgrade
+    ? `Перейти на тариф «${targetPlan.name}» (${priceLabel}/мес)?\n\nС баланса сразу спишется ${targetPlan.price} ₽, начнётся новый оплачиваемый период на 30 дней. Неиспользованные деньги за текущий тариф не возвращаются.`
+    : `Понизить тариф до «${targetPlan.name}» (${priceLabel}/мес)?\n\nДеньги сейчас не списываются. В следующую дату платежа будет списано по новому тарифу.`
+
+  if (!window.confirm(message)) return
+
   changePlanLoading.value = planKey
   try {
     await $fetch(`/api/tenants/${tenantId}/change-plan`, {

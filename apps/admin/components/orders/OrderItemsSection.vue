@@ -59,7 +59,7 @@
       :tenant-id="tenantId"
       :edit-item="editingItem"
       show-combos
-      show-ingredients
+      :show-ingredients="access.ingredients.value"
       @select="onPickerSelect"
       @update:model-value="onAddDishModalClose"
     />
@@ -71,6 +71,7 @@ import { computed } from 'vue'
 import { UiButton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import { getItemUnitPrice } from '@fastio/shared'
+import { useAccess } from '~/composables/plan/useAccess'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import type { OrderItem } from '@fastio/shared'
 
@@ -89,6 +90,7 @@ const emit = defineEmits<{
 }>()
 
 const { confirm } = useConfirm()
+const access = useAccess()
 
 const isItemEditable = (item: OrderItem) => {
   if (item.customizable !== undefined) return item.customizable

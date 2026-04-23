@@ -20,7 +20,7 @@
         :name-placeholder="isServices ? 'Например: Ремонт холодильника' : 'Маргарита'"
         :price-placeholder="350"
         :description-placeholder="isServices ? 'Опишите услугу' : 'Томатный соус, моцарелла, базилик'"
-        :show-weight="!isServices"
+        :show-weight="isFood"
         @update:photo-url="currentPhotoUrl = $event"
         @update:photo-removed="photoRemoved = $event"
         @update:pending-photo="pendingPhotoFile = $event"
@@ -64,12 +64,12 @@
         />
 
         <IngredientsSection
-          v-if="!isServices"
+          v-if="access.ingredients.value"
           ref="ingredientsRef"
           :category-dishes="categoryDishes"
         />
 
-        <NutritionSection v-if="!isServices" ref="nutritionRef" />
+        <NutritionSection v-if="isFood" ref="nutritionRef" />
 
         <SettingsSection
           entity="dish"
@@ -94,6 +94,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useAccess } from '~/composables/plan/useAccess'
 import { useDishSave } from '~/composables/data/useDishSave'
 import { useAddons } from '~/composables/data/useAddons'
 import { useModules } from '~/composables/plan/useModules'
@@ -123,8 +124,10 @@ const emit = defineEmits<{
 
 const { tenantId: tenantIdRef } = toRefs(props)
 const tenantStore = useTenantStore()
-const { isServices } = useTenantLabels()
+const { isServices, menuStyle } = useTenantLabels()
+const isFood = computed(() => !isServices.value && menuStyle.value === 'food')
 const modules = useModules()
+const access = useAccess()
 const modalTitle = computed(() => props.dish
   ? (isServices.value ? 'Редактировать услугу' : 'Редактировать блюдо')
   : (isServices.value ? 'Новая услуга' : 'Новое блюдо'))

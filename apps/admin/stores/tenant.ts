@@ -45,6 +45,7 @@ export const useTenantStore = defineStore('tenant', () => {
     init: tenantApi.init,
     fetchTenant: tenantApi.fetchTenant,
     update: tenantApi.update,
+    changePlan: tenantApi.changePlan,
     switchTenant,
     dispose,
   }

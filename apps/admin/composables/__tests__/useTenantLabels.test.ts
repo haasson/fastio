@@ -9,24 +9,29 @@ vi.mock('~/stores/tenant', () => ({
 
 describe('useTenantLabels', () => {
   describe('menuLabel', () => {
-    it('food → "Меню"', () => {
-      mockStore.tenant = { businessType: 'food' }
+    it('retail + food → "Меню"', () => {
+      mockStore.tenant = { businessType: 'retail', menuStyle: 'food' }
       expect(useTenantLabels().menuLabel.value).toBe('Меню')
     })
 
+    it('retail + catalog → "Каталог"', () => {
+      mockStore.tenant = { businessType: 'retail', menuStyle: 'catalog' }
+      expect(useTenantLabels().menuLabel.value).toBe('Каталог')
+    })
+
     it('services → "Услуги"', () => {
-      mockStore.tenant = { businessType: 'services' }
+      mockStore.tenant = { businessType: 'services', menuStyle: 'food' }
       expect(useTenantLabels().menuLabel.value).toBe('Услуги')
     })
 
-    it('retail → "Каталог"', () => {
-      mockStore.tenant = { businessType: 'retail' }
-      expect(useTenantLabels().menuLabel.value).toBe('Каталог')
+    it('null businessType + food menuStyle → "Меню"', () => {
+      mockStore.tenant = { businessType: null, menuStyle: 'food' }
+      expect(useTenantLabels().menuLabel.value).toBe('Меню')
     })
 
-    it('null → "Каталог"', () => {
-      mockStore.tenant = { businessType: null }
-      expect(useTenantLabels().menuLabel.value).toBe('Каталог')
+    it('null tenant → "Меню" (default menuStyle)', () => {
+      mockStore.tenant = null
+      expect(useTenantLabels().menuLabel.value).toBe('Меню')
     })
   })
 
@@ -36,15 +41,15 @@ describe('useTenantLabels', () => {
       expect(useTenantLabels().isServices.value).toBe(true)
     })
 
-    it('food → false', () => {
-      mockStore.tenant = { businessType: 'food' }
+    it('retail → false', () => {
+      mockStore.tenant = { businessType: 'retail' }
       expect(useTenantLabels().isServices.value).toBe(false)
     })
   })
 
   describe('itemLabel / itemsLabel', () => {
     it('services → "услуга" / "Услуги"', () => {
-      mockStore.tenant = { businessType: 'services' }
+      mockStore.tenant = { businessType: 'services', menuStyle: 'food' }
       const { itemLabel, itemsLabel, itemsLabelLower, itemsLabelGen } = useTenantLabels()
 
       expect(itemLabel.value).toBe('услуга')
@@ -53,8 +58,8 @@ describe('useTenantLabels', () => {
       expect(itemsLabelGen.value).toBe('услуг')
     })
 
-    it('food → "блюдо" / "Блюда"', () => {
-      mockStore.tenant = { businessType: 'food' }
+    it('retail + food → "блюдо" / "Блюда"', () => {
+      mockStore.tenant = { businessType: 'retail', menuStyle: 'food' }
       const { itemLabel, itemsLabel, itemsLabelLower, itemsLabelGen } = useTenantLabels()
 
       expect(itemLabel.value).toBe('блюдо')
@@ -63,9 +68,26 @@ describe('useTenantLabels', () => {
       expect(itemsLabelGen.value).toBe('блюд')
     })
 
-    it('retail → "блюдо" / "Блюда" (не услуги)', () => {
+    it('retail + catalog → "товар" / "Товары"', () => {
+      mockStore.tenant = { businessType: 'retail', menuStyle: 'catalog' }
+      const { itemLabel, itemsLabel, itemsLabelLower, itemsLabelGen } = useTenantLabels()
+
+      expect(itemLabel.value).toBe('товар')
+      expect(itemsLabel.value).toBe('Товары')
+      expect(itemsLabelLower.value).toBe('товары')
+      expect(itemsLabelGen.value).toBe('товаров')
+    })
+  })
+
+  describe('reservationsLabel', () => {
+    it('services → "Запись"', () => {
+      mockStore.tenant = { businessType: 'services' }
+      expect(useTenantLabels().reservationsLabel.value).toBe('Запись')
+    })
+
+    it('retail → "Бронирование"', () => {
       mockStore.tenant = { businessType: 'retail' }
-      expect(useTenantLabels().itemLabel.value).toBe('блюдо')
+      expect(useTenantLabels().reservationsLabel.value).toBe('Бронирование')
     })
   })
 })

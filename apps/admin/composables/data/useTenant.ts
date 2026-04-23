@@ -115,6 +115,15 @@ export const useTenant = (userId: Ref<string | null>) => {
     }
   }
 
+  const changePlan = async (planKey: string): Promise<'upgraded' | 'downgraded'> => {
+    if (!tenant.value) throw new Error('No tenant')
+    const result = await api.tenants.updatePlan(tenant.value.id, planKey)
+
+    await fetchTenant()
+
+    return result
+  }
+
   const dispose = () => {
     tenant.value = null
     memberships.value = []
@@ -142,6 +151,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     fetchTenant,
     switchTenant,
     update,
+    changePlan,
     dispose,
   }
 }

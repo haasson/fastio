@@ -5,6 +5,12 @@ export default defineNuxtConfig({
   css: ['~/assets/styles/main.scss'],
   components: false,
   modules: ['@nuxt/eslint'],
+  runtimeConfig: {
+    public: {
+      supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL
+      supabaseAnonKey: '', // NUXT_PUBLIC_SUPABASE_ANON_KEY
+    },
+  },
   app: {
     head: {
       title: 'Fastio — сайт с онлайн-заказами для любого бизнеса',

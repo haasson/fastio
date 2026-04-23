@@ -10,7 +10,7 @@
     <ClientSitesSection />
     <HowItWorksSection />
     <EasyStartSection />
-    <PricingSection />
+    <PricingSection :plans="plans ?? []" />
     <FaqSection />
     <CtaSection />
     <LandingFooter />
@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { useFetch } from '#imports'
 import LandingHeader from '~/components/sections/LandingHeader.vue'
 import HeroSection from '~/components/sections/HeroSection.vue'
 import AudienceSection from '~/components/sections/AudienceSection.vue'
@@ -32,6 +33,10 @@ import PricingSection from '~/components/sections/PricingSection.vue'
 import FaqSection from '~/components/sections/FaqSection.vue'
 import CtaSection from '~/components/sections/CtaSection.vue'
 import LandingFooter from '~/components/sections/LandingFooter.vue'
+
+import type { LandingPlanRow } from '~/types/plan'
+
+const { data: plans } = await useFetch<LandingPlanRow[]>('/api/plans')
 </script>
 
 <style scoped lang="scss">

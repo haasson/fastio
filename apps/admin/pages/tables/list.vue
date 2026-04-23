@@ -67,7 +67,7 @@
       :model-value="dishPickerOpen"
       :tenant-id="ctx.tenantId"
       show-combos
-      show-ingredients
+      :show-ingredients="access.ingredients.value"
       @select="onDishPicked"
       @update:model-value="dishPickerOpen = $event"
     />
@@ -96,6 +96,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useTablesContext } from '~/composables/ui/useTablesContext'
 import useAddDishToTable from '~/composables/ui/useAddDishToTable'
 import { usePermissions } from '~/composables/auth/usePermissions'
+import { useAccess } from '~/composables/plan/useAccess'
 import DishPickerModal from '~/components/menu/DishPickerModal.vue'
 import TableCard from '~/components/tables/TableCard.vue'
 import TableEditModal from '~/components/tables/TableEditModal.vue'
@@ -105,6 +106,7 @@ const ctx = useTablesContext()
 
 const api = useDatabase()
 const { canManageTables } = usePermissions()
+const access = useAccess()
 
 const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId)
 

@@ -1,5 +1,5 @@
 import type { IconName } from '@fastio/icons'
-import type { TenantModules } from '@fastio/shared'
+import type { BusinessType, MenuStyle, TenantModules } from '@fastio/shared'
 
 export type ModuleKey = keyof TenantModules
 
@@ -10,4 +10,6 @@ export type ModuleConfig = {
   icon: IconName
   requiredPlan: string
   sortOrder: number
+  businessTypes: BusinessType[]
+  menuStyles: MenuStyle[] | null
 }

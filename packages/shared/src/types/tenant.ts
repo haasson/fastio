@@ -154,7 +154,11 @@ export type TenantSubscription = {
   gracePeriodDays: number | null
 }
 
-export type BusinessType = 'food' | 'retail' | 'services'
+export type BusinessType = 'retail' | 'services'
+
+export type MenuStyle = 'food' | 'catalog'
+
+export type PlanTier = 'showcase' | 'start' | 'pro'
 
 export type TenantModules = {
   delivery: boolean
@@ -168,6 +172,8 @@ export type TenantModules = {
   kitchen: boolean
   reservations: boolean
   customers: boolean
+  services: boolean
+  branches: boolean
 }
 
 export type OrderNumberFormat = 'counter' | 'prefix_counter' | 'date_counter' | 'prefix_date_counter'
@@ -235,6 +241,7 @@ export type Tenant = {
   customDomain: string | null
   ownerId: string
   businessType: BusinessType | null
+  menuStyle: MenuStyle
   theme: TenantTheme
   siteLayout: SiteLayout
   siteContent: SiteContent

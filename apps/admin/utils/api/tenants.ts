@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode } from '@fastio/shared'
+import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, parseSchedulingConfig } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { TenantRow } from './db-types'
@@ -32,6 +32,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     slug: row.slug,
     customDomain: row.custom_domain,
     businessType: row.business_type ?? null,
+    menuStyle: (row.menu_style as MenuStyle) ?? 'food',
     theme: { ...defaultTheme(), ...row.theme },
     siteLayout: deepMerge(defaultSiteLayout(), row.site_layout ?? {}),
     siteContent: deepMerge(defaultSiteContent(), row.site_content ?? {}),
@@ -68,6 +69,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   slug: data.slug,
   custom_domain: data.customDomain,
   business_type: data.businessType,
+  menu_style: data.menuStyle,
   theme: data.theme,
   site_layout: data.siteLayout,
   site_content: data.siteContent,
@@ -100,6 +102,14 @@ export const tenantsApi = {
 
   async update(sb: SupabaseClient, id: string, data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) {
     await query(sb.from('tenants').update(tenantToDb(data)).eq('id', id))
+  },
+
+  async updatePlan(sb: SupabaseClient, tenantId: string, planKey: string): Promise<'upgraded' | 'downgraded'> {
+    const { data, error } = await sb.rpc('billing_change_plan', { p_tenant_id: tenantId, p_new_plan_key: planKey })
+
+    if (error) throw new Error(error.message)
+
+    return data as 'upgraded' | 'downgraded'
   },
 
   async uploadDocument(sb: SupabaseClient, tenantId: string, file: File, slug: 'privacy' | 'offer'): Promise<string> {

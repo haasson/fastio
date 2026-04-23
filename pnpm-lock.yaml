@@ -266,9 +266,15 @@ importers:
       '@fastio/public-ui':
         specifier: workspace:*
         version: link:../../packages/public-ui
+      '@fastio/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@fastio/styles':
         specifier: workspace:*
         version: link:../../packages/styles
+      '@supabase/supabase-js':
+        specifier: ^2.98.0
+        version: 2.98.0
       lucide-vue-next:
         specifier: ^0.575.0
         version: 0.575.0(vue@3.5.29(typescript@5.9.3))

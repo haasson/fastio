@@ -31,7 +31,7 @@ import type { IconName } from '@fastio/icons'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
 import { useTenantLabels } from '~/composables/plan/useTenantLabels'
-import { useModules } from '~/composables/plan/useModules'
+import { useAccess } from '~/composables/plan/useAccess'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
@@ -49,32 +49,37 @@ type NavItem = {
 }
 
 const { canManageMenu, canManageOrders, canViewKitchen, canViewKitchenOverview, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canViewAuditLog, canManageTeam } = usePermissions()
-const modules = useModules()
-const { menuLabel, isServices } = useTenantLabels()
+const access = useAccess()
+const { menuLabel, reservationsLabel } = useTenantLabels()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 const { count: newReservationCount } = useNewReservationCounter()
 const { count: unreadSupportCount } = useUnreadSupportCounter()
 
-const canSeePromotions = computed(() => canManagePromotions.value && modules.promotions.value.enabled)
-const canSeeOrders = computed(() => canManageOrders.value && (modules.delivery.value.enabled || modules.pickup.value.enabled || isServices.value))
-const canSeeKitchen = computed(() => (canViewKitchen.value || canViewKitchenOverview.value) && modules.kitchen.value.enabled)
-const canSeeTables = computed(() => canViewTables.value && modules.dineIn.value.enabled)
-const canSeeReservations = computed(() => canViewReservations.value && (modules.reservations?.value?.enabled ?? false))
-const canSeeBranches = computed(() => canManageTeam.value && !isServices.value)
+const canSeePromotions = computed(() => canManagePromotions.value && access.promotions.value)
+const canSeeOrders = computed(() => canManageOrders.value && access.orders.value)
+const canSeeKitchen = computed(() => (canViewKitchen.value || canViewKitchenOverview.value) && access.kitchen.value)
+const canSeeTables = computed(() => canViewTables.value && access.dineIn.value)
+const canSeeReservations = computed(() => {
+  if (!canViewReservations.value) return false
+
+  return access.isServices.value ? access.services.value : access.reservations.value
+})
+const canSeeTeam = computed(() => canManageTeam.value && access.team.value)
+const canSeeBranches = computed(() => canManageTeam.value && access.branches.value)
 
 const orderCounter = computed(() => blinkingCounter.value ? newOrderCount.value : 0)
 const orderBlink = computed(() => blinkingCounter.value && newOrderCount.value > 0)
 
 const allNavItems: NavItem[] = [
-  { to: '/', icon: 'dashboard', label: 'Дашборд' },
+  { to: '/', icon: 'dashboard', label: 'Дашборд', visible: access.dashboard },
   { to: '/menu', icon: 'dishes', label: menuLabel, visible: canManageMenu },
   { to: '/orders', icon: 'orders', label: 'Заказы', visible: canSeeOrders, counter: orderCounter, blink: orderBlink },
   { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: canSeeKitchen },
   { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },
-  { to: '/reservations', icon: 'calendar', label: 'Бронирование', visible: canSeeReservations, counter: newReservationCount },
+  { to: '/reservations', icon: 'calendar', label: reservationsLabel, visible: canSeeReservations, counter: newReservationCount },
   { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: canSeePromotions },
-  { to: '/team/members', icon: 'users', label: 'Команда', visible: computed(() => canManageTeam.value && !isServices.value) },
+  { to: '/team/members', icon: 'users', label: 'Команда', visible: canSeeTeam },
   { to: '/team/branches', icon: 'mapPin', label: 'Филиалы', visible: canSeeBranches },
   { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
   { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewContent },

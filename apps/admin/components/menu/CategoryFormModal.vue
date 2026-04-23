@@ -32,7 +32,7 @@
         />
       </div>
 
-      <div v-if="!category" class="field" data-tour="category-type">
+      <div v-if="!category && modeOptions.length > 1" class="field" data-tour="category-type">
         <UiText size="small" weight="medium" class="label">Тип</UiText>
         <UiSelect
           :value="formMode"
@@ -72,6 +72,7 @@ import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiText, UiSelect, UiSwitch, UiAlert, useMessage } from '@fastio/ui'
 import type { Category, CategoryType, DishTagDefinition } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { useAccess } from '~/composables/plan/useAccess'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 
 type FormMode = 'regular' | 'virtual' | 'combo'
@@ -90,6 +91,7 @@ const emit = defineEmits<{
 
 const api = useDatabase()
 const { error: showError } = useMessage()
+const access = useAccess()
 
 const formRef = ref()
 const saving = ref(false)
@@ -135,11 +137,11 @@ watch(
   },
 )
 
-const modeOptions: { label: string; value: FormMode }[] = [
+const modeOptions = computed<{ label: string; value: FormMode }[]>(() => [
   { label: 'Обычная', value: 'regular' },
-  { label: 'Виртуальная (по тегу)', value: 'virtual' },
-  { label: 'Комбо', value: 'combo' },
-]
+  ...(access.virtualCategories.value ? [{ label: 'Виртуальная (по тегу)', value: 'virtual' as FormMode }] : []),
+  ...(access.combos.value ? [{ label: 'Комбо', value: 'combo' as FormMode }] : []),
+])
 
 const onModeChange = (mode: FormMode) => {
   formMode.value = mode

@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="mobile-menu">
-      <div v-if="modelValue" class="fs-mobile-menu-root" @click.self="emit('update:modelValue', false)">
+      <div v-if="modelValue" class="fs-mobile-menu-root" v-bind="$attrs" @click.self="emit('update:modelValue', false)">
         <slot />
       </div>
     </Transition>
@@ -15,6 +15,7 @@ type Props = {
   modelValue: boolean
 }
 
+defineOptions({ inheritAttrs: false })
 const props = defineProps<Props>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 

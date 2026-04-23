@@ -16,9 +16,9 @@
       </UiTitle>
     </div>
 
-    <div v-if="price > 0" class="summary-item">
+    <div v-if="price > 0 && tenant.subscription.renewsAt" class="summary-item">
       <UiText size="small" class="summary-label">Следующее списание</UiText>
-      <UiTitle size="h4">{{ tenant.subscription.renewsAt ? formatDate(tenant.subscription.renewsAt) : '—' }}</UiTitle>
+      <UiTitle size="h4">{{ formatDate(tenant.subscription.renewsAt) }}</UiTitle>
       <UiText size="small" class="summary-sub">{{ formatPrice(price) }}</UiText>
     </div>
   </div>

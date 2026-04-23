@@ -28,6 +28,7 @@ export type TenantRow = {
   slug: string
   custom_domain: string | null
   business_type: BusinessType | null
+  menu_style: string
   theme: TenantTheme
   site_layout: Record<string, unknown>
   site_content: SiteContent

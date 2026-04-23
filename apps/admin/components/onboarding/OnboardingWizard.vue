@@ -18,6 +18,10 @@
           ref="typeStepRef"
           v-model="form.businessType"
         />
+        <OnboardingStepMenuStyle
+          v-else-if="currentStep === 'menuStyle'"
+          v-model="form.menuStyle"
+        />
         <OnboardingStepInfo
           v-else-if="currentStep === 'info'"
           ref="infoStepRef"
@@ -76,15 +80,16 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { UiButton, UiCard } from '@fastio/ui'
-import type { BusinessType } from '@fastio/shared'
+import type { BusinessType, MenuStyle } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import OnboardingStepType from '~/components/onboarding/OnboardingStepType.vue'
+import OnboardingStepMenuStyle from '~/components/onboarding/OnboardingStepMenuStyle.vue'
 import OnboardingStepInfo from '~/components/onboarding/OnboardingStepInfo.vue'
 import OnboardingStepBranch from '~/components/onboarding/OnboardingStepBranch.vue'
 import OnboardingStepModules from '~/components/onboarding/OnboardingStepModules.vue'
 import OnboardingStepComplete from '~/components/onboarding/OnboardingStepComplete.vue'
 
-type StepName = 'type' | 'info' | 'branch' | 'modules' | 'complete'
+type StepName = 'type' | 'menuStyle' | 'info' | 'branch' | 'modules' | 'complete'
 
 const tenantStore = useTenantStore()
 
@@ -96,6 +101,7 @@ const branchStepRef = ref<InstanceType<typeof OnboardingStepBranch> | null>(null
 const modulesStepRef = ref<InstanceType<typeof OnboardingStepModules> | null>(null)
 const form = reactive({
   businessType: tenantStore.tenant?.businessType ?? null as BusinessType | null,
+  menuStyle: tenantStore.tenant?.menuStyle ?? ('food' as MenuStyle),
   name: tenantStore.tenant?.name ?? '',
   phone: tenantStore.tenant?.contacts?.phone ?? '',
   timezone: tenantStore.tenant?.timezone ?? 'Europe/Moscow',
@@ -109,7 +115,7 @@ const stepList = computed<StepName[]>(() => {
     return ['type', 'info', 'complete']
   }
 
-  return ['type', 'info', 'branch', 'modules', 'complete']
+  return ['type', 'menuStyle', 'info', 'branch', 'modules', 'complete']
 })
 
 const totalSteps = computed(() => stepList.value.length)
@@ -141,9 +147,12 @@ const next = async () => {
           delivery: false,
           pickup: false,
           dineIn: false,
+          services: true,
         }
       }
       await tenantStore.update(updates)
+    } else if (currentStep.value === 'menuStyle') {
+      await tenantStore.update({ menuStyle: form.menuStyle })
     } else if (currentStep.value === 'info') {
       await tenantStore.update({
         name: form.name.trim(),

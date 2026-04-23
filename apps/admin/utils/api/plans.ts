@@ -1,16 +1,19 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Plan } from '@fastio/shared'
+import type { BusinessType, Plan, PlanFeatures } from '@fastio/shared'
 import { query } from '~/utils/query'
 
 const mapPlan = (row: Record<string, unknown>): Plan => ({
   id: row.id as string,
-  key: row.key as Plan['key'],
+  key: row.key as string,
+  businessType: (row.business_type as BusinessType) ?? 'retail',
   name: row.name as string,
   description: row.description as string,
   price: row.price as number,
   sortOrder: row.sort_order as number,
   isActive: row.is_active as boolean,
-  maxBranches: row.max_branches as number,
+  features: (row.features as PlanFeatures) ?? {},
+  badge: (row.badge as string | null) ?? null,
+  isFeatured: (row.is_featured as boolean) ?? false,
 })
 
 export const plansApi = {

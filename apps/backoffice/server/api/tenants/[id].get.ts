@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: tenant, error } = await supabase
     .from('tenants')
-    .select('id, name, slug, owner_id, subscription, balance, created_at')
+    .select('id, name, slug, owner_id, subscription, balance, created_at, business_type, menu_style')
     .eq('id', id)
     .single()
 
@@ -29,14 +29,21 @@ export default defineEventHandler(async (event) => {
     .order('created_at', { ascending: false })
     .limit(100)
 
-  // Plans for reference
-  const { data: plans } = await supabase.from('plans').select('*').order('sort_order')
+  // Plans for reference — only matching business type
+  const { data: plans } = await supabase
+    .from('plans')
+    .select('*')
+    .eq('is_active', true)
+    .eq('business_type', tenant.business_type ?? 'retail')
+    .order('sort_order')
 
   return {
     id: tenant.id,
     name: tenant.name,
     slug: tenant.slug,
     ownerEmail,
+    businessType: tenant.business_type ?? null,
+    menuStyle: tenant.menu_style ?? 'food',
     subscription: tenant.subscription,
     balance: tenant.balance ?? 0,
     createdAt: tenant.created_at,

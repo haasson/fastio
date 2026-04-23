@@ -64,10 +64,9 @@ const { warning } = useMessage()
 const toggleIssues = ref<ToggleIssue[]>([])
 const pendingToggleKey = ref<ModuleKey | null>(null)
 
-const moduleList = computed(() => configs.value.map((cfg) => ({
-  ...cfg,
-  state: modules[cfg.key].value,
-})),
+const moduleList = computed(() => configs.value
+  .map((cfg) => ({ ...cfg, state: modules[cfg.key]?.value ?? { active: false, locked: false, absent: false, enabled: false } }))
+  .filter((m) => !m.state.absent),
 )
 
 const availableModules = computed(() => moduleList.value.filter((m) => !m.state.locked))

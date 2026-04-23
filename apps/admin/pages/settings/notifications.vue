@@ -29,39 +29,41 @@
         </div>
       </div>
 
-      <UiSectionHeader title="Telegram" />
+      <template v-if="access.telegramNotifications.value">
+        <UiSectionHeader title="Telegram" />
 
-      <div class="tg-block">
-        <span class="tg-icon">
-          <UiIcon name="messageCircle" :size="28" />
-        </span>
-        <div class="tg-info">
-          <UiText size="small" class="tg-title">Уведомления в Telegram</UiText>
-          <UiText size="tiny" class="tg-desc">
-            <template v-if="isTelegramConnected">
-              {{ chatTitle ? `Подключена группа «${chatTitle}»` : 'Группа подключена' }} — заказы и бронирования будут приходить туда
-            </template>
-            <template v-else>Подключи группу — бот будет писать туда при каждом новом заказе или бронировании</template>
-          </UiText>
+        <div class="tg-block">
+          <span class="tg-icon">
+            <UiIcon name="messageCircle" :size="28" />
+          </span>
+          <div class="tg-info">
+            <UiText size="small" class="tg-title">Уведомления в Telegram</UiText>
+            <UiText size="tiny" class="tg-desc">
+              <template v-if="isTelegramConnected">
+                {{ chatTitle ? `Подключена группа «${chatTitle}»` : 'Группа подключена' }} — заказы и бронирования будут приходить туда
+              </template>
+              <template v-else>Подключи группу — бот будет писать туда при каждом новом заказе или бронировании</template>
+            </UiText>
+          </div>
+          <UiButton
+            v-if="isTelegramConnected"
+            size="small"
+            :loading="disconnecting"
+            @click="disconnectTelegram"
+          >
+            Отключить
+          </UiButton>
+          <UiButton
+            v-else
+            size="small"
+            type="primary"
+            :loading="generating"
+            @click="connectTelegram"
+          >
+            Подключить
+          </UiButton>
         </div>
-        <UiButton
-          v-if="isTelegramConnected"
-          size="small"
-          :loading="disconnecting"
-          @click="disconnectTelegram"
-        >
-          Отключить
-        </UiButton>
-        <UiButton
-          v-else
-          size="small"
-          type="primary"
-          :loading="generating"
-          @click="connectTelegram"
-        >
-          Подключить
-        </UiButton>
-      </div>
+      </template>
 
       <div class="footer">
         <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
@@ -108,11 +110,13 @@ import { ref, reactive, computed, watch, onUnmounted } from 'vue'
 import { UiForm, UiInput, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal, useMessage } from '@fastio/ui'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'
+import { useAccess } from '~/composables/plan/useAccess'
 import { useNuxtApp, useRuntimeConfig } from '#imports'
 import { useConfirm } from '@fastio/kit'
 
 const { blinkingCounter } = useNotificationPrefs()
 const tenantStore = useTenantStore()
+const access = useAccess()
 const { $supabase } = useNuxtApp()
 const { success } = useMessage()
 const { confirm } = useConfirm()

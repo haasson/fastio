@@ -34,7 +34,7 @@ export type Tour = {
   title: string
   description: string
   category: string
-  moduleRequired?: ModuleKey
+  moduleRequired?: ModuleKey | ModuleKey[]
   permissionRequired?: PermissionKey
   getSteps: () => TourStep[]
 }
@@ -87,6 +87,7 @@ export const TOURS: Tour[] = [
   {
     id: 'orders',
     category: 'orders',
+    moduleRequired: ['delivery', 'pickup'],
     title: 'Как работать с заказами',
     description: 'Статусы, карточки заказов, быстрая смена статуса и создание заказа вручную.',
     getSteps: getOrdersTourSteps,
@@ -94,6 +95,7 @@ export const TOURS: Tour[] = [
   {
     id: 'order-statuses',
     category: 'orders',
+    moduleRequired: ['delivery', 'pickup'],
     title: 'Настройка статусов',
     description: 'Создавайте свои статусы, задавайте им группы и быстрые действия.',
     getSteps: getStatusesTourSteps,
@@ -101,6 +103,7 @@ export const TOURS: Tour[] = [
   {
     id: 'order-number',
     category: 'orders',
+    moduleRequired: ['delivery', 'pickup'],
     title: 'Нумерация заказов',
     description: 'Формат номера заказа: счётчик, дата, префикс, сброс.',
     getSteps: getOrderNumberTourSteps,
@@ -116,6 +119,7 @@ export const TOURS: Tour[] = [
   {
     id: 'order-settings',
     category: 'orders',
+    moduleRequired: ['delivery', 'pickup'],
     title: 'Предзаказ',
     description: 'Разрешите клиентам выбирать время заказа — настройте слоты и буферы.',
     getSteps: getOrderSettingsTourSteps,

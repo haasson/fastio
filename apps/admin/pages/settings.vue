@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
@@ -22,18 +22,12 @@ const tenantStore = useTenantStore()
 
 onMounted(() => tenantStore.init())
 
-const isServices = computed(() => tenantStore.tenant?.businessType === 'services')
-
-const tabs = computed(() => {
-  const all = [
-    { value: 'contacts', label: 'Общее', icon: 'settings' as const },
-    { value: 'modules', label: 'Модули', icon: 'puzzle' as const },
-    { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
-    { value: 'legal', label: 'Юридические', icon: 'fileText' as const },
-  ]
-
-  return isServices.value ? all.filter((t) => t.value !== 'modules') : all
-})
+const tabs = [
+  { value: 'contacts', label: 'Общее', icon: 'settings' as const },
+  { value: 'modules', label: 'Модули', icon: 'puzzle' as const },
+  { value: 'notifications', label: 'Уведомления', icon: 'messageCircle' as const },
+  { value: 'legal', label: 'Юридические', icon: 'fileText' as const },
+]
 </script>
 
 <style scoped lang="scss">

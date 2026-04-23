@@ -6,39 +6,59 @@
         <template #subtitle>Тариф окупается с первых же онлайн-заказов. Никаких скрытых платежей.</template>
       </SectionHeader>
 
-      <p class="note-text">
-        Fastio создан для общепита и крупных заведений, но мы оставили доступный тариф
-        для частных мастеров и небольших сервисов — чтобы классный инструмент
-        был у каждого.
-      </p>
+      <div class="switcher">
+        <button
+          class="switcher-btn"
+          :class="{ active: activeType === 'retail' }"
+          @click="activeType = 'retail'"
+        >
+          Магазины и рестораны
+        </button>
+        <button
+          class="switcher-btn"
+          :class="{ active: activeType === 'services' }"
+          @click="activeType = 'services'"
+        >
+          Услуги и запись
+        </button>
+      </div>
 
       <div class="cards">
-        <div v-for="plan in plans" :key="plan.name" class="card" :class="{ featured: plan.featured }">
+        <div
+          v-for="plan in activePlans"
+          :key="plan.key"
+          class="card"
+          :class="{ featured: plan.is_featured }"
+        >
           <div class="card-inner">
-            <span v-if="plan.badge" class="badge">{{ plan.badge }}</span>
-            <span class="plan-name">{{ plan.name }}</span>
-            <p class="plan-desc">{{ plan.desc }}</p>
+            <div class="plan-header">
+              <span class="plan-name">{{ plan.name }}</span>
+              <span v-if="plan.badge" class="badge">{{ plan.badge }}</span>
+            </div>
+            <p class="plan-desc">{{ plan.description }}</p>
 
             <div class="price-wrap">
               <div class="price">
-                <span class="amount">{{ plan.price }}</span>
-                <span class="period">/ мес</span>
+                <span class="amount">{{ plan.price > 0 ? `${plan.price.toLocaleString('ru')} ₽` : 'Бесплатно' }}</span>
+                <span v-if="plan.price > 0" class="period">/ мес</span>
               </div>
-              <span class="per-year">{{ plan.perYear }} в год</span>
             </div>
 
             <ul class="features">
-              <li v-for="feature in plan.features" :key="feature" class="feature">
+              <li v-if="prevPlanName(plan)" class="feature feature-inherited">
                 <Check :size="15" class="check-icon" />
-                <span>{{ feature }}</span>
+                <span>Всё из тарифа {{ prevPlanName(plan) }}</span>
+              </li>
+              <li v-for="label in featureLabels(plan)" :key="label" class="feature">
+                <Check :size="15" class="check-icon" />
+                <span>{{ label }}</span>
               </li>
             </ul>
 
-            <FsButton as="a" href="#contact" :variant="plan.featured ? 'primary' : 'outline'" class="action">
+            <FsButton as="a" href="#contact" :variant="plan.is_featured ? 'primary' : 'outline'" class="action">
               Оставить заявку
             </FsButton>
           </div>
-          <p v-if="plan.note" class="note">{{ plan.note }}</p>
         </div>
       </div>
 
@@ -52,58 +72,76 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { FsButton } from '@fastio/public-ui'
+import { extractPlanTier, getPlanTierOrder } from '@fastio/shared'
 import { Check } from 'lucide-vue-next'
 import SectionHeader from './SectionHeader.vue'
+import type { LandingPlanRow } from '~/types/plan'
 
-type Plan = {
-  name: string
-  desc: string
-  price: string
-  perYear: string
-  features: string[]
-  note?: string
-  featured?: boolean
-  badge?: string
+type PlanRow = LandingPlanRow
+
+const BASE_FEATURES: Record<string, string[]> = {
+  retail: ['Конструктор сайта', 'Каталог товаров и блюд', 'Кастомный домен', 'Тема и дизайн'],
+  services: ['Конструктор сайта', 'Каталог услуг', 'Кастомный домен', 'Тема и дизайн'],
 }
 
-const plans: Plan[] = [
-  {
-    name: 'Услуги',
-    desc: 'Для мастеров, салонов и сервисов',
-    price: '490 ₽',
-    perYear: '5 880 ₽',
-    features: [
-      'Конструктор сайта',
-      'Каталог услуг',
-      'Приём заявок онлайн',
-      'Онлайн-бронирование',
-      'Уведомления в Telegram',
-      'Поддомен fastio.ru',
-    ],
-  },
-  {
-    name: 'Бизнес',
-    desc: 'Для кафе, ресторанов и магазинов',
-    price: '2 490 ₽',
-    perYear: '29 880 ₽',
-    badge: 'Популярный',
-    featured: true,
-    features: [
-      'Всё из тарифа Услуги',
-      'Корзина и онлайн-заказы',
-      'Доставка и самовывоз',
-      'Модификаторы и добавки',
-      'Промокоды и акции',
-      'Комбо-наборы',
-      'Экран кухни',
-      'Заказ со стола (QR)',
-      'Кастомные роли сотрудников',
-      'Свой домен + SSL',
-    ],
-    note: 'Окупается уже с первой недели онлайн-заказов',
-  },
-]
+const MODULE_LABELS: Record<string, string> = {
+  delivery: 'Доставка',
+  pickup: 'Самовывоз',
+  modifiers: 'Модификаторы блюд',
+  addons: 'Добавки к заказу',
+  promotions: 'Акции и промокоды',
+  combos: 'Комбо-наборы',
+  kitchen: 'Экран кухни (KDS)',
+  dineIn: 'QR-столы и зал',
+  reservations: 'Бронирование столиков',
+  services: 'Онлайн-запись',
+  branches: 'Несколько филиалов',
+  customRoles: 'Кастомные роли',
+  customers: 'База клиентов',
+  team: 'Управление командой',
+}
+
+const props = defineProps<{ plans: PlanRow[] }>()
+
+const activeType = ref<'retail' | 'services'>('retail')
+
+const activePlans = computed(() =>
+  props.plans.filter((p) => p.business_type === activeType.value),
+)
+
+const prevPlanName = (plan: PlanRow): string | null => {
+  const order = getPlanTierOrder(plan.key)
+  if (order === 0) return null
+  const prev = props.plans
+    .filter((p) => p.business_type === plan.business_type && getPlanTierOrder(p.key) === order - 1)
+    .at(0)
+  return prev?.name ?? null
+}
+
+const featureLabels = (plan: PlanRow): string[] => {
+  if (extractPlanTier(plan.key) === 'showcase') {
+    return BASE_FEATURES[plan.business_type] ?? BASE_FEATURES.retail
+  }
+
+  const f = plan.features
+  const labels: string[] = []
+
+  if (f.modules) {
+    for (const [key, val] of Object.entries(f.modules)) {
+      if (val && MODULE_LABELS[key]) labels.push(MODULE_LABELS[key])
+    }
+  }
+  if (f.site?.telegramNotifications) labels.push('Уведомления в Telegram')
+  if (f.menu?.virtualCategories) labels.push('Виртуальные категории')
+  if (f.menu?.ingredients) labels.push('Состав блюд')
+  if (f.resources?.max !== undefined) {
+    labels.push(f.resources.max === 0 ? 'Без лимита ресурсов' : `До ${f.resources.max} активных ресурсов`)
+  }
+
+  return labels
+}
 </script>
 
 <style scoped lang="scss">
@@ -132,13 +170,34 @@ const plans: Plan[] = [
   }
 }
 
-.note-text {
-  text-align: center;
-  @include text-caption;
+.switcher {
+  display: flex;
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-border);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 40px;
+}
+
+.switcher-btn {
+  padding: 8px 20px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
   color: var(--ln-muted);
-  max-width: 520px;
-  margin: 0 0 48px;
-  line-height: 1.5;
+  @include text-caption(500);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &.active {
+    background: var(--ln-surface-2);
+    color: var(--ln-white);
+  }
+
+  &:hover:not(.active) {
+    color: rgba(245, 243, 238, 0.7);
+  }
 }
 
 .cards {
@@ -147,7 +206,7 @@ const plans: Plan[] = [
   gap: 20px;
   align-items: center;
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -160,7 +219,7 @@ const plans: Plan[] = [
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 420px;
+  max-width: 380px;
   background: var(--ln-surface);
   border: 1px solid var(--ln-border);
   border-radius: 16px;
@@ -197,18 +256,24 @@ const plans: Plan[] = [
   }
 
   @media (min-width: 768px) {
-    padding: 32px 28px;
+    padding: 28px 24px;
   }
 }
 
+.plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 6px;
+}
+
 .badge {
-  align-self: flex-start;
   background: var(--ln-accent);
   color: white;
   @include text-xs(600);
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
-  margin: 0 0 16px;
+  white-space: nowrap;
 }
 
 .plan-name {
@@ -216,7 +281,7 @@ const plans: Plan[] = [
   font-size: 20px;
   font-weight: 700;
   color: var(--ln-white);
-  margin: 0 0 6px;
+  margin: 0;
 }
 
 .plan-desc {
@@ -226,13 +291,13 @@ const plans: Plan[] = [
 }
 
 .price-wrap {
-  @include flex-col(4px);
   margin-bottom: 24px;
 }
 
 .price {
-  @include flex-row(6px);
+  display: flex;
   align-items: baseline;
+  gap: 6px;
 }
 
 .amount {
@@ -240,7 +305,7 @@ const plans: Plan[] = [
   font-weight: 700;
 
   @media (min-width: 480px) {
-    font-size: 40px;
+    font-size: 36px;
   }
   font-family: var(--heading-font-family);
   color: var(--ln-white);
@@ -249,11 +314,6 @@ const plans: Plan[] = [
 
 .period {
   @include text-caption;
-  color: var(--ln-muted);
-}
-
-.per-year {
-  @include text-xs;
   color: var(--ln-muted);
 }
 
@@ -275,6 +335,14 @@ const plans: Plan[] = [
   @include text-caption;
   color: rgba(245, 243, 238, 0.8);
   line-height: 1.4;
+
+  &-inherited {
+    color: rgba(245, 243, 238, 0.5);
+
+    .check-icon {
+      color: rgba(229, 90, 37, 0.5);
+    }
+  }
 }
 
 .check-icon {
@@ -285,14 +353,6 @@ const plans: Plan[] = [
 
 .action {
   width: 100%;
-}
-
-.note {
-  padding: 12px 24px 16px;
-  @include text-xs;
-  color: rgba(229, 90, 37, 0.7);
-  text-align: center;
-  border-top: 1px solid var(--ln-border);
 }
 
 .compare-hint {

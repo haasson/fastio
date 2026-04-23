@@ -65,6 +65,7 @@
       />
 
       <RichTextEditor
+        v-if="linkType === 'promotion' || linkType === 'promo_code'"
         v-model="form.content"
         label="Контент страницы"
       />
@@ -78,6 +79,7 @@ import { UiModal, UiForm, UiSwitch, UiSelect, UiInput } from '@fastio/ui'
 import type { ModalAction } from '@fastio/ui'
 import type { Banner, BannerFormData, Promotion, PromoCode } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
+import { useAccess } from '~/composables/plan/useAccess'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 
@@ -125,13 +127,20 @@ const getLinkType = (b: Banner | null): LinkType => {
 
 const linkType = ref<LinkType>('none')
 
+const access = useAccess()
+
 watch(() => props.modelValue, (open) => {
   if (!open) return
   const b = props.banner
 
   pendingFile.value = null
   imageError.value = false
-  linkType.value = getLinkType(b)
+
+  let lt = getLinkType(b)
+
+  if ((lt === 'promotion' || lt === 'promo_code') && !access.promotions.value) lt = 'none'
+  linkType.value = lt
+
   form.value = {
     url: b?.url ?? '',
     enabled: b?.enabled ?? true,
@@ -152,13 +161,17 @@ watch(linkType, (val) => {
 
 // ─── Options ─────────────────────────────────────────────────
 
-const linkTypeOptions = [
+const linkTypeOptions = computed(() => [
   { label: 'Ничего не происходит', value: 'none' },
   { label: 'Страница сайта', value: 'page' },
-  { label: 'Страница акции', value: 'promotion' },
-  { label: 'Страница промокода', value: 'promo_code' },
+  ...(access.promotions.value
+    ? [
+        { label: 'Страница акции', value: 'promotion' },
+        { label: 'Страница промокода', value: 'promo_code' },
+      ]
+    : []),
   { label: 'Внешняя ссылка', value: 'custom' },
-]
+])
 
 const promotionOptions = computed(() => props.promotions.map((p) => ({ label: p.title, value: p.id })),
 )

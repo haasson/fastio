@@ -1,5 +1,6 @@
 import { ref } from 'vue'
-import type { Plan } from '@fastio/shared'
+import type { Plan, PlanTier } from '@fastio/shared'
+import { PLAN_LEVEL_ORDER, extractPlanTier } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reportError } from '~/utils/reportError'
 
@@ -24,15 +25,17 @@ export const usePlans = () => {
   }
 
   const getPlanSortOrder = (key: string): number => {
-    // До загрузки планов — всё кроме service залочено (безопасный дефолт)
-    if (!loaded.value) return key === 'service' ? 0 : Infinity
-    const plan = plans.value.find((p) => p.key === key)
+    const tier = extractPlanTier(key)
 
-    return plan?.sortOrder ?? 0
+    // До загрузки — всё кроме showcase залочено (безопасный дефолт)
+    if (!loaded.value) return tier === 'showcase' ? 0 : Infinity
+
+    return PLAN_LEVEL_ORDER[tier as PlanTier] ?? 0
   }
 
   const getPlanLabel = (key: string): string => {
-    const plan = plans.value.find((p) => p.key === key)
+    const tier = extractPlanTier(key)
+    const plan = plans.value.find((p) => p.key === key) ?? plans.value.find((p) => extractPlanTier(p.key) === tier)
 
     return plan?.name ?? key
   }

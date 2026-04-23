@@ -49,7 +49,11 @@ const categoriesWithTours = computed(() => TOUR_CATEGORIES
     ...cat,
     tours: TOURS.filter((t) => {
       if (t.category !== cat.id) return false
-      if (t.moduleRequired && !(modules[t.moduleRequired]?.value.enabled ?? false)) return false
+      if (t.moduleRequired) {
+        const keys = Array.isArray(t.moduleRequired) ? t.moduleRequired : [t.moduleRequired]
+
+        if (!keys.some((k) => modules[k]?.value.enabled)) return false
+      }
       if (t.permissionRequired && !can(t.permissionRequired).value) return false
 
       return true
