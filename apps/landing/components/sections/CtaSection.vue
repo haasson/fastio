@@ -1,11 +1,10 @@
 <template>
   <section id="contact" class="cta-root">
     <div class="container">
-      <SectionHeader label="Связаться с нами">
-        <template #heading>Запустите сайт с онлайн-заказами за&nbsp;1&nbsp;день</template>
+      <SectionHeader label="Контакты">
+        <template #heading>Остались вопросы?</template>
         <template #subtitle>
-          Напишите нам удобным способом — менеджер ответит, поможет с настройкой
-          и запустит ваш сайт. Без лишних вопросов и месяцев ожидания.
+          Напишите нам удобным способом — ответим в рабочее время.
         </template>
       </SectionHeader>
 

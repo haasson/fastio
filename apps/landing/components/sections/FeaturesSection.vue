@@ -30,6 +30,10 @@ import {
   BarChart3,
   QrCode,
   Tag,
+  CalendarCheck,
+  CalendarDays,
+  Building2,
+  ChefHat,
 } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
@@ -79,6 +83,26 @@ const features: Feature[] = [
     icon: BarChart3,
     title: 'Аналитика',
     desc: 'Отслеживайте заказы, популярные блюда и выручку в реальном времени.',
+  },
+  {
+    icon: CalendarCheck,
+    title: 'Онлайн запись',
+    desc: 'Клиенты записываются сами через сайт в удобный слот. Вы видите расписание в панели.',
+  },
+  {
+    icon: CalendarDays,
+    title: 'Резервирование столиков',
+    desc: 'Гости бронируют стол онлайн — все резервации видны в одном месте.',
+  },
+  {
+    icon: Building2,
+    title: 'Несколько точек',
+    desc: 'Управляйте несколькими филиалами из одной панели. У каждой точки свои настройки.',
+  },
+  {
+    icon: ChefHat,
+    title: 'Кухонный экран',
+    desc: 'Заказы автоматически попадают на экран кухни. Повар видит очередь и отмечает готовность.',
   },
 ]
 </script>

@@ -25,8 +25,8 @@
         </a>
       </nav>
 
-      <FsButton as="a" href="#contact" variant="primary" class="cta-desktop cta-accent">
-        Оставить заявку
+      <FsButton as="a" href="#try" variant="primary" class="cta-desktop cta-accent">
+        Начать бесплатно
       </FsButton>
 
       <FsBurger v-model="menuOpen" style="--burger-color: var(--ln-white)" />
@@ -57,8 +57,8 @@
       </a>
     </nav>
     <div class="mobile-bottom">
-      <FsButton as="a" href="#contact" variant="primary" size="large" class="cta-accent" @click="menuOpen = false">
-        Оставить заявку
+      <FsButton as="a" href="#try" variant="primary" size="large" class="cta-accent" @click="menuOpen = false">
+        Начать бесплатно
       </FsButton>
     </div>
   </FsMobileMenu>
@@ -206,6 +206,7 @@ onUnmounted(() => {
 .mobile-nav {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .mobile-nav-link {
@@ -214,8 +215,10 @@ onUnmounted(() => {
   color: var(--ln-white);
   text-decoration: none;
   padding: 14px 0;
+  text-align: center;
   border-bottom: 1px solid var(--ln-border);
   transition: color 0.15s;
+  width: 100%;
 
   &:first-child { border-top: 1px solid var(--ln-border); }
   &:hover { color: var(--ln-accent); }
@@ -224,9 +227,7 @@ onUnmounted(() => {
 .mobile-bottom {
   margin-top: auto;
   padding-top: 32px;
-
-  :deep(button) {
-    width: 100%;
-  }
+  display: flex;
+  justify-content: center;
 }
 </style>

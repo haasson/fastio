@@ -167,8 +167,8 @@ const fastioItems: CompareItem[] = [
   }
 
   &.good {
-    background: rgba(229, 90, 37, 0.15);
-    color: var(--ln-accent);
+    background: var(--ln-accent);
+    color: #fff;
   }
 }
 
@@ -289,6 +289,7 @@ const fastioItems: CompareItem[] = [
 
   .card-fastio & {
     color: var(--ln-muted);
+    margin-bottom: 20px;
   }
 }
 

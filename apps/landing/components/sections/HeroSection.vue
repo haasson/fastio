@@ -2,13 +2,13 @@
   <section id="hero" class="hero-root">
     <div class="container">
       <h1 class="title">
-        Запустите сайт с онлайн-заказами <em>за&nbsp;1&nbsp;день</em>
+        Запустите сайт с онлайн-заказами <em>за&nbsp;5&nbsp;минут</em>
       </h1>
 
       <div class="hero-body">
         <div class="hero-text">
           <p class="subtitle">
-            Полноценный сайт с онлайн-заказами, доставкой, меню и&nbsp;акциями — подключаем через менеджера за&nbsp;1&nbsp;день.
+            Полноценный сайт с онлайн-заказами, доставкой, меню и&nbsp;акциями — зарегистрируйтесь сами и&nbsp;сразу работайте.
             Управляйте всем из одной панели: заказы, аналитика, команда.
             Для кафе, ресторанов, фастфуда — от&nbsp;2&nbsp;490&nbsp;₽/мес.
           </p>
@@ -20,8 +20,8 @@
           </div>
 
           <div class="actions">
-            <FsButton as="a" href="#contact" variant="primary" size="large">
-              Оставить заявку
+            <FsButton as="a" href="#try" variant="primary" size="large">
+              Начать бесплатно
             </FsButton>
             <FsButton as="a" href="#how-it-works" variant="outline" size="large">
               Как это работает →
@@ -29,7 +29,7 @@
           </div>
 
           <p class="trust">
-            Подключаем за&nbsp;1&nbsp;день через менеджера — быстро и&nbsp;без лишних вопросов
+            14 дней бесплатно — без карты и без звонков менеджера
           </p>
         </div>
 

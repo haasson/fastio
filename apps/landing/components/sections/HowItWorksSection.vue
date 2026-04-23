@@ -1,9 +1,9 @@
 <template>
   <section id="how-it-works" class="how-root">
     <div class="container">
-      <SectionHeader label="Как подключиться">
-        <template #heading>Сайт с онлайн-заказами за&nbsp;1&nbsp;день</template>
-        <template #subtitle>Никакой самостоятельной настройки с нуля — менеджер помогает и отвечает на вопросы.</template>
+      <SectionHeader label="Как начать">
+        <template #heading>Сайт с онлайн-заказами за&nbsp;5&nbsp;минут</template>
+        <template #subtitle>Зарегистрируйтесь, заполните меню — и принимайте заказы. Без менеджеров и ожиданий.</template>
       </SectionHeader>
 
       <div class="layout">
@@ -16,8 +16,8 @@
             </div>
           </div>
 
-          <FsButton as="a" href="#contact" variant="primary">
-            Оставить заявку
+          <FsButton as="a" href="#try" variant="primary">
+            Начать бесплатно
           </FsButton>
         </div>
 
@@ -28,27 +28,27 @@
               <div class="tl-dot active" />
               <div class="tl-content">
                 <span class="tl-time">Сегодня, 10:00</span>
-                <div class="tl-bubble">Оставили заявку в Telegram</div>
+                <div class="tl-bubble">Заполнили форму регистрации</div>
               </div>
             </div>
             <div class="tl-item">
               <div class="tl-dot" />
               <div class="tl-content">
-                <span class="tl-time">Сегодня, 10:30</span>
-                <div class="tl-bubble">Менеджер связался, всё объяснил</div>
+                <span class="tl-time">Сегодня, 10:05</span>
+                <div class="tl-bubble">Подтвердили почту, вошли в кабинет</div>
               </div>
             </div>
             <div class="tl-item">
               <div class="tl-dot" />
               <div class="tl-content">
-                <span class="tl-time">Сегодня, 14:00</span>
-                <div class="tl-bubble">Заполнили меню, настроили сайт</div>
+                <span class="tl-time">Сегодня, 12:00</span>
+                <div class="tl-bubble">Загрузили меню, настроили сайт</div>
               </div>
             </div>
             <div class="tl-item tl-item-done">
               <div class="tl-dot done" />
               <div class="tl-content">
-                <span class="tl-time">Завтра</span>
+                <span class="tl-time">Сегодня, 14:00</span>
                 <div class="tl-bubble success">
                   <span>Первый онлайн-заказ принят 🎉</span>
                 </div>
@@ -72,16 +72,16 @@ type Step = {
 
 const steps: Step[] = [
   {
-    title: 'Оставляете заявку',
-    desc: 'Пишете в Telegram или заполняете форму. Занимает 2 минуты.',
+    title: 'Регистрируетесь',
+    desc: 'Заполняете форму: название, адрес сайта, email. Занимает 2 минуты.',
   },
   {
-    title: 'Менеджер связывается в течение часа',
-    desc: 'В рабочее время — ответим быстро. Объясним всё, ответим на вопросы.',
+    title: 'Настраиваете сайт',
+    desc: 'Загружаете меню, выбираете тему, настраиваете доставку — всё через простую панель.',
   },
   {
-    title: 'Настраиваем вместе',
-    desc: 'Помогаем загрузить меню, настроить сайт и запустить заказы.',
+    title: 'Принимаете заказы',
+    desc: 'Ваш сайт готов к работе. Уведомления о заказах — сразу в Telegram.',
   },
 ]
 </script>

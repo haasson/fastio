@@ -93,7 +93,7 @@ const sites: ClientSite[] = [
 .card {
   position: relative;
   border-radius: var(--radius-card, 16px);
-  aspect-ratio: 3 / 2;
+  height: 220px;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -189,6 +189,10 @@ const sites: ClientSite[] = [
 
   .grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .card {
+    height: 280px;
   }
 
   .card-name {
