@@ -1,5 +1,5 @@
 <template>
-  <form class="fs-form" @submit.prevent="handleSubmit">
+  <form class="fs-form" novalidate @submit.prevent="handleSubmit">
     <slot />
   </form>
 </template>

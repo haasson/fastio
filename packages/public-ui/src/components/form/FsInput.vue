@@ -25,16 +25,16 @@
     </button>
   </div>
 
-  <!-- Input with prefix -->
+  <!-- Input with prefix / suffix -->
   <div
-    v-else-if="prefix"
+    v-else-if="prefix || suffix || $slots.suffix"
     class="input-wrapper"
-    :class="[`size-${size}`, { 'is-responsive': responsive }]"
+    :class="[`size-${size}`, { 'is-responsive': responsive, 'is-error': error, 'is-success': success }]"
   >
-    <span class="prefix">{{ prefix }}</span>
+    <span v-if="prefix" class="prefix">{{ prefix }}</span>
     <input
-      class="input-root has-prefix"
-      :class="[`size-${size}`, { 'is-responsive': responsive, 'is-error': error }]"
+      class="input-root"
+      :class="[`size-${size}`, { 'is-responsive': responsive, 'has-prefix': prefix, 'has-suffix': suffix || $slots.suffix }]"
       v-bind="$attrs"
       :type="type"
       :value="modelValue"
@@ -43,6 +43,8 @@
       :readonly="readonly"
       @input="onInput"
     />
+    <slot name="suffix" />
+    <span v-if="suffix" class="suffix">{{ suffix }}</span>
   </div>
 
   <!-- Plain input -->
@@ -75,6 +77,8 @@ type Props = {
   size?: 'small' | 'medium' | 'large'
   responsive?: boolean
   prefix?: string
+  suffix?: string
+  success?: boolean
   min?: number
   max?: number
   step?: number
@@ -154,10 +158,10 @@ const iconSize = computed(() => {
   }
 
   &.is-error {
-    border-color: var(--color-error, #ef4444);
+    border-color: var(--color-error);
 
     &:focus {
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error, #ef4444) 15%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
     }
   }
 
@@ -168,6 +172,14 @@ const iconSize = computed(() => {
 
   &.has-prefix {
     padding-left: 0;
+  }
+
+  &.has-suffix {
+    padding-right: 0;
+  }
+
+  &.has-prefix,
+  &.has-suffix {
     border: none;
     border-radius: 0;
     box-shadow: none;
@@ -181,7 +193,7 @@ const iconSize = computed(() => {
   }
 }
 
-// Wrapper with prefix
+// Wrapper with prefix/suffix
 .input-wrapper {
   display: flex;
   align-items: center;
@@ -197,10 +209,34 @@ const iconSize = computed(() => {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--primary-subtle);
   }
+
+  &.is-error {
+    border-color: var(--color-error);
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
+    }
+  }
+
+  &.is-success {
+    border-color: var(--color-success);
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 15%, transparent);
+    }
+  }
 }
 
 .prefix {
-  padding: 0 10px;
+  padding: 0 0 0 var(--ctrl-px);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: inherit;
+}
+
+.suffix {
+  padding: 0 var(--ctrl-px) 0 0;
   color: var(--color-text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
@@ -225,10 +261,10 @@ const iconSize = computed(() => {
   }
 
   &.is-error {
-    border-color: var(--color-error, #ef4444);
+    border-color: var(--color-error);
 
     &:focus-within {
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error, #ef4444) 15%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
     }
   }
 

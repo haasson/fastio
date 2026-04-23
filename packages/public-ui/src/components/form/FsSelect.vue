@@ -66,6 +66,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
+import type { ComputedRef } from 'vue'
 import {
   SelectRoot,
   SelectTrigger,
@@ -136,7 +137,7 @@ function selectMobile(value: string | number) {
   sheetOpen.value = false
 }
 
-const fieldLabel = inject<ReturnType<typeof computed<string | null>>>('fs-field-label', computed(() => null))
+const fieldLabel = inject<ComputedRef<string | null>>('fs-field-label', computed<string | null>(() => null))
 const sheetTitle = computed(() => props.label ?? fieldLabel.value ?? undefined)
 
 const stringValue = computed(() =>
