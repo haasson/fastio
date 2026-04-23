@@ -6,6 +6,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg', key: 'favicon' }],
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+      ],
     },
   },
 

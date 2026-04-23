@@ -43,7 +43,7 @@ const { data: plans } = await useFetch<LandingPlanRow[]>('/api/plans')
 
 <style scoped lang="scss">
 .landing-root {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }

@@ -44,7 +44,7 @@ const tenantName = computed(() => tenant.value?.name ?? '')
 .table-layout-root {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .table-header {

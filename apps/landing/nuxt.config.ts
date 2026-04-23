@@ -23,7 +23,7 @@ export default defineNuxtConfig({
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
       meta: [
         { name: 'description', content: 'Запустите свой сайт с онлайн-заказами за 5 минут. Для кафе, салонов, частных мастеров.' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
       ],
     },
   },

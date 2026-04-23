@@ -102,6 +102,8 @@ const rightSizeStyle = computed(() => {
 </script>
 
 <style scoped lang="scss">
+@use '../../styles/mixins' as *;
+
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -118,7 +120,7 @@ const rightSizeStyle = computed(() => {
   background: var(--color-surface);
   border-radius: var(--radius-card) var(--radius-card) 0 0;
   padding: 0 20px 0;
-  padding-bottom: env(safe-area-inset-bottom);
+  @include safe-area-bottom(20px);
   z-index: var(--z-modal, 400);
   max-height: 90vh;
   outline: none;
@@ -143,6 +145,8 @@ const rightSizeStyle = computed(() => {
   z-index: var(--z-modal, 400);
   overflow-y: auto;
   padding: 24px;
+  @include safe-area-top(24px);
+  @include safe-area-right(24px);
   outline: none;
   font-family: var(--font-family);
 

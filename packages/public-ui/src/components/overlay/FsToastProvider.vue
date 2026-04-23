@@ -39,8 +39,8 @@ defineProps<Props>()
 
 .fs-toast-viewport {
   position: fixed;
-  bottom: 16px;
-  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  right: max(16px, env(safe-area-inset-right));
   left: 16px;
   z-index: var(--z-toast, 500);
   display: flex;

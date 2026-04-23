@@ -28,7 +28,7 @@ const safeContent = useSafeHtml(() => props.heroContent?.text ?? '')
 
 const heroStyle = computed(() => {
   if (props.hero.size === 'fullscreen') {
-    return { height: `calc(100vh - ${props.stickyHeight ?? 0}px)` }
+    return { height: `calc(100dvh - ${props.stickyHeight ?? 0}px)` }
   }
 
   return { minHeight: '320px' }

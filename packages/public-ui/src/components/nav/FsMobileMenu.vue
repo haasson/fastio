@@ -43,7 +43,8 @@ onUnmounted(() => {
   background: var(--mobile-menu-bg, var(--color-bg, #fff));
   display: flex;
   flex-direction: column;
-  padding: 24px 24px 40px;
+  padding: 24px 24px 0;
+  @include safe-area-bottom(40px);
   overflow-y: auto;
   font-family: var(--font-family, inherit);
 

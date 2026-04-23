@@ -75,7 +75,7 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 .page-shell-root {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .sticky-header {
@@ -95,6 +95,6 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 }
 
 .has-fab {
-  padding-bottom: 100px;
+  padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom)));
 }
 </style>

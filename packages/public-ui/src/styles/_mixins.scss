@@ -83,3 +83,5 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+
+@forward '@fastio/styles/mixins/safe-area';

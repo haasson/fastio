@@ -135,7 +135,7 @@ useHead(computed(() => ({
 
 <style lang="scss">
 .app-root {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--color-bg);
   color: var(--color-text);
   transition: background 0.3s, color 0.3s;

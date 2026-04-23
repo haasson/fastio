@@ -32,7 +32,7 @@ const emit = defineEmits<{
 
 .fab-root {
   position: fixed;
-  bottom: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
   left: 0;
   right: var(--scrollbar-width, 0px);
   margin-inline: auto;
@@ -54,7 +54,7 @@ const emit = defineEmits<{
   }
 
   @include lg {
-    bottom: 32px;
+    bottom: max(32px, env(safe-area-inset-bottom));
   }
 }
 

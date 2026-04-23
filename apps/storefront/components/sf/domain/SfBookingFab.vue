@@ -19,7 +19,7 @@ const emit = defineEmits<{ click: [] }>()
 
 .fab-root {
   position: fixed;
-  bottom: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
   left: 0;
   right: var(--scrollbar-width, 0px);
   margin-inline: auto;
@@ -37,7 +37,7 @@ const emit = defineEmits<{ click: [] }>()
   border: none;
 
   @include lg {
-    bottom: 32px;
+    bottom: max(32px, env(safe-area-inset-bottom));
   }
 }
 

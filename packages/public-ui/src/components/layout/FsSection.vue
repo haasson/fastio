@@ -27,6 +27,7 @@ withDefaults(defineProps<Props>(), {
   max-width: 1280px;
   margin-inline: auto;
   padding-inline: 16px;
+  @include safe-area-horizontal(16px);
   box-sizing: border-box;
 
   @include md {
