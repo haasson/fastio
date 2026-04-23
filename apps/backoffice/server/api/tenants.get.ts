@@ -11,13 +11,14 @@ type TenantRow = {
   branchCount: number
   createdAt: string
   isActivated: boolean
+  selfRegistered: boolean
 }
 
 export default defineEventHandler(async (): Promise<TenantRow[]> => {
   const supabase = getAdminClient()
 
   const [tenantsResult, branchesResult, usersResult] = await Promise.all([
-    supabase.from('tenants').select('id, name, slug, created_at, owner_id, subscription, balance'),
+    supabase.from('tenants').select('id, name, slug, created_at, owner_id, subscription, balance, self_registered'),
     supabase.from('branches').select('tenant_id'),
     supabase.auth.admin.listUsers({ perPage: 1000 }),
   ])
@@ -47,6 +48,7 @@ export default defineEventHandler(async (): Promise<TenantRow[]> => {
       branchCount: branchCountByTenant.get(tenant.id) ?? 0,
       createdAt: tenant.created_at,
       isActivated: !!user?.email_confirmed_at,
+      selfRegistered: !!(tenant as Record<string, unknown>).self_registered,
     }
   })
 })

@@ -6,9 +6,14 @@ export default defineNuxtConfig({
   components: false,
   modules: ['@nuxt/eslint'],
   runtimeConfig: {
+    supabaseServiceRoleKey: '', // NUXT_SUPABASE_SERVICE_ROLE_KEY
+    supabaseJwtPrivateKey: '', // NUXT_SUPABASE_JWT_PRIVATE_KEY
+    adminUrl: 'https://admin.fastio.ru', // NUXT_ADMIN_URL
+    yandexCaptchaServerKey: '', // NUXT_YANDEX_CAPTCHA_SERVER_KEY — оставь пустым чтобы отключить проверку
     public: {
       supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL
       supabaseAnonKey: '', // NUXT_PUBLIC_SUPABASE_ANON_KEY
+      yandexCaptchaClientKey: '', // NUXT_PUBLIC_YANDEX_CAPTCHA_CLIENT_KEY
     },
   },
   app: {

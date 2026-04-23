@@ -11,6 +11,7 @@
     <HowItWorksSection />
     <EasyStartSection />
     <PricingSection :plans="plans ?? []" />
+    <RegistrationSection />
     <FaqSection />
     <CtaSection />
     <LandingFooter />
@@ -31,6 +32,7 @@ import HowItWorksSection from '~/components/sections/HowItWorksSection.vue'
 import EasyStartSection from '~/components/sections/EasyStartSection.vue'
 import PricingSection from '~/components/sections/PricingSection.vue'
 import FaqSection from '~/components/sections/FaqSection.vue'
+import RegistrationSection from '~/components/sections/RegistrationSection.vue'
 import CtaSection from '~/components/sections/CtaSection.vue'
 import LandingFooter from '~/components/sections/LandingFooter.vue'
 

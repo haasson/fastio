@@ -263,6 +263,9 @@ importers:
 
   apps/landing:
     dependencies:
+      '@fastio/kit':
+        specifier: workspace:*
+        version: link:../../packages/kit
       '@fastio/public-ui':
         specifier: workspace:*
         version: link:../../packages/public-ui

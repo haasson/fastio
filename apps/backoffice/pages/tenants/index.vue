@@ -81,6 +81,7 @@ type TenantRow = {
   branchCount: number
   createdAt: string
   isActivated: boolean
+  selfRegistered: boolean
 }
 
 const { data, pending, error, refresh } = await useFetch<TenantRow[]>('/api/tenants')
@@ -113,6 +114,12 @@ const columns: DataTableColumns<TenantRow> = [
     title: 'Название',
     key: 'name',
     sorter: (a, b) => a.name.localeCompare(b.name),
+    render: (row) => h('span', { style: 'display:flex;align-items:center;gap:8px' }, [
+      row.name,
+      row.selfRegistered
+        ? h(NTag, { size: 'small', bordered: false, type: 'info' }, { default: () => 'self' })
+        : null,
+    ]),
   },
   {
     title: 'Слаг',
