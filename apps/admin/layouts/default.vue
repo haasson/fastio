@@ -19,6 +19,7 @@
         </div>
 
         <div class="nav-scroll">
+          <div id="onboarding-sidebar-slot" class="onboarding-slot" />
           <AppNav :collapsed="collapsed && !sidebarOpen" @navigate="sidebarOpen = false" />
         </div>
 
@@ -80,6 +81,7 @@
     </div>
 
     <OnboardingWizard v-if="showOnboarding" />
+    <OnboardingChecklist v-if="showChecklist" />
     <AiChat />
   </div>
 </template>
@@ -95,6 +97,7 @@ import TenantSwitcher from '~/components/TenantSwitcher.vue'
 import AppNav from '~/components/layout/AppNav.vue'
 import BranchSelector from '~/components/layout/BranchSelector.vue'
 import OnboardingWizard from '~/components/onboarding/OnboardingWizard.vue'
+import OnboardingChecklist from '~/components/onboarding/OnboardingChecklist.vue'
 import PastDueBanner from '~/components/layout/PastDueBanner.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
 import AiChat from '~/components/ai/AiChat.vue'
@@ -111,7 +114,7 @@ const isDark = inject<Ref<boolean>>('isDark', ref(false))
 
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()
-const { currentTenantId } = storeToRefs(tenantStore)
+const { currentTenantId, tenant, isOwner } = storeToRefs(tenantStore)
 
 useRealtimeChannels(currentTenantId)
 
@@ -133,6 +136,15 @@ const showAccountIcon = computed(() => collapsed.value && !sidebarOpen.value)
 const showOnboarding = computed(
   () => !tenantStore.loading && !!tenantStore.tenant && !tenantStore.tenant.onboardingCompleted,
 )
+
+// Дешёвый гейт: виджет чек-листа не маунтим, если он заведомо не нужен.
+// Убирает подписки/watchers useOnboarding у не-owner'ов и у dismissed тенантов.
+const showChecklist = computed(() => {
+  if (showOnboarding.value) return false
+  if (!isOwner.value || !tenant.value) return false
+
+  return !tenant.value.onboardingState.dismissedAt
+})
 
 const userName = computed(() => authStore.user?.user_metadata?.full_name || authStore.user?.email || '')
 const userRole = computed(() => tenantStore.currentRoleName ?? '')
@@ -254,6 +266,30 @@ const kbUrl = computed(() => {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+}
+
+.onboarding-slot {
+  padding: var(--space-12) var(--space-12) 0;
+}
+
+.sidebar-collapsed .onboarding-slot :deep(.entry-label),
+.sidebar-collapsed .onboarding-slot :deep(.entry-chev) {
+  display: none;
+}
+
+.sidebar-collapsed .onboarding-slot :deep(.sidebar-entry) {
+  padding: var(--space-8);
+  justify-content: center;
+}
+
+.sidebar-collapsed .sidebar.open .onboarding-slot :deep(.entry-label),
+.sidebar-collapsed .sidebar.open .onboarding-slot :deep(.entry-chev) {
+  display: flex;
+}
+
+.sidebar-collapsed .sidebar.open .onboarding-slot :deep(.sidebar-entry) {
+  padding: var(--space-12);
+  justify-content: flex-start;
 }
 
 .collapse-btn {
@@ -402,6 +438,8 @@ const kbUrl = computed(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  // для n-drawer с to=".main": drawer внутри телепортится и позиционируется absolute
+  position: relative;
   transition: margin-left 0.25s ease;
 
   @include mq-m {

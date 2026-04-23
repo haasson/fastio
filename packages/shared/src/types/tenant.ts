@@ -234,6 +234,19 @@ export function parseSchedulingConfig(raw: Record<string, unknown> | null | unde
   }
 }
 
+export type OnboardingState = {
+  /** Id активного шага. null = юзер на первом шаге (ещё ничего не жал) ИЛИ всё пройдено (см. completedAt). */
+  currentStepId: string | null
+  completedAt: string | null
+  dismissedAt: string | null
+}
+
+export const emptyOnboardingState = (): OnboardingState => ({
+  currentStepId: null,
+  completedAt: null,
+  dismissedAt: null,
+})
+
 export type Tenant = {
   id: string
   name: string
@@ -266,6 +279,7 @@ export type Tenant = {
   orderNumberConfig: OrderNumberConfig | null
   maxAddonsDefault: number | null
   onboardingCompleted: boolean
+  onboardingState: OnboardingState
   orderSchedulingConfig: OrderSchedulingConfig
   legalInfo: TenantLegalInfo | null
   createdAt: string

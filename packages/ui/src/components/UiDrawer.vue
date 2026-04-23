@@ -3,9 +3,12 @@
     <n-drawer
       :show="modelValue"
       :width="effectiveWidth"
-      placement="right"
+      :placement="placement"
+      :show-mask="showMask"
+      :mask-closable="maskClosable"
+      :to="to"
       display-directive="show"
-      :z-index="zIndex"
+      :z-index="effectiveZIndex"
       :auto-focus="false"
       :trap-focus="false"
       @update:show="onUpdateShow"
@@ -73,6 +76,15 @@ export type UiDrawerProps = {
   title?: string
   width?: number | string
   closable?: boolean
+  placement?: 'left' | 'right'
+  /** Куда телепортировать drawer (CSS-селектор / элемент). По умолчанию body. */
+  to?: string | HTMLElement
+  /** Показывать ли затемняющую маску. true | 'transparent' | false. */
+  showMask?: boolean | 'transparent'
+  /** Закрывать ли по клику вне панели. */
+  maskClosable?: boolean
+  /** Фиксированный z-index; если задан — layerManager не используется. */
+  zIndex?: number
   actions?: DrawerAction[]
   onConfirm?: () => boolean | void | Promise<boolean | void>
   onDecline?: () => boolean | void | Promise<boolean | void>
@@ -81,6 +93,9 @@ export type UiDrawerProps = {
 const props = withDefaults(defineProps<UiDrawerProps>(), {
   width: 800,
   closable: true,
+  placement: 'right',
+  showMask: true,
+  maskClosable: true,
 })
 
 const { m: isDesktop } = useBreakpoints()
@@ -92,15 +107,19 @@ const emit = defineEmits<{
   'closed': []
 }>()
 
-const zIndex = ref<number | undefined>(undefined)
+const managedZIndex = ref<number | undefined>(undefined)
+const effectiveZIndex = computed(() => props.zIndex ?? managedZIndex.value)
 
 watch(() => props.modelValue, (shown) => {
   if (shown) {
-    zIndex.value = layerManager.push()
+    // Если зафиксировали zIndex снаружи — layerManager не трогаем (он управляет стеком модалок).
+    if (props.zIndex === undefined) managedZIndex.value = layerManager.push()
     emit('opened')
   } else {
-    layerManager.pop()
-    zIndex.value = undefined
+    if (props.zIndex === undefined) {
+      layerManager.pop()
+      managedZIndex.value = undefined
+    }
     emit('closed')
   }
 })

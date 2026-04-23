@@ -51,6 +51,11 @@ export type TenantRow = {
   order_number_config: OrderNumberConfig | null
   max_addons_default: number | null
   onboarding_completed: boolean
+  onboarding_state: {
+    current_step_id: string | null
+    completed_at: string | null
+    dismissed_at: string | null
+  }
   order_scheduling_config: Record<string, unknown>
   legal_info: Record<string, unknown> | null
   created_at: string

@@ -50,6 +50,11 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     orderNumberConfig: (row.order_number_config as OrderNumberConfig | null) ?? null,
     maxAddonsDefault: (row.max_addons_default as number | null) ?? null,
     onboardingCompleted: (row.onboarding_completed as boolean) ?? false,
+    onboardingState: {
+      currentStepId: ((row.onboarding_state as { current_step_id?: string | null } | null)?.current_step_id) ?? null,
+      completedAt: ((row.onboarding_state as { completed_at?: string | null } | null)?.completed_at) ?? null,
+      dismissedAt: ((row.onboarding_state as { dismissed_at?: string | null } | null)?.dismissed_at) ?? null,
+    },
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config as Record<string, unknown> | null),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
     createdAt: row.created_at as string,

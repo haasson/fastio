@@ -8,6 +8,8 @@ export default defineConfig({
     dedupe: ['vue', 'pinia'],
     alias: {
       'vue': resolve(__dirname, 'apps/admin/node_modules/vue'),
+      'pinia': resolve(__dirname, 'apps/admin/node_modules/pinia'),
+      '#imports': resolve(__dirname, 'apps/admin/test-utils/nuxt-imports-stub.ts'),
       '~': resolve(__dirname, 'apps/admin'),
       '@fastio/shared': resolve(__dirname, 'packages/shared/src'),
       '@fastio/ui': resolve(__dirname, 'packages/ui/src'),
