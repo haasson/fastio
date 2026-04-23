@@ -42,6 +42,9 @@ VALUES
    '{"menu":{"virtualCategories":false,"ingredients":false},"branches":{"max":0}}');
 
 -- 6. Remove old deactivated legacy plans
+-- Nullify plan_id in billing_transactions to avoid FK violation on prod
+UPDATE billing_transactions SET plan_id = NULL
+WHERE plan_id IN (SELECT id FROM plans WHERE key IN ('service', 'business'));
 DELETE FROM plans WHERE key IN ('service', 'business');
 
 -- 7. Migrate existing tenant subscriptions (all existing are retail)
