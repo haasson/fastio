@@ -2,6 +2,7 @@
   <PageShell show-category-bar>
     <template #default>
       <MenuSection
+        default-view="dishes"
         :dish-description-mode="layout.pageSettings.menu.dishDescriptionMode"
         :mobile-dish-card="layout.pageSettings.menu.mobileDishCard"
       />

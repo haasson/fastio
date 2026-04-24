@@ -66,6 +66,7 @@ export function mapCategory(row: Record<string, unknown>): Category {
     id: row.id as string,
     tenantId: row.tenant_id as string,
     name: row.name as string,
+    slug: (row.slug as string | null) ?? null,
     type: (row.type as CategoryType) ?? 'regular',
     tagId: (row.tag_id as string) ?? null,
     order: row.sort_order as number,

@@ -9,7 +9,11 @@
       ref="categoryBarRef"
       class="sticky-category-bar"
     >
-      <CategoryBar :overflow="layout.sections.categoryBar.overflow" :sticky-offset="stickyTotalHeight" />
+      <CategoryBar
+        :overflow="layout.sections.categoryBar.overflow"
+        :sticky-offset="stickyTotalHeight"
+        :navigate-on-click="categoryBarNavigate"
+      />
     </div>
 
     <div class="page-content">
@@ -39,8 +43,10 @@ import useLegalCompliance from '~/composables/useLegalCompliance'
 
 withDefaults(defineProps<{
   showCategoryBar?: boolean
+  categoryBarNavigate?: boolean
 }>(), {
   showCategoryBar: false,
+  categoryBarNavigate: false,
 })
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')

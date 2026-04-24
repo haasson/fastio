@@ -14,6 +14,7 @@ export const mapCategory = (raw: Record<string, unknown>): Category => {
     id: row.id,
     tenantId: row.tenant_id,
     name: row.name,
+    slug: row.slug ?? null,
     type: row.type ?? 'regular',
     tagId: row.tag_id ?? null,
     order: row.sort_order,
@@ -37,7 +38,7 @@ export const categoriesApi = {
       type: payload.type ?? 'regular',
       sort_order: payload.order,
       active: true,
-      ...filterDefined({ photo_url: payload.photoUrl, use_first_dish_photo: payload.useFirstDishPhoto, tag_id: payload.tagId }),
+      ...filterDefined({ photo_url: payload.photoUrl, use_first_dish_photo: payload.useFirstDishPhoto, tag_id: payload.tagId, slug: payload.slug }),
     }).select().single())
 
     return data ? mapCategory(data) : null
@@ -52,6 +53,7 @@ export const categoriesApi = {
         photo_url: data.photoUrl,
         use_first_dish_photo: data.useFirstDishPhoto,
         tag_id: data.tagId,
+        slug: data.slug,
       }),
     ).eq('id', id).select().single())
 

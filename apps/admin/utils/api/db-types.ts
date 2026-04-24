@@ -101,6 +101,7 @@ export type CategoryRow = {
   id: string
   tenant_id: string
   name: string
+  slug: string | null
   type: CategoryType
   tag_id: string | null
   sort_order: number

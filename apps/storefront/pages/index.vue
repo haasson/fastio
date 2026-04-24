@@ -1,5 +1,5 @@
 <template>
-  <PageShell show-category-bar>
+  <PageShell show-category-bar :category-bar-navigate="menuDefaultView === 'categories'">
     <template #default="{ stickyTotalHeight, layout: shellLayout }">
       <template v-for="key in shellLayout.sectionsOrder" :key="key">
         <HeroSection

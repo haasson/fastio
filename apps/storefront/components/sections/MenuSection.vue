@@ -1,7 +1,7 @@
 <template>
   <FsSection class="menu-root">
     <!-- Режим categories: сетка карточек категорий -->
-    <template v-if="defaultView === 'categories' && !selectedCategoryId">
+    <template v-if="defaultView === 'categories'">
       <div v-if="categories.length" class="menu-content">
         <div class="categories-grid">
           <FsCard
@@ -10,7 +10,7 @@
             as="button"
             :image="categoryPhotos[category.id] ?? undefined"
             :image-alt="category.name"
-            @click="selectedCategoryId = category.id"
+            @click="navigateToCategory(category)"
           >
             <template v-if="!categoryPhotos[category.id]" #image>
               <div class="category-placeholder">
@@ -26,13 +26,8 @@
       </SfEmptyState>
     </template>
 
-    <!-- Список блюд (общий для обоих режимов) -->
+    <!-- Список блюд -->
     <template v-else>
-      <button v-if="selectedCategoryId" class="back-btn" @click="selectedCategoryId = null">
-        <ChevronLeft :size="18" />
-        {{ selectedCategory?.name }}
-      </button>
-
       <div v-if="displayCategories.length" class="menu-content">
         <div
           v-for="category in displayCategories"
@@ -40,7 +35,7 @@
           :key="category.id"
           class="category-block"
         >
-          <div v-if="!selectedCategoryId" class="category-title">
+          <div class="category-title">
             <FsHeading as="h3">{{ category.name }}</FsHeading>
           </div>
           <div class="menu-grid">
@@ -106,10 +101,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { UtensilsCrossed, ChevronLeft } from 'lucide-vue-next'
-import type { Dish, Combo, Tenant } from '@fastio/shared'
+import { UtensilsCrossed } from 'lucide-vue-next'
+import type { Dish, Combo, Tenant, Category } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
-import { useNuxtData } from 'nuxt/app'
+import { useNuxtData, useRouter } from 'nuxt/app'
 import { useCartStore, type CartItem } from '~/stores/cart'
 import { useMenuStore, type ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
@@ -122,6 +117,7 @@ import ServiceRequestModal from '~/components/services/ServiceRequestModal.vue'
 
 const props = defineProps<{
   defaultView: 'categories' | 'dishes'
+  categoryId?: string | null
   tableMode?: boolean
   dishDescriptionMode?: 'below' | 'overlay'
   mobileDishCard?: 'vertical' | 'horizontal'
@@ -133,7 +129,7 @@ const emit = defineEmits<{
 
 const menuStore = useMenuStore()
 const cart = useCartStore()
-const selectedCategoryId = ref<string | null>(null)
+const router = useRouter()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const isServices = computed(() => tenant.value?.businessType === 'services')
 const { legalInfoComplete } = useLegalCompliance()
@@ -145,15 +141,14 @@ const categories = computed(() => menuStore.visibleCategories)
 const dishesByCategory = computed(() => menuStore.dishesByCategory)
 const combosByCategory = computed(() => menuStore.combosByCategory)
 
-const selectedCategory = computed(() =>
-  categories.value.find(c => c.id === selectedCategoryId.value) ?? null
-)
+const navigateToCategory = (cat: Category) => {
+  router.push(`/category/${cat.slug ?? cat.id}`)
+}
 
-// В режиме dishes — все категории, в режиме categories — только выбранная
 const displayCategories = computed(() =>
-  selectedCategoryId.value
-    ? categories.value.filter(c => c.id === selectedCategoryId.value)
-    : categories.value
+  props.categoryId
+    ? categories.value.filter(c => c.id === props.categoryId)
+    : categories.value,
 )
 
 const categoryPhotos = computed<Record<string, string | null>>(() =>
@@ -376,22 +371,5 @@ function addComboToCart(combo: Combo) {
   padding: 10px 12px;
   font-weight: 600;
   line-height: 1.3;
-}
-
-// Кнопка назад
-.back-btn {
-  @include flex-row(4px);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text);
-  padding: 0 0 20px;
-  transition: color 0.15s;
-
-  &:hover {
-    color: var(--primary);
-  }
 }
 </style>

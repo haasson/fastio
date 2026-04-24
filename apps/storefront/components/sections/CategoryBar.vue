@@ -13,15 +13,19 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'nuxt/app'
 import { FsSection, FsScrollNav } from '@fastio/public-ui'
 import { useMenuStore } from '~/stores/menu'
 
 const props = defineProps<{
   overflow: 'scroll' | 'wrap'
   stickyOffset?: number
+  navigateOnClick?: boolean
 }>()
 
 const menuStore = useMenuStore()
+const route = useRoute()
+const router = useRouter()
 
 const activeId = ref<string | number | undefined>(undefined)
 
@@ -29,10 +33,23 @@ const navItems = computed(() =>
   menuStore.visibleCategories.map((cat) => ({ id: cat.id, label: cat.name })),
 )
 
-let ignoreIO = false
-let scrollEndTimer: ReturnType<typeof setTimeout> | null = null
+const categoryPath = (id: string | number) => {
+  const cat = menuStore.visibleCategories.find(c => c.id === String(id))
+  return `/category/${cat?.slug ?? String(id)}`
+}
 
 const onSelect = (id: string | number) => {
+  if (props.navigateOnClick) {
+    const path = categoryPath(id)
+    // replace между страницами категорий, чтобы не засорять history
+    if (route.path.startsWith('/category/')) {
+      router.replace(path)
+    } else {
+      router.push(path)
+    }
+    return
+  }
+
   activeId.value = id
   if (!import.meta.client) return
   const el = document.getElementById(`category-${id}`)
@@ -52,8 +69,17 @@ const onSelect = (id: string | number) => {
   window.addEventListener('scroll', onScroll, { passive: true })
 }
 
+const syncActiveFromRoute = () => {
+  const slug = route.params.slug as string | undefined
+  if (!slug) return
+  const cat = menuStore.visibleCategories.find(c => (c.slug ?? c.id) === slug)
+  if (cat) activeId.value = cat.id
+}
+
 // ─── Scroll spy ──────────────────────────────────────────────────────────────
 
+let ignoreIO = false
+let scrollEndTimer: ReturnType<typeof setTimeout> | null = null
 let io: IntersectionObserver | null = null
 const visibleIds = new Set<string>()
 
@@ -90,8 +116,26 @@ const setupScrollSpy = () => {
   })
 }
 
-onMounted(setupScrollSpy)
-watch(navItems, setupScrollSpy)
+onMounted(() => {
+  if (props.navigateOnClick) {
+    syncActiveFromRoute()
+    return
+  }
+  setupScrollSpy()
+})
+
+watch(navItems, () => {
+  if (props.navigateOnClick) {
+    syncActiveFromRoute()
+    return
+  }
+  setupScrollSpy()
+})
+
+watch(() => route.params.slug, () => {
+  if (props.navigateOnClick) syncActiveFromRoute()
+})
+
 onUnmounted(() => io?.disconnect())
 </script>
 

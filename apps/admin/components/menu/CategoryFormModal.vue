@@ -32,6 +32,18 @@
         />
       </div>
 
+      <div>
+        <UiInput
+          v-model="form.slug"
+          name="slug"
+          label="Слаг для URL"
+          placeholder="pizza"
+          :rules="slugRules"
+          :feedback="slugFeedback"
+          @update:model-value="onSlugInput"
+        />
+      </div>
+
       <div v-if="!category && modeOptions.length > 1" class="field" data-tour="category-type">
         <UiText size="small" weight="medium" class="label">Тип</UiText>
         <UiSelect
@@ -71,6 +83,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiText, UiSelect, UiSwitch, UiAlert, useMessage } from '@fastio/ui'
 import type { Category, CategoryType, DishTagDefinition } from '@fastio/shared'
+import { slugify } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAccess } from '~/composables/plan/useAccess'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
@@ -97,9 +110,11 @@ const formRef = ref()
 const saving = ref(false)
 const formMode = ref<FormMode>('regular')
 const pendingPhotoFile = ref<File | null>(null)
+const slugEdited = ref(false)
 
 const form = ref({
   name: '',
+  slug: '' as string,
   type: 'regular' as CategoryType,
   tagId: null as string | null,
   active: true,
@@ -123,18 +138,41 @@ watch(
       if (props.category) {
         form.value = {
           name: props.category.name,
+          slug: props.category.slug ?? '',
           type: props.category.type,
           tagId: props.category.tagId,
           active: props.category.active,
           photoUrl: props.category.photoUrl,
         }
         formMode.value = categoryToMode(props.category)
+        slugEdited.value = !!props.category.slug
       } else {
-        form.value = { name: '', type: 'regular', tagId: null, active: true, photoUrl: null }
+        form.value = { name: '', slug: '', type: 'regular', tagId: null, active: true, photoUrl: null }
         formMode.value = 'regular'
+        slugEdited.value = false
       }
     }
   },
+)
+
+watch(() => form.value.name, (name) => {
+  if (slugEdited.value) return
+  form.value.slug = slugify(name)
+})
+
+const onSlugInput = (value: string | null) => {
+  slugEdited.value = !!value && value.length > 0
+}
+
+const slugRules = [
+  { type: 'required' as const, required: true, message: 'Введите слаг' },
+  { type: 'pattern' as const, pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/, message: 'Только строчные латинские буквы, цифры и дефис (не в начале/конце и без повторов)' },
+  { type: 'maxLength' as const, max: 60, message: 'Не длиннее 60 символов' },
+]
+
+const slugFeedback = computed(() => form.value.slug
+  ? `Адрес страницы: /category/${form.value.slug}`
+  : 'Подставится автоматически из названия — можно изменить',
 )
 
 const modeOptions = computed<{ label: string; value: FormMode }[]>(() => [
@@ -158,12 +196,15 @@ const actions = computed(() => [
 
 const handleSave = async () => {
   form.value.name = form.value.name.trim()
+  form.value.slug = form.value.slug.trim()
   if (!formRef.value?.validate()) return false
+
+  const slug = form.value.slug
 
   saving.value = true
   try {
     if (props.category) {
-      const data: Record<string, unknown> = { name: form.value.name, active: form.value.active, tagId: form.value.tagId }
+      const data: Record<string, unknown> = { name: form.value.name, active: form.value.active, tagId: form.value.tagId, slug }
 
       if (pendingPhotoFile.value) {
         if (props.category.photoUrl) await api.categories.deletePhoto(props.category.photoUrl)
@@ -180,6 +221,7 @@ const handleSave = async () => {
         order: 0,
         type: form.value.type,
         tagId: formMode.value === 'virtual' ? form.value.tagId : null,
+        slug,
       })
 
       if (cat && pendingPhotoFile.value) {
