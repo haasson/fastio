@@ -80,6 +80,8 @@ const makeTenant = (overrides: Partial<Tenant> = {}): Tenant => ({
     deliveryLeadMinutes: 60,
     pickupLeadMinutes: 30,
     closeBufferMinutes: 30,
+    holdingStatusId: null,
+    nextStatusId: null,
   },
   legalInfo: null,
   createdAt: new Date().toISOString(),

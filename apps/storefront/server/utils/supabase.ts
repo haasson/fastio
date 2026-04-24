@@ -167,6 +167,7 @@ export function mapOrder(row: Record<string, unknown>): Order {
     updatedAt: row.updated_at as string,
     kitchenQueuedAt: (row.kitchen_queued_at as string | null) ?? null,
     kitchenCompletedAt: (row.kitchen_completed_at as string | null) ?? null,
+    kitchenLeadMinutes: (row.kitchen_lead_minutes as number | null) ?? null,
     scheduledAt: (row.scheduled_at as string | null) ?? null,
     visitedStatuses: (row.visited_statuses as string[] | null) ?? [],
   }

@@ -85,7 +85,7 @@ import {
   UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone, normalizePhone, formatDateStr, dateStrToTs, localDateTimeToUtcIso, utcIsoToLocalDateTime } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, normalizePhone, addDaysToDateStr, localDateTimeToUtcIso, utcIsoToLocalDateTime } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
@@ -137,7 +137,7 @@ const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 
 const buildEditForm = (o: Order) => {
   let schedulingMode: 'asap' | 'scheduled' = 'asap'
-  let scheduledDate: number | null = null
+  let scheduledDate: string | null = null
   let scheduledTime: string | null = null
 
   if (o.scheduledAt) {
@@ -145,7 +145,7 @@ const buildEditForm = (o: Order) => {
     const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
     const { dateStr, timeStr } = utcIsoToLocalDateTime(o.scheduledAt, tz)
 
-    scheduledDate = dateStrToTs(dateStr)
+    scheduledDate = dateStr
     scheduledTime = timeStr
   }
 
@@ -168,6 +168,7 @@ const buildEditForm = (o: Order) => {
     schedulingMode,
     scheduledDate,
     scheduledTime,
+    kitchenLeadMinutes: o.kitchenLeadMinutes,
   }
 }
 
@@ -188,8 +189,9 @@ const buildCreateForm = () => ({
   comment: '',
   paymentType: 'cash' as Order['paymentType'],
   schedulingMode: 'asap' as 'asap' | 'scheduled',
-  scheduledDate: null as number | null,
+  scheduledDate: null as string | null,
   scheduledTime: null as string | null,
+  kitchenLeadMinutes: null as number | null,
 })
 
 const form = reactive(buildCreateForm())
@@ -222,11 +224,15 @@ const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.
 const scheduledAt = computed<string | null>(() => {
   if (form.schedulingMode !== 'scheduled' || !form.scheduledDate || !form.scheduledTime) return null
   const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+  // Overnight-слоты из getAvailableSlots кодируются суффиксом "+1" (например "02:30+1" = следующий день в 02:30)
+  const isNextDay = form.scheduledTime.endsWith('+1')
+  const timeStr = isNextDay ? form.scheduledTime.slice(0, -2) : form.scheduledTime
+  const dateStr = isNextDay ? addDaysToDateStr(form.scheduledDate, 1) : form.scheduledDate
 
-  return localDateTimeToUtcIso(formatDateStr(form.scheduledDate), form.scheduledTime, tz)
+  return localDateTimeToUtcIso(dateStr, timeStr, tz)
 })
 
-const { currentStatus, statusMenuItems, can, onStatusSelect } = useOrderStatus(orderRef, isEdit, form)
+const { currentStatus, statusMenuItems, can, onStatusSelect } = useOrderStatus(orderRef, isEdit, form, scheduledAt)
 const { promoOptions, selectedPromoValue, autoPromotionId, promoError, bestPromoHint, onPromoSelect } = useOrderPromo(props.tenantId, orderRef, isEdit, form, subtotal, scheduledAt)
 const { customerOrders } = useOrderCustomerHistory(props.tenantId, orderRef)
 
@@ -275,6 +281,7 @@ const formPayload = computed(() => ({
   paymentType: form.paymentType,
   branchId: selectedBranchId.value,
   scheduledAt: scheduledAt.value,
+  kitchenLeadMinutes: form.schedulingMode === 'scheduled' ? (form.kitchenLeadMinutes ?? null) : null,
 }))
 
 // ─── Save ─────────────────────────────────────────────────────────────────────

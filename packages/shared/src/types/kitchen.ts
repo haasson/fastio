@@ -28,6 +28,8 @@ export type KitchenQueueItem = {
   skipKitchen: boolean
   charged: boolean
   createdAt: string
+  scheduledAt: string | null
+  kitchenLeadMinutes: number | null
 }
 
 export type KitchenConfig = {

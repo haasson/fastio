@@ -17,7 +17,15 @@
         >{{ currentStatus.name }}</UiTag>
         <span class="time" :title="absoluteTime">{{ relativeTime }}</span>
       </div>
-      <div v-if="showDeliveryType || branchName" class="header-meta">
+      <div v-if="order.scheduledAt || showDeliveryType || branchName" class="header-meta">
+        <UiTag
+          v-if="order.scheduledAt"
+          size="small"
+          type="warning"
+          empty
+          round
+          icon="clock"
+        >{{ scheduledLabel }}</UiTag>
         <UiTag
           v-if="showDeliveryType"
           size="small"
@@ -115,7 +123,7 @@
 import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, utcIsoToLocalDateTime, todayInTz, addDaysToDateStr } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/order-status-groups'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
@@ -153,6 +161,19 @@ const absoluteTime = computed(() => {
   const d = new Date(props.order.createdAt)
 
   return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+})
+
+const scheduledLabel = computed(() => {
+  if (!props.order.scheduledAt) return ''
+  const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+  const { dateStr, timeStr } = utcIsoToLocalDateTime(props.order.scheduledAt, tz)
+  const today = todayInTz(tz)
+  const tomorrow = addDaysToDateStr(today, 1)
+
+  if (dateStr === today) return `Сегодня ${timeStr}`
+  if (dateStr === tomorrow) return `Завтра ${timeStr}`
+
+  return `${dateStr.slice(8)}.${dateStr.slice(5, 7)} ${timeStr}`
 })
 </script>
 

@@ -136,7 +136,7 @@ import { useNuxtData, navigateTo } from 'nuxt/app'
 import { Truck, PersonStanding } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
-import { todayInTz, nowTimeInTz, addDaysToDateStr, localDateTimeToUtcIso, isAsapAvailable, timeToMinutes, getAvailableSlots, formatDateWeekday } from '@fastio/shared'
+import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useAuthStore } from '~/stores/auth'
@@ -171,6 +171,8 @@ const paymentOptions = [
 
 const schedulingEnabled = computed(() => tenant.value?.orderSchedulingConfig?.enabled ?? false)
 
+const tenantTz = computed(() => tenant.value?.timezone ?? 'Europe/Moscow')
+
 const asapAvailable = computed(() => {
   const cfg = tenant.value?.orderSchedulingConfig
   if (!cfg) return true
@@ -182,53 +184,11 @@ const schedulingOptions = computed(() => [
   { value: 'scheduled', label: 'К определённому времени' },
 ])
 
-const tenantTz = computed(() => tenant.value?.timezone ?? 'Europe/Moscow')
-
-const leadMinutes = computed(() => {
-  const cfg = tenant.value?.orderSchedulingConfig
-  if (!cfg) return 30
-  return checkout.form.deliveryType === 'delivery' ? cfg.deliveryLeadMinutes : cfg.pickupLeadMinutes
-})
-
-const slotStep = computed(() => tenant.value?.orderSchedulingConfig?.slotStep ?? 30)
-
-const getSlotsForDate = (dateStr: string, nowMinutes: number | null) =>
-  getAvailableSlots(dateStr, tenant.value?.workingHoursSchedule, {
-    step: slotStep.value,
-    leadMinutes: leadMinutes.value,
-    closeBufferMinutes: tenant.value?.orderSchedulingConfig?.closeBufferMinutes ?? 30,
-    nowMinutes,
-  })
-
-const dateOptions = computed(() => {
-  const tz = tenantTz.value
-  const today = todayInTz(tz)
-  const daysAhead = tenant.value?.orderSchedulingConfig?.daysAhead ?? 3
-  const nowMinutes = timeToMinutes(nowTimeInTz(tz))
-
-  return Array.from({ length: daysAhead }, (_, i) => {
-    const dateStr = addDaysToDateStr(today, i)
-    const nowMin = i === 0 ? nowMinutes : null
-    return {
-      value: dateStr,
-      label: i === 0 ? 'Сегодня' : formatDateWeekday(dateStr),
-      disabled: getSlotsForDate(dateStr, nowMin).length === 0,
-    }
-  })
-})
-
-const timeSlots = computed(() => {
-  const dateStr = checkout.form.scheduledDate
-  if (!dateStr) return []
-
-  const tz = tenantTz.value
-  const today = todayInTz(tz)
-  const isToday = dateStr === today
-
-  const nowMinutes = isToday ? timeToMinutes(nowTimeInTz(tz)) : null
-
-  return getSlotsForDate(dateStr, nowMinutes)
-})
+const { dateOptions, timeSlots } = useSchedulingSlots(
+  tenant,
+  () => checkout.form.deliveryType,
+  () => checkout.form.scheduledDate,
+)
 
 watch(asapAvailable, (available) => {
   if (!available && checkout.form.schedulingMode === 'asap') {

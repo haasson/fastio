@@ -12,6 +12,23 @@
       </div>
 
       <template v-if="form.enabled">
+        <UiSectionHeader title="Статусы" />
+        <div class="row row-half">
+          <UiSelect
+            v-model:value="form.nextStatusId"
+            label="Статус после срабатывания"
+            :options="statusOptions"
+            clearable
+            placeholder="Не выбран"
+          />
+        </div>
+        <p class="section-hint">
+          <strong>Статус после срабатывания</strong> — в этот статус система автоматически переведёт заказ, когда настанет время начала готовки (scheduled_at − lead minutes).
+          Обычно это первый рабочий статус, например «Принят» или «На кухне».
+          <br /><br />
+          Система автоматически создаёт статус <strong>«Запланировано»</strong> (в группе «Новые»), куда оператор переводит входящие заказы ко времени. Когда время наступит, заказ сам перейдёт в выбранный статус выше.
+        </p>
+
         <UiSectionHeader title="Доступные даты" />
         <div data-tour="preorder-slots" class="row row-half">
           <UiInputNumber
@@ -69,8 +86,11 @@ import { ref, reactive, watch, computed } from 'vue'
 import { UiForm, UiInputNumber, UiButton, UiSectionHeader, UiSelect, useMessage } from '@fastio/ui'
 import type { OrderSchedulingConfig } from '@fastio/shared'
 import { buildMinuteOptions } from '@fastio/shared'
+import { storeToRefs } from 'pinia'
 import { useTenantStore } from '~/stores/tenant'
+import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useModules } from '~/composables/plan/useModules'
+import { useDatabase } from '~/composables/data/useDatabase'
 import SettingToggle from '~/components/ui/SettingToggle.vue'
 
 const SLOT_STEP_OPTIONS = [
@@ -80,11 +100,18 @@ const SLOT_STEP_OPTIONS = [
 ]
 
 const tenantStore = useTenantStore()
+const { statuses } = storeToRefs(useOrderStatusesStore())
+const api = useDatabase()
 const modules = useModules()
-const { success } = useMessage()
+const { success, error } = useMessage()
 const saving = ref(false)
 
 const tenant = computed(() => tenantStore.tenant)
+
+const statusOptions = computed(() => statuses.value
+  .filter((s) => s.groupType === 'in_progress')
+  .map((s) => ({ label: s.name, value: s.id })),
+)
 
 const defaultConfig = (): OrderSchedulingConfig => ({
   enabled: false,
@@ -93,6 +120,8 @@ const defaultConfig = (): OrderSchedulingConfig => ({
   deliveryLeadMinutes: 60,
   pickupLeadMinutes: 30,
   closeBufferMinutes: 30,
+  holdingStatusId: null,
+  nextStatusId: null,
 })
 
 const buildForm = (cfg?: OrderSchedulingConfig | null): OrderSchedulingConfig => ({
@@ -117,8 +146,31 @@ watch(() => form.slotStep, (step) => {
 })
 
 const handleSave = async () => {
+  const tenantId = tenant.value?.id
+
+  if (!tenantId) return
+
+  if (!form.enabled && tenant.value?.orderSchedulingConfig?.enabled) {
+    const holdingStatusId = tenant.value.orderSchedulingConfig.holdingStatusId
+
+    if (holdingStatusId) {
+      const { total } = await api.orders.list(tenantId, null, { statusIds: [holdingStatusId], pageSize: 0 })
+
+      if (total > 0) {
+        error(`Нельзя выключить: есть запланированные заказы (${total}). Завершите или отмените их в разделе Заказы.`)
+
+        return
+      }
+    }
+  }
+
   saving.value = true
   try {
+    if (form.enabled && !form.holdingStatusId) {
+      const holdingId = await api.orders.ensureScheduledHoldingStatus(tenantId)
+
+      form.holdingStatusId = holdingId
+    }
     await tenantStore.update({ orderSchedulingConfig: { ...form } })
     success('Сохранено')
   } finally {

@@ -23,6 +23,7 @@ export { default as UiSwitch } from './components/UiSwitch.vue'
 export { default as UiSegmentedControl } from './components/UiSegmentedControl.vue'
 export { default as UiDatepicker } from './components/UiDatepicker.vue'
 export { default as UiTimepicker } from './components/UiTimepicker.vue'
+export { default as UiSlider } from './components/UiSlider.vue'
 export type { SegmentedControlItem } from './components/UiSegmentedControl.vue'
 export type { UiSelectProps } from './components/UiSelect.vue'
 

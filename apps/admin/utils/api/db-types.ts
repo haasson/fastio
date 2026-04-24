@@ -227,6 +227,7 @@ export type OrderRow = {
   updated_at: string
   kitchen_queued_at: string | null
   kitchen_completed_at: string | null
+  kitchen_lead_minutes: number | null
   scheduled_at: string | null
   visited_statuses: string[] | null
   order_items?: OrderItemRow[]
@@ -321,6 +322,8 @@ export type KitchenQueueRow = {
   skip_kitchen: boolean
   charged: boolean
   created_at: string
+  scheduled_at?: string | null
+  kitchen_lead_minutes?: number | null
 }
 
 export type BranchRow = {

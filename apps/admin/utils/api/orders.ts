@@ -31,6 +31,7 @@ export type OrderUpdateData = {
   paymentType?: 'cash' | 'card' | 'online'
   branchId?: string | null
   scheduledAt?: string | null
+  kitchenLeadMinutes?: number | null
 }
 
 export type OrderCreateData = {
@@ -126,6 +127,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     updatedAt: row.updated_at,
     kitchenQueuedAt: row.kitchen_queued_at ?? null,
     kitchenCompletedAt: row.kitchen_completed_at ?? null,
+    kitchenLeadMinutes: row.kitchen_lead_minutes ?? null,
     scheduledAt: row.scheduled_at ?? null,
     visitedStatuses: row.visited_statuses ?? [],
   }
@@ -154,6 +156,7 @@ const toOrderPayload = (data: OrderUpdateData | OrderCreateData): Partial<OrderR
   status: data.status,
   payment_type: data.paymentType,
   scheduled_at: data.scheduledAt,
+  ...('kitchenLeadMinutes' in data && { kitchen_lead_minutes: data.kitchenLeadMinutes }),
 }) as Partial<OrderRow>
 
 const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id'>[] => items.map((item, i) => ({
@@ -475,6 +478,14 @@ export const ordersApi = {
         .eq('id', itemId)
         .eq('status', 'pending'),
     )
+  },
+
+  async ensureScheduledHoldingStatus(sb: SupabaseClient, tenantId: string): Promise<string | null> {
+    const { data, error } = await sb.rpc('ensure_scheduled_holding_status', { p_tenant_id: tenantId })
+
+    if (error) throw error
+
+    return data as string | null
   },
 
   async confirmAllPendingItems(sb: SupabaseClient, tableId: string, userId: string, cancelledStatusIds: string[]): Promise<void> {

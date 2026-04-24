@@ -25,9 +25,9 @@
       <UiSkeleton :repeat="6" />
     </div>
 
-    <template v-else-if="hasActiveItems">
+    <template v-else-if="hasContent">
       <div class="queue-layout">
-        <!-- Queue (narrow left panel) -->
+        <!-- Left panel: Queue -->
         <div class="panel queue-panel" data-tour="kitchen-queue-panel">
           <div class="panel-header">
             <UiSectionHeader :title="`Очередь (${filteredQueueItems.length})`" />
@@ -153,7 +153,7 @@ const completedStatusMissing = computed(() => {
 const queueItems = computed(() => items.value.filter((i) => i.status === 'queued'))
 const myItems = computed(() => items.value.filter((i) => i.status === 'in_progress' && i.assignedTo === currentUserId.value))
 const cancelledOnBoard = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo === currentUserId.value))
-const hasActiveItems = computed(() => queueItems.value.length > 0 || myItems.value.length > 0 || cancelledOnBoard.value.length > 0)
+const hasContent = computed(() => queueItems.value.length > 0 || myItems.value.length > 0 || cancelledOnBoard.value.length > 0)
 
 // --- Category filter (persisted per user) ---
 

@@ -1,7 +1,7 @@
 # Active Context: Fastio
 
 ## Current Work Focus
-Разработка `apps/help` — публичной базы знаний с AI-ассистентом. Параллельно ведётся работа над storefront (галерея с PhotoSwipe, секции).
+Реализован план scheduled orders (2026-04-24): admin + kitchen display support для заказов ко времени.
 
 ## Recent Changes
 - Добавлен `apps/help/` — новое Nuxt SSR приложение (порт 4712)

@@ -1,4 +1,4 @@
-import { computed, type Ref } from 'vue'
+import { computed, type Ref, type ComputedRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import type { Order } from '@fastio/shared'
 import { getAllowedStatuses, getKitchenAutoStatuses } from '@fastio/shared'
@@ -14,6 +14,7 @@ export const useOrderStatus = (
   order: Ref<Order | null>,
   isEdit: Ref<boolean>,
   form: StatusForm,
+  scheduledAt: ComputedRef<string | null>,
 ) => {
   const { statuses } = storeToRefs(useOrderStatusesStore())
   const tenantStore = useTenantStore()
@@ -23,6 +24,17 @@ export const useOrderStatus = (
 
   const currentStatus = computed(() => statuses.value.find((s) => s.id === form.status) ?? null)
   const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
+
+  const holdingStatusId = computed(() => tenantStore.tenant?.orderSchedulingConfig?.holdingStatusId ?? null,
+  )
+
+  const isScheduledPending = computed(() => {
+    if (!isEdit.value || !scheduledAt.value) return false
+    if (statusGroup.value !== 'new') return false
+    if (!holdingStatusId.value) return false
+
+    return order.value?.status !== holdingStatusId.value
+  })
 
   const can = computed(() => {
     if (!isEdit.value) return {}
@@ -42,9 +54,22 @@ export const useOrderStatus = (
 
   const statusMenuItems = computed(() => {
     const kitchenAuto = getKitchenAutoStatuses(tenantStore.tenant?.kitchenConfig)
-
-    return getAllowedStatuses(statusGroup.value, statuses.value)
+    const all = getAllowedStatuses(statusGroup.value, statuses.value)
       .filter((s) => s.id !== form.status && !kitchenAuto.includes(s.id))
+
+    if (isScheduledPending.value) {
+      const allowed = new Set([
+        holdingStatusId.value,
+        ...statuses.value.filter((s) => s.groupType === 'cancelled').map((s) => s.id),
+      ])
+
+      return all
+        .filter((s) => allowed.has(s.id))
+        .map((s) => ({ name: s.id, label: s.name, color: getStatusColor(s.id) }))
+    }
+
+    return all
+      .filter((s) => s.id !== holdingStatusId.value)
       .map((s) => ({ name: s.id, label: s.name, color: getStatusColor(s.id) }))
   })
 

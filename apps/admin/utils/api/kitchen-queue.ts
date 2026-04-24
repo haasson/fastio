@@ -13,7 +13,11 @@ export const mergeRealtimeItem = (incoming: KitchenQueueItem, existing: KitchenQ
 export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueItem => {
   const row = raw as KitchenQueueRow
 
-  const orders = (raw as Record<string, unknown>).orders as { order_number: string | null } | null
+  const orders = (raw as Record<string, unknown>).orders as {
+    order_number: string | null
+    scheduled_at?: string | null
+    kitchen_lead_minutes?: number | null
+  } | null
 
   return {
     id: row.id,
@@ -40,6 +44,8 @@ export const mapKitchenQueueItem = (raw: Record<string, unknown>): KitchenQueueI
     skipKitchen: row.skip_kitchen,
     charged: row.charged,
     createdAt: row.created_at,
+    scheduledAt: orders?.scheduled_at ?? row.scheduled_at ?? null,
+    kitchenLeadMinutes: orders?.kitchen_lead_minutes ?? row.kitchen_lead_minutes ?? null,
   }
 }
 
@@ -57,7 +63,7 @@ export const kitchenQueueApi = {
   async listActive(sb: SupabaseClient, tenantId: string): Promise<KitchenQueueItem[]> {
     const data = await query(
       sb.from('kitchen_queue')
-        .select('*, orders(order_number)')
+        .select('*, orders(order_number, scheduled_at, kitchen_lead_minutes)')
         .eq('tenant_id', tenantId)
         .eq('skip_kitchen', false)
         .in('status', ['queued', 'in_progress', 'cancelled'])

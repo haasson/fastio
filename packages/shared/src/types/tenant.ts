@@ -210,6 +210,8 @@ export type OrderSchedulingConfig = {
   deliveryLeadMinutes: number
   pickupLeadMinutes: number
   closeBufferMinutes: number
+  holdingStatusId: string | null
+  nextStatusId: string | null
 }
 
 export const DEFAULT_SCHEDULING_CONFIG: OrderSchedulingConfig = {
@@ -219,6 +221,8 @@ export const DEFAULT_SCHEDULING_CONFIG: OrderSchedulingConfig = {
   deliveryLeadMinutes: 60,
   pickupLeadMinutes: 30,
   closeBufferMinutes: 30,
+  holdingStatusId: null,
+  nextStatusId: null,
 }
 
 export function parseSchedulingConfig(raw: Record<string, unknown> | null | undefined): OrderSchedulingConfig {
@@ -231,6 +235,8 @@ export function parseSchedulingConfig(raw: Record<string, unknown> | null | unde
     deliveryLeadMinutes: (raw.deliveryLeadMinutes as number) ?? d.deliveryLeadMinutes,
     pickupLeadMinutes: (raw.pickupLeadMinutes as number) ?? d.pickupLeadMinutes,
     closeBufferMinutes: (raw.closeBufferMinutes as number) ?? d.closeBufferMinutes,
+    holdingStatusId: (raw.holdingStatusId as string | null) ?? null,
+    nextStatusId: (raw.nextStatusId as string | null) ?? null,
   }
 }
 

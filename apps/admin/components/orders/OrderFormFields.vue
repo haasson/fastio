@@ -129,14 +129,33 @@
       <UiSegmentedControl v-model="form.schedulingMode" :items="schedulingItems" size="medium" />
     </div>
     <div v-if="form.schedulingMode === 'scheduled'" class="schedule-row">
-      <UiDatepicker v-model="form.scheduledDate" label="Дата" :disabled="!perms.editScheduling" />
-      <UiTimepicker
-        v-model="form.scheduledTime"
-        label="Время"
-        :minute-step="30"
+      <UiSelect
+        :value="form.scheduledDate"
+        :options="dateOptions"
+        label="Дата"
+        placeholder="Выберите дату"
         :disabled="!perms.editScheduling"
+        @update:value="onDateChange"
+      />
+      <UiSelect
+        v-model:value="form.scheduledTime"
+        :options="timeSlots"
+        label="Время"
+        placeholder="Выберите время"
+        :disabled="!perms.editScheduling || !form.scheduledDate"
       />
     </div>
+    <UiSlider
+      v-if="form.schedulingMode === 'scheduled'"
+      :model-value="form.kitchenLeadMinutes ?? 60"
+      label="Запустить на кухню за"
+      :min="15"
+      :max="180"
+      :step="15"
+      :marks="LEAD_MARKS"
+      :disabled="!perms.editScheduling"
+      @update:model-value="form.kitchenLeadMinutes = $event"
+    />
   </div>
 
   <!-- Состав заказа -->
@@ -208,16 +227,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, UiDatepicker, UiTimepicker } from '@fastio/ui'
+import { ref, computed, watch } from 'vue'
+import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, UiSlider } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
 import type { Order, DeliveryZone } from '@fastio/shared'
 import type { DeliveryInfo } from '~/composables/delivery/useOrderDelivery'
-import { findDeliveryZone } from '@fastio/shared'
-import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
+import { findDeliveryZone, useSchedulingSlots } from '@fastio/shared'
+import { useTenantStore } from '~/stores/tenant'
 import { useModules } from '~/composables/plan/useModules'
 import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
 import OrderItemsSection from './OrderItemsSection.vue'
+
+const LEAD_MARKS: Record<number, string> = { 15: '15м', 30: '30м', 45: '45м', 60: '1ч', 90: '1.5ч', 120: '2ч', 180: '3ч' }
 
 type OrderFormData = {
   customerName: string | null
@@ -235,8 +257,9 @@ type OrderFormData = {
   comment: string
   paymentType: Order['paymentType']
   schedulingMode: 'asap' | 'scheduled'
-  scheduledDate: number | null
+  scheduledDate: string | null
   scheduledTime: string | null
+  kitchenLeadMinutes: number | null
 }
 
 type Permissions = {
@@ -358,6 +381,30 @@ const schedulingItems = [
   { label: 'Как можно скорее', value: 'asap' },
   { label: 'К определённому времени', value: 'scheduled' },
 ]
+
+const tenantStore = useTenantStore()
+const { dateOptions, timeSlots } = useSchedulingSlots(
+  () => tenantStore.tenant,
+  () => props.form.deliveryType,
+  () => props.form.scheduledDate,
+)
+
+const onDateChange = (date: string | number | (string | number)[] | null) => {
+  props.form.scheduledDate = date as string | null
+  props.form.scheduledTime = null
+}
+
+watch(() => props.form.schedulingMode, (mode) => {
+  if (mode !== 'scheduled') return
+  if (!props.form.scheduledDate) {
+    const first = dateOptions.value.find((d) => !d.disabled)
+
+    if (first) props.form.scheduledDate = first.value
+  }
+  if (!props.form.scheduledTime) {
+    props.form.scheduledTime = timeSlots.value[0]?.value ?? null
+  }
+})
 
 const modules = useModules()
 const deliveryEnabled = computed(() => modules.delivery.value.active)
