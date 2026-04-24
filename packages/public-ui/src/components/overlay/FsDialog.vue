@@ -62,6 +62,7 @@ import {
 } from 'reka-ui'
 import { X } from 'lucide-vue-next'
 import FsDrawer from './FsDrawer.vue'
+import { useModalHistory } from '../../composables/useModalHistory'
 
 type Props = {
   modelValue: boolean
@@ -95,6 +96,13 @@ const maxWidth = computed(() => sizeMap[props.size])
 function onOpenChange(value: boolean) {
   emit('update:modelValue', value)
 }
+
+// На мобиле рендерится FsDrawer — у него свой useModalHistory.
+// Guard !_isMobile здесь нужен, чтобы не было двойного push в history при mobile-режиме.
+useModalHistory(
+  () => mounted.value && !_isMobile.value && props.modelValue,
+  () => emit('update:modelValue', false),
+)
 </script>
 
 <style scoped lang="scss">

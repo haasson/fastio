@@ -22,6 +22,7 @@ export default defineConfig({
     globals: true,
     include: [
       'packages/shared/src/**/*.test.ts',
+      'packages/public-ui/src/**/*.test.ts',
       'apps/admin/**/*.test.ts',
       'apps/storefront/**/*.test.ts',
       'apps/backoffice/**/*.test.ts',

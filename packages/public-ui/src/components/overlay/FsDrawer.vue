@@ -68,6 +68,7 @@ import {
   DialogClose,
 } from 'reka-ui'
 import { X } from 'lucide-vue-next'
+import { useModalHistory } from '../../composables/useModalHistory'
 
 type Props = {
   modelValue: boolean
@@ -89,6 +90,13 @@ const emit = defineEmits<{
 }>()
 
 const effectiveSide = computed(() => props.side ?? 'bottom')
+
+// Только bottom-sheet — back-жест ожидается только на мобильной шторке,
+// для side='right' (desktop sidebar) нативный back не нужен.
+useModalHistory(
+  () => effectiveSide.value === 'bottom' && props.modelValue,
+  () => emit('update:modelValue', false),
+)
 
 const bottomSizeStyle = computed(() => {
   const map: Record<string, string> = { sm: '40vh', md: '60vh', lg: '90vh', full: '100vh' }
