@@ -2,7 +2,7 @@
   <div class="addons-root">
     <div class="max-addons-setting" data-tour="addon-max-setting">
       <UiCheckbox :model-value="maxAddonsDefault != null" @update:model-value="toggleMaxAddons">
-        <UiText size="small">Ограничить количество добавок на блюдо</UiText>
+        <UiText size="small">{{ `Ограничить количество добавок на ${item.acc}` }}</UiText>
       </UiCheckbox>
       <UiInputNumber
         v-if="maxAddonsDefault != null"
@@ -63,7 +63,7 @@
       <UiSkeleton v-if="presetsLoading" :height="56" :count="3" />
 
       <UiEmpty v-else-if="presets.length === 0">
-        Пресеты позволяют быстро назначать наборы добавок на блюда.
+        {{ `Пресеты позволяют быстро назначать наборы добавок на ${item.plural.acc}.` }}
       </UiEmpty>
 
       <template v-else>
@@ -109,6 +109,7 @@ import type { Addon, AddonPreset } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAddons } from '~/composables/data/useAddons'
+import { useTerms } from '~/composables/useTerms'
 import { buildAddonColumns, buildAddonPresetColumns } from '~/columns/addons'
 import AddonFormModal from '~/components/menu/AddonFormModal.vue'
 import AddonPresetFormModal from '~/components/menu/AddonPresetFormModal.vue'
@@ -135,6 +136,7 @@ const {
 onMounted(loadPresets)
 
 const { confirm } = useConfirm()
+const { item } = useTerms()
 const message = useMessage()
 
 const tabs = [
@@ -179,7 +181,7 @@ const addonById = (id: string) => addons.value.find((a) => a.id === id)
 const handleRemoveAddon = async (addon: Addon) => {
   const ok = await confirm({
     title: 'Удалить добавку?',
-    message: `«${addon.name}» будет удалена. Привязки к блюдам тоже исчезнут.`,
+    message: `«${addon.name}» будет удалена. Привязки к ${item.plural.dat} тоже исчезнут.`,
     confirmText: 'Удалить',
     confirmType: 'error',
   })

@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, provide } from 'vue'
+import { computed, provide } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton } from '@fastio/ui'
 import AppearancePreview from '~/components/appearance/AppearancePreview.vue'
@@ -58,8 +58,6 @@ const tabs = [
 ]
 
 const tenantStore = useTenantStore()
-
-onMounted(() => tenantStore.init())
 
 const { tenant } = storeToRefs(tenantStore)
 const form = useAppearanceForm(tenant)

@@ -7,7 +7,7 @@
     />
 
     <template v-else>
-      <UiSectionHeader :title="sectionTitle">
+      <UiSectionHeader :title="item.plural.label">
         <template #left>
           <div class="header-left">
             <UiSegmentedControl
@@ -44,7 +44,7 @@
             <UiSkeleton v-if="showSkeleton" text :repeat="6" />
 
             <template v-else-if="!dishesLoading">
-              <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="emptyText" />
+              <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="`В этой категории пока нет ${item.plural.gen}`" />
 
               <template v-else>
 
@@ -132,7 +132,7 @@
 <script setup lang="ts">
 import { toRefs, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 import {
   UiButton, UiDataTable, UiDivider, UiEmpty, UiInput,
   UiSectionHeader, UiSegmentedControl, UiSkeleton,
@@ -161,9 +161,7 @@ const emit = defineEmits<{
   dishesChanged: []
 }>()
 
-const { isServices, itemsLabel, itemsLabelLower, itemsLabelGen } = useTenantLabels()
-const sectionTitle = computed(() => isServices.value ? 'Услуги' : 'Блюда')
-const emptyText = computed(() => `В этой категории пока нет ${itemsLabelGen.value}`)
+const { item } = useTerms()
 
 const { tenantId: tenantIdRef, categoryId: categoryIdRef } = toRefs(props)
 
@@ -186,7 +184,7 @@ const toggleActive = async (id: string, active: boolean) => {
     const alert = await getComboWarning(id)
 
     if (alert) {
-      const ok = await confirm({ title: 'Отключить блюдо?', alert, confirmText: 'Отключить', confirmType: 'warning' })
+      const ok = await confirm({ title: `Отключить ${item.acc}?`, alert, confirmText: 'Отключить', confirmType: 'warning' })
 
       if (!ok) return
     }
@@ -216,7 +214,7 @@ const { showSkeleton, modalOpen: dishModalOpen, editingItem: editingDish, openMo
   = useItemManager<Dish>({
     loading: dishesLoading,
     remove: removeDish,
-    confirmTitle: `Удалить ${itemsLabelLower.value}?`,
+    confirmTitle: `Удалить ${item.acc}?`,
     beforeDelete: async (id) => {
       const alert = await getComboWarning(id)
 

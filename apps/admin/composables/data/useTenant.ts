@@ -1,10 +1,11 @@
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, watch, type Ref } from 'vue'
 import type { Tenant, RolePermissions } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 import { usePlans } from '~/composables/plan/usePlans'
 import { useModuleConfigs } from '~/composables/plan/useModules'
 import { useRoles } from '~/composables/data/useRoles'
+import { setVocab } from '~/composables/useTerms'
 
 type MembershipWithTenant = {
   id: string
@@ -28,6 +29,8 @@ export const useTenant = (userId: Ref<string | null>) => {
   const loading = ref(false)
 
   const rolesApi = useRoles(currentTenantId)
+
+  watch(tenant, (t) => setVocab(t?.businessType ?? null, t?.menuStyle ?? 'food'), { immediate: true })
 
   const currentMembership = computed(() => {
     if (!currentTenantId.value) return null

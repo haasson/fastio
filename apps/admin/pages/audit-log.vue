@@ -32,13 +32,11 @@ import { UiSectionHeader, UiEmpty, UiSelect, UiDataTable, UiTag, UiText, UiSpace
 import type { DataTableColumns } from '@fastio/ui'
 import { navigateTo } from '#imports'
 import { useAuditLog } from '~/composables/data/useAuditLog'
-import { useTenantStore } from '~/stores/tenant'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { usePageTitle } from '~/composables/usePageTitle'
 
 usePageTitle('Журнал действий')
 
-const tenantStore = useTenantStore()
 const { canViewAuditLog } = usePermissions()
 const { list } = useAuditLog()
 
@@ -140,7 +138,6 @@ const columns: DataTableColumns<AuditLog> = [
 ]
 
 onMounted(async () => {
-  await tenantStore.init()
   if (!canViewAuditLog.value) {
     navigateTo('/')
 

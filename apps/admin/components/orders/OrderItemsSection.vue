@@ -50,7 +50,7 @@
         icon="plus"
         @click="openAddDishModal()"
       >
-        Добавить блюдо
+        {{ `Добавить ${item.acc}` }}
       </UiButton>
     </div>
 
@@ -78,6 +78,7 @@ import type { OrderItem } from '@fastio/shared'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 import useDrawer from '~/composables/ui/useDrawer'
+import { useTerms } from '~/composables/useTerms'
 
 const props = defineProps<{
   items: OrderItem[]
@@ -90,6 +91,7 @@ const emit = defineEmits<{
 }>()
 
 const { confirm } = useConfirm()
+const { item } = useTerms()
 const access = useAccess()
 
 const isItemEditable = (item: OrderItem) => {
@@ -119,7 +121,7 @@ const changeQty = async (idx: number, delta: number) => {
   const next = props.items[idx].quantity + delta
 
   if (next <= 0) {
-    const ok = await confirm({ title: 'Удалить блюдо?', confirmText: 'Удалить', confirmType: 'error' })
+    const ok = await confirm({ title: `Удалить ${item.acc}?`, confirmText: 'Удалить', confirmType: 'error' })
 
     if (ok) mutate((items) => items.splice(idx, 1))
   } else {
@@ -130,7 +132,7 @@ const changeQty = async (idx: number, delta: number) => {
 }
 
 const removeItem = async (idx: number) => {
-  const ok = await confirm({ title: 'Удалить блюдо?', confirmText: 'Удалить', confirmType: 'error' })
+  const ok = await confirm({ title: `Удалить ${item.acc}?`, confirmText: 'Удалить', confirmType: 'error' })
 
   if (ok) mutate((items) => items.splice(idx, 1))
 }

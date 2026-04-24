@@ -1,7 +1,7 @@
 import type { Side, Alignment } from 'driver.js'
 import type { TourStep } from '~/composables/useTour'
 import { waitForElement } from '~/composables/useTour'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 
 // Принимает либо голое имя (`kitchen-tab-queue`) — превращает в `[data-tour="..."]`,
 // либо готовый CSS-селектор (`.queue-panel`) — возвращает как есть
@@ -72,15 +72,13 @@ export const clickAndWait = (opts: {
 
 export const navigateToMenuStep = (waitTarget: string): TourStep => {
   const waitSel = toSelector(waitTarget)
-  const l = useTenantLabels()
-  const menuLabel = l.menuLabel.value // Меню / Каталог / Услуги
-  const itemsLower = l.itemsLabelLower.value
+  const { item, menu } = useTerms()
 
   return {
     element: 'a[href="/menu"]',
     popover: {
-      title: `Раздел «${menuLabel}»`,
-      description: `Здесь собрано всё содержимое витрины: ${itemsLower}, категории, модификаторы. Нажмите «Далее» чтобы перейти.`,
+      title: `Раздел «${menu.label}»`,
+      description: `Здесь собрано всё содержимое витрины: ${item.plural.nom}, категории, модификаторы. Нажмите «Далее» чтобы перейти.`,
       side: 'right',
       align: 'center',
     },

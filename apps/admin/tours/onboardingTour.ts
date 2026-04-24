@@ -1,5 +1,5 @@
 import type { TourStep } from '~/composables/useTour'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 
 type NavStep = {
   selector: string
@@ -8,18 +8,13 @@ type NavStep = {
 }
 
 const buildNavSteps = (): NavStep[] => {
-  const l = useTenantLabels()
-  const menuLabel = l.menuLabel.value
-  const itemsGen = l.itemsLabelGen.value // блюд / товаров / услуг
-  const itemsIns = l.itemsIns.value
-  const reservationsLabel = l.reservationsLabel.value
-  const isServices = l.isServices.value
+  const { item, menu, reservationsLabel, isServices } = useTerms()
 
   return [
     {
       selector: 'a[href="/menu"]',
-      title: menuLabel,
-      description: `Управляйте ${itemsIns}, категориями, модификаторами и добавками.`,
+      title: menu.label,
+      description: `Управляйте ${item.plural.ins}, категориями, модификаторами и добавками.`,
     },
     {
       selector: 'a[href="/orders"]',
@@ -31,7 +26,7 @@ const buildNavSteps = (): NavStep[] => {
     {
       selector: 'a[href="/kitchen"]',
       title: 'Кухня',
-      description: `Экран для исполнителей: очередь ${itemsGen} и статусы готовности.`,
+      description: `Экран для исполнителей: очередь ${item.plural.gen} и статусы готовности.`,
     },
     {
       selector: 'a[href="/tables"]',

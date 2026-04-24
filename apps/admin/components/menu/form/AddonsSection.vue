@@ -3,7 +3,7 @@
     <template #header-extra>
       <HintPopover>
         <UiText size="tiny">
-          Дополнения к блюду за отдельную цену. Добавки общие на весь каталог — создаются в разделе Меню → Добавки. Количество можно ограничить — по умолчанию для всех блюд или индивидуально.
+          {{ `Дополнения к ${item.dat} за отдельную цену. Добавки общие на весь ${menu.nom} — создаются в разделе ${menu.label} → Добавки. Количество можно ограничить — по умолчанию для всех ${item.plural.gen} или индивидуально.` }}
         </UiText>
       </HintPopover>
     </template>
@@ -72,7 +72,7 @@
                 size="small"
                 @click="addMode = 'copy'"
               >
-                Скопировать с другого блюда
+                {{ `Скопировать с другого ${item.gen}` }}
               </UiButton>
             </div>
           </template>
@@ -81,7 +81,7 @@
             <UiSelect
               v-model:value="copyFromDishId"
               label=""
-              placeholder="Выберите блюдо"
+              :placeholder="`Выберите ${item.acc}`"
               :options="copyDishSelectOptions"
               class="add-select"
             />
@@ -113,6 +113,7 @@ import { useConfirm } from '@fastio/kit'
 import { useDatabase } from '~/composables/data/useDatabase'
 import AddonPickerModal from './AddonPickerModal.vue'
 import HintPopover from '~/components/ui/HintPopover.vue'
+import { useTerms } from '~/composables/useTerms'
 
 const props = defineProps<{
   tenantId: string
@@ -129,6 +130,7 @@ const props = defineProps<{
 const api = useDatabase()
 const { success } = useMessage()
 const { confirm } = useConfirm()
+const { item, menu } = useTerms()
 
 const selectedAddonIds = ref(new Set<string>())
 const showPicker = ref(false)

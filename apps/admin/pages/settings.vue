@@ -11,7 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
@@ -19,8 +18,6 @@ import { usePageTitle } from '~/composables/usePageTitle'
 usePageTitle('Настройки')
 
 const tenantStore = useTenantStore()
-
-onMounted(() => tenantStore.init())
 
 const tabs = [
   { value: 'contacts', label: 'Общее', icon: 'settings' as const },

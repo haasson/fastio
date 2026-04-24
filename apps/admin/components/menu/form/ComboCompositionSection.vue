@@ -46,7 +46,7 @@
 
         <!-- Добавление блюда -->
         <UiButton type="primary" icon="plus" @click="showPicker = true">
-          Добавить блюдо
+          {{ `Добавить ${item.acc}` }}
         </UiButton>
 
         <DishPickerModal
@@ -58,7 +58,7 @@
         <!-- Итого -->
         <div v-if="displayItems.length > 0" class="totals">
           <div class="total-row">
-            <span class="total-label">Сумма блюд</span>
+            <span class="total-label">{{ `Сумма ${item.plural.gen}` }}</span>
             <span class="total-value">{{ dishesTotal }} ₽</span>
           </div>
           <template v-if="comboPrice !== null && comboPrice > 0">
@@ -84,6 +84,7 @@ import DishItemRow from '~/components/ui/DishItemRow.vue'
 import type { Addon, Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
+import { useTerms } from '~/composables/useTerms'
 
 type DishInfo = { id: string; name: string; categoryId: string; price: number; active: boolean; deleted?: boolean }
 
@@ -98,6 +99,7 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:modelValue': [value: ComboItemInput[]] }>()
 
 const api = useDatabase()
+const { item } = useTerms()
 const loading = ref(false)
 const showPicker = ref(false)
 const allDishes = ref<DishInfo[]>([])
@@ -108,7 +110,7 @@ const addonsLoaded = ref(false)
 // ─── Lookups ─────────────────────────────────────────────────────────────────
 
 const getDish = (dishId: string) => allDishes.value.find((d) => d.id === dishId)
-const getDishName = (dishId: string) => getDish(dishId)?.name ?? 'Удалённое блюдо'
+const getDishName = (dishId: string) => getDish(dishId)?.name ?? `Удалённое ${item.nom}`
 const getDishStatus = (dishId: string): 'deleted' | 'inactive' | null => {
   const dish = getDish(dishId)
 

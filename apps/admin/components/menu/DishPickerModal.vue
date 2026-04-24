@@ -9,7 +9,7 @@
     <div v-if="step === 'pick'" class="pick-content">
       <div v-if="loading" class="state">Загрузка…</div>
       <template v-else>
-        <UiInput v-model="searchQuery" placeholder="Поиск блюда…" clearable />
+        <UiInput v-model="searchQuery" :placeholder="`Поиск ${item.gen}…`" clearable />
 
         <div v-if="!searchQuery" class="cats">
           <button
@@ -194,6 +194,7 @@ import type { Addon } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
 import { useModules } from '~/composables/plan/useModules'
+import { useTerms } from '~/composables/useTerms'
 
 type PickerListItem = { type: 'dish'; data: Dish } | { type: 'combo'; data: Combo }
 
@@ -235,6 +236,7 @@ const emit = defineEmits<{
 
 const { loading, categories, allDishes, allCombos, fetchData, getDishModifiers, getDishAddons, listAddons } = useOrderDishPicker(toRef(props, 'tenantId'))
 const modules = useModules()
+const { item } = useTerms()
 
 const step = ref<'pick' | 'customize'>('pick')
 const selectedCatId = ref<string | null>(null)
@@ -283,13 +285,13 @@ const displayItems = computed((): PickerListItem[] => {
 const listEmptyMessage = computed(() => {
   if (displayItems.value.length) return null
   if (searchQuery.value) return 'Ничего не найдено'
-  if (selectedCatId.value !== 'combos') return 'Нет блюд'
+  if (selectedCatId.value !== 'combos') return `Нет ${item.plural.gen}`
 
   return 'Нет комбо'
 })
 
 const modalTitle = computed(() => {
-  if (step.value === 'pick') return 'Выберите блюдо'
+  if (step.value === 'pick') return `Выберите ${item.acc}`
   if (props.editItem) return 'Изменить состав'
 
   return selectedDish.value?.name ?? ''

@@ -17,9 +17,9 @@
         :weight-unit="form.weightUnit"
         :category-id="form.categoryId"
         :category-options="categoryOptions"
-        :name-placeholder="isServices ? 'Например: Ремонт холодильника' : 'Маргарита'"
+        :name-placeholder="terms.isServices ? 'Например: Ремонт холодильника' : 'Маргарита'"
         :price-placeholder="350"
-        :description-placeholder="isServices ? 'Опишите услугу' : 'Томатный соус, моцарелла, базилик'"
+        :description-placeholder="terms.isServices ? 'Опишите услугу' : 'Томатный соус, моцарелла, базилик'"
         :show-weight="isFood"
         @update:photo-url="currentPhotoUrl = $event"
         @update:photo-removed="photoRemoved = $event"
@@ -50,7 +50,7 @@
         />
 
         <AddonsSection
-          v-if="!isServices && modules.addons.value.enabled"
+          v-if="!terms.isServices && modules.addons.value.enabled"
           ref="addonsRef"
           :tenant-id="tenantId"
           :dish-id="dish?.id ?? null"
@@ -93,7 +93,7 @@ import type { DishFormData } from '~/utils/api/dishes'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 import { useAccess } from '~/composables/plan/useAccess'
 import { useDishSave } from '~/composables/data/useDishSave'
 import { useAddons } from '~/composables/data/useAddons'
@@ -124,13 +124,14 @@ const emit = defineEmits<{
 
 const { tenantId: tenantIdRef } = toRefs(props)
 const tenantStore = useTenantStore()
-const { isServices, menuStyle } = useTenantLabels()
-const isFood = computed(() => !isServices.value && menuStyle.value === 'food')
+const terms = useTerms()
+const { item } = terms
+const isFood = computed(() => !terms.isServices && terms.menuStyle === 'food')
 const modules = useModules()
 const access = useAccess()
 const modalTitle = computed(() => props.dish
-  ? (isServices.value ? 'Редактировать услугу' : 'Редактировать блюдо')
-  : (isServices.value ? 'Новая услуга' : 'Новое блюдо'))
+  ? `Редактировать ${item.acc}`
+  : `${item.new} ${item.nom}`)
 const db = useDatabase()
 const { uploadPhoto, deletePhoto, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()

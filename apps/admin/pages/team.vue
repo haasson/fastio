@@ -8,16 +8,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { useTenantStore } from '~/stores/tenant'
 import { usePermissions } from '~/composables/auth/usePermissions'
 import { useAccess } from '~/composables/plan/useAccess'
 import { usePageTitle } from '~/composables/usePageTitle'
 
 usePageTitle('Команда')
 
-const tenantStore = useTenantStore()
 const { canManageRoles } = usePermissions()
 const access = useAccess()
 
@@ -33,5 +31,4 @@ const tabs = computed(() => {
   return list
 })
 
-onMounted(() => tenantStore.init())
 </script>

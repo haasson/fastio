@@ -49,8 +49,6 @@ const router = useRouter()
 const api = useDatabase()
 const tenantStore = useTenantStore()
 
-tenantStore.init()
-
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 
 const order = ref<Order | null>(null)

@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { emptyOnboardingState, type OnboardingState } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 import { reportError } from '~/utils/reportError'
 import {
   buildOnboardingFlow,
@@ -20,19 +20,20 @@ export type OnboardingStepView = OnboardingStep & {
 export const useOnboarding = () => {
   const tenantStore = useTenantStore()
   const { tenant, isOwner } = storeToRefs(tenantStore)
-  const labels = useTenantLabels()
+  const terms = useTerms()
+  const { item, menu } = terms
 
   const onboardingLabels = computed<OnboardingLabels>(() => ({
-    menu: labels.menuLabel.value,
-    menuPurpose: labels.menuPurpose.value,
-    item: labels.itemLabel.value,
-    itemAcc: labels.itemAccLabel.value,
-    firstItemAcc: labels.firstItemAccLabel.value,
-    categoryExamples: labels.categoryExamples.value,
+    menu: menu.label,
+    menuPurpose: menu.nom,
+    item: item.nom,
+    itemAcc: item.acc,
+    firstItemAcc: terms.firstItemAcc,
+    categoryExamples: terms.categoryExamples,
   }))
 
   const flow = computed(() => buildOnboardingFlow(onboardingLabels.value, {
-    isServices: labels.isServices.value,
+    isServices: terms.isServices,
     modules: tenant.value?.modules ?? null,
   }))
 

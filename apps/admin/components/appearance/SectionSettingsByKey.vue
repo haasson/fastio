@@ -87,7 +87,7 @@ import HeroOptions from './HeroOptions.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, SectionKey } from '@fastio/shared'
 import { dishDescriptionOptions, mobileDishCardOptions } from '@fastio/shared'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 
 defineProps<{
   sectionKey: SectionKey
@@ -106,10 +106,10 @@ const bannerDisplayOptions = [
   { value: 'auto', label: 'По размеру' },
 ]
 
-const { itemsLabel } = useTenantLabels()
+const { item } = useTerms()
 const menuViewOptions = computed(() => [
   { value: 'categories', label: 'Категории' },
-  { value: 'dishes', label: itemsLabel.value },
+  { value: 'dishes', label: item.plural.label },
 ])
 
 </script>

@@ -6,7 +6,7 @@
     <template #header-extra>
       <HintPopover>
         <UiText size="tiny">
-          Группы вариантов блюда. Например, размер пиццы или вид теста. Гость выбирает один вариант из каждой группы.
+          {{ `Группы вариантов ${item.gen}. Например, размер пиццы или вид теста. Гость выбирает один вариант из каждой группы.` }}
         </UiText>
       </HintPopover>
     </template>
@@ -33,7 +33,7 @@
                 ✕
               </UiButton>
             </div>
-            <UiAlert v-if="isGroupInactive(attached.groupId)" type="error" size="small">Модификатор отключен в настройках и не будет отображаться для данного блюда</UiAlert>
+            <UiAlert v-if="isGroupInactive(attached.groupId)" type="error" size="small">{{ `Модификатор отключен в настройках и не будет отображаться для данного ${item.gen}` }}</UiAlert>
 
             <div class="options-grid">
               <div v-for="sourceOpt in getGroupSourceOptions(attached.groupId)" :key="sourceOpt.id" class="option-row">
@@ -94,7 +94,7 @@
                 size="small"
                 @click="addMode = 'copy'"
               >
-                Скопировать с другого блюда
+                {{ `Скопировать с другого ${item.gen}` }}
               </UiButton>
             </div>
           </template>
@@ -117,7 +117,7 @@
               <UiSelect
                 v-model:value="copyFromDishId"
                 label=""
-                placeholder="Выберите блюдо"
+                :placeholder="`Выберите ${item.acc}`"
                 :options="copyDishSelectOptions"
                 class="add-select"
               />
@@ -139,6 +139,7 @@ import { toRefs } from 'vue'
 import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, UiAlert, useMessage } from '@fastio/ui'
 import { useDishModifiersEditor } from '~/composables/menu/useDishModifiersEditor'
 import HintPopover from '~/components/ui/HintPopover.vue'
+import { useTerms } from '~/composables/useTerms'
 
 const props = defineProps<{
   tenantId: string
@@ -151,6 +152,7 @@ const props = defineProps<{
 const { success } = useMessage()
 
 const { tenantId, categoryId, dishId, refreshKey, weightUnit } = toRefs(props)
+const { item } = useTerms()
 
 const {
   loading, availableGroups, attachedGroups, selectedGroupId, copyFromDishId, addMode,

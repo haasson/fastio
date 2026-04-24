@@ -9,7 +9,7 @@
 
     <template v-else>
       <UiEmpty v-if="categories.length === 0" icon="layoutGrid">
-        Добавлять {{ itemsLabelLower }} пока некуда — сначала
+        Добавлять {{ item.plural.nom }} пока некуда — сначала
         <RouterLink to="/menu/categories" class="link">создайте категорию</RouterLink>.
       </UiEmpty>
       <UiTabs
@@ -29,7 +29,7 @@ import { UiEmpty, UiSkeleton, UiTabs } from '@fastio/ui'
 import type { Category, DishTagDefinition } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
 import { useCategories } from '~/composables/data/useCategories'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 
 const props = defineProps<{
   tenantId: string
@@ -43,7 +43,7 @@ const emit = defineEmits<{
   'categoriesLoaded': [cats: Category[]]
 }>()
 
-const { itemsLabelLower } = useTenantLabels()
+const { item } = useTerms()
 const { tenantId: tenantIdRef } = toRefs(props)
 
 const { categories, loading: categoriesLoading } = useCategories(tenantIdRef)

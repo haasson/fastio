@@ -33,8 +33,6 @@ resetOrderCount()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 
-tenantStore.init()
-
 const tenantId = computed(() => tenantStore.tenant?.id ?? '')
 const branchId = computed(() => branchStore.currentBranchId)
 

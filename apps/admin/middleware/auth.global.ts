@@ -45,10 +45,22 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     if (!tenantStore.tenant && !tenantStore.loading) {
       await tenantStore.init()
+    } else if (tenantStore.loading) {
+      await new Promise<void>((resolve) => {
+        const unwatch = watch(
+          () => tenantStore.loading,
+          (loading) => {
+            if (!loading) {
+              unwatch()
+              resolve()
+            }
+          },
+        )
+      })
     }
 
     // Юзер без единого тенанта — выкидываем
-    if (!tenantStore.loading && tenantStore.memberships.length === 0 && to.path !== '/no-access') {
+    if (tenantStore.memberships.length === 0 && to.path !== '/no-access') {
       return navigateTo('/no-access')
     }
 

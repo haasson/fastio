@@ -94,7 +94,7 @@ import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, PageKey, NavPageKey } from '@fastio/shared'
 import { dishDescriptionOptions, mobileDishCardOptions } from '@fastio/shared'
-import { useTenantLabels } from '~/composables/plan/useTenantLabels'
+import { useTerms } from '~/composables/useTerms'
 
 defineProps<{
   pageKey: PageKey | NavPageKey
@@ -106,10 +106,10 @@ const emit = defineEmits<{
   'pending-about-cover': [file: File | null]
 }>()
 
-const { itemsLabel } = useTenantLabels()
+const { item } = useTerms()
 const menuViewOptions = computed(() => [
   { value: 'categories', label: 'Категории' },
-  { value: 'dishes', label: itemsLabel.value },
+  { value: 'dishes', label: item.plural.label },
 ])
 
 const deliveryDescriptionOptions = [
