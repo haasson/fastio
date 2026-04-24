@@ -5,6 +5,7 @@
       <UiConfigProvider :is-dark="true">
         <div class="sidebar-header">
           <NuxtLink to="/" class="logo">
+            <UiAppLogo class="logo-mark" :size="32" />
             <span class="logo-text">Fast<span class="logo-accent">io</span></span>
           </NuxtLink>
           <a
@@ -100,6 +101,7 @@ import OnboardingWizard from '~/components/onboarding/OnboardingWizard.vue'
 import OnboardingChecklist from '~/components/onboarding/OnboardingChecklist.vue'
 import PastDueBanner from '~/components/layout/PastDueBanner.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
+import UiAppLogo from '~/components/ui/AppLogo.vue'
 import AiChat from '~/components/ai/AiChat.vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
@@ -225,6 +227,10 @@ const kbUrl = computed(() => {
 
   text-decoration: none;
   color: var(--grey-50);
+}
+
+.logo-mark {
+  display: none;
 }
 
 // Логотип — отдельный кейс: специфичный шрифт Unbounded, нестандартный размер/вес.
@@ -384,6 +390,10 @@ const kbUrl = computed(() => {
     display: none;
   }
 
+  .logo-mark {
+    display: block;
+  }
+
   .user-info {
     padding: var(--space-12) var(--space-8) var(--space-4);
   }
@@ -403,6 +413,7 @@ const kbUrl = computed(() => {
     width: var(--sidebar-width);
 
     .logo-text { display: block; }
+    .logo-mark { display: none; }
     .site-link { display: inline-flex; }
     .user-info { padding: var(--space-12) var(--space-16) var(--space-4); }
 
