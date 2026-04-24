@@ -118,6 +118,22 @@ const itemStep = (l: OnboardingLabels): OnboardingStep => ({
   tourId: 'create-dish',
 })
 
+const legalStep: OnboardingStep = {
+  id: 'legal',
+  title: 'Заполните юридические данные',
+  description:
+    'Без этих данных закон запрещает обрабатывать персональные данные клиентов — значит, приём заказов и бронирований будет недоступен. Заполнение занимает пару минут.',
+  details: [
+    'Откройте «Настройки → Юридические»',
+    'Укажите юр. наименование, ИНН, ОГРН/ОГРНИП и юридический адрес',
+    'Добавьте email для обращений по персональным данным',
+    'По желанию прикрепите PDF с офертой для клиентов',
+  ],
+  ctaLabel: 'Открыть юр. данные',
+  route: '/settings/legal',
+  kbRoute: '/settings',
+}
+
 const statusesStep: OnboardingStep = {
   id: 'statuses',
   title: 'Проверьте статусы заказов',
@@ -180,7 +196,7 @@ export const buildOnboardingFlow = (
     if (m?.dineIn) steps.push(dineInStep)
   }
 
-  steps.push(statusesStep, siteStep, testOrderStep)
+  steps.push(legalStep, statusesStep, siteStep, testOrderStep)
 
   return steps
 }

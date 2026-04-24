@@ -1,22 +1,6 @@
 <template>
-  <UiForm @submit="handleSave">
-    <div class="form">
-      <UiSectionHeader title="Уведомления о заказах" />
-
-      <div class="row">
-        <div class="field">
-          <UiInput
-            v-model="form.email"
-            name="email"
-            label="Email для уведомлений"
-            message="На этот адрес придёт письмо при каждом новом заказе"
-            type="email"
-            placeholder="orders@vasya-pizza.ru"
-            :rules="[{ type: 'email', message: 'Некорректный email' }]"
-          />
-        </div>
-      </div>
-
+  <div class="root">
+    <UiCard size="large" class="section">
       <UiSectionHeader title="Браузерные уведомления" />
 
       <div class="prefs">
@@ -28,48 +12,44 @@
           <UiSwitch v-model="blinkingCounter" />
         </div>
       </div>
+    </UiCard>
 
-      <template v-if="access.telegramNotifications.value">
-        <UiSectionHeader title="Telegram" />
+    <UiCard v-if="access.telegramNotifications.value" size="large" class="section">
+      <UiSectionHeader title="Telegram" />
 
-        <div class="tg-block">
-          <span class="tg-icon">
-            <UiIcon name="messageCircle" :size="28" />
-          </span>
-          <div class="tg-info">
-            <UiText size="small" class="tg-title">Уведомления в Telegram</UiText>
-            <UiText size="tiny" class="tg-desc">
-              <template v-if="isTelegramConnected">
-                {{ chatTitle ? `Подключена группа «${chatTitle}»` : 'Группа подключена' }} — заказы и бронирования будут приходить туда
-              </template>
-              <template v-else>Подключи группу — бот будет писать туда при каждом новом заказе или бронировании</template>
-            </UiText>
-          </div>
-          <UiButton
-            v-if="isTelegramConnected"
-            size="small"
-            :loading="disconnecting"
-            @click="disconnectTelegram"
-          >
-            Отключить
-          </UiButton>
-          <UiButton
-            v-else
-            size="small"
-            type="primary"
-            :loading="generating"
-            @click="connectTelegram"
-          >
-            Подключить
-          </UiButton>
+      <div class="tg-block">
+        <span class="tg-icon">
+          <UiIcon name="messageCircle" :size="28" />
+        </span>
+        <div class="tg-info">
+          <UiText size="small" class="tg-title">Уведомления в Telegram</UiText>
+          <UiText size="tiny" class="tg-desc">
+            <template v-if="isTelegramConnected">
+              {{ chatTitle ? `Подключена группа «${chatTitle}»` : 'Группа подключена' }} — заказы и бронирования будут приходить туда
+            </template>
+            <template v-else>Подключи группу — бот будет писать туда при каждом новом заказе или бронировании</template>
+          </UiText>
         </div>
-      </template>
-
-      <div class="footer">
-        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
+        <UiButton
+          v-if="isTelegramConnected"
+          size="small"
+          :loading="disconnecting"
+          @click="disconnectTelegram"
+        >
+          Отключить
+        </UiButton>
+        <UiButton
+          v-else
+          size="small"
+          type="primary"
+          :loading="generating"
+          @click="connectTelegram"
+        >
+          Подключить
+        </UiButton>
       </div>
-    </div>
-  </UiForm>
+    </UiCard>
+  </div>
 
   <UiModal
     v-model="showModal"
@@ -106,8 +86,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onUnmounted } from 'vue'
-import { UiForm, UiInput, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal, useMessage } from '@fastio/ui'
+import { ref, computed, watch, onUnmounted } from 'vue'
+import { UiCard, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal } from '@fastio/ui'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'
 import { useAccess } from '~/composables/plan/useAccess'
@@ -118,18 +98,8 @@ const { blinkingCounter } = useNotificationPrefs()
 const tenantStore = useTenantStore()
 const access = useAccess()
 const { $supabase } = useNuxtApp()
-const { success } = useMessage()
 const { confirm } = useConfirm()
 
-const form = reactive({
-  email: tenantStore.tenant?.notifications?.email ?? '',
-})
-
-watch(() => tenantStore.tenant?.notifications, (n) => {
-  form.email = n?.email ?? ''
-})
-
-const saving = ref(false)
 const generating = ref(false)
 const disconnecting = ref(false)
 const showModal = ref(false)
@@ -179,24 +149,6 @@ watch(showModal, (open) => {
 })
 
 onUnmounted(() => stopPolling())
-
-const handleSave = async () => {
-  saving.value = true
-  try {
-    const current = tenantStore.tenant?.notifications
-
-    await tenantStore.update({
-      notifications: {
-        email: form.email || null,
-        telegramChatId: current?.telegramChatId ?? null,
-        telegramThreadId: current?.telegramThreadId ?? null,
-      },
-    })
-    success('Сохранено')
-  } finally {
-    saving.value = false
-  }
-}
 
 const connectTelegram = async () => {
   generating.value = true
@@ -251,21 +203,15 @@ const copyCode = () => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 
-.form {
-  @include modal-form;
+.root {
+  @include flex-col(var(--space-12));
+  max-width: 680px;
 }
 
-.row {
-  display: flex;
+.section {
   gap: var(--space-16);
-
-  .field {
-    flex: 1;
-    min-width: 0;
-  }
 }
 
 .hint {
@@ -386,9 +332,5 @@ const copyCode = () => {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-.footer {
-  @include settings-footer;
 }
 </style>

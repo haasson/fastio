@@ -4,113 +4,126 @@
       Заполните юридические данные — без них приём заказов и бронирование на витрине недоступны
     </UiAlert>
 
-    <UiSectionHeader title="Юридические данные" />
+    <UiCard size="large" class="section">
+      <UiSectionHeader title="Юридические данные" />
 
-    <div class="grid">
-      <UiInput
-        v-model="form.legalName"
-        label="Юридическое наименование *"
-        placeholder="ИП Иванов Иван Иванович"
-        name="legalName"
-        :rules="[{ type: 'required', message: 'Введите наименование' }]"
-      />
-      <UiInput
-        v-model="form.privacyEmail"
-        label="Email для обращений по персданным *"
-        placeholder="privacy@vasya-pizza.ru"
-        name="privacyEmail"
-        :rules="[
-          { type: 'required', message: 'Введите email' },
-          { type: 'email', message: 'Некорректный email' },
-        ]"
-      />
-      <UiInput
-        v-model="form.inn"
-        label="ИНН *"
-        placeholder="1234567890"
-        name="inn"
-        inputmode="numeric"
-        :rules="[
-          { type: 'required', message: 'Введите ИНН' },
-          { type: 'pattern', pattern: /^\d{10}$|^\d{12}$/, message: 'ИНН — 10 цифр (ООО) или 12 цифр (ИП)' },
-        ]"
-      />
-      <UiInput
-        v-model="form.ogrn"
-        label="ОГРН / ОГРНИП *"
-        placeholder="1234567890123"
-        name="ogrn"
-        inputmode="numeric"
-        :rules="[
-          { type: 'required', message: 'Введите ОГРН или ОГРНИП' },
-          { type: 'pattern', pattern: /^\d{13}$|^\d{15}$/, message: 'ОГРН — 13 цифр, ОГРНИП — 15 цифр' },
-        ]"
-      />
-    </div>
-
-    <UiInput
-      v-model="form.legalAddress"
-      label="Юридический адрес *"
-      placeholder="117546, г. Москва, ул. Примерная, д. 1"
-      name="legalAddress"
-      :rules="[{ type: 'required', message: 'Введите адрес' }]"
-    />
-
-    <UiSectionHeader title="Документы" />
-
-    <div class="docs">
-      <div class="doc-row">
-        <span class="doc-label">Оферта для клиентов</span>
-        <a
-          v-if="form.offerUrl"
-          :href="form.offerUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="doc-link"
-        >
-          <UiIcon name="fileText" :size="14" />
-          PDF прикреплён
-        </a>
-        <label class="doc-upload">
-          <UiButton
-            type="default"
-            size="small"
-            :loading="uploading"
-            tag="span"
-          >
-            {{ form.offerUrl ? 'Заменить' : 'Загрузить PDF' }}
-          </UiButton>
-          <input
-            type="file"
-            accept="application/pdf"
-            class="file-input"
-            @change="uploadOffer"
-          />
-        </label>
-        <button
-          v-if="form.offerUrl"
-          type="button"
-          class="doc-remove"
-          @click="form.offerUrl = null"
-        >
-          <UiIcon name="close" :size="14" />
-        </button>
+      <div class="grid">
+        <UiInput
+          v-model="form.legalName"
+          label="Юридическое наименование *"
+          placeholder="ИП Иванов Иван Иванович"
+          name="legalName"
+          :rules="[{ type: 'required', message: 'Введите наименование' }]"
+        />
+        <UiInput
+          v-model="form.privacyEmail"
+          label="Email для обращений по персданным *"
+          placeholder="privacy@vasya-pizza.ru"
+          name="privacyEmail"
+          :rules="[
+            { type: 'required', message: 'Введите email' },
+            { type: 'email', message: 'Некорректный email' },
+          ]"
+        />
+        <UiInput
+          v-model="form.inn"
+          label="ИНН *"
+          placeholder="1234567890"
+          name="inn"
+          inputmode="numeric"
+          :rules="[
+            { type: 'required', message: 'Введите ИНН' },
+            { type: 'pattern', pattern: /^\d{10}$|^\d{12}$/, message: 'ИНН — 10 цифр (ООО) или 12 цифр (ИП)' },
+          ]"
+        />
+        <UiInput
+          v-model="form.ogrn"
+          label="ОГРН / ОГРНИП *"
+          placeholder="1234567890123"
+          name="ogrn"
+          inputmode="numeric"
+          :rules="[
+            { type: 'required', message: 'Введите ОГРН или ОГРНИП' },
+            { type: 'pattern', pattern: /^\d{13}$|^\d{15}$/, message: 'ОГРН — 13 цифр, ОГРНИП — 15 цифр' },
+          ]"
+        />
       </div>
-    </div>
+
+      <UiInput
+        v-model="form.legalAddress"
+        label="Юридический адрес *"
+        placeholder="117546, г. Москва, ул. Примерная, д. 1"
+        name="legalAddress"
+        :rules="[{ type: 'required', message: 'Введите адрес' }]"
+      />
+    </UiCard>
+
+    <UiCard size="large" class="section">
+      <UiSectionHeader title="Документы" />
+
+      <div class="docs">
+        <div class="doc-row">
+          <span class="doc-label">Оферта для клиентов</span>
+          <a
+            v-if="form.offerUrl"
+            :href="form.offerUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="doc-link"
+          >
+            <UiIcon name="fileText" :size="14" />
+            PDF прикреплён
+          </a>
+          <label class="doc-upload">
+            <UiButton
+              type="default"
+              size="small"
+              :loading="uploading"
+              tag="span"
+            >
+              {{ form.offerUrl ? 'Заменить' : 'Загрузить PDF' }}
+            </UiButton>
+            <input
+              type="file"
+              accept="application/pdf"
+              class="file-input"
+              @change="uploadOffer"
+            />
+          </label>
+          <button
+            v-if="form.offerUrl"
+            type="button"
+            class="doc-remove"
+            @click="form.offerUrl = null"
+          >
+            <UiIcon name="close" :size="14" />
+          </button>
+        </div>
+      </div>
+    </UiCard>
 
     <div class="footer">
-      <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
+      <UiButton
+        submit
+        type="primary"
+        :loading="saving"
+        :disabled="!isDirty"
+      >
+        Сохранить
+      </UiButton>
     </div>
   </UiForm>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiForm, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiSectionHeader } from '@fastio/ui'
+import { UiCard, UiForm, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiSectionHeader } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { isLegalInfoComplete } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { useFormDirty } from '~/composables/ui/useFormDirty'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 const db = useDatabase()
@@ -125,9 +138,13 @@ const buildForm = (t: Tenant) => ({
 })
 
 const form = reactive(buildForm(tenantStore.tenant!))
+const { isDirty, reset } = useFormDirty(form)
 
 watch(() => tenantStore.tenant, (t) => {
-  if (t) Object.assign(form, buildForm(t))
+  if (t) {
+    Object.assign(form, buildForm(t))
+    reset()
+  }
 })
 
 const legalInfoComplete = computed(() => isLegalInfoComplete({
@@ -141,6 +158,8 @@ const legalInfoComplete = computed(() => isLegalInfoComplete({
 const saving = ref(false)
 const uploading = ref(false)
 const { success, error } = useMessage()
+
+useUnsavedGuard(isDirty)
 
 const uploadOffer = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
@@ -173,6 +192,7 @@ const handleSave = async () => {
         offerUrl: form.offerUrl,
       },
     })
+    reset()
     success('Сохранено')
   } finally {
     saving.value = false
@@ -186,8 +206,13 @@ const handleSave = async () => {
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
-  @include flex-col(var(--space-20));
+  @include flex-col(var(--space-12));
+  @include save-bar-offset;
   max-width: 680px;
+}
+
+.section {
+  gap: var(--space-16);
 }
 
 .grid {
@@ -249,6 +274,6 @@ const handleSave = async () => {
 }
 
 .footer {
-  @include settings-footer;
+  @include fixed-save-bar;
 }
 </style>

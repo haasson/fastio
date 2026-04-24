@@ -3,7 +3,6 @@
     <TabsLayout
       :tabs="tabs"
       base-path="/settings"
-      card
       hide-single
     />
   </template>

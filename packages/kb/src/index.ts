@@ -147,6 +147,7 @@ export const KB_STRUCTURE: KbSectionMeta[] = [
     articles: [
       { id: 'settings-contacts', title: 'Контакты и часы работы', file: '10-settings-contacts' },
       { id: 'settings-notifications', title: 'Уведомления', file: '10-settings-notifications' },
+      { id: 'settings-legal', title: 'Юридические данные', file: '10-settings-legal' },
       { id: 'settings-modules', title: 'Модули', file: '10-settings-modules' },
     ],
   },

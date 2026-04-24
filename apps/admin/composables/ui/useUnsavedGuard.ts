@@ -22,7 +22,7 @@ export const useUnsavedGuard = (isDirty: Ref<boolean>) => {
     if (isDirty.value) e.preventDefault()
   }
 
-  if (import.meta.client) {
+  if (typeof window !== 'undefined') {
     window.addEventListener('beforeunload', onBeforeUnload)
     onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload))
   }

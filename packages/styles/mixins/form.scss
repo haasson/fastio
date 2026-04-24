@@ -24,6 +24,30 @@
   gap: 12px;
 }
 
+// Высота фикс-бара (padding + кнопка). Страницы под баром добавляют
+// padding-bottom в 2x этой величины, чтобы контент не залезал под бар.
+$save-bar-height: 64px;
+
+@mixin fixed-save-bar {
+  position: fixed;
+  bottom: 0;
+  left: var(--current-sidebar-width, 0);
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--content-padding, var(--space-24));
+  background: var(--color-bg-card);
+  border-top: 1px solid var(--color-border);
+  z-index: 20;
+  transition: left 0.25s ease;
+}
+
+@mixin save-bar-offset {
+  padding-bottom: calc(#{$save-bar-height} * 2);
+}
+
 @mixin saved-msg {
   display: flex;
   align-items: center;

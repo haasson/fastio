@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       'vue': resolve(__dirname, 'apps/admin/node_modules/vue'),
       'pinia': resolve(__dirname, 'apps/admin/node_modules/pinia'),
+      'vue-router': resolve(__dirname, 'apps/admin/test-utils/vue-router-stub.ts'),
       '#imports': resolve(__dirname, 'apps/admin/test-utils/nuxt-imports-stub.ts'),
       '~': resolve(__dirname, 'apps/admin'),
       '@fastio/shared': resolve(__dirname, 'packages/shared/src'),

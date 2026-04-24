@@ -174,6 +174,7 @@ describe('useOnboarding', () => {
 
       expect(byId.category).toBe('done')
       expect(byId.item).toBe('done')
+      expect(byId.legal).toBe('done')
       expect(byId.statuses).toBe('done')
       expect(byId.site).toBe('active')
       expect(byId['test-order']).toBe('locked')
@@ -209,7 +210,7 @@ describe('useOnboarding', () => {
       isOwnerRef.value = true
       const ids = useOnboarding().steps.value.map((s) => s.id)
 
-      expect(ids).toEqual(['category', 'item', 'intake-delivery', 'intake-dine-in', 'statuses', 'site', 'test-order'])
+      expect(ids).toEqual(['category', 'item', 'intake-delivery', 'intake-dine-in', 'legal', 'statuses', 'site', 'test-order'])
     })
 
     it('omits intake steps when no intake modules are enabled', () => {
@@ -217,7 +218,7 @@ describe('useOnboarding', () => {
       isOwnerRef.value = true
       const ids = useOnboarding().steps.value.map((s) => s.id)
 
-      expect(ids).toEqual(['category', 'item', 'statuses', 'site', 'test-order'])
+      expect(ids).toEqual(['category', 'item', 'legal', 'statuses', 'site', 'test-order'])
     })
   })
 
@@ -229,8 +230,8 @@ describe('useOnboarding', () => {
       isOwnerRef.value = true
       const { progress } = useOnboarding()
 
-      expect(progress.value.completed).toBe(2)
-      expect(progress.value.total).toBe(5)
+      expect(progress.value.completed).toBe(3)
+      expect(progress.value.total).toBe(6)
     })
 
     it('counts all as completed when completedAt set', () => {
@@ -240,8 +241,8 @@ describe('useOnboarding', () => {
       isOwnerRef.value = true
       const { progress } = useOnboarding()
 
-      expect(progress.value.completed).toBe(5)
-      expect(progress.value.total).toBe(5)
+      expect(progress.value.completed).toBe(6)
+      expect(progress.value.total).toBe(6)
     })
   })
 

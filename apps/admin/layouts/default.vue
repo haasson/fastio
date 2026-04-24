@@ -170,10 +170,15 @@ const kbUrl = computed(() => {
   --content-padding: var(--space-24);
   --sidebar-width: 240px;
   --sidebar-width-collapsed: 64px;
+  --current-sidebar-width: 0px;
 
   display: flex;
   min-height: 100vh;
   background: var(--color-bg-page);
+
+  @include mq-m {
+    --current-sidebar-width: var(--sidebar-width);
+  }
 }
 
 .sidebar {
@@ -376,6 +381,10 @@ const kbUrl = computed(() => {
 }
 
 .sidebar-collapsed {
+  @include mq-m {
+    --current-sidebar-width: var(--sidebar-width-collapsed);
+  }
+
   .sidebar {
     width: var(--sidebar-width-collapsed);
   }

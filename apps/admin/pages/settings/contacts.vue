@@ -1,62 +1,77 @@
 <template>
   <UiForm class="form" @submit="handleSave">
-    <UiSectionHeader title="Основное" />
+    <UiCard size="large" class="section">
+      <UiSectionHeader title="Основное" />
 
-    <div class="grid">
+      <div class="grid">
+        <UiInput
+          v-model="form.name"
+          name="name"
+          label="Название заведения *"
+          placeholder="Пицца Васи"
+          :rules="[{ type: 'required', message: 'Введите название' }]"
+        />
+        <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
+      </div>
+
       <UiInput
-        v-model="form.name"
-        name="name"
-        label="Название заведения *"
-        placeholder="Пицца Васи"
-        :rules="[{ type: 'required', message: 'Введите название' }]"
+        v-model="form.phone"
+        name="phone"
+        label="Телефон"
+        class="phone-input"
+        placeholder="+7 (999) 000-00-00"
+        :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
       />
-      <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
-    </div>
 
-    <UiInput
-      v-model="form.phone"
-      name="phone"
-      label="Телефон"
-      class="phone-input"
-      placeholder="+7 (999) 000-00-00"
-      :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
-    />
+      <UiSelect
+        v-model:value="form.timezone"
+        label="Часовой пояс"
+        :options="TIMEZONE_OPTIONS"
+        filterable
+        class="timezone-select"
+      />
+    </UiCard>
 
-    <UiSelect
-      v-model:value="form.timezone"
-      label="Часовой пояс"
-      :options="TIMEZONE_OPTIONS"
-      filterable
-      class="timezone-select"
-    />
+    <UiCard size="large" class="section">
+      <UiSectionHeader title="Часы работы" />
 
-    <UiSectionHeader title="Часы работы" />
+      <WorkingHoursEditor v-model="form.workingHoursSchedule" />
+    </UiCard>
 
-    <WorkingHoursEditor v-model="form.workingHoursSchedule" />
+    <UiCard size="large" class="section">
+      <UiSectionHeader title="Соцсети и мессенджеры" />
 
-    <UiSectionHeader title="Соцсети и мессенджеры" />
-
-    <div class="grid">
-      <UiInput v-model="form.instagram" label="Instagram" placeholder="@vasya_pizza" />
-      <UiInput v-model="form.vk" label="ВКонтакте" placeholder="vk.com/vasya_pizza" />
-      <UiInput v-model="form.telegram" label="Telegram" placeholder="@vasya_pizza" />
-      <UiInput v-model="form.whatsapp" label="WhatsApp" placeholder="+7 (999) 000-00-00" />
-      <UiInput v-model="form.max" label="MAX" placeholder="@vasya_pizza" />
-    </div>
+      <div class="grid">
+        <UiInput v-model="form.instagram" label="Instagram" placeholder="@vasya_pizza" />
+        <UiInput v-model="form.vk" label="ВКонтакте" placeholder="vk.com/vasya_pizza" />
+        <UiInput v-model="form.telegram" label="Telegram" placeholder="@vasya_pizza" />
+        <UiInput v-model="form.whatsapp" label="WhatsApp" placeholder="+7 (999) 000-00-00" />
+        <UiInput v-model="form.max" label="MAX" placeholder="@vasya_pizza" />
+      </div>
+    </UiCard>
 
     <div class="footer">
-      <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
+      <UiButton
+        submit
+        type="primary"
+        :loading="saving"
+        :disabled="!isDirty"
+      >
+        Сохранить
+      </UiButton>
     </div>
   </UiForm>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { UiForm, UiInput, UiButton, useMessage, UiSectionHeader, UiSelect } from '@fastio/ui'
+import { UiCard, UiForm, UiInput, UiButton, useMessage, UiSectionHeader, UiSelect } from '@fastio/ui'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { TIMEZONE_OPTIONS } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
+import { useFormDirty } from '~/composables/ui/useFormDirty'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 
@@ -76,13 +91,19 @@ const buildForm = (t: Tenant) => ({
 })
 
 const form = reactive(buildForm(tenantStore.tenant!))
+const { isDirty, reset } = useFormDirty(form)
 
 watch(() => tenantStore.tenant, (t) => {
-  if (t) Object.assign(form, buildForm(t))
+  if (t) {
+    Object.assign(form, buildForm(t))
+    reset()
+  }
 })
 
 const saving = ref(false)
 const { success } = useMessage()
+
+useUnsavedGuard(isDirty)
 
 const handleSave = async () => {
   saving.value = true
@@ -102,6 +123,7 @@ const handleSave = async () => {
       },
       workingHoursSchedule: form.workingHoursSchedule,
     })
+    reset()
     success('Сохранено')
   } finally {
     saving.value = false
@@ -115,8 +137,13 @@ const handleSave = async () => {
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
-  @include flex-col(var(--space-20));
+  @include flex-col(var(--space-12));
+  @include save-bar-offset;
   max-width: 680px;
+}
+
+.section {
+  gap: var(--space-16);
 }
 
 .grid {
@@ -138,6 +165,6 @@ const handleSave = async () => {
 }
 
 .footer {
-  @include settings-footer;
+  @include fixed-save-bar;
 }
 </style>
