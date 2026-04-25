@@ -36,28 +36,16 @@ import { ref, computed } from 'vue'
 import { UiButton, UiText } from '@fastio/ui'
 import { UiIcon } from '@fastio/icons'
 import useTour from '~/composables/useTour'
-import { useModules } from '~/composables/plan/useModules'
-import { usePermissions } from '~/composables/auth/usePermissions'
+import { useGate } from '~/composables/plan/useGate'
 import { TOURS, TOUR_CATEGORIES } from '~/tours/index'
 import type { Tour } from '~/tours/index'
 
-const modules = useModules()
-const { can } = usePermissions()
+const gate = useGate()
 
 const categoriesWithTours = computed(() => TOUR_CATEGORIES
   .map((cat) => ({
     ...cat,
-    tours: TOURS.filter((t) => {
-      if (t.category !== cat.id) return false
-      if (t.moduleRequired) {
-        const keys = Array.isArray(t.moduleRequired) ? t.moduleRequired : [t.moduleRequired]
-
-        if (!keys.some((k) => modules[k]?.value.enabled)) return false
-      }
-      if (t.permissionRequired && !can(t.permissionRequired).value) return false
-
-      return true
-    }),
+    tours: TOURS.filter((t) => t.category === cat.id && (!t.isVisible || t.isVisible(gate))),
   }))
   .filter((cat) => cat.tours.length > 0),
 )

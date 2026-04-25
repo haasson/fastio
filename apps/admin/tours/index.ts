@@ -1,6 +1,5 @@
 import type { TourStep } from '~/composables/useTour'
-import type { ModuleKey } from '~/config/modules'
-import type { PermissionKey } from '@fastio/shared'
+import type { GateRegistry } from '~/composables/plan/useGate.types'
 import { getOnboardingSteps } from '~/tours/onboardingTour'
 import { getCategoryTourSteps } from '~/tours/categoryTour'
 import { getDishTourSteps } from '~/tours/dishTour'
@@ -34,10 +33,16 @@ export type Tour = {
   title: string
   description: string
   category: string
-  moduleRequired?: ModuleKey | ModuleKey[]
-  permissionRequired?: PermissionKey
+  /**
+   * Условие видимости тура. Принимает реестр гейтов и возвращает true,
+   * если тур актуален текущему пользователю/тенанту. Без поля — виден всегда.
+   * Работает в обе стороны: и фильтр по модулям/тарифу, и по правам роли.
+   */
+  isVisible?: (g: GateRegistry) => boolean
   getSteps: () => TourStep[]
 }
+
+const ordersAvailable = (g: GateRegistry) => g.delivery.value.enabled || g.pickup.value.enabled
 
 export const TOURS: Tour[] = [
   {
@@ -64,7 +69,7 @@ export const TOURS: Tour[] = [
   {
     id: 'modifiers',
     category: 'menu',
-    moduleRequired: 'modifiers',
+    isVisible: (g) => g.modifiers.value.enabled,
     title: 'Как работают модификаторы',
     description: 'Размер, бортик, прожарка — как создавать группы вариантов для блюд.',
     getSteps: getModifierTourSteps,
@@ -72,7 +77,7 @@ export const TOURS: Tour[] = [
   {
     id: 'addons',
     category: 'menu',
-    moduleRequired: 'addons',
+    isVisible: (g) => g.addons.value.enabled,
     title: 'Как работают добавки',
     description: 'Соусы, топпинги, дополнительные ингредиенты — и пресеты для быстрого назначения.',
     getSteps: getAddonTourSteps,
@@ -87,7 +92,7 @@ export const TOURS: Tour[] = [
   {
     id: 'orders',
     category: 'orders',
-    moduleRequired: ['delivery', 'pickup'],
+    isVisible: ordersAvailable,
     title: 'Как работать с заказами',
     description: 'Статусы, карточки заказов, быстрая смена статуса и создание заказа вручную.',
     getSteps: getOrdersTourSteps,
@@ -95,7 +100,7 @@ export const TOURS: Tour[] = [
   {
     id: 'order-statuses',
     category: 'orders',
-    moduleRequired: ['delivery', 'pickup'],
+    isVisible: ordersAvailable,
     title: 'Настройка статусов',
     description: 'Создавайте свои статусы, задавайте им группы и быстрые действия.',
     getSteps: getStatusesTourSteps,
@@ -103,7 +108,7 @@ export const TOURS: Tour[] = [
   {
     id: 'order-number',
     category: 'orders',
-    moduleRequired: ['delivery', 'pickup'],
+    isVisible: ordersAvailable,
     title: 'Нумерация заказов',
     description: 'Формат номера заказа: счётчик, дата, префикс, сброс.',
     getSteps: getOrderNumberTourSteps,
@@ -111,7 +116,7 @@ export const TOURS: Tour[] = [
   {
     id: 'delivery',
     category: 'orders',
-    moduleRequired: 'delivery',
+    isVisible: (g) => g.delivery.value.enabled,
     title: 'Зоны доставки',
     description: 'Фиксированная стоимость или зоны на карте с индивидуальными условиями.',
     getSteps: getDeliveryTourSteps,
@@ -119,7 +124,7 @@ export const TOURS: Tour[] = [
   {
     id: 'order-settings',
     category: 'orders',
-    moduleRequired: ['delivery', 'pickup'],
+    isVisible: ordersAvailable,
     title: 'Предзаказ',
     description: 'Разрешите клиентам выбирать время заказа — настройте слоты и буферы.',
     getSteps: getOrderSettingsTourSteps,
@@ -127,8 +132,7 @@ export const TOURS: Tour[] = [
   {
     id: 'kitchen-queue',
     category: 'kitchen',
-    moduleRequired: 'kitchen',
-    permissionRequired: 'kitchen.view',
+    isVisible: (g) => g.viewKitchenQueue.value.enabled,
     title: 'Кухонная очередь',
     description: 'Рабочее место повара: берёте блюдо из очереди, готовите, отмечаете готовым.',
     getSteps: getKitchenQueueTourSteps,
@@ -136,8 +140,7 @@ export const TOURS: Tour[] = [
   {
     id: 'kitchen-assembly',
     category: 'kitchen',
-    moduleRequired: 'kitchen',
-    permissionRequired: 'kitchen.view',
+    isVisible: (g) => g.viewKitchenQueue.value.enabled,
     title: 'Сборка заказов',
     description: 'Как собирать заказы на выдаче и переводить их в финальный статус.',
     getSteps: getKitchenAssemblyTourSteps,
@@ -145,8 +148,7 @@ export const TOURS: Tour[] = [
   {
     id: 'kitchen-overview',
     category: 'kitchen',
-    moduleRequired: 'kitchen',
-    permissionRequired: 'kitchen.overview',
+    isVisible: (g) => g.viewKitchenOverview.value.enabled,
     title: 'Обзор кухни',
     description: 'Вид для менеджера: все блюда в работе, срочные и критичные.',
     getSteps: getKitchenOverviewTourSteps,
@@ -154,8 +156,7 @@ export const TOURS: Tour[] = [
   {
     id: 'kitchen-settings',
     category: 'kitchen',
-    moduleRequired: 'kitchen',
-    permissionRequired: 'settings.edit',
+    isVisible: (g) => g.kitchen.value.enabled && g.editSettings.value.enabled,
     title: 'Настройки кухни',
     description: 'Привязка очереди к статусам заказов и настройка порога срочности.',
     getSteps: getKitchenSettingsTourSteps,
