@@ -4,6 +4,7 @@
 Реализована единая система контроля доступа `useGate` (2026-04-25): объединяет 7 слоёв защиты в один реестр с явной причиной отказа.
 
 ## Recent Changes
+- **Route-level гейтинг** (2026-04-25): добавлен `middleware/gate.global.ts` + `composables/plan/useGate.routes.ts`. Закрывает прямой URL-доступ к секциям, которых юзер не видит в `AppNav` (выключенный модуль, нет прав, locked план). Карта роут → `GateKey` совпадает с видимостью в навигации. Suspended-флоу остаётся за `auth.global` (избегаем двойного редиректа). При отказе ищет первый доступный fallback из `REDIRECT_FALLBACKS` (`/`, `/orders`, …, `/account/profile`).
 - **`useGate` система** (2026-04-25): новый composable `composables/plan/useGate.ts` с типами в `useGate.types.ts`, тесты в `__tests__/useGate.test.ts` (27 кейсов). Заменяет ручное комбинирование `usePermissions + useAccess + tenant.modules + tenant config`. Каждый гейт возвращает `{enabled, reason, requiredPlan?, configPath?, hint?}`. Приоритет причин: suspended → absent → flag → locked → disabled → unconfigured → forbidden. `useAccess.ts` удалён (не было ни одного потребителя).
 - Хелпер `useGate.helpers.ts` — `toEnabled()` для конвертации в boolean
 - Мигрированы: AppNav, orders/*, kitchen/*, menu/*, tables/*, reservations/settings, team, audit-log, settings/notifications, BannerFormModal, useBranchLimit, useKitchenStatusBlock

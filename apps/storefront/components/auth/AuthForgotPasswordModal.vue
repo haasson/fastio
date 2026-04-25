@@ -17,7 +17,7 @@
     </FsForm>
 
     <div v-else class="forgot-root">
-      <FsText>Ссылка для сброса пароля отправлена на {{ email }}. Проверьте почту.</FsText>
+      <FsText>Ссылка для сброса пароля отправлена на {{ email }}. Проверьте почту — если письмо не пришло, убедитесь что адрес введён правильно.</FsText>
       <FsButton variant="outline" block @click="modal.close()">Закрыть</FsButton>
     </div>
   </FsDialog>
