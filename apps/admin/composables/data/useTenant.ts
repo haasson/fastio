@@ -80,8 +80,18 @@ export const useTenant = (userId: Ref<string | null>) => {
   }
 
   useRealtimeWatch('tenants', currentTenantId, {
-    onUpdate: () => {
+    onUpdate: (row) => {
       if (Date.now() - lastFetchAt < 2000) return
+
+      const newPlan = (row.subscription as Record<string, unknown> | null)?.plan
+      const currentPlan = maybeTenant.value?.subscription?.plan
+
+      if (newPlan !== currentPlan) {
+        window.location.reload()
+
+        return
+      }
+
       fetchTenant()
     },
   })

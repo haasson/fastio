@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { emptyOnboardingState, type OnboardingState } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useTerms } from '~/composables/useTerms'
+import { useGate } from '~/composables/plan/useGate'
 import { reportError } from '~/utils/reportError'
 import {
   buildOnboardingFlow,
@@ -22,6 +23,7 @@ export const useOnboarding = () => {
   const { maybeTenant, isOwner, isServices } = storeToRefs(tenantStore)
   const terms = useTerms()
   const { item, menu } = terms
+  const gate = useGate()
 
   const onboardingLabels = computed<OnboardingLabels>(() => ({
     menu: menu.label,
@@ -34,7 +36,11 @@ export const useOnboarding = () => {
 
   const flow = computed(() => buildOnboardingFlow(onboardingLabels.value, {
     isServices: isServices.value,
-    modules: maybeTenant.value?.modules ?? null,
+    modules: {
+      delivery: gate.delivery.value.enabled,
+      pickup: gate.pickup.value.enabled,
+      dineIn: gate.dineIn.value.enabled,
+    },
   }))
 
   const state = computed<OnboardingState>(() => maybeTenant.value?.onboardingState ?? emptyOnboardingState())

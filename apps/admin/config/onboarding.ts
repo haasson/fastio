@@ -1,5 +1,3 @@
-import type { TenantModules } from '@fastio/shared'
-
 export type OnboardingLabels = {
   menu: string // 'Меню' / 'Каталог' / 'Услуги'
   menuPurpose: string // 'меню' / 'каталог' / 'список услуг'
@@ -197,23 +195,25 @@ const testBookingStep: OnboardingStep = {
 
 export const buildOnboardingFlow = (
   l: OnboardingLabels,
-  ctx: { isServices: boolean; modules: TenantModules | null },
+  ctx: { isServices: boolean; modules: { delivery: boolean; pickup: boolean; dineIn: boolean } },
 ): OnboardingStep[] => {
   const steps: OnboardingStep[] = [categoryStep(l), itemStep(l)]
+  const { delivery, pickup, dineIn } = ctx.modules
+  const hasOrders = delivery || pickup || dineIn
 
   if (ctx.isServices) {
     steps.push(intakeServicesStep)
   } else {
-    const m = ctx.modules
-
-    if (m?.delivery) steps.push(deliveryStep)
-    if (m?.pickup) steps.push(pickupStep)
-    if (m?.dineIn) steps.push(dineInStep)
+    if (delivery) steps.push(deliveryStep)
+    if (pickup) steps.push(pickupStep)
+    if (dineIn) steps.push(dineInStep)
   }
 
-  steps.push(legalStep)
-  if (!ctx.isServices) steps.push(statusesStep)
-  steps.push(siteStep, ctx.isServices ? testBookingStep : testOrderStep)
+  if (ctx.isServices || hasOrders) steps.push(legalStep)
+  if (hasOrders) steps.push(statusesStep)
+  steps.push(siteStep)
+  if (ctx.isServices) steps.push(testBookingStep)
+  else if (hasOrders) steps.push(testOrderStep)
 
   return steps
 }

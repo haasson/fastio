@@ -77,14 +77,21 @@ import { PAGE_KEYS, STRUCTURAL_SECTIONS, featureLabel, isFeatureAvailable, type 
 import { useConfirm } from '@fastio/kit'
 import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
 import { useTenantStore } from '~/stores/tenant'
+import { useGate } from '~/composables/plan/useGate'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
 const { confirm } = useConfirm()
 const tenantStore = useTenantStore()
 const { businessType } = storeToRefs(tenantStore)
+const gate = useGate()
 
-const isAvailable = (key: string) => isFeatureAvailable(key, tenantStore.tenant.modules, businessType.value)
+const isAvailable = (key: string) => {
+  if (key === 'delivery') return gate.delivery.value.enabled
+  if (key === 'booking') return gate.reservations.value.enabled
+
+  return isFeatureAvailable(key, tenantStore.tenant.modules, businessType.value)
+}
 
 const openKeys = reactive(new Set<string>())
 

@@ -18,6 +18,20 @@ const emptyModules = (): TenantModules => ({
   branches: false,
 })
 
+const gateDelivery = ref(false)
+const gatePickup = ref(false)
+const gateDineIn = ref(false)
+
+const makeGateResult = (enabled: boolean) => ({ enabled, reason: enabled ? null : 'disabled' as const })
+
+vi.mock('~/composables/plan/useGate', () => ({
+  useGate: () => ({
+    delivery: computed(() => makeGateResult(gateDelivery.value)),
+    pickup: computed(() => makeGateResult(gatePickup.value)),
+    dineIn: computed(() => makeGateResult(gateDineIn.value)),
+  }),
+}))
+
 const makeTenant = (overrides: Partial<Tenant> = {}): Tenant => ({
   id: 't-1',
   name: 'Test',
@@ -117,6 +131,9 @@ describe('useOnboarding', () => {
     tenantRef.value = null
     isOwnerRef.value = false
     updateMock.mockClear()
+    gateDelivery.value = false
+    gatePickup.value = false
+    gateDineIn.value = false
   })
 
   describe('visibility', () => {
@@ -171,6 +188,7 @@ describe('useOnboarding', () => {
         onboardingState: { ...emptyOnboardingState(), currentStepId: 'site' },
       })
       isOwnerRef.value = true
+      gateDelivery.value = true
       const { steps, activeStepId } = useOnboarding()
 
       expect(activeStepId.value).toBe('site')
@@ -178,6 +196,7 @@ describe('useOnboarding', () => {
 
       expect(byId.category).toBe('done')
       expect(byId.item).toBe('done')
+      expect(byId['intake-delivery']).toBe('done')
       expect(byId.legal).toBe('done')
       expect(byId.statuses).toBe('done')
       expect(byId.site).toBe('active')
@@ -208,21 +227,21 @@ describe('useOnboarding', () => {
 
   describe('module-driven intake steps', () => {
     it('includes one intake step per enabled module, in order', () => {
-      tenantRef.value = makeTenant({
-        modules: { ...emptyModules(), delivery: true, dineIn: true },
-      })
+      tenantRef.value = makeTenant()
       isOwnerRef.value = true
+      gateDelivery.value = true
+      gateDineIn.value = true
       const ids = useOnboarding().steps.value.map((s) => s.id)
 
       expect(ids).toEqual(['category', 'item', 'intake-delivery', 'intake-dine-in', 'legal', 'statuses', 'site', 'test-order'])
     })
 
-    it('omits intake steps when no intake modules are enabled', () => {
+    it('omits intake, legal, statuses and test-order steps when no intake modules are enabled', () => {
       tenantRef.value = makeTenant()
       isOwnerRef.value = true
       const ids = useOnboarding().steps.value.map((s) => s.id)
 
-      expect(ids).toEqual(['category', 'item', 'legal', 'statuses', 'site', 'test-order'])
+      expect(ids).toEqual(['category', 'item', 'site'])
     })
 
     it('services flow: intake-services, no statuses step, test-order id preserved', () => {
@@ -245,25 +264,29 @@ describe('useOnboarding', () => {
 
   describe('progress', () => {
     it('counts steps before currentStepId as completed', () => {
+      // delivery enabled → flow: category, item, intake-delivery, legal, statuses, site, test-order (7 steps)
+      // statuses is index 4 → completed = 4
       tenantRef.value = makeTenant({
         onboardingState: { ...emptyOnboardingState(), currentStepId: 'statuses' },
       })
       isOwnerRef.value = true
+      gateDelivery.value = true
       const { progress } = useOnboarding()
 
-      expect(progress.value.completed).toBe(3)
-      expect(progress.value.total).toBe(6)
+      expect(progress.value.completed).toBe(4)
+      expect(progress.value.total).toBe(7)
     })
 
     it('counts all as completed when completedAt set', () => {
+      // no modules → flow: category, item, site (3 steps)
       tenantRef.value = makeTenant({
         onboardingState: { ...emptyOnboardingState(), completedAt: '2026-01-01' },
       })
       isOwnerRef.value = true
       const { progress } = useOnboarding()
 
-      expect(progress.value.completed).toBe(6)
-      expect(progress.value.total).toBe(6)
+      expect(progress.value.completed).toBe(3)
+      expect(progress.value.total).toBe(3)
     })
   })
 
@@ -278,11 +301,12 @@ describe('useOnboarding', () => {
     })
 
     it('sets completedAt when advancing past the last step', async () => {
+      // no modules → last step is 'site'
       tenantRef.value = makeTenant({
-        onboardingState: { ...emptyOnboardingState(), currentStepId: 'test-order' },
+        onboardingState: { ...emptyOnboardingState(), currentStepId: 'site' },
       })
       isOwnerRef.value = true
-      await useOnboarding().completeStep('test-order')
+      await useOnboarding().completeStep('site')
       const arg = updateMock.mock.calls[0][0].onboardingState
 
       expect(arg.currentStepId).toBeNull()
