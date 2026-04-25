@@ -3,7 +3,7 @@ import type { Ref, ComputedRef } from 'vue'
 import type { Reservation } from '@fastio/shared'
 import { dateStrToTs, formatDateStr } from '@fastio/shared'
 import { buildReservationColumns } from '~/columns/reservations'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 
 type FilterOption = { label: string; value: string }
 
@@ -22,8 +22,8 @@ export const useReservationTable = (
   filterDate: Ref<string | null>,
   statusFilterOptions?: FilterOption[],
 ) => {
-  const modules = useModules()
-  const dineInEnabled = computed(() => modules.dineIn?.value?.enabled ?? false)
+  const gate = useGate()
+  const dineInEnabled = computed(() => gate.dineIn.value.enabled)
 
   const search = ref('')
   const visibleColumns = ref<string[]>(RESERVATION_COLUMN_OPTIONS.map((c) => c.value))

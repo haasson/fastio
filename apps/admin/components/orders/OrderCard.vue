@@ -129,6 +129,7 @@ import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/order-options'
 import { useOrderCard } from '~/composables/ui/useOrderCard'
 import { useTenantStore } from '~/stores/tenant'
+import { useGate } from '~/composables/plan/useGate'
 
 const props = defineProps<{
   order: Order
@@ -145,11 +146,8 @@ const { currentStatus, quickActionStatuses, relativeTime }
   = useOrderCard(toRef(props, 'order'))
 
 const tenantStore = useTenantStore()
-const showDeliveryType = computed(() => {
-  const modules = tenantStore.tenant.modules
-
-  return !!(modules?.delivery && modules?.pickup)
-})
+const gate = useGate()
+const showDeliveryType = computed(() => gate.delivery.value.enabled && gate.pickup.value.enabled)
 
 const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')
 

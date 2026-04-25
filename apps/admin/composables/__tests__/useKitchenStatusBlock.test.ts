@@ -1,19 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { computed } from 'vue'
 import type { Order } from '@fastio/shared'
 import { useKitchenStatusBlock } from '../kitchen/useKitchenStatusBlock'
 
 const mockConfirm = vi.fn<() => Promise<boolean | null>>()
 
-const mockTenant: {
-  modules: { kitchen: boolean }
-  kitchenConfig: { sourceStatusId: string | null } | null
-} = {
-  modules: { kitchen: false },
-  kitchenConfig: null,
-}
+// Состояние для мока gate.kitchenAutoStatus.
+const mockKitchenAuto = { enabled: false, reason: 'disabled' as string | null }
 
-vi.mock('~/stores/tenant', () => ({
-  useTenantStore: () => ({ tenant: mockTenant }),
+vi.mock('~/composables/plan/useGate', () => ({
+  useGate: () => ({
+    kitchenAutoStatus: computed(() => ({ ...mockKitchenAuto })),
+  }),
 }))
 
 vi.mock('@fastio/kit', () => ({
@@ -64,15 +62,15 @@ const makeOrder = (overrides: Partial<Order> = {}): Order => ({
 })
 
 const enableKitchen = () => {
-  mockTenant.modules.kitchen = true
-  mockTenant.kitchenConfig = { sourceStatusId: 'status-accepted' }
+  mockKitchenAuto.enabled = true
+  mockKitchenAuto.reason = null
 }
 
 describe('useKitchenStatusBlock', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockTenant.modules.kitchen = false
-    mockTenant.kitchenConfig = null
+    mockKitchenAuto.enabled = false
+    mockKitchenAuto.reason = 'disabled'
     mockConfirm.mockResolvedValue(false)
   })
 
@@ -85,8 +83,9 @@ describe('useKitchenStatusBlock', () => {
     })
 
     it('allows any change when sourceStatusId is not configured', async () => {
-      mockTenant.modules.kitchen = true
-      mockTenant.kitchenConfig = { sourceStatusId: null }
+      // kitchen активен, но source-статус не настроен → kitchenAutoStatus = unconfigured
+      mockKitchenAuto.enabled = false
+      mockKitchenAuto.reason = 'unconfigured'
       const { checkKitchenBlock } = useKitchenStatusBlock()
       const result = await checkKitchenBlock(makeOrder({ kitchenQueuedAt: '2026-01-01' }), 'in_progress')
 

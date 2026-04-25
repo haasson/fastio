@@ -1,60 +1,68 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ref, computed } from 'vue'
+import type { ResolvedFeatures } from '@fastio/shared'
 import { useBranchLimit } from '../plan/useBranchLimit'
 
-const mockBranchesMax = ref(0)
+const mockResolved = ref<ResolvedFeatures>({
+  modules: {
+    dashboard: false, delivery: false, pickup: false, modifiers: false, addons: false,
+    promotions: false, combos: false, kitchen: false, dineIn: false,
+    reservations: false, services: false, branches: false,
+    customRoles: false, customers: false, team: false,
+  },
+  menu: { virtualCategories: false, ingredients: false },
+  resources: { max: 0 },
+  site: { telegramNotifications: false },
+})
+
 const mockCanAddBranch = ref(true)
 
-vi.mock('../plan/useAccess', () => ({
-  useAccess: () => ({
-    branchesMax: computed(() => mockBranchesMax.value),
-    canAddBranch: computed(() => mockCanAddBranch.value),
+vi.mock('../plan/useResolvedFeatures', () => ({
+  useResolvedFeatures: () => ({ resolved: mockResolved }),
+}))
+
+vi.mock('../plan/useGate', () => ({
+  useGate: () => ({
+    addBranch: computed(() => ({
+      enabled: mockCanAddBranch.value,
+      reason: mockCanAddBranch.value ? null : 'locked',
+    })),
   }),
 }))
 
-const setup = (max: number, count: number) => {
-  mockBranchesMax.value = max
-  mockCanAddBranch.value = max === 0 || count < max
+const setup = (branchesUnlocked: boolean, canAdd: boolean) => {
+  mockResolved.value.modules.branches = branchesUnlocked
+  mockCanAddBranch.value = canAdd
 }
 
 describe('useBranchLimit', () => {
   describe('maxBranches', () => {
-    it('возвращает 0 (безлимит)', () => {
-      setup(0, 0)
+    it('модуль branches доступен → 0 (безлимит)', () => {
+      setup(true, true)
       expect(useBranchLimit().maxBranches.value).toBe(0)
     })
 
-    it('возвращает лимит из плана', () => {
-      setup(3, 0)
-      expect(useBranchLimit().maxBranches.value).toBe(3)
+    it('модуль branches недоступен → 1 (только главный)', () => {
+      setup(false, true)
+      expect(useBranchLimit().maxBranches.value).toBe(1)
     })
   })
 
   describe('canAddBranch', () => {
-    it('max=0 → безлимит → true', () => {
-      setup(0, 100)
+    it('addBranch enabled → true', () => {
+      setup(true, true)
       expect(useBranchLimit().canAddBranch.value).toBe(true)
     })
 
-    it('меньше лимита → можно добавить', () => {
-      setup(3, 2)
-      expect(useBranchLimit().canAddBranch.value).toBe(true)
-    })
-
-    it('достигнут лимит → нельзя добавить', () => {
-      setup(3, 3)
-      expect(useBranchLimit().canAddBranch.value).toBe(false)
-    })
-
-    it('превышен лимит → нельзя добавить', () => {
-      setup(3, 5)
+    it('addBranch disabled → false', () => {
+      setup(false, false)
       expect(useBranchLimit().canAddBranch.value).toBe(false)
     })
   })
 
   describe('branchLimitReached', () => {
     it('обратен canAddBranch', () => {
-      setup(1, 0)
+      setup(true, true)
       expect(useBranchLimit().branchLimitReached.value).toBe(false)
       mockCanAddBranch.value = false
       expect(useBranchLimit().branchLimitReached.value).toBe(true)
@@ -63,17 +71,12 @@ describe('useBranchLimit', () => {
 
   describe('branchLimitLabel', () => {
     it('1 → "филиал"', () => {
-      setup(1, 0)
+      setup(false, true) // unlocked=false → max=1
       expect(useBranchLimit().branchLimitLabel.value).toBe('филиал')
     })
 
-    it('3 → "филиала"', () => {
-      setup(3, 0)
-      expect(useBranchLimit().branchLimitLabel.value).toBe('филиала')
-    })
-
-    it('5 → "филиалов"', () => {
-      setup(5, 0)
+    it('0 → "филиалов" (безлимит)', () => {
+      setup(true, true) // unlocked=true → max=0
       expect(useBranchLimit().branchLimitLabel.value).toBe('филиалов')
     })
   })

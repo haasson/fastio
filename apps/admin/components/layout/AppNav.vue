@@ -28,10 +28,9 @@ import { computed } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import { UiIcon, UiCounter } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
-import { usePermissions } from '~/composables/auth/usePermissions'
-import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
 import { useTerms } from '~/composables/useTerms'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
+import { toEnabled } from '~/composables/plan/useGate.helpers'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
@@ -48,45 +47,32 @@ type NavItem = {
   blink?: ComputedRef<boolean>
 }
 
-const { canManageMenu, canManageOrders, canViewKitchen, canViewKitchenOverview, canViewTables, canViewReservations, canManagePromotions, canViewContent, canViewSettings, canViewAuditLog, canManageTeam } = usePermissions()
-const access = useAccess()
+const gate = useGate()
 const terms = useTerms()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 const { count: newReservationCount } = useNewReservationCounter()
 const { count: unreadSupportCount } = useUnreadSupportCounter()
 
-const canSeePromotions = computed(() => canManagePromotions.value && access.promotions.value)
-const canSeeOrders = computed(() => canManageOrders.value && access.orders.value)
-const canSeeKitchen = computed(() => (canViewKitchen.value || canViewKitchenOverview.value) && access.kitchen.value)
-const canSeeTables = computed(() => canViewTables.value && access.dineIn.value)
-const canSeeReservations = computed(() => {
-  if (!canViewReservations.value) return false
-
-  return access.isServices.value ? access.services.value : access.reservations.value
-})
-const canSeeTeam = computed(() => canManageTeam.value && access.team.value)
-const canSeeBranchPage = computed(() => canManageTeam.value)
-const branchNavLabel = computed(() => access.branches.value ? 'Филиалы' : 'Заведение')
-
 const orderCounter = computed(() => blinkingCounter.value ? newOrderCount.value : 0)
 const orderBlink = computed(() => blinkingCounter.value && newOrderCount.value > 0)
+const branchNavLabel = computed(() => gate.branches.value.enabled ? 'Филиалы' : 'Заведение')
 
 const navItems = computed(() => {
   const items: NavItem[] = [
-    { to: '/', icon: 'dashboard', label: 'Дашборд', visible: access.dashboard },
-    { to: '/menu', icon: 'dishes', label: terms.menu.label, visible: canManageMenu },
-    { to: '/orders', icon: 'orders', label: 'Заказы', visible: canSeeOrders, counter: orderCounter, blink: orderBlink },
-    { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: canSeeKitchen },
-    { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: canSeeTables },
-    { to: '/reservations', icon: 'calendar', label: terms.reservationsLabel, visible: canSeeReservations, counter: newReservationCount },
-    { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: canSeePromotions },
-    { to: '/team/members', icon: 'users', label: 'Команда', visible: canSeeTeam },
-    { to: '/branches', icon: 'mapPin', label: access.branches.value ? 'Филиалы' : 'Заведение', visible: canSeeBranchPage },
-    { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: canViewContent },
-    { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: canViewContent },
-    { to: '/settings', icon: 'settings', label: 'Настройки', visible: canViewSettings },
-    ...(AUDIT_LOG_ENABLED ? [{ to: '/audit-log', icon: 'list' as const, label: 'Журнал действий', visible: canViewAuditLog }] : []),
+    { to: '/', icon: 'dashboard', label: 'Дашборд', visible: toEnabled(gate.dashboard) },
+    { to: '/menu', icon: 'dishes', label: terms.menu.label, visible: toEnabled(gate.manageMenu) },
+    { to: '/orders', icon: 'orders', label: 'Заказы', visible: toEnabled(gate.viewOrders), counter: orderCounter, blink: orderBlink },
+    { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: toEnabled(gate.viewKitchen) },
+    { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: toEnabled(gate.viewTables) },
+    { to: '/reservations', icon: 'calendar', label: terms.reservationsLabel, visible: toEnabled(gate.viewReservations), counter: newReservationCount },
+    { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: toEnabled(gate.managePromotions) },
+    { to: '/team/members', icon: 'users', label: 'Команда', visible: toEnabled(gate.manageTeam) },
+    { to: '/branches', icon: 'mapPin', label: branchNavLabel.value, visible: toEnabled(gate.viewBranches) },
+    { to: '/content', icon: 'fileText', label: 'Контент сайта', visible: toEnabled(gate.viewContent) },
+    { to: '/appearance', icon: 'layoutGrid', label: 'Сайт', visible: toEnabled(gate.viewContent) },
+    { to: '/settings', icon: 'settings', label: 'Настройки', visible: toEnabled(gate.viewSettings) },
+    { to: '/audit-log', icon: 'list', label: 'Журнал действий', visible: toEnabled(gate.viewAuditLog) },
     { to: '/help', icon: 'help', label: 'Помощь', counter: unreadSupportCount },
   ]
 

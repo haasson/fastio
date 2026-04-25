@@ -14,7 +14,7 @@
       </div>
     </UiCard>
 
-    <UiCard v-if="access.telegramNotifications.value" size="large" class="section">
+    <UiCard v-if="gate.telegramNotifications.value.enabled" size="large" class="section">
       <UiSectionHeader title="Telegram" />
 
       <div class="tg-block">
@@ -90,13 +90,13 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiCard, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal } from '@fastio/ui'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
 import { useNuxtApp, useRuntimeConfig } from '#imports'
 import { useConfirm } from '@fastio/kit'
 
 const { blinkingCounter } = useNotificationPrefs()
 const tenantStore = useTenantStore()
-const access = useAccess()
+const gate = useGate()
 const { $supabase } = useNuxtApp()
 const { confirm } = useConfirm()
 

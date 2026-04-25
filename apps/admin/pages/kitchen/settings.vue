@@ -77,17 +77,17 @@ import { storeToRefs } from 'pinia'
 import { UiCard, UiForm, UiSelect, UiInputNumber, UiButton, useMessage } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 
 const tenantStore = useTenantStore()
 const { statuses } = storeToRefs(useOrderStatusesStore())
-const modules = useModules()
+const gate = useGate()
 const { success } = useMessage()
 
 const tenant = computed(() => tenantStore.tenant)
 
-const deliveryActive = computed(() => modules.delivery?.value.active)
-const pickupActive = computed(() => modules.pickup?.value.active)
+const deliveryActive = computed(() => gate.delivery.value.enabled)
+const pickupActive = computed(() => gate.pickup.value.enabled)
 
 const statusOptions = computed(() => statuses.value.map((s) => ({ label: s.name, value: s.id })))
 

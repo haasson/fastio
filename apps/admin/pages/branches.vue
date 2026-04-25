@@ -95,7 +95,8 @@ import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useBranchLimit } from '~/composables/plan/useBranchLimit'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
+import { isLockedBy } from '~/composables/plan/useGate.helpers'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useDeliveryZoneStore } from '~/stores/deliveryZone'
 import BranchDrawer from '~/components/settings/BranchDrawer.vue'
@@ -109,15 +110,15 @@ const { branches, archivedBranches, loading } = storeToRefs(branchStore)
 const { add, update, archive, restore } = branchStore
 const { confirm } = useConfirm()
 const { zones } = storeToRefs(useDeliveryZoneStore())
-const modules = useModules()
+const gate = useGate()
 
 const { branchLimitReached, maxBranches, branchLimitLabel } = useBranchLimit()
 // Модуль филиалов недоступен на текущем тарифе — у тенанта одна точка,
 // рендерим страницу как настройки заведения (без списка, без добавления, с апселлом).
-const isVenueMode = computed(() => modules.branches.value.locked)
+const isVenueMode = isLockedBy(gate.branches, 'locked')
 
 usePageTitle(computed(() => isVenueMode.value ? 'Заведение' : 'Филиалы'))
-const deliveryEnabled = computed(() => modules.delivery.value.enabled)
+const deliveryEnabled = computed(() => gate.delivery.value.enabled)
 const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
 

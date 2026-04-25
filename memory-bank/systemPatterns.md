@@ -31,7 +31,8 @@ supabase/
 - `useRealtimeList` — универсальный оркестратор для списков с Supabase Realtime
 - `useRealtimeWatch` — то же для одного объекта
 - `useDatabase()` — агрегатор всех API-модулей, единая точка входа
-- `usePermissions()` — composable для проверки прав в компонентах
+- `usePermissions()` — composable для проверки прав в компонентах (низкоуровневый)
+- `useGate()` — **единая точка проверки доступа к фичам**: возвращает `{enabled, reason}` где reason ∈ `{suspended, absent, flag, locked, disabled, unconfigured, forbidden, null}`. Учитывает 7 слоёв защиты: subscription status, plan, business type/menuStyle, module toggle, role permissions, tenant config, compile-time flags. Приоритет: suspended → absent → flag → locked → disabled → unconfigured → forbidden. Используй вместо ручного комбинирования permissions+modules.
 - `moduleToggleChecks.ts` — проверка зависимостей перед отключением модуля
 
 ## Component Relationships

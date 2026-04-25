@@ -15,7 +15,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiTag } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
-import { usePermissions } from '~/composables/auth/usePermissions'
+import { useGate } from '~/composables/plan/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
@@ -25,7 +25,7 @@ import { usePageTitle } from '~/composables/usePageTitle'
 
 usePageTitle('Кухня')
 
-const { canEditSettings, canViewKitchen, canViewKitchenOverview } = usePermissions()
+const gate = useGate()
 const isConnected = realtimeConnected
 const itemCount = ref(0)
 
@@ -65,16 +65,16 @@ watch(isConnected, (connected) => {
 })
 
 const tabs = computed(() => [
-  ...(canViewKitchen.value
+  ...(gate.viewKitchenQueue.value.enabled
     ? [
         { value: 'queue', label: 'Кухня', attrs: { 'data-tour': 'kitchen-tab-queue' } },
         { value: 'assembly', label: 'Сборка', attrs: { 'data-tour': 'kitchen-tab-assembly' } },
       ]
     : []),
-  ...(canViewKitchenOverview.value
+  ...(gate.viewKitchenOverview.value.enabled
     ? [{ value: 'overview', label: 'Обзор', attrs: { 'data-tour': 'kitchen-tab-overview' } }]
     : []),
-  ...(canEditSettings.value
+  ...(gate.editSettings.value.enabled
     ? [{ value: 'settings', label: 'Настройки', attrs: { 'data-tour': 'kitchen-tab-settings' } }]
     : []),
 ])

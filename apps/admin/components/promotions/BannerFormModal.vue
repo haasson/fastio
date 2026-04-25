@@ -79,7 +79,7 @@ import { UiModal, UiForm, UiSwitch, UiSelect, UiInput } from '@fastio/ui'
 import type { ModalAction } from '@fastio/ui'
 import type { Banner, BannerFormData, Promotion, PromoCode } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 
@@ -127,7 +127,7 @@ const getLinkType = (b: Banner | null): LinkType => {
 
 const linkType = ref<LinkType>('none')
 
-const access = useAccess()
+const gate = useGate()
 
 watch(() => props.modelValue, (open) => {
   if (!open) return
@@ -138,7 +138,7 @@ watch(() => props.modelValue, (open) => {
 
   let lt = getLinkType(b)
 
-  if ((lt === 'promotion' || lt === 'promo_code') && !access.promotions.value) lt = 'none'
+  if ((lt === 'promotion' || lt === 'promo_code') && !gate.promotions.value.enabled) lt = 'none'
   linkType.value = lt
 
   form.value = {
@@ -164,7 +164,7 @@ watch(linkType, (val) => {
 const linkTypeOptions = computed(() => [
   { label: 'Ничего не происходит', value: 'none' },
   { label: 'Страница сайта', value: 'page' },
-  ...(access.promotions.value
+  ...(gate.promotions.value.enabled
     ? [
         { label: 'Страница акции', value: 'promotion' },
         { label: 'Страница промокода', value: 'promo_code' },

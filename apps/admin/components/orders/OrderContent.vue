@@ -92,7 +92,7 @@ import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 import { useOrderEventLogger } from '~/composables/data/useOrderEventLogger'
 import { useOrderDelivery } from '~/composables/delivery/useOrderDelivery'
 import { useOrderStatus } from '~/composables/data/useOrderStatus'
@@ -120,7 +120,7 @@ const { logSaveEvents } = useOrderEventLogger()
 const { statuses } = storeToRefs(useOrderStatusesStore())
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
-const modules = useModules()
+const gate = useGate()
 
 const isEdit = computed(() => !!props.order)
 const orderRef = computed(() => props.order)
@@ -175,7 +175,7 @@ const buildCreateForm = () => ({
   status: statuses.value.find((s) => s.groupType === 'new')?.id ?? statuses.value[0]?.id ?? '',
   customerName: '',
   customerPhone: '',
-  deliveryType: (props.tableId ? 'dine_in' : modules.delivery.value.active ? 'delivery' : 'pickup') as Order['deliveryType'],
+  deliveryType: (props.tableId ? 'dine_in' : gate.delivery.value.enabled ? 'delivery' : 'pickup') as Order['deliveryType'],
   address: '',
   entrance: null,
   floor: null,

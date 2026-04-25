@@ -96,13 +96,14 @@ import {
 import type { TenantMember, TenantInvitation } from '@fastio/shared'
 import TeamMemberEditModal from '~/components/settings/TeamMemberEditModal.vue'
 import { useTeam } from '~/composables/data/useTeam'
-import { usePermissions } from '~/composables/auth/usePermissions'
+import { useGate } from '~/composables/plan/useGate'
+import { toEnabled } from '~/composables/plan/useGate.helpers'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
 import { buildMemberColumns, buildInviteColumns } from '~/columns/team'
 
 const { members, invitations, loading: teamLoading, load, invite, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()
-const { canManageTeam } = usePermissions()
+const canManageTeam = toEnabled(useGate().manageTeam)
 const { confirm } = useConfirm()
 const message = useMessage()
 const branchStore = useBranchStore()

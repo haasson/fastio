@@ -40,7 +40,7 @@
         <TagsSection v-model="form.tags" :available-tags="tags" />
 
         <DishModifiersSection
-          v-if="modules.modifiers.value.enabled"
+          v-if="gate.modifiers.value.enabled"
           ref="modifiersRef"
           :tenant-id="tenantId"
           :category-id="form.categoryId"
@@ -50,7 +50,7 @@
         />
 
         <AddonsSection
-          v-if="!terms.isServices && modules.addons.value.enabled"
+          v-if="!terms.isServices && gate.addons.value.enabled"
           ref="addonsRef"
           :tenant-id="tenantId"
           :dish-id="dish?.id ?? null"
@@ -64,7 +64,7 @@
         />
 
         <IngredientsSection
-          v-if="access.ingredients.value"
+          v-if="gate.ingredients.value.enabled"
           ref="ingredientsRef"
           :category-dishes="categoryDishes"
         />
@@ -94,10 +94,9 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
 import { useTerms } from '~/composables/useTerms'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
 import { useDishSave } from '~/composables/data/useDishSave'
 import { useAddons } from '~/composables/data/useAddons'
-import { useModules } from '~/composables/plan/useModules'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
 import TagsSection from '~/components/menu/form/TagsSection.vue'
 import DishModifiersSection from '~/components/menu/form/DishModifiersSection.vue'
@@ -127,8 +126,7 @@ const tenantStore = useTenantStore()
 const terms = useTerms()
 const { item } = terms
 const isFood = computed(() => !terms.isServices && terms.menuStyle === 'food')
-const modules = useModules()
-const access = useAccess()
+const gate = useGate()
 const modalTitle = computed(() => props.dish
   ? `Редактировать ${item.acc}`
   : `${item.new} ${item.nom}`)

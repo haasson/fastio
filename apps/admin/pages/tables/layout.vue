@@ -41,7 +41,7 @@
       :model-value="dishPickerOpen"
       :tenant-id="ctx.tenantId"
       show-combos
-      :show-ingredients="access.ingredients.value"
+      :show-ingredients="gate.ingredients.value.enabled"
       @select="onDishPicked"
       @update:model-value="dishPickerOpen = $event"
     />
@@ -54,7 +54,7 @@ import type { Table, Reservation } from '@fastio/shared'
 import { useTablesContext, TodayReservationsKey } from '~/composables/ui/useTablesContext'
 import { useReservationsStore } from '~/stores/reservations'
 import useAddDishToTable from '~/composables/ui/useAddDishToTable'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
 import TablesCanvas from '~/components/tables/TablesCanvas.vue'
 import TableDetailDrawer from '~/components/tables/TableDetailDrawer.vue'
 import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
@@ -66,7 +66,7 @@ const todayReservations = inject(TodayReservationsKey, computed(() => []))
 const reservationsStore = useReservationsStore()
 
 const { dishPickerOpen, openPicker, onDishPicked, repeatItem } = useAddDishToTable(() => ctx.tenantId)
-const access = useAccess()
+const gate = useGate()
 
 // ── Detail drawer ───────────────────────────────────────
 const detailDrawerOpen = ref(false)

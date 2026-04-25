@@ -63,17 +63,17 @@
           :branch-id="selectedBranchId"
         />
         <DashboardTables
-          v-if="modules.dineIn?.value.enabled"
+          v-if="gate.dineIn.value.enabled"
           :tenant-id="tenantId"
         />
         <DashboardReservations
-          v-if="modules.reservations?.value.enabled"
+          v-if="gate.reservations.value.enabled"
           :tenant-id="tenantId"
           :branch-id="selectedBranchId"
           :timezone="tenantStore.timezone"
         />
         <DashboardKitchen
-          v-if="modules.kitchen?.value.enabled"
+          v-if="gate.kitchen.value.enabled"
           :tenant-id="tenantId"
         />
       </div>
@@ -88,7 +88,7 @@ import { usePageTitle } from '~/composables/usePageTitle'
 import { UiSegmentedControl, UiSelect } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 import { useDashboardStats } from '~/composables/data/useDashboardStats'
 import type { DashboardPeriod } from '~/composables/data/useDashboardStats'
 
@@ -111,7 +111,7 @@ const branchStore = useBranchStore()
 const { tenantId, businessType, isOwner } = storeToRefs(tenantStore)
 const { branches, hasBranches } = storeToRefs(branchStore)
 
-const modules = useModules()
+const gate = useGate()
 
 const period = ref<DashboardPeriod>('today')
 
@@ -132,20 +132,20 @@ const selectedBranchId = computed(() => selectedBranchKey.value || null)
 
 const stats = useDashboardStats(tenantId, period, selectedBranchId)
 
-const noOrderModules = computed(() => !modules.delivery?.value.enabled
-  && !modules.pickup?.value.enabled
-  && !modules.dineIn?.value.enabled,
+const noOrderModules = computed(() => !gate.delivery.value.enabled
+  && !gate.pickup.value.enabled
+  && !gate.dineIn.value.enabled,
 )
 
-const hasAnyOrderModule = computed(() => modules.delivery?.value.enabled
-  || modules.pickup?.value.enabled
-  || modules.dineIn?.value.enabled,
+const hasAnyOrderModule = computed(() => gate.delivery.value.enabled
+  || gate.pickup.value.enabled
+  || gate.dineIn.value.enabled,
 )
 
 const hasMultipleOrderTypes = computed(() => [
-  modules.delivery?.value.enabled,
-  modules.pickup?.value.enabled,
-  modules.dineIn?.value.enabled,
+  gate.delivery.value.enabled,
+  gate.pickup.value.enabled,
+  gate.dineIn.value.enabled,
 ].filter(Boolean).length > 1)
 </script>
 

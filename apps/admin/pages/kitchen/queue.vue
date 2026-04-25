@@ -2,12 +2,12 @@
   <div class="queue-root" data-tour="kitchen-queue">
     <UiAlert v-if="sourceStatusMissing" type="error" size="small">
       Не настроен статус для отправки заказов на кухню — блюда доставки и самовывоза не попадут в очередь.
-      <NuxtLink v-if="canEditSettings" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
+      <NuxtLink v-if="gate.editSettings.value.enabled" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
     </UiAlert>
 
     <UiAlert v-else-if="completedStatusMissing.length" type="warning" size="small">
       Не настроены статусы завершения для: {{ completedStatusMissing.join(', ') }} — заказы не будут автоматически переходить в следующий статус после приготовления.
-      <NuxtLink v-if="canEditSettings" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
+      <NuxtLink v-if="gate.editSettings.value.enabled" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
     </UiAlert>
 
     <UiSelect
@@ -106,8 +106,7 @@ import { isAutoCategory, getKitchenUrgencyLevel, formatKitchenElapsed } from '@f
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
-import { useModules } from '~/composables/plan/useModules'
-import { usePermissions } from '~/composables/auth/usePermissions'
+import { useGate } from '~/composables/plan/useGate'
 import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
 import KitchenQueueItem from '~/components/kitchen/KitchenQueueItem.vue'
 import KitchenWorkCard from '~/components/kitchen/KitchenWorkCard.vue'
@@ -117,8 +116,7 @@ import { mergeRealtimeItem } from '~/utils/api/kitchen-queue'
 const api = useDatabase()
 const tenantStore = useTenantStore()
 const authStore = useAuthStore()
-const modules = useModules()
-const { canEditSettings } = usePermissions()
+const gate = useGate()
 const now = useNow({ interval: 30_000 })
 
 const loading = ref(false)
@@ -129,16 +127,18 @@ const currentUserId = computed(() => authStore.user?.id ?? null)
 const urgencyMinutes = computed(() => tenantStore.tenant.kitchenUrgencyMinutes ?? 15)
 
 const hasMultipleDeliveryTypes = computed(() => {
-  const active = [modules.delivery?.value?.active, modules.pickup?.value?.active, modules.dineIn?.value?.active].filter(Boolean)
+  const active = [gate.delivery.value.enabled, gate.pickup.value.enabled, gate.dineIn.value.enabled].filter(Boolean)
 
   return active.length > 1
 })
 
-const deliveryActive = computed(() => !!modules.delivery?.value?.active)
-const pickupActive = computed(() => !!modules.pickup?.value?.active)
+const deliveryActive = computed(() => gate.delivery.value.enabled)
+const pickupActive = computed(() => gate.pickup.value.enabled)
 const hasDeliveryOrPickup = computed(() => deliveryActive.value || pickupActive.value)
 
-const sourceStatusMissing = computed(() => hasDeliveryOrPickup.value && !tenantStore.tenant.kitchenConfig?.sourceStatusId)
+// kitchenAutoStatus сам учитывает kitchen-доступ + источник.
+// sourceStatusMissing срабатывает только когда у тенанта есть delivery/pickup и не настроен source статус.
+const sourceStatusMissing = computed(() => hasDeliveryOrPickup.value && gate.kitchenAutoStatus.value.reason === 'unconfigured')
 
 const completedStatusMissing = computed(() => {
   const map = tenantStore.tenant.kitchenConfig?.completedStatusMap

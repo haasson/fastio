@@ -64,6 +64,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { UiAlert, UiButton, UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiSwitch, useMessage } from '@fastio/ui'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
+import { useGate } from '~/composables/plan/useGate'
 import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 
 const SLOT_STEP_OPTIONS = [
@@ -81,6 +82,7 @@ const BUFFER_OPTIONS = [
 ]
 
 const tenantStore = useTenantStore()
+const gate = useGate()
 const api = useDatabase()
 const { success } = useMessage()
 
@@ -94,7 +96,7 @@ const form = reactive({
 })
 
 const hasSchedule = computed(() => !!tenantStore.tenant.workingHoursSchedule)
-const hasDineIn = computed(() => !!tenantStore.tenant.modules?.dineIn)
+const hasDineIn = computed(() => gate.dineIn.value.enabled)
 
 watch(() => tenantStore.currentTenantId, async (id) => {
   if (!id) return

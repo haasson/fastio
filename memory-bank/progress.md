@@ -2,6 +2,7 @@
 
 ## What Works
 - **Admin панель** — полностью рабочая: меню, заказы, кухня, столы, бронирования, акции, контент, внешний вид, настройки, команда, аккаунт
+- **`useGate` — единая система контроля доступа** (2026-04-25): объединяет 7 слоёв (suspended / business type / plan / module toggle / role / config / compile-time flag). Возвращает `{enabled, reason}` для UI-баннеров с причиной отказа. Покрытие тестами: 27 кейсов матрицы приоритетов. Замигрирован весь admin (AppNav, orders, kitchen, menu, tables, reservations, team, settings, audit-log, banners). `useAccess` удалён.
 - **Scheduled orders (заказы ко времени)** — admin + kitchen: секция "Запланировано" на странице заказов, панель "Скоро" в очереди кухни, pg_cron release, ручной early release, UiSlider для lead time
 - **Мультитенантность** — полная: tenant_members, роли, RLS, switchTenant
 - **Storefront** — рабочая витрина с секциями, галереей (PhotoSwipe), промокодами, SEO

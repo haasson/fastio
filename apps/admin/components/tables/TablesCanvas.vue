@@ -106,7 +106,7 @@ import { UiButton, UiMenuDropdown, UiPopover } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { Table, Reservation } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { usePermissions } from '~/composables/auth/usePermissions'
+import { useGate } from '~/composables/plan/useGate'
 
 type Props = {
   tables: Table[]
@@ -126,7 +126,8 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const api = useDatabase()
-const { canManageTables } = usePermissions()
+const gate = useGate()
+const canManageTables = computed(() => gate.manageTables.value.enabled)
 
 // ── Canvas state ──────────────────────────────────────────
 const canvasRef = ref<HTMLElement | null>(null)

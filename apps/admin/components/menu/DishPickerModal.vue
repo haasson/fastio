@@ -193,7 +193,7 @@ import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon 
 import type { Addon } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
 import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 import { useTerms } from '~/composables/useTerms'
 
 type PickerListItem = { type: 'dish'; data: Dish } | { type: 'combo'; data: Combo }
@@ -235,7 +235,7 @@ const emit = defineEmits<{
 }>()
 
 const { loading, categories, allDishes, allCombos, fetchData, getDishModifiers, getDishAddons, listAddons } = useOrderDishPicker(toRef(props, 'tenantId'))
-const modules = useModules()
+const gate = useGate()
 const { item } = useTerms()
 
 const step = ref<'pick' | 'customize'>('pick')
@@ -336,8 +336,8 @@ watch(
 )
 
 const loadDishData = async (dishId: string) => {
-  const modifiersEnabled = modules.modifiers.value.enabled
-  const addonsEnabled = modules.addons.value.enabled
+  const modifiersEnabled = gate.modifiers.value.enabled
+  const addonsEnabled = gate.addons.value.enabled
   const [groups, addonIds, allAddons] = await Promise.all([
     modifiersEnabled ? getDishModifiers(dishId) : Promise.resolve([]),
     addonsEnabled ? getDishAddons(dishId) : Promise.resolve([]),

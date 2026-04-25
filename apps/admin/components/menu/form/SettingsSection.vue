@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiCollapseItem, UiSwitch } from '@fastio/ui'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 
 defineProps<{
   active: boolean
@@ -32,8 +32,8 @@ defineEmits<{
   'update:requiresKitchen': [value: boolean]
 }>()
 
-const modules = useModules()
-const kitchenEnabled = computed(() => modules.kitchen.value.enabled)
+const gate = useGate()
+const kitchenEnabled = computed(() => gate.kitchen.value.enabled)
 </script>
 
 <style scoped lang="scss">

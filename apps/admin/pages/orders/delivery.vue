@@ -107,7 +107,7 @@ import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDeliveryZoneStore } from '~/stores/deliveryZone'
 import { useZoneEditor, type ZoneForm } from '~/composables/delivery/useZoneEditor'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 import DeliveryZoneMap from '~/components/settings/DeliveryZoneMap.vue'
 import DeliveryZonePanel from '~/components/settings/DeliveryZonePanel.vue'
@@ -118,9 +118,9 @@ const branchStore = useBranchStore()
 const deliveryZoneStore = useDeliveryZoneStore()
 const { zones, loading: zonesLoading } = storeToRefs(deliveryZoneStore)
 const { add: addZone, update: updateZone, remove: removeZone } = deliveryZoneStore
-const modules = useModules()
+const gate = useGate()
 
-const deliveryEnabled = computed(() => modules.delivery.value.enabled)
+const deliveryEnabled = computed(() => gate.delivery.value.enabled)
 
 const modeItems = [
   { label: 'Фикс. стоимость', value: 'fixed' },

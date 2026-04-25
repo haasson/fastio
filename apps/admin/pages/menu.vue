@@ -5,14 +5,12 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from '#imports'
-import { usePermissions } from '~/composables/auth/usePermissions'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
 import { useTerms } from '~/composables/useTerms'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 
-const { canManageMenu } = usePermissions()
-const access = useAccess()
+const gate = useGate()
 const terms = useTerms()
 const { item, menu } = terms
 
@@ -20,10 +18,10 @@ usePageTitle(menu.label)
 
 const tabs = computed(() => [
   { value: 'dishes', label: item.plural.label, attrs: { 'data-tour': 'menu-tab-dishes' } },
-  ...(canManageMenu.value ? [{ value: 'categories', label: 'Категории', attrs: { 'data-tour': 'menu-tab-categories' } }] : []),
-  ...(!access.isServices.value && canManageMenu.value && access.modifiers.value ? [{ value: 'modifiers', label: 'Модификаторы', attrs: { 'data-tour': 'menu-tab-modifiers' } }] : []),
-  ...(!access.isServices.value && canManageMenu.value && access.addons.value ? [{ value: 'addons', label: 'Добавки', attrs: { 'data-tour': 'menu-tab-addons' } }] : []),
-  ...(canManageMenu.value ? [{ value: 'tags', label: 'Теги', attrs: { 'data-tour': 'menu-tab-tags' } }] : []),
+  ...(gate.manageMenu.value.enabled ? [{ value: 'categories', label: 'Категории', attrs: { 'data-tour': 'menu-tab-categories' } }] : []),
+  ...(!terms.isServices && gate.manageMenu.value.enabled && gate.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы', attrs: { 'data-tour': 'menu-tab-modifiers' } }] : []),
+  ...(!terms.isServices && gate.manageMenu.value.enabled && gate.addons.value.enabled ? [{ value: 'addons', label: 'Добавки', attrs: { 'data-tour': 'menu-tab-addons' } }] : []),
+  ...(gate.manageMenu.value.enabled ? [{ value: 'tags', label: 'Теги', attrs: { 'data-tour': 'menu-tab-tags' } }] : []),
 ])
 
 const route = useRoute()

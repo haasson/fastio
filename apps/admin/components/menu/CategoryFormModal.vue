@@ -85,7 +85,7 @@ import { UiModal, UiForm, UiInput, UiText, UiSelect, UiSwitch, UiAlert, useMessa
 import type { Category, CategoryType, DishTagDefinition } from '@fastio/shared'
 import { slugify } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 
 type FormMode = 'regular' | 'virtual' | 'combo'
@@ -104,7 +104,7 @@ const emit = defineEmits<{
 
 const api = useDatabase()
 const { error: showError } = useMessage()
-const access = useAccess()
+const gate = useGate()
 
 const formRef = ref()
 const saving = ref(false)
@@ -177,8 +177,8 @@ const slugFeedback = computed(() => form.value.slug
 
 const modeOptions = computed<{ label: string; value: FormMode }[]>(() => [
   { label: 'Обычная', value: 'regular' },
-  ...(access.virtualCategories.value ? [{ label: 'Виртуальная (по тегу)', value: 'virtual' as FormMode }] : []),
-  ...(access.combos.value ? [{ label: 'Комбо', value: 'combo' as FormMode }] : []),
+  ...(gate.virtualCategories.value.enabled ? [{ label: 'Виртуальная (по тегу)', value: 'virtual' as FormMode }] : []),
+  ...(gate.combos.value.enabled ? [{ label: 'Комбо', value: 'combo' as FormMode }] : []),
 ])
 
 const onModeChange = (mode: FormMode) => {

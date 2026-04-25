@@ -53,13 +53,13 @@
             :options="bufferOptions"
           />
           <UiSelect
-            v-if="modules.delivery.value.active"
+            v-if="gate.delivery.value.enabled"
             v-model:value="form.deliveryLeadMinutes"
             label="Буфер при открытии — доставка"
             :options="leadOptions"
           />
           <UiSelect
-            v-if="modules.pickup.value.active"
+            v-if="gate.pickup.value.enabled"
             v-model:value="form.pickupLeadMinutes"
             label="Буфер при открытии — самовывоз"
             :options="leadOptions"
@@ -89,7 +89,7 @@ import { buildMinuteOptions } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useTenantStore } from '~/stores/tenant'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'
 import SettingToggle from '~/components/ui/SettingToggle.vue'
 
@@ -102,7 +102,7 @@ const SLOT_STEP_OPTIONS = [
 const tenantStore = useTenantStore()
 const { statuses } = storeToRefs(useOrderStatusesStore())
 const api = useDatabase()
-const modules = useModules()
+const gate = useGate()
 const { success, error } = useMessage()
 const saving = ref(false)
 

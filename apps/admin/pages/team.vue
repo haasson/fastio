@@ -10,21 +10,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { usePermissions } from '~/composables/auth/usePermissions'
-import { useAccess } from '~/composables/plan/useAccess'
+import { useGate } from '~/composables/plan/useGate'
 import { usePageTitle } from '~/composables/usePageTitle'
 
 usePageTitle('Команда')
 
-const { canManageRoles } = usePermissions()
-const access = useAccess()
+const gate = useGate()
 
 const tabs = computed(() => {
   const list = [
     { value: 'members', label: 'Участники' },
   ]
 
-  if (canManageRoles.value && access.customRoles.value) {
+  if (gate.manageRoles.value.enabled && gate.customRoles.value.enabled) {
     list.push({ value: 'roles', label: 'Роли' })
   }
 

@@ -1,5 +1,5 @@
 import type { Order, OrderStatusGroup } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useGate } from '~/composables/plan/useGate'
 import { useConfirm } from '@fastio/kit'
 
 type KitchenBlockResult = {
@@ -7,15 +7,14 @@ type KitchenBlockResult = {
 }
 
 export function useKitchenStatusBlock() {
-  const tenantStore = useTenantStore()
+  const gate = useGate()
   const { confirm } = useConfirm()
 
   const checkKitchenBlock = async (
     order: Order,
     targetGroupType: OrderStatusGroup | undefined,
   ): Promise<KitchenBlockResult> => {
-    const kitchenEnabled = tenantStore.tenant.modules?.kitchen === true
-      && !!tenantStore.tenant.kitchenConfig?.sourceStatusId
+    const kitchenEnabled = gate.kitchenAutoStatus.value.enabled
 
     if (!kitchenEnabled) return { blocked: false }
     if (targetGroupType === 'cancelled') return { blocked: false }

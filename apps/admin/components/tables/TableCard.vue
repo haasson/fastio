@@ -78,7 +78,7 @@ import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { formatRelativeTime } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '~/utils/api/tables'
 import TableSessionItems from '~/components/tables/TableSessionItems.vue'
-import { usePermissions } from '~/composables/auth/usePermissions'
+import { useGate } from '~/composables/plan/useGate'
 
 const props = defineProps<{
   table: Table
@@ -102,7 +102,8 @@ const emit = defineEmits<{
   'show-qr': []
 }>()
 
-const { canManageTables } = usePermissions()
+const gate = useGate()
+const canManageTables = computed(() => gate.manageTables.value.enabled)
 
 const menuItems = computed<UiMenuDropdownItem[]>(() => {
   if (!canManageTables.value) return []

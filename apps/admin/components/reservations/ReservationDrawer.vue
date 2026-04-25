@@ -143,7 +143,7 @@ import { useReservationsStore } from '~/stores/reservations'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
-import { useModules } from '~/composables/plan/useModules'
+import { useGate } from '~/composables/plan/useGate'
 import { formatDateStr, todayInTz, nowTimeInTz } from '@fastio/shared'
 import {
   RESERVATION_STATUS_LABELS as STATUS_LABELS,
@@ -168,8 +168,8 @@ const authStore = useAuthStore()
 const api = useDatabase()
 const { success, error } = useMessage()
 const { confirm } = useConfirm()
-const modules = useModules()
-const dineInEnabled = computed(() => modules.dineIn?.value?.enabled ?? false)
+const gate = useGate()
+const dineInEnabled = computed(() => gate.dineIn.value.enabled)
 
 const form = reactive({
   guestName: '',
