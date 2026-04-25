@@ -91,7 +91,7 @@
 import { ref, computed, inject, type Ref } from 'vue'
 import { useRoute, useRuntimeConfig } from '#imports'
 import { KB_ROUTES } from '@fastio/kb'
-import { requestNotificationPermission } from '~/composables/data/useAlerts'
+import { requestNotificationPermission } from '~/utils/alerts'
 import { useLocalStorage } from '@vueuse/core'
 import { UiConfigProvider, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
 import TenantSwitcher from '~/components/TenantSwitcher.vue'

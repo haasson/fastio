@@ -94,7 +94,7 @@ import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag } from '@fastio/u
 import type { Table } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTablesContext } from '~/composables/ui/useTablesContext'
-import useAddDishToTable from '~/composables/ui/useAddDishToTable'
+import useAddDishToTable from '~/composables/data/useAddDishToTable'
 import { useGate } from '~/composables/plan/useGate'
 import DishPickerModal from '~/components/menu/DishPickerModal.vue'
 import TableCard from '~/components/tables/TableCard.vue'
