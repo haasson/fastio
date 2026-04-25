@@ -1,6 +1,6 @@
 <template>
   <FsDialog v-model="modal.isOpen.value" title="Вход" size="sm">
-    <FsForm class="login-root" @submit="onSubmit">
+    <FsForm @submit="onSubmit">
       <FsField v-slot="{ hasError }" label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]">
         <FsInput v-model="email" type="email" placeholder="email@example.com" :error="hasError" />
       </FsField>
@@ -19,6 +19,14 @@
         Зарегистрироваться
       </FsButton>
 
+      <template v-if="telegramEnabled">
+        <div class="divider"><span>или</span></div>
+
+        <FsAlert v-if="telegramError" type="error">{{ telegramError }}</FsAlert>
+
+        <AuthTelegramWidget @auth="onTelegramAuth" />
+      </template>
+
       <div class="links">
         <button type="button" class="link" @click="toRegister">Создать аккаунт</button>
         <button type="button" class="link" @click="toForgot">Забыли пароль?</button>
@@ -28,19 +36,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { FsDialog, FsField, FsForm, FsInput, FsButton, FsAlert } from '@fastio/public-ui'
 import { validationRules } from '@fastio/kit'
+import { useRuntimeConfig } from '#imports'
 import { useAuthStore } from '~/stores/auth'
 import { useModal } from '~/composables/useModal'
+import { reportError } from '~/utils/reportError'
+import AuthTelegramWidget from '~/components/auth/AuthTelegramWidget.vue'
 
 const authStore = useAuthStore()
 const modal = useModal('auth-login')
+const config = useRuntimeConfig()
 
 const email = ref('')
 const password = ref('')
 const serverError = ref('')
+const telegramError = ref('')
 const notRegistered = ref(false)
+
+const telegramEnabled = computed(() => !!config.public.telegramAuthBotUsername)
 
 function toRegister() { modal.close(); useModal('auth-register').open() }
 function toForgot() { modal.close(); useModal('auth-forgot').open() }
@@ -57,14 +72,22 @@ async function onSubmit() {
     notRegistered.value = fetchErr?.status === 403
   }
 }
+
+async function onTelegramAuth(data: Record<string, string>) {
+  telegramError.value = ''
+  try {
+    await $fetch('/api/auth/telegram/login', { method: 'POST', body: data })
+    await authStore.loginWithTelegram()
+    modal.close()
+  } catch (err) {
+    reportError(err)
+    telegramError.value = 'Не удалось войти через Telegram. Попробуйте ещё раз.'
+  }
+}
 </script>
 
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
-
-.login-root {
-  // gap handled by FsForm
-}
 
 .links {
   display: flex;
@@ -81,5 +104,21 @@ async function onSubmit() {
   font: inherit;
 
   &:hover { text-decoration: underline; }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
 }
 </style>

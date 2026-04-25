@@ -3,11 +3,15 @@ import { ref, computed } from 'vue'
 import type { Customer } from '@fastio/shared'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useModal } from '~/composables/useModal'
+import { reportError } from '~/utils/reportError'
+
+type AuthMode = 'tg' | 'supabase' | null
 
 export const useAuthStore = defineStore('auth', () => {
   const customer = ref<Customer | null>(null)
   const loading = ref(false)
   const initialized = ref(false)
+  const authMode = ref<AuthMode>(null)
 
   const isAuthenticated = computed(() => !!customer.value)
   const customerName = computed(() => customer.value?.name ?? '')
@@ -22,28 +26,42 @@ export const useAuthStore = defineStore('auth', () => {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (session) {
-      await fetchProfile(session.access_token)
+      authMode.value = 'supabase'
+      await fetchProfile()
+    } else {
+      // No Supabase session — try to resolve via tg cookie. Server returns 401 if absent or expired.
+      await fetchProfile()
+      if (customer.value) authMode.value = 'tg'
     }
 
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        await fetchProfile(session.access_token)
+        authMode.value = 'supabase'
+        await fetchProfile()
       } else if (event === 'SIGNED_OUT') {
-        customer.value = null
+        // Supabase emits SIGNED_OUT even when nobody was signed in via Supabase
+        // (e.g. on first load with only a tg cookie). Only clear when WE were the supabase user.
+        if (authMode.value === 'supabase') {
+          customer.value = null
+          authMode.value = null
+        }
       }
     })
   }
 
-  async function fetchProfile(accessToken?: string) {
+  async function fetchProfile() {
     try {
-      const token = accessToken ?? (await useSupabaseClient().auth.getSession()).data.session?.access_token
-      if (!token) return
+      const headers: Record<string, string> = {}
+      const supabaseToken = await getSupabaseToken()
+      if (supabaseToken) headers.Authorization = `Bearer ${supabaseToken}`
 
-      const result = await $fetch<{ customer: Customer }>('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const result = await $fetch<{ customer: Customer }>('/api/auth/me', { headers })
       customer.value = result.customer
-    } catch {
+    } catch (err) {
+      const status = (err as { status?: number; statusCode?: number }).status
+        ?? (err as { statusCode?: number }).statusCode
+      // 401 just means «not signed in» — expected on guest pageviews, don't pollute Sentry.
+      if (status !== 401 && status !== 404) reportError(err)
       customer.value = null
     }
   }
@@ -62,6 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
         refresh_token: result.session.refresh_token,
       })
 
+      authMode.value = 'supabase'
       customer.value = result.customer
     } finally {
       loading.value = false
@@ -84,33 +103,42 @@ export const useAuthStore = defineStore('auth', () => {
         })
       }
 
+      authMode.value = 'supabase'
       customer.value = result.customer
     } finally {
       loading.value = false
     }
   }
 
-  async function logout() {
-    const supabase = useSupabaseClient()
-    const { data: { session } } = await supabase.auth.getSession()
+  /** Called after a successful Telegram login; the cookie is already set by the server. */
+  async function loginWithTelegram() {
+    authMode.value = 'tg'
+    await fetchProfile()
+  }
 
+  async function logout() {
+    const supabaseToken = await getSupabaseToken()
     await $fetch('/api/auth/logout', {
       method: 'POST',
-      body: { accessToken: session?.access_token },
+      body: { accessToken: supabaseToken },
     })
 
-    await supabase.auth.signOut()
+    if (authMode.value === 'supabase' || supabaseToken) {
+      await useSupabaseClient().auth.signOut()
+    }
+
     customer.value = null
+    authMode.value = null
   }
 
   async function updateProfile(data: { name?: string; phone?: string }) {
-    const supabase = useSupabaseClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    const headers: Record<string, string> = {}
+    const supabaseToken = await getSupabaseToken()
+    if (supabaseToken) headers.Authorization = `Bearer ${supabaseToken}`
 
     const result = await $fetch<{ customer: Customer }>('/api/customer/profile', {
       method: 'PATCH',
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers,
       body: data,
     })
     customer.value = result.customer
@@ -124,6 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
     customer,
     loading,
     initialized,
+    authMode,
     isAuthenticated,
     customerName,
     customerPhone,
@@ -131,9 +160,18 @@ export const useAuthStore = defineStore('auth', () => {
     init,
     fetchProfile,
     login,
+    loginWithTelegram,
     register,
     logout,
     updateProfile,
     showLogin,
   }
 })
+
+// Returns a Supabase access token if present. TG sessions don't use Authorization headers — the
+// HttpOnly cookie travels with $fetch automatically — so callers just attach the header conditionally.
+async function getSupabaseToken(): Promise<string | undefined> {
+  const supabase = useSupabaseClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token
+}

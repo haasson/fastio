@@ -23,10 +23,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     supabaseServiceRoleKey: '',
     dadataApiKey: '',
+    telegramAuthBotToken: '',
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',
       yandexMapsApiKey: '',
+      telegramAuthBotUsername: '',
     },
   },
 })

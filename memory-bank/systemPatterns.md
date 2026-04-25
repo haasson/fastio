@@ -58,3 +58,39 @@ supabase/
 Готовые computed-shortcuts в сторе: `tenantId`, `timezone`, `businessType` — предпочитай их вместо `tenant.value.id` и т.п. (короче, и `timezone` фолбэчит на `DEFAULT_TIMEZONE`).
 
 Все magic strings `'Europe/Moscow'` → `DEFAULT_TIMEZONE` из `@fastio/shared`.
+
+## Storefront Customer Auth
+На витрине **два независимых пути** аутентификации, которые объединяет `server/utils/customerAuth.ts`:
+
+1. **Email/password** — поверх Supabase Auth. JWT/refresh токены живут в Supabase SDK (localStorage), refresh делает сам Supabase. На сервере проверяется через `supabase.auth.getUser()`.
+2. **Telegram Login Widget** — **кастомная сессионная модель** (см. ADR ниже). Никакой Supabase auth не задействован — телеграм-юзер не имеет `auth_user_id` в таблице `customers`.
+
+Таблица `customers` поддерживает оба пути: `auth_user_id` nullable, добавлен `telegram_id`.
+
+### ADR: Sliding session vs Refresh-token pattern для Telegram-auth (2026-04-25)
+
+**Решение:** Variant A — Sliding session (HttpOnly cookie + хеш токена в БД + продление `expires_at` при использовании).
+
+**Реализация:**
+- Серверная сессия в `customer_sessions`, токен `tgs_<32hex>` в БД хранится как SHA-256 хеш (колонка `token_hash`)
+- Сам токен — в HttpOnly cookie `tg_session` (SameSite=Lax, Secure в prod, Path=/, Max-Age=30d)
+- TTL: 30 дней. На каждый аутентифицированный запрос `expires_at` сдвигается на +30d, **но не чаще раза в сутки** (throttle через сравнение `expires_at - now() < 29d`), чтобы не насиловать БД
+- Cleanup протухших — `pg_cron` job раз в сутки `DELETE FROM customer_sessions WHERE expires_at < now()`
+
+**Почему A, а не B (refresh-token + JWT access):**
+- Storefront-кастомер — это не банковский кабинет. Угон сессии в худшем случае = заказ еды на чужой адрес. Модель угроз не оправдывает 480 строк кода вместо 150.
+- В системе УЖЕ есть Supabase refresh-machine для email-юзеров. Свой refresh-цикл для TG = две независимые системы, разное поведение, болезненная отладка.
+- Storefront — SSR. Refresh-токены требуют прокидывания cookie + ротации **и** на серверном рендере, **и** на клиенте. Sliding session работает одинаково в обоих режимах.
+- A закрывает 80% угроз (XSS не достанет HttpOnly cookie, утечка БД не даёт живых сессий из-за хеша) с минимумом сложности.
+
+**Минус варианта A, который мы принимаем осознанно:**
+- Если access-токен утёк (например, через прокси/MITM на HTTP-сегменте), он валиден до 30 дней. Нет короткого окна как с 15-мин JWT.
+- Mitigation: Secure cookie (только HTTPS), серверный logout инвалидирует строку в БД немедленно, кнопка «Выйти на всех устройствах» в профиле (планируется).
+
+**Когда мигрировать на B (refresh-token + JWT):**
+- Появилось мобильное приложение или внешний API, где stateless JWT критичен для масштабирования
+- На витрине появилась оплата прямо с сохранённой картой (CVV-less re-charge) или другие действия с финансовым ущербом > заказ еды
+- Pen-test или security-инцидент показал реальную необходимость короткого access-окна
+- Появилась многофакторка для кастомеров — refresh-pattern удобнее для step-up auth
+
+До тех пор A — уместное решение, не дешёвый компромисс.

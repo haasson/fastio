@@ -178,7 +178,8 @@ export function mapCustomer(row: Record<string, unknown>): Customer {
   return {
     id: row.id as string,
     tenantId: row.tenant_id as string,
-    authUserId: row.auth_user_id as string,
+    authUserId: row.auth_user_id as string | null,
+    telegramId: row.telegram_id == null ? null : String(row.telegram_id),
     name: row.name as string | null,
     phone: row.phone as string | null,
     email: row.email as string | null,

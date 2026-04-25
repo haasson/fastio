@@ -1,7 +1,8 @@
 export type Customer = {
   id: string
   tenantId: string
-  authUserId: string
+  authUserId: string | null
+  telegramId: string | null
   name: string | null
   phone: string | null
   email: string | null
