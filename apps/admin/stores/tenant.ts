@@ -34,6 +34,8 @@ export const useTenantStore = defineStore('tenant', () => {
     tenantId: tenantApi.tenantId,
     timezone: tenantApi.timezone,
     businessType: tenantApi.businessType,
+    isServices: tenantApi.isServices,
+    isRetail: tenantApi.isRetail,
     loading: tenantApi.loading,
     currentRoleName: tenantApi.currentRoleName,
     currentPermissions: tenantApi.currentPermissions,

@@ -53,6 +53,8 @@ export const useTenant = (userId: Ref<string | null>) => {
   const tenantId = computed<string>(() => tenant.value.id)
   const timezone = computed<string>(() => maybeTenant.value?.timezone ?? DEFAULT_TIMEZONE)
   const businessType = computed(() => tenant.value.businessType)
+  const isServices = computed(() => tenant.value.businessType === 'services')
+  const isRetail = computed(() => tenant.value.businessType === 'retail')
 
   const currentMembership = computed(() => {
     if (!currentTenantId.value) return null
@@ -164,6 +166,8 @@ export const useTenant = (userId: Ref<string | null>) => {
     tenantId,
     timezone,
     businessType,
+    isServices,
+    isRetail,
     loading,
     currentRoleName,
     currentPermissions,

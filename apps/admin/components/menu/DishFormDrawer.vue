@@ -17,9 +17,9 @@
         :weight-unit="form.weightUnit"
         :category-id="form.categoryId"
         :category-options="categoryOptions"
-        :name-placeholder="terms.isServices ? 'Например: Ремонт холодильника' : 'Маргарита'"
+        :name-placeholder="tenantStore.isServices ? 'Например: Ремонт холодильника' : 'Маргарита'"
         :price-placeholder="350"
-        :description-placeholder="terms.isServices ? 'Опишите услугу' : 'Томатный соус, моцарелла, базилик'"
+        :description-placeholder="tenantStore.isServices ? 'Опишите услугу' : 'Томатный соус, моцарелла, базилик'"
         :show-weight="isFood"
         @update:photo-url="currentPhotoUrl = $event"
         @update:photo-removed="photoRemoved = $event"
@@ -50,7 +50,7 @@
         />
 
         <AddonsSection
-          v-if="!terms.isServices && gate.addons.value.enabled"
+          v-if="!tenantStore.isServices && gate.addons.value.enabled"
           ref="addonsRef"
           :tenant-id="tenantId"
           :dish-id="dish?.id ?? null"
@@ -125,7 +125,8 @@ const { tenantId: tenantIdRef } = toRefs(props)
 const tenantStore = useTenantStore()
 const terms = useTerms()
 const { item } = terms
-const isFood = computed(() => !terms.isServices && terms.menuStyle === 'food')
+const isFood = computed(() => !tenantStore.isServices && terms.menuStyle === 'food')
+
 const gate = useGate()
 const modalTitle = computed(() => props.dish
   ? `Редактировать ${item.acc}`

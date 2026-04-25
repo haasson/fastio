@@ -1,5 +1,6 @@
 import type { TourStep } from '~/composables/useTour'
 import { useTerms } from '~/composables/useTerms'
+import { useTenantStore } from '~/stores/tenant'
 
 type NavStep = {
   selector: string
@@ -8,7 +9,8 @@ type NavStep = {
 }
 
 const buildNavSteps = (): NavStep[] => {
-  const { item, menu, reservationsLabel, isServices } = useTerms()
+  const { item, menu, reservationsLabel } = useTerms()
+  const isServices = useTenantStore().isServices
 
   return [
     {

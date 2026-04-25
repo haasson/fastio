@@ -19,7 +19,7 @@ export type OnboardingStepView = OnboardingStep & {
 
 export const useOnboarding = () => {
   const tenantStore = useTenantStore()
-  const { maybeTenant, isOwner } = storeToRefs(tenantStore)
+  const { maybeTenant, isOwner, isServices } = storeToRefs(tenantStore)
   const terms = useTerms()
   const { item, menu } = terms
 
@@ -33,7 +33,7 @@ export const useOnboarding = () => {
   }))
 
   const flow = computed(() => buildOnboardingFlow(onboardingLabels.value, {
-    isServices: terms.isServices,
+    isServices: isServices.value,
     modules: maybeTenant.value?.modules ?? null,
   }))
 

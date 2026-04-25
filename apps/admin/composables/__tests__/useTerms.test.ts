@@ -29,18 +29,6 @@ describe('useTerms', () => {
     })
   })
 
-  describe('isServices', () => {
-    it('services → true', () => {
-      set('services')
-      expect(useTerms().isServices).toBe(true)
-    })
-
-    it('retail → false', () => {
-      set('retail')
-      expect(useTerms().isServices).toBe(false)
-    })
-  })
-
   describe('item forms', () => {
     it('services → правильные формы услуги', () => {
       set('services')

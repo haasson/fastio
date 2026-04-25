@@ -6,21 +6,22 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { useGate } from '~/composables/plan/useGate'
+import { useTenantStore } from '~/stores/tenant'
 import { useTerms } from '~/composables/useTerms'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 
 const gate = useGate()
-const terms = useTerms()
-const { item, menu } = terms
+const tenantStore = useTenantStore()
+const { item, menu } = useTerms()
 
 usePageTitle(menu.label)
 
 const tabs = computed(() => [
   { value: 'dishes', label: item.plural.label, attrs: { 'data-tour': 'menu-tab-dishes' } },
   ...(gate.manageMenu.value.enabled ? [{ value: 'categories', label: 'Категории', attrs: { 'data-tour': 'menu-tab-categories' } }] : []),
-  ...(!terms.isServices && gate.manageMenu.value.enabled && gate.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы', attrs: { 'data-tour': 'menu-tab-modifiers' } }] : []),
-  ...(!terms.isServices && gate.manageMenu.value.enabled && gate.addons.value.enabled ? [{ value: 'addons', label: 'Добавки', attrs: { 'data-tour': 'menu-tab-addons' } }] : []),
+  ...(!tenantStore.isServices && gate.manageMenu.value.enabled && gate.modifiers.value.enabled ? [{ value: 'modifiers', label: 'Модификаторы', attrs: { 'data-tour': 'menu-tab-modifiers' } }] : []),
+  ...(!tenantStore.isServices && gate.manageMenu.value.enabled && gate.addons.value.enabled ? [{ value: 'addons', label: 'Добавки', attrs: { 'data-tour': 'menu-tab-addons' } }] : []),
   ...(gate.manageMenu.value.enabled ? [{ value: 'tags', label: 'Теги', attrs: { 'data-tour': 'menu-tab-tags' } }] : []),
 ])
 

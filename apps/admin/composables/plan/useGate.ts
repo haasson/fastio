@@ -148,9 +148,7 @@ export const useGate = (): GateRegistry => {
   const orders = computed<GateResult>(() => {
     if (isSuspended.value) return deny('suspended')
 
-    const isServices = tenantStore.tenant.businessType === 'services'
-
-    if (isServices) return services.value
+    if (tenantStore.isServices) return services.value
     if (delivery.value.enabled) return ok()
     if (pickup.value.enabled) return ok()
 
@@ -218,7 +216,7 @@ export const useGate = (): GateRegistry => {
   const manageTables = permissionGate(dineIn, 'tables.manage')
 
   // Reservations: для services используется модуль services, иначе reservations.
-  const reservationsForRole = computed<GateResult>(() => tenantStore.tenant.businessType === 'services' ? services.value : reservations.value,
+  const reservationsForRole = computed<GateResult>(() => tenantStore.isServices ? services.value : reservations.value,
   )
   const viewReservations = permissionGate(reservationsForRole, 'reservations.view')
   const manageReservations = permissionGate(reservationsForRole, 'reservations.manage')

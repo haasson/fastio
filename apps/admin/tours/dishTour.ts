@@ -1,9 +1,11 @@
 import type { TourStep } from '~/composables/useTour'
 import { intro, highlight, formField, saveButton, clickAndWait, navigateToMenuStep, clickMenuTabStep } from '~/tours/helpers'
 import { useTerms } from '~/composables/useTerms'
+import { useTenantStore } from '~/stores/tenant'
 
 export const getDishTourSteps = (): TourStep[] => {
-  const { item, menu: menuVocab, menuStyle, isServices } = useTerms()
+  const { item, menu: menuVocab, menuStyle } = useTerms()
+  const isServices = useTenantStore().isServices
   const isFood = menuStyle === 'food' && !isServices
 
   return [

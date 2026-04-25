@@ -9,8 +9,6 @@ type TermsState = {
   firstItemAcc: string
   reservationsLabel: string
   categoryExamples: string
-  isServices: boolean
-  isRetail: boolean
   menuStyle: MenuStyle
 }
 
@@ -26,8 +24,6 @@ const _state = reactive<TermsState>({
   firstItemAcc: `${food.item.first} ${food.item.acc}`,
   reservationsLabel: food.reservations,
   categoryExamples: food.categoryExamples,
-  isServices: false,
-  isRetail: false,
   menuStyle: 'food',
 })
 
@@ -48,8 +44,6 @@ export const setVocab = (businessType: BusinessType | null, menuStyle: MenuStyle
   _state.firstItemAcc = `${e.item.first} ${e.item.acc}`
   _state.reservationsLabel = e.reservations
   _state.categoryExamples = e.categoryExamples
-  _state.isServices = businessType === 'services'
-  _state.isRetail = businessType === 'retail'
   _state.menuStyle = menuStyle
 }
 

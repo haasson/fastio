@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { emptyOnboardingState, type Tenant, type OnboardingState, type TenantModules } from '@fastio/shared'
 
 const emptyModules = (): TenantModules => ({
@@ -93,9 +93,10 @@ const isOwnerRef = ref(false)
 const updateMock = vi.fn(async (_data: { onboardingState: OnboardingState }) => {})
 
 vi.mock('pinia', () => ({
-  storeToRefs: (store: { maybeTenant: unknown; isOwner: unknown }) => ({
+  storeToRefs: (store: { maybeTenant: unknown; isOwner: unknown; isServices: unknown }) => ({
     maybeTenant: store.maybeTenant,
     isOwner: store.isOwner,
+    isServices: store.isServices,
   }),
 }))
 
@@ -103,6 +104,7 @@ vi.mock('~/stores/tenant', () => ({
   useTenantStore: () => ({
     maybeTenant: tenantRef,
     isOwner: isOwnerRef,
+    isServices: computed(() => tenantRef.value?.businessType === 'services'),
     update: updateMock,
   }),
 }))

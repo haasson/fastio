@@ -38,6 +38,8 @@ const tenantStore = {
   isOwner: false,
   currentPermissions: null as RolePermissions | null,
   maybeTenant: { subscription: { status: 'active' } as Subscription },
+  get isServices() { return this.tenant.businessType === 'services' },
+  get isRetail() { return this.tenant.businessType === 'retail' },
   tenant: {
     businessType: 'retail' as BusinessType,
     menuStyle: 'food' as MenuStyle,
