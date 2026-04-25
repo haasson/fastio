@@ -35,4 +35,8 @@ export const realtimeApi = {
       handlers.onStatus?.(status === 'SUBSCRIBED')
     })
   },
+
+  removeChannel: (sb: SupabaseClient, channel: RealtimeChannel): void => {
+    sb.removeChannel(channel)
+  },
 }

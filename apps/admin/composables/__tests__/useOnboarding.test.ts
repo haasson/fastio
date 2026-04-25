@@ -224,6 +224,23 @@ describe('useOnboarding', () => {
 
       expect(ids).toEqual(['category', 'item', 'legal', 'statuses', 'site', 'test-order'])
     })
+
+    it('services flow: intake-services, no statuses step, test-order id preserved', () => {
+      tenantRef.value = makeTenant({ businessType: 'services' })
+      isOwnerRef.value = true
+      const { steps } = useOnboarding()
+      const ids = steps.value.map((s) => s.id)
+
+      expect(ids).toEqual(['category', 'item', 'intake-services', 'legal', 'site', 'test-order'])
+    })
+
+    it('services flow: last step has booking-specific title', () => {
+      tenantRef.value = makeTenant({ businessType: 'services' })
+      isOwnerRef.value = true
+      const last = useOnboarding().steps.value.at(-1)!
+
+      expect(last.title).toBe('Проверьте форму записи')
+    })
   })
 
   describe('progress', () => {

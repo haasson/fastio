@@ -18,7 +18,7 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
   const isConnected = ref(false)
 
   const dispose = () => {
-    channel?.unsubscribe()
+    if (channel) api.realtime.removeChannel(channel)
     channel = null
     isConnected.value = false
   }

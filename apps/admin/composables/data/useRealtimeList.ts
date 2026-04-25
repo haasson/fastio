@@ -60,7 +60,7 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
   watch(
     [options.channelKey, options.filter],
     ([key, filter]) => {
-      channel?.unsubscribe()
+      if (channel) api.realtime.removeChannel(channel)
       channel = null
       items.value = []
 
@@ -75,7 +75,9 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
     loading.value = false
   }
 
-  if (getCurrentInstance()) onUnmounted(() => channel?.unsubscribe())
+  if (getCurrentInstance()) onUnmounted(() => {
+    if (channel) api.realtime.removeChannel(channel)
+  })
 
   return { items, loading, refresh }
 }

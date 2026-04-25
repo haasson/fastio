@@ -180,6 +180,21 @@ const testOrderStep: OnboardingStep = {
   tourId: 'orders',
 }
 
+const testBookingStep: OnboardingStep = {
+  id: 'test-order',
+  title: 'Проверьте форму записи',
+  description:
+    'Финальная проверка. Пройдите путь клиента сами — убедитесь, что запись оформляется и заявка появляется в системе.',
+  details: [
+    'Откройте витрину в новой вкладке',
+    'Выберите услугу и оформите запись',
+    'Убедитесь, что заявка появилась в разделе «Записи»',
+  ],
+  ctaLabel: 'Открыть витрину',
+  externalTarget: 'storefront',
+  kbRoute: '/reservations',
+}
+
 export const buildOnboardingFlow = (
   l: OnboardingLabels,
   ctx: { isServices: boolean; modules: TenantModules | null },
@@ -196,7 +211,9 @@ export const buildOnboardingFlow = (
     if (m?.dineIn) steps.push(dineInStep)
   }
 
-  steps.push(legalStep, statusesStep, siteStep, testOrderStep)
+  steps.push(legalStep)
+  if (!ctx.isServices) steps.push(statusesStep)
+  steps.push(siteStep, ctx.isServices ? testBookingStep : testOrderStep)
 
   return steps
 }
