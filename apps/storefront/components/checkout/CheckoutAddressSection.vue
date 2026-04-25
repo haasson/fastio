@@ -88,7 +88,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { Check, X, Clock, AlertTriangle } from 'lucide-vue-next'
 import type { CustomerAddress, Tenant, WorkingHoursSchedule } from '@fastio/shared'
-import { isOpenNow } from '@fastio/shared'
+import { isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'
 import { useAuthStore } from '~/stores/auth'
@@ -223,7 +223,7 @@ async function checkAddress(lat: number, lon: number) {
       checkout.hasZones = true
 
       if (result.zone.branchSchedule) {
-        const tz = tenant.value?.timezone ?? 'Europe/Moscow'
+        const tz = tenant.value?.timezone ?? DEFAULT_TIMEZONE
         const status = isOpenNow(result.zone.branchSchedule, tz)
         branchClosedInfo.value = status.open ? null : status.nextChange
       } else {

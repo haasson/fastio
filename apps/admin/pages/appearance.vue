@@ -1,32 +1,29 @@
 <template>
   <div class="appearance-root">
-    <template v-if="tenantStore.tenant">
-      <TabsLayout
-        :tabs="tabs"
-        base-path="/appearance"
-        card
-        full-height
-      >
-        <template #extra>
-          <UiButton
-            type="primary"
-            :loading="saving"
-            :disabled="!isDirty"
-            @click="form.save()"
-          >
-            Сохранить
-          </UiButton>
-        </template>
-        <template #sidebar>
-          <AppearancePreview
-            :layout="form.siteLayoutForm as SiteLayout"
-            :content="form.contentForm"
-            :theme="form.themeForm"
-          />
-        </template>
-      </TabsLayout>
-    </template>
-    <div v-else class="state-msg">Загрузка…</div>
+    <TabsLayout
+      :tabs="tabs"
+      base-path="/appearance"
+      card
+      full-height
+    >
+      <template #extra>
+        <UiButton
+          type="primary"
+          :loading="saving"
+          :disabled="!isDirty"
+          @click="form.save()"
+        >
+          Сохранить
+        </UiButton>
+      </template>
+      <template #sidebar>
+        <AppearancePreview
+          :layout="form.siteLayoutForm as SiteLayout"
+          :content="form.contentForm"
+          :theme="form.themeForm"
+        />
+      </template>
+    </TabsLayout>
 
     <ConfigIssuesModal
       :issues="configIssues"

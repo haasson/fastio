@@ -87,6 +87,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiTag, UiText } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Gallery, GalleryFormData } from '@fastio/shared'
@@ -100,7 +101,7 @@ import GalleryFormModal from '~/components/gallery/GalleryFormModal.vue'
 import GalleryPhotosModal from '~/components/gallery/GalleryPhotosModal.vue'
 
 const tenantStore = useTenantStore()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(tenantStore)
 
 const { galleries, loading, add, update, remove, reorder, uploadPhoto, removePhoto, reorderPhotos } = useGalleries(tenantId)
 
@@ -113,7 +114,7 @@ const uploading = ref(false)
 
 const { confirm } = useConfirm()
 
-const siteLayout = computed(() => tenantStore.tenant?.siteLayout)
+const siteLayout = computed(() => tenantStore.tenant.siteLayout)
 
 const usedIn = (galleryId: string): string[] => {
   const result: string[] = []

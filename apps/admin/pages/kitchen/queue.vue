@@ -126,7 +126,7 @@ const error = ref(false)
 const items = ref<KitchenQueueItemType[]>([])
 
 const currentUserId = computed(() => authStore.user?.id ?? null)
-const urgencyMinutes = computed(() => tenantStore.tenant?.kitchenUrgencyMinutes ?? 15)
+const urgencyMinutes = computed(() => tenantStore.tenant.kitchenUrgencyMinutes ?? 15)
 
 const hasMultipleDeliveryTypes = computed(() => {
   const active = [modules.delivery?.value?.active, modules.pickup?.value?.active, modules.dineIn?.value?.active].filter(Boolean)
@@ -138,10 +138,10 @@ const deliveryActive = computed(() => !!modules.delivery?.value?.active)
 const pickupActive = computed(() => !!modules.pickup?.value?.active)
 const hasDeliveryOrPickup = computed(() => deliveryActive.value || pickupActive.value)
 
-const sourceStatusMissing = computed(() => hasDeliveryOrPickup.value && !tenantStore.tenant?.kitchenConfig?.sourceStatusId)
+const sourceStatusMissing = computed(() => hasDeliveryOrPickup.value && !tenantStore.tenant.kitchenConfig?.sourceStatusId)
 
 const completedStatusMissing = computed(() => {
-  const map = tenantStore.tenant?.kitchenConfig?.completedStatusMap
+  const map = tenantStore.tenant.kitchenConfig?.completedStatusMap
   const missing: string[] = []
 
   if (deliveryActive.value && !map?.delivery) missing.push('доставки')
@@ -185,12 +185,8 @@ watch(selectedCategories, (val) => {
 const allCategories = ref<string[]>([])
 
 const loadCategories = async () => {
-  const tenantId = tenantStore.tenant?.id
-
-  if (!tenantId) return
-
   try {
-    const cats = await api.categories.list(tenantId)
+    const cats = await api.categories.list(tenantStore.tenant.id)
 
     allCategories.value = cats
       .filter((c) => c.active && c.type === 'regular' && !isAutoCategory(c))
@@ -201,8 +197,8 @@ const loadCategories = async () => {
   }
 }
 
-watch(() => tenantStore.tenant?.id, (id) => {
-  if (id) loadCategories()
+watch(() => tenantStore.tenant.id, () => {
+  loadCategories()
 }, { immediate: true })
 
 const categoryOptions = computed(() => allCategories.value.map((name) => ({ label: name, value: name })))
@@ -223,14 +219,10 @@ const formatKitchenTime = formatKitchenElapsed
 // --- Load ---
 
 const load = async () => {
-  const tenantId = tenantStore.tenant?.id
-
-  if (!tenantId) return
-
   loading.value = true
   error.value = false
   try {
-    items.value = await api.kitchenQueue.listActive(tenantId)
+    items.value = await api.kitchenQueue.listActive(tenantStore.tenant.id)
   } catch {
     error.value = true
   } finally {
@@ -238,8 +230,8 @@ const load = async () => {
   }
 }
 
-watch(() => tenantStore.tenant?.id, (id) => {
-  if (id) load()
+watch(() => tenantStore.tenant.id, () => {
+  load()
 }, { immediate: true })
 
 // --- Actions ---
@@ -250,7 +242,7 @@ const getActor = () => {
   if (!user) return null
 
   return {
-    tenantId: tenantStore.tenant?.id ?? '',
+    tenantId: tenantStore.tenant.id,
     actorId: user.id,
     actorName: user.user_metadata?.full_name || user.email || null,
     actorRole: tenantStore.currentRoleName ?? null,

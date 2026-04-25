@@ -74,13 +74,11 @@ const lockedModules = computed(() => moduleList.value.filter((m) => m.state.lock
 
 const doToggle = async (key: ModuleKey, val: boolean) => {
   await tenantStore.update({
-    modules: { ...tenantStore.tenant!.modules, [key]: val },
+    modules: { ...tenantStore.tenant.modules, [key]: val },
   }).catch(() => warning('Не удалось сохранить изменения'))
 }
 
 const toggle = async (key: ModuleKey, val: boolean) => {
-  if (!tenantStore.tenant) return
-
   // Enabling — no checks needed
   if (val) {
     await doToggle(key, true)

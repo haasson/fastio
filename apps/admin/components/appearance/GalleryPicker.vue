@@ -60,12 +60,9 @@ const galleries = ref<Gallery[]>([])
 const loading = ref(false)
 
 onMounted(async () => {
-  const tenantId = tenantStore.tenant?.id
-
-  if (!tenantId) return
   loading.value = true
   try {
-    galleries.value = await api.galleries.list(tenantId)
+    galleries.value = await api.galleries.list(tenantStore.tenant.id)
   } finally {
     loading.value = false
   }

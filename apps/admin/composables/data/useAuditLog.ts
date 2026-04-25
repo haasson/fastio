@@ -15,7 +15,7 @@ export const useAuditLog = () => {
 
   const log = (params: LogParams) => {
     if (!AUDIT_LOG_ENABLED) return
-    if (!authStore.user || !tenantStore.tenant) return
+    if (!authStore.user) return
 
     api.auditLogs.add({
       tenantId: tenantStore.tenant.id,
@@ -28,7 +28,6 @@ export const useAuditLog = () => {
 
   const list = async (params: AuditLogsListParams = {}): Promise<AuditLog[]> => {
     if (!AUDIT_LOG_ENABLED) return []
-    if (!tenantStore.tenant) return []
 
     return api.auditLogs.list(tenantStore.tenant.id, params)
   }

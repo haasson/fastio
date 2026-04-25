@@ -104,7 +104,7 @@ import useDrawer from '~/composables/ui/useDrawer'
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const api = useDatabase()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(tenantStore)
 const { branches, archivedBranches, loading } = storeToRefs(branchStore)
 const { add, update, archive, restore } = branchStore
 const { confirm } = useConfirm()

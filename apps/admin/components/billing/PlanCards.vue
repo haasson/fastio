@@ -106,13 +106,12 @@ type PlanCard = {
 }
 
 const tenantStore = useTenantStore()
-const { tenant } = storeToRefs(tenantStore)
+const { tenant, businessType } = storeToRefs(tenantStore)
 const { plans, getPlanSortOrder } = usePlans()
 const { error, success } = useMessage()
 const { confirm } = useConfirm()
 
-const currentPlanKey = computed(() => tenant.value?.subscription?.plan ?? '')
-const businessType = computed(() => tenant.value?.businessType ?? 'retail')
+const currentPlanKey = computed(() => tenant.value.subscription?.plan ?? '')
 
 const planFeatureLabels = (plan: Plan): string[] => {
   if (extractPlanTier(plan.key) === 'showcase') {
@@ -148,8 +147,9 @@ const prevPlanName = (plan: Plan): string | null => {
 }
 
 const planCards = computed<PlanCard[]>(() => {
+  const bt = businessType.value ?? 'retail'
   const activePlans = plans.value
-    .filter((p) => p.businessType === businessType.value)
+    .filter((p) => p.businessType === bt)
     .sort((a, b) => a.sortOrder - b.sortOrder)
 
   return activePlans.map((plan) => ({

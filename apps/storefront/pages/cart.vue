@@ -80,7 +80,7 @@ import { ref, computed, onMounted } from 'vue'
 import { navigateTo, useNuxtData } from 'nuxt/app'
 import { ShoppingCart, Clock } from 'lucide-vue-next'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
-import { isOpenNow } from '@fastio/shared'
+import { isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { useCartEdit } from '~/composables/useCartEdit'
@@ -106,7 +106,7 @@ const branchSchedules = ref<BranchScheduleInfo[]>([])
 const branchLoadError = ref(false)
 
 const closedStatus = computed(() => {
-  const tz = tenant.value?.timezone ?? 'Europe/Moscow'
+  const tz = tenant.value?.timezone ?? DEFAULT_TIMEZONE
   const schedules = branchSchedules.value
   if (schedules.length === 0) return null
 

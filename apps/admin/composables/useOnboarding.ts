@@ -19,7 +19,7 @@ export type OnboardingStepView = OnboardingStep & {
 
 export const useOnboarding = () => {
   const tenantStore = useTenantStore()
-  const { tenant, isOwner } = storeToRefs(tenantStore)
+  const { maybeTenant, isOwner } = storeToRefs(tenantStore)
   const terms = useTerms()
   const { item, menu } = terms
 
@@ -34,10 +34,10 @@ export const useOnboarding = () => {
 
   const flow = computed(() => buildOnboardingFlow(onboardingLabels.value, {
     isServices: terms.isServices,
-    modules: tenant.value?.modules ?? null,
+    modules: maybeTenant.value?.modules ?? null,
   }))
 
-  const state = computed<OnboardingState>(() => tenant.value?.onboardingState ?? emptyOnboardingState())
+  const state = computed<OnboardingState>(() => maybeTenant.value?.onboardingState ?? emptyOnboardingState())
 
   const allCompleted = computed(() => state.value.completedAt !== null)
 
@@ -74,11 +74,11 @@ export const useOnboarding = () => {
   const isVisible = computed(() => {
     if (state.value.dismissedAt) return false
 
-    return isOwner.value && !!tenant.value
+    return isOwner.value && !!maybeTenant.value
   })
 
   const persistState = async (next: OnboardingState) => {
-    if (!tenant.value) return
+    if (!maybeTenant.value) return
     try {
       await tenantStore.update({ onboardingState: next })
     } catch (e) {

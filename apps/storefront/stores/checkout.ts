@@ -3,7 +3,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
-import { localDateTimeToUtcIso, addDaysToDateStr } from '@fastio/shared'
+import { localDateTimeToUtcIso, addDaysToDateStr, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import { useAuthStore } from '~/stores/auth'
 import { reportError } from '~/utils/reportError'
@@ -98,7 +98,7 @@ export const useCheckoutStore = defineStore('checkout', () => {
 
   const scheduledAt = computed<string | null>(() => {
     if (form.schedulingMode !== 'scheduled' || !form.scheduledDate || !form.scheduledTime) return null
-    const tz = tenant.value?.timezone ?? 'Europe/Moscow'
+    const tz = tenant.value?.timezone ?? DEFAULT_TIMEZONE
     const rawTime = form.scheduledTime
     const isNextDay = rawTime.endsWith('+1')
     const timeStr = isNextDay ? rawTime.slice(0, -2) : rawTime

@@ -20,7 +20,7 @@ export function useOrderCard(order: Ref<Order>) {
 
     // Scheduled order not yet planned: operator must open the drawer to act
     if (order.value.scheduledAt && current.groupType === 'new') {
-      const holdingId = tenantStore.tenant?.orderSchedulingConfig?.holdingStatusId
+      const holdingId = tenantStore.tenant.orderSchedulingConfig?.holdingStatusId
 
       if (holdingId && order.value.status !== holdingId) return []
     }

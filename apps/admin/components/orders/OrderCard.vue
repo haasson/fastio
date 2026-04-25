@@ -146,7 +146,7 @@ const { currentStatus, quickActionStatuses, relativeTime }
 
 const tenantStore = useTenantStore()
 const showDeliveryType = computed(() => {
-  const modules = tenantStore.tenant?.modules
+  const modules = tenantStore.tenant.modules
 
   return !!(modules?.delivery && modules?.pickup)
 })
@@ -165,7 +165,7 @@ const absoluteTime = computed(() => {
 
 const scheduledLabel = computed(() => {
   if (!props.order.scheduledAt) return ''
-  const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+  const tz = tenantStore.timezone
   const { dateStr, timeStr } = utcIsoToLocalDateTime(props.order.scheduledAt, tz)
   const today = todayInTz(tz)
   const tomorrow = addDaysToDateStr(today, 1)

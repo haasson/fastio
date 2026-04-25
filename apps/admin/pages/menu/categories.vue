@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiButton } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
@@ -44,8 +44,7 @@ import { useItemManager } from '~/composables/ui/useItemManager'
 import MenuCategoryList from '~/components/menu/CategoryList.vue'
 import MenuCategoryFormModal from '~/components/menu/CategoryFormModal.vue'
 
-const tenantStore = useTenantStore()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(useTenantStore())
 
 const { categories, loading, update, remove, reorder, refresh } = useCategories(tenantId)
 const { tags } = useTags(tenantId)

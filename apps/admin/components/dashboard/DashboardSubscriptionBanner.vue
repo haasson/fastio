@@ -22,7 +22,7 @@ import { useTenantStore } from '~/stores/tenant'
 
 const { tenant } = storeToRefs(useTenantStore())
 
-const status = computed(() => tenant.value?.subscription?.status)
+const status = computed(() => tenant.value.subscription?.status)
 
 const show = computed(() => ['trial', 'past_due', 'suspended'].includes(status.value ?? ''))
 
@@ -34,7 +34,7 @@ const bannerClass = computed(() => ({
 const icon = computed(() => status.value === 'suspended' ? 'ban' : 'warningRound')
 
 const trialDaysLeft = computed(() => {
-  const endsAt = tenant.value?.subscription?.trialEndsAt
+  const endsAt = tenant.value.subscription?.trialEndsAt
 
   if (!endsAt) return 0
 
@@ -42,7 +42,7 @@ const trialDaysLeft = computed(() => {
 })
 
 const pastDueDaysLeft = computed(() => {
-  const sub = tenant.value?.subscription
+  const sub = tenant.value.subscription
 
   if (!sub?.pastDueAt) return sub?.gracePeriodDays ?? 3
 

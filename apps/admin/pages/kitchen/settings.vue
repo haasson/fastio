@@ -92,18 +92,17 @@ const pickupActive = computed(() => modules.pickup?.value.active)
 const statusOptions = computed(() => statuses.value.map((s) => ({ label: s.name, value: s.id })))
 
 const form = reactive({
-  sourceStatusId: tenant.value?.kitchenConfig?.sourceStatusId ?? null as string | null,
-  cookingStatusId: tenant.value?.kitchenConfig?.cookingStatusId ?? null as string | null,
+  sourceStatusId: tenant.value.kitchenConfig?.sourceStatusId ?? null as string | null,
+  cookingStatusId: tenant.value.kitchenConfig?.cookingStatusId ?? null as string | null,
   completedStatusMap: {
-    delivery: tenant.value?.kitchenConfig?.completedStatusMap?.delivery ?? null as string | null,
-    pickup: tenant.value?.kitchenConfig?.completedStatusMap?.pickup ?? null as string | null,
-    dine_in: tenant.value?.kitchenConfig?.completedStatusMap?.dine_in ?? null as string | null,
+    delivery: tenant.value.kitchenConfig?.completedStatusMap?.delivery ?? null as string | null,
+    pickup: tenant.value.kitchenConfig?.completedStatusMap?.pickup ?? null as string | null,
+    dine_in: tenant.value.kitchenConfig?.completedStatusMap?.dine_in ?? null as string | null,
   },
-  urgencyMinutes: tenant.value?.kitchenUrgencyMinutes ?? 15,
+  urgencyMinutes: tenant.value.kitchenUrgencyMinutes ?? 15,
 })
 
 watch(tenant, (t) => {
-  if (!t) return
   form.sourceStatusId = t.kitchenConfig?.sourceStatusId ?? null
   form.cookingStatusId = t.kitchenConfig?.cookingStatusId ?? null
   form.completedStatusMap.delivery = t.kitchenConfig?.completedStatusMap?.delivery ?? null

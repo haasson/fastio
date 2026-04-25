@@ -1,5 +1,5 @@
 import { getServerSupabase, getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
-import { createRateLimiter, todayInTz, addDaysToDateStr } from '@fastio/shared'
+import { createRateLimiter, todayInTz, addDaysToDateStr, DEFAULT_TIMEZONE } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 
@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Validate date range
-  const tenantTz = (tenantData.timezone as string) ?? 'Europe/Moscow'
+  const tenantTz = (tenantData.timezone as string) ?? DEFAULT_TIMEZONE
   const todayStr = todayInTz(tenantTz)
 
   if (body.reservedDate < todayStr) {

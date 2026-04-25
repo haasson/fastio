@@ -129,12 +129,12 @@ const buildForm = (cfg?: OrderSchedulingConfig | null): OrderSchedulingConfig =>
   ...cfg,
 })
 
-const form = reactive<OrderSchedulingConfig>(buildForm(tenant.value?.orderSchedulingConfig))
+const form = reactive<OrderSchedulingConfig>(buildForm(tenant.value.orderSchedulingConfig))
 
 const leadOptions = computed(() => buildMinuteOptions(form.slotStep, 120))
 const bufferOptions = computed(() => buildMinuteOptions(form.slotStep, 120, true))
 
-watch(tenant, (t) => t && Object.assign(form, buildForm(t.orderSchedulingConfig)))
+watch(tenant, (t) => Object.assign(form, buildForm(t.orderSchedulingConfig)))
 
 // При смене шага — округляем буферы вверх до ближайшего кратного
 watch(() => form.slotStep, (step) => {
@@ -146,11 +146,9 @@ watch(() => form.slotStep, (step) => {
 })
 
 const handleSave = async () => {
-  const tenantId = tenant.value?.id
+  const tenantId = tenant.value.id
 
-  if (!tenantId) return
-
-  if (!form.enabled && tenant.value?.orderSchedulingConfig?.enabled) {
+  if (!form.enabled && tenant.value.orderSchedulingConfig?.enabled) {
     const holdingStatusId = tenant.value.orderSchedulingConfig.holdingStatusId
 
     if (holdingStatusId) {

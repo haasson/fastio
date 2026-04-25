@@ -137,14 +137,12 @@ const buildForm = (t: Tenant) => ({
   offerUrl: t.contacts?.offerUrl ?? null,
 })
 
-const form = reactive(buildForm(tenantStore.tenant!))
+const form = reactive(buildForm(tenantStore.tenant))
 const { isDirty, reset } = useFormDirty(form)
 
 watch(() => tenantStore.tenant, (t) => {
-  if (t) {
-    Object.assign(form, buildForm(t))
-    reset()
-  }
+  Object.assign(form, buildForm(t))
+  reset()
 })
 
 const legalInfoComplete = computed(() => isLegalInfoComplete({
@@ -167,7 +165,7 @@ const uploadOffer = async (event: Event) => {
   if (!file) return
   uploading.value = true
   try {
-    form.offerUrl = await db.tenants.uploadDocument(tenantStore.tenant!.id, file, 'offer')
+    form.offerUrl = await db.tenants.uploadDocument(tenantStore.tenant.id, file, 'offer')
   } catch {
     error('Ошибка загрузки файла')
   } finally {
@@ -188,7 +186,7 @@ const handleSave = async () => {
         privacyEmail: form.privacyEmail,
       },
       contacts: {
-        ...tenantStore.tenant!.contacts,
+        ...tenantStore.tenant.contacts,
         offerUrl: form.offerUrl,
       },
     })

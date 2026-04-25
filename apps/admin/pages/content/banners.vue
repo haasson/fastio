@@ -59,7 +59,7 @@
       :banner="editing"
       :promotions="promotions"
       :promo-codes="promoCodes"
-      :pages="tenantStore.tenant?.siteLayout.pages ?? []"
+      :pages="tenantStore.tenant.siteLayout.pages ?? []"
       :saving="saving"
       @save="handleSave"
     />
@@ -67,7 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch, UiTag } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Banner, BannerFormData } from '@fastio/shared'
@@ -83,7 +84,7 @@ import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 import BannerFormModal from '~/components/promotions/BannerFormModal.vue'
 
 const tenantStore = useTenantStore()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(tenantStore)
 
 const { banners, loading, add, update, remove, toggleEnabled, reorder, uploadImage } = useBanners(tenantId)
 const { promotions } = usePromotions(tenantId)

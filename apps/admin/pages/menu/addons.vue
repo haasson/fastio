@@ -102,6 +102,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useDebounceFn } from '@vueuse/core'
 import { UiButton, UiSkeleton, UiTabs, UiDataTable, UiInput, UiEmpty, UiCheckbox, UiInputNumber, UiText, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
@@ -116,9 +117,9 @@ import AddonPresetFormModal from '~/components/menu/AddonPresetFormModal.vue'
 
 const db = useDatabase()
 const tenantStore = useTenantStore()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(tenantStore)
 
-const maxAddonsDefault = ref<number | null>(tenantStore.tenant?.maxAddonsDefault ?? null)
+const maxAddonsDefault = ref<number | null>(tenantStore.tenant.maxAddonsDefault ?? null)
 
 const toggleMaxAddons = (checked: boolean) => {
   maxAddonsDefault.value = checked ? 3 : null

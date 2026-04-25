@@ -136,7 +136,7 @@ import { useNuxtData, navigateTo } from 'nuxt/app'
 import { Truck, PersonStanding } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
-import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots } from '@fastio/shared'
+import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useAuthStore } from '~/stores/auth'
@@ -171,7 +171,7 @@ const paymentOptions = [
 
 const schedulingEnabled = computed(() => tenant.value?.orderSchedulingConfig?.enabled ?? false)
 
-const tenantTz = computed(() => tenant.value?.timezone ?? 'Europe/Moscow')
+const tenantTz = computed(() => tenant.value?.timezone ?? DEFAULT_TIMEZONE)
 
 const asapAvailable = computed(() => {
   const cfg = tenant.value?.orderSchedulingConfig

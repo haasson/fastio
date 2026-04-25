@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiButton } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
@@ -41,8 +41,7 @@ import { useItemManager } from '~/composables/ui/useItemManager'
 import MenuTagList from '~/components/menu/TagList.vue'
 import MenuTagFormModal from '~/components/menu/TagFormModal.vue'
 
-const tenantStore = useTenantStore()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(useTenantStore())
 
 const { tags, loading, load, reorder } = useTags(tenantId)
 

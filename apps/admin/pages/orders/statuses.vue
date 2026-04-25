@@ -49,8 +49,8 @@ const { showSkeleton, modalOpen, editingItem, openModal, confirmDelete } = useIt
   remove: async (id: string) => await remove(id),
   confirmTitle: 'Удалить статус?',
   beforeDelete: (id) => {
-    const kitchen = tenantStore.tenant?.kitchenConfig
-    const scheduling = tenantStore.tenant?.orderSchedulingConfig
+    const kitchen = tenantStore.tenant.kitchenConfig
+    const scheduling = tenantStore.tenant.orderSchedulingConfig
 
     const usages: string[] = []
 

@@ -8,6 +8,6 @@ export const useDadataSuggestions = () => {
 
   return useSharedDadataSuggestions({
     proxyUrl: '/api/dadata/suggest',
-    extraBody: () => ({ tenantId: tenantStore.tenant?.id }),
+    extraBody: () => ({ tenantId: tenantStore.tenant.id }),
   })
 }

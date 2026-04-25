@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
-import { Check, AlertTriangle } from 'lucide-vue-next'
+import { Check, AlertTriangle, X } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useCartStore } from '~/stores/cart'

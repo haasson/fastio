@@ -103,14 +103,14 @@ const infoStepRef = ref<InstanceType<typeof OnboardingStepInfo> | null>(null)
 const branchStepRef = ref<InstanceType<typeof OnboardingStepBranch> | null>(null)
 const modulesStepRef = ref<InstanceType<typeof OnboardingStepModules> | null>(null)
 const form = reactive({
-  businessType: tenantStore.tenant?.businessType ?? null as BusinessType | null,
-  menuStyle: tenantStore.tenant?.menuStyle ?? ('food' as MenuStyle),
-  name: tenantStore.tenant?.name ?? '',
-  phone: tenantStore.tenant?.contacts?.phone ?? '',
-  timezone: tenantStore.tenant?.timezone ?? 'Europe/Moscow',
-  delivery: tenantStore.tenant?.modules?.delivery ?? true,
-  pickup: tenantStore.tenant?.modules?.pickup ?? true,
-  dineIn: tenantStore.tenant?.modules?.dineIn ?? false,
+  businessType: tenantStore.tenant.businessType as BusinessType | null,
+  menuStyle: tenantStore.tenant.menuStyle,
+  name: tenantStore.tenant.name,
+  phone: tenantStore.tenant.contacts?.phone ?? '',
+  timezone: tenantStore.tenant.timezone,
+  delivery: tenantStore.tenant.modules?.delivery ?? true,
+  pickup: tenantStore.tenant.modules?.pickup ?? true,
+  dineIn: tenantStore.tenant.modules?.dineIn ?? false,
 })
 
 const stepList = computed<StepName[]>(() => {
@@ -146,7 +146,7 @@ const next = async () => {
 
       if (form.businessType === 'services') {
         updates.modules = {
-          ...tenantStore.tenant!.modules,
+          ...tenantStore.tenant.modules,
           delivery: false,
           pickup: false,
           dineIn: false,
@@ -160,7 +160,7 @@ const next = async () => {
       await tenantStore.update({
         name: form.name.trim(),
         contacts: {
-          ...tenantStore.tenant!.contacts,
+          ...tenantStore.tenant.contacts,
           phone: form.phone.trim(),
         },
         timezone: form.timezone,
@@ -170,7 +170,7 @@ const next = async () => {
     } else if (currentStep.value === 'modules') {
       await tenantStore.update({
         modules: {
-          ...tenantStore.tenant!.modules,
+          ...tenantStore.tenant.modules,
           delivery: form.delivery,
           pickup: form.pickup,
           dineIn: form.dineIn,

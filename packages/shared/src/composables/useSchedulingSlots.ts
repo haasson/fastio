@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import type { Tenant } from '../types/tenant'
 import { getAvailableSlots } from '../utils/scheduling'
-import { todayInTz, nowTimeInTz, addDaysToDateStr } from '../utils/timezone'
+import { todayInTz, nowTimeInTz, addDaysToDateStr, DEFAULT_TIMEZONE } from '../utils/timezone'
 import { timeToMinutes } from '../utils/timezone'
 import { formatDateWeekday } from '../utils/date'
 
@@ -10,7 +10,7 @@ export function useSchedulingSlots(
   deliveryType: MaybeRefOrGetter<string>,
   selectedDate: MaybeRefOrGetter<string | null | undefined>,
 ) {
-  const tenantTz = computed(() => toValue(tenant)?.timezone ?? 'Europe/Moscow')
+  const tenantTz = computed(() => toValue(tenant)?.timezone ?? DEFAULT_TIMEZONE)
 
   const leadMinutes = computed(() => {
     const cfg = toValue(tenant)?.orderSchedulingConfig

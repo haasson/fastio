@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useResolvedFeatures } from './useResolvedFeatures'
@@ -6,11 +7,12 @@ import { useModules } from './useModules'
 
 export const useAccess = () => {
   const tenantStore = useTenantStore()
+  const { businessType } = storeToRefs(tenantStore)
   const branchStore = useBranchStore()
   const { resolved } = useResolvedFeatures()
   const modules = useModules()
 
-  const isServices = computed(() => tenantStore.tenant?.businessType === 'services')
+  const isServices = computed(() => businessType.value === 'services')
 
   // Module availability (plan lock + toggle + business type — всё в useModules)
   const delivery = computed(() => modules.delivery?.value?.enabled ?? false)
@@ -36,7 +38,7 @@ export const useAccess = () => {
   // ingredients — поле «состав» в карточке блюда и DishPickerModal. Только для общепита (menuStyle='food'),
   // в каталоге товары не раскладываются на ингредиенты.
   const virtualCategories = computed(() => resolved.value.menu.virtualCategories)
-  const ingredients = computed(() => resolved.value.menu.ingredients && tenantStore.tenant?.menuStyle === 'food')
+  const ingredients = computed(() => resolved.value.menu.ingredients && tenantStore.tenant.menuStyle === 'food')
   const telegramNotifications = computed(() => resolved.value.site.telegramNotifications)
 
   // Branches: модуль разблокирован → безлимит (0), иначе — 1 (только главный филиал).

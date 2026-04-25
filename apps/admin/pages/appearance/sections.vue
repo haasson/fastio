@@ -123,6 +123,7 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, reactive, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from '#imports'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiIcon, UiSectionHeader } from '@fastio/ui'
@@ -137,9 +138,9 @@ const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
 const { confirm } = useConfirm()
 const tenantStore = useTenantStore()
-const businessType = computed(() => tenantStore.tenant?.businessType)
+const { businessType } = storeToRefs(tenantStore)
 
-const isAvailable = (key: string) => !tenantStore.tenant?.modules || isFeatureAvailable(key, tenantStore.tenant.modules, businessType.value)
+const isAvailable = (key: string) => isFeatureAvailable(key, tenantStore.tenant.modules, businessType.value)
 
 const route = useRoute()
 const headerOpen = ref(false)

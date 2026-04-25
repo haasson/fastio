@@ -1,5 +1,6 @@
 import { ref, computed, watch, type Ref } from 'vue'
 import type { Tenant, RolePermissions } from '@fastio/shared'
+import { DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 import { usePlans } from '~/composables/plan/usePlans'
@@ -25,12 +26,33 @@ export const useTenant = (userId: Ref<string | null>) => {
 
   const memberships = ref<MembershipWithTenant[]>([])
   const currentTenantId = ref<string | null>(null)
-  const tenant = ref<Tenant | null>(null)
+  const maybeTenant = ref<Tenant | null>(null)
   const loading = ref(false)
 
   const rolesApi = useRoles(currentTenantId)
 
-  watch(tenant, (t) => setVocab(t?.businessType ?? null, t?.menuStyle ?? 'food'), { immediate: true })
+  watch(maybeTenant, (t) => setVocab(t?.businessType ?? null, t?.menuStyle ?? 'food'), { immediate: true })
+
+  /**
+   * Non-nullable tenant для защищённых роутов. После `init()` и до `dispose()`
+   * гарантирован middleware'ом. На публичных страницах (login/invite/
+   * set-password/no-access/legal) и во время init — используй `maybeTenant`,
+   * иначе в dev упадёт с понятной ошибкой, в проде — TypeError при чтении полей.
+   */
+  const tenant = computed<Tenant>(() => {
+    if (import.meta.dev && !maybeTenant.value) {
+      throw new Error(
+        '[useTenant] tenant прочитан, но не загружен. Используй maybeTenant на публичных роутах '
+        + '(login/invite/set-password/no-access/legal/*) или дождись окончания init().',
+      )
+    }
+
+    return maybeTenant.value as Tenant
+  })
+
+  const tenantId = computed<string>(() => tenant.value.id)
+  const timezone = computed<string>(() => maybeTenant.value?.timezone ?? DEFAULT_TIMEZONE)
+  const businessType = computed(() => tenant.value.businessType)
 
   const currentMembership = computed(() => {
     if (!currentTenantId.value) return null
@@ -54,7 +76,7 @@ export const useTenant = (userId: Ref<string | null>) => {
 
   const fetchTenant = async () => {
     if (!currentTenantId.value) return
-    tenant.value = await api.tenants.getById(currentTenantId.value)
+    maybeTenant.value = await api.tenants.getById(currentTenantId.value)
     lastFetchAt = Date.now()
   }
 
@@ -104,23 +126,23 @@ export const useTenant = (userId: Ref<string | null>) => {
   }
 
   const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt' | 'subscription' | 'balance'>>) => {
-    if (!tenant.value) return
+    if (!maybeTenant.value) return
 
-    const snapshot = tenant.value
+    const snapshot = maybeTenant.value
 
-    tenant.value = { ...tenant.value, ...data }
+    maybeTenant.value = { ...snapshot, ...data }
 
     try {
       await api.tenants.update(snapshot.id, data)
     } catch {
-      tenant.value = snapshot
+      maybeTenant.value = snapshot
       throw new Error('Не удалось сохранить изменения')
     }
   }
 
   const changePlan = async (planKey: string): Promise<'upgraded' | 'downgraded'> => {
-    if (!tenant.value) throw new Error('No tenant')
-    const result = await api.tenants.updatePlan(tenant.value.id, planKey)
+    if (!maybeTenant.value) throw new Error('No tenant')
+    const result = await api.tenants.updatePlan(maybeTenant.value.id, planKey)
 
     await fetchTenant()
 
@@ -128,7 +150,7 @@ export const useTenant = (userId: Ref<string | null>) => {
   }
 
   const dispose = () => {
-    tenant.value = null
+    maybeTenant.value = null
     memberships.value = []
     currentTenantId.value = null
     localStorage.removeItem(STORAGE_KEY)
@@ -138,6 +160,10 @@ export const useTenant = (userId: Ref<string | null>) => {
     memberships,
     currentTenantId,
     tenant,
+    maybeTenant,
+    tenantId,
+    timezone,
+    businessType,
     loading,
     currentRoleName,
     currentPermissions,

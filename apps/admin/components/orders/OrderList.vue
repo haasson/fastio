@@ -251,8 +251,7 @@ watch(
 const bulkStatusId = ref<string | null>(null)
 const bulkUpdating = ref(false)
 
-const kitchenAutoStatuses = computed(() => getKitchenAutoStatuses(tenantStore.tenant?.kitchenConfig),
-)
+const kitchenAutoStatuses = computed(() => getKitchenAutoStatuses(tenantStore.tenant.kitchenConfig))
 
 const statusOptions = computed(() => {
   if (!checkedRowKeys.value.length) return []

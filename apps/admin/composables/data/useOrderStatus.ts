@@ -25,8 +25,7 @@ export const useOrderStatus = (
   const currentStatus = computed(() => statuses.value.find((s) => s.id === form.status) ?? null)
   const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
 
-  const holdingStatusId = computed(() => tenantStore.tenant?.orderSchedulingConfig?.holdingStatusId ?? null,
-  )
+  const holdingStatusId = computed(() => tenantStore.tenant.orderSchedulingConfig?.holdingStatusId ?? null)
 
   const isScheduledPending = computed(() => {
     if (!isEdit.value || !scheduledAt.value) return false
@@ -53,7 +52,7 @@ export const useOrderStatus = (
   })
 
   const statusMenuItems = computed(() => {
-    const kitchenAuto = getKitchenAutoStatuses(tenantStore.tenant?.kitchenConfig)
+    const kitchenAuto = getKitchenAutoStatuses(tenantStore.tenant.kitchenConfig)
     const all = getAllowedStatuses(statusGroup.value, statuses.value)
       .filter((s) => s.id !== form.status && !kitchenAuto.includes(s.id))
 

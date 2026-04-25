@@ -93,8 +93,8 @@ const form = reactive({
   maxGuestsAuto: false,
 })
 
-const hasSchedule = computed(() => !!tenantStore.tenant?.workingHoursSchedule)
-const hasDineIn = computed(() => !!tenantStore.tenant?.modules?.dineIn)
+const hasSchedule = computed(() => !!tenantStore.tenant.workingHoursSchedule)
+const hasDineIn = computed(() => !!tenantStore.tenant.modules?.dineIn)
 
 watch(() => tenantStore.currentTenantId, async (id) => {
   if (!id) return

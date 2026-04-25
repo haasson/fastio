@@ -1,22 +1,16 @@
 <template>
-  <template v-if="tenantStore.tenant">
-    <TabsLayout
-      :tabs="tabs"
-      base-path="/settings"
-      hide-single
-    />
-  </template>
-  <div v-else class="state-msg">Загрузка…</div>
+  <TabsLayout
+    :tabs="tabs"
+    base-path="/settings"
+    hide-single
+  />
 </template>
 
 <script setup lang="ts">
-import { useTenantStore } from '~/stores/tenant'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 
 usePageTitle('Настройки')
-
-const tenantStore = useTenantStore()
 
 const tabs = [
   { value: 'contacts', label: 'Общее', icon: 'settings' as const },
@@ -25,9 +19,3 @@ const tabs = [
   { value: 'legal', label: 'Юридические', icon: 'fileText' as const },
 ]
 </script>
-
-<style scoped lang="scss">
-.state-msg {
-  color: var(--color-text-secondary);
-}
-</style>

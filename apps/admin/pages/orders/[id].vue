@@ -36,7 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from '#imports'
 import { UiButton, UiSkeleton, UiEmpty } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
@@ -47,9 +48,7 @@ import OrderContent from '~/components/orders/OrderContent.vue'
 const route = useRoute()
 const router = useRouter()
 const api = useDatabase()
-const tenantStore = useTenantStore()
-
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(useTenantStore())
 
 const order = ref<Order | null>(null)
 const loading = ref(true)

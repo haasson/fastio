@@ -115,7 +115,7 @@ const BRANCH_COLORS = ['#FF5500', '#FFA500', '#00C853', '#2979FF', '#AA00FF', '#
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
-const prefixLocked = computed(() => tenantStore.tenant?.orderNumberConfig?.scope !== 'per_branch')
+const prefixLocked = computed(() => tenantStore.tenant.orderNumberConfig?.scope !== 'per_branch')
 const hasMultipleBranches = computed(() => branchStore.branches.length > 1)
 
 const onAddressPick = (s: DadataSuggestion) => {

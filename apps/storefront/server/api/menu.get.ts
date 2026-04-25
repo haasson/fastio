@@ -19,10 +19,9 @@ type OptionBindingRow = {
 }
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
-
-  const tenantModules = (event.context.tenant as Tenant | undefined)?.modules
+  const tenantId = event.context.tenantId as string
+  const tenant = event.context.tenant as Tenant
+  const tenantModules = tenant.modules
   const modifiersEnabled = tenantModules?.modifiers ?? true
   const addonsEnabled = tenantModules?.addons ?? true
   const combosEnabled = tenantModules?.combos ?? true
@@ -320,8 +319,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get tagDisplayMode from tenant layout
-  const tenant = event.context.tenant as Tenant | undefined
-  const tagDisplayMode = tenant?.siteLayout?.sections?.menu?.tagDisplayMode ?? 'both'
+  const tagDisplayMode = tenant.siteLayout?.sections?.menu?.tagDisplayMode ?? 'both'
 
   return {
     categories: (categoriesData ?? []).map(mapCategory),
@@ -332,6 +330,6 @@ export default defineEventHandler(async (event) => {
     comboItems,
     tagDefinitions,
     tagDisplayMode,
-    maxAddonsDefault: tenant?.maxAddonsDefault ?? null,
+    maxAddonsDefault: tenant.maxAddonsDefault ?? null,
   }
 })

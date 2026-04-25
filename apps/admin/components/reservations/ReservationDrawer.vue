@@ -93,7 +93,7 @@
           :day-reservations="dayReservations"
           :guest-count="form.guestCount"
           :reserved-date="form.reservedDate"
-          :timezone="tenantStore.tenant?.timezone ?? 'Europe/Moscow'"
+          :timezone="tenantStore.timezone"
         />
       </template>
 
@@ -237,8 +237,7 @@ watch(() => props.reservation, (r) => {
 }, { immediate: true })
 
 const isDateDisabled = (ts: number) => {
-  const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
-  const today = todayInTz(tz) // "YYYY-MM-DD"
+  const today = todayInTz(tenantStore.timezone) // "YYYY-MM-DD"
   const dateStr = formatDateStr(ts) // "YYYY-MM-DD"
 
   return dateStr < today
@@ -354,7 +353,7 @@ const onSave = async () => {
       })
       success('Бронь обновлена')
     } else if (r.status === 'confirmed') {
-      const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
+      const tz = tenantStore.timezone
       const nowDate = todayInTz(tz)
       const nowTime = nowTimeInTz(tz)
       const toMs = (date: string, time: string) => {

@@ -71,7 +71,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { useCheckoutStore } from '~/stores/checkout'
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
-import { formatWorkingHours, isOpenNow } from '@fastio/shared'
+import { formatWorkingHours, isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHoursSchedule, Tenant } from '@fastio/shared'
 
 type BranchStatus = ReturnType<typeof isOpenNow>
@@ -118,7 +118,7 @@ onUnmounted(() => clearInterval(clockTimer))
 
 const branchStatuses = computed(() =>
   branches.value.map((b) =>
-    isOpenNow(b.workingHoursSchedule, tenant.value?.timezone ?? 'Europe/Moscow', now.value)
+    isOpenNow(b.workingHoursSchedule, tenant.value?.timezone ?? DEFAULT_TIMEZONE, now.value)
   )
 )
 

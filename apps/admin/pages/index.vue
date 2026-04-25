@@ -52,7 +52,7 @@
         :items="stats.allItemCounts.value"
         :categories="stats.categories.value"
         :loading="stats.loading.value"
-        :business-type="tenant?.businessType ?? null"
+        :business-type="businessType"
       />
 
       <!-- Живые данные -->
@@ -70,7 +70,7 @@
           v-if="modules.reservations?.value.enabled"
           :tenant-id="tenantId"
           :branch-id="selectedBranchId"
-          :timezone="tenantStore.tenant?.timezone ?? 'Europe/Moscow'"
+          :timezone="tenantStore.timezone"
         />
         <DashboardKitchen
           v-if="modules.kitchen?.value.enabled"
@@ -108,11 +108,8 @@ usePageTitle('Дашборд')
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 
-const { tenant } = storeToRefs(tenantStore)
+const { tenantId, businessType, isOwner } = storeToRefs(tenantStore)
 const { branches, hasBranches } = storeToRefs(branchStore)
-const { isOwner } = storeToRefs(tenantStore)
-
-const tenantId = computed(() => tenant.value?.id ?? '')
 
 const modules = useModules()
 

@@ -31,7 +31,7 @@
           <NuxtLink to="/account" class="account-link" @click="sidebarOpen = false">
             <UiIcon v-if="showAccountIcon" name="users" :size="18" />
             <div class="user-names">
-              <UiText size="small" class="user-tenant">{{ tenantStore.tenant?.name }}</UiText>
+              <UiText size="small" class="user-tenant">{{ tenantStore.tenant.name }}</UiText>
               <UiText size="tiny" class="user-name">{{ userName }}</UiText>
               <UiText v-if="userRole" size="tiny" class="user-role">{{ userRole }}</UiText>
             </div>
@@ -122,7 +122,7 @@ const { currentTenantId, tenant, isOwner } = storeToRefs(tenantStore)
 useRealtimeChannels(currentTenantId)
 
 // Запрашиваем разрешение на OS-уведомления (нужно для алертов на скрытой вкладке)
-if (tenantStore.tenant?.businessType !== 'services') {
+if (tenantStore.tenant.businessType !== 'services') {
   requestNotificationPermission()
 }
 
@@ -131,7 +131,7 @@ const { baseUrl: siteUrl } = useStorefrontUrl()
 const showAccountIcon = computed(() => collapsed.value && !sidebarOpen.value)
 
 const showOnboarding = computed(
-  () => !tenantStore.loading && !!tenantStore.tenant && !tenantStore.tenant.onboardingCompleted,
+  () => !tenantStore.loading && !tenantStore.tenant.onboardingCompleted,
 )
 
 // Дешёвый гейт: виджет чек-листа не маунтим, если он заведомо не нужен.

@@ -2,9 +2,7 @@ import { getServerSupabase } from '../utils/supabase'
 import type { Gallery, GalleryPhoto } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const tenantId = event.context.tenantId as string
 
   const supabase = getServerSupabase()
 

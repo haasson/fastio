@@ -38,10 +38,10 @@ export default defineEventHandler(async (event) => {
   const { serverItems, subtotal, comboItemsMap } = await validateAndBuildItems(supabase, tenantId, body.items)
 
   // 4. Доставка: зоны, филиал, стоимость, стол
-  const tenant = event.context.tenant as Tenant | undefined
+  const tenant = event.context.tenant as Tenant
   const { matchedZone, branchId, deliveryFee, tableRecord, deliveryLat, deliveryLon } = await resolveDelivery(
     supabase, tenantId, deliveryType, body, tenantConfig, subtotal,
-    { workingHoursSchedule: tenant?.workingHoursSchedule ?? null, timezone: tenant?.timezone ?? 'Europe/Moscow' },
+    { workingHoursSchedule: tenant.workingHoursSchedule, timezone: tenant.timezone },
   )
 
   // 5. Валидация scheduledAt (нужна до проверки промо, чтобы передать время доставки)

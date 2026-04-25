@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
 
   if (!chatId || !reservation) return { ok: true }
 
-  const tz = tenant.timezone ?? 'Europe/Moscow'
+  const tz = tenant.timezone
   const dateStr = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: tz })
     .format(new Date(`${reservation.reserved_date}T12:00:00Z`))
   const timeStr = reservation.reserved_time.slice(0, 5)

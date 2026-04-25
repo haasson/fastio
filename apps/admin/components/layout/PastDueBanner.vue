@@ -24,10 +24,10 @@ import { useTenantStore } from '~/stores/tenant'
 
 const { tenant } = storeToRefs(useTenantStore())
 
-const show = computed(() => tenant.value?.subscription?.status === 'past_due')
+const show = computed(() => tenant.value.subscription?.status === 'past_due')
 
 const daysLeft = computed(() => {
-  const sub = tenant.value?.subscription
+  const sub = tenant.value.subscription
 
   if (!sub?.pastDueAt) return sub?.gracePeriodDays ?? 3
 

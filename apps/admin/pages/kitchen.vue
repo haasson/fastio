@@ -33,17 +33,13 @@ const api = useDatabase()
 const tenantStore = useTenantStore()
 
 const loadCount = async () => {
-  const tenantId = tenantStore.tenant?.id
-
-  if (!tenantId) return
-
-  const items = await api.kitchenQueue.listActive(tenantId)
+  const items = await api.kitchenQueue.listActive(tenantStore.tenant.id)
 
   itemCount.value = items.length
 }
 
-watch(() => tenantStore.tenant?.id, (id) => {
-  if (id) loadCount()
+watch(() => tenantStore.tenant.id, () => {
+  loadCount()
 }, { immediate: true })
 
 const offInsert = kitchenQueueEvents.onInsert((item: KitchenQueueItem) => {

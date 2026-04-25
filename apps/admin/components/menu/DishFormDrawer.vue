@@ -59,7 +59,7 @@
           :presets="presets"
           :loading="addonsLoading"
           :category-dishes="categoryDishes"
-          :max-addons-default="tenantStore.tenant?.maxAddonsDefault ?? null"
+          :max-addons-default="tenantStore.tenant.maxAddonsDefault ?? null"
           :initial-max-addons="dish?.maxAddons ?? null"
         />
 

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useOrderStatuses } from '~/composables/data/useOrderStatuses'
 import { useTenantStore } from './tenant'
 
@@ -8,8 +8,7 @@ import { useTenantStore } from './tenant'
 // Вся логика работы с API и realtime живёт в useOrderStatuses —
 // стор только связывает её с текущим тенантом и делает глобальной.
 export const useOrderStatusesStore = defineStore('orderStatuses', () => {
-  const tenantStore = useTenantStore()
-  const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+  const { tenantId } = storeToRefs(useTenantStore())
 
   return useOrderStatuses(tenantId)
 })

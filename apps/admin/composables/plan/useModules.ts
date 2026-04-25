@@ -52,12 +52,12 @@ export const useModules = (): Record<ModuleKey, ComputedRef<ModuleState>> => {
       if (!cfg) return DEFAULT_STATE
 
       const tenant = tenantStore.tenant
-      const tenantBusinessType = tenant?.businessType ?? null
-      const tenantMenuStyle = tenant?.menuStyle ?? null
+      const tenantBusinessType = tenant.businessType
+      const tenantMenuStyle = tenant.menuStyle
       const wrongBusinessType = tenantBusinessType !== null && !cfg.businessTypes.includes(tenantBusinessType)
-      const wrongMenuStyle = cfg.menuStyles !== null && tenantMenuStyle !== null && !cfg.menuStyles.includes(tenantMenuStyle)
+      const wrongMenuStyle = cfg.menuStyles !== null && !cfg.menuStyles.includes(tenantMenuStyle)
       const absent = wrongBusinessType || wrongMenuStyle
-      const active = tenant?.modules?.[key] ?? false
+      const active = tenant.modules?.[key] ?? false
       const locked = !absent && !resolved.value.modules[key]
 
       return { active, locked, absent, enabled: active && !locked && !absent }

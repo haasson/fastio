@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useTenantStore } from '~/stores/tenant'
 import {
   SITE_FEATURES,
@@ -16,10 +17,10 @@ export type StorefrontIssue = {
 
 export const useStorefrontVisibility = (key: SiteFeatureKey) => {
   const tenantStore = useTenantStore()
+  const { businessType } = storeToRefs(tenantStore)
   const def = SITE_FEATURES[key]
 
-  const layout = computed(() => tenantStore.tenant?.siteLayout)
-  const businessType = computed(() => tenantStore.tenant?.businessType)
+  const layout = computed(() => tenantStore.tenant.siteLayout)
   const label = computed(() => featureLabel(key, businessType.value))
 
   const isPageEnabled = computed(

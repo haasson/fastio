@@ -37,7 +37,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiButton, UiDataTable, UiEmpty, UiSkeleton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
@@ -46,8 +47,7 @@ import { useModifierGroups } from '~/composables/data/useModifierGroups'
 import { buildModifierColumns } from '~/columns/modifiers'
 import ModifierGroupFormModal from '~/components/menu/ModifierGroupFormModal.vue'
 
-const tenantStore = useTenantStore()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(useTenantStore())
 const { groups, loading, add, update, remove, toggleActive } = useModifierGroups(tenantId)
 
 const showModal = ref(false)

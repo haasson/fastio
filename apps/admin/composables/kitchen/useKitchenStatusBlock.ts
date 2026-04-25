@@ -14,8 +14,8 @@ export function useKitchenStatusBlock() {
     order: Order,
     targetGroupType: OrderStatusGroup | undefined,
   ): Promise<KitchenBlockResult> => {
-    const kitchenEnabled = tenantStore.tenant?.modules?.kitchen === true
-      && !!tenantStore.tenant?.kitchenConfig?.sourceStatusId
+    const kitchenEnabled = tenantStore.tenant.modules?.kitchen === true
+      && !!tenantStore.tenant.kitchenConfig?.sourceStatusId
 
     if (!kitchenEnabled) return { blocked: false }
     if (targetGroupType === 'cancelled') return { blocked: false }

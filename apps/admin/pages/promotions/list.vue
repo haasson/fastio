@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { UiButton, UiDataTable, UiEmpty, UiInput, UiSkeleton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Promotion, PromotionFormData } from '@fastio/shared'
@@ -56,8 +57,7 @@ import { useBanners } from '~/composables/data/useBanners'
 import { buildPromotionColumns } from '~/columns/promotions'
 import PromotionFormModal from '~/components/promotions/PromotionFormModal.vue'
 
-const tenantStore = useTenantStore()
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(useTenantStore())
 
 const { promotions, loading, add, update, remove, toggleActive } = usePromotions(tenantId)
 const { banners: allBanners } = useBanners(tenantId)

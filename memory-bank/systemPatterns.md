@@ -44,3 +44,16 @@ supabase/
 - SQL helpers: `is_tenant_member()`, `has_tenant_role()`
 - Store: `useTenantStore()` — текущий тенант + роль + `switchTenant()`
 - Роли: owner > admin > manager > staff (enum `tenant_role`)
+
+## tenant vs maybeTenant
+`useTenantStore()` экспортирует **два** ref'а на тенант — выбор зависит от роута:
+
+- **`tenant`** (non-nullable, default) — на защищённых роутах. Гарантирован `auth.global.ts` middleware'ом после `init()`. Используй везде в `pages/`, `components/`, `composables/`. В dev-режиме чтение до загрузки кидает ошибку с понятным текстом, в проде — TypeError на доступе к полю.
+- **`maybeTenant`** (nullable) — только для:
+  - `app.vue` (рендерится на login/legal/* без tenant);
+  - `middleware/auth.global.ts` (проверяет, нужен ли init);
+  - публичных страниц с `definePageMeta({ layout: false })`: `login`, `invite`, `set-password`, `no-access`, `legal/*`.
+
+Готовые computed-shortcuts в сторе: `tenantId`, `timezone`, `businessType` — предпочитай их вместо `tenant.value.id` и т.п. (короче, и `timezone` фолбэчит на `DEFAULT_TIMEZONE`).
+
+Все magic strings `'Europe/Moscow'` → `DEFAULT_TIMEZONE` из `@fastio/shared`.

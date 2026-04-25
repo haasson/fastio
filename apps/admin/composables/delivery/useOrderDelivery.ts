@@ -38,7 +38,7 @@ export const useOrderDelivery = ({ form, subtotal, selectedBranchId, canEditBran
   const activeBranchIds = computed(() => new Set(branchStore.branches.map((b) => b.id)))
 
   const activeZones = computed(() => {
-    if (tenantStore.tenant?.deliveryMode === 'fixed') return []
+    if (tenantStore.tenant.deliveryMode === 'fixed') return []
 
     return zones.value.filter((z) => z.isActive && activeBranchIds.value.has(z.branchId))
   })
@@ -92,8 +92,6 @@ export const useOrderDelivery = ({ form, subtotal, selectedBranchId, canEditBran
 
     const tenant = tenantStore.tenant
 
-    if (!tenant) return null
-
     if (tenant.deliveryMode === 'fixed') {
       const freeFrom = tenant.freeDeliveryFrom ?? 0
 
@@ -115,9 +113,6 @@ export const useOrderDelivery = ({ form, subtotal, selectedBranchId, canEditBran
     if (!addressVerifiedForDelivery.value) return null
 
     const tenant = tenantStore.tenant
-
-    if (!tenant) return null
-
     const isFixed = tenant.deliveryMode === 'fixed'
     const zone = currentZone.value
     const outside = addressOutsideZones.value

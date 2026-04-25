@@ -43,7 +43,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (authStore.isAuthenticated) {
     const tenantStore = useTenantStore()
 
-    if (!tenantStore.tenant && !tenantStore.loading) {
+    if (!tenantStore.maybeTenant && !tenantStore.loading) {
       await tenantStore.init()
     } else if (tenantStore.loading) {
       await new Promise<void>((resolve) => {
@@ -65,7 +65,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     // Suspended: только /account/* и /suspended доступны
-    if (tenantStore.tenant?.subscription?.status === 'suspended') {
+    if (tenantStore.maybeTenant?.subscription?.status === 'suspended') {
       const isAllowed = to.path === '/suspended'
         || to.path.startsWith('/account')
 

@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import type { DeliveryZone, DeliveryZoneFormData } from '@fastio/shared'
 import { mapDeliveryZone } from '~/utils/api/delivery-zones'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
@@ -7,11 +8,10 @@ import { useTenantStore } from '~/stores/tenant'
 
 export const useAllDeliveryZones = () => {
   const api = useDatabase()
-  const tenantStore = useTenantStore()
-  const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+  const { tenantId } = storeToRefs(useTenantStore())
 
   const { items: zones, loading } = useRealtimeList({
-    channelKey: computed(() => tenantId.value ? `delivery_zones_all:${tenantId.value}` : null),
+    channelKey: computed(() => `delivery_zones_all:${tenantId.value}`),
     table: 'delivery_zones',
     filter: computed(() => `tenant_id=eq.${tenantId.value}`),
     fetch: () => api.deliveryZones.listAll(tenantId.value),
@@ -19,8 +19,6 @@ export const useAllDeliveryZones = () => {
   })
 
   const add = async (data: DeliveryZoneFormData) => {
-    if (!tenantId.value) return null
-
     const zone = await api.deliveryZones.add(tenantId.value, data)
 
     if (zone) zones.value.push(zone)

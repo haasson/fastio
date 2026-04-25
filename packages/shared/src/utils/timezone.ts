@@ -1,4 +1,11 @@
 /**
+ * Дефолтная таймзона — совпадает с NOT NULL DEFAULT в схеме tenants.timezone
+ * (см. миграцию 049). Используется как фолбэк только там, где tenant ещё не
+ * загружен (async), — на защищённых роутах его брать из tenantStore.tenant.
+ */
+export const DEFAULT_TIMEZONE = 'Europe/Moscow'
+
+/**
  * "Сейчас" в таймзоне тенанта как "YYYY-MM-DD".
  * Используем Intl.DateTimeFormat для корректного определения даты
  * без внешних библиотек.

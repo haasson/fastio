@@ -198,7 +198,6 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
   }
 
   const save = async () => {
-    if (!tenantStore.tenant) return
     saving.value = true
     try {
       await uploadPendingAssets(tenantStore.tenant.id)

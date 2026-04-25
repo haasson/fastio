@@ -18,7 +18,7 @@ import { useTenantStore } from '~/stores/tenant'
 const tenantStore = useTenantStore()
 
 useHead({
-  title: computed(() => tenantStore.tenant?.name ? `${tenantStore.tenant.name} — Fastio` : 'Fastio'),
+  title: computed(() => tenantStore.maybeTenant?.name ? `${tenantStore.maybeTenant.name} — Fastio` : 'Fastio'),
 })
 
 const isDark = useDark({

@@ -93,15 +93,15 @@ const isOwnerRef = ref(false)
 const updateMock = vi.fn(async (_data: { onboardingState: OnboardingState }) => {})
 
 vi.mock('pinia', () => ({
-  storeToRefs: (store: { tenant: unknown; isOwner: unknown }) => ({
-    tenant: store.tenant,
+  storeToRefs: (store: { maybeTenant: unknown; isOwner: unknown }) => ({
+    maybeTenant: store.maybeTenant,
     isOwner: store.isOwner,
   }),
 }))
 
 vi.mock('~/stores/tenant', () => ({
   useTenantStore: () => ({
-    tenant: tenantRef,
+    maybeTenant: tenantRef,
     isOwner: isOwnerRef,
     update: updateMock,
   }),

@@ -3,15 +3,14 @@ import type { DeliveryZone, Tenant } from '@fastio/shared'
 import { getServerSupabase, mapDeliveryZoneRow, getActiveBranchIds } from '../utils/supabase'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const tenantId = event.context.tenantId as string
+  const tenant = event.context.tenant as Tenant
 
-  const tenant = event.context.tenant as Tenant | undefined
-  if (tenant && !tenant.modules?.delivery) {
+  if (!tenant.modules?.delivery) {
     throw createError({ statusCode: 400, message: 'Доставка отключена' })
   }
 
-  if (tenant && tenant.deliveryMode === 'fixed') {
+  if (tenant.deliveryMode === 'fixed') {
     return {
       zone: null,
       fixed: true,
@@ -68,7 +67,7 @@ export default defineEventHandler(async (event) => {
       .eq('id', zone.branchId)
       .single()
 
-    branchSchedule = branch?.working_hours_schedule ?? tenant?.workingHoursSchedule ?? null
+    branchSchedule = branch?.working_hours_schedule ?? tenant.workingHoursSchedule ?? null
   }
 
   return {

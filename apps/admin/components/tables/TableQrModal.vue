@@ -164,7 +164,7 @@ const downloadPdf = async () => {
 
   generating.value = true
   try {
-    await generateTableQrPdf(items, tenant.value?.name ?? '')
+    await generateTableQrPdf(items, tenant.value.name)
   } finally {
     generating.value = false
   }

@@ -10,7 +10,7 @@
         />
       </div>
 
-      <SettingsDelivery v-if="deliveryMode === 'fixed'" :tenant="tenantStore.tenant!" />
+      <SettingsDelivery v-if="deliveryMode === 'fixed'" :tenant="tenantStore.tenant" />
 
       <!-- Top bar: hint + zone tiles -->
       <div v-if="deliveryMode === 'zones'" class="zones-topbar">
@@ -128,7 +128,7 @@ const modeItems = [
 ]
 
 const { confirm } = useConfirm()
-const deliveryMode = computed(() => tenantStore.tenant?.deliveryMode ?? 'zones')
+const deliveryMode = computed(() => tenantStore.tenant.deliveryMode ?? 'zones')
 
 const confirmMessages: Record<string, { title: string; message: string }> = {
   fixed: {

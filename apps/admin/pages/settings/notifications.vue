@@ -110,8 +110,8 @@ const connected = ref(false)
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
 const botUsername = useRuntimeConfig().public.telegramBotUsername
-const isTelegramConnected = computed(() => !!tenantStore.tenant?.notifications?.telegramChatId)
-const chatTitle = computed(() => tenantStore.tenant?.notifications?.telegramChatTitle ?? null)
+const isTelegramConnected = computed(() => !!tenantStore.tenant.notifications?.telegramChatId)
+const chatTitle = computed(() => tenantStore.tenant.notifications?.telegramChatTitle ?? null)
 
 const stopPolling = () => {
   if (pollInterval) {
@@ -182,7 +182,7 @@ const disconnectTelegram = async () => {
 
   disconnecting.value = true
   try {
-    const current = tenantStore.tenant?.notifications
+    const current = tenantStore.tenant.notifications
 
     await tenantStore.update({
       notifications: {

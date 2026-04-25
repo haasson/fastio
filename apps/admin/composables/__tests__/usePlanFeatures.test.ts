@@ -8,13 +8,6 @@ vi.mock('~/stores/tenant', () => ({
 }))
 
 describe('usePlanFeatures', () => {
-  it('план showcase если tenant null', () => {
-    mockStore.tenant = null
-    const { plan } = usePlanFeatures()
-
-    expect(plan.value).toBe('showcase')
-  })
-
   it('план showcase если subscription null', () => {
     mockStore.tenant = { subscription: null }
     const { plan } = usePlanFeatures()

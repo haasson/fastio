@@ -52,7 +52,6 @@ const txTagType = (type: BillingTransactionType) => {
 }
 
 const load = async () => {
-  if (!tenantStore.tenant) return
   loading.value = true
   try {
     transactions.value = await api.billing.getTransactions(tenantStore.tenant.id)

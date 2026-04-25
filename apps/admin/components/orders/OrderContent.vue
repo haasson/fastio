@@ -142,8 +142,7 @@ const buildEditForm = (o: Order) => {
 
   if (o.scheduledAt) {
     schedulingMode = 'scheduled'
-    const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
-    const { dateStr, timeStr } = utcIsoToLocalDateTime(o.scheduledAt, tz)
+    const { dateStr, timeStr } = utcIsoToLocalDateTime(o.scheduledAt, tenantStore.timezone)
 
     scheduledDate = dateStr
     scheduledTime = timeStr
@@ -223,13 +222,12 @@ const total = computed(() => subtotal.value - (form.discountAmount ?? 0) + form.
 
 const scheduledAt = computed<string | null>(() => {
   if (form.schedulingMode !== 'scheduled' || !form.scheduledDate || !form.scheduledTime) return null
-  const tz = tenantStore.tenant?.timezone ?? 'Europe/Moscow'
   // Overnight-слоты из getAvailableSlots кодируются суффиксом "+1" (например "02:30+1" = следующий день в 02:30)
   const isNextDay = form.scheduledTime.endsWith('+1')
   const timeStr = isNextDay ? form.scheduledTime.slice(0, -2) : form.scheduledTime
   const dateStr = isNextDay ? addDaysToDateStr(form.scheduledDate, 1) : form.scheduledDate
 
-  return localDateTimeToUtcIso(dateStr, timeStr, tz)
+  return localDateTimeToUtcIso(dateStr, timeStr, tenantStore.timezone)
 })
 
 const { currentStatus, statusMenuItems, can, onStatusSelect } = useOrderStatus(orderRef, isEdit, form, scheduledAt)

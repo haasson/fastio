@@ -178,20 +178,16 @@ const mobilePhaseTabs = computed(() => {
 })
 
 const load = async () => {
-  const tenantId = tenantStore.tenant?.id
-
-  if (!tenantId) return
-
   loading.value = true
   try {
-    items.value = await api.kitchenQueue.listForAssembly(tenantId)
+    items.value = await api.kitchenQueue.listForAssembly(tenantStore.tenant.id)
   } finally {
     loading.value = false
   }
 }
 
-watch(() => tenantStore.tenant?.id, (id) => {
-  if (id) load()
+watch(() => tenantStore.tenant.id, () => {
+  load()
 }, { immediate: true })
 
 const onCollectItem = (itemId: string, collected: boolean) => {
@@ -220,7 +216,7 @@ const onDismissed = async (orderId: string) => {
 }
 
 const onAssembled = async (orderId: string, deliveryType: string) => {
-  const targetStatusId = tenantStore.tenant?.kitchenConfig?.completedStatusMap?.[deliveryType as 'delivery' | 'pickup']
+  const targetStatusId = tenantStore.tenant.kitchenConfig?.completedStatusMap?.[deliveryType as 'delivery' | 'pickup']
 
   const promises: Promise<unknown>[] = [
     api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id),

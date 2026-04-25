@@ -1,5 +1,5 @@
 import { getServerSupabase } from '../../utils/supabase'
-import { createRateLimiter, getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes } from '@fastio/shared'
+import { createRateLimiter, getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(30, 60_000)
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
 
   const slots = generateTimeSlots(dayHours.open, dayHours.close, slotStep, closeBuffer)
 
-  const tenantTz = (tenantData.timezone as string) ?? 'Europe/Moscow'
+  const tenantTz = (tenantData.timezone as string) ?? DEFAULT_TIMEZONE
   const tenantToday = todayInTz(tenantTz)
   const tenantNowMin = date === tenantToday ? timeToMinutes(nowTimeInTz(tenantTz)) : null
 

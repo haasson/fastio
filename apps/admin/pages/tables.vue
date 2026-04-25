@@ -423,7 +423,7 @@ const onGlobalTagsUpdated = (tags: string[]) => {
 
 // ── Today's reservations ─────────────────────────────────────
 const todayReservations = computed(() => {
-  const today = todayInTz(tenantStore.tenant?.timezone ?? 'Europe/Moscow')
+  const today = todayInTz(tenantStore.timezone)
 
   return reservationsStore.reservations.filter(
     (r) => r.reservedDate === today && (r.status === 'confirmed' || r.status === 'pending' || r.status === 'seated'),

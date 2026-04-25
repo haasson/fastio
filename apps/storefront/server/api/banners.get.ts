@@ -2,10 +2,8 @@ import { getServerSupabase } from '../utils/supabase'
 import type { Banner, Tenant } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  const tenant = event.context.tenant as Tenant | undefined
-
-  if (!tenantId || !tenant) throw createError({ statusCode: 404 })
+  const tenantId = event.context.tenantId as string
+  const tenant = event.context.tenant as Tenant
 
   const supabase = getServerSupabase()
   const promoModuleEnabled = tenant.modules.promotions

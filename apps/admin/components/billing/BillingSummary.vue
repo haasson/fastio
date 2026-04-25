@@ -35,9 +35,9 @@ import { useTenantStore } from '~/stores/tenant'
 const { tenant } = storeToRefs(useTenantStore())
 const { plans } = usePlans()
 
-const currentPlan = computed(() => plans.value.find((p) => p.key === tenant.value?.subscription?.plan))
-const planName = computed(() => currentPlan.value?.name ?? tenant.value?.subscription?.plan ?? '—')
-const price = computed(() => tenant.value?.subscription?.priceOverride ?? currentPlan.value?.price ?? 0)
+const currentPlan = computed(() => plans.value.find((p) => p.key === tenant.value.subscription?.plan))
+const planName = computed(() => currentPlan.value?.name ?? tenant.value.subscription?.plan ?? '—')
+const price = computed(() => tenant.value.subscription?.priceOverride ?? currentPlan.value?.price ?? 0)
 
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 </script>

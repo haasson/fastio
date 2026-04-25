@@ -33,7 +33,7 @@ resetOrderCount()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 
-const tenantId = computed(() => tenantStore.tenant?.id ?? '')
+const { tenantId } = storeToRefs(tenantStore)
 const branchId = computed(() => branchStore.currentBranchId)
 
 const { statuses } = storeToRefs(useOrderStatusesStore())

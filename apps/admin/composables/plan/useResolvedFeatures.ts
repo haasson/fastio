@@ -12,7 +12,7 @@ export const useResolvedFeatures = () => {
 
   const resolved = computed((): ResolvedFeatures => {
     const currentOrder = getPlanTierOrder(plan.value)
-    const businessType = tenantStore.tenant?.businessType ?? 'retail'
+    const businessType = tenantStore.tenant.businessType ?? 'retail'
 
     const result: ResolvedFeatures = {
       modules: { ...EMPTY_RESOLVED_FEATURES.modules },

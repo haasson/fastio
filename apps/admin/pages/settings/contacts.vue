@@ -86,18 +86,16 @@ const buildForm = (t: Tenant) => ({
   telegram: t.contacts?.telegram ?? '',
   whatsapp: t.contacts?.whatsapp ?? '',
   max: t.contacts?.max ?? '',
-  timezone: t.timezone ?? 'Europe/Moscow',
+  timezone: t.timezone,
   workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_SCHEDULE,
 })
 
-const form = reactive(buildForm(tenantStore.tenant!))
+const form = reactive(buildForm(tenantStore.tenant))
 const { isDirty, reset } = useFormDirty(form)
 
 watch(() => tenantStore.tenant, (t) => {
-  if (t) {
-    Object.assign(form, buildForm(t))
-    reset()
-  }
+  Object.assign(form, buildForm(t))
+  reset()
 })
 
 const saving = ref(false)
@@ -112,7 +110,7 @@ const handleSave = async () => {
       name: form.name,
       timezone: form.timezone,
       contacts: {
-        ...tenantStore.tenant!.contacts,
+        ...tenantStore.tenant.contacts,
         phone: form.phone,
         email: form.email,
         instagram: form.instagram || null,

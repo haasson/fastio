@@ -52,27 +52,23 @@ const onStatSelect = (key: string) => {
 const loading = ref(false)
 const items = ref<KitchenQueueItem[]>([])
 
-const urgencyMinutes = computed(() => tenantStore.tenant?.kitchenUrgencyMinutes ?? 15)
+const urgencyMinutes = computed(() => tenantStore.tenant.kitchenUrgencyMinutes ?? 15)
 
 const getUrgencyLevel = (createdAt: string) => getKitchenUrgencyLevel(createdAt, now.value, urgencyMinutes.value)
 
 const formatElapsed = (isoDate: string) => formatKitchenElapsed(isoDate, now.value)
 
 const load = async () => {
-  const tenantId = tenantStore.tenant?.id
-
-  if (!tenantId) return
-
   loading.value = true
   try {
-    items.value = await api.kitchenQueue.listActive(tenantId)
+    items.value = await api.kitchenQueue.listActive(tenantStore.tenant.id)
   } finally {
     loading.value = false
   }
 }
 
-watch(() => tenantStore.tenant?.id, (id) => {
-  if (id) load()
+watch(() => tenantStore.tenant.id, () => {
+  load()
 }, { immediate: true })
 
 // --- Computed ---

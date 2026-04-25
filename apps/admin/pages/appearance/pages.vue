@@ -69,6 +69,7 @@
 
 <script setup lang="ts">
 import { computed, inject, reactive } from 'vue'
+import { storeToRefs } from 'pinia'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiIcon, UiSectionHeader } from '@fastio/ui'
 import PageSettingsByKey from '~/components/appearance/PageSettingsByKey.vue'
@@ -81,9 +82,9 @@ const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm
 const { confirm } = useConfirm()
 const tenantStore = useTenantStore()
-const businessType = computed(() => tenantStore.tenant?.businessType)
+const { businessType } = storeToRefs(tenantStore)
 
-const isAvailable = (key: string) => !tenantStore.tenant?.modules || isFeatureAvailable(key, tenantStore.tenant.modules, businessType.value)
+const isAvailable = (key: string) => isFeatureAvailable(key, tenantStore.tenant.modules, businessType.value)
 
 const openKeys = reactive(new Set<string>())
 

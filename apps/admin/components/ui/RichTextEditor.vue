@@ -182,7 +182,7 @@ const props = defineProps<{
 const tenantStore = useTenantStore()
 
 const activePalette = computed((): ThemePalette | null => {
-  const theme = tenantStore.tenant?.theme
+  const theme = tenantStore.tenant.theme
 
   if (!theme) return null
   if (theme.activeCustomId) {

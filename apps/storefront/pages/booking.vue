@@ -45,7 +45,7 @@
               :max-advance-days="settings?.maxAdvanceDays ?? 30"
               :branches="branches ?? []"
               :schedule="currentSchedule"
-              :timezone="tenant?.timezone ?? 'Europe/Moscow'"
+              :timezone="tenant?.timezone ?? DEFAULT_TIMEZONE"
               @next="goToStep2"
             />
 
@@ -77,7 +77,7 @@
 import { computed } from 'vue'
 import { useAsyncData, useNuxtData, useRequestFetch } from 'nuxt/app'
 import type { WorkingHours, WorkingHoursSchedule, ReservationSettings, Tenant } from '@fastio/shared'
-import { getDaySchedule, getIsoDayForDate } from '@fastio/shared'
+import { getDaySchedule, getIsoDayForDate, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsHeading, FsAlert } from '@fastio/public-ui'
 import PageShell from '~/components/sections/PageShell.vue'
