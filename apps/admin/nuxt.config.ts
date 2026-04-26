@@ -66,6 +66,8 @@ export default defineNuxtConfig({
     openaiApiKey: '',
     supabaseServiceRoleKey: '',
     telegramBotToken: '',
+    telegramAuthBotToken: '',
+    telegramWebhookSecret: '',
     adminUrl: '',
     dadataApiKey: '',
     public: {

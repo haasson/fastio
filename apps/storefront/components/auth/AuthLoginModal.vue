@@ -22,9 +22,7 @@
       <template v-if="telegramEnabled">
         <div class="divider"><span>или</span></div>
 
-        <FsAlert v-if="telegramError" type="error">{{ telegramError }}</FsAlert>
-
-        <AuthTelegramWidget @auth="onTelegramAuth" />
+        <AuthTelegramButton @done="onTelegramDone" />
       </template>
 
       <div class="links">
@@ -42,8 +40,7 @@ import { validationRules } from '@fastio/kit'
 import { useRuntimeConfig } from '#imports'
 import { useAuthStore } from '~/stores/auth'
 import { useModal } from '~/composables/useModal'
-import { reportError } from '~/utils/reportError'
-import AuthTelegramWidget from '~/components/auth/AuthTelegramWidget.vue'
+import AuthTelegramButton from '~/components/auth/AuthTelegramButton.vue'
 
 const authStore = useAuthStore()
 const modal = useModal('auth-login')
@@ -52,7 +49,6 @@ const config = useRuntimeConfig()
 const email = ref('')
 const password = ref('')
 const serverError = ref('')
-const telegramError = ref('')
 const notRegistered = ref(false)
 
 const telegramEnabled = computed(() => !!config.public.telegramAuthBotUsername)
@@ -73,16 +69,9 @@ async function onSubmit() {
   }
 }
 
-async function onTelegramAuth(data: Record<string, string>) {
-  telegramError.value = ''
-  try {
-    await $fetch('/api/auth/telegram/login', { method: 'POST', body: data })
-    await authStore.loginWithTelegram()
-    modal.close()
-  } catch (err) {
-    reportError(err)
-    telegramError.value = 'Не удалось войти через Telegram. Попробуйте ещё раз.'
-  }
+async function onTelegramDone() {
+  await authStore.loginWithTelegram()
+  modal.close()
 }
 </script>
 
