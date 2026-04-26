@@ -1,7 +1,10 @@
 <template>
   <header class="header-root" :class="{ scrolled }">
     <div class="container">
-      <a href="/" class="logo"><span>Fast</span><span class="logo-accent">io</span></a>
+      <a href="/" class="logo">
+        <img src="/logo-mark.svg" class="logo-mark" alt="" />
+        <span><span>Fast</span><span class="logo-accent">io</span></span>
+      </a>
 
       <nav class="nav">
         <a
@@ -132,6 +135,9 @@ onUnmounted(() => {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--heading-font-family);
   font-weight: 800;
   font-size: 24px;
@@ -139,6 +145,12 @@ onUnmounted(() => {
   text-decoration: none;
   flex-shrink: 0;
   margin-right: auto;
+}
+
+.logo-mark {
+  width: 26px;
+  height: auto;
+  flex-shrink: 0;
 }
 
 .logo-accent {

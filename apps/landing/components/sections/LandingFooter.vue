@@ -3,7 +3,10 @@
     <div class="container">
       <div class="top">
         <div class="left">
-          <span class="logo"><span class="logo-fast">Fast</span><span class="logo-io">io</span></span>
+          <span class="logo">
+            <img src="/logo-mark.svg" class="logo-mark" alt="" />
+            <span><span class="logo-fast">Fast</span><span class="logo-io">io</span></span>
+          </span>
           <span class="copy">&copy; {{ year }} Fastio</span>
         </div>
 
@@ -44,9 +47,18 @@ const year = new Date().getFullYear()
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--heading-font-family);
   font-weight: 800;
   font-size: 22px;
+}
+
+.logo-mark {
+  width: 22px;
+  height: auto;
+  flex-shrink: 0;
 }
 
 .logo-fast {
