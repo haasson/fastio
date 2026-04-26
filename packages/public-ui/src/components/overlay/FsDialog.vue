@@ -72,6 +72,7 @@ type Props = {
   drawerSize?: 'sm' | 'md' | 'lg' | 'full'
   closable?: boolean
   closeOnOverlay?: boolean
+  forceDialog?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -79,6 +80,7 @@ const props = withDefaults(defineProps<Props>(), {
   drawerSize: 'lg',
   closable: true,
   closeOnOverlay: true,
+  forceDialog: false,
 })
 
 const emit = defineEmits<{
@@ -88,7 +90,7 @@ const emit = defineEmits<{
 const _isMobile = useMediaQuery('(max-width: 767px)')
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
-const isMobile = computed(() => mounted.value && _isMobile.value)
+const isMobile = computed(() => !props.forceDialog && mounted.value && _isMobile.value)
 
 const sizeMap: Record<string, string> = { sm: '400px', md: '560px', lg: '720px' }
 const maxWidth = computed(() => sizeMap[props.size])
@@ -100,7 +102,7 @@ function onOpenChange(value: boolean) {
 // На мобиле рендерится FsDrawer — у него свой useModalHistory.
 // Guard !_isMobile здесь нужен, чтобы не было двойного push в history при mobile-режиме.
 useModalHistory(
-  () => mounted.value && !_isMobile.value && props.modelValue,
+  () => mounted.value && (!_isMobile.value || props.forceDialog) && props.modelValue,
   () => emit('update:modelValue', false),
 )
 </script>

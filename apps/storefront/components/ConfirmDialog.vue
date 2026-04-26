@@ -4,6 +4,7 @@
     :title="state.title"
     size="sm"
     :closable="false"
+    force-dialog
     @update:model-value="onCancel"
   >
     <p class="message">{{ state.message }}</p>
