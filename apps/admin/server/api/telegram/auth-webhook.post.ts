@@ -13,7 +13,11 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const token = config.telegramAuthBotToken
 
-  if (!token) return { ok: true }
+  if (!token) {
+    console.warn('[tg-auth] no token, skipping')
+
+    return { ok: true }
+  }
 
   const webhookSecret = config.telegramWebhookSecret
 
@@ -26,20 +30,33 @@ export default defineEventHandler(async (event) => {
   const body: TgUpdate = await readBody(event)
   const message = body?.message
 
-  if (!message) return { ok: true }
+  if (!message) {
+    console.warn('[tg-auth] no message in body')
+
+    return { ok: true }
+  }
 
   const chatId = message.chat?.id
 
   if (!chatId) return { ok: true }
 
-  const sendMessage = (text: string, extra: Record<string, unknown> = {}) => fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, ...extra }),
-  })
+  const sendMessage = async (text: string, extra: Record<string, unknown> = {}) => {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, ...extra }),
+    })
+    const data = await res.json() as { ok: boolean; description?: string }
+
+    if (!data.ok) console.error('[tg-auth] sendMessage failed:', data.description)
+
+    return data
+  }
 
   const supabase = getServerSupabase()
   const text: string = message.text ?? ''
+
+  console.warn('[tg-auth] message received, text:', JSON.stringify(text), 'chatId:', chatId)
 
   // /start <nonce>
   const startMatch = text.match(/^\/start(?:@\S+)?\s+(\S+)/)
@@ -47,6 +64,8 @@ export default defineEventHandler(async (event) => {
   if (startMatch) {
     const nonce = startMatch[1]
     const from = message.from
+
+    console.warn('[tg-auth] /start nonce:', nonce, 'from:', from?.id)
 
     if (!from?.id) return { ok: true }
 
@@ -57,13 +76,15 @@ export default defineEventHandler(async (event) => {
       username: from.username ?? null,
     }
 
-    const { data: pending } = await supabase
+    const { data: pending, error: dbError } = await supabase
       .from('pending_telegram_auths')
       .select('nonce')
       .eq('nonce', nonce)
       .gt('expires_at', new Date().toISOString())
       .is('completed_at', null)
       .single()
+
+    console.warn('[tg-auth] nonce lookup:', { found: !!pending, dbError: dbError?.message })
 
     if (!pending) {
       await sendMessage('❌ Ссылка для входа устарела или недействительна. Попробуйте войти заново.')
