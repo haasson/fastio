@@ -33,11 +33,12 @@ const resolved = ref<ResolvedFeatures>({
 })
 
 type Subscription = { status: string; plan: string }
+type OnboardingState = { branchNotNeeded?: boolean }
 
 const tenantStore = {
   isOwner: false,
   currentPermissions: null as RolePermissions | null,
-  maybeTenant: { subscription: { status: 'active' } as Subscription },
+  maybeTenant: { subscription: { status: 'active' } as Subscription, onboardingState: undefined as OnboardingState | undefined },
   get isServices() { return this.tenant.businessType === 'services' },
   get isRetail() { return this.tenant.businessType === 'retail' },
   tenant: {
@@ -90,7 +91,7 @@ const importGate = async () => (await import('../plan/useGate')).useGate
 const reset = () => {
   tenantStore.isOwner = false
   tenantStore.currentPermissions = null
-  tenantStore.maybeTenant = { subscription: { status: 'active', plan: 'pro' } }
+  tenantStore.maybeTenant = { subscription: { status: 'active', plan: 'pro' }, onboardingState: undefined }
   tenantStore.tenant.businessType = 'retail'
   tenantStore.tenant.menuStyle = 'food'
   tenantStore.tenant.modules = {}
@@ -326,7 +327,7 @@ describe('useGate', () => {
       expect(gate.orders.value.enabled).toBe(true)
     })
 
-    it('orders для services читает services-модуль', async () => {
+    it('orders для services всегда disabled (заказы — это retail-фича)', async () => {
       const useGate = await importGate()
 
       tenantStore.tenant.businessType = 'services'
@@ -334,7 +335,8 @@ describe('useGate', () => {
 
       const gate = useGate()
 
-      expect(gate.orders.value.enabled).toBe(true)
+      expect(gate.orders.value.enabled).toBe(false)
+      expect(gate.orders.value.reason).toBe('disabled')
     })
 
     it('orders disabled показывает disabled если хотя бы один disabled (приоритет над locked)', async () => {
@@ -417,6 +419,56 @@ describe('useGate', () => {
 
       expect(gate.addBranch.value.enabled).toBe(false)
       expect(gate.addBranch.value.reason).toBe('locked')
+    })
+  })
+
+  describe('branchNotNeeded (опт-аут на онбординге)', () => {
+    it('branches opted-out если юзер выбрал «не указывать филиал»', async () => {
+      const useGate = await importGate()
+
+      allEnabled('branches')
+      tenantStore.maybeTenant.onboardingState = { branchNotNeeded: true }
+
+      const gate = useGate()
+
+      expect(gate.branches.value.enabled).toBe(false)
+      expect(gate.branches.value.reason).toBe('opted-out')
+    })
+
+    it('viewBranches opted-out если branchNotNeeded даже когда есть team.manage', async () => {
+      const useGate = await importGate()
+
+      tenantStore.maybeTenant.onboardingState = { branchNotNeeded: true }
+      tenantStore.currentPermissions = { 'team.manage': true }
+
+      const gate = useGate()
+
+      expect(gate.viewBranches.value.enabled).toBe(false)
+      expect(gate.viewBranches.value.reason).toBe('opted-out')
+    })
+
+    it('viewBranches enabled когда branchNotNeeded не выставлен', async () => {
+      const useGate = await importGate()
+
+      tenantStore.currentPermissions = { 'team.manage': true }
+
+      const gate = useGate()
+
+      expect(gate.viewBranches.value.enabled).toBe(true)
+    })
+
+    it('addBranch разрешает первый филиал даже при branchNotNeeded — для override через поддержку', async () => {
+      const useGate = await importGate()
+
+      tenantStore.maybeTenant.onboardingState = { branchNotNeeded: true }
+      setModule('branches', { active: false, locked: true })
+      branchStore.branches = []
+
+      const gate = useGate()
+
+      // branches возвращает opted-out → addBranch проверяет «филиалов 0?». Если да — разрешает
+      // создать главный филиал (для случая, когда поддержка вручную сбросит флаг).
+      expect(gate.addBranch.value.enabled).toBe(true)
     })
   })
 

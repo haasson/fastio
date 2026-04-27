@@ -41,6 +41,7 @@ export const useOnboarding = () => {
       pickup: gate.pickup.value.enabled,
       dineIn: gate.dineIn.value.enabled,
       reservations: gate.reservations.value.enabled,
+      services: gate.services.value.enabled,
     },
   }))
 

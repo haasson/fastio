@@ -75,7 +75,7 @@
         </FsCard>
 
         <FsButton variant="secondary" size="large" class="back-btn" @click="navigateTo('/')">
-          Вернуться в меню
+          Вернуться в {{ menu.acc }}
         </FsButton>
       </div>
     </div>
@@ -89,6 +89,7 @@ import { SearchX, CircleCheck } from 'lucide-vue-next'
 import type { Order } from '@fastio/shared'
 import { formatDateTime } from '@fastio/shared'
 import { useCurrency } from '~/composables/useCurrency'
+import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
 import PageShell from '~/components/sections/PageShell.vue'
 import { FsHeading, FsButton, FsCard, FsText, FsDivider, FsSpinner } from '@fastio/public-ui'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
@@ -96,6 +97,7 @@ import SfOrderStatus from '~/components/sf/domain/SfOrderStatus.vue'
 import SfOrderTotals from '~/components/sf/domain/SfOrderTotals.vue'
 import SfOrderItemsList from '~/components/sf/domain/SfOrderItemsList.vue'
 
+const { menu } = useStorefrontTerms()
 const route = useRoute()
 const currency = useCurrency()
 

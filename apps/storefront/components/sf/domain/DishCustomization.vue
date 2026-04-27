@@ -7,7 +7,7 @@
         <div v-for="(ci, idx) in comboItems" :key="idx" class="combo-item">
           <img v-if="ci.photo" :src="ci.photo" :alt="ci.name" class="combo-item-photo" >
           <div v-else class="combo-item-placeholder">
-            <UtensilsCrossed :size="18" />
+            <component :is="placeholderIcon" :size="18" />
           </div>
           <span class="combo-item-name">
             {{ ci.name }}<span v-if="ci.modifier" class="combo-item-mod"> · {{ ci.modifier }}</span><span v-if="ci.addons" class="combo-item-mod"> + {{ ci.addons }}</span>
@@ -54,12 +54,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UtensilsCrossed } from 'lucide-vue-next'
 import type { DishModifierGroup, DishIngredient } from '@fastio/shared'
 import type { ClientAddon } from '~/stores/menu'
 import type { ComboItemInfo } from '~/composables/useDishCustomization'
 import { FsText } from '@fastio/public-ui'
 import DishChips from '~/components/sf/domain/DishChips.vue'
+import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
+
+const { placeholderIcon } = useItemPlaceholder()
 
 type Props = {
   comboItems?: ComboItemInfo[]

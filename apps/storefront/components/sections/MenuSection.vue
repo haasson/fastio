@@ -14,15 +14,15 @@
           >
             <template v-if="!categoryPhotos[category.id]" #image>
               <div class="category-placeholder">
-                <UtensilsCrossed :size="32" />
+                <component :is="placeholderIcon" :size="32" />
               </div>
             </template>
             <FsText as="span" variant="body-sm" class="category-name">{{ category.name }}</FsText>
           </FsCard>
         </div>
       </div>
-      <SfEmptyState v-else title="Меню пока пусто" description="Блюда появятся здесь после добавления в меню">
-        <UtensilsCrossed :size="48" />
+      <SfEmptyState v-else v-bind="emptyStateProps">
+        <component :is="placeholderIcon" :size="48" />
       </SfEmptyState>
     </template>
 
@@ -46,7 +46,7 @@
                 :dish="combo"
                 :combo-id="combo.id"
                 :hide-stepper="tableMode"
-                :is-services="isServices"
+                :is-services="servicesMode"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
@@ -61,7 +61,7 @@
                 :dish="dish"
                 :has-modifiers="hasModifiers(dish)"
                 :hide-stepper="tableMode"
-                :is-services="isServices"
+                :is-services="servicesMode"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
@@ -73,8 +73,8 @@
           </div>
         </div>
       </div>
-      <SfEmptyState v-else title="Меню пока пусто" description="Блюда появятся здесь после добавления в меню">
-        <UtensilsCrossed :size="48" />
+      <SfEmptyState v-else v-bind="emptyStateProps">
+        <component :is="placeholderIcon" :size="48" />
       </SfEmptyState>
     </template>
 
@@ -101,10 +101,11 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { UtensilsCrossed } from 'lucide-vue-next'
 import type { Dish, Combo, Tenant, Category } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
 import { useNuxtData, useRouter } from 'nuxt/app'
+import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
+import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
 import { useCartStore, type CartItem } from '~/stores/cart'
 import { useMenuStore, type ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
@@ -127,15 +128,25 @@ const emit = defineEmits<{
   tableOrder: [item: CartItem]
 }>()
 
+const { placeholderIcon } = useItemPlaceholder()
+const { menu } = useStorefrontTerms()
 const menuStore = useMenuStore()
 const cart = useCartStore()
 const router = useRouter()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
-const isServices = computed(() => tenant.value?.businessType === 'services')
+// «Услуга» как режим взаимодействия (форма записи вместо корзины) — это услуги-тенант
+// с активным модулем `services`. Если модуль выключен (например, тариф без него) —
+// рендерим как обычный каталог с режимом «только просмотр».
+const servicesMode = computed(() => tenant.value?.businessType === 'services' && !!tenant.value?.modules?.services)
 const { legalInfoComplete } = useLegalCompliance()
 const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
 const effectiveOrderingEnabled = computed(() => orderingEnabled.value && legalInfoComplete.value)
-const viewOnly = computed(() => !effectiveOrderingEnabled.value && !props.tableMode && !isServices.value)
+const viewOnly = computed(() => !effectiveOrderingEnabled.value && !props.tableMode && !servicesMode.value)
+
+const emptyStateProps = computed(() => ({
+  title: menu.value.emptyTitle,
+  description: menu.value.emptyDescription,
+}))
 
 const categories = computed(() => menuStore.visibleCategories)
 const dishesByCategory = computed(() => menuStore.dishesByCategory)
@@ -230,7 +241,7 @@ function handleAddButton(dish: Dish) {
 }
 
 function handleCardClick(dish: Dish) {
-  if (isServices.value) {
+  if (servicesMode.value) {
     openRequestModal(dish)
   } else {
     openDishModal(dish)

@@ -13,7 +13,7 @@
           v-model="form.name"
           name="name"
           label="Название"
-          placeholder="Острое"
+          :placeholder="namePlaceholder"
           :rules="[{ required: true, message: 'Введите название' }]"
         />
       </div>
@@ -22,7 +22,7 @@
         <UiText size="small" weight="medium" class="label">Иконка</UiText>
         <div class="icon-grid">
           <button
-            v-for="icon in TAG_ICON_PRESETS"
+            v-for="icon in iconPresets"
             :key="icon"
             type="button"
             class="icon-btn"
@@ -66,9 +66,10 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiText } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
-import { TAG_ICON_PRESETS, TAG_COLOR_PRESETS, getTagColorPreset } from '@fastio/shared'
+import { TAG_COLOR_PRESETS, getTagColorPreset, getTagIconPresets, getTagNamePlaceholder } from '@fastio/shared'
 import * as icons from 'lucide-vue-next'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { useTenantStore } from '~/stores/tenant'
 
 const props = defineProps<{
   modelValue: boolean
@@ -82,6 +83,10 @@ const emit = defineEmits<{
 }>()
 
 const api = useDatabase()
+const tenantStore = useTenantStore()
+
+const iconPresets = computed(() => getTagIconPresets(tenantStore.tenant.businessType, tenantStore.tenant.menuStyle))
+const namePlaceholder = computed(() => getTagNamePlaceholder(tenantStore.tenant.businessType, tenantStore.tenant.menuStyle))
 
 const formRef = ref()
 const saving = ref(false)

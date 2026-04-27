@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
-import { vocabulary } from '~/config/vocabulary'
-import type { ItemVocab, MenuVocab } from '~/config/vocabulary'
+import { vocabulary, selectVocabulary } from '@fastio/shared'
+import type { ItemVocab, MenuVocab } from '@fastio/shared'
 import type { BusinessType, MenuStyle } from '@fastio/shared'
 
 type TermsState = {
@@ -12,15 +12,11 @@ type TermsState = {
   menuStyle: MenuStyle
 }
 
-const food = vocabulary.food
+const food = structuredClone(vocabulary.food)
 
 const _state = reactive<TermsState>({
-  item: {
-    ...food.item,
-    plural: { ...food.item.plural },
-    pronoun: { ...food.item.pronoun },
-  },
-  menu: { ...food.menu },
+  item: food.item,
+  menu: food.menu,
   firstItemAcc: `${food.item.first} ${food.item.acc}`,
   reservationsLabel: food.reservations,
   categoryExamples: food.categoryExamples,
@@ -28,12 +24,7 @@ const _state = reactive<TermsState>({
 })
 
 export const setVocab = (businessType: BusinessType | null, menuStyle: MenuStyle) => {
-  const key = businessType === 'services'
-    ? 'services'
-    : menuStyle === 'catalog'
-      ? 'catalog'
-      : 'food'
-  const e = vocabulary[key]
+  const e = selectVocabulary(businessType, menuStyle)
   const { plural, pronoun, ...itemScalars } = e.item
 
   Object.assign(_state.item, itemScalars)

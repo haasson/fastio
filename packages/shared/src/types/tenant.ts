@@ -247,12 +247,15 @@ export type OnboardingState = {
   currentStepId: string | null
   completedAt: string | null
   dismissedAt: string | null
+  /** Юзер явно отказался от создания филиала на онбординге. */
+  branchNotNeeded?: boolean
 }
 
 export const emptyOnboardingState = (): OnboardingState => ({
   currentStepId: null,
   completedAt: null,
   dismissedAt: null,
+  branchNotNeeded: false,
 })
 
 export type Tenant = {

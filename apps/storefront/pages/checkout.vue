@@ -1,7 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout :breadcrumbs="[{ label: 'Меню', to: '/' }, { label: 'Корзина', to: '/cart' }]" current="Оформление">
+      <StorePageLayout :breadcrumbs="[{ label: menu.label, to: '/' }, { label: 'Корзина', to: '/cart' }]" current="Оформление">
 
         <div class="checkout-layout">
           <div class="checkout-form">
@@ -152,6 +152,7 @@ import { Truck, PersonStanding } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
 import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
 import { useCartStore } from '~/stores/cart'
 import { useCheckoutStore } from '~/stores/checkout'
 import { useAuthStore } from '~/stores/auth'
@@ -166,7 +167,7 @@ import CheckoutPickupBranch from '~/components/checkout/CheckoutPickupBranch.vue
 import CheckoutPromoSection from '~/components/checkout/CheckoutPromoSection.vue'
 import CheckoutSidebar from '~/components/checkout/CheckoutSidebar.vue'
 
-
+const { menu } = useStorefrontTerms()
 const cart = useCartStore()
 const checkout = useCheckoutStore()
 const authStore = useAuthStore()

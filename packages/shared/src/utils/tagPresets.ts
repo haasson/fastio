@@ -1,3 +1,5 @@
+import type { BusinessType, MenuStyle } from '../types/tenant'
+
 export type TagColorPreset = {
   key: string
   color: string
@@ -21,7 +23,19 @@ export const TAG_COLOR_PRESETS: TagColorPreset[] = [
   { key: 'primary', color: 'var(--color-primary)', background: 'var(--color-primary-light)' },
 ]
 
-export const TAG_ICON_PRESETS = [
+const MARKETING_ICONS = [
+  'Sparkles', 'Star', 'Zap', 'Crown', 'Award', 'ThumbsUp', 'TrendingUp', 'Percent', 'Gift',
+] as const
+
+const TIME_ICONS = [
+  'Clock', 'Timer', 'CalendarDays', 'Hourglass', 'Sunrise', 'Moon',
+] as const
+
+const GENERAL_ICONS = [
+  'Tag', 'Bookmark', 'Heart', 'CircleCheck', 'Info', 'Ban',
+] as const
+
+const FOOD_ICONS = [
   // Еда и напитки
   'Flame', 'CookingPot', 'Soup', 'Pizza', 'Sandwich', 'Beef', 'Egg', 'Salad', 'IceCream',
   'Fish', 'Shrimp', 'Drumstick', 'Ham', 'Hamburger', 'Bone',
@@ -30,17 +44,54 @@ export const TAG_ICON_PRESETS = [
   // Диета и здоровье
   'Leaf', 'Vegan', 'Apple', 'Carrot', 'Cherry', 'Grape', 'Citrus', 'Banana', 'Bean',
   'Wheat', 'WheatOff', 'Nut', 'NutOff', 'Sprout', 'HeartPulse', 'Baby', 'ShieldCheck',
-  // Маркетинг
-  'Sparkles', 'Star', 'Zap', 'Crown', 'Award', 'ThumbsUp', 'TrendingUp', 'Percent', 'Gift',
-  // Время и статус
-  'Clock', 'Timer', 'CalendarDays', 'Hourglass', 'Sunrise', 'Moon',
   // Характеристики
   'Gauge', 'Dumbbell', 'Scale', 'Ruler', 'Droplets', 'Snowflake', 'Sun', 'AlertTriangle',
-  // Общие
-  'Tag', 'Bookmark', 'Heart', 'CircleCheck', 'Info', 'Ban',
 ] as const
 
-export type TagIconPreset = typeof TAG_ICON_PRESETS[number]
+const CATALOG_ICONS = [
+  // Товар
+  'Package', 'Box', 'ShoppingBag', 'Shirt', 'Gem', 'Watch', 'Glasses', 'Layers',
+  // Характеристики
+  'Ruler', 'Palette', 'Scale', 'Recycle', 'Leaf', 'Globe', 'ShieldCheck', 'AlertTriangle',
+  // Сезон и условия
+  'Sun', 'Snowflake', 'Umbrella', 'Thermometer', 'Droplets',
+] as const
+
+const SERVICES_ICONS = [
+  // Формат работы
+  'Laptop', 'Home', 'MapPin', 'Car', 'Plane',
+  // Специализация
+  'Scissors', 'Wrench', 'Brush', 'Camera', 'Stethoscope', 'GraduationCap', 'Code', 'PenTool', 'Mic', 'Music',
+  // Люди
+  'User', 'Users', 'UserCheck',
+  // Характеристики
+  'Gauge', 'Dumbbell', 'ShieldCheck', 'HeartPulse', 'AlertTriangle',
+] as const
+
+export type TagIconPreset =
+  | typeof MARKETING_ICONS[number]
+  | typeof TIME_ICONS[number]
+  | typeof GENERAL_ICONS[number]
+  | typeof FOOD_ICONS[number]
+  | typeof CATALOG_ICONS[number]
+  | typeof SERVICES_ICONS[number]
+
+export const getTagIconPresets = (businessType: BusinessType | null, menuStyle: MenuStyle): TagIconPreset[] => {
+  const specific = businessType === 'services'
+    ? SERVICES_ICONS
+    : menuStyle === 'food'
+      ? FOOD_ICONS
+      : CATALOG_ICONS
+
+  // Set чтобы общие категории (Marketing/Time/General) не дублировали иконки специфичной зоны.
+  return [...new Set([...specific, ...MARKETING_ICONS, ...TIME_ICONS, ...GENERAL_ICONS])]
+}
+
+export const getTagNamePlaceholder = (businessType: BusinessType | null, menuStyle: MenuStyle): string => {
+  if (businessType === 'services') return 'Онлайн'
+  if (menuStyle === 'catalog') return 'Новинка'
+  return 'Острое'
+}
 
 export function getTagColorPreset(key: string): TagColorPreset | undefined {
   return TAG_COLOR_PRESETS.find((p) => p.key === key)

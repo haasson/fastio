@@ -9,7 +9,7 @@
       <div class="compact-photo">
         <img v-if="dish.photos[0]" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
         <div v-else class="dish-placeholder compact-placeholder">
-          <UtensilsCrossed :size="24" />
+          <component :is="placeholderIcon" :size="24" />
         </div>
       </div>
       <div class="compact-body">
@@ -44,7 +44,7 @@
     <template #image>
       <img v-if="dish.photos[0]" class="dish-photo" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
       <div v-else class="dish-placeholder">
-        <UtensilsCrossed :size="32" />
+        <component :is="placeholderIcon" :size="32" />
       </div>
       <div v-if="resolvedTags.length" class="dish-tags">
         <span
@@ -112,15 +112,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Plus, UtensilsCrossed } from 'lucide-vue-next'
+import { Plus } from 'lucide-vue-next'
 import type { Dish, Combo } from '@fastio/shared'
 import { getTagColorPreset } from '@fastio/shared'
 import { FsCard, FsText, FsButton } from '@fastio/public-ui'
+import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { useCartStore, type CartItem } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { resolveTagIcon } from '~/utils/tag-icons'
+
+const { placeholderIcon } = useItemPlaceholder()
 
 type Props = {
   dish: Dish | Combo

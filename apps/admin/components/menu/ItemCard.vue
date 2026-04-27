@@ -8,7 +8,7 @@
     <UiSpace :size="8" vertical>
       <div class="card-photo">
         <img v-if="photo" :src="photo" :alt="name" />
-        <UiPhotoPlaceholder v-else size="medium" />
+        <UiPhotoPlaceholder v-else size="medium" :variant="placeholderVariant" />
       </div>
       <span class="card-name">{{ name }}</span>
       <UiSpace :size="4" align="center">
@@ -49,6 +49,9 @@
 import { UiCard, UiPhotoPlaceholder, UiSpace, UiSwitch, UiTag } from '@fastio/ui'
 import { formatPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import { useItemVariant } from '~/composables/useItemVariant'
+
+const { variant: placeholderVariant } = useItemVariant()
 
 defineProps<{
   photo?: string | null

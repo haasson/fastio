@@ -61,6 +61,8 @@ import {
   ExternalLink,
   CalendarCheck,
   GraduationCap,
+  Package,
+  Briefcase,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -128,6 +130,8 @@ export const iconRegistry = {
   externalLink: ExternalLink,
   calendarCheck: CalendarCheck,
   graduationCap: GraduationCap,
+  package: Package,
+  briefcase: Briefcase,
 } as const
 
 export type IconName = keyof typeof iconRegistry

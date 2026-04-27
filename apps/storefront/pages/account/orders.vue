@@ -17,7 +17,7 @@
           >
             <ShoppingBag />
             <template #action>
-              <FsButton variant="primary" @click="navigateTo({ path: '/', query: route.query })">Перейти в меню</FsButton>
+              <FsButton variant="primary" @click="navigateTo({ path: '/', query: route.query })">Перейти в {{ menu.acc }}</FsButton>
             </template>
           </SfEmptyState>
 
@@ -61,6 +61,7 @@ import type { Order } from '@fastio/shared'
 import { pluralize, formatDateTime } from '@fastio/shared'
 import { ShoppingBag, ChevronRight } from 'lucide-vue-next'
 import { FsSection, FsCard, FsButton } from '@fastio/public-ui'
+import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
 import AccountCardsSkeleton from '~/components/account/AccountCardsSkeleton.vue'
 import SfOrderStatus from '~/components/sf/domain/SfOrderStatus.vue'
 import PageShell from '~/components/sections/PageShell.vue'
@@ -73,6 +74,7 @@ import { storeToRefs } from 'pinia'
 
 definePageMeta({ middleware: 'no-services' })
 
+const { menu } = useStorefrontTerms()
 const route = useRoute()
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)

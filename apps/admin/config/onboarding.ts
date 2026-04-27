@@ -100,15 +100,18 @@ const categoryStep = (l: OnboardingLabels): OnboardingStep => ({
   tourId: 'create-category',
 })
 
-const itemStep = (l: OnboardingLabels): OnboardingStep => ({
+const itemStep = (l: OnboardingLabels, isServices: boolean): OnboardingStep => ({
   id: 'item',
   title: `Добавьте ${l.firstItemAcc}`,
-  description:
-    `Отлично, категория есть. Теперь наполним её. ${l.item.charAt(0).toUpperCase() + l.item.slice(1)} — это то, что клиент кладёт в корзину. Начните с одной позиции.`,
+  description: isServices
+    ? `Отлично, категория есть. Теперь наполним её. Услуга — это позиция каталога, которую клиент выбирает при записи или заказе. Начните с одной позиции.`
+    : `Отлично, категория есть. Теперь наполним её. ${l.item.charAt(0).toUpperCase() + l.item.slice(1)} — это то, что клиент кладёт в корзину. Начните с одной позиции.`,
   details: [
     `Откройте раздел «${l.menu}» и нажмите «Добавить»`,
     'Заполните название, цену и выберите категорию',
-    'Обязательно добавьте фото — оно сильнее всего влияет на решение о покупке',
+    isServices
+      ? 'Добавьте фото — это помогает клиентам понять, чего ожидать'
+      : 'Обязательно добавьте фото — оно сильнее всего влияет на решение о покупке',
   ],
   ctaLabel: `Добавить ${l.itemAcc}`,
   route: '/menu/dishes',
@@ -210,15 +213,15 @@ const testBookingStep: OnboardingStep = {
 
 export const buildOnboardingFlow = (
   l: OnboardingLabels,
-  ctx: { isServices: boolean; modules: { delivery: boolean; pickup: boolean; dineIn: boolean; reservations: boolean } },
+  ctx: { isServices: boolean; modules: { delivery: boolean; pickup: boolean; dineIn: boolean; reservations: boolean; services: boolean } },
 ): OnboardingStep[] => {
-  const steps: OnboardingStep[] = [categoryStep(l), itemStep(l)]
-  const { delivery, pickup, dineIn, reservations } = ctx.modules
+  const steps: OnboardingStep[] = [categoryStep(l), itemStep(l, ctx.isServices)]
+  const { delivery, pickup, dineIn, reservations, services } = ctx.modules
   const hasOrders = delivery || pickup || dineIn
-  const hasPersonalData = ctx.isServices || hasOrders || reservations
+  const hasPersonalData = (ctx.isServices && services) || hasOrders || reservations
 
   if (ctx.isServices) {
-    steps.push(intakeServicesStep)
+    if (services) steps.push(intakeServicesStep)
   } else {
     if (delivery) steps.push(deliveryStep)
     if (pickup) steps.push(pickupStep)
@@ -229,7 +232,7 @@ export const buildOnboardingFlow = (
   if (hasPersonalData) steps.push(legalStep)
   if (hasOrders) steps.push(statusesStep)
   steps.push(siteStep)
-  if (ctx.isServices) steps.push(testBookingStep)
+  if (ctx.isServices && services) steps.push(testBookingStep)
   else if (hasOrders) steps.push(testOrderStep)
 
   return steps

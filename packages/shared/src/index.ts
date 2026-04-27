@@ -46,4 +46,8 @@ export * from './utils/reconcile-cart'
 export * from './utils/rateLimit'
 export * from './utils/scheduling'
 export * from './utils/planLevel'
+export * from './utils/planConstants'
+export * from './utils/planResolve'
 export * from './utils/slugify'
+
+export * from './utils/vocabulary'

@@ -1,7 +1,7 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout :breadcrumbs="[{ label: 'Меню', to: '/' }]" current="Корзина">
+      <StorePageLayout :breadcrumbs="[{ label: menu.label, to: '/' }]" current="Корзина">
         <div v-if="!cart.restored" class="cart-loading">
           <FsSpinner size="large" />
         </div>
@@ -9,12 +9,12 @@
         <SfEmptyState
           v-else-if="!cart.items.length"
           title="Корзина пуста"
-          description="Добавьте блюда из нашего меню"
+          :description="`Добавьте ${itemTerm.plural.nom} из нашего ${menu.gen}`"
           size="lg"
         >
           <ShoppingCart />
           <template #action>
-            <FsButton @click="navigateTo('/')">В меню</FsButton>
+            <FsButton @click="navigateTo('/')">В {{ menu.acc }}</FsButton>
           </template>
         </SfEmptyState>
 
@@ -81,6 +81,7 @@ import { navigateTo, useNuxtData } from 'nuxt/app'
 import { ShoppingCart, Clock } from 'lucide-vue-next'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { useCartEdit } from '~/composables/useCartEdit'
@@ -92,6 +93,7 @@ import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CartItem from '~/components/cart/CartItem.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'
 
+const { menu, item: itemTerm } = useStorefrontTerms()
 const cart = useCartStore()
 const menuStore = useMenuStore()
 const currency = useCurrency()

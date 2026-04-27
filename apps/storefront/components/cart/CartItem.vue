@@ -3,7 +3,7 @@
     <div class="item-photo">
       <img v-if="item.photo" :src="item.photo" :alt="item.dishName" class="item-img" loading="lazy" >
       <div v-else class="item-placeholder">
-        <UtensilsCrossed :size="24" />
+        <component :is="placeholderIcon" :size="24" />
       </div>
     </div>
 
@@ -54,12 +54,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Pencil, Trash2, UtensilsCrossed } from 'lucide-vue-next'
+import { Pencil, Trash2 } from 'lucide-vue-next'
 import { getItemUnitPrice, getItemSummary } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { FsIconButton } from '@fastio/public-ui'
 import { useConfirm } from '~/composables/useConfirm'
+import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
+
+const { placeholderIcon } = useItemPlaceholder()
 
 type Props = {
   item: CartItem

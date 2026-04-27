@@ -1,6 +1,6 @@
 <template>
   <div class="wizard-root">
-    <UiCard size="large" class="wizard-card">
+    <UiCard size="large" class="wizard-card" :class="{ wide: currentStep === 'plan' }">
       <!-- Progress -->
       <div class="progress">
         <div
@@ -21,6 +21,11 @@
         <OnboardingStepMenuStyle
           v-else-if="currentStep === 'menuStyle'"
           v-model="form.menuStyle"
+        />
+        <OnboardingStepPlan
+          v-else-if="currentStep === 'plan'"
+          v-model="form.plan"
+          :business-type="form.businessType"
         />
         <OnboardingStepInfo
           v-else-if="currentStep === 'info'"
@@ -63,6 +68,7 @@
           v-if="currentStep !== 'complete'"
           type="primary"
           :loading="saving"
+          :disabled="!canAdvance"
           @click="next"
         >
           Далее
@@ -83,18 +89,22 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { UiButton, UiCard } from '@fastio/ui'
-import type { BusinessType, MenuStyle } from '@fastio/shared'
+import type { BusinessType, MenuStyle, TenantModules } from '@fastio/shared'
+import { resolveFeaturesForPlan } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
+import { usePlans } from '~/composables/plan/usePlans'
 import OnboardingStepType from '~/components/onboarding/OnboardingStepType.vue'
 import OnboardingStepMenuStyle from '~/components/onboarding/OnboardingStepMenuStyle.vue'
+import OnboardingStepPlan from '~/components/onboarding/OnboardingStepPlan.vue'
 import OnboardingStepInfo from '~/components/onboarding/OnboardingStepInfo.vue'
 import OnboardingStepBranch from '~/components/onboarding/OnboardingStepBranch.vue'
 import OnboardingStepModules from '~/components/onboarding/OnboardingStepModules.vue'
 import OnboardingStepComplete from '~/components/onboarding/OnboardingStepComplete.vue'
 
-type StepName = 'type' | 'menuStyle' | 'info' | 'branch' | 'modules' | 'complete'
+type StepName = 'type' | 'menuStyle' | 'plan' | 'info' | 'branch' | 'modules' | 'complete'
 
 const tenantStore = useTenantStore()
+const { plans } = usePlans()
 
 const step = ref(1)
 const saving = ref(false)
@@ -102,9 +112,11 @@ const typeStepRef = ref<InstanceType<typeof OnboardingStepType> | null>(null)
 const infoStepRef = ref<InstanceType<typeof OnboardingStepInfo> | null>(null)
 const branchStepRef = ref<InstanceType<typeof OnboardingStepBranch> | null>(null)
 const modulesStepRef = ref<InstanceType<typeof OnboardingStepModules> | null>(null)
+
 const form = reactive({
   businessType: tenantStore.tenant.businessType as BusinessType | null,
   menuStyle: tenantStore.tenant.menuStyle,
+  plan: (tenantStore.tenant.subscription?.plan ?? null) as string | null,
   name: tenantStore.tenant.name,
   phone: tenantStore.tenant.contacts?.phone ?? '',
   timezone: tenantStore.tenant.timezone,
@@ -115,20 +127,32 @@ const form = reactive({
 
 const stepList = computed<StepName[]>(() => {
   if (form.businessType === 'services') {
-    return ['type', 'info', 'branch', 'complete']
+    return ['type', 'plan', 'info', 'branch', 'complete']
   }
 
-  return ['type', 'menuStyle', 'info', 'branch', 'modules', 'complete']
+  return ['type', 'menuStyle', 'plan', 'info', 'branch', 'modules', 'complete']
 })
 
 const totalSteps = computed(() => stepList.value.length)
 const currentStep = computed<StepName>(() => stepList.value[step.value - 1])
+
+// Кнопка «Далее» заблокирована, когда ввод текущего шага не достаточен.
+// Это даёт мгновенный визуальный фидбэк, не дожидаясь клика и валидации шага.
+const canAdvance = computed(() => {
+  switch (currentStep.value) {
+    case 'type': return form.businessType !== null
+    case 'plan': return form.plan !== null
+    case 'modules': return form.delivery || form.pickup || form.dineIn
+    default: return true
+  }
+})
 
 const prev = () => {
   if (step.value > 1) step.value--
 }
 
 const next = async () => {
+  // Шаг `plan` блокируется на уровне кнопки (canAdvance), поэтому отдельная validate() ему не нужна.
   const stepRefs: Record<string, { validate: () => boolean } | null> = {
     type: typeStepRef.value,
     info: infoStepRef.value,
@@ -142,20 +166,26 @@ const next = async () => {
   saving.value = true
   try {
     if (currentStep.value === 'type') {
-      const updates: Parameters<typeof tenantStore.update>[0] = { businessType: form.businessType }
-
-      if (form.businessType === 'services') {
-        updates.modules = {
-          ...tenantStore.tenant.modules,
-          delivery: false,
-          pickup: false,
-          dineIn: false,
-          services: true,
-        }
-      }
-      await tenantStore.update(updates)
+      // На type-шаге фиксируем только тип бизнеса. Конкретные модули определит выбор тарифа
+      // (для services это всегда `services: true`, для retail — что включает данный план).
+      await tenantStore.update({ businessType: form.businessType })
     } else if (currentStep.value === 'menuStyle') {
       await tenantStore.update({ menuStyle: form.menuStyle })
+    } else if (currentStep.value === 'plan') {
+      // Меняем план только если новый отличается от текущего, иначе RPC кинет 'Already on this plan'.
+      if (form.plan && form.plan !== tenantStore.tenant.subscription?.plan) {
+        await tenantStore.changePlan(form.plan)
+      }
+      // По выбранному плану рассчитываем включённые модули и сохраняем.
+      // services: для услуг-тенанта дополнительно включаем `services: true` (если тариф его содержит —
+      // он уже будет true; если нет — gate всё равно его залочит, но семантика state сохранится).
+      const modulesFromPlan = computeModulesForPlan(form.plan, form.businessType)
+
+      await tenantStore.update({ modules: { ...tenantStore.tenant.modules, ...modulesFromPlan } })
+      // Синхронизируем `form.*` toggle'ы с тем, что план реально открыл.
+      form.delivery = !!modulesFromPlan.delivery
+      form.pickup = !!modulesFromPlan.pickup
+      form.dineIn = !!modulesFromPlan.dineIn
     } else if (currentStep.value === 'info') {
       await tenantStore.update({
         name: form.name.trim(),
@@ -166,7 +196,14 @@ const next = async () => {
         timezone: form.timezone,
       })
     } else if (currentStep.value === 'branch') {
-      // Branch is saved inline via branchStore.add — nothing to save here
+      if (branchStepRef.value?.isOptedOut()) {
+        await tenantStore.update({
+          onboardingState: {
+            ...tenantStore.tenant.onboardingState,
+            branchNotNeeded: true,
+          },
+        })
+      }
     } else if (currentStep.value === 'modules') {
       await tenantStore.update({
         modules: {
@@ -184,6 +221,33 @@ const next = async () => {
   }
 }
 
+/**
+ * Вычисляет состояние `modules` для тенанта на основании выбранного тарифа.
+ * Для услуг — выставляет services=true и явно гасит retail-каналы (на случай если юзер
+ * сначала выбрал retail-тип, потом передумал). Для retail — выставляет каналы по умолчанию
+ * только в пределах того, что тариф открывает.
+ */
+function computeModulesForPlan(planKey: string | null, bt: BusinessType | null): Partial<TenantModules> {
+  if (!planKey || !bt) return {}
+  const features = resolveFeaturesForPlan(plans.value, planKey, bt)
+  const allowed = features.modules
+
+  if (bt === 'services') {
+    return {
+      services: allowed.services,
+      delivery: false,
+      pickup: false,
+      dineIn: false,
+    }
+  }
+
+  // retail: даём дефолтно delivery+pickup если тариф их открывает; dineIn — отдельный шаг.
+  return {
+    delivery: allowed.delivery,
+    pickup: allowed.pickup,
+  }
+}
+
 const finish = async () => {
   saving.value = true
   try {
@@ -195,6 +259,8 @@ const finish = async () => {
 </script>
 
 <style scoped lang="scss">
+@use '@fastio/styles/mixins/media-queries' as mq;
+
 .wizard-root {
   position: fixed;
   inset: 0;
@@ -208,9 +274,14 @@ const finish = async () => {
 }
 
 .wizard-card {
+  width: 100%;
   max-width: 480px;
   gap: var(--space-32);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+
+  &.wide {
+    max-width: 860px;
+  }
 }
 
 .progress {

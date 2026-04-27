@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BillingTransaction } from '@fastio/shared'
+import { DEFAULT_TRIAL_DAYS } from '@fastio/shared'
 import { query } from '~/utils/query'
 
 const mapTransaction = (row: Record<string, unknown>): BillingTransaction => ({
@@ -24,6 +25,13 @@ export const billingApi = {
     )
 
     return (data ?? []).map(mapTransaction)
+  },
+
+  async getConfig(sb: SupabaseClient): Promise<{ trialDays: number }> {
+    const data = await query(sb.from('billing_config').select('trial_days').single())
+    const trialDays = data?.trial_days
+
+    return { trialDays: typeof trialDays === 'number' ? trialDays : DEFAULT_TRIAL_DAYS }
   },
 
   async changePlan(sb: SupabaseClient, tenantId: string, newPlanKey: string): Promise<string> {

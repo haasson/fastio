@@ -2,6 +2,10 @@
   <div class="plan-cards-root">
     <UiSectionHeader title="Тариф" />
 
+    <UiAlert v-if="isOnTrial" type="info">
+      Пробный период до {{ trialEndsFormatted }} — меняйте тариф бесплатно, списаний не будет.
+    </UiAlert>
+
     <div class="cards">
       <UiCard
         v-for="card in planCards"
@@ -63,35 +67,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiTitle, UiText, UiIcon, UiButton, UiCard, UiSectionHeader, UiBadge, UiPopover, useMessage } from '@fastio/ui'
+import { UiTitle, UiText, UiIcon, UiButton, UiCard, UiSectionHeader, UiBadge, UiPopover, UiAlert, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
-import type { Plan } from '@fastio/shared'
-import { getPlanTierOrder, extractPlanTier } from '@fastio/shared'
 import { usePlans } from '~/composables/plan/usePlans'
+import { getPlanFeatureLabels, getPrevPlanName, getChangePlanConfirmText } from '~/utils/planFeatureLabels'
 import { useTenantStore } from '~/stores/tenant'
-
-const MODULE_LABELS: Record<string, string> = {
-  delivery: 'Доставка',
-  pickup: 'Самовывоз',
-  modifiers: 'Модификаторы',
-  addons: 'Добавки',
-  promotions: 'Акции и промокоды',
-  combos: 'Комбо-наборы',
-  kitchen: 'Экран кухни (KDS)',
-  dineIn: 'QR-столы и зал',
-  reservations: 'Бронирование столиков',
-  services: 'Онлайн-запись',
-  branches: 'Филиалы',
-  customRoles: 'Кастомные роли',
-  customers: 'База клиентов',
-  team: 'Управление командой',
-  dashboard: 'Дашборд и статистика',
-}
-
-const BASE_FEATURES: Record<string, string[]> = {
-  retail: ['Конструктор сайта', 'Каталог блюд / товаров', 'Кастомный домен', 'Тема и дизайн'],
-  services: ['Конструктор сайта', 'Каталог услуг', 'Кастомный домен', 'Тема и дизайн'],
-}
 
 type PlanCard = {
   key: string
@@ -112,39 +92,14 @@ const { error, success } = useMessage()
 const { confirm } = useConfirm()
 
 const currentPlanKey = computed(() => tenant.value.subscription?.plan ?? '')
+const isOnTrial = computed(() => tenant.value.subscription?.status === 'trial')
+const trialEndsFormatted = computed(() => {
+  const raw = tenant.value.subscription?.trialEndsAt
 
-const planFeatureLabels = (plan: Plan): string[] => {
-  if (extractPlanTier(plan.key) === 'showcase') {
-    return BASE_FEATURES[plan.businessType] ?? BASE_FEATURES.retail
-  }
+  if (!raw) return ''
 
-  const labels: string[] = []
-  const f = plan.features
-  const mods = f.modules ?? {}
-
-  for (const [key, val] of Object.entries(mods)) {
-    if (val && MODULE_LABELS[key]) labels.push(MODULE_LABELS[key])
-  }
-  if (f.site?.telegramNotifications) labels.push('Уведомления в Telegram')
-  if (f.menu?.virtualCategories) labels.push('Виртуальные категории')
-  if (f.menu?.ingredients) labels.push('Состав блюд')
-  if (f.resources?.max !== undefined) {
-    labels.push(f.resources.max === 0 ? 'Без лимита ресурсов' : `До ${f.resources.max} активных ресурсов`)
-  }
-
-  return labels
-}
-
-const prevPlanName = (plan: Plan): string | null => {
-  const order = getPlanTierOrder(plan.key)
-
-  if (order === 0) return null
-  const prev = plans.value.find(
-    (p) => p.businessType === plan.businessType && getPlanTierOrder(p.key) === order - 1,
-  )
-
-  return prev?.name ?? null
-}
+  return new Date(raw).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+})
 
 const planCards = computed<PlanCard[]>(() => {
   const bt = businessType.value ?? 'retail'
@@ -158,8 +113,8 @@ const planCards = computed<PlanCard[]>(() => {
     shortName: plan.name,
     description: plan.description,
     price: plan.price,
-    featureLabels: planFeatureLabels(plan),
-    inheritedFromName: prevPlanName(plan),
+    featureLabels: getPlanFeatureLabels(plan, tenant.value.menuStyle),
+    inheritedFromName: getPrevPlanName(plan, plans.value),
     isCurrent: plan.key === currentPlanKey.value,
     isDowngrade: getPlanSortOrder(plan.key) < getPlanSortOrder(currentPlanKey.value),
   }))
@@ -174,7 +129,7 @@ const handleChangePlan = async (planKey: string) => {
 
   const ok = await confirm({
     title: `Перейти на тариф «${card.name}»?`,
-    message: `Сейчас с баланса спишется ${card.price.toLocaleString('ru')} ₽, и начнётся новый оплачиваемый период на 30 дней. Неиспользованные деньги за текущий тариф не возвращаются.`,
+    message: getChangePlanConfirmText(card.price, isOnTrial.value),
     confirmText: 'Перейти',
     cancelText: 'Отмена',
   })

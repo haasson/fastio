@@ -1,7 +1,7 @@
 /**
  * Единая модель причин, по которым фича может быть недоступна.
  * Приоритет (от высшего к низшему):
- *   suspended → absent → flag → locked → disabled → unconfigured → forbidden → null
+ *   suspended → absent → flag → locked → opted-out → disabled → unconfigured → forbidden → null
  *
  * Высший приоритет — самый "глобальный" отказ. Если аккаунт suspended, нет
  * смысла говорить пользователю "нужен план повыше" или "нет прав".
@@ -11,6 +11,7 @@ export type GateReason
     | 'absent' // тип бизнеса/menuStyle не поддерживает фичу
     | 'flag' // compile-time feature flag выключен
     | 'locked' // тариф ниже требуемого
+    | 'opted-out' // юзер явно отказался от фичи на онбординге (для возврата нужна поддержка)
     | 'disabled' // модуль выключен пользователем в /settings/modules
     | 'unconfigured' // нужна настройка тенанта (например scheduledOrders.enabled=false)
     | 'forbidden' // нет прав по роли

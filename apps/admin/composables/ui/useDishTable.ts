@@ -5,6 +5,7 @@ import type { Dish, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import { useTagDisplay } from '~/composables/ui/useTagDisplay'
+import { useItemVariant } from '~/composables/useItemVariant'
 
 type Actions = {
   onEdit: (dish: Dish) => void
@@ -15,6 +16,7 @@ type Actions = {
 
 export function useDishTable(dishes: Ref<Dish[]>, actions: Actions) {
   const searchQuery = ref('')
+  const { variant: placeholderVariant } = useItemVariant()
 
   const filteredDishes = computed(() => {
     const q = searchQuery.value.trim().toLowerCase()
@@ -36,7 +38,7 @@ export function useDishTable(dishes: Ref<Dish[]>, actions: Actions) {
       width: 56,
       render: (row) => row.photos[0]
         ? h('img', { src: row.photos[0], alt: row.name, style: 'width:40px;height:40px;border-radius:8px;object-fit:cover;display:block' })
-        : h(UiPhotoPlaceholder, { size: 'small' }),
+        : h(UiPhotoPlaceholder, { size: 'small', variant: placeholderVariant.value }),
     },
     {
       title: 'Название',
