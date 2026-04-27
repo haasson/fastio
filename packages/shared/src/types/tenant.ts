@@ -154,6 +154,8 @@ export type TenantSubscription = {
   gracePeriodDays: number | null
 }
 
+export type PaymentMethod = 'cash' | 'card' | 'online'
+
 export type BusinessType = 'retail' | 'services'
 
 export type MenuStyle = 'food' | 'catalog'
@@ -288,5 +290,6 @@ export type Tenant = {
   onboardingState: OnboardingState
   orderSchedulingConfig: OrderSchedulingConfig
   legalInfo: TenantLegalInfo | null
+  paymentMethods: PaymentMethod[]
   createdAt: string
 }

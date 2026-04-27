@@ -1,27 +1,36 @@
 import { watch } from 'vue'
+import type { Ref } from 'vue'
 import { reconcileCart } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
-import { useMenuStore } from '~/stores/menu'
+import type { ClientAddon } from '~/stores/menu'
 import { useToast } from '~/composables/useToast'
 import { formatRemovedToasts } from '~/utils/format-removed-toast'
+import type { Dish, Combo, DishModifierGroup } from '@fastio/shared'
 
-export function useCartReconciler() {
+type MenuData = {
+  dishes: Dish[]
+  combos: Combo[]
+  dishModifiers: Record<string, DishModifierGroup[]>
+  dishAddons: Record<string, ClientAddon[]>
+}
+
+export function useCartReconciler(menuRef: Ref<MenuData | null>) {
   const cartStore = useCartStore()
-  const menuStore = useMenuStore()
   const { warning } = useToast()
 
   watch(
-    () => [menuStore.allDishes.length, menuStore.allCombos.length, cartStore.restored] as const,
-    ([dishCount, comboCount, restored]) => {
+    () => [!!menuRef.value, cartStore.restored] as const,
+    ([menuLoaded, restored]) => {
       if (!restored) return
-      if (dishCount === 0 && comboCount === 0) return
+      if (!menuLoaded) return
       if (cartStore.items.length === 0) return
 
+      const menu = menuRef.value!
       const result = reconcileCart(cartStore.items, {
-        dishes: menuStore.allDishes,
-        combos: menuStore.allCombos,
-        dishModifiers: menuStore.dishModifiers,
-        dishAddons: menuStore.dishAddons,
+        dishes: menu.dishes,
+        combos: menu.combos,
+        dishModifiers: menu.dishModifiers,
+        dishAddons: menu.dishAddons,
       })
 
       const hasChanges = result.removed.length > 0 || result.updated.length > 0

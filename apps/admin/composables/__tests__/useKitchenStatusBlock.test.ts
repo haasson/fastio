@@ -44,6 +44,8 @@ const makeOrder = (overrides: Partial<Order> = {}): Order => ({
   statusGroup: 'in_progress',
   statusName: null,
   paymentType: 'cash',
+  needsChange: false,
+  changeFrom: null,
   branchId: null,
   branchAddress: null,
   deliveryZoneId: null,

@@ -64,6 +64,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     },
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config ?? {}),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
+    paymentMethods: (row.payment_methods ?? ['cash', 'card']) as Tenant['paymentMethods'],
     createdAt: row.created_at,
   }
 }
@@ -101,6 +102,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   },
   order_scheduling_config: data.orderSchedulingConfig as Record<string, unknown> | undefined,
   legal_info: data.legalInfo,
+  payment_methods: data.paymentMethods,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {

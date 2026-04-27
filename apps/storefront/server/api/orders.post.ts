@@ -1,7 +1,7 @@
 import { normalizePhone, createRateLimiter } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getServerSupabase } from '../utils/supabase'
-import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType } from '../services/order-validation'
+import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType, validatePaymentMethod } from '../services/order-validation'
 import { resolveCustomer } from '../services/order-customer'
 import { resolveDelivery } from '../services/order-delivery'
 import { validateAndBuildItems } from '../services/order-items'
@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
   ])
 
   validateModulesForDeliveryType(deliveryType, tenantConfig.modules)
+  validatePaymentMethod(paymentType, tenantConfig.paymentMethods)
 
   // 3. Валидация блюд, модификаторов, пересчёт цен
   const { serverItems, subtotal, comboItemsMap } = await validateAndBuildItems(supabase, tenantId, body.items)
@@ -88,6 +89,10 @@ export default defineEventHandler(async (event) => {
       total,
       status: initialStatusId,
       payment_type: paymentType,
+      needs_change: paymentType === 'cash' && body.needsChange === true,
+      change_from: paymentType === 'cash' && body.needsChange === true && typeof body.changeFrom === 'number' && body.changeFrom > total
+        ? body.changeFrom
+        : null,
       ...(idempotencyKey && { idempotency_key: idempotencyKey }),
       ...(branchId && { branch_id: branchId }),
       ...(matchedZone && { delivery_zone_id: matchedZone.id }),

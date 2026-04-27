@@ -94,6 +94,9 @@
       <span class="payment-type">
         <UiIcon :name="paymentIcon" :size="13" />
         {{ PAYMENT_TYPE_LABELS[order.paymentType] }}
+        <template v-if="order.needsChange && order.paymentType === 'cash'">
+          · сдача с {{ order.changeFrom }} ₽
+        </template>
       </span>
     </div>
 

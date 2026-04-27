@@ -12,6 +12,7 @@ export type TenantOrderConfig = {
   deliveryMinOrder: number
   deliveryMode: string
   modules: Record<string, boolean> | null
+  paymentMethods: string[]
 }
 
 export type OrderInitialData = {
@@ -51,7 +52,7 @@ export async function fetchOrderInitialData(
   tenantId: string,
 ): Promise<OrderInitialData> {
   const [{ data: tenantData, error: tenantError }, { data: initialStatusData }] = await Promise.all([
-    supabase.from('tenants').select('delivery_fee, free_delivery_from, delivery_min_order, delivery_mode, modules').eq('id', tenantId).single(),
+    supabase.from('tenants').select('delivery_fee, free_delivery_from, delivery_min_order, delivery_mode, modules, payment_methods').eq('id', tenantId).single(),
     supabase.from('order_statuses').select('id').eq('tenant_id', tenantId).eq('group_type', 'new').order('position').limit(1).single(),
   ])
 
@@ -70,8 +71,15 @@ export async function fetchOrderInitialData(
       deliveryMinOrder: Number(tenantData.delivery_min_order),
       deliveryMode: (tenantData.delivery_mode as string) ?? 'zones',
       modules: tenantData.modules as Record<string, boolean> | null,
+      paymentMethods: (tenantData.payment_methods as string[] | null) ?? ['cash', 'card'],
     },
     initialStatusId: initialStatusData.id as string,
+  }
+}
+
+export function validatePaymentMethod(paymentType: PaymentType, paymentMethods: string[]): void {
+  if (!paymentMethods.includes(paymentType)) {
+    throw createError({ statusCode: 400, message: 'Недопустимый способ оплаты' })
   }
 }
 

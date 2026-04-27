@@ -113,6 +113,21 @@
             <section class="form-section">
               <FsHeading as="h6" class="section-title">Оплата</FsHeading>
               <FsRadioGroup v-model="checkout.form.paymentType" :options="paymentOptions" orientation="vertical" />
+              <div v-if="checkout.form.paymentType === 'cash'" class="change-section">
+                <FsCheckbox v-model="checkout.form.needsChange" label="Нужна сдача" />
+                <div v-if="checkout.form.needsChange" class="change-input">
+                  <FsInput
+                    :model-value="checkout.form.changeFrom ?? undefined"
+                    type="number"
+                    :min="changeMin"
+                    :step="500"
+                    :error="changeError"
+                    suffix="₽"
+                    @update:model-value="checkout.form.changeFrom = Number($event) || null"
+                  />
+                  <span v-if="changeError" class="change-hint error">Сумма должна быть больше итога заказа</span>
+                </div>
+              </div>
             </section>
 
             <CheckoutPromoSection v-if="tenant?.modules?.promotions" />
@@ -144,7 +159,7 @@ import { useConfirm } from '~/composables/useConfirm'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
-import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup, FsSelect } from '@fastio/public-ui'
+import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup, FsSelect, FsCheckbox } from '@fastio/public-ui'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CheckoutAddressSection from '~/components/checkout/CheckoutAddressSection.vue'
 import CheckoutPickupBranch from '~/components/checkout/CheckoutPickupBranch.vue'
@@ -164,10 +179,44 @@ const showDeliveryTabs = computed(() => {
   return !!tenant.value?.deliveryAvailable && !!tenant.value?.modules?.pickup
 })
 
-const paymentOptions = [
-  { value: 'card', label: 'Картой при получении' },
-  { value: 'cash', label: 'Наличными' },
-]
+const PAYMENT_LABELS: Record<string, string> = {
+  cash: 'Наличными',
+  card: 'Картой при получении',
+  online: 'Онлайн',
+}
+
+const paymentOptions = computed(() =>
+  (tenant.value?.paymentMethods ?? ['cash', 'card'])
+    .map((m) => ({ value: m, label: PAYMENT_LABELS[m] ?? m })),
+)
+
+watch(
+  () => tenant.value?.paymentMethods,
+  (methods) => {
+    if (methods && !methods.includes(checkout.form.paymentType)) {
+      checkout.form.paymentType = methods[0] ?? 'cash'
+    }
+  },
+  { immediate: true },
+)
+
+const changeMin = computed(() => Math.ceil((checkout.orderTotal + 1) / 500) * 500)
+
+watch(
+  () => checkout.form.needsChange,
+  (needs) => {
+    if (needs && !checkout.form.changeFrom) {
+      checkout.form.changeFrom = Math.ceil((checkout.orderTotal + 1) / 500) * 500
+    }
+    if (!needs) checkout.form.changeFrom = null
+  },
+)
+
+const changeError = computed(() =>
+  checkout.form.needsChange &&
+  checkout.form.paymentType === 'cash' &&
+  (checkout.form.changeFrom === null || checkout.form.changeFrom <= checkout.orderTotal),
+)
 
 const schedulingEnabled = computed(() => tenant.value?.orderSchedulingConfig?.enabled ?? false)
 
@@ -244,6 +293,8 @@ function validate(): boolean {
     else if (!checkout.form.scheduledTime) errors.push('Выберите время доставки')
   }
 
+  if (changeError.value) errors.push('Укажите корректную сумму для сдачи')
+
   if (errors.length) {
     submitErrors.value = errors
     return false
@@ -313,6 +364,8 @@ async function submitOrder() {
       deliveryType: checkout.form.deliveryType,
       comment: checkout.form.comment || undefined,
       paymentType: checkout.form.paymentType,
+      needsChange: checkout.form.paymentType === 'cash' ? checkout.form.needsChange : false,
+      changeFrom: checkout.form.paymentType === 'cash' && checkout.form.needsChange ? checkout.form.changeFrom : null,
       idempotencyKey: idempotencyKey.value,
     }
 
@@ -398,6 +451,25 @@ async function submitOrder() {
 
 .section-title {
   margin: 0 0 16px;
+}
+
+.change-section {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.change-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 200px;
+}
+
+.change-hint {
+  font-size: 13px;
+  color: var(--color-error);
 }
 
 .delivery-tabs {

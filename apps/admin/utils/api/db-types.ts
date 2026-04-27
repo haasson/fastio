@@ -58,6 +58,7 @@ export type TenantRow = {
   }
   order_scheduling_config: Record<string, unknown>
   legal_info: Record<string, unknown> | null
+  payment_methods: string[]
   created_at: string
 }
 
@@ -216,6 +217,8 @@ export type OrderRow = {
   total: number
   status: string
   payment_type: 'cash' | 'card' | 'online'
+  needs_change: boolean
+  change_from: number | null
   branch_id: string | null
   branch_address: string | null
   delivery_zone_id: string | null

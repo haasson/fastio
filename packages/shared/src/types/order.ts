@@ -97,6 +97,8 @@ export type Order = {
   statusGroup: OrderStatusGroup | null
   statusName: string | null
   paymentType: 'cash' | 'card' | 'online'
+  needsChange: boolean
+  changeFrom: number | null
   branchId: string | null
   branchAddress: string | null
   deliveryZoneId: string | null

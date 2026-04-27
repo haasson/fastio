@@ -217,6 +217,10 @@
         class="payment-select"
       />
     </div>
+    <div v-if="form.paymentType === 'cash' && form.needsChange" class="change-row">
+      <span class="block-label">Сдача с</span>
+      <span class="change-value">{{ form.changeFrom }} ₽</span>
+    </div>
   </div>
 
   <!-- Комментарий (только в режиме создания) -->
@@ -256,6 +260,8 @@ type OrderFormData = {
   deliveryFee: number
   comment: string
   paymentType: Order['paymentType']
+  needsChange: boolean
+  changeFrom: number | null
   schedulingMode: 'asap' | 'scheduled'
   scheduledDate: string | null
   scheduledTime: string | null
@@ -567,6 +573,21 @@ const paymentOptions = PAYMENT_OPTIONS
 
 .payment-select {
   width: 260px;
+}
+
+.change-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding-top: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.change-value {
+  font-weight: 500;
+  color: var(--color-text);
 }
 
 .address-field {

@@ -6,9 +6,9 @@
     <CheckboxRoot
       class="checkbox-box"
       :class="`size-${size}`"
-      :checked="modelValue"
+      :model-value="modelValue"
       :disabled="disabled"
-      @update:checked="onCheckedChange"
+      @update:model-value="onCheckedChange"
     >
       <CheckboxIndicator class="checkbox-indicator">
         <Check class="check-icon" :stroke-width="3" />

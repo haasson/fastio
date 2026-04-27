@@ -6,9 +6,9 @@
     <SwitchRoot
       class="switch-track"
       :class="`size-${size}`"
-      :checked="modelValue"
+      :model-value="modelValue"
       :disabled="disabled"
-      @update:checked="onCheckedChange"
+      @update:model-value="onCheckedChange"
     >
       <SwitchThumb class="switch-thumb" :class="`size-${size}`" />
     </SwitchRoot>

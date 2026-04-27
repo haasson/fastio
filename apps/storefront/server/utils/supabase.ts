@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Tenant, Category, CategoryType, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle } from '@fastio/shared'
+import type { Tenant, Category, CategoryType, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle, PaymentMethod } from '@fastio/shared'
 import { mapDeliveryZoneRow, defaultSeo, resolveModules, parseSchedulingConfig } from '@fastio/shared'
 
 export function getServerSupabase() {
@@ -57,6 +57,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     },
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config as Record<string, unknown> | null),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
+    paymentMethods: ((row.payment_methods as string[] | null) ?? ['cash', 'card']) as PaymentMethod[],
     createdAt: row.created_at as string,
   }
 }
@@ -157,6 +158,8 @@ export function mapOrder(row: Record<string, unknown>): Order {
     statusGroup: (row._statusInfo as { group_type: string } | null)?.group_type as Order['statusGroup'] ?? null,
     statusName: (row._statusInfo as { name: string } | null)?.name ?? null,
     paymentType: row.payment_type as Order['paymentType'],
+    needsChange: (row.needs_change as boolean) ?? false,
+    changeFrom: (row.change_from as number | null) ?? null,
     branchId: row.branch_id as string | null,
     branchAddress: (row._branchInfo as { address: string } | null)?.address ?? null,
     deliveryZoneId: row.delivery_zone_id as string | null,

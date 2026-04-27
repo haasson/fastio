@@ -116,6 +116,8 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     statusGroup: (raw as Record<string, unknown>).statusGroup as Order['statusGroup'] ?? null,
     statusName: (raw as Record<string, unknown>).statusName as string ?? null,
     paymentType: row.payment_type,
+    needsChange: row.needs_change ?? false,
+    changeFrom: row.change_from ?? null,
     branchId: row.branch_id,
     branchAddress: row.branch_address ?? null,
     deliveryZoneId: row.delivery_zone_id,

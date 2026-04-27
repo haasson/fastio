@@ -1,5 +1,17 @@
 <template>
   <div class="settings-root">
+    <UiForm class="form" @submit="handleSavePayments">
+      <UiSectionHeader title="Методы оплаты" />
+      <div class="checkboxes">
+        <UiCheckbox v-model="paymentForm.cash">Наличные</UiCheckbox>
+        <UiCheckbox v-model="paymentForm.card">Карта при получении</UiCheckbox>
+        <UiCheckbox v-model="paymentForm.online">Онлайн</UiCheckbox>
+      </div>
+      <div class="footer">
+        <UiButton submit type="primary" :loading="savingPayments">Сохранить</UiButton>
+      </div>
+    </UiForm>
+
     <UiForm class="form" @submit="handleSave">
       <UiSectionHeader title="Предзаказ" />
 
@@ -83,7 +95,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
-import { UiForm, UiInputNumber, UiButton, UiSectionHeader, UiSelect, useMessage } from '@fastio/ui'
+import { UiForm, UiInputNumber, UiButton, UiSectionHeader, UiSelect, UiCheckbox, useMessage } from '@fastio/ui'
 import type { OrderSchedulingConfig } from '@fastio/shared'
 import { buildMinuteOptions } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
@@ -105,6 +117,7 @@ const api = useDatabase()
 const gate = useGate()
 const { success, error } = useMessage()
 const saving = ref(false)
+const savingPayments = ref(false)
 
 const tenant = computed(() => tenantStore.tenant)
 
@@ -112,6 +125,39 @@ const statusOptions = computed(() => statuses.value
   .filter((s) => s.groupType === 'in_progress')
   .map((s) => ({ label: s.name, value: s.id })),
 )
+
+// ── Payment methods ───────────────────────────────────────────────────────────
+
+type PaymentForm = { cash: boolean; card: boolean; online: boolean }
+
+const buildPaymentForm = (methods: string[]): PaymentForm => ({
+  cash: methods.includes('cash'),
+  card: methods.includes('card'),
+  online: methods.includes('online'),
+})
+
+const paymentForm = reactive<PaymentForm>(buildPaymentForm(tenant.value.paymentMethods))
+
+watch(tenant, (t) => Object.assign(paymentForm, buildPaymentForm(t.paymentMethods)))
+
+const handleSavePayments = async () => {
+  const methods = (['cash', 'card', 'online'] as const).filter((m) => paymentForm[m])
+
+  if (methods.length === 0) {
+    error('Должен быть выбран хотя бы один метод оплаты')
+
+    return
+  }
+  savingPayments.value = true
+  try {
+    await tenantStore.update({ paymentMethods: methods })
+    success('Сохранено')
+  } finally {
+    savingPayments.value = false
+  }
+}
+
+// ── Scheduling ────────────────────────────────────────────────────────────────
 
 const defaultConfig = (): OrderSchedulingConfig => ({
   enabled: false,
@@ -188,6 +234,12 @@ const handleSave = async () => {
 
 .form {
   @include modal-form;
+}
+
+.checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
 }
 
 .row {

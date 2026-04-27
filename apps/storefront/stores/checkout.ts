@@ -36,7 +36,9 @@ type CheckoutForm = {
   customerName: string
   customerPhone: string
   comment: string
-  paymentType: 'cash' | 'card'
+  paymentType: 'cash' | 'card' | 'online'
+  needsChange: boolean
+  changeFrom: number | null
   address: string
   addressCoords: { lat: number; lon: number } | null
   entrance: string
@@ -56,6 +58,8 @@ const FORM_DEFAULTS: CheckoutForm = {
   customerPhone: '',
   comment: '',
   paymentType: 'card',
+  needsChange: false,
+  changeFrom: null,
   address: '',
   addressCoords: null,
   entrance: '',

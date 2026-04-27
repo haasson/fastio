@@ -37,17 +37,17 @@ onMounted(() => {
   authStore.init()
 })
 
-useCartReconciler()
-
 // Применяем тему тенанта как CSS-переменные
 const route = useRoute()
 const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
-const [{ data: tenant }] = await Promise.all([
+const [{ data: tenant }, { data: menuData }] = await Promise.all([
   // @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
   useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery)),
   useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
 ])
+
+useCartReconciler(menuData)
 
 const googleFontLink = computed(() => {
   const theme = tenant.value?.theme
