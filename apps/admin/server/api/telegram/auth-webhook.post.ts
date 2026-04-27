@@ -82,12 +82,12 @@ export default defineEventHandler(async (event) => {
       .eq('nonce', nonce)
       .gt('expires_at', new Date().toISOString())
       .is('completed_at', null)
-      .single()
+      .maybeSingle()
 
     console.warn('[tg-auth] nonce lookup:', { found: !!pending, dbError: dbError?.message })
 
     if (!pending) {
-      await sendMessage('❌ Ссылка для входа устарела или недействительна. Попробуйте войти заново.')
+      void sendMessage('❌ Ссылка для входа устарела или недействительна. Попробуйте войти заново.')
 
       return { ok: true }
     }
@@ -97,7 +97,8 @@ export default defineEventHandler(async (event) => {
       .update({ telegram_id: telegramId, telegram_data: telegramData })
       .eq('nonce', nonce)
 
-    await sendMessage(
+    // sendMessage in background — respond to Telegram before waiting for external API
+    void sendMessage(
       'Чтобы мы могли сохранить ваш номер телефона в профиле, нажмите кнопку ниже.\nМожно войти и без номера — он понадобится только для связи по заказу.',
       {
         reply_markup: {
@@ -130,7 +131,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    await sendMessage('✅ Готово! Вернитесь на сайт — вы уже вошли в аккаунт.', {
+    void sendMessage('✅ Готово! Вернитесь на сайт — вы уже вошли в аккаунт.', {
       reply_markup: { remove_keyboard: true },
     })
 
@@ -152,7 +153,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    await sendMessage('✅ Готово! Вернитесь на сайт — вы уже вошли в аккаунт.', {
+    void sendMessage('✅ Готово! Вернитесь на сайт — вы уже вошли в аккаунт.', {
       reply_markup: { remove_keyboard: true },
     })
 

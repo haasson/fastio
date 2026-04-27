@@ -5,7 +5,7 @@ import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../../utils/supabase'
 import { reportError } from '~/utils/reportError'
 
-const NONCE_TTL_MS = 5 * 60 * 1000
+const NONCE_TTL_MS = 15 * 60 * 1000
 
 const rateLimiter = createRateLimiter(5, 60_000)
 
