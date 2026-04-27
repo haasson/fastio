@@ -21,6 +21,7 @@ const emptyModules = (): TenantModules => ({
 const gateDelivery = ref(false)
 const gatePickup = ref(false)
 const gateDineIn = ref(false)
+const gateReservations = ref(false)
 
 const makeGateResult = (enabled: boolean) => ({ enabled, reason: enabled ? null : 'disabled' as const })
 
@@ -29,6 +30,7 @@ vi.mock('~/composables/plan/useGate', () => ({
     delivery: computed(() => makeGateResult(gateDelivery.value)),
     pickup: computed(() => makeGateResult(gatePickup.value)),
     dineIn: computed(() => makeGateResult(gateDineIn.value)),
+    reservations: computed(() => makeGateResult(gateReservations.value)),
   }),
 }))
 
@@ -98,6 +100,7 @@ const makeTenant = (overrides: Partial<Tenant> = {}): Tenant => ({
     nextStatusId: null,
   },
   legalInfo: null,
+  paymentMethods: ['cash', 'card'],
   createdAt: new Date().toISOString(),
   ...overrides,
 })
@@ -134,6 +137,7 @@ describe('useOnboarding', () => {
     gateDelivery.value = false
     gatePickup.value = false
     gateDineIn.value = false
+    gateReservations.value = false
   })
 
   describe('visibility', () => {
@@ -259,6 +263,34 @@ describe('useOnboarding', () => {
       const last = useOnboarding().steps.value.at(-1)!
 
       expect(last.title).toBe('Проверьте форму записи')
+    })
+
+    it('reservations only: includes reservations and legal, no statuses or test-order', () => {
+      tenantRef.value = makeTenant()
+      isOwnerRef.value = true
+      gateReservations.value = true
+      const ids = useOnboarding().steps.value.map((s) => s.id)
+
+      expect(ids).toEqual(['category', 'item', 'reservations', 'legal', 'site'])
+    })
+
+    it('reservations + delivery: both intake steps present, legal appears once', () => {
+      tenantRef.value = makeTenant()
+      isOwnerRef.value = true
+      gateDelivery.value = true
+      gateReservations.value = true
+      const ids = useOnboarding().steps.value.map((s) => s.id)
+
+      expect(ids).toEqual(['category', 'item', 'intake-delivery', 'reservations', 'legal', 'statuses', 'site', 'test-order'])
+    })
+
+    it('services flow ignores reservations gate', () => {
+      tenantRef.value = makeTenant({ businessType: 'services' })
+      isOwnerRef.value = true
+      gateReservations.value = true
+      const ids = useOnboarding().steps.value.map((s) => s.id)
+
+      expect(ids).toEqual(['category', 'item', 'intake-services', 'legal', 'site', 'test-order'])
     })
   })
 

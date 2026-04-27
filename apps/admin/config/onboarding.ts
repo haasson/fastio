@@ -178,6 +178,21 @@ const testOrderStep: OnboardingStep = {
   tourId: 'orders',
 }
 
+const reservationsStep: OnboardingStep = {
+  id: 'reservations',
+  title: 'Настройте бронирование столиков',
+  description:
+    'Гости смогут бронировать столик прямо с витрины. Без расписания работы слоты недоступны — начните с него.',
+  details: [
+    'Убедитесь, что в «Настройках → Контакты» заполнены часы работы — без них броней не будет',
+    'Откройте «Бронирования → Настройки» и задайте шаг слотов (15, 30 или 60 минут)',
+    'Укажите, на сколько дней вперёд принимаются брони и максимум гостей на одну запись',
+  ],
+  ctaLabel: 'Открыть настройки бронирований',
+  route: '/reservations/settings',
+  kbRoute: '/reservations',
+}
+
 const testBookingStep: OnboardingStep = {
   id: 'test-order',
   title: 'Проверьте форму записи',
@@ -195,11 +210,12 @@ const testBookingStep: OnboardingStep = {
 
 export const buildOnboardingFlow = (
   l: OnboardingLabels,
-  ctx: { isServices: boolean; modules: { delivery: boolean; pickup: boolean; dineIn: boolean } },
+  ctx: { isServices: boolean; modules: { delivery: boolean; pickup: boolean; dineIn: boolean; reservations: boolean } },
 ): OnboardingStep[] => {
   const steps: OnboardingStep[] = [categoryStep(l), itemStep(l)]
-  const { delivery, pickup, dineIn } = ctx.modules
+  const { delivery, pickup, dineIn, reservations } = ctx.modules
   const hasOrders = delivery || pickup || dineIn
+  const hasPersonalData = ctx.isServices || hasOrders || reservations
 
   if (ctx.isServices) {
     steps.push(intakeServicesStep)
@@ -207,9 +223,10 @@ export const buildOnboardingFlow = (
     if (delivery) steps.push(deliveryStep)
     if (pickup) steps.push(pickupStep)
     if (dineIn) steps.push(dineInStep)
+    if (reservations) steps.push(reservationsStep)
   }
 
-  if (ctx.isServices || hasOrders) steps.push(legalStep)
+  if (hasPersonalData) steps.push(legalStep)
   if (hasOrders) steps.push(statusesStep)
   steps.push(siteStep)
   if (ctx.isServices) steps.push(testBookingStep)

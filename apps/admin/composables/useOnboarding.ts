@@ -40,6 +40,7 @@ export const useOnboarding = () => {
       delivery: gate.delivery.value.enabled,
       pickup: gate.pickup.value.enabled,
       dineIn: gate.dineIn.value.enabled,
+      reservations: gate.reservations.value.enabled,
     },
   }))
 
