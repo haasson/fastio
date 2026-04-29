@@ -9,6 +9,23 @@
 --   resources (type: person|object, updated_at)
 --   resource_branches (junction resource ↔ branch, может уже существовать)
 
+-- ─── Baseline таблицы resources ──────────────────────────
+-- Оригинальная миграция, создавшая `resources`, была удалена из репо как часть
+-- неудачной попытки записи. На dev DB таблица уже существует, а на свежем
+-- db reset / Coolify+self-hosted bootstrap её надо создать заново перед ALTER.
+-- CREATE TABLE IF NOT EXISTS делает это безопасным no-op'ом на dev.
+
+CREATE TABLE IF NOT EXISTS resources (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id   uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  name        text NOT NULL,
+  is_active   boolean NOT NULL DEFAULT true,
+  sort_order  integer NOT NULL DEFAULT 0,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_resources_tenant ON resources(tenant_id);
+
 -- ─── Cleanup: таблицы от прошлой попытки ─────────────────
 
 DROP TABLE IF EXISTS resource_services CASCADE;
