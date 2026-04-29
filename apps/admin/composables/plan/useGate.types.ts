@@ -58,10 +58,12 @@ export type GateKey
     | 'scheduledOrders' | 'kitchenAutoStatus'
   // ───── Permission-aware (с role-check) ─────
     | 'viewMenu' | 'manageMenu'
+    | 'viewServiceMenu' | 'manageServiceMenu'
     | 'viewOrders'
     | 'viewKitchen' | 'viewKitchenQueue' | 'viewKitchenOverview'
     | 'viewTables' | 'manageTables'
     | 'viewReservations' | 'manageReservations'
+    | 'viewAppointments' | 'manageAppointments'
     | 'viewPromotions' | 'managePromotions'
     | 'viewContent' | 'editContent'
     | 'viewTeam' | 'manageTeam' | 'manageRoles'

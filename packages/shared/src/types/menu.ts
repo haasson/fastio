@@ -1,5 +1,6 @@
 export type CategoryType = 'regular' | 'combo'
 export type SpecialCategoryType = 'combo'
+export type CategoryKind = 'food' | 'service'
 
 export const SPECIAL_CATEGORY_TYPES: SpecialCategoryType[] = ['combo']
 
@@ -34,6 +35,7 @@ export type Category = {
   name: string
   slug: string | null
   type: CategoryType
+  kind: CategoryKind
   tagId: string | null
   order: number
   active: boolean

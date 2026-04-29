@@ -139,6 +139,8 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
 
   function buildCartItem(): CartItem {
     return {
+      kind: 'dish',
+      _key: '', // присваивается в cart.add() через crypto.randomUUID
       dishId: props.item.comboId ? null : props.item.id,
       comboId: props.item.comboId ?? null,
       dishName: props.item.name,

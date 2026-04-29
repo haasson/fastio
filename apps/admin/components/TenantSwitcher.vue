@@ -27,9 +27,17 @@ const tenantOptions = computed(() => tenantStore.memberships.map((membership) =>
 })),
 )
 
+// Hard-reload вместо in-memory swap: смена тенанта затрагивает много
+// module-level state'ов (channels, counters, gates), и накапливаются
+// костыли при попытке всё сбросить вручную. Ререндер с нуля проще и
+// надёжнее — заодно гарантирует свежую инициализацию.
 const currentTenantId = computed({
   get: () => tenantStore.currentTenantId ?? '',
-  set: (id: string) => tenantStore.switchTenant(id),
+  set: (id: string) => {
+    if (id === tenantStore.currentTenantId) return
+    tenantStore.switchTenant(id)
+    window.location.href = '/'
+  },
 })
 </script>
 

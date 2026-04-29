@@ -57,8 +57,8 @@ function onLogin() {
 @use '~/assets/styles/mixins' as *;
 
 .user-card-root {
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-card, 14px);
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
   padding: 16px;
 }
 
@@ -74,7 +74,7 @@ function onLogin() {
   height: 34px;
   border-radius: 50%;
   background: var(--primary);
-  color: var(--on-primary, #fff);
+  color: var(--on-primary);
   @include text-caption(700);
   @include flex-row;
   justify-content: center;
@@ -107,7 +107,7 @@ function onLogin() {
   &.router-link-active { color: var(--primary); }
 
   &--logout {
-    color: var(--color-danger, #e53935);
+    color: var(--color-error);
     margin-top: 4px;
 
     &:hover { opacity: 0.7; }

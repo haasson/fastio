@@ -46,7 +46,6 @@
                 :dish="combo"
                 :combo-id="combo.id"
                 :hide-stepper="tableMode"
-                :is-services="servicesMode"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
@@ -61,13 +60,11 @@
                 :dish="dish"
                 :has-modifiers="hasModifiers(dish)"
                 :hide-stepper="tableMode"
-                :is-services="servicesMode"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
                 @add="handleAddButton(dish)"
-                @card-click="handleCardClick(dish)"
-                @request="openRequestModal(dish)"
+                @card-click="openDishModal(dish)"
               />
             </template>
           </div>
@@ -90,19 +87,12 @@
       :mode="tableMode ? 'order' : 'add'"
       @add="handleModalAdd"
     />
-
-    <ServiceRequestModal
-      v-if="requestDish"
-      v-model="requestModalOpen"
-      :dish="requestDish"
-    />
   </FsSection>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { Dish, Combo, Tenant, Category } from '@fastio/shared'
-import { isAutoCategory } from '@fastio/shared'
 import { useNuxtData, useRouter } from 'nuxt/app'
 import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
 import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
@@ -114,7 +104,6 @@ import { FsSection, FsCard, FsHeading, FsText } from '@fastio/public-ui'
 import SfDishCard from '~/components/sf/domain/SfDishCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'
-import ServiceRequestModal from '~/components/services/ServiceRequestModal.vue'
 
 const props = defineProps<{
   defaultView: 'categories' | 'dishes'
@@ -134,14 +123,10 @@ const menuStore = useMenuStore()
 const cart = useCartStore()
 const router = useRouter()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
-// «Услуга» как режим взаимодействия (форма записи вместо корзины) — это услуги-тенант
-// с активным модулем `services`. Если модуль выключен (например, тариф без него) —
-// рендерим как обычный каталог с режимом «только просмотр».
-const servicesMode = computed(() => tenant.value?.businessType === 'services' && !!tenant.value?.modules?.services)
 const { legalInfoComplete } = useLegalCompliance()
 const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
 const effectiveOrderingEnabled = computed(() => orderingEnabled.value && legalInfoComplete.value)
-const viewOnly = computed(() => !effectiveOrderingEnabled.value && !props.tableMode && !servicesMode.value)
+const viewOnly = computed(() => !effectiveOrderingEnabled.value && !props.tableMode)
 
 const emptyStateProps = computed(() => ({
   title: menu.value.emptyTitle,
@@ -174,16 +159,6 @@ const categoryPhotos = computed<Record<string, string | null>>(() =>
 const modalOpen = ref(false)
 const modalItem = ref<ModalItem | null>(null)
 
-// Service request modal
-type ServiceDish = { id: string; name: string; price: number; categoryName: string | null }
-const requestModalOpen = ref(false)
-const requestDish = ref<ServiceDish | null>(null)
-
-function openRequestModal(dish: Dish) {
-  requestDish.value = { id: dish.id, name: dish.name, price: dish.price, categoryName: findCategoryName(dish.id) }
-  requestModalOpen.value = true
-}
-
 function hasModifiers(dish: Dish): boolean {
   return (menuStore.dishModifiers[dish.id]?.length ?? 0) > 0
 }
@@ -195,7 +170,6 @@ function openModal(item: ModalItem) {
 
 function findCategoryName(dishOrComboId: string): string | null {
   for (const cat of categories.value) {
-    if (isAutoCategory(cat)) continue
     const dishes = dishesByCategory.value[cat.id]
     if (dishes?.some(d => d.id === dishOrComboId)) return cat.name
     const combos = combosByCategory.value[cat.id]
@@ -240,14 +214,6 @@ function handleAddButton(dish: Dish) {
   }
 }
 
-function handleCardClick(dish: Dish) {
-  if (servicesMode.value) {
-    openRequestModal(dish)
-  } else {
-    openDishModal(dish)
-  }
-}
-
 function handleModalAdd(item: CartItem) {
   if (props.tableMode) {
     emit('tableOrder', item)
@@ -276,6 +242,8 @@ const modalMaxAddons = computed(() => {
 
 function addToCart(dish: Dish) {
   const item: CartItem = {
+    kind: 'dish',
+    _key: '',
     dishId: dish.id,
     comboId: null,
     dishName: dish.name,
@@ -301,6 +269,8 @@ function addToCart(dish: Dish) {
 
 function addComboToCart(combo: Combo) {
   const item: CartItem = {
+    kind: 'dish',
+    _key: '',
     dishId: null,
     comboId: combo.id,
     dishName: combo.name,

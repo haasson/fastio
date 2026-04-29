@@ -131,7 +131,7 @@ watch(state, () => {
 
 .day-off-label {
   font-size: var(--font-size-base);
-  color: var(--color-text-muted);
+  color: var(--color-text-hint);
   flex: 1;
 }
 

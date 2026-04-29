@@ -20,6 +20,7 @@
 import { ref, onUnmounted } from 'vue'
 import { FsSpinner } from '@fastio/public-ui'
 import SfIconTelegram from '~/components/sf/icons/SfIconTelegram.vue'
+import { reportError } from '~/utils/reportError'
 
 const emit = defineEmits<{ done: [] }>()
 
@@ -29,6 +30,7 @@ const error = ref('')
 let intervalId: ReturnType<typeof setInterval> | null = null
 
 async function start() {
+  if (polling.value || initializing.value) return
   initializing.value = true
   error.value = ''
   try {
@@ -40,7 +42,8 @@ async function start() {
     window.open(`https://t.me/${botUsername}?start=${nonce}`, '_blank')
     polling.value = true
     startPolling(nonce)
-  } catch {
+  } catch (e) {
+    reportError(e)
     error.value = 'Не удалось начать вход через Telegram. Попробуйте ещё раз.'
   } finally {
     initializing.value = false
@@ -48,6 +51,8 @@ async function start() {
 }
 
 function startPolling(nonce: string) {
+  // На всякий случай — не плодим параллельные интервалы.
+  stopPolling()
   intervalId = setInterval(async () => {
     try {
       const { status } = await $fetch<{ status: 'pending' | 'ok' | 'expired' }>(
@@ -61,8 +66,9 @@ function startPolling(nonce: string) {
         stopPolling()
         polling.value = false
       }
-    } catch {
-      // network hiccup — keep polling
+    } catch (e) {
+      // network hiccup — keep polling, но всё равно логируем
+      reportError(e)
     }
   }, 2000)
 }
@@ -70,6 +76,7 @@ function startPolling(nonce: string) {
 function cancel() {
   stopPolling()
   polling.value = false
+  error.value = ''
 }
 
 function stopPolling() {
@@ -143,7 +150,7 @@ onUnmounted(stopPolling)
 .tg-error {
   margin-top: 8px;
   font-size: 13px;
-  color: var(--color-error, #e53e3e);
+  color: var(--color-error);
   text-align: center;
 }
 </style>

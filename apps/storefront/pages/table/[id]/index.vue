@@ -81,7 +81,8 @@ import { useTableStore, type CheckItem } from '~/stores/table'
 import { useToast } from '~/composables/useToast'
 import { useCurrency } from '~/composables/useCurrency'
 import { useTableRealtime } from '~/composables/useTableRealtime'
-import type { CartItem } from '~/stores/cart'
+import { isDishItem, type CartItem } from '~/stores/cart'
+import { reportError } from '~/utils/reportError'
 import { ClipboardList } from 'lucide-vue-next'
 import SfFab from '~/components/sf/domain/SfFab.vue'
 import TableCheckItem from '~/components/table/TableCheckItem.vue'
@@ -145,8 +146,8 @@ async function loadCheck() {
       }
     }
     tableStore.setCheckItems(result.items)
-  } catch {
-    // Не критично
+  } catch (e) {
+    reportError(e instanceof Error ? e : new Error('[table/[id]] failed to load check'))
   }
 }
 
@@ -160,6 +161,10 @@ useTableRealtime(tenant.value?.id ?? '', loadCheck)
 
 // Заказ блюда
 async function onTableOrder(item: CartItem) {
+  if (!isDishItem(item)) {
+    reportError(new Error(`[table/[id]] expected dish item, got kind=${item.kind}`))
+    return
+  }
   try {
     await $fetch('/api/orders', {
       method: 'POST',
@@ -185,6 +190,7 @@ async function onTableOrder(item: CartItem) {
     showSuccess(`${item.dishName} — отправлено`)
     await loadCheck()
   } catch (err: unknown) {
+    reportError(err instanceof Error ? err : new Error('[table/[id]] failed to send table order'))
     const message = (err as { data?: { message?: string } })?.data?.message ?? 'Ошибка при заказе'
     showError(message)
   }

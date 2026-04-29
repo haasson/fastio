@@ -56,9 +56,9 @@ const icon = computed(() => {
 
 const iconColor = computed(() => {
   switch (props.variant) {
-    case 'success': return 'var(--color-success, #10b981)'
-    case 'error': return 'var(--color-error, #ef4444)'
-    case 'warning': return 'var(--color-warning, #f59e0b)'
+    case 'success': return 'var(--color-success)'
+    case 'error': return 'var(--color-error)'
+    case 'warning': return 'var(--color-warning)'
     default: return undefined
   }
 })

@@ -179,10 +179,10 @@ const selectedLabel = computed(() => {
   }
 
   &.is-error {
-    border-color: var(--color-error, #ef4444);
+    border-color: var(--color-error);
 
     &:focus {
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error, #ef4444) 15%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 15%, transparent);
     }
   }
 

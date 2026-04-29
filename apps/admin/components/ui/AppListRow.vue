@@ -1,5 +1,5 @@
 <template>
-  <div class="row-root" :class="{ 'row-root--disabled': disabled }">
+  <div class="row-root" :class="{ disabled }">
     <UiIcon name="grip" class="drag-handle" />
 
     <div v-if="thumbUrl !== undefined" class="thumb" :style="thumbStyle">
@@ -58,11 +58,11 @@ const thumbStyle = computed(() => ({
   padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-8);
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-bg-card);
 
   &:hover { background: var(--color-bg-hover); }
 
-  &--disabled {
+  &.disabled {
     opacity: 0.5;
   }
 }
@@ -80,7 +80,7 @@ const thumbStyle = computed(() => ({
   overflow: hidden;
   flex-shrink: 0;
   border: 1px solid var(--color-border);
-  background: var(--color-bg-secondary);
+  background: var(--color-bg-subtle);
 }
 
 .thumb-img {

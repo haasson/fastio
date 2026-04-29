@@ -88,7 +88,7 @@ const onNext = () => {
 
 .time-error {
   @include text-caption;
-  color: var(--color-error, #ef4444);
+  color: var(--color-error);
   margin-top: -8px;
 }
 

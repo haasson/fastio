@@ -1,11 +1,12 @@
 import { watch } from 'vue'
 import type { Ref } from 'vue'
-import { reconcileCart } from '@fastio/shared'
-import { useCartStore } from '~/stores/cart'
+import { useNuxtData } from 'nuxt/app'
+import { reconcileCart, reconcileServices } from '@fastio/shared'
+import type { ReconcileService, Dish, Combo, DishModifierGroup } from '@fastio/shared'
+import { useCartStore, type DishCartItem, type ServiceCartItem } from '~/stores/cart'
 import type { ClientAddon } from '~/stores/menu'
 import { useToast } from '~/composables/useToast'
 import { formatRemovedToasts } from '~/utils/format-removed-toast'
-import type { Dish, Combo, DishModifierGroup } from '@fastio/shared'
 
 type MenuData = {
   dishes: Dish[]
@@ -14,38 +15,72 @@ type MenuData = {
   dishAddons: Record<string, ClientAddon[]>
 }
 
+type ServicesCatalogData = {
+  services: ReconcileService[]
+}
+
 export function useCartReconciler(menuRef: Ref<MenuData | null>) {
   const cartStore = useCartStore()
   const { warning } = useToast()
+  const { data: servicesCatalog } = useNuxtData<ServicesCatalogData>('services-catalog')
 
   watch(
-    () => [!!menuRef.value, cartStore.restored] as const,
-    ([menuLoaded, restored]) => {
+    () => [!!menuRef.value, !!servicesCatalog.value, cartStore.restored] as const,
+    ([menuLoaded, servicesLoaded, restored]) => {
       if (!restored) return
-      if (!menuLoaded) return
-      if (cartStore.items.length === 0) return
 
-      const menu = menuRef.value!
-      const result = reconcileCart(cartStore.items, {
-        dishes: menu.dishes,
-        combos: menu.combos,
-        dishModifiers: menu.dishModifiers,
-        dishAddons: menu.dishAddons,
-      })
+      const menu = menuLoaded ? menuRef.value : null
+      const services = servicesLoaded ? (servicesCatalog.value?.services ?? []) : null
 
-      const hasChanges = result.removed.length > 0 || result.updated.length > 0
+      const dishResult = menu && cartStore.dishItems.length > 0
+        ? reconcileCart(cartStore.dishItems, {
+            dishes: menu.dishes,
+            combos: menu.combos,
+            dishModifiers: menu.dishModifiers,
+            dishAddons: menu.dishAddons,
+          })
+        : null
+
+      const serviceResult = services !== null && cartStore.serviceItems.length > 0
+        ? reconcileServices(cartStore.serviceItems, services)
+        : null
+
+      const hasChanges
+        = (dishResult && (dishResult.removed.length > 0 || dishResult.updated.length > 0))
+        || (serviceResult && (serviceResult.removed.length > 0 || serviceResult.updated.length > 0))
       if (!hasChanges) return
 
-      cartStore.replaceAll(result.items)
+      const reconciledDishes: DishCartItem[] = dishResult
+        ? dishResult.items.map((item) => ({ ...item, kind: 'dish' as const }))
+        : cartStore.dishItems
 
-      if (result.removed.length > 0) {
-        for (const toast of formatRemovedToasts(result.removed)) {
+      const reconciledServices: ServiceCartItem[] = serviceResult
+        ? serviceResult.items.map((item) => ({ ...item, kind: 'service' as const }))
+        : cartStore.serviceItems
+
+      // patchByKey вместо replaceAll: сохраняет индексы существующих позиций
+      // (и порядок). Открытые модалки useCartEdit, адресующие item по `_key`,
+      // не получают stale-индекса.
+      cartStore.patchByKey([...reconciledDishes, ...reconciledServices])
+
+      if (dishResult && dishResult.removed.length > 0) {
+        for (const toast of formatRemovedToasts(dishResult.removed)) {
           warning(toast.title, toast.description ?? undefined)
         }
       }
 
-      if (result.updated.length > 0) {
+      if (dishResult && dishResult.updated.length > 0) {
         warning('Цены блюд изменились', 'Сумма корзины пересчитана')
+      }
+
+      if (serviceResult && serviceResult.removed.length > 0) {
+        for (const item of serviceResult.removed) {
+          warning('Услуга больше недоступна', `«${item.serviceName}» убрана из корзины`)
+        }
+      }
+
+      if (serviceResult && serviceResult.updated.length > 0) {
+        warning('Услуги обновились', 'Цены и длительность пересчитаны')
       }
     },
     { immediate: true },

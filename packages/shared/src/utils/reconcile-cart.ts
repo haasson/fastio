@@ -24,7 +24,78 @@ export type MenuAddon = {
   order: number
 }
 
-export type ReconcileCartItem = OrderItem & { photo: string | null }
+// `_key` — UUID конкретной строки в корзине (две одинаковые позиции с разными
+// модификаторами различаются именно по нему). Reconciler ОБЯЗАН пробросить его
+// в выход без изменений: `cart.patchByKey(...)` ищет совпадения по `_key`,
+// и потеря его в reconciler'е стирает корзину пользователя. Контракт явный —
+// чтобы рефактор без spread не сломал это незаметно.
+export type ReconcileCartItem = OrderItem & { photo: string | null; _key: string }
+
+export type ReconcileServiceItem = {
+  _key: string
+  serviceId: string
+  serviceName: string
+  price: number
+  duration: number
+  photo: string | null
+  preferredResourceId: string | null
+}
+
+export type ReconcileService = {
+  id: string
+  name: string
+  price: number
+  duration: number
+  photos: string[]
+}
+
+export type ReconcileServiceResult = {
+  items: ReconcileServiceItem[]
+  removed: ReconcileServiceItem[]
+  updated: ReconcileServiceItem[]
+}
+
+// Реконсиляция services. Симметрично reconcileCart, но проще: только
+// проверяем что serviceId всё ещё в каталоге и обновляем
+// name/price/duration/photo если расходятся со снапшотом.
+export function reconcileServices(
+  cartItems: ReconcileServiceItem[],
+  services: ReconcileService[],
+): ReconcileServiceResult {
+  const items: ReconcileServiceItem[] = []
+  const removed: ReconcileServiceItem[] = []
+  const updated: ReconcileServiceItem[] = []
+
+  const serviceMap = new Map(services.map((s) => [s.id, s]))
+
+  for (const item of cartItems) {
+    const svc = serviceMap.get(item.serviceId)
+    if (!svc) {
+      removed.push(item)
+      continue
+    }
+
+    const newPhoto = svc.photos[0] ?? null
+    const changed
+      = svc.name !== item.serviceName
+      || svc.price !== item.price
+      || svc.duration !== item.duration
+      || newPhoto !== item.photo
+
+    const next: ReconcileServiceItem = {
+      ...item,
+      serviceName: svc.name,
+      price: svc.price,
+      duration: svc.duration,
+      photo: newPhoto,
+    }
+
+    items.push(next)
+    if (changed) updated.push(next)
+  }
+
+  return { items, removed, updated }
+}
 
 export type ReconcileMenuData = {
   dishes: MenuDish[]

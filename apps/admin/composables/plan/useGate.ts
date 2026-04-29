@@ -138,8 +138,28 @@ export const useGate = (): GateRegistry => {
   const branches = computed<GateResult>(() => branchesNotNeeded.value ? deny('opted-out') : branchesModule.value)
   const customRoles = moduleGate('customRoles')
 
-  /** Меню — всегда доступно (нет в TenantModules), но учитывает suspended. */
-  const menu = computed<GateResult>(() => isSuspended.value ? deny('suspended') : ok())
+  /**
+   * Меню (food-каталог) — всегда доступно для food-тенантов; для services —
+   * `absent`. Storefront для services-тенанта живёт в `/services/*`, а food-каталог
+   * не имеет смысла. Это закрывает прямые ссылки `/menu/*` для services-тенанта.
+   */
+  const menu = computed<GateResult>(() => {
+    if (isSuspended.value) return deny('suspended')
+    if (tenantStore.isServices) return deny('absent')
+
+    return ok()
+  })
+
+  /**
+   * Меню услуг — зеркальная сущность для services-тенанта. Доступна
+   * только если businessType=services и модуль `services` включён.
+   */
+  const serviceMenu = computed<GateResult>(() => {
+    if (isSuspended.value) return deny('suspended')
+    if (!tenantStore.isServices) return deny('absent')
+
+    return services.value
+  })
 
   /**
    * orders = delivery || pickup || services.
@@ -198,6 +218,8 @@ export const useGate = (): GateRegistry => {
 
   const viewMenu = permissionGate(menu, 'menu.view')
   const manageMenu = permissionGate(menu, 'menu.edit')
+  const viewServiceMenu = permissionGate(serviceMenu, 'menu.view')
+  const manageServiceMenu = permissionGate(serviceMenu, 'menu.edit')
 
   const viewOrders = permissionGate(orders, 'orders.view')
 
@@ -217,11 +239,15 @@ export const useGate = (): GateRegistry => {
   const viewTables = permissionGate(dineIn, 'tables.view')
   const manageTables = permissionGate(dineIn, 'tables.manage')
 
-  // Reservations: для services используется модуль services, иначе reservations.
-  const reservationsForRole = computed<GateResult>(() => tenantStore.isServices ? services.value : reservations.value,
-  )
-  const viewReservations = permissionGate(reservationsForRole, 'reservations.view')
-  const manageReservations = permissionGate(reservationsForRole, 'reservations.manage')
+  // Reservations — только для retail (бронирование столиков).
+  const viewReservations = permissionGate(reservations, 'reservations.view')
+  const manageReservations = permissionGate(reservations, 'reservations.manage')
+
+  // Appointments — только для services (запись на услуги).
+  // Отдельные ключи `appointments.*` — чтобы хостес со `reservations.manage`
+  // не получал доступ к Appointments автоматически.
+  const viewAppointments = permissionGate(services, 'appointments.view')
+  const manageAppointments = permissionGate(services, 'appointments.manage')
 
   const viewPromotions = permissionGate(promotions, 'promos.view')
   const managePromotions = permissionGate(promotions, 'promos.manage')
@@ -273,10 +299,12 @@ export const useGate = (): GateRegistry => {
     scheduledOrders, kitchenAutoStatus,
     // permission-aware
     viewMenu, manageMenu,
+    viewServiceMenu, manageServiceMenu,
     viewOrders,
     viewKitchen, viewKitchenQueue, viewKitchenOverview,
     viewTables, manageTables,
     viewReservations, manageReservations,
+    viewAppointments, manageAppointments,
     viewPromotions, managePromotions,
     viewContent, editContent,
     viewTeam: teamSection, manageTeam: teamSection, manageRoles,

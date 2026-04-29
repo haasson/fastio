@@ -53,11 +53,13 @@ describe('resolveRouteGate', () => {
 
   describe('корни секций (соответствуют AppNav)', () => {
     it.each([
-      ['/menu', 'manageMenu'],
+      ['/menu', 'viewMenu'],
+      ['/services', 'viewServiceMenu'],
       ['/orders', 'viewOrders'],
       ['/kitchen', 'viewKitchen'],
       ['/tables', 'viewTables'],
       ['/reservations', 'viewReservations'],
+      ['/appointments', 'viewAppointments'],
       ['/promotions', 'managePromotions'],
       ['/team', 'manageTeam'],
       ['/branches', 'viewBranches'],
@@ -87,8 +89,8 @@ describe('resolveRouteGate', () => {
       expect(resolveRouteGate('/orders/abc-123')).toBe('viewOrders')
     })
 
-    it('/menu/dishes → manageMenu (унаследовано от /menu)', () => {
-      expect(resolveRouteGate('/menu/dishes')).toBe('manageMenu')
+    it('/menu/dishes → viewMenu (унаследовано от /menu)', () => {
+      expect(resolveRouteGate('/menu/dishes')).toBe('viewMenu')
     })
 
     it('/settings/contacts → viewSettings', () => {
@@ -155,6 +157,18 @@ describe('resolveRouteGate', () => {
 
     it('/menu/tags → manageMenu', () => {
       expect(resolveRouteGate('/menu/tags')).toBe('manageMenu')
+    })
+
+    it('/services/items → viewServiceMenu', () => {
+      expect(resolveRouteGate('/services/items')).toBe('viewServiceMenu')
+    })
+
+    it('/services/categories → manageServiceMenu', () => {
+      expect(resolveRouteGate('/services/categories')).toBe('manageServiceMenu')
+    })
+
+    it('/services/tags → manageServiceMenu', () => {
+      expect(resolveRouteGate('/services/tags')).toBe('manageServiceMenu')
     })
 
     it('/team/roles → manageRoles', () => {

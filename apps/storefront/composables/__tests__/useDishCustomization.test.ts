@@ -229,6 +229,7 @@ describe('useDishCustomization', () => {
         initialQuantity: 2,
       })
       const cart = buildCartItem()
+      if (cart.kind !== 'dish') throw new Error('expected dish item')
       expect(cart.dishId).toBe('dish-1')
       expect(cart.dishName).toBe('Пицца')
       expect(cart.price).toBe(500)
@@ -243,7 +244,9 @@ describe('useDishCustomization', () => {
         addons: [],
       })
       removedSet.value.add('томат')
-      expect(buildCartItem().removedIngredients).toContain('томат')
+      const item = buildCartItem()
+      if (item.kind !== 'dish') throw new Error('expected dish item')
+      expect(item.removedIngredients).toContain('томат')
     })
 
     it('фото берётся из первого элемента photos', () => {

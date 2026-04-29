@@ -1,7 +1,7 @@
 <template>
   <div class="categories-root">
     <UiSkeleton
-      v-if="categoriesLoading"
+      v-if="loading"
       text
       :repeat="3"
       class="skeleton"
@@ -10,7 +10,7 @@
     <template v-else>
       <UiEmpty v-if="categories.length === 0" icon="layoutGrid">
         Добавлять {{ item.plural.nom }} пока некуда — сначала
-        <RouterLink to="/menu/categories" class="link">создайте категорию</RouterLink>.
+        <RouterLink :to="emptyLink" class="link">создайте категорию</RouterLink>.
       </UiEmpty>
       <UiTabs
         v-else
@@ -24,38 +24,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRefs, watch } from 'vue'
+import { computed, toRefs } from 'vue'
 import { UiEmpty, UiSkeleton, UiTabs } from '@fastio/ui'
-import type { Category, DishTagDefinition } from '@fastio/shared'
+import type { Category } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
-import { useCategories } from '~/composables/data/useCategories'
 import { useTerms } from '~/composables/useTerms'
 
-const props = defineProps<{
-  tenantId: string
+const props = withDefaults(defineProps<{
   modelValue: string | null
-  dishCounts: Record<string, number>
-  tags: DishTagDefinition[]
-}>()
+  categories: Category[]
+  loading?: boolean
+  itemCounts?: Record<string, number>
+  emptyLink?: string
+}>(), {
+  loading: false,
+  itemCounts: () => ({}),
+  emptyLink: '/menu/categories',
+})
 
-const emit = defineEmits<{
+defineEmits<{
   'update:modelValue': [id: string | null]
-  'categoriesLoaded': [cats: Category[]]
 }>()
 
 const { item } = useTerms()
-const { tenantId: tenantIdRef } = toRefs(props)
+const { itemCounts } = toRefs(props)
 
-const { categories, loading: categoriesLoading } = useCategories(tenantIdRef)
-
-watch(categories, (cats) => emit('categoriesLoaded', cats), { immediate: true })
-
-const { dishCounts: dishCountByCategory } = toRefs(props)
-
-const categoryTabs = computed(() => categories.value.map((c) => ({
+const categoryTabs = computed(() => props.categories.map((c) => ({
   value: c.id,
   label: c.name,
-  count: dishCountByCategory.value[c.id] ?? 0,
+  count: itemCounts.value[c.id] ?? 0,
   attrs: { 'data-tour': 'category-tab', 'data-category-type': isAutoCategory(c) ? 'virtual' : (c.type ?? 'regular') },
   ...((c.type !== 'regular' || isAutoCategory(c)) && { type: 'warning' as const }),
 })))

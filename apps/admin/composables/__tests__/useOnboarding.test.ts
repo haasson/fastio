@@ -251,14 +251,14 @@ describe('useOnboarding', () => {
       expect(ids).toEqual(['category', 'item', 'site'])
     })
 
-    it('services flow: intake-services, no statuses step, test-order id preserved', () => {
+    it('services flow: appointments step, no statuses step, test-order id preserved', () => {
       tenantRef.value = makeTenant({ businessType: 'services' })
       isOwnerRef.value = true
       gateServices.value = true
       const { steps } = useOnboarding()
       const ids = steps.value.map((s) => s.id)
 
-      expect(ids).toEqual(['category', 'item', 'intake-services', 'legal', 'site', 'test-order'])
+      expect(ids).toEqual(['category', 'item', 'appointments', 'legal', 'site', 'test-order'])
     })
 
     it('services flow: last step has booking-specific title', () => {
@@ -304,7 +304,7 @@ describe('useOnboarding', () => {
       gateServices.value = true
       const ids = useOnboarding().steps.value.map((s) => s.id)
 
-      expect(ids).toEqual(['category', 'item', 'intake-services', 'legal', 'site', 'test-order'])
+      expect(ids).toEqual(['category', 'item', 'appointments', 'legal', 'site', 'test-order'])
     })
   })
 

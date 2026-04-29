@@ -262,13 +262,13 @@ const handleSave = async () => {
   border: none;
   background: none;
   cursor: pointer;
-  color: var(--color-text-muted);
+  color: var(--color-text-hint);
   display: flex;
   align-items: center;
   padding: var(--space-4);
   border-radius: var(--radius-4);
 
-  &:hover { color: var(--color-danger); }
+  &:hover { color: var(--color-error); }
 }
 
 .footer {

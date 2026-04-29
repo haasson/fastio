@@ -2,7 +2,7 @@
   <!-- Mobile compact layout (shown only on mobile when mobileCompact is true) -->
   <FsCard
     v-if="mobileCompact"
-    :class="['dish-card-root', 'mobile-compact', { clickable: isServices || orderingEnabled }]"
+    :class="['dish-card-root', 'mobile-compact', { clickable: orderingEnabled }]"
     @click="emit('cardClick')"
   >
     <div class="compact-inner">
@@ -17,10 +17,7 @@
         <p v-if="dish.description" class="compact-desc">{{ dish.description }}</p>
         <div class="dish-footer">
           <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" size="small" />
-          <FsButton v-if="isServices" variant="primary" size="small" @click.stop="emit('request')">
-            Заявка
-          </FsButton>
-          <template v-else-if="orderingEnabled">
+          <template v-if="orderingEnabled && cart.restored">
             <SfStepper
               v-if="cartCount > 0 && !hideStepper"
               :model-value="cartCount"
@@ -40,7 +37,7 @@
   </FsCard>
 
   <!-- Default vertical layout (hidden on mobile when mobileCompact is true) -->
-  <FsCard :image-alt="dish.name" :class="['dish-card-root', { clickable: isServices || orderingEnabled, 'hide-mobile': mobileCompact }]" @click="emit('cardClick')">
+  <FsCard :image-alt="dish.name" :class="['dish-card-root', { clickable: orderingEnabled, 'hide-mobile': mobileCompact }]" @click="emit('cardClick')">
     <template #image>
       <img v-if="dish.photos[0]" class="dish-photo" :src="dish.photos[0]" :alt="dish.name" loading="lazy" >
       <div v-else class="dish-placeholder">
@@ -67,20 +64,19 @@
         <FsText v-if="dish.description" variant="caption" class="dish-desc-overlay">{{ dish.description }}</FsText>
         <div class="dish-footer">
           <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
-          <FsButton v-if="isServices" variant="primary" size="small" :responsive="true" @click.stop="emit('request')">
-            Оставить заявку
-          </FsButton>
-          <SfStepper
-            v-else-if="orderingEnabled && cartCount > 0 && !hideStepper"
-            :model-value="cartCount"
-            :min="0"
-            size="small"
-            @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
-          />
-          <FsButton v-else-if="orderingEnabled" variant="primary" size="small" :responsive="true" @click="emit('add')">
-            <Plus :size="16" />
-            Добавить
-          </FsButton>
+          <template v-if="orderingEnabled && cart.restored">
+            <SfStepper
+              v-if="cartCount > 0 && !hideStepper"
+              :model-value="cartCount"
+              :min="0"
+              size="small"
+              @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
+            />
+            <FsButton v-else variant="primary" size="small" :responsive="true" @click="emit('add')">
+              <Plus :size="16" />
+              Добавить
+            </FsButton>
+          </template>
         </div>
       </div>
     </template>
@@ -90,21 +86,20 @@
       <FsText v-if="dish.description" variant="caption" class="dish-desc">{{ dish.description }}</FsText>
       <div class="dish-footer">
         <SfPriceTag :price="dish.price" :prefix="hasModifiers ? 'от' : undefined" :currency="currency" />
-        <FsButton v-if="isServices" variant="primary" size="small" :responsive="true" @click.stop="emit('request')">
-          Оставить заявку
-        </FsButton>
-        <SfStepper
-          v-else-if="orderingEnabled && cartCount > 0 && !hideStepper"
-          :model-value="cartCount"
-          :min="0"
-          size="small"
-          @click.stop
-          @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
-        />
-        <FsButton v-else-if="orderingEnabled" variant="primary" size="small" :responsive="true" @click.stop="emit('add')">
-          <Plus :size="16" />
-          Добавить
-        </FsButton>
+        <template v-if="orderingEnabled && cart.restored">
+          <SfStepper
+            v-if="cartCount > 0 && !hideStepper"
+            :model-value="cartCount"
+            :min="0"
+            size="small"
+            @click.stop
+            @update:model-value="(val) => val < cartCount ? onDecrement() : onIncrement()"
+          />
+          <FsButton v-else variant="primary" size="small" :responsive="true" @click.stop="emit('add')">
+            <Plus :size="16" />
+            Добавить
+          </FsButton>
+        </template>
       </div>
     </div>
   </FsCard>
@@ -119,7 +114,7 @@ import { FsCard, FsText, FsButton } from '@fastio/public-ui'
 import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
-import { useCartStore, type CartItem } from '~/stores/cart'
+import { useCartStore, isDishItem, type CartItem, type DishCartItem } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { resolveTagIcon } from '~/utils/tag-icons'
 
@@ -131,14 +126,13 @@ type Props = {
   hasModifiers?: boolean
   currency?: string
   hideStepper?: boolean
-  isServices?: boolean
   orderingEnabled?: boolean
   overlay?: boolean
   mobileCompact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), { currency: '₽', orderingEnabled: true })
-const emit = defineEmits<{ add: []; cardClick: []; request: [] }>()
+const emit = defineEmits<{ add: []; cardClick: [] }>()
 const cart = useCartStore()
 const menuStore = useMenuStore()
 
@@ -156,15 +150,15 @@ const resolvedTags = computed(() =>
 
 const itemPred = computed(() =>
   props.comboId
-    ? (i: CartItem) => i.comboId === props.comboId
-    : (i: CartItem) => i.dishId === props.dish.id,
+    ? (i: DishCartItem) => i.comboId === props.comboId
+    : (i: DishCartItem) => i.dishId === props.dish.id,
 )
 
 const cartCount = computed(() =>
-  cart.items.filter(itemPred.value).reduce((s, i) => s + i.quantity, 0),
+  cart.dishItems.filter(itemPred.value).reduce((s, i) => s + i.quantity, 0),
 )
 const firstCartIndex = computed(() =>
-  cart.items.findIndex(itemPred.value),
+  cart.items.findIndex((i: CartItem) => isDishItem(i) && itemPred.value(i)),
 )
 
 function onIncrement() { if (firstCartIndex.value !== -1) cart.increment(firstCartIndex.value) }

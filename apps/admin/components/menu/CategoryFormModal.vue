@@ -82,20 +82,24 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiText, UiSelect, UiSwitch, UiAlert, useMessage } from '@fastio/ui'
-import type { Category, CategoryType, DishTagDefinition } from '@fastio/shared'
+import type { Category, CategoryKind, CategoryType, DishTagDefinition } from '@fastio/shared'
 import { slugify } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
+import { reportError } from '~/utils/reportError'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 
 type FormMode = 'regular' | 'virtual' | 'combo'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: boolean
   tenantId: string
   category: Category | null
   tags?: DishTagDefinition[]
-}>()
+  kind?: CategoryKind
+}>(), {
+  kind: 'food',
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
@@ -220,6 +224,7 @@ const handleSave = async () => {
         name: form.value.name,
         order: 0,
         type: form.value.type,
+        kind: props.kind,
         tagId: formMode.value === 'virtual' ? form.value.tagId : null,
         slug,
       })
@@ -233,7 +238,8 @@ const handleSave = async () => {
 
     emit('saved')
     emit('update:modelValue', false)
-  } catch {
+  } catch (e) {
+    reportError(e)
     showError('Не удалось сохранить категорию')
 
     return false

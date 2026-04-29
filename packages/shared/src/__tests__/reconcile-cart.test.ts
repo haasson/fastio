@@ -15,6 +15,7 @@ function makeDish(overrides: Partial<MenuDish> = {}): MenuDish {
 
 function makeCartItem(overrides: Partial<ReconcileCartItem> = {}): ReconcileCartItem {
   return {
+    _key: 'key-1',
     dishId: 'dish-1',
     comboId: null,
     dishName: 'Бургер',

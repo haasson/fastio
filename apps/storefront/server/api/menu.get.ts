@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
       .from('categories')
       .select('*')
       .eq('tenant_id', tenantId)
+      .eq('kind', 'food')
       .eq('active', true)
       .is('deleted_at', null)
       .order('sort_order'),

@@ -69,6 +69,7 @@ export function mapCategory(row: Record<string, unknown>): Category {
     name: row.name as string,
     slug: (row.slug as string | null) ?? null,
     type: (row.type as CategoryType) ?? 'regular',
+    kind: (row.kind as 'food' | 'service') ?? 'food',
     tagId: (row.tag_id as string) ?? null,
     order: row.sort_order as number,
     active: row.active as boolean,

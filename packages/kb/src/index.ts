@@ -47,6 +47,8 @@ export const KB_ROUTES: KbRoute[] = [
   { route: '/settings',  kbSection: 'settings',     kbFilePrefix: '10-settings',     aiSections: ['settings'] },
   { route: '/team',      kbSection: 'team',         kbFilePrefix: '11-team',         aiSections: ['team'] },
   { route: '/account',   kbSection: 'account',      kbFilePrefix: '12-account',      aiSections: ['account'] },
+  { route: '/appointments', kbSection: 'appointments', kbFilePrefix: '13-appointments', aiSections: ['appointments'] },
+  { route: '/services',  kbSection: 'services',     kbFilePrefix: '14-services',     aiSections: ['services'] },
   { route: '/help',      kbSection: null,           kbFilePrefix: null,              aiSections: ['support'] },
 ]
 
@@ -167,6 +169,27 @@ export const KB_STRUCTURE: KbSectionMeta[] = [
     icon: 'creditCard',
     articles: [
       { id: 'account', title: 'Аккаунт и биллинг', file: '12-account' },
+    ],
+  },
+  {
+    id: 'appointments',
+    title: 'Онлайн-запись',
+    icon: 'calendarCheck',
+    articles: [
+      { id: 'appointments-managing', title: 'Работа с записями', file: '13-appointments-managing' },
+      { id: 'appointments-resources', title: 'Исполнители и объекты', file: '13-appointments-resources' },
+      { id: 'appointments-templates', title: 'Шаблоны расписаний', file: '13-appointments-templates' },
+      { id: 'appointments-settings', title: 'Настройки записи', file: '13-appointments-settings' },
+    ],
+  },
+  {
+    id: 'services',
+    title: 'Услуги',
+    icon: 'briefcase',
+    articles: [
+      { id: 'services-items', title: 'Услуги', file: '14-services-items' },
+      { id: 'services-categories', title: 'Категории услуг', file: '14-services-categories' },
+      { id: 'services-tags', title: 'Теги услуг', file: '14-services-tags' },
     ],
   },
 ]

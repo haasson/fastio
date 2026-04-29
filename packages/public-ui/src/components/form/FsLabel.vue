@@ -39,7 +39,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .required {
-  color: var(--color-error, #ef4444);
+  color: var(--color-error);
   font-weight: 500;
 }
 </style>

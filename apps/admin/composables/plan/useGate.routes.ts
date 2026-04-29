@@ -30,12 +30,23 @@ const ROUTE_GATES: Array<[string, GateKey]> = [
 
   ['/reservations/settings', 'editSettings'],
 
+  ['/appointments/settings', 'editSettings'],
+  ['/appointments/templates', 'manageAppointments'],
+  ['/appointments/staff', 'manageAppointments'],
+  ['/appointments/objects', 'manageAppointments'],
+
+  ['/services/categories', 'manageServiceMenu'],
+  ['/services/items', 'viewServiceMenu'],
+  ['/services/tags', 'manageServiceMenu'],
+
   // ───── Корни секций (соответствуют AppNav) ─────
-  ['/menu', 'manageMenu'],
+  ['/menu', 'viewMenu'],
   ['/orders', 'viewOrders'],
   ['/kitchen', 'viewKitchen'],
   ['/tables', 'viewTables'],
   ['/reservations', 'viewReservations'],
+  ['/appointments', 'viewAppointments'],
+  ['/services', 'viewServiceMenu'],
   ['/promotions', 'managePromotions'],
   ['/team', 'manageTeam'],
   ['/branches', 'viewBranches'],
@@ -79,9 +90,11 @@ export const REDIRECT_FALLBACKS = [
   '/',
   '/orders',
   '/menu',
+  '/services/items',
   '/kitchen',
   '/tables',
   '/reservations',
+  '/appointments',
   '/promotions',
   '/branches',
   '/content',

@@ -1,23 +1,25 @@
 import { computed, type Ref } from 'vue'
-import type { Category, CategoryData, CategoryType } from '@fastio/shared'
+import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio/shared'
 import { mapCategory } from '~/utils/api/categories'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { reportError } from '~/utils/reportError'
 
-export const useCategories = (tenantId: Ref<string>) => {
+export const useCategories = (tenantId: Ref<string>, kind: CategoryKind = 'food') => {
   const api = useDatabase()
 
   const { items: categories, loading, refresh } = useRealtimeList({
-    channelKey: computed(() => tenantId.value ? `categories:${tenantId.value}` : null),
+    channelKey: computed(() => tenantId.value ? `categories:${tenantId.value}:${kind}` : null),
     table: 'categories',
     filter: computed(() => `tenant_id=eq.${tenantId.value}`),
-    fetch: () => api.categories.list(tenantId.value),
+    fetch: () => api.categories.list(tenantId.value, kind),
     mapper: mapCategory,
+    shouldInclude: (cat) => cat.kind === kind,
   })
 
   const add = async (name: string, extra?: { photoUrl?: string | null; useFirstDishPhoto?: boolean; color?: string | null; type?: CategoryType; tagId?: string | null }) => {
     if (!tenantId.value) return
-    const cat = await api.categories.add(tenantId.value, { name, order: categories.value.length, ...extra })
+    const cat = await api.categories.add(tenantId.value, { name, order: categories.value.length, kind, ...extra })
 
     if (cat) categories.value.push(cat)
   }
@@ -38,8 +40,16 @@ export const useCategories = (tenantId: Ref<string>) => {
   }
 
   const reorder = async (reordered: Category[]) => {
+    const prev = categories.value
+
     categories.value = reordered
-    await api.categories.reorder(reordered.map((c, i) => ({ id: c.id, order: i })))
+    try {
+      await api.categories.reorder(reordered.map((c, i) => ({ id: c.id, order: i })))
+    } catch (e) {
+      categories.value = prev
+      reportError(e)
+      throw e
+    }
   }
 
   const updatePhoto = async (id: string, file: File) => {

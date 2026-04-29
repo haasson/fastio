@@ -64,7 +64,7 @@ const emit = defineEmits<{
 
 .submit-errors {
   @include text-xs;
-  color: var(--color-error, #ef4444);
+  color: var(--color-error);
   margin: 0;
   padding: 0;
   list-style: none;

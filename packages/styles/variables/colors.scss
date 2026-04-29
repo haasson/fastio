@@ -68,6 +68,7 @@
   --color-primary: var(--blue-500);
   --color-primary-hover: var(--blue-600);
   --color-primary-light: var(--blue-50);
+  --color-primary-soft: color-mix(in srgb, var(--color-primary) 12%, transparent);
   --color-success: var(--green-500);
   --color-title: var(--grey-900);
   --color-text: var(--grey-700);
@@ -99,6 +100,7 @@
   --color-primary: var(--blue-400);
   --color-primary-hover: var(--blue-300);
   --color-primary-light: rgba(59, 130, 246, 0.15);
+  --color-primary-soft: rgba(59, 130, 246, 0.18);
   --color-success: var(--green-500);
   --color-title: var(--grey-50);
   --color-text: var(--grey-300);

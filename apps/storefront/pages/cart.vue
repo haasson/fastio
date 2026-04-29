@@ -1,97 +1,164 @@
 <template>
   <PageShell>
     <FsSection>
-      <StorePageLayout :breadcrumbs="[{ label: menu.label, to: '/' }]" current="Корзина">
+      <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" current="Корзина">
         <div v-if="!cart.restored" class="cart-loading">
           <FsSpinner size="large" />
         </div>
 
         <SfEmptyState
-          v-else-if="!cart.items.length"
+          v-else-if="cart.count === 0"
           title="Корзина пуста"
-          :description="`Добавьте ${itemTerm.plural.nom} из нашего ${menu.gen}`"
+          :description="emptyDescription"
           size="lg"
         >
           <ShoppingCart />
           <template #action>
-            <FsButton @click="navigateTo('/')">В {{ menu.acc }}</FsButton>
+            <FsButton @click="navigateTo('/')">{{ emptyActionLabel }}</FsButton>
           </template>
         </SfEmptyState>
 
         <div v-else class="cart-layout">
           <div class="cart-items">
-            <CartItem
-              v-for="(item, i) in cart.items"
-              :key="item._key ?? i"
+            <CartLineItem
+              v-for="item in cart.dishItems"
+              :key="item._key"
               :item="item"
-              :index="i"
+              :index="globalIndex(item._key)"
               :currency="currency"
-              :can-edit="canEdit(item.dishId)"
-              @change="cart.setQuantity"
-              @remove="cart.remove"
+              :can-edit="canEditDish(item.dishId)"
+              @change="onChange"
+              @remove="onRemove"
               @edit="openEdit"
+            />
+            <CartLineItem
+              v-for="item in cart.serviceItems"
+              :key="item._key"
+              :item="item"
+              :index="globalIndex(item._key)"
+              :currency="currency"
+              :resources="resourcesMap.get(item.serviceId) ?? []"
+              :can-edit="(resourcesMap.get(item.serviceId) ?? []).length > 0"
+              @remove="onRemoveService"
+              @edit="onEditService"
             />
           </div>
 
-          <div class="cart-sidebar">
-            <FsAlert v-if="closedStatus" type="warning" :icon="Clock" class="closed-alert">
-              Мы сейчас не работаем. Откроемся {{ closedStatus.day }} в {{ closedStatus.time }}
-            </FsAlert>
-            <FsAlert v-else-if="branchLoadError" type="muted" class="closed-alert">
-              Не удалось проверить время работы
-            </FsAlert>
-            <FsCard class="summary-card">
+          <aside class="cart-sidebar">
+            <FsCard v-if="cart.dishItems.length" class="summary-card">
               <div class="summary-body">
+                <FsAlert v-if="closedStatus" type="warning" :icon="Clock" class="closed-alert">
+                  Мы сейчас не работаем. Откроемся {{ closedStatus.day }} в {{ closedStatus.time }}
+                </FsAlert>
+                <FsAlert v-else-if="branchLoadError" type="muted" class="closed-alert">
+                  Не удалось проверить время работы
+                </FsAlert>
                 <div class="summary-row">
-                  <span class="summary-label">Итого</span>
-                  <span class="summary-total">{{ cart.subtotal }} {{ currency }}</span>
+                  <FsText as="span" variant="body-sm" class="summary-label">Сумма заказа</FsText>
+                  <FsText as="span" variant="body" :weight="700" class="summary-total">{{ cart.dishSubtotal }} {{ currency }}</FsText>
                 </div>
-                <FsButton size="large" class="checkout-btn" :disabled="!!closedStatus && !schedulingEnabled" @click="navigateTo('/checkout')">
-                  Перейти к оформлению
+                <FsButton
+                  size="large"
+                  class="checkout-btn"
+                  :disabled="!!closedStatus && !schedulingEnabled"
+                  @click="navigateTo('/checkout')"
+                >
+                  Оформить заказ
                 </FsButton>
               </div>
             </FsCard>
-          </div>
+
+            <FsCard v-if="cart.serviceItems.length" class="summary-card">
+              <div class="summary-body">
+                <div class="summary-row">
+                  <FsText as="span" variant="body-sm" class="summary-label">Время</FsText>
+                  <FsText as="span" variant="body-sm" :weight="600">{{ cart.totalServiceDuration }} мин</FsText>
+                </div>
+                <div v-if="cart.serviceSubtotal > 0" class="summary-row">
+                  <FsText as="span" variant="body-sm" class="summary-label">Стоимость</FsText>
+                  <FsText as="span" variant="body" :weight="700" class="summary-total">{{ cart.serviceSubtotal }} {{ currency }}</FsText>
+                </div>
+                <FsButton size="large" class="checkout-btn" @click="navigateTo('/appointments/checkout')">
+                  Подобрать время
+                </FsButton>
+                <FsButton variant="ghost" size="small" class="request-btn" @click="navigateTo('/appointments/checkout?request=1')">
+                  Записаться без выбора времени
+                </FsButton>
+              </div>
+            </FsCard>
+          </aside>
         </div>
       </StorePageLayout>
     </FsSection>
 
-    <DishModal
+    <SfProductModal
       v-if="editState.item"
       :key="editKey"
       v-model="editState.open"
-      mode="edit"
-      :item="editState.item"
-      :modifiers="editState.modifiers"
-      :addons="editState.addons"
-      :max-addons="editState.maxAddons"
-      :currency="currency"
-      :initial-quantity="editState.initialQuantity"
-      :initial-removed-ingredients="editState.initialRemovedIngredients"
-      :initial-modifiers="editState.initialModifiers"
-      :initial-addon-ids="editState.initialAddonIds"
-      @edit="onItemEdited"
-    />
+      :title="editState.item.name"
+      :photo="editState.item.photos[0] ?? null"
+      :description="editState.item.longDescription || editState.item.description || null"
+    >
+      <DishModalBody
+        mode="edit"
+        :item="editState.item"
+        :modifiers="editState.modifiers"
+        :addons="editState.addons"
+        :max-addons="editState.maxAddons"
+        :currency="currency"
+        :initial-quantity="editState.initialQuantity"
+        :initial-removed-ingredients="editState.initialRemovedIngredients"
+        :initial-modifiers="editState.initialModifiers"
+        :initial-addon-ids="editState.initialAddonIds"
+        @edit="onItemEdited"
+        @close="editState.open = false"
+      />
+    </SfProductModal>
+
+    <SfProductModal
+      v-if="editServiceInfo"
+      v-model="showServiceModal"
+      :title="editServiceInfo.name"
+      :photo="editServiceInfo.photos[0] ?? null"
+      :description="null"
+    >
+      <template #meta>
+        <div class="service-meta">
+          <FsText as="span" variant="caption">{{ editServiceInfo.duration }} мин</FsText>
+          <FsText v-if="editServiceInfo.price" as="span" variant="caption" :weight="700" class="meta-price">{{ editServiceInfo.price }} {{ currency }}</FsText>
+        </div>
+      </template>
+      <ServiceModalBody
+        :key="editServiceInfo.id"
+        :service="editServiceInfo"
+        :currency="currency"
+        :is-edit="true"
+        @close="showServiceModal = false"
+      />
+    </SfProductModal>
   </PageShell>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { navigateTo, useNuxtData } from 'nuxt/app'
 import { ShoppingCart, Clock } from 'lucide-vue-next'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
-import { useCartStore } from '~/stores/cart'
+import { useCartStore, type ServiceCartItem } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { useCartEdit } from '~/composables/useCartEdit'
 import { useCurrency } from '~/composables/useCurrency'
+import { reportError } from '~/utils/reportError'
 import PageShell from '~/components/sections/PageShell.vue'
-import { FsSection, FsButton, FsSpinner, FsCard, FsAlert } from '@fastio/public-ui'
+import { FsSection, FsButton, FsSpinner, FsCard, FsAlert, FsText } from '@fastio/public-ui'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import CartItem from '~/components/cart/CartItem.vue'
-import DishModal from '~/components/sf/domain/DishModal.vue'
+import CartLineItem from '~/components/cart/CartLineItem.vue'
+import SfProductModal from '~/components/sf/domain/SfProductModal.vue'
+import DishModalBody from '~/components/sf/domain/DishModalBody.vue'
+import ServiceModalBody from '~/components/appointments/ServiceModalBody.vue'
 
 const { menu, item: itemTerm } = useStorefrontTerms()
 const cart = useCartStore()
@@ -102,6 +169,18 @@ const { editKey, editState, openEdit, onItemEdited } = useCartEdit()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const schedulingEnabled = computed(() => tenant.value?.orderSchedulingConfig?.enabled ?? false)
+const hasOrdering = computed(() => !!tenant.value?.orderingEnabled)
+const hasServices = computed(() => !!tenant.value?.modules?.services)
+
+const emptyDescription = computed(() => {
+  if (hasOrdering.value && hasServices.value) return 'Добавьте товары или услуги'
+  if (hasServices.value) return 'Добавьте услуги из каталога'
+  return `Добавьте ${itemTerm.value.plural.nom} из нашего ${menu.value.gen}`
+})
+
+const emptyActionLabel = computed(() =>
+  hasOrdering.value ? `В ${menu.value.acc}` : 'К услугам',
+)
 
 type BranchScheduleInfo = { id: string; workingHoursSchedule: WorkingHoursSchedule | null }
 const branchSchedules = ref<BranchScheduleInfo[]>([])
@@ -125,20 +204,124 @@ const closedStatus = computed(() => {
   return earliest
 })
 
-onMounted(async () => {
-  if (!tenant.value?.orderingEnabled) {
-    await navigateTo('/', { replace: true })
-    return
-  }
+const resourcesMap = ref(new Map<string, Array<{ id: string; name: string }>>())
+const editServiceItem = ref<ServiceCartItem | null>(null)
+const showServiceModal = ref(false)
 
-  try {
-    branchSchedules.value = await $fetch<BranchScheduleInfo[]>('/api/branches')
-  } catch {
-    branchLoadError.value = true
+const editServiceInfo = computed(() => {
+  const it = editServiceItem.value
+  if (!it) return null
+  return {
+    id: it.serviceId,
+    name: it.serviceName,
+    price: it.price,
+    duration: it.duration,
+    photos: it.photo ? [it.photo] : [],
   }
 })
 
-function canEdit(dishId: string | null): boolean {
+// Перформанс U20: Map _key → index пересчитывается одним проходом по items,
+// вместо `findIndex` на каждый рендер каждого элемента (был O(n²)).
+const keyToIndex = computed(() => {
+  const map = new Map<string, number>()
+  cart.items.forEach((i, idx) => map.set(i._key, idx))
+  return map
+})
+
+function globalIndex(key: string): number {
+  const idx = keyToIndex.value.get(key)
+  if (idx === undefined) {
+    reportError(new Error(`[pages/cart] _key not found in items: ${key}`))
+    return -1
+  }
+  return idx
+}
+
+onMounted(async () => {
+  if (hasOrdering.value) {
+    try {
+      branchSchedules.value = await $fetch<BranchScheduleInfo[]>('/api/branches')
+    } catch (e) {
+      reportError(e instanceof Error ? e : new Error('[pages/cart] failed to load branches'))
+      branchLoadError.value = true
+    }
+  }
+})
+
+// U21: вместо `.map().join(',')` используем стабильный массив `_key` и
+// диффим против предыдущего сета — чтобы не перезагружать ВСЕ resources при
+// каждом изменении любой service-позиции.
+let prevServiceKeys: string[] = []
+// Generation counter защищает от race: пользователь удалил услугу A → добавил
+// A снова → fetch1 (старый) может прийти ПОСЛЕ fetch2 → в resourcesMap попадут
+// устаревшие данные. Каждый запуск watcher'а инкрементит gen, и резолв
+// игнорится если за время `await` появился новый запуск.
+let resourcesLoadGen = 0
+
+watch(
+  () => cart.serviceItems.map((i) => i.serviceId),
+  async (ids) => {
+    const gen = ++resourcesLoadGen
+
+    if (ids.length === 0) {
+      resourcesMap.value = new Map()
+      prevServiceKeys = []
+      return
+    }
+    // Дифф: загружаем только новые serviceId, остальные оставляем как есть.
+    const prevSet = new Set(prevServiceKeys)
+    const toLoad = ids.filter((id) => !prevSet.has(id))
+    prevServiceKeys = [...ids]
+
+    if (toLoad.length === 0) {
+      // Только удаления — обрезаем resourcesMap по актуальному списку.
+      const next = new Map<string, Array<{ id: string; name: string }>>()
+      for (const id of ids) {
+        const cached = resourcesMap.value.get(id)
+        if (cached) next.set(id, cached)
+      }
+      resourcesMap.value = next
+      return
+    }
+
+    const results = await Promise.allSettled(
+      toLoad.map(async (serviceId) => ({
+        serviceId,
+        resources: await $fetch<Array<{ id: string; name: string }>>(
+          `/api/appointments/resources?serviceId=${serviceId}`,
+        ),
+      })),
+    )
+    if (gen !== resourcesLoadGen) return
+    const next = new Map(resourcesMap.value)
+    for (const r of results) {
+      if (r.status === 'fulfilled') {
+        next.set(r.value.serviceId, r.value.resources)
+      } else {
+        reportError(r.reason instanceof Error ? r.reason : new Error('[pages/cart] failed to load service resources'))
+      }
+    }
+    // Удаляем устаревшие entry (services убрали из корзины).
+    const idSet = new Set(ids)
+    for (const k of next.keys()) {
+      if (!idSet.has(k)) next.delete(k)
+    }
+    resourcesMap.value = next
+  },
+  { immediate: true, deep: true },
+)
+
+function onRemove(index: number) {
+  if (index < 0) return
+  cart.remove(index)
+}
+
+function onChange(index: number, quantity: number) {
+  if (index < 0) return
+  cart.setQuantity(index, quantity)
+}
+
+function canEditDish(dishId: string | null): boolean {
   if (!dishId) return false
   const dish = menuStore.allDishes.find(d => d.id === dishId)
   if (!dish) return false
@@ -148,6 +331,18 @@ function canEdit(dishId: string | null): boolean {
   return hasIngredients || hasModifiers || hasAddons
 }
 
+function onRemoveService(index: number) {
+  const it = cart.items[index]
+  if (it?.kind !== 'service') return
+  cart.removeService(it.serviceId)
+}
+
+function onEditService(index: number) {
+  const it = cart.items[index]
+  if (it?.kind !== 'service') return
+  editServiceItem.value = it
+  showServiceModal.value = true
+}
 </script>
 
 <style scoped lang="scss">
@@ -157,11 +352,6 @@ function canEdit(dishId: string | null): boolean {
   display: flex;
   justify-content: center;
   padding: 64px 0;
-}
-
-.cart-count {
-  color: var(--color-text-secondary);
-  font-weight: 400;
 }
 
 .cart-layout {
@@ -175,7 +365,15 @@ function canEdit(dishId: string | null): boolean {
   }
 }
 
+.cart-items {
+  @include flex-col;
+}
+
 .cart-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
   @include mdl {
     position: sticky;
     top: 80px;
@@ -196,21 +394,27 @@ function canEdit(dishId: string | null): boolean {
 }
 
 .summary-label {
-  @include text-body-sm;
   color: var(--color-text-secondary);
 }
 
 .summary-total {
   font-size: 22px;
-  font-weight: 700;
   color: var(--color-text);
 }
 
 .closed-alert {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .checkout-btn {
   width: 100%;
+}
+
+.service-meta {
+  @include flex-row(12px);
+}
+
+.meta-price {
+  color: var(--primary);
 }
 </style>

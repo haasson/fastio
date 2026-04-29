@@ -116,11 +116,11 @@ withDefaults(defineProps<Props>(), {
 }
 
 .btn-destructive {
-  background: var(--color-error, #ef4444);
+  background: var(--color-error);
   color: #fff;
 
   &:hover:not(.is-disabled) {
-    background: color-mix(in srgb, var(--color-error, #ef4444) 82%, #000);
+    background: color-mix(in srgb, var(--color-error) 82%, #000);
   }
 }
 

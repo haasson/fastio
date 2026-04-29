@@ -1,11 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Category, CategoryData, CategoryType } from '@fastio/shared'
+import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio/shared'
 import { query } from '~/utils/query'
 import type { CategoryRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
 import { optimizeImage } from '~/utils/imageOptimize'
 
-type CategoryAddPayload = Required<Pick<CategoryData, 'name' | 'order'>> & CategoryData & { type?: CategoryType }
+type CategoryAddPayload = Required<Pick<CategoryData, 'name' | 'order'>> & CategoryData & { type?: CategoryType; kind: CategoryKind }
 
 export const mapCategory = (raw: Record<string, unknown>): Category => {
   const row = raw as CategoryRow
@@ -16,6 +16,7 @@ export const mapCategory = (raw: Record<string, unknown>): Category => {
     name: row.name,
     slug: row.slug ?? null,
     type: row.type ?? 'regular',
+    kind: row.kind ?? 'food',
     tagId: row.tag_id ?? null,
     order: row.sort_order,
     active: row.active,
@@ -25,8 +26,8 @@ export const mapCategory = (raw: Record<string, unknown>): Category => {
 }
 
 export const categoriesApi = {
-  async list(sb: SupabaseClient, tenantId: string) {
-    const data = await query(sb.from('categories').select('*').eq('tenant_id', tenantId).is('deleted_at', null).order('sort_order'))
+  async list(sb: SupabaseClient, tenantId: string, kind: CategoryKind = 'food') {
+    const data = await query(sb.from('categories').select('*').eq('tenant_id', tenantId).eq('kind', kind).is('deleted_at', null).order('sort_order'))
 
     return (data ?? []).map(mapCategory)
   },
@@ -36,6 +37,7 @@ export const categoriesApi = {
       tenant_id: tenantId,
       name: payload.name,
       type: payload.type ?? 'regular',
+      kind: payload.kind,
       sort_order: payload.order,
       active: true,
       ...filterDefined({ photo_url: payload.photoUrl, use_first_dish_photo: payload.useFirstDishPhoto, tag_id: payload.tagId, slug: payload.slug }),

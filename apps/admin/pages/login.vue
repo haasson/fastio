@@ -139,15 +139,17 @@ const handleSubmit = async () => {
     error.value = authError.message === 'Invalid login credentials'
       ? 'Неверный email или пароль'
       : 'Произошла ошибка. Попробуйте ещё раз'
+    loading.value = false
   } else {
     if (inviteToken) {
       await api.functions.acceptInvite({ token: inviteToken })
     }
 
-    await navigateTo('/')
+    // Hard-reload вместо SPA-перехода: гарантирует свежую инициализацию всех
+    // module-level state'ов (realtime channels, counters), иначе после login
+    // на одной вкладке остаются handlers/счётчики предыдущего юзера.
+    window.location.href = '/'
   }
-
-  loading.value = false
 }
 
 const handleReset = async () => {

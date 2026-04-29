@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizePhone, formatPhone } from '../utils/phone'
+import { normalizePhone, formatPhone, validateAndNormalizeRussianPhone } from '../utils/phone'
 
 describe('normalizePhone', () => {
   it('убирает все нецифры', () => {
@@ -40,5 +40,38 @@ describe('formatPhone', () => {
 
   it('возвращает as-is если пустая строка', () => {
     expect(formatPhone('')).toBe('')
+  })
+})
+
+describe('validateAndNormalizeRussianPhone', () => {
+  it('11 цифр начиная с 7 — возвращает как есть', () => {
+    expect(validateAndNormalizeRussianPhone('79991234567')).toBe('79991234567')
+  })
+
+  it('11 цифр начиная с 8 — нормализует через 7', () => {
+    expect(validateAndNormalizeRussianPhone('89991234567')).toBe('79991234567')
+  })
+
+  it('+7 с маской — возвращает 11 цифр', () => {
+    expect(validateAndNormalizeRussianPhone('+7 (999) 123-45-67')).toBe('79991234567')
+  })
+
+  it('10 цифр без префикса — добавляет 7', () => {
+    expect(validateAndNormalizeRussianPhone('9991234567')).toBe('79991234567')
+  })
+
+  it('10 цифр начиная с 8 — НЕ принимает (после normalize даёт 10 цифр с 7-префиксом, что выглядит как невалидный 77-номер)', () => {
+    // '8123456789' (10 цифр) → normalize → '7123456789' (10 цифр).
+    // Без guard'а получили бы '77123456789' — невалидный РФ-номер.
+    expect(validateAndNormalizeRussianPhone('8123456789')).toBeNull()
+  })
+
+  it('число не той длины — null', () => {
+    expect(validateAndNormalizeRussianPhone('123')).toBeNull()
+    expect(validateAndNormalizeRussianPhone('123456789012')).toBeNull()
+  })
+
+  it('пустая строка — null', () => {
+    expect(validateAndNormalizeRussianPhone('')).toBeNull()
   })
 })

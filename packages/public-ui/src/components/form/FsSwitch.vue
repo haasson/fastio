@@ -87,7 +87,7 @@ function onCheckedChange(value: boolean) {
 
 .switch-thumb {
   display: block;
-  background: white;
+  background: #fff;
   border-radius: 50%;
   transition: transform 0.2s;
   position: absolute;

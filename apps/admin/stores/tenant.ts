@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useAuthStore } from './auth'
-import { useBranchStore } from './branch'
 import { useTenant } from '~/composables/data/useTenant'
 
 export const useTenantStore = defineStore('tenant', () => {
@@ -9,22 +8,6 @@ export const useTenantStore = defineStore('tenant', () => {
   const userId = computed(() => authStore.user?.id ?? null)
 
   const tenantApi = useTenant(userId)
-
-  // switchTenant и dispose перехватываем в сторе, чтобы синхронно сбросить
-  // branchStore перед сменой тенанта — без круговой зависимости в composable
-  const switchTenant = async (tenantId: string) => {
-    const branchStore = useBranchStore()
-
-    branchStore.dispose()
-    await tenantApi.switchTenant(tenantId)
-  }
-
-  const dispose = () => {
-    const branchStore = useBranchStore()
-
-    branchStore.dispose()
-    tenantApi.dispose()
-  }
 
   return {
     memberships: tenantApi.memberships,
@@ -52,7 +35,7 @@ export const useTenantStore = defineStore('tenant', () => {
     fetchTenant: tenantApi.fetchTenant,
     update: tenantApi.update,
     changePlan: tenantApi.changePlan,
-    switchTenant,
-    dispose,
+    switchTenant: tenantApi.switchTenant,
+    dispose: tenantApi.dispose,
   }
 })

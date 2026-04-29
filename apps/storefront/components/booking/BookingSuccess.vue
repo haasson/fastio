@@ -80,7 +80,7 @@ const formattedDate = computed(() => props.date ? formatDateLong(dateStrToTs(pro
 .link-warning {
   font-size: 13px;
   color: var(--color-warning);
-  background: var(--color-warning-soft, color-mix(in srgb, var(--color-warning) 12%, transparent));
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
   border-radius: var(--radius-card);
   padding: 10px 14px;
   margin: 0;

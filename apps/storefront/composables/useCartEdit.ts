@@ -1,14 +1,16 @@
 import { ref } from 'vue'
 import type { DishModifierGroup, OrderItemModifier } from '@fastio/shared'
-import type { CartItem } from '~/stores/cart'
+import { isDishItem, useCartStore, type CartItem } from '~/stores/cart'
 import type { ModalItem } from '~/composables/useDishCustomization'
 import type { ClientAddon } from '~/stores/menu'
-import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
+import { reportError } from '~/utils/reportError'
 
 type EditState = {
   open: boolean
-  index: number
+  // Адресация item по `_key`, не индексу — после reconcile/patchByKey индекс
+  // может стать stale, а `_key` стабилен на всё время жизни позиции.
+  key: string | null
   item: ModalItem | null
   modifiers: DishModifierGroup[]
   addons: ClientAddon[]
@@ -26,7 +28,7 @@ export function useCartEdit() {
   const editKey = ref(0)
   const editState = ref<EditState>({
     open: false,
-    index: -1,
+    key: null,
     item: null,
     modifiers: [],
     addons: [],
@@ -39,6 +41,11 @@ export function useCartEdit() {
 
   function openEdit(index: number) {
     const cartItem = cart.items[index]
+    if (!cartItem) return
+    if (!isDishItem(cartItem)) {
+      reportError(new Error(`[useCartEdit] non-dish item at index ${index}, kind=${cartItem.kind}`))
+      return
+    }
     if (!cartItem.dishId) return
 
     const dish = menu.allDishes.find((d) => d.id === cartItem.dishId)
@@ -47,7 +54,7 @@ export function useCartEdit() {
     editKey.value++
     editState.value = {
       open: true,
-      index,
+      key: cartItem._key,
       item: {
         id: dish.id,
         name: dish.name,
@@ -69,7 +76,17 @@ export function useCartEdit() {
   }
 
   function onItemEdited(newItem: CartItem) {
-    cart.replace(editState.value.index, newItem)
+    const key = editState.value.key
+    if (!key) {
+      reportError(new Error('[useCartEdit] onItemEdited called without key'))
+      return
+    }
+    const idx = cart.items.findIndex((i) => i._key === key)
+    if (idx === -1) {
+      reportError(new Error(`[useCartEdit] item with _key=${key} not found at edit time`))
+      return
+    }
+    cart.replace(idx, newItem)
   }
 
   return { editKey, editState, openEdit, onItemEdited }

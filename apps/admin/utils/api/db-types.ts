@@ -19,6 +19,13 @@ import type {
   KitchenConfig,
   OrderNumberConfig,
   WorkingHoursSchedule,
+  AppointmentStatus,
+  AppointmentResourceMode,
+  StaffNameFormat,
+  ResourceType,
+  BookingMode,
+  ScheduleTemplateType,
+  AppointmentEventType,
 } from '@fastio/shared'
 
 export type TenantRow = {
@@ -104,6 +111,7 @@ export type CategoryRow = {
   name: string
   slug: string | null
   type: CategoryType
+  kind: 'food' | 'service'
   tag_id: string | null
   sort_order: number
   active: boolean
@@ -348,4 +356,169 @@ export type BranchRow = {
   created_at: string
   updated_at: string
   archived_at: string | null
+}
+
+// ─── Appointments / Services / Resources / Schedule templates ──
+//
+// Соответствуют миграциям 179..197.
+
+export type AppointmentRow = {
+  id: string
+  tenant_id: string
+  branch_id: string | null
+  service_id: string | null
+  service_name: string
+  service_price: number
+  resource_id: string | null
+  user_id: string | null
+  customer_name: string
+  customer_phone: string
+  customer_email: string | null
+  starts_at: string
+  ends_at: string
+  actual_ends_at: string | null
+  status: AppointmentStatus
+  notes: string | null
+  cancel_reason: string | null
+  cancelled_by: string | null
+  cancelled_at: string | null
+  confirmed_at: string | null
+  confirmed_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type AppointmentEventRow = {
+  id: string
+  appointment_id: string
+  tenant_id: string
+  actor_id: string | null
+  actor_name: string | null
+  actor_role: string | null
+  event_type: AppointmentEventType
+  meta: Record<string, unknown>
+  created_at: string
+}
+
+export type AppointmentSettingsRow = {
+  id: string
+  tenant_id: string
+  resource_label: string
+  resource_mode: AppointmentResourceMode
+  staff_name_format: StaffNameFormat
+  auto_confirm: boolean
+  booking_horizon_days: number
+  slot_step_minutes: number
+  allow_client_cancellation: boolean
+  allow_client_reschedule: boolean
+  cancellation_deadline_hours: number
+  created_at: string
+  updated_at: string
+}
+
+export type ServiceRow = {
+  id: string
+  tenant_id: string
+  category_id: string | null
+  name: string
+  description: string
+  price: number
+  duration: number
+  photos: string[]
+  tags: string[]
+  is_bookable: boolean
+  booking_mode: BookingMode
+  allow_resource_choice: boolean
+  active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+// Категории услуг живут в общей таблице `categories` с kind='service' (см. миграцию 186).
+// Тип `ServiceCategoryRow` удалён.
+
+export type ServiceBranchRow = {
+  service_id: string
+  branch_id: string
+}
+
+export type ServiceResourceRow = {
+  resource_id: string
+  service_id: string
+}
+
+export type ResourceRow = {
+  id: string
+  tenant_id: string
+  name: string
+  type: ResourceType
+  member_id: string | null
+  capacity: number
+  is_active: boolean
+  sort_order: number
+  applied_template_id: string | null
+  cycle_start_date: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ResourceCategoryRow = {
+  resource_id: string
+  category_id: string
+}
+
+export type ResourceBranchRow = {
+  resource_id: string
+  branch_id: string
+}
+
+export type ResourceScheduleRow = {
+  id: string
+  resource_id: string
+  day_of_week: number
+  is_working: boolean
+  open_time: string | null
+  close_time: string | null
+}
+
+export type ResourceDisabledSlotRow = {
+  id: string
+  resource_id: string
+  day_of_week: number
+  slot_time: string
+}
+
+export type ResourceDateOverrideRow = {
+  id: string
+  resource_id: string
+  date: string
+  is_working: boolean
+  open_time: string | null
+  close_time: string | null
+}
+
+export type ResourceDateDisabledSlotRow = {
+  id: string
+  resource_id: string
+  date: string
+  slot_time: string
+}
+
+export type ScheduleTemplateRow = {
+  id: string
+  tenant_id: string
+  name: string
+  type: ScheduleTemplateType
+  cycle_length: number | null
+  reference_branch_id: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type ScheduleTemplateSlotRow = {
+  template_id: string
+  day_index: number
+  slot_time: string
 }

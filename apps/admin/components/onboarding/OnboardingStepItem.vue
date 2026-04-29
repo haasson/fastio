@@ -115,7 +115,7 @@ const isOpen = computed(() => props.step.status === 'active')
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-8);
   border: none;
   padding: 0;
   background: transparent;
@@ -127,7 +127,7 @@ const isOpen = computed(() => props.step.status === 'active')
   &:hover {
     opacity: 1;
     background: var(--color-bg-hover);
-    color: var(--color-text-primary);
+    color: var(--color-text);
   }
 }
 

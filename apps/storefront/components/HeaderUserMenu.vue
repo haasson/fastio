@@ -133,8 +133,8 @@ async function onLogout() {
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover { background: var(--color-bg-secondary); }
+  &:hover { background: var(--color-surface); }
 
-  &--danger { color: var(--color-danger, #e53935); }
+  &--danger { color: var(--color-error); }
 }
 </style>

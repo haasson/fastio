@@ -15,7 +15,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import { FsSection, FsScrollNav } from '@fastio/public-ui'
-import { useMenuStore } from '~/stores/menu'
+import { useCatalogMode } from '~/composables/useCatalogMode'
 
 const props = defineProps<{
   overflow: 'scroll' | 'wrap'
@@ -23,18 +23,18 @@ const props = defineProps<{
   navigateOnClick?: boolean
 }>()
 
-const menuStore = useMenuStore()
+const { visibleCategories } = useCatalogMode()
 const route = useRoute()
 const router = useRouter()
 
 const activeId = ref<string | number | undefined>(undefined)
 
 const navItems = computed(() =>
-  menuStore.visibleCategories.map((cat) => ({ id: cat.id, label: cat.name })),
+  visibleCategories.value.map((cat) => ({ id: cat.id, label: cat.name })),
 )
 
 const categoryPath = (id: string | number) => {
-  const cat = menuStore.visibleCategories.find(c => c.id === String(id))
+  const cat = visibleCategories.value.find(c => c.id === String(id))
   return `/category/${cat?.slug ?? String(id)}`
 }
 
@@ -72,7 +72,7 @@ const onSelect = (id: string | number) => {
 const syncActiveFromRoute = () => {
   const slug = route.params.slug as string | undefined
   if (!slug) return
-  const cat = menuStore.visibleCategories.find(c => (c.slug ?? c.id) === slug)
+  const cat = visibleCategories.value.find(c => (c.slug ?? c.id) === slug)
   if (cat) activeId.value = cat.id
 }
 

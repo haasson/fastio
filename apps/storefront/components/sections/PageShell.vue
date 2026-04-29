@@ -64,9 +64,14 @@ const hasCartItems = computed(() => count.value > 0)
 const { legalInfoComplete } = useLegalCompliance()
 
 const isServices = computed(() => tenant.value?.businessType === 'services')
+const servicesModuleEnabled = computed(() => !!tenant.value?.modules?.services)
 const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
 const effectiveOrderingEnabled = computed(() => orderingEnabled.value && legalInfoComplete.value)
-const showCartFab = computed(() => !isServices.value && effectiveOrderingEnabled.value && !['/cart', '/checkout'].includes(route.path))
+const showCartFab = computed(() => {
+  if (['/cart', '/checkout', '/appointments/checkout'].includes(route.path)) return false
+  if (isServices.value) return servicesModuleEnabled.value && legalInfoComplete.value
+  return effectiveOrderingEnabled.value
+})
 const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.modules?.reservations && legalInfoComplete.value && route.path !== '/booking')
 
 const headerRef = useTemplateRef('headerRef')

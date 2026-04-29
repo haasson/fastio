@@ -78,8 +78,8 @@ const variantClass = computed(() => `variant-${props.variant}`)
 .color-secondary { color: var(--color-text-secondary); }
 .color-muted     { color: var(--color-text-muted); }
 .color-primary   { color: var(--primary); }
-.color-error     { color: var(--color-error, #ef4444); }
-.color-success   { color: var(--color-success, #10b981); }
+.color-error     { color: var(--color-error); }
+.color-success   { color: var(--color-success); }
 
 // ─── Truncate ────────────────────────────────────────────────────────────────
 .is-truncate {

@@ -317,7 +317,7 @@ onMounted(async () => {
 
   checkout.prefillFromAuth()
 
-  if (cart.items.length === 0) {
+  if (cart.dishItems.length === 0) {
     await navigateTo('/cart')
     return
   }
@@ -332,7 +332,7 @@ onMounted(async () => {
 
 async function submitOrder() {
   if (!validate()) return
-  if (cart.items.length === 0) return
+  if (cart.dishItems.length === 0) return
 
   if (checkout.form.deliveryType === 'delivery' && checkout.outsideZones) {
     const ok = await confirm('Похоже, мы не доставляем заказы по вашему адресу.', {
@@ -345,13 +345,17 @@ async function submitOrder() {
   submitting.value = true
   submitErrors.value = []
 
+  // Snapshot dish-позиций до запроса — после успеха удалим только их,
+  // а не всё, что добавилось за время `await $fetch`.
+  const commitClearDishes = cart.clearDishes()
+
   try {
     const body: Record<string, unknown> = {
       customer: {
         name: checkout.form.customerName || undefined,
         phone: checkout.form.customerPhone,
       },
-      items: cart.items.map((item) => ({
+      items: cart.dishItems.map((item) => ({
         dishId: item.dishId,
         comboId: item.comboId,
         dishName: item.dishName,
@@ -409,7 +413,7 @@ async function submitOrder() {
 
     const result = await $fetch<{ id: string; orderNumber: string | null }>('/api/orders', { method: 'POST', body, headers })
 
-    cart.clear()
+    commitClearDishes()
     checkout.clearPromo()
     await navigateTo(`/order/${result.id}`)
   } catch (err: unknown) {

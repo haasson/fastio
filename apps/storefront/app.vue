@@ -45,6 +45,7 @@ const [{ data: tenant }, { data: menuData }] = await Promise.all([
   // @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
   useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery)),
   useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
+  useAsyncData('services-catalog', () => rfetch('/api/services-catalog', slugQuery)),
 ])
 
 useCartReconciler(menuData)

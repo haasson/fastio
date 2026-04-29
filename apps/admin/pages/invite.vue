@@ -46,7 +46,9 @@ onMounted(async () => {
       fatalError.value = 'Не удалось принять приглашение. Возможно, вы уже состоите в команде или email не совпадает.'
       pageLoading.value = false
     } else {
-      await navigateTo('/')
+      // Hard-reload: после accept-invite смена tenant'а / прав требует
+      // полной переинициализации store'ов и channels.
+      window.location.href = '/'
     }
 
     return

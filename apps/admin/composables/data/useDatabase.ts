@@ -33,6 +33,12 @@ import { tagsApi } from '~/utils/api/tags'
 import { rolesApi } from '~/utils/api/roles'
 import { supportApi } from '~/utils/api/support'
 import { auditLogsApi } from '~/utils/api/audit-logs'
+import { appointmentsApi } from '~/utils/api/appointments'
+import { appointmentSettingsApi } from '~/utils/api/appointment-settings'
+import { appointmentEventsApi } from '~/utils/api/appointment-events'
+import { servicesApi } from '~/utils/api/services'
+import { resourcesApi } from '~/utils/api/resources'
+import { scheduleTemplatesApi } from '~/utils/api/schedule-templates'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
@@ -86,5 +92,11 @@ export const useDatabase = () => {
     roles: bindAll(rolesApi, sb),
     support: bindAll(supportApi, sb),
     auditLogs: bindAll(auditLogsApi, sb),
+    appointments: bindAll(appointmentsApi, sb),
+    appointmentSettings: bindAll(appointmentSettingsApi, sb),
+    appointmentEvents: bindAll(appointmentEventsApi, sb),
+    services: bindAll(servicesApi, sb),
+    resources: bindAll(resourcesApi, sb),
+    scheduleTemplates: bindAll(scheduleTemplatesApi, sb),
   }
 }

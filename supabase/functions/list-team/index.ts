@@ -73,10 +73,13 @@ Deno.serve(async (req) => {
     (acceptedInvites ?? []).map(inv => inv.invited_by).filter(Boolean)
   )]
 
-  // Получаем профили участников и пригласивших через DB (надёжно, SECURITY DEFINER)
+  // Получаем профили участников и пригласивших через DB (SECURITY DEFINER).
+  // Вызываем от имени пользователя (userSupabase), потому что функция опирается
+  // на auth.uid(). Используем tenant-scoped вариант, чтобы исключить утечку
+  // профилей мемберов чужого тенанта в multi-tenant сценарии.
   const allUserIds = [...new Set([...memberUserIds, ...inviterUserIds])]
-  const { data: profileRows } = await adminSupabase
-    .rpc('get_user_profiles', { user_ids: allUserIds })
+  const { data: profileRows } = await userSupabase
+    .rpc('get_user_profiles_for_tenant', { p_tenant_id: tenantId, user_ids: allUserIds })
 
   type UserProfile = { user_id: string; email: string; full_name: string | null }
   const profileMap = new Map<string, UserProfile>(

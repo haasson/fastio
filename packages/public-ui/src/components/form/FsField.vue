@@ -83,7 +83,7 @@ const computedError = computed(() => internalError.value || props.error || null)
 .field-error {
   margin: 4px 0 0;
   font-size: 12px;
-  color: var(--color-error, #ef4444);
+  color: var(--color-error);
   line-height: 1.4;
 }
 

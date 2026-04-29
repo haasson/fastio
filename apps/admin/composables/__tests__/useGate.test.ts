@@ -472,8 +472,69 @@ describe('useGate', () => {
     })
   })
 
-  describe('reservations / services вилка', () => {
-    it('viewReservations для retail использует модуль reservations', async () => {
+  describe('menu vs serviceMenu — раздельные гейты по businessType', () => {
+    it('viewMenu для food-тенанта enabled с правом', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'retail'
+      tenantStore.currentPermissions = { 'menu.view': true }
+
+      const gate = useGate()
+
+      expect(gate.viewMenu.value.enabled).toBe(true)
+    })
+
+    it('viewMenu для services-тенанта absent (не должен открывать /menu)', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      tenantStore.currentPermissions = { 'menu.view': true }
+
+      const gate = useGate()
+
+      expect(gate.viewMenu.value.enabled).toBe(false)
+      expect(gate.viewMenu.value.reason).toBe('absent')
+    })
+
+    it('viewServiceMenu для services-тенанта enabled когда services модуль включён', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      allEnabled('services')
+      tenantStore.currentPermissions = { 'menu.view': true }
+
+      const gate = useGate()
+
+      expect(gate.viewServiceMenu.value.enabled).toBe(true)
+    })
+
+    it('viewServiceMenu для food-тенанта absent', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'retail'
+      tenantStore.currentPermissions = { 'menu.view': true }
+
+      const gate = useGate()
+
+      expect(gate.viewServiceMenu.value.enabled).toBe(false)
+      expect(gate.viewServiceMenu.value.reason).toBe('absent')
+    })
+
+    it('manageServiceMenu требует menu.edit + services-тенант + services модуль', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      allEnabled('services')
+      tenantStore.currentPermissions = { 'menu.edit': true }
+
+      const gate = useGate()
+
+      expect(gate.manageServiceMenu.value.enabled).toBe(true)
+    })
+  })
+
+  describe('reservations vs appointments — отдельные ключи', () => {
+    it('viewReservations для retail использует модуль reservations + reservations.view', async () => {
       const useGate = await importGate()
 
       tenantStore.tenant.businessType = 'retail'
@@ -483,9 +544,11 @@ describe('useGate', () => {
       const gate = useGate()
 
       expect(gate.viewReservations.value.enabled).toBe(true)
+      // appointments.* отдельный ключ — без него гейт не открыт.
+      expect(gate.viewAppointments.value.enabled).toBe(false)
     })
 
-    it('viewReservations для services использует модуль services', async () => {
+    it('viewAppointments для services требует appointments.view, не reservations.view', async () => {
       const useGate = await importGate()
 
       tenantStore.tenant.businessType = 'services'
@@ -494,7 +557,25 @@ describe('useGate', () => {
 
       const gate = useGate()
 
-      expect(gate.viewReservations.value.enabled).toBe(true)
+      // reservations.view сам по себе не открывает Appointments.
+      expect(gate.viewAppointments.value.enabled).toBe(false)
+
+      tenantStore.currentPermissions = { 'appointments.view': true }
+      const gate2 = useGate()
+
+      expect(gate2.viewAppointments.value.enabled).toBe(true)
+    })
+
+    it('manageAppointments требует appointments.manage', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      allEnabled('services')
+      tenantStore.currentPermissions = { 'appointments.manage': true }
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.enabled).toBe(true)
     })
   })
 })

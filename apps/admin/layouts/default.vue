@@ -492,7 +492,7 @@ const kbUrl = computed(() => {
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-8);
   color: var(--color-text-hint);
   opacity: 0.55;
   text-decoration: none;

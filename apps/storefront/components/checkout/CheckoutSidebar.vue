@@ -3,10 +3,10 @@
     <FsCard class="sidebar-card">
       <div class="sidebar-body">
         <FsHeading as="h6" class="sidebar-title">Ваш заказ</FsHeading>
-        <SfOrderItemsList :items="cart.items" :currency="currency" />
+        <SfOrderItemsList :items="cart.dishItems" :currency="currency" />
         <FsDivider spacing="none" />
         <CheckoutSummary
-          :subtotal="cart.subtotal"
+          :subtotal="cart.dishSubtotal"
           :delivery-fee="checkout.deliveryFee"
           :discount-amount="checkout.discountAmount"
           :discount-label="discountLabel"

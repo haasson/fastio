@@ -1,16 +1,16 @@
 <template>
   <MenuCategoryList
     v-model="selectedCategoryId"
-    :tenant-id="tenantId"
-    :dish-counts="dishCounts"
-    :tags="tags"
-    @categories-loaded="onCategoriesLoaded"
+    :categories="categories"
+    :loading="categoriesLoading"
+    :item-counts="dishCounts"
+    empty-link="/menu/categories"
   />
   <MenuDishList
     v-if="selectedCategory?.type === 'regular' && !isAutoCategory(selectedCategory)"
     :tenant-id="tenantId"
     :category-id="selectedCategoryId"
-    :categories="loadedCategories"
+    :categories="categories"
     :tags="tags"
     @dishes-changed="refreshDishCounts"
   />
@@ -18,7 +18,7 @@
     v-else-if="selectedCategory?.type === 'combo'"
     :tenant-id="tenantId"
     :category-id="selectedCategoryId!"
-    :categories="loadedCategories"
+    :categories="categories"
     :tags="tags"
     @combos-changed="refreshDishCounts"
   />
@@ -27,25 +27,25 @@
     :tenant-id="tenantId"
     :tag-id="selectedCategory.tagId"
     :category-name="selectedCategory.name"
-    :categories="loadedCategories"
+    :categories="categories"
     :all-tags="tags"
   />
   <MenuDishList
-    v-else-if="!selectedCategory && loadedCategories.length > 0"
+    v-else-if="!selectedCategory && categories.length > 0"
     :tenant-id="tenantId"
     :category-id="null"
-    :categories="loadedCategories"
+    :categories="categories"
     :tags="tags"
     @dishes-changed="refreshDishCounts"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, shallowRef } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import { storeToRefs } from 'pinia'
-import type { Category } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
+import { useCategories } from '~/composables/data/useCategories'
 import useDishCounts from '~/composables/data/useDishCounts'
 import { useTags } from '~/composables/data/useTags'
 import MenuCategoryList from '~/components/menu/CategoryTabs.vue'
@@ -56,19 +56,20 @@ import MenuVirtualDishList from '~/components/menu/VirtualDishList.vue'
 const { tenantId } = storeToRefs(useTenantStore())
 
 const selectedCategoryId = ref<string | null>(null)
-const loadedCategories = shallowRef<Category[]>([])
 
+const { categories, loading: categoriesLoading } = useCategories(tenantId)
 const { tags } = useTags(tenantId)
+const { counts: dishCounts, refresh: refreshDishCounts } = useDishCounts(tenantId, categories)
 
-const { counts: dishCounts, refresh: refreshDishCounts } = useDishCounts(tenantId, loadedCategories)
+const selectedCategory = computed(() => categories.value.find((c) => c.id === selectedCategoryId.value) ?? null)
 
-const selectedCategory = computed(() => loadedCategories.value.find((c) => c.id === selectedCategoryId.value) ?? null)
-
-const onCategoriesLoaded = (cats: Category[]) => {
-  loadedCategories.value = cats
-  if (!selectedCategoryId.value && cats.length > 0) {
-    selectedCategoryId.value = cats[0].id
+watchEffect(() => {
+  if (!selectedCategoryId.value && categories.value.length > 0) {
+    selectedCategoryId.value = categories.value[0].id
   }
+})
+
+watch(categories, () => {
   refreshDishCounts()
-}
+})
 </script>

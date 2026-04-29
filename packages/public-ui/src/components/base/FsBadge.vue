@@ -73,8 +73,8 @@ withDefaults(defineProps<Props>(), {
 }
 
 .badge-error {
-  background: color-mix(in srgb, var(--color-error, #ef4444) 12%, transparent);
-  color: var(--color-error, #ef4444);
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
 }
 
 .badge-info {

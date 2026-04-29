@@ -180,7 +180,7 @@ const modalActions = computed((): ModalAction[] => [
   border-radius: var(--radius-8);
   overflow: hidden;
   border: 1px solid var(--color-border);
-  background: var(--color-bg-secondary);
+  background: var(--color-bg-subtle);
 
   &--loading {
     width: 120px;

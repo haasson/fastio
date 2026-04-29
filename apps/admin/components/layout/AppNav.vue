@@ -31,6 +31,7 @@ import type { IconName } from '@fastio/icons'
 import { useTerms } from '~/composables/useTerms'
 import { useGate } from '~/composables/plan/useGate'
 import { toEnabled } from '~/composables/plan/useGate.helpers'
+import { useTenantStore } from '~/stores/tenant'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
@@ -49,6 +50,7 @@ type NavItem = {
 
 const gate = useGate()
 const terms = useTerms()
+const tenantStore = useTenantStore()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 const { count: newReservationCount } = useNewReservationCounter()
@@ -61,11 +63,14 @@ const branchNavLabel = computed(() => gate.branches.value.enabled ? 'Филиа�
 const navItems = computed(() => {
   const items: NavItem[] = [
     { to: '/', icon: 'dashboard', label: 'Дашборд', visible: toEnabled(gate.dashboard) },
-    { to: '/menu', icon: 'dishes', label: terms.menu.label, visible: toEnabled(gate.manageMenu) },
+    // Services-tenants ходят в /services, food-tenants — в /menu. Гейты раздельные:
+    // services-тенант не должен видеть food-меню, и наоборот.
+    { to: tenantStore.isServices ? '/services' : '/menu', icon: 'dishes', label: terms.menu.label, visible: toEnabled(tenantStore.isServices ? gate.manageServiceMenu : gate.manageMenu) },
     { to: '/orders', icon: 'orders', label: 'Заказы', visible: toEnabled(gate.viewOrders), counter: orderCounter, blink: orderBlink },
     { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: toEnabled(gate.viewKitchen) },
     { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: toEnabled(gate.viewTables) },
     { to: '/reservations', icon: 'calendar', label: terms.reservationsLabel, visible: toEnabled(gate.viewReservations), counter: newReservationCount },
+    { to: '/appointments', icon: 'calendarCheck', label: 'Запись', visible: toEnabled(gate.viewAppointments) },
     { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: toEnabled(gate.managePromotions) },
     { to: '/team/members', icon: 'users', label: 'Команда', visible: toEnabled(gate.manageTeam) },
     { to: '/branches', icon: 'mapPin', label: branchNavLabel.value, visible: toEnabled(gate.viewBranches) },

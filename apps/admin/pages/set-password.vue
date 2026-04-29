@@ -125,7 +125,8 @@ const handleSubmit = async () => {
       error.value = 'Не удалось сохранить. Попробуйте ещё раз'
     } else {
       sessionStorage.removeItem(RECOVERY_PENDING_KEY)
-      await navigateTo('/')
+      // Hard-reload: см. комментарий в login.vue.
+      window.location.href = '/'
     }
 
     loading.value = false
@@ -142,8 +143,7 @@ const handleSubmit = async () => {
       await api.auth.updateUser({ data: { full_name: form.name } })
       await api.functions.acceptInvite({ token: inviteToken })
       sessionStorage.removeItem(INVITE_PENDING_KEY)
-      await navigateTo('/')
-      loading.value = false
+      window.location.href = '/'
 
       return
     }
@@ -166,12 +166,13 @@ const handleSubmit = async () => {
     if (newSession) {
       await api.functions.acceptInvite({ token: inviteToken })
       sessionStorage.removeItem(INVITE_PENDING_KEY)
-      await navigateTo('/')
-    } else {
-      // Продакшн: ждём подтверждения email
-      emailConfirmSent.value = true
+      window.location.href = '/'
+
+      return
     }
 
+    // Продакшн: ждём подтверждения email
+    emailConfirmSent.value = true
     loading.value = false
 
     return
@@ -185,12 +186,11 @@ const handleSubmit = async () => {
 
   if (updateError) {
     error.value = 'Не удалось сохранить. Попробуйте ещё раз'
+    loading.value = false
   } else {
     sessionStorage.removeItem(INVITE_PENDING_KEY)
-    await navigateTo('/')
+    window.location.href = '/'
   }
-
-  loading.value = false
 }
 </script>
 

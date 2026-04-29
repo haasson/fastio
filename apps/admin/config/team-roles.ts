@@ -47,6 +47,13 @@ export const permissionGroups: PermissionGroup[] = [
     ],
   },
   {
+    label: 'Онлайн-запись',
+    permissions: [
+      { key: 'appointments.view', label: 'Просмотр записей' },
+      { key: 'appointments.manage', label: 'Управление записями' },
+    ],
+  },
+  {
     label: 'Промоакции',
     permissions: [
       { key: 'promos.view', label: 'Просмотр промоакций' },

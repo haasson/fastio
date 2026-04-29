@@ -69,14 +69,20 @@ const dineInStep: OnboardingStep = {
   kbRoute: '/tables',
 }
 
-const intakeServicesStep: OnboardingStep = {
-  id: 'intake-services',
-  title: 'Настройте приём записей',
+const appointmentsStep: OnboardingStep = {
+  id: 'appointments',
+  title: 'Добавьте первого исполнителя или объект',
   description:
-    'Решите, как клиенты будут записываться: онлайн-бронирование, заявка на обратный звонок или ручное подтверждение.',
-  ctaLabel: 'Открыть модули',
-  route: '/settings/modules',
-  kbRoute: '/settings',
+    'Онлайн-запись работает через ресурсы — это могут быть мастера и тренеры, либо объекты вроде бильярдного стола, корта, кабинета. Настройте расписание, и клиенты смогут выбирать время прямо с витрины.',
+  details: [
+    'Откройте «Онлайн-запись → Сотрудники» (или «Объекты»)',
+    'Нажмите «Добавить» и введите имя или название',
+    'Задайте рабочие дни и часы работы',
+    'Привяжите услуги, на которые ведётся запись',
+  ],
+  ctaLabel: 'Открыть сотрудников',
+  route: '/appointments/staff',
+  kbRoute: '/appointments',
 }
 
 // ============================================================================
@@ -84,7 +90,7 @@ const intakeServicesStep: OnboardingStep = {
 // labels).
 // ============================================================================
 
-const categoryStep = (l: OnboardingLabels): OnboardingStep => ({
+const categoryStep = (l: OnboardingLabels, isServices: boolean): OnboardingStep => ({
   id: 'category',
   title: 'Создайте первую категорию',
   description:
@@ -95,8 +101,9 @@ const categoryStep = (l: OnboardingLabels): OnboardingStep => ({
     'По желанию — загрузите обложку',
   ],
   ctaLabel: 'Создать категорию',
-  route: '/menu/categories',
-  kbRoute: '/menu',
+  // services-тенанты идут в /services/categories — /menu/* у них закрыт гейтом.
+  route: isServices ? '/services/categories' : '/menu/categories',
+  kbRoute: isServices ? '/services' : '/menu',
   tourId: 'create-category',
 })
 
@@ -114,8 +121,8 @@ const itemStep = (l: OnboardingLabels, isServices: boolean): OnboardingStep => (
       : 'Обязательно добавьте фото — оно сильнее всего влияет на решение о покупке',
   ],
   ctaLabel: `Добавить ${l.itemAcc}`,
-  route: '/menu/dishes',
-  kbRoute: '/menu',
+  route: isServices ? '/services/items' : '/menu/dishes',
+  kbRoute: isServices ? '/services' : '/menu',
   tourId: 'create-dish',
 })
 
@@ -215,13 +222,16 @@ export const buildOnboardingFlow = (
   l: OnboardingLabels,
   ctx: { isServices: boolean; modules: { delivery: boolean; pickup: boolean; dineIn: boolean; reservations: boolean; services: boolean } },
 ): OnboardingStep[] => {
-  const steps: OnboardingStep[] = [categoryStep(l), itemStep(l, ctx.isServices)]
+  const steps: OnboardingStep[] = [categoryStep(l, ctx.isServices), itemStep(l, ctx.isServices)]
   const { delivery, pickup, dineIn, reservations, services } = ctx.modules
   const hasOrders = delivery || pickup || dineIn
   const hasPersonalData = (ctx.isServices && services) || hasOrders || reservations
 
   if (ctx.isServices) {
-    if (services) steps.push(intakeServicesStep)
+    // Шаг настройки приёма записей (intakeServicesStep) удалён — он вёл на
+    // /settings/modules уже после включения модуля и ничего полезного не давал.
+    // Сразу переходим к добавлению ресурса (исполнителя или объекта).
+    if (services) steps.push(appointmentsStep)
   } else {
     if (delivery) steps.push(deliveryStep)
     if (pickup) steps.push(pickupStep)

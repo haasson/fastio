@@ -4,6 +4,7 @@ export type PermissionKey =
   | 'kitchen.view' | 'kitchen.overview'
   | 'tables.view' | 'tables.manage'
   | 'reservations.view' | 'reservations.manage'
+  | 'appointments.view' | 'appointments.manage'
   | 'promos.view' | 'promos.manage'
   | 'content.view' | 'content.edit'
   | 'team.view' | 'team.manage'

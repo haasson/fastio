@@ -7,6 +7,8 @@ import { useKitchenQueueChannel } from '~/composables/data/useKitchenQueueChanne
 import { useReservationsChannel } from '~/composables/data/useReservationsChannel'
 import { useReservationAlertHandler } from '~/composables/data/useReservationAlertHandler'
 import { useSupportChannel } from '~/composables/data/useSupportChannel'
+import { useAppointmentsChannel } from '~/composables/data/useAppointmentsChannel'
+import { useAppointmentAlertHandler } from '~/composables/data/useAppointmentAlertHandler'
 
 export function useRealtimeChannels(tenantId: Ref<string | null>) {
   useOrdersChannel(tenantId)
@@ -21,4 +23,7 @@ export function useRealtimeChannels(tenantId: Ref<string | null>) {
   useReservationAlertHandler()
 
   useSupportChannel(tenantId)
+
+  useAppointmentsChannel(tenantId)
+  useAppointmentAlertHandler()
 }

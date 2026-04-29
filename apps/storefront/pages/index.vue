@@ -15,6 +15,12 @@
           :banners="banners ?? []"
           :settings="shellLayout.sections.banners"
         />
+        <ServicesSection
+          v-else-if="key === 'menu' && shellLayout.sections.menu.enabled && useServicesCatalog"
+          id="menu"
+          :default-view="menuDefaultView"
+          :mobile-service-card="shellLayout.sections.menu.mobileDishCard"
+        />
         <MenuSection
           v-else-if="key === 'menu' && shellLayout.sections.menu.enabled"
           id="menu"
@@ -46,10 +52,15 @@ import PageShell from '~/components/sections/PageShell.vue'
 import HeroSection from '~/components/sections/HeroSection.vue'
 import BannersSection from '~/components/sections/BannersSection.vue'
 import MenuSection from '~/components/sections/MenuSection.vue'
+import ServicesSection from '~/components/sections/ServicesSection.vue'
 import GallerySection from '~/components/sections/GallerySection.vue'
 import ReviewsSection from '~/components/sections/ReviewsSection.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+const useServicesCatalog = computed(() =>
+  tenant.value?.businessType === 'services' && tenant.value?.modules?.services === true,
+)
 
 const rfetch = useRequestFetch()
 const route = useRoute()

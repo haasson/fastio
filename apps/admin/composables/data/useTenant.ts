@@ -6,6 +6,7 @@ import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 import { usePlans } from '~/composables/plan/usePlans'
 import { useModuleConfigs } from '~/composables/plan/useModules'
 import { useRoles } from '~/composables/data/useRoles'
+import { reportError } from '~/utils/reportError'
 
 type MembershipWithTenant = {
   id: string
@@ -96,6 +97,26 @@ export const useTenant = (userId: Ref<string | null>) => {
     },
   })
 
+  /**
+   * Догружаем глобальные данные модуля appointments после `fetchTenant`,
+   * если модуль включён — чтобы избежать роундтрипов в каждом потребителе.
+   * Импорт стора лениво, чтобы не было циркулярной зависимости.
+   *
+   * Ошибки логируем, но не пробрасываем: если настройки не загрузились,
+   * это не должно блокировать вход в админку.
+   */
+  const loadModuleStores = async () => {
+    if (!maybeTenant.value?.modules?.services) return
+
+    try {
+      const { useAppointmentSettingsStore } = await import('~/stores/appointmentSettings')
+
+      await useAppointmentSettingsStore().load()
+    } catch (e) {
+      reportError(e)
+    }
+  }
+
   const init = async () => {
     if (!userId.value) return
 
@@ -120,18 +141,19 @@ export const useTenant = (userId: Ref<string | null>) => {
     const { load: loadConfigs } = useModuleConfigs()
 
     await Promise.all([fetchTenant(), loadPlans(), loadConfigs(), rolesApi.load()])
+    await loadModuleStores()
     loading.value = false
   }
 
-  const switchTenant = async (tenantId: string) => {
+  /**
+   * Меняет выбранный тенант и сохраняет в localStorage. Не грузит данные:
+   * после смены ожидается hard-reload (см. TenantSwitcher.vue), который
+   * инициализирует все store'ы и channels с нуля для нового тенанта.
+   */
+  const switchTenant = (tenantId: string) => {
     if (tenantId === currentTenantId.value) return
-
-    loading.value = true
     currentTenantId.value = tenantId
     localStorage.setItem(STORAGE_KEY, tenantId)
-
-    await Promise.all([fetchTenant(), rolesApi.load()])
-    loading.value = false
   }
 
   const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt' | 'subscription' | 'balance'>>) => {
@@ -143,8 +165,9 @@ export const useTenant = (userId: Ref<string | null>) => {
 
     try {
       await api.tenants.update(snapshot.id, data)
-    } catch {
+    } catch (e) {
       maybeTenant.value = snapshot
+      reportError(e)
       throw new Error('Не удалось сохранить изменения')
     }
   }
