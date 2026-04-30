@@ -26,8 +26,9 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { PROJECTS, mapPath, getProjectForFile } from './projects.mjs';
+import { PROJECTS, STYLE_PROJECTS, mapPath, getProjectForFile, getStyleProjectForFile } from './projects.mjs';
 import { parseFile, fileHash, pageRelToUrl } from './parsers.mjs';
+import { parseScssFile, renderStyleMd } from './scss-parser.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -264,6 +265,85 @@ function scanProject(projectKey, options = {}) {
   return writtenMaps;
 }
 
+// ------------------------- styles -------------------------
+
+function walkScss(absRoot) {
+  const out = [];
+  if (!fs.existsSync(absRoot)) return out;
+  const stack = [absRoot];
+  while (stack.length) {
+    const cur = stack.pop();
+    let entries;
+    try { entries = fs.readdirSync(cur, { withFileTypes: true }); } catch { continue; }
+    for (const ent of entries) {
+      if (ent.name.startsWith('.DS_Store')) continue;
+      const full = path.join(cur, ent.name);
+      if (ent.isDirectory()) {
+        if (SKIP_DIRS.has(ent.name)) continue;
+        stack.push(full);
+      } else if (ent.isFile()) {
+        if (path.extname(ent.name) === '.scss') out.push(full);
+      }
+    }
+  }
+  return out.sort();
+}
+
+function scanStyleProject(projectKey) {
+  const cfg = STYLE_PROJECTS[projectKey];
+  if (!cfg) throw new Error(`Unknown style project: ${projectKey}`);
+  const projectAbs = path.join(ROOT, projectKey);
+  if (!fs.existsSync(projectAbs)) return null;
+
+  const fileEntries = [];
+  for (const src of cfg.sources ?? []) {
+    const absDir = path.join(projectAbs, src.dir);
+    const files = walkScss(absDir);
+    for (const abs of files) {
+      const relFromProject = path.relative(projectAbs, abs).replace(/\\/g, '/');
+      try {
+        const parsed = parseScssFile(abs);
+        fileEntries.push({ relPath: relFromProject, parsed });
+      } catch (err) {
+        process.stderr.write(`[codemap] WARN scss parse ${projectKey}/${relFromProject}: ${err.message}\n`);
+      }
+    }
+  }
+  if (fileEntries.length === 0) return null;
+
+  const { md, totals } = renderStyleMd(projectKey, cfg.label, fileEntries);
+  const outAbs = path.join(ROOT, cfg.output);
+
+  // Если в SCSS-файлах нет ни одного объявления (только импорты/правила) — карта бесполезна
+  const declCount = totals.tokens + totals.vars + totals.mixins + totals.functions;
+  if (declCount === 0) {
+    if (fs.existsSync(outAbs)) fs.unlinkSync(outAbs);
+    return null;
+  }
+
+  fs.mkdirSync(path.dirname(outAbs), { recursive: true });
+  fs.writeFileSync(outAbs, md + '\n', 'utf8');
+
+  return { projectKey, output: cfg.output, totals, fileCount: fileEntries.length };
+}
+
+function scanAllStyles() {
+  const results = [];
+  for (const key of Object.keys(STYLE_PROJECTS)) {
+    process.stderr.write(`scan styles ${key} ... `);
+    const t0 = Date.now();
+    const r = scanStyleProject(key);
+    if (r) {
+      const t = r.totals;
+      process.stderr.write(`${r.fileCount} files, tokens:${t.tokens}, vars:${t.vars}, mixins:${t.mixins}, functions:${t.functions} (${Date.now() - t0}ms)\n`);
+      results.push(r);
+    } else {
+      process.stderr.write(`(пусто, скип)\n`);
+    }
+  }
+  return results;
+}
+
 // ------------------------- index -------------------------
 
 function rebuildIndex() {
@@ -299,6 +379,15 @@ function rebuildIndex() {
     totFiles += pf; totSymbols += ps; totUndescr += pu;
   }
 
+  // Стилевые карты — отдельный реестр
+  const styles = {};
+  for (const [styleKey, styleCfg] of Object.entries(STYLE_PROJECTS)) {
+    const stylePath = path.join(ROOT, styleCfg.output);
+    if (fs.existsSync(stylePath)) {
+      styles[styleKey] = { file: styleCfg.output, label: styleCfg.label };
+    }
+  }
+
   const index = {
     rule: [
       'Это индекс карт проектов монорепо. Сами карты НЕ в контексте — Read только нужные.',
@@ -307,10 +396,12 @@ function rebuildIndex() {
       '3. Если по ходу работы выяснилось, что нужно править другой проект — СНАЧАЛА прочитай его карты, потом меняй код',
       '4. НЕ читай карты «на всякий случай» — это перегружает контекст',
       '5. Карта говорит ЧТО есть и ДЛЯ ЧЕГО. Сигнатуры/реализацию смотри в самом файле, когда нужно',
+      '6. При работе со стилями (.scss / <style> в .vue) — Read нужную styles-карту из секции "styles" ниже. ВСЕГДА используй существующие токены/миксины вместо хардкода значений.',
     ].join(' '),
     generated_at: new Date().toISOString(),
     totals: { files: totFiles, symbols: totSymbols, undescribed: totUndescr },
     projects,
+    styles,
   };
   saveJson(indexPath, index);
 }
@@ -340,11 +431,31 @@ function projectsForFiles(filePaths) {
   return [...set];
 }
 
+function styleProjectsForFiles(filePaths) {
+  const set = new Set();
+  for (const f of filePaths) {
+    if (path.extname(f) !== '.scss') continue;
+    const proj = getStyleProjectForFile(f);
+    if (proj && STYLE_PROJECTS[proj]) set.add(proj);
+  }
+  return [...set];
+}
+
 function decideTargets() {
   if (args.project) return [args.project];
   if (args.all) return Object.keys(PROJECTS);
   if (args.staged) return projectsForFiles(getStagedFiles());
   if (args.files) return projectsForFiles(args.files);
+  return [];
+}
+
+function decideStyleTargets() {
+  if (args.project) {
+    return STYLE_PROJECTS[args.project] ? [args.project] : [];
+  }
+  if (args.all) return Object.keys(STYLE_PROJECTS);
+  if (args.staged) return styleProjectsForFiles(getStagedFiles());
+  if (args.files) return styleProjectsForFiles(args.files);
   return [];
 }
 
@@ -373,7 +484,8 @@ function reportUndescribed(allMaps) {
 
 function main() {
   const targets = decideTargets();
-  if (targets.length === 0) {
+  const styleTargets = decideStyleTargets();
+  if (targets.length === 0 && styleTargets.length === 0) {
     if (args.staged || args.files) process.exit(0);
     process.stderr.write('Usage: node scan.mjs [--all|--staged|--project=KEY|--files=a.ts,b.vue] [--report-only]\n');
     process.exit(2);
@@ -390,6 +502,21 @@ function main() {
     }), { f: 0, s: 0, p: 0, u: 0 });
     process.stderr.write(`${written.length} maps, ${totals.f} files, ${totals.p} pages, ${totals.s} symbols, ${totals.u} undescribed (${Date.now() - t0}ms)\n`);
     allMaps.push(...written);
+  }
+
+  // Стили (.scss). Описаний для них не требуем — это TOC-таблица; Hook не блокируется.
+  if (!args.reportOnly) {
+    for (const key of styleTargets) {
+      process.stderr.write(`scan styles ${key} ... `);
+      const t0 = Date.now();
+      const r = scanStyleProject(key);
+      if (r) {
+        const t = r.totals;
+        process.stderr.write(`${r.fileCount} files, tokens:${t.tokens}, vars:${t.vars}, mixins:${t.mixins}, fn:${t.functions} (${Date.now() - t0}ms)\n`);
+      } else {
+        process.stderr.write(`(пусто)\n`);
+      }
+    }
   }
 
   if (!args.reportOnly) rebuildIndex();

@@ -2,7 +2,7 @@
   "project": "packages/ui",
   "submap": "main",
   "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-  "generated_at": "2026-04-30T04:03:26.972Z",
+  "generated_at": "2026-04-30T05:12:38.384Z",
   "stats": {
     "files": 52,
     "pages": 0,

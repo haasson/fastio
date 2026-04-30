@@ -172,6 +172,58 @@ export const PROJECTS = {
   },
 };
 
+// ============================================================
+// SCSS-карты проектов
+// Отдельный реестр от PROJECTS — стили живут в своих папках,
+// кто-то из «обычных» проектов может вообще не иметь SCSS,
+// и наоборот packages/styles — только стили.
+// ============================================================
+
+export const STYLE_PROJECTS = {
+  'packages/styles': {
+    label: 'Глобальные токены и миксины монорепо. Используются всеми приложениями и пакетами через @use \'@fastio/styles/...\'.',
+    sources: [
+      { dir: 'variables' },
+      { dir: 'mixins' },
+    ],
+    output: '.claude/codemap/packages/styles.styles.md',
+  },
+  'apps/admin': {
+    label: 'Локальные стили админки (помимо @fastio/styles).',
+    sources: [{ dir: 'assets/css' }],
+    output: '.claude/codemap/apps/admin.styles.md',
+  },
+  'apps/storefront': {
+    label: 'Локальные стили витрины (помимо @fastio/styles).',
+    sources: [{ dir: 'assets/styles' }],
+    output: '.claude/codemap/apps/storefront.styles.md',
+  },
+  'apps/help': {
+    label: 'Локальные стили базы знаний.',
+    sources: [{ dir: 'assets' }],
+    output: '.claude/codemap/apps/help.styles.md',
+  },
+  'apps/landing': {
+    label: 'Локальные стили лендинга.',
+    sources: [{ dir: 'assets/styles' }],
+    output: '.claude/codemap/apps/landing.styles.md',
+  },
+  'packages/public-ui': {
+    label: 'Локальные миксины пакета public-ui (для компонентов витрины).',
+    sources: [{ dir: 'src/styles' }],
+    output: '.claude/codemap/packages/public-ui.styles.md',
+  },
+};
+
+// Принадлежность .scss файла → ключу STYLE_PROJECTS (по префиксу пути)
+export function getStyleProjectForFile(relPath) {
+  const keys = Object.keys(STYLE_PROJECTS).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    if (relPath === key || relPath.startsWith(key + '/')) return key;
+  }
+  return null;
+}
+
 // под-карта одного проекта → путь к файлу
 export function mapPath(projectKey, subMap) {
   const cfg = PROJECTS[projectKey];
