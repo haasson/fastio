@@ -1,0 +1,1116 @@
+{
+  "project": "packages/shared",
+  "submap": "main",
+  "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
+  "generated_at": "2026-04-30T04:03:26.934Z",
+  "stats": {
+    "files": 36,
+    "pages": 0,
+    "symbols": 141,
+    "undescribed_files": 0,
+    "undescribed_pages": 0,
+    "undescribed_symbols": 0
+  },
+  "files": {
+    "src/utils/appointment.ts": {
+      "kind": "ts",
+      "hash": "00b4b6d27261",
+      "purpose": "Мапперы snake_case → camelCase для всех сущностей записи: ресурсы, расписания, настройки, аппойнтменты, группы, заявки",
+      "symbols": [
+        {
+          "name": "mapResource",
+          "kind": "function",
+          "hash": "efc490e2",
+          "purpose": "Маппит сырую запись из БД в Resource (минимум capacity=1, чтобы не делить на ноль)"
+        },
+        {
+          "name": "mapResourceSchedule",
+          "kind": "function",
+          "hash": "662d33cb",
+          "purpose": "Маппит запись недельного расписания ресурса (день недели + open/close обрезанные до HH:MM)"
+        },
+        {
+          "name": "mapResourceDisabledSlot",
+          "kind": "function",
+          "hash": "12d3395c",
+          "purpose": "Маппит постоянно отключённый слот ресурса по дню недели"
+        },
+        {
+          "name": "mapResourceDateOverride",
+          "kind": "function",
+          "hash": "4a82fb7a",
+          "purpose": "Маппит override на конкретную дату (выходной или нестандартные часы)"
+        },
+        {
+          "name": "mapResourceDateDisabledSlot",
+          "kind": "function",
+          "hash": "d8a2b456",
+          "purpose": "Маппит точечно отключённый слот ресурса на конкретную дату"
+        },
+        {
+          "name": "mapAppointmentSettings",
+          "kind": "function",
+          "hash": "b59e937e",
+          "purpose": "Маппит настройки модуля записи тенанта (auto_confirm, slot_step, горизонт бронирования и т.д.)"
+        },
+        {
+          "name": "mapAppointment",
+          "kind": "function",
+          "hash": "203b97cb",
+          "purpose": "Маппит одиночную запись (Appointment) — строка из аппойнтмент-группы с услугой и ресурсом"
+        },
+        {
+          "name": "mapAppointmentGroup",
+          "kind": "function",
+          "hash": "2f42cbee",
+          "purpose": "Маппит группу записей одного клиента (несколько услуг подряд) с total_price и source"
+        },
+        {
+          "name": "mapAppointmentRequestService",
+          "kind": "function",
+          "hash": "2c0925be",
+          "purpose": "Маппит одну услугу внутри заявки на запись (часть JSON-массива services)"
+        },
+        {
+          "name": "mapAppointmentRequest",
+          "kind": "function",
+          "hash": "c8d9e347",
+          "purpose": "Маппит заявку на запись (необработанный запрос клиента до конвертации в группу)"
+        }
+      ]
+    },
+    "src/utils/appointmentSlots.ts": {
+      "kind": "ts",
+      "hash": "a9ec5815cc70",
+      "purpose": "Ядро расчёта доступных слотов для записи: учёт расписаний ресурсов, capacity, shift-циклов, групп услуг с зелёными/жёлтыми вариантами",
+      "symbols": [
+        {
+          "name": "resolveResourceWorkingHours",
+          "kind": "function",
+          "hash": "11579641",
+          "purpose": "Возвращает рабочие часы ресурса на дату (override → shift-цикл → недельное расписание → филиал) или null если не работает"
+        },
+        {
+          "name": "countConflicts",
+          "kind": "function",
+          "hash": "a477fad4",
+          "purpose": "Сколько существующих записей пересекается с интервалом — для capacity ресурса (вместо булевого hasConflict)"
+        },
+        {
+          "name": "getResourceSlotsForDate",
+          "kind": "function",
+          "hash": "3a935d80",
+          "purpose": "Список доступных HH:MM слотов одного ресурса на дату с учётом capacity, disabled-слотов и прошедшего времени"
+        },
+        {
+          "name": "mergeResourceSlots",
+          "kind": "function",
+          "hash": "f95fe9a8",
+          "purpose": "Объединение слотов нескольких ресурсов для услуги в режиме «любой исполнитель»"
+        },
+        {
+          "name": "getBranchSlotsForDate",
+          "kind": "function",
+          "hash": "97ab9702",
+          "purpose": "Слоты для услуги БЕЗ исполнителя на основе расписания филиала (open_ended режим)"
+        },
+        {
+          "name": "getAllSlotsInWindow",
+          "kind": "function",
+          "hash": "c2b4047b",
+          "purpose": "Все теоретически возможные слоты в окне open–close (для UI-сетки администратора)"
+        },
+        {
+          "name": "getEffectiveServiceIds",
+          "kind": "function",
+          "hash": "17935507",
+          "purpose": "Эффективный список услуг ресурса: явные + услуги из подписанных категорий (с автодобавлением новых)"
+        },
+        {
+          "name": "findGroupSlots",
+          "kind": "function",
+          "hash": "1e99be2c",
+          "purpose": "Все варианты последовательного расписания для группы услуг на дату (next start = previous end)"
+        },
+        {
+          "name": "findGroupSlotsWithFallback",
+          "kind": "function",
+          "hash": "f0132288",
+          "purpose": "Слоты группы с цветовой маркировкой: preferred (зелёный — все мастера сошлись) / any (жёлтый — заменили) / request_only (длиннее дня)"
+        },
+        {
+          "name": "getGroupDateAvailability",
+          "kind": "function",
+          "hash": "2570bc79",
+          "purpose": "Статус доступности на дату для подсветки кнопок-дней в стрипе (preferred/any/null)"
+        }
+      ]
+    },
+    "src/utils/date.ts": {
+      "kind": "ts",
+      "hash": "6cf76ecbdca8",
+      "purpose": "Форматирование дат на ru-RU и конверсии между ISO/timestamp/YYYY-MM-DD без UTC-сюрпризов",
+      "symbols": [
+        {
+          "name": "formatMinutes",
+          "kind": "function",
+          "hash": "c200858c",
+          "purpose": "Человекочитаемая длительность в минутах: «30 мин», «1 ч», «1 ч 30 мин»"
+        },
+        {
+          "name": "formatDate",
+          "kind": "function",
+          "hash": "0dee7da3",
+          "purpose": "ISO → «1 мар 2024» (короткий месяц с годом)"
+        },
+        {
+          "name": "formatDateShort",
+          "kind": "function",
+          "hash": "98a022e0",
+          "purpose": "ISO → «1 мар» (без года)"
+        },
+        {
+          "name": "formatDateWeekday",
+          "kind": "function",
+          "hash": "c97e5543",
+          "purpose": "YYYY-MM-DD → «пн, 15 мар» (день недели + дата)"
+        },
+        {
+          "name": "formatDateLong",
+          "kind": "function",
+          "hash": "76d6ca82",
+          "purpose": "ISO/timestamp → «1 марта 2024» (полный месяц)"
+        },
+        {
+          "name": "formatDateMonthDay",
+          "kind": "function",
+          "hash": "32fcff3f",
+          "purpose": "ISO/timestamp → «1 марта» (полный месяц без года)"
+        },
+        {
+          "name": "formatDateTime",
+          "kind": "function",
+          "hash": "33a52402",
+          "purpose": "ISO → «1 марта, 14:30» (дата + время)"
+        },
+        {
+          "name": "dateStrToTs",
+          "kind": "function",
+          "hash": "b0d07627",
+          "purpose": "YYYY-MM-DD → ms-таймстамп (полдень local time, чтобы не словить UTC-сдвиг)"
+        },
+        {
+          "name": "formatDateStr",
+          "kind": "function",
+          "hash": "71a2996f",
+          "purpose": "ms-таймстамп → YYYY-MM-DD в local time (вместо toISOString, который даёт UTC)"
+        },
+        {
+          "name": "todayStr",
+          "kind": "function",
+          "hash": "d388a1db",
+          "purpose": "Сегодняшняя дата как YYYY-MM-DD в local time"
+        },
+        {
+          "name": "isoToTs",
+          "kind": "function",
+          "hash": "1bf76435",
+          "purpose": "ISO-строка → ms (или null)"
+        },
+        {
+          "name": "tsToIso",
+          "kind": "function",
+          "hash": "ed254677",
+          "purpose": "ms → ISO-строка (или null)"
+        },
+        {
+          "name": "tsToIsoEndOfDay",
+          "kind": "function",
+          "hash": "33b5a7b2",
+          "purpose": "ms → ISO 23:59:59 того же дня — для active_to акций, чтобы не помирали в полночь"
+        },
+        {
+          "name": "formatRelativeTime",
+          "kind": "function",
+          "hash": "a9cefaaf",
+          "purpose": "«только что», «5 мин назад», «2 ч назад» или полная дата для старых событий"
+        }
+      ]
+    },
+    "src/utils/deepMerge.ts": {
+      "kind": "ts",
+      "hash": "8444175f6bbd",
+      "purpose": "Рекурсивное слияние defaults + overrides (массивы заменяются, undefined игнорируется) — для дефолтов настроек тенанта",
+      "symbols": [
+        {
+          "name": "deepMerge",
+          "kind": "function",
+          "hash": "68323ee0",
+          "purpose": "Рекурсивно мержит defaults и overrides: массивы заменяются целиком, undefined-поля сохраняют дефолт"
+        }
+      ]
+    },
+    "src/utils/defaultSeo.ts": {
+      "kind": "ts",
+      "hash": "f931dfd3c990",
+      "purpose": "Фабрика дефолтного TenantSeo (пустые мета, robots=index)",
+      "symbols": [
+        {
+          "name": "defaultSeo",
+          "kind": "function",
+          "hash": "61305a23",
+          "purpose": "Возвращает пустой TenantSeo с robots='index' — для нового тенанта или fallback"
+        }
+      ]
+    },
+    "src/utils/defaultSiteContent.ts": {
+      "kind": "ts",
+      "hash": "04b3228c2c4a",
+      "purpose": "Фабрика дефолтного SiteContent (logo, hero, about, delivery — все пустые)",
+      "symbols": [
+        {
+          "name": "defaultSiteContent",
+          "kind": "function",
+          "hash": "0011a3a4",
+          "purpose": "Возвращает пустой SiteContent для нового тенанта (без логотипа, текстов и фоновых изображений)"
+        }
+      ]
+    },
+    "src/utils/defaultSiteLayout.ts": {
+      "kind": "ts",
+      "hash": "e8156db14271",
+      "purpose": "Дефолтный SiteLayout (порядок секций, настройки header, страницы) и опции для select'ов в редакторе",
+      "symbols": [
+        {
+          "name": "dishDescriptionOptions",
+          "kind": "const",
+          "hash": "aa43fb45",
+          "purpose": "Опции select'а для расположения описания блюда: «Под фото» (below) / «На фото» (overlay)"
+        },
+        {
+          "name": "mobileDishCardOptions",
+          "kind": "const",
+          "hash": "af60bd34",
+          "purpose": "Опции select'а для карточки блюда на мобиле: «Вертикальная» / «Горизонтальная»"
+        },
+        {
+          "name": "defaultSiteLayout",
+          "kind": "function",
+          "hash": "9f110f92",
+          "purpose": "Полный дефолтный SiteLayout: header с навигацией, секции (categoryBar+menu включены, остальное off), порядок и pageSettings"
+        }
+      ]
+    },
+    "src/utils/defaultTheme.ts": {
+      "kind": "ts",
+      "hash": "afe18c2f322e",
+      "purpose": "Фабрика дефолтной TenantTheme (preset='fresh', primary=#ff6b35, шрифт system)",
+      "symbols": [
+        {
+          "name": "defaultTheme",
+          "kind": "function",
+          "hash": "037a09da",
+          "purpose": "Возвращает дефолтную тему тенанта с preset='fresh' и оранжевым primary"
+        }
+      ]
+    },
+    "src/utils/format.ts": {
+      "kind": "ts",
+      "hash": "59beac09a82b",
+      "purpose": "Форматирование цены (RUB, без копеек) и плюрализация по числу для русского языка",
+      "symbols": [
+        {
+          "name": "formatPrice",
+          "kind": "function",
+          "hash": "bf95c80d",
+          "purpose": "Форматирует число в рубли по ru-RU без дробной части: 1250 → «1 250 ₽»"
+        },
+        {
+          "name": "pluralize",
+          "kind": "function",
+          "hash": "6bbcc8db",
+          "purpose": "Склонение по числу: pluralize(5, 'день', 'дня', 'дней') → 'дней'"
+        }
+      ]
+    },
+    "src/utils/geo.ts": {
+      "kind": "ts",
+      "hash": "5e58a23a3176",
+      "purpose": "Геометрия для зон доставки: ray-casting проверка точки в полигоне и поиск самой выгодной активной зоны",
+      "symbols": [
+        {
+          "name": "isPointInPolygon",
+          "kind": "function",
+          "hash": "1012ee62",
+          "purpose": "Ray-casting: точка [lng,lat] внутри полигона? — для проверки попадания адреса в зону доставки"
+        },
+        {
+          "name": "findDeliveryZone",
+          "kind": "function",
+          "hash": "eb795aaf",
+          "purpose": "Находит активную зону доставки с минимальной стоимостью, в которую попадает точка (или null)"
+        }
+      ]
+    },
+    "src/utils/heroGradients.ts": {
+      "kind": "ts",
+      "hash": "0f5a46d78865",
+      "purpose": "Каталог пресетов градиентов для hero-секции (диагональ, радиальный, тройной и т.д.) с CSS на var(--primary)/var(--color-bg)",
+      "symbols": [
+        {
+          "name": "HeroGradient",
+          "kind": "type",
+          "hash": "f874dc8b",
+          "purpose": "Тип пресета градиента: id, label и CSS-строка"
+        },
+        {
+          "name": "heroGradients",
+          "kind": "const",
+          "hash": "81855a4a",
+          "purpose": "Готовые пресеты hero-градиентов: диагональ, вертикаль, радиальный, тройной, нейтральный и др."
+        },
+        {
+          "name": "getHeroGradient",
+          "kind": "function",
+          "hash": "8b7806f6",
+          "purpose": "Находит пресет градиента по id"
+        },
+        {
+          "name": "resolveGradientCss",
+          "kind": "function",
+          "hash": "cd6abb5b",
+          "purpose": "Подставляет реальные цвета палитры в CSS пресета (для превью без живых CSS-переменных)"
+        }
+      ]
+    },
+    "src/utils/heroLayout.ts": {
+      "kind": "ts",
+      "hash": "408260386d92",
+      "purpose": "Маппинг позиции 1-9 (3x3 сетка) в alignItems/justifyContent для размещения контента hero-секции",
+      "symbols": [
+        {
+          "name": "heroContentPositionStyle",
+          "kind": "function",
+          "hash": "2a486423",
+          "purpose": "Превращает номер ячейки 1..9 в { alignItems, justifyContent } для flex-расстановки контента hero"
+        }
+      ]
+    },
+    "src/utils/orderItemKey.ts": {
+      "kind": "ts",
+      "hash": "ef29091a99ac",
+      "purpose": "Ключ позиции корзины из её модификаторов/допов/удалённых ингредиентов — для слияния одинаковых строк",
+      "symbols": [
+        {
+          "name": "orderItemKey",
+          "kind": "function",
+          "hash": "2e6b4d0d",
+          "purpose": "Стабильный ключ позиции корзины: одинаковое блюдо с одинаковыми модификаторами/допами/убранными ингредиентами даёт одну строку"
+        }
+      ]
+    },
+    "src/utils/phone.ts": {
+      "kind": "ts",
+      "hash": "34845b5844fb",
+      "purpose": "Нормализация, форматирование и валидация русских телефонов (8XXX → 7XXX, +7 (999) 123-45-67)",
+      "symbols": [
+        {
+          "name": "normalizePhone",
+          "kind": "function",
+          "hash": "3f70dde1",
+          "purpose": "Только цифры; '8' в начале → '7': '8 999 123-45-67' → '79991234567'"
+        },
+        {
+          "name": "formatPhone",
+          "kind": "function",
+          "hash": "f560858a",
+          "purpose": "Красивое отображение: '79991234567' → '+7 (999) 123-45-67'"
+        },
+        {
+          "name": "validateAndNormalizeRussianPhone",
+          "kind": "function",
+          "hash": "97eb3631",
+          "purpose": "Валидирует и приводит RU-телефон к каноничной форме '79991234567' (или null если невалидно)"
+        }
+      ]
+    },
+    "src/utils/planConstants.ts": {
+      "kind": "ts",
+      "hash": "9f181fbe521f",
+      "purpose": "Дефолтные константы планов и филиалов (длительность триала, цвет нового филиала)",
+      "symbols": [
+        {
+          "name": "DEFAULT_TRIAL_DAYS",
+          "kind": "const",
+          "hash": "20ffc799",
+          "purpose": "Длительность триала по умолчанию (14 дней) — fallback если billing_config недоступен"
+        },
+        {
+          "name": "DEFAULT_BRANCH_COLOR",
+          "kind": "const",
+          "hash": "ca4fe0f8",
+          "purpose": "Цвет нового филиала по умолчанию (#6366f1, индиго)"
+        }
+      ]
+    },
+    "src/utils/planLevel.ts": {
+      "kind": "ts",
+      "hash": "564a2a6ef244",
+      "purpose": "Иерархия тарифных уровней (showcase → start → pro), их лейблы и сравнение ключей retail-/services-",
+      "symbols": [
+        {
+          "name": "PLAN_LEVEL_ORDER",
+          "kind": "const",
+          "hash": "6cb03859",
+          "purpose": "Числовой порядок уровней тарифа: showcase=0, start=1, pro=2 (для сравнений >=)"
+        },
+        {
+          "name": "PLAN_TIER_LABELS",
+          "kind": "const",
+          "hash": "f780867f",
+          "purpose": "Локализованные лейблы уровней тарифа: 'Витрина', 'Старт', 'Про'"
+        },
+        {
+          "name": "extractPlanTier",
+          "kind": "function",
+          "hash": "0bbb06a6",
+          "purpose": "Срезает префикс businessType из ключа плана: 'retail-pro' → 'pro'"
+        },
+        {
+          "name": "getPlanTierOrder",
+          "kind": "function",
+          "hash": "75b41cdc",
+          "purpose": "Числовой ранг плана по его ключу — чтобы понять, выше или ниже один план другого"
+        }
+      ]
+    },
+    "src/utils/planResolve.ts": {
+      "kind": "ts",
+      "hash": "fae82f55a710",
+      "purpose": "Расчёт итоговых фич тенанта суммированием всех тарифов уровня ≤ выбранного для конкретного businessType",
+      "symbols": [
+        {
+          "name": "resolveFeaturesForPlan",
+          "kind": "function",
+          "hash": "fb0ab654",
+          "purpose": "Аккумулирует фичи (модули, меню, ресурсы, сайт) всех планов уровня ≤ выбранного — для онбординга и useResolvedFeatures"
+        }
+      ]
+    },
+    "src/utils/price.ts": {
+      "kind": "ts",
+      "hash": "911e84115940",
+      "purpose": "Расчёт итоговой цены позиции с модификаторами/допами и человекочитаемое описание её опций",
+      "symbols": [
+        {
+          "name": "getItemSummary",
+          "kind": "function",
+          "hash": "f32edff4",
+          "purpose": "Текст с опциями позиции: 'Маленькая · + Сыр · Убрать: лук' для отображения в корзине"
+        },
+        {
+          "name": "getItemUnitPrice",
+          "kind": "function",
+          "hash": "91dcea98",
+          "purpose": "Итоговая цена за единицу: базовая + сумма priceDelta модификаторов + цены допов"
+        }
+      ]
+    },
+    "src/utils/rateLimit.ts": {
+      "kind": "ts",
+      "hash": "8495fe02114f",
+      "purpose": "In-memory rate limiter с TTL-окном и автоочисткой — для server-роутов (auth, формы и т.п.)",
+      "symbols": [
+        {
+          "name": "createRateLimiter",
+          "kind": "function",
+          "hash": "0c534e53",
+          "purpose": "Фабрика rate-лимитера: { check(key) → bool } разрешает максимум max запросов в окне windowMs"
+        }
+      ]
+    },
+    "src/utils/reconcile-cart.ts": {
+      "kind": "ts",
+      "hash": "d58bcebfe65d",
+      "purpose": "Реконсиляция корзины со свежим меню: удаляет несуществующие, обновляет цены/имена, помечает изменённые позиции",
+      "symbols": [
+        {
+          "name": "reconcileServices",
+          "kind": "function",
+          "hash": "bcf401cf",
+          "purpose": "Реконсилит корзину услуг: удаляет несуществующие serviceId, обновляет name/price/duration/photo если изменились"
+        },
+        {
+          "name": "reconcileCart",
+          "kind": "function",
+          "hash": "d8233209",
+          "purpose": "Реконсилит корзину блюд/комбо: удаляет отсутствующие, валидирует модификаторы/допы, обновляет цены — { items, removed, updated }"
+        },
+        {
+          "name": "MenuDish",
+          "kind": "type",
+          "hash": "060b9bc6",
+          "purpose": "Минимальное представление блюда для reconciler (id, name, price, photos, ingredients)"
+        },
+        {
+          "name": "MenuCombo",
+          "kind": "type",
+          "hash": "336f4a75",
+          "purpose": "Минимальное представление комбо для reconciler"
+        },
+        {
+          "name": "MenuAddon",
+          "kind": "type",
+          "hash": "79a322ef",
+          "purpose": "Минимальное представление аддона для reconciler"
+        },
+        {
+          "name": "ReconcileCartItem",
+          "kind": "type",
+          "hash": "f9e52e15",
+          "purpose": "Позиция корзины с _key (UUID конкретной строки) — reconciler обязан пробрасывать _key в выход"
+        },
+        {
+          "name": "ReconcileServiceItem",
+          "kind": "type",
+          "hash": "73227359",
+          "purpose": "Позиция корзины услуг с preferredResourceId"
+        },
+        {
+          "name": "ReconcileService",
+          "kind": "type",
+          "hash": "4b693d60",
+          "purpose": "Минимальное представление услуги (для матчинга в reconcileServices)"
+        },
+        {
+          "name": "ReconcileServiceResult",
+          "kind": "type",
+          "hash": "f4a80047",
+          "purpose": "Результат реконсиляции услуг: items / removed / updated"
+        },
+        {
+          "name": "ReconcileMenuData",
+          "kind": "type",
+          "hash": "e54d64d6",
+          "purpose": "Слепок меню для reconciler: dishes, combos, dishModifiers и dishAddons по dishId"
+        },
+        {
+          "name": "RemovalReason",
+          "kind": "type",
+          "hash": "f937e2eb",
+          "purpose": "Причина удаления позиции: dish_missing | combo_missing | modifier_invalid | addon_invalid"
+        },
+        {
+          "name": "RemovedItem",
+          "kind": "type",
+          "hash": "fa7de98e",
+          "purpose": "Удалённая позиция с указанием причины — для уведомления юзера в UI"
+        },
+        {
+          "name": "ReconcileResult",
+          "kind": "type",
+          "hash": "fc52a685",
+          "purpose": "Результат реконсиляции корзины: { items, removed, updated }"
+        }
+      ]
+    },
+    "src/utils/reservation.ts": {
+      "kind": "ts",
+      "hash": "40774cd7d472",
+      "purpose": "Маппер сырой записи бронирования стола в Reservation (с обрезкой времени до HH:MM)",
+      "symbols": [
+        {
+          "name": "mapReservation",
+          "kind": "function",
+          "hash": "fd715c57",
+          "purpose": "Маппит сырое бронирование стола из БД в Reservation (snake_case → camelCase, time без секунд)"
+        }
+      ]
+    },
+    "src/utils/resolveModules.ts": {
+      "kind": "ts",
+      "hash": "c2195a39a259",
+      "purpose": "Принудительно гасит модули, неприменимые к businessType (для services убирает delivery/kitchen/комбо/брони и т.д.)",
+      "symbols": [
+        {
+          "name": "resolveModules",
+          "kind": "function",
+          "hash": "e9fb22cc",
+          "purpose": "Фильтрует TenantModules: для businessType=services гасит delivery/pickup/dineIn/kitchen/combos/promotions/reservations/modifiers/addons"
+        }
+      ]
+    },
+    "src/utils/roles.ts": {
+      "kind": "ts",
+      "hash": "1cff11f6b0e8",
+      "purpose": "Проверка флага в RolePermissions (Owner с null roleId — отдельный кейс выше)",
+      "symbols": [
+        {
+          "name": "hasPermission",
+          "kind": "function",
+          "hash": "7ac30b30",
+          "purpose": "Проверяет флаг в RolePermissions: hasPermission(perms, 'orders.write') → true/false"
+        }
+      ]
+    },
+    "src/utils/scheduleTemplate.ts": {
+      "kind": "ts",
+      "hash": "1c38f3d46425",
+      "purpose": "Мапперы шаблонов расписаний (shift-циклы) и хелперы по часам работы филиала на день недели/самое широкое окно",
+      "symbols": [
+        {
+          "name": "mapScheduleTemplate",
+          "kind": "function",
+          "hash": "ab967844",
+          "purpose": "Маппит шаблон расписания (shift-цикл) из БД в ScheduleTemplate"
+        },
+        {
+          "name": "mapScheduleTemplateSlot",
+          "kind": "function",
+          "hash": "74a14716",
+          "purpose": "Маппит один слот шаблона (dayIndex + slotTime) с обрезкой до HH:MM"
+        },
+        {
+          "name": "getBranchHoursForDow",
+          "kind": "function",
+          "hash": "c832b295",
+          "purpose": "Часы работы филиала на конкретный день недели (0=Sun..6=Sat) или null если выходной/allDay → 00:00-24:00"
+        },
+        {
+          "name": "getBranchWidestWindow",
+          "kind": "function",
+          "hash": "33150497",
+          "purpose": "Самое широкое окно работы филиала за всю неделю (min open / max close) — для shift-сетки"
+        }
+      ]
+    },
+    "src/utils/scheduling.ts": {
+      "kind": "ts",
+      "hash": "9f90698c7163",
+      "purpose": "Слоты для планируемого заказа (delivery/pickup): рабочие часы, шаг, lead-time, буфер до закрытия и overnight (+1)",
+      "symbols": [
+        {
+          "name": "getAvailableSlots",
+          "kind": "function",
+          "hash": "5e755679",
+          "purpose": "Слоты для планируемого заказа на дату с учётом расписания, шага, lead-time и буфера до закрытия (overnight кодируется суффиксом '+1')"
+        },
+        {
+          "name": "buildMinuteOptions",
+          "kind": "function",
+          "hash": "e47f594d",
+          "purpose": "Опции для select'а длительностей с шагом: [{label:'30 мин', value:30}, ...] (опционально с 'Нет')"
+        },
+        {
+          "name": "SlotOption",
+          "kind": "type",
+          "hash": "d7a4a7e1",
+          "purpose": "Опция слота: { value, label, disabled? }"
+        }
+      ]
+    },
+    "src/utils/service.ts": {
+      "kind": "ts",
+      "hash": "20567cfe858c",
+      "purpose": "Маппер услуги (services) из сырой записи БД в Service",
+      "symbols": [
+        {
+          "name": "mapService",
+          "kind": "function",
+          "hash": "fa66164e",
+          "purpose": "Маппит сырую услугу из БД в Service (booking_mode по умолчанию 'fixed', allow_resource_choice по умолчанию true)"
+        }
+      ]
+    },
+    "src/utils/siteFeatures.ts": {
+      "kind": "ts",
+      "hash": "e76807d3a679",
+      "purpose": "Реестр фич публичного сайта (секция/страница/нав, нужный модуль, лейбл с учётом businessType=services)",
+      "symbols": [
+        {
+          "name": "SITE_FEATURES",
+          "kind": "const",
+          "hash": "d976fc45",
+          "purpose": "Реестр фич сайта (categoryBar/hero/menu/banners/...): где можно использовать (index/page/nav) и какой модуль обязателен"
+        },
+        {
+          "name": "SiteFeatureKey",
+          "kind": "type",
+          "hash": "ccf216c2",
+          "purpose": "Все возможные ключи фич сайта (объединение ключей SITE_FEATURES)"
+        },
+        {
+          "name": "SectionKey",
+          "kind": "type",
+          "hash": "b92acb09",
+          "purpose": "Только те фичи, которые могут быть секцией на главной (index=true)"
+        },
+        {
+          "name": "NavPageKey",
+          "kind": "type",
+          "hash": "6e8b037b",
+          "purpose": "Только те фичи, которые показываются в навигации"
+        },
+        {
+          "name": "PageKey",
+          "kind": "type",
+          "hash": "c37f7742",
+          "purpose": "Только те фичи, которые могут быть отдельной страницей"
+        },
+        {
+          "name": "SECTION_KEYS",
+          "kind": "const",
+          "hash": "da3ba18d",
+          "purpose": "Массив ключей секций главной (отфильтрован SITE_FEATURES по index=true)"
+        },
+        {
+          "name": "NAV_PAGE_KEYS",
+          "kind": "const",
+          "hash": "6c688273",
+          "purpose": "Массив ключей фич, которые могут быть в нав-меню"
+        },
+        {
+          "name": "PAGE_KEYS",
+          "kind": "const",
+          "hash": "02dff310",
+          "purpose": "Массив ключей фич, которые могут быть отдельной страницей"
+        },
+        {
+          "name": "STRUCTURAL_SECTIONS",
+          "kind": "const",
+          "hash": "fc490ca1",
+          "purpose": "Структурные секции (categoryBar/hero), всегда присутствующие, не выбираются юзером"
+        },
+        {
+          "name": "featureLabel",
+          "kind": "function",
+          "hash": "dbcdb48c",
+          "purpose": "Локализованный лейбл фичи; для businessType=services подставляет servicesLabel"
+        },
+        {
+          "name": "isFeatureAvailable",
+          "kind": "function",
+          "hash": "f649f52a",
+          "purpose": "Доступна ли фича: проверяет businessTypes и нужный модуль из TenantModules"
+        }
+      ]
+    },
+    "src/utils/slugify.ts": {
+      "kind": "ts",
+      "hash": "b6954ef01fda",
+      "purpose": "Транслит ru → lat и приведение строки к URL-slug (только [a-z0-9-])",
+      "symbols": [
+        {
+          "name": "slugify",
+          "kind": "function",
+          "hash": "26c055ec",
+          "purpose": "Превращает строку в URL-slug с транслитом русского: 'Пицца Маргарита' → 'picca-margarita'"
+        }
+      ]
+    },
+    "src/utils/tagPresets.ts": {
+      "kind": "ts",
+      "hash": "4c76480ba32e",
+      "purpose": "Пресеты цветов и иконок для тегов с подбором по businessType/menuStyle (food/catalog/services)",
+      "symbols": [
+        {
+          "name": "getTagColorPreset",
+          "kind": "function",
+          "hash": "919e7fee",
+          "purpose": "Находит цветовой пресет тега по ключу ('red', 'green', 'primary' и т.д.)"
+        },
+        {
+          "name": "TagColorPreset",
+          "kind": "type",
+          "hash": "2af30ab8",
+          "purpose": "Цветовой пресет тега: key + color + background"
+        },
+        {
+          "name": "TAG_COLOR_PRESETS",
+          "kind": "const",
+          "hash": "02b1462e",
+          "purpose": "14 готовых цветовых пресетов для тегов (red, orange, ..., primary)"
+        },
+        {
+          "name": "TagIconPreset",
+          "kind": "type",
+          "hash": "f944dd85",
+          "purpose": "Объединение всех допустимых имён иконок (Lucide) для тегов"
+        },
+        {
+          "name": "getTagIconPresets",
+          "kind": "function",
+          "hash": "0d175c60",
+          "purpose": "Подбирает список иконок для тегов под businessType/menuStyle (food / catalog / services) + общие маркетинг/время/универсальные"
+        },
+        {
+          "name": "getTagNamePlaceholder",
+          "kind": "function",
+          "hash": "3949b8e0",
+          "purpose": "Подсказка имени тега в зависимости от типа: services→'Онлайн', catalog→'Новинка', food→'Острое'"
+        }
+      ]
+    },
+    "src/utils/themePresets.ts": {
+      "kind": "ts",
+      "hash": "e4f9aa940f31",
+      "purpose": "Каталог из ~50 пресетов тем (палитры primary/bg/surface/text/border, флаг dark) и хелперы для CSS-переменных",
+      "symbols": [
+        {
+          "name": "ThemePresetDef",
+          "kind": "type",
+          "hash": "2e3d7850",
+          "purpose": "Описание пресета темы: name + label + palette + опциональный dark"
+        },
+        {
+          "name": "THEME_PRESETS",
+          "kind": "const",
+          "hash": "9f6b01f2",
+          "purpose": "Каталог пресетов темы (~50): fresh, dark, forest, sakura, slate, neon, ocean, lemon, ember, ... — палитры цветов с light/dark"
+        },
+        {
+          "name": "getPresetPalette",
+          "kind": "function",
+          "hash": "1315e893",
+          "purpose": "Палитра пресета по имени или null если не найден"
+        },
+        {
+          "name": "isPresetDark",
+          "kind": "function",
+          "hash": "388fddb1",
+          "purpose": "Тёмный ли пресет (для подсветки в селекторе и автоинверсии)"
+        },
+        {
+          "name": "paletteToCssVars",
+          "kind": "function",
+          "hash": "0e68c7f5",
+          "purpose": "Превращает палитру в объект CSS-переменных (--primary, --color-bg, --color-surface, ...)"
+        }
+      ]
+    },
+    "src/utils/timezone.ts": {
+      "kind": "ts",
+      "hash": "ca4a8e5bf1fe",
+      "purpose": "Работа с таймзонами тенанта: today/now в TZ, конверсия local↔UTC, генерация слотов с overnight, ASAP-проверка",
+      "symbols": [
+        {
+          "name": "todayInTz",
+          "kind": "function",
+          "hash": "f078bfc4",
+          "purpose": "Сегодняшняя дата в таймзоне тенанта как 'YYYY-MM-DD' через Intl.DateTimeFormat"
+        },
+        {
+          "name": "nowTimeInTz",
+          "kind": "function",
+          "hash": "325d4653",
+          "purpose": "Текущее время в таймзоне тенанта как 'HH:MM'"
+        },
+        {
+          "name": "getIsoDayForDate",
+          "kind": "function",
+          "hash": "b0f78bce",
+          "purpose": "ISO-день недели (1=Пн..7=Вс) для строки YYYY-MM-DD"
+        },
+        {
+          "name": "addDaysToDateStr",
+          "kind": "function",
+          "hash": "2994e89d",
+          "purpose": "Прибавляет N дней к 'YYYY-MM-DD' (через UTC, не зависит от локали сервера)"
+        },
+        {
+          "name": "localDateTimeToUtcIso",
+          "kind": "function",
+          "hash": "e3c15a33",
+          "purpose": "Наивная дата+время в TZ тенанта → UTC ISO-строка (учитывает DST через Intl)"
+        },
+        {
+          "name": "utcIsoToLocalDateTime",
+          "kind": "function",
+          "hash": "d7e9b2c4",
+          "purpose": "UTC ISO → { dateStr, timeStr } в таймзоне тенанта (для отображения)"
+        },
+        {
+          "name": "timeToMinutes",
+          "kind": "function",
+          "hash": "11cfd50a",
+          "purpose": "'HH:MM' → минуты от начала суток"
+        },
+        {
+          "name": "minutesToTimeStr",
+          "kind": "function",
+          "hash": "52f700be",
+          "purpose": "Минуты (в т.ч. > 1440 для overnight) → нормализованное 'HH:MM'"
+        },
+        {
+          "name": "generateTimeSlots",
+          "kind": "function",
+          "hash": "abb75b26",
+          "purpose": "Слоты между open и close с шагом step и буфером до закрытия; поддерживает overnight (close<open) с пометкой nextDay"
+        },
+        {
+          "name": "isAsapAvailable",
+          "kind": "function",
+          "hash": "fafa847b",
+          "purpose": "Можно ли прямо сейчас сделать ASAP-заказ (рабочие часы + overnight + буфер до закрытия)"
+        },
+        {
+          "name": "DEFAULT_TIMEZONE",
+          "kind": "const",
+          "hash": "28288466",
+          "purpose": "Дефолтная таймзона 'Europe/Moscow' — fallback пока tenant не загружен"
+        },
+        {
+          "name": "TIMEZONE_OPTIONS",
+          "kind": "const",
+          "hash": "5e0a2b2c",
+          "purpose": "Список популярных таймзон для селектора (МСК-1..МСК+9, Калининград..Камчатка)"
+        }
+      ]
+    },
+    "src/utils/validateTenantConfig.ts": {
+      "kind": "ts",
+      "hash": "0097853dc076",
+      "purpose": "Валидация целостности SiteLayout/Modules/Content: висячие nav-ссылки, секции на выключенных модулях, пустые hero/gallery/about/delivery",
+      "symbols": [
+        {
+          "name": "ConfigIssueSeverity",
+          "kind": "type",
+          "hash": "2f7ec2b7",
+          "purpose": "Серьёзность проблемы конфигурации: 'error' | 'warning'"
+        },
+        {
+          "name": "ConfigIssue",
+          "kind": "type",
+          "hash": "773bbe5c",
+          "purpose": "Найденная проблема: severity + code + сообщение для UI"
+        },
+        {
+          "name": "validateTenantConfig",
+          "kind": "function",
+          "hash": "6fedcac2",
+          "purpose": "Возвращает список проблем конфигурации сайта тенанта: висячие nav-ссылки, секции/страницы на выключенных модулях, пустые hero/gallery/about/delivery"
+        }
+      ]
+    },
+    "src/utils/vocabulary.ts": {
+      "kind": "ts",
+      "hash": "90da5c8163ca",
+      "purpose": "Словари доменных терминов (Блюдо/Товар/Услуга) во всех падежах + согласованные эмпти-стейты под businessType/menuStyle",
+      "symbols": [
+        {
+          "name": "ItemVariant",
+          "kind": "type",
+          "hash": "3e811793",
+          "purpose": "Вариант словаря: 'food' | 'catalog' | 'services'"
+        },
+        {
+          "name": "vocabulary",
+          "kind": "const",
+          "hash": "5c411043",
+          "purpose": "Словарь терминов по варианту (Блюдо/Товар/Услуга): все падежи, plural, местоимения, label меню, заголовки empty-state"
+        },
+        {
+          "name": "selectItemVariant",
+          "kind": "function",
+          "hash": "c1916777",
+          "purpose": "Подбирает вариант словаря по businessType/menuStyle: services→services, catalog→catalog, иначе food"
+        },
+        {
+          "name": "selectVocabulary",
+          "kind": "function",
+          "hash": "c43b79dc",
+          "purpose": "Возвращает готовый VocabEntry под businessType/menuStyle (для UI: заголовки, кнопки, empty-state)"
+        },
+        {
+          "name": "ItemVocab",
+          "kind": "type",
+          "hash": "cdb9da42",
+          "purpose": "Словарь самой сущности: все падежи + label/new/first + plural + местоимения"
+        },
+        {
+          "name": "MenuVocab",
+          "kind": "type",
+          "hash": "961a93db",
+          "purpose": "Словарь меню/каталога/услуг: label + падежи + согласованные empty-state заголовки"
+        },
+        {
+          "name": "VocabEntry",
+          "kind": "type",
+          "hash": "45990529",
+          "purpose": "Полный словарь варианта: item + menu + reservations + categoryExamples"
+        }
+      ]
+    },
+    "src/utils/workingHours.ts": {
+      "kind": "ts",
+      "hash": "3312e202c4d9",
+      "purpose": "Расчёт расписания филиала: текстовое отображение (Пн-Пт 10-22), проверка выходного и «открыто сейчас» с учётом overnight",
+      "symbols": [
+        {
+          "name": "formatWorkingHours",
+          "kind": "function",
+          "hash": "84b6838f",
+          "purpose": "Расписание в человекочитаемую строку: 'Круглосуточно' / '10:00 – 23:00' / 'Пн–Пт: 10:00 – 22:00, Сб–Вс: выходной'"
+        },
+        {
+          "name": "getDaySchedule",
+          "kind": "function",
+          "hash": "77832414",
+          "purpose": "Расписание на конкретный день недели с fallback на default"
+        },
+        {
+          "name": "isDayOff",
+          "kind": "function",
+          "hash": "9b04c907",
+          "purpose": "Выходной ли указанный день в расписании"
+        },
+        {
+          "name": "isOpenNow",
+          "kind": "function",
+          "hash": "171fe963",
+          "purpose": "Открыто ли заведение прямо сейчас в TZ: { open, nextChange, closingAt, minutesUntilClose } с учётом overnight"
+        }
+      ]
+    },
+    "src/composables/useDadataSuggestions.ts": {
+      "kind": "ts",
+      "hash": "c4425fa107d2",
+      "purpose": "Composable для автокомплита адреса через прокси к DaData с дебаунсом и отложенным скрытием саджестов",
+      "symbols": [
+        {
+          "name": "DadataSuggestion",
+          "kind": "type",
+          "hash": "55f874e5",
+          "purpose": "Подсказка DaData: value (полный адрес) + data { geo_lat, geo_lon, city, street, house }"
+        },
+        {
+          "name": "DadataSuggestionsOptions",
+          "kind": "type",
+          "hash": "e2ad684c",
+          "purpose": "Опции composable'а: proxyUrl, debounce, extraBody (статика или функция)"
+        },
+        {
+          "name": "useDadataSuggestions",
+          "kind": "function",
+          "hash": "2915787f",
+          "purpose": "Возвращает { suggestions, loading, search, fetchSuggestions, clear, showSuggestions, hideSuggestionsDelayed } для автокомплита адреса"
+        }
+      ]
+    },
+    "src/composables/useSchedulingSlots.ts": {
+      "kind": "ts",
+      "hash": "e53ea5ea0724",
+      "purpose": "Composable дат и временных слотов для планируемого заказа на storefront (Сегодня/Завтра/...) с проверкой пустых дней",
+      "symbols": [
+        {
+          "name": "useSchedulingSlots",
+          "kind": "function",
+          "hash": "8fd50cf8",
+          "purpose": "Возвращает { dateOptions, timeSlots } для планируемого заказа: учитывает таймзону тенанта, lead-time delivery/pickup и шаг слота"
+        }
+      ]
+    }
+  },
+  "pages": {},
+  "folders": {}
+}

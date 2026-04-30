@@ -14,6 +14,65 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Codemap — карты проектов
+
+В `.claude/codemap/` лежат **8 карт-индексов** по проектам монорепо: что есть готового и для чего, чтобы не лепить велосипед, когда уже есть `pluralize` / `useConfirm` / `UiCard`.
+
+Карты:
+- `apps/admin.json` — общая инфра админки: stores, корневые/ui/plan/delivery/menu/kitchen composables, utils корня, config, columns, components/{ui,layout}, middleware, plugins, layouts
+- `apps/storefront.json` — общая инфра витрины: composables, utils, stores, types, components/{sf,layout}, middleware, plugins, layouts
+- `packages/shared.json` — `src/utils/*` + `src/composables/*` (pluralize, planLevel, scheduling, vocabulary, geo, useDadataSuggestions и т.д.). **Доменные типы НЕ картируются** — читаются напрямую через импорты
+- `packages/ui.json` — UI-библиотека админки (UiCard, UiText, UiButton, UiTitle, UiTag…)
+- `packages/public-ui.json` — UI витрины (SfButton, SfBottomSheet, SfDishCard…)
+- `packages/kit.json` — общие composables/utils для storefront и public-ui (useBreakpoints, useModals, useConfirm…)
+- `packages/icons.json` — UiIcon + iconRegistry
+- `index.json` — корневой индекс (всегда в контексте через @ ниже)
+
+**Что НЕ в картах** (намеренно — агент сам найдёт через структуру каталогов / импорты):
+- `apps/admin/composables/data/*`, `apps/admin/utils/api/*` — паттерн `useX → CRUD` понятен по имени файла
+- `pages/`, `server/api/` — Nuxt-конвенция URL→файл и так очевидна
+- Фичевые компоненты внутри модулей (`components/menu/*`, `components/orders/*` и т.д.)
+- Доменные типы из `packages/shared/src/types/*`
+- `apps/help`, `apps/landing`, `apps/backoffice` — редко-трогаемые проекты
+
+@.claude/codemap/index.json
+
+**Правило использования:**
+
+1. Когда нужна утилка / общий composable / UI-компонент — сначала загляни в карту, потом пиши код. Это главная цель карт: не переизобретать `pluralize`, не верстать `<div class="card">` вместо `UiCard`
+2. Карта говорит **ЧТО есть и ДЛЯ ЧЕГО** (имя + 1 строка). Реализацию/сигнатуру смотри в самом файле через Read
+3. Карты НЕ заменяют чтение кода — они подсказывают **где искать**. После того как нашёл нужное в карте, открой исходник
+4. Не грузи карты «на всякий случай» — обычно достаточно карты проекта в котором работаешь + `packages/shared.json` если нужны утилки
+
+**Поддержание актуальности (автоматически):**
+
+При коммите через агента (`git commit` через Bash) срабатывает PreToolUse hook (`scripts/codemap/precommit-hook.mjs`):
+- парсит staged TS/Vue файлы через `pnpm codemap:scan --staged`
+- обновляет соответствующие карты (актуальные символы, хеши)
+- если есть **файл/символ** без описания (поле `"purpose": null`) — **блокирует коммит** и выводит список «что описать»
+- ты дозаполняешь поле `purpose` (1 строка по-русски, чётко по делу) → снова коммит → hook сам подкидывает обновлённые карты в стейдж
+
+Описания нужны на двух уровнях:
+- **Файл** — что делает файл целиком
+- **Символ** — что делает каждая экспортируемая функция/тип/класс/composable
+
+Ручной запуск: `pnpm codemap:scan --all` (полная регенерация), `--project=apps/admin`, `--files=foo.ts,bar.vue`.
+
+**Hook требует регистрации в личных настройках** (один раз на каждой машине, не коммитится):
+добавить в `~/.claude/settings.json` или `.claude/settings.local.json` блок:
+```json
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{ "type": "command", "command": "node /Users/evgeniy/WebstormProjects/fastio/scripts/codemap/precommit-hook.mjs" }]
+    }]
+  }
+}
+```
+
+---
+
 ## Сбор информации
 
 - Если не уверен в запросе — сначала собери больше информации через инструменты

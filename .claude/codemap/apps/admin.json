@@ -1,0 +1,1985 @@
+{
+  "project": "apps/admin",
+  "submap": "main",
+  "purpose": null,
+  "generated_at": "2026-04-30T04:03:26.673Z",
+  "stats": {
+    "files": 113,
+    "pages": 0,
+    "symbols": 196,
+    "undescribed_files": 0,
+    "undescribed_pages": 0,
+    "undescribed_symbols": 0
+  },
+  "files": {
+    "composables/delivery/useAllDeliveryZones.ts": {
+      "kind": "ts",
+      "hash": "16025676aba9",
+      "purpose": "Realtime-список всех зон доставки тенанта (по всем филиалам) c CRUD и Supabase-подпиской",
+      "symbols": [
+        {
+          "name": "useAllDeliveryZones",
+          "kind": "function",
+          "hash": "4629ad98",
+          "purpose": "Возвращает zones/loading + add/update/remove с realtime-синком таблицы delivery_zones"
+        }
+      ]
+    },
+    "composables/delivery/useDadataSuggestions.ts": {
+      "kind": "ts",
+      "hash": "5043d06dea75",
+      "purpose": "Обёртка над shared-композаблом подсказок DaData с проксированием через /api/dadata/suggest",
+      "symbols": [
+        {
+          "name": "useDadataSuggestions",
+          "kind": "function",
+          "hash": "fdf31941",
+          "purpose": "Подсказки адресов DaData с привязкой к tenantId через серверный прокси"
+        },
+        {
+          "name": "DadataSuggestion",
+          "kind": "re-export",
+          "hash": "c44bae0c",
+          "purpose": "Реэкспорт типа DadataSuggestion из @fastio/shared"
+        }
+      ]
+    },
+    "composables/delivery/useOrderDelivery.ts": {
+      "kind": "ts",
+      "hash": "4c210b99be71",
+      "purpose": "Расчёт стоимости доставки заказа: попадание в зону, фикс/зональный режим, авто-смена филиала, минзаказ и порог free delivery",
+      "symbols": [
+        {
+          "name": "DeliveryInfo",
+          "kind": "type",
+          "hash": "fa8b8f53",
+          "purpose": "Сводка по доставке: fee, минзаказ, порог бесплатной, mismatch филиала"
+        },
+        {
+          "name": "useOrderDelivery",
+          "kind": "function",
+          "hash": "f25abd36",
+          "purpose": "Возвращает activeZones/deliveryInfo/effectiveDeliveryFee + onZoneDetected/initFromOrder для формы заказа"
+        }
+      ]
+    },
+    "composables/delivery/usePolygonDraw.ts": {
+      "kind": "ts",
+      "hash": "82a4624d973c",
+      "purpose": "Рисование полигона зоны доставки на Yandex-карте: точки, snap к первой, rubber-band и стили линий/заливки",
+      "symbols": [
+        {
+          "name": "usePolygonDraw",
+          "kind": "function",
+          "hash": "f95687be",
+          "purpose": "Состояние и хелперы рисования полигона: addPoint/finishDraw/cancelDraw + getDraw*Settings"
+        }
+      ]
+    },
+    "composables/delivery/useZoneEditor.ts": {
+      "kind": "ts",
+      "hash": "3d148776d653",
+      "purpose": "UI-стейт редактора зон доставки: выбор зоны, форма, режим рисования, привязка к филиалу",
+      "symbols": [
+        {
+          "name": "ZoneForm",
+          "kind": "type",
+          "hash": "3eb5d958",
+          "purpose": "Форма зоны: branchId, имя, цвет, fee, minOrder, freeFrom, координаты"
+        },
+        {
+          "name": "useZoneEditor",
+          "kind": "function",
+          "hash": "53eb7845",
+          "purpose": "Управление выбором/созданием зоны: selectZone/onZoneClick/startDraw/onPolygonDrawn/closePanel"
+        }
+      ]
+    },
+    "composables/kitchen/useKitchenStatusBlock.ts": {
+      "kind": "ts",
+      "hash": "7c1248c5fcca",
+      "purpose": "Запрещает ручную смену статуса заказа, пока он находится на кухне (показывает confirm-объяснение)",
+      "symbols": [
+        {
+          "name": "useKitchenStatusBlock",
+          "kind": "function",
+          "hash": "4304e50b",
+          "purpose": "Возвращает checkKitchenBlock(order, targetGroupType): blocked=true если заказ в работе кухни"
+        }
+      ]
+    },
+    "composables/menu/useDishModifiersEditor.ts": {
+      "kind": "ts",
+      "hash": "70486d1d9da6",
+      "purpose": "Редактор модификаторов блюда: подгрузка групп, копирование с другого блюда, toggle опций, default-выбор",
+      "symbols": [
+        {
+          "name": "useDishModifiersEditor",
+          "kind": "function",
+          "hash": "b92d4702",
+          "purpose": "Состояние присоединённых групп + addGroup/removeGroup/copyFromDish/toggleOption/setDefault/getModifiers"
+        }
+      ]
+    },
+    "composables/plan/useBillingConfig.ts": {
+      "kind": "ts",
+      "hash": "af25a11d6aae",
+      "purpose": "Глобальный одноразовый кэш billing_config (длительность триала) с failed-флагом для UI",
+      "symbols": [
+        {
+          "name": "useBillingConfig",
+          "kind": "function",
+          "hash": "031fba56",
+          "purpose": "Возвращает trialDays/loaded/failed/load(): кеширует ответ API на сессию"
+        }
+      ]
+    },
+    "composables/plan/useBranchLimit.ts": {
+      "kind": "ts",
+      "hash": "cb4c7dab5300",
+      "purpose": "Лимит филиалов: 0=безлимит при модуле branches, иначе 1 (только главный)",
+      "symbols": [
+        {
+          "name": "useBranchLimit",
+          "kind": "function",
+          "hash": "39bff72c",
+          "purpose": "Возвращает maxBranches/canAddBranch/branchLimitReached/branchLimitLabel"
+        }
+      ]
+    },
+    "composables/plan/useGate.helpers.ts": {
+      "kind": "ts",
+      "hash": "daab65dd509c",
+      "purpose": "Хелперы поверх useGate: преобразование GateResult в boolean и проверка конкретной причины блокировки",
+      "symbols": [
+        {
+          "name": "toEnabled",
+          "kind": "function",
+          "hash": "1948dc8c",
+          "purpose": "ComputedRef<GateResult> -> ComputedRef<boolean> для пропсов visible"
+        },
+        {
+          "name": "isLockedBy",
+          "kind": "function",
+          "hash": "691332e8",
+          "purpose": "Проверяет, заблокирован ли гейт по конкретной GateReason"
+        }
+      ]
+    },
+    "composables/plan/useGate.routes.ts": {
+      "kind": "ts",
+      "hash": "ce6e4fa3da4a",
+      "purpose": "Карта маршрутов admin -> ключ гейта для middleware и список fallback-роутов для редиректа",
+      "symbols": [
+        {
+          "name": "isUngatedRoute",
+          "kind": "function",
+          "hash": "0f57ba4f",
+          "purpose": "Проверяет принадлежность пути к ungated-разделам (login/legal/account/help и т.д.)"
+        },
+        {
+          "name": "resolveRouteGate",
+          "kind": "function",
+          "hash": "2ceff2e1",
+          "purpose": "Находит GateKey для произвольного пути; null для 404/ungated"
+        },
+        {
+          "name": "REDIRECT_FALLBACKS",
+          "kind": "const",
+          "hash": "80c33efc",
+          "purpose": "Упорядоченный список путей-кандидатов для редиректа при недоступности исходного"
+        }
+      ]
+    },
+    "composables/plan/useGate.ts": {
+      "kind": "ts",
+      "hash": "ba0e0e8f4505",
+      "purpose": "Единая точка проверки доступа к фичам админки: GateResult с причиной блокировки (suspended/absent/flag/locked/disabled/unconfigured/forbidden)",
+      "symbols": [
+        {
+          "name": "useGate",
+          "kind": "function",
+          "hash": "97743b46",
+          "purpose": "Возвращает GateRegistry — объект с computed-гейтами для каждого ключа фичи/раздела"
+        }
+      ]
+    },
+    "composables/plan/useGate.types.ts": {
+      "kind": "ts",
+      "hash": "5b463fa15846",
+      "purpose": "Типы и контракт системы гейтов: GateReason, GateResult, GateRegistry, GateKey",
+      "symbols": [
+        {
+          "name": "GateReason",
+          "kind": "type",
+          "hash": "3c77654f",
+          "purpose": "Причина недоступности фичи с приоритетом suspended->absent->flag->locked->opted-out->disabled->unconfigured->forbidden"
+        },
+        {
+          "name": "GateResult",
+          "kind": "type",
+          "hash": "c64c884b",
+          "purpose": "Результат гейта: enabled + reason (+ requiredPlan/configPath/hint)"
+        },
+        {
+          "name": "GateRegistry",
+          "kind": "type",
+          "hash": "ba3b6a16",
+          "purpose": "Реестр всех известных гейтов: GateKey -> ComputedRef<GateResult>"
+        },
+        {
+          "name": "GateKey",
+          "kind": "type",
+          "hash": "4fb3e0e0",
+          "purpose": "Все ключи useGate: feature-only, plan-features, флаги, config-driven и permission-aware (viewX/manageX)"
+        }
+      ]
+    },
+    "composables/plan/useModules.ts": {
+      "kind": "ts",
+      "hash": "821460757787",
+      "purpose": "Состояние модулей тенанта: active/locked/absent/enabled с учётом businessType, menuStyle и тарифа",
+      "symbols": [
+        {
+          "name": "useModuleConfigs",
+          "kind": "function",
+          "hash": "16487cf2",
+          "purpose": "Глобальный one-shot кэш конфигов модулей (имя/иконка/requiredPlan/businessTypes)"
+        },
+        {
+          "name": "useModules",
+          "kind": "function",
+          "hash": "fbafd511",
+          "purpose": "Прокси Record<ModuleKey, ComputedRef<ModuleState>> с ленивыми computed по запросу"
+        }
+      ]
+    },
+    "composables/plan/usePlanFeatures.ts": {
+      "kind": "ts",
+      "hash": "858214587947",
+      "purpose": "Текущий ключ тарифа тенанта (по умолчанию showcase)",
+      "symbols": [
+        {
+          "name": "usePlanFeatures",
+          "kind": "function",
+          "hash": "3c4bd590",
+          "purpose": "Возвращает plan = subscription.plan ?? 'showcase'"
+        }
+      ]
+    },
+    "composables/plan/usePlans.ts": {
+      "kind": "ts",
+      "hash": "901622969d3a",
+      "purpose": "Глобальный реестр доступных тарифов с lazy-загрузкой и хелперами сортировки/имён",
+      "symbols": [
+        {
+          "name": "usePlans",
+          "kind": "function",
+          "hash": "e964cf3f",
+          "purpose": "Возвращает plans/load/invalidate/getPlanSortOrder/getPlanLabel"
+        }
+      ]
+    },
+    "composables/plan/useResolvedFeatures.ts": {
+      "kind": "ts",
+      "hash": "f72850174793",
+      "purpose": "Сводка фич, доступных текущему тарифу: модули, меню, ресурсы, site-фичи (накопительно по eligible-планам)",
+      "symbols": [
+        {
+          "name": "useResolvedFeatures",
+          "kind": "function",
+          "hash": "06daf9a4",
+          "purpose": "Computed ResolvedFeatures по текущему плану и businessType"
+        }
+      ]
+    },
+    "composables/ui/useDelayedLoading.ts": {
+      "kind": "ts",
+      "hash": "37b7ee10efd1",
+      "purpose": "Отложенный показ скелетона: появляется только если loading длится дольше delay (по умолчанию 1с)",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "e9fc61f9",
+          "purpose": "Возвращает showSkeleton: Ref<boolean> с дебаунсом старта загрузки"
+        }
+      ]
+    },
+    "composables/ui/useDishTable.ts": {
+      "kind": "ts",
+      "hash": "5491278f9f90",
+      "purpose": "Колонки и фильтры таблицы блюд: фото-плейсхолдер, теги с цветовым стилем, поиск, switch активности и actions",
+      "symbols": [
+        {
+          "name": "useDishTable",
+          "kind": "function",
+          "hash": "9ff0275b",
+          "purpose": "Возвращает searchQuery/filteredDishes/tableColumns для DishList"
+        }
+      ]
+    },
+    "composables/ui/useDrawer.ts": {
+      "kind": "ts",
+      "hash": "fc478b505814",
+      "purpose": "Универсальный стейт drawer/modal: isOpen + data, методы open(item)/close()",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "9ee62c36",
+          "purpose": "Возвращает isOpen/data/open/close для модалок редактирования"
+        }
+      ]
+    },
+    "composables/ui/useFormDirty.ts": {
+      "kind": "ts",
+      "hash": "481940aa2dfe",
+      "purpose": "Снапшот формы через JSON.stringify для определения isDirty (для plain-объектов без Date/Map/Set)",
+      "symbols": [
+        {
+          "name": "useFormDirty",
+          "kind": "function",
+          "hash": "28e941bc",
+          "purpose": "Возвращает isDirty/reset(): сравнивает текущее состояние со снапшотом"
+        }
+      ]
+    },
+    "composables/ui/useItemManager.ts": {
+      "kind": "ts",
+      "hash": "f2026508acdd",
+      "purpose": "Стандартизирует CRUD-страницу: drawer открытия + delayed-skeleton + confirm-удаление с beforeDelete-проверкой",
+      "symbols": [
+        {
+          "name": "useItemManager",
+          "kind": "function",
+          "hash": "4f5618c4",
+          "purpose": "Возвращает showSkeleton/modalOpen/editingItem/openModal/closeModal/confirmDelete"
+        }
+      ]
+    },
+    "composables/ui/useKitchenProgress.ts": {
+      "kind": "ts",
+      "hash": "e32d440d4cb6",
+      "purpose": "Группирует позиции очереди кухни по dishName+кастомизации+статусу с ценой из сессии стола",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "52a1fbc6",
+          "purpose": "Возвращает kitchenProgress: список KitchenProgressRow со счётчиками и сумарной ценой"
+        },
+        {
+          "name": "KitchenProgressRow",
+          "kind": "type",
+          "hash": "ca79e5f9",
+          "purpose": "Строка прогресса: ключ, ids, dishName, count, dotClass, цены, статус"
+        }
+      ]
+    },
+    "composables/ui/useOrderCard.ts": {
+      "kind": "ts",
+      "hash": "63c7fa1c01fb",
+      "purpose": "Карточка заказа: текущий статус, quickActions для быстрого перехода и относительное время с shared-now",
+      "symbols": [
+        {
+          "name": "useOrderCard",
+          "kind": "function",
+          "hash": "e93a1159",
+          "purpose": "Возвращает currentStatus/quickActionStatuses/relativeTime для OrderCard"
+        }
+      ]
+    },
+    "composables/ui/useOrderStatus.ts": {
+      "kind": "ts",
+      "hash": "e6135730d4bc",
+      "purpose": "Меню смены статуса заказа: фильтрация allowed-переходов, блокировка кухни, scheduled-pending, confirm возврата в пройденный",
+      "symbols": [
+        {
+          "name": "useOrderStatus",
+          "kind": "function",
+          "hash": "da23e08b",
+          "purpose": "Возвращает currentStatus/statusMenuItems/can/onStatusSelect для OrderEditModal"
+        }
+      ]
+    },
+    "composables/ui/useOrderTable.ts": {
+      "kind": "ts",
+      "hash": "996f9669b25b",
+      "purpose": "Конструктор колонок таблицы заказов: видимые колонки, фильтры по типу/оплате/филиалу, сортировка",
+      "symbols": [
+        {
+          "name": "useOrderTable",
+          "kind": "function",
+          "hash": "1b1355dd",
+          "purpose": "Возвращает columns: ComputedRef<DataTableColumns<Order>> с учётом visibleColumns"
+        },
+        {
+          "name": "COLUMN_OPTIONS",
+          "kind": "const",
+          "hash": "eda24fb5",
+          "purpose": "Опции выбора видимых колонок (имя/телефон/состав/...) для column-picker"
+        }
+      ]
+    },
+    "composables/ui/useReservationTable.ts": {
+      "kind": "ts",
+      "hash": "3757360dc158",
+      "purpose": "Состояние таблицы бронирований: фильтры (дата/гости/статус), модалка создания/редактирования, видимые колонки",
+      "symbols": [
+        {
+          "name": "RESERVATION_COLUMN_OPTIONS",
+          "kind": "const",
+          "hash": "48a5c784",
+          "purpose": "Опции выбора видимых колонок таблицы бронирований"
+        },
+        {
+          "name": "useReservationTable",
+          "kind": "function",
+          "hash": "c775f088",
+          "purpose": "Возвращает search/filterDateTs/guestMin-Max/visibleColumnDefs/clearFilters/openCreate/openEdit"
+        }
+      ]
+    },
+    "composables/ui/useStatusColor.ts": {
+      "kind": "ts",
+      "hash": "bc1310f7cd5d",
+      "purpose": "Цвет статуса заказа по его groupType (primary/warning/success/error)",
+      "symbols": [
+        {
+          "name": "useStatusColor",
+          "kind": "function",
+          "hash": "b4b34528",
+          "purpose": "Возвращает getStatusColor(statusId): hex-цвет для тегов и индикаторов"
+        }
+      ]
+    },
+    "composables/ui/useStorefrontVisibility.ts": {
+      "kind": "ts",
+      "hash": "e87e7cec59e7",
+      "purpose": "Проверка видимости фичи на витрине: включена ли страница, секция на главной, пункт навигации в шапке",
+      "symbols": [
+        {
+          "name": "StorefrontIssue",
+          "kind": "type",
+          "hash": "907860ff",
+          "purpose": "Проблема витрины: page_disabled/section_disabled/nav_missing с message и link"
+        },
+        {
+          "name": "useStorefrontVisibility",
+          "kind": "function",
+          "hash": "e4a89b7c",
+          "purpose": "Возвращает isPageEnabled/isSectionEnabled/isInNav/issues для конкретной SiteFeatureKey"
+        }
+      ]
+    },
+    "composables/ui/useTablesContext.ts": {
+      "kind": "ts",
+      "hash": "96e5aba68cdc",
+      "purpose": "InjectionKey-контекст страницы /tables с провайдом столов, сессий, вызовов, кухни и actions",
+      "symbols": [
+        {
+          "name": "TablesContext",
+          "kind": "type",
+          "hash": "e7fdf139",
+          "purpose": "Контракт provide/inject для страницы столов: state + computed + actions"
+        },
+        {
+          "name": "TablesContextKey",
+          "kind": "const",
+          "hash": "18dde389",
+          "purpose": "InjectionKey<TablesContext>"
+        },
+        {
+          "name": "TodayReservationsKey",
+          "kind": "const",
+          "hash": "bb2896c0",
+          "purpose": "InjectionKey<ComputedRef<Reservation[]>> — сегодняшние брони на странице столов"
+        },
+        {
+          "name": "useTablesContext",
+          "kind": "function",
+          "hash": "5ab9c9bf",
+          "purpose": "inject(TablesContextKey) с reactive-обёрткой"
+        }
+      ]
+    },
+    "composables/ui/useTagDisplay.ts": {
+      "kind": "ts",
+      "hash": "9c760df26b83",
+      "purpose": "Отображение цветовых тегов блюд: имя по id и стили (color/background/border) из пресетов",
+      "symbols": [
+        {
+          "name": "useTagDisplay",
+          "kind": "function",
+          "hash": "fb944607",
+          "purpose": "Возвращает tagName/tagStyle/tagStyleString для рендера UiTag"
+        }
+      ]
+    },
+    "composables/ui/useUnsavedGuard.ts": {
+      "kind": "ts",
+      "hash": "5d06a165b974",
+      "purpose": "Защита от потери несохранённых изменений: confirm на onBeforeRouteLeave + browser beforeunload",
+      "symbols": [
+        {
+          "name": "useUnsavedGuard",
+          "kind": "function",
+          "hash": "537d2542",
+          "purpose": "Подключает router-guard и beforeunload-listener при isDirty=true"
+        }
+      ]
+    },
+    "composables/useAiChat.ts": {
+      "kind": "ts",
+      "hash": "a61438317d71",
+      "purpose": "AI-чат админки на @ai-sdk/vue: транспорт через /api/ai/chat с tenantId/userId/currentRoute, управление input/messages/status",
+      "symbols": [
+        {
+          "name": "useAiChat",
+          "kind": "function",
+          "hash": "77031817",
+          "purpose": "Возвращает messages/input/handleSubmit/isLoading/status/error/reload/stop/clearMessages"
+        }
+      ]
+    },
+    "composables/useItemVariant.ts": {
+      "kind": "ts",
+      "hash": "7cdd736fe749",
+      "purpose": "Тип витрины (food/catalog/services) текущего тенанта для иконок-плейсхолдеров",
+      "symbols": [
+        {
+          "name": "useItemVariant",
+          "kind": "function",
+          "hash": "f17221e8",
+          "purpose": "Возвращает variant: ComputedRef<ItemVariant> по businessType/menuStyle"
+        }
+      ]
+    },
+    "composables/useOnboarding.ts": {
+      "kind": "ts",
+      "hash": "f6355a250674",
+      "purpose": "Состояние онбординга: построение flow-шагов, статусы (done/active/locked), прогресс, completeStep/dismiss/finish/reset",
+      "symbols": [
+        {
+          "name": "StepStatus",
+          "kind": "type",
+          "hash": "1a83f303",
+          "purpose": "'done' | 'active' | 'locked'"
+        },
+        {
+          "name": "OnboardingStepView",
+          "kind": "type",
+          "hash": "c42b2148",
+          "purpose": "OnboardingStep с index и status для рендера чек-листа"
+        },
+        {
+          "name": "useOnboarding",
+          "kind": "function",
+          "hash": "a374e032",
+          "purpose": "Возвращает isVisible/steps/progress/allCompleted/activeStepId + completeStep/dismiss/finish/reset"
+        }
+      ]
+    },
+    "composables/useOnboardingActions.ts": {
+      "kind": "ts",
+      "hash": "ee0933047a37",
+      "purpose": "Семантические интенты онбординга: переход на роут или внешний URL, запуск driver.js-тура, открытие KB, шаг дальше",
+      "symbols": [
+        {
+          "name": "useOnboardingActions",
+          "kind": "function",
+          "hash": "05cb5e40",
+          "purpose": "Возвращает goToStep/startStepTour/openKb/nextStep"
+        }
+      ]
+    },
+    "composables/usePageTitle.ts": {
+      "kind": "ts",
+      "hash": "07102fb7db4e",
+      "purpose": "Глобальное состояние заголовка страницы (через useState): set из страницы, get в layout",
+      "symbols": [
+        {
+          "name": "usePageTitle",
+          "kind": "function",
+          "hash": "88e439d9",
+          "purpose": "useState<string>('page-title'); опционально устанавливает заголовок (string или ref)"
+        }
+      ]
+    },
+    "composables/useRealtimeChannels.ts": {
+      "kind": "ts",
+      "hash": "0d9e67c21ee6",
+      "purpose": "Поднимает все realtime-каналы тенанта (заказы/вызовы/кухня/брони/поддержка/записи) и обработчики звуковых алертов",
+      "symbols": [
+        {
+          "name": "useRealtimeChannels",
+          "kind": "function",
+          "hash": "0918a256",
+          "purpose": "Подключает каналы и alert-handlers; вызывается из default-layout"
+        }
+      ]
+    },
+    "composables/useStorefrontUrl.ts": {
+      "kind": "ts",
+      "hash": "fe4f923e1b87",
+      "purpose": "Базовый URL витрины тенанта: customDomain или {slug}.fastio.ru",
+      "symbols": [
+        {
+          "name": "useStorefrontUrl",
+          "kind": "function",
+          "hash": "34069e92",
+          "purpose": "Возвращает baseUrl: ComputedRef<string>"
+        }
+      ]
+    },
+    "composables/useTableUrl.ts": {
+      "kind": "ts",
+      "hash": "9a3a725908c2",
+      "purpose": "URL для QR-кодов столов: baseUrl + /table/{tableId}",
+      "symbols": [
+        {
+          "name": "useTableUrl",
+          "kind": "function",
+          "hash": "16e76eb7",
+          "purpose": "Возвращает baseUrl и getTableUrl(tableId)"
+        }
+      ]
+    },
+    "composables/useTerms.ts": {
+      "kind": "ts",
+      "hash": "36883cb2659b",
+      "purpose": "Глобальный реактивный словарь терминов UI (блюдо/товар/услуга, меню/каталог/услуги) по businessType+menuStyle",
+      "symbols": [
+        {
+          "name": "setVocab",
+          "kind": "function",
+          "hash": "66b39d19",
+          "purpose": "Пересчитать терминологию по businessType+menuStyle (вызывается из vocab-плагина)"
+        },
+        {
+          "name": "useTerms",
+          "kind": "function",
+          "hash": "e2763862",
+          "purpose": "Возвращает reactive item/menu/firstItemAcc/reservationsLabel/categoryExamples/menuStyle"
+        }
+      ]
+    },
+    "composables/useTour.ts": {
+      "kind": "ts",
+      "hash": "29597dbcd736",
+      "purpose": "Обёртка над driver.js: запускает интерактивный тур по шагам (с onNext-хуками) и waitForElement",
+      "symbols": [
+        {
+          "name": "TourStep",
+          "kind": "type",
+          "hash": "db30c4f4",
+          "purpose": "DriveStep + опциональный async onNext для валидации/перехода"
+        },
+        {
+          "name": "waitForElement",
+          "kind": "function",
+          "hash": "b665d339",
+          "purpose": "Promise<HTMLElement>: ждёт появления селектора через MutationObserver с таймаутом"
+        },
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "68b54b56",
+          "purpose": "Возвращает start(steps)/stop()/isActive — глобальный singleton driver.js"
+        }
+      ]
+    },
+    "utils/alerts.ts": {
+      "kind": "ts",
+      "hash": "8f7c34f9e141",
+      "purpose": "Звуковые и OS-уведомления админки: бип через Web Audio при активной вкладке, Notification при скрытой",
+      "symbols": [
+        {
+          "name": "requestNotificationPermission",
+          "kind": "function",
+          "hash": "d75618f6",
+          "purpose": "Запрос Notification.permission при первом взаимодействии (вызывается из layout)"
+        },
+        {
+          "name": "alertNewOrder",
+          "kind": "function",
+          "hash": "39f99200",
+          "purpose": "Алерт нового заказа: бип 880Hz или OS-нотификация"
+        },
+        {
+          "name": "alertTableCall",
+          "kind": "function",
+          "hash": "22283625",
+          "purpose": "Алерт вызова официанта: двойной бип или OS-нотификация с типом вызова"
+        }
+      ]
+    },
+    "utils/audit.ts": {
+      "kind": "ts",
+      "hash": "1d342acbc100",
+      "purpose": "Хелпер audit-лога: выбор подмножества полей объекта по списку ключей",
+      "symbols": [
+        {
+          "name": "pickFields",
+          "kind": "function",
+          "hash": "3eb19ee0",
+          "purpose": "Возвращает подобъект только с указанными ключами"
+        }
+      ]
+    },
+    "utils/constants.ts": {
+      "kind": "ts",
+      "hash": "7cb0325478d5",
+      "purpose": "Ключи sessionStorage для invite/recovery flow Supabase",
+      "symbols": [
+        {
+          "name": "INVITE_PENDING_KEY",
+          "kind": "const",
+          "hash": "3f5e98ca",
+          "purpose": "Ключ sessionStorage: индикатор pending-инвайта (до set-password)"
+        },
+        {
+          "name": "RECOVERY_PENDING_KEY",
+          "kind": "const",
+          "hash": "f513cc8d",
+          "purpose": "Ключ sessionStorage: индикатор pending-recovery"
+        }
+      ]
+    },
+    "utils/fastio-legal.ts": {
+      "kind": "ts",
+      "hash": "dbd922d5d798",
+      "purpose": "Реквизиты FastIO для оферты и политики (placeholder-данные с FILL_ME до публикации)",
+      "symbols": [
+        {
+          "name": "FASTIO_LEGAL",
+          "kind": "const",
+          "hash": "b2f5122d",
+          "purpose": "Объект с реквизитами: entityName/inn/ogrn/address/phone/emails/site/acquirer/lastUpdated"
+        }
+      ]
+    },
+    "utils/featureFlags.ts": {
+      "kind": "ts",
+      "hash": "db1eadab8200",
+      "purpose": "Compile-time feature flags админки",
+      "symbols": [
+        {
+          "name": "AUDIT_LOG_ENABLED",
+          "kind": "const",
+          "hash": "1a724498",
+          "purpose": "Флаг показа раздела аудит-лога (сейчас false)"
+        }
+      ]
+    },
+    "utils/filterDefined.ts": {
+      "kind": "ts",
+      "hash": "289c9d7f378c",
+      "purpose": "Удаляет ключи со значением undefined из объекта (для построения patch'ей)",
+      "symbols": [
+        {
+          "name": "filterDefined",
+          "kind": "function",
+          "hash": "fe62374d",
+          "purpose": "Возвращает Partial<T> без undefined-полей"
+        }
+      ]
+    },
+    "utils/format-order.ts": {
+      "kind": "ts",
+      "hash": "5158970a081a",
+      "purpose": "Форматирование событий заказа и значений полей для журнала истории заказа",
+      "symbols": [
+        {
+          "name": "formatEventText",
+          "kind": "function",
+          "hash": "408065be",
+          "purpose": "Текст события (создание/смена статуса/действия кухни) по eventType+meta"
+        },
+        {
+          "name": "formatFieldValue",
+          "kind": "function",
+          "hash": "0704aca6",
+          "purpose": "Форматирует значение поля заказа (тип оплаты/доставки/fee) для отображения в логе"
+        }
+      ]
+    },
+    "utils/formatRelativeDate.ts": {
+      "kind": "ts",
+      "hash": "ab12eae09559",
+      "purpose": "Относительное форматирование даты на ru-RU: HH:MM, 'Вчера, HH:MM', '5 апр, HH:MM', с годом для прошлых лет",
+      "symbols": [
+        {
+          "name": "formatRelativeDate",
+          "kind": "function",
+          "hash": "cc5df0fc",
+          "purpose": "ISO-строка -> относительная дата на русском"
+        }
+      ]
+    },
+    "utils/generateTableQrPdf.ts": {
+      "kind": "ts",
+      "hash": "13ffcdfb76ab",
+      "purpose": "Генерация PDF с QR-кодами столов через jsPDF: 3 колонки A4, шрифт Roboto, имя стола и название заведения",
+      "symbols": [
+        {
+          "name": "generateTableQrPdf",
+          "kind": "function",
+          "hash": "147405f8",
+          "purpose": "Скачивает qr-{restaurantName}.pdf со столами (с учётом copies на стол)"
+        }
+      ]
+    },
+    "utils/imageOptimize.ts": {
+      "kind": "ts",
+      "hash": "2ee9c2040598",
+      "purpose": "Уменьшает изображение до max 1200px и конвертирует в WebP с качеством 0.85 через canvas",
+      "symbols": [
+        {
+          "name": "optimizeImage",
+          "kind": "function",
+          "hash": "6bfbc898",
+          "purpose": "File -> Promise<Blob> (image/webp, ужатый под лимит сторон)"
+        }
+      ]
+    },
+    "utils/moduleToggleChecks.ts": {
+      "kind": "ts",
+      "hash": "bcf0a7e0d2c2",
+      "purpose": "Проверки перед отключением модуля: блокеры (активные заказы/брони/столы/очередь кухни) и warnings (баннеры с акциями, секции витрины)",
+      "symbols": [
+        {
+          "name": "ToggleIssue",
+          "kind": "type",
+          "hash": "9f640dba",
+          "purpose": "{ severity: 'blocker' | 'warning'; message: string }"
+        },
+        {
+          "name": "checkModuleDisable",
+          "kind": "function",
+          "hash": "8546f837",
+          "purpose": "Async проверка блокеров и warnings отключения модуля по бизнес-данным"
+        }
+      ]
+    },
+    "utils/planFeatureLabels.ts": {
+      "kind": "ts",
+      "hash": "c823d46acca1",
+      "purpose": "Текстовые описания фич плана для тариф-карточек и confirm-диалога смены тарифа",
+      "symbols": [
+        {
+          "name": "getPlanFeatureLabels",
+          "kind": "function",
+          "hash": "694044dd",
+          "purpose": "Список лейблов фич тарифа (для showcase — базовый список по menuStyle)"
+        },
+        {
+          "name": "getPrevPlanName",
+          "kind": "function",
+          "hash": "9b2e3bc1",
+          "purpose": "Имя соседнего тарифа на ступень ниже (для строки 'Всё из тарифа X')"
+        },
+        {
+          "name": "getChangePlanConfirmText",
+          "kind": "function",
+          "hash": "f647b323",
+          "purpose": "Текст confirm-диалога смены тарифа: триал vs обычное списание"
+        }
+      ]
+    },
+    "utils/promoStatus.ts": {
+      "kind": "ts",
+      "hash": "1d3ea186146f",
+      "purpose": "Эффективный статус акции/промокода (active/inactive/scheduled/expired) и опции фильтра",
+      "symbols": [
+        {
+          "name": "effectivePromoStatus",
+          "kind": "function",
+          "hash": "a14a2d04",
+          "purpose": "Возвращает {key, type, label} по active/activeFrom/activeTo"
+        },
+        {
+          "name": "PROMO_STATUS_FILTER_OPTIONS",
+          "kind": "const",
+          "hash": "d7ece065",
+          "purpose": "Опции фильтра по статусу для таблиц промо/промокодов"
+        }
+      ]
+    },
+    "utils/query.ts": {
+      "kind": "ts",
+      "hash": "e7be3a0c652b",
+      "purpose": "Враппер Supabase-запроса: бросает исключение и показывает naive-message при error",
+      "symbols": [
+        {
+          "name": "query",
+          "kind": "function",
+          "hash": "ee78e78a",
+          "purpose": "await query(supabasePromise) -> data; throw + toast при error"
+        }
+      ]
+    },
+    "utils/renderQr.ts": {
+      "kind": "ts",
+      "hash": "c47e28074afe",
+      "purpose": "Рендер QR-кода в data-URL через qrcode-библиотеку",
+      "symbols": [
+        {
+          "name": "renderQrToDataUrl",
+          "kind": "function",
+          "hash": "a9214437",
+          "purpose": "(url, size) -> data:image/png base64 для вставки в PDF/img"
+        }
+      ]
+    },
+    "utils/reportError.ts": {
+      "kind": "ts",
+      "hash": "a054a510d5ce",
+      "purpose": "Единая отправка ошибок в Sentry через @sentry/nuxt captureException",
+      "symbols": [
+        {
+          "name": "reportError",
+          "kind": "function",
+          "hash": "2919befe",
+          "purpose": "Отправляет ошибку в Sentry"
+        }
+      ]
+    },
+    "utils/reservation-constants.ts": {
+      "kind": "ts",
+      "hash": "34b9526088d3",
+      "purpose": "Константы статусов бронирований: лейблы, типы тегов, опции фильтра, активные/архивные группы",
+      "symbols": [
+        {
+          "name": "ReservationTagType",
+          "kind": "type",
+          "hash": "9c6024da",
+          "purpose": "'default' | 'primary' | 'success' | 'warning' | 'error' для UiTag"
+        },
+        {
+          "name": "RESERVATION_STATUS_LABELS",
+          "kind": "const",
+          "hash": "cfc8c38c",
+          "purpose": "Словарь ReservationStatus -> русский лейбл"
+        },
+        {
+          "name": "RESERVATION_STATUS_TYPES",
+          "kind": "const",
+          "hash": "70236c1c",
+          "purpose": "Словарь ReservationStatus -> тип тега (цвет)"
+        },
+        {
+          "name": "RESERVATION_STATUS_FILTER_OPTIONS",
+          "kind": "const",
+          "hash": "8aa9dfd8",
+          "purpose": "Опции фильтра статусов для таблицы бронирований"
+        },
+        {
+          "name": "RESERVATION_ACTIVE_STATUSES",
+          "kind": "const",
+          "hash": "c12caf12",
+          "purpose": "['pending', 'confirmed', 'seated'] — активные брони"
+        },
+        {
+          "name": "RESERVATION_ARCHIVE_STATUSES",
+          "kind": "const",
+          "hash": "b941b12b",
+          "purpose": "['completed', 'cancelled', 'no_show'] — архивные брони"
+        },
+        {
+          "name": "RESERVATION_ARCHIVE_STATUS_OPTIONS",
+          "kind": "const",
+          "hash": "885e1e11",
+          "purpose": "Опции архивных статусов для модалки 'закрытия' брони"
+        }
+      ]
+    },
+    "utils/scheduleConflictCheck.ts": {
+      "kind": "ts",
+      "hash": "6cf827b6456b",
+      "purpose": "Проверка существующих записей онлайн-записи на конфликт со сменой шаблона расписания (без мутаций БД)",
+      "symbols": [
+        {
+          "name": "buildSlotDataFromWeeklyTemplate",
+          "kind": "function",
+          "hash": "ec83a0de",
+          "purpose": "Собирает ResourceSlotData из weekly-шаблона так же, как applyWeeklyToResource в API"
+        },
+        {
+          "name": "buildSlotDataFromShiftTemplate",
+          "kind": "function",
+          "hash": "0e0e964f",
+          "purpose": "Собирает ResourceSlotData из shift-шаблона + cycleStartDate"
+        },
+        {
+          "name": "checkAppointmentAgainstSchedule",
+          "kind": "function",
+          "hash": "bcc4b02d",
+          "purpose": "Возвращает причину конфликта одной записи (day-off/out-of-hours/disabled-slot/overnight) или null"
+        },
+        {
+          "name": "checkAppointmentsAgainstSchedule",
+          "kind": "function",
+          "hash": "2ce3454a",
+          "purpose": "Прогон списка записей -> массив ScheduleConflict"
+        },
+        {
+          "name": "AppointmentLite",
+          "kind": "type",
+          "hash": "9f18c041",
+          "purpose": "Минимальные поля записи для проверки конфликтов"
+        },
+        {
+          "name": "ConflictReason",
+          "kind": "type",
+          "hash": "42a74458",
+          "purpose": "'day-off' | 'out-of-hours' | 'disabled-slot' | 'overnight'"
+        },
+        {
+          "name": "ScheduleConflict",
+          "kind": "type",
+          "hash": "b0127758",
+          "purpose": "Конфликт с локальным временем и причиной для UI-предупреждения"
+        }
+      ]
+    },
+    "utils/supportStatus.ts": {
+      "kind": "ts",
+      "hash": "321b9b02630a",
+      "purpose": "Маппинг статусов тикетов поддержки на тип/лейбл UiTag",
+      "symbols": [
+        {
+          "name": "supportStatusMap",
+          "kind": "const",
+          "hash": "ae845004",
+          "purpose": "Словарь SupportTicketStatus -> { type, label }"
+        }
+      ]
+    },
+    "stores/appointmentSettings.ts": {
+      "kind": "ts",
+      "hash": "69034b6a5387",
+      "purpose": "Pinia: настройки онлайн-записи тенанта (resourceMode: staff|object), lazy-загрузка по tenantId",
+      "symbols": [
+        {
+          "name": "useAppointmentSettingsStore",
+          "kind": "const",
+          "hash": "c88ac7de",
+          "purpose": "Стор с settings/loading/resourceMode + load(force)/refresh()"
+        }
+      ]
+    },
+    "stores/auth.ts": {
+      "kind": "ts",
+      "hash": "01d1ea5cd361",
+      "purpose": "Pinia: текущий Supabase User + флаг loading на инициализацию (управляется supabase-плагином)",
+      "symbols": [
+        {
+          "name": "useAuthStore",
+          "kind": "const",
+          "hash": "5256a5be",
+          "purpose": "Стор с user/loading/isAuthenticated + setUser()"
+        }
+      ]
+    },
+    "stores/branch.ts": {
+      "kind": "ts",
+      "hash": "9a1307705be8",
+      "purpose": "Pinia: список филиалов и текущий выбранный филиал тенанта; агрегирует useBranches+useBranch с учётом memberBranchIds",
+      "symbols": [
+        {
+          "name": "useBranchStore",
+          "kind": "const",
+          "hash": "cb46f6e2",
+          "purpose": "Стор с branches/archivedBranches/currentBranchId/currentBranch + add/update/archive/restore/setBranch"
+        }
+      ]
+    },
+    "stores/deliveryZone.ts": {
+      "kind": "ts",
+      "hash": "1ebf360929ca",
+      "purpose": "Pinia: глобальный кэш всех зон доставки тенанта (для заказов, страницы зон и филиалов)",
+      "symbols": [
+        {
+          "name": "useDeliveryZoneStore",
+          "kind": "const",
+          "hash": "91034ec8",
+          "purpose": "Стор с zones/loading + add/update/remove (обёртка над useAllDeliveryZones)"
+        }
+      ]
+    },
+    "stores/order-statuses.ts": {
+      "kind": "ts",
+      "hash": "4bdb0486ebc0",
+      "purpose": "Pinia: статусы заказов тенанта с realtime-подпиской (общий ресурс для OrderCard/OrderRow/OrderEditModal)",
+      "symbols": [
+        {
+          "name": "useOrderStatusesStore",
+          "kind": "const",
+          "hash": "2a82cb02",
+          "purpose": "Стор с statuses + CRUD (обёртка над useOrderStatuses, привязан к tenantId)"
+        }
+      ]
+    },
+    "stores/reservations.ts": {
+      "kind": "ts",
+      "hash": "3483913ae6b7",
+      "purpose": "Pinia: бронирования с realtime по tenantId+branchId (общий ресурс для тоста/счётчиков/страниц)",
+      "symbols": [
+        {
+          "name": "useReservationsStore",
+          "kind": "const",
+          "hash": "5d347b93",
+          "purpose": "Стор-обёртка над useReservations, привязан к tenant/branch"
+        }
+      ]
+    },
+    "stores/tenant.ts": {
+      "kind": "ts",
+      "hash": "71c9006ae1bb",
+      "purpose": "Pinia: текущий тенант, memberships, права роли, переключение тенантов; инициализируется через init()",
+      "symbols": [
+        {
+          "name": "useTenantStore",
+          "kind": "const",
+          "hash": "3a1ef8e5",
+          "purpose": "Стор с tenant/maybeTenant/memberships/permissions/isOwner/roles + init/update/changePlan/switchTenant"
+        }
+      ]
+    },
+    "config/google-fonts.ts": {
+      "kind": "ts",
+      "hash": "1a4074a66563",
+      "purpose": "Реестр Google-шрифтов для темы витрины: каталог по категориям + сборка CSS-имён и URLов CSS API",
+      "symbols": [
+        {
+          "name": "GoogleFontCategory",
+          "kind": "type",
+          "hash": "5cfe3796",
+          "purpose": "'sans-serif' | 'serif' | 'display' | 'handwriting' | 'monospace'"
+        },
+        {
+          "name": "GoogleFont",
+          "kind": "type",
+          "hash": "bd556dae",
+          "purpose": "{ family: string; category: GoogleFontCategory }"
+        },
+        {
+          "name": "GOOGLE_FONTS",
+          "kind": "const",
+          "hash": "0d0926b7",
+          "purpose": "Список доступных шрифтов с категориями"
+        },
+        {
+          "name": "FONT_CATEGORY_LABELS",
+          "kind": "const",
+          "hash": "36f73c0e",
+          "purpose": "Русские лейблы категорий шрифтов для группировки в селекте"
+        },
+        {
+          "name": "SYSTEM_FONT_VALUE",
+          "kind": "const",
+          "hash": "9021f25b",
+          "purpose": "Маркер 'системный шрифт' для опции по умолчанию"
+        },
+        {
+          "name": "isGoogleFontValue",
+          "kind": "function",
+          "hash": "2474e930",
+          "purpose": "Проверяет, что value — известный Google-шрифт (а не системный)"
+        },
+        {
+          "name": "fontFamilyCSS",
+          "kind": "function",
+          "hash": "a3c4f415",
+          "purpose": "Собирает CSS font-family с фолбэком по категории"
+        },
+        {
+          "name": "googleFontUrl",
+          "kind": "function",
+          "hash": "4ebcfb6e",
+          "purpose": "URL Google Fonts CSS API для одного семейства"
+        },
+        {
+          "name": "googleFontsBatchUrl",
+          "kind": "function",
+          "hash": "1577f4b8",
+          "purpose": "URL Google Fonts CSS API для нескольких семейств"
+        }
+      ]
+    },
+    "config/modules.ts": {
+      "kind": "ts",
+      "hash": "5b2f526e3800",
+      "purpose": "Типы конфигов модулей тенанта (key, requiredPlan, businessTypes, menuStyles, иконка)",
+      "symbols": [
+        {
+          "name": "ModuleKey",
+          "kind": "type",
+          "hash": "97939251",
+          "purpose": "keyof TenantModules — все известные модули (delivery/pickup/kitchen/...)"
+        },
+        {
+          "name": "ModuleConfig",
+          "kind": "type",
+          "hash": "6d055812",
+          "purpose": "Конфиг одного модуля: name/description/icon/requiredPlan/businessTypes/menuStyles"
+        }
+      ]
+    },
+    "config/onboarding.ts": {
+      "kind": "ts",
+      "hash": "d1851588aa6e",
+      "purpose": "Конфиг шагов онбординга владельца: динамическая сборка flow по активным модулям и терминологии",
+      "symbols": [
+        {
+          "name": "OnboardingLabels",
+          "kind": "type",
+          "hash": "dccecc1c",
+          "purpose": "Лейблы термов (меню/каталог/блюдо/товар) для подстановки в шаги"
+        },
+        {
+          "name": "OnboardingStep",
+          "kind": "type",
+          "hash": "5237329d",
+          "purpose": "Шаг онбординга: id/title/description/details/cta/route/externalTarget/tourId/kbRoute"
+        },
+        {
+          "name": "buildOnboardingFlow",
+          "kind": "function",
+          "hash": "49f2df41",
+          "purpose": "Собирает массив шагов для текущего тенанта (по модулям и businessType)"
+        }
+      ]
+    },
+    "config/order-events.ts": {
+      "kind": "ts",
+      "hash": "b635ddeb7815",
+      "purpose": "Лейблы полей заказа для журнала истории (customer_name, address, payment_type и т.п.)",
+      "symbols": [
+        {
+          "name": "FIELD_LABELS",
+          "kind": "const",
+          "hash": "c104ca85",
+          "purpose": "Словарь имён полей заказа -> русский лейбл"
+        }
+      ]
+    },
+    "config/order-options.ts": {
+      "kind": "ts",
+      "hash": "65fce2b4f653",
+      "purpose": "Лейблы и опции типов оплаты/доставки заказа + иконки",
+      "symbols": [
+        {
+          "name": "PAYMENT_TYPE_LABELS",
+          "kind": "const",
+          "hash": "163ff8fb",
+          "purpose": "Словарь типа оплаты -> русский лейбл"
+        },
+        {
+          "name": "DELIVERY_TYPE_LABELS",
+          "kind": "const",
+          "hash": "d45040cb",
+          "purpose": "Словарь типа доставки -> русский лейбл (доставка/самовывоз/со стола)"
+        },
+        {
+          "name": "DELIVERY_TYPE_ICONS",
+          "kind": "const",
+          "hash": "1d6e5769",
+          "purpose": "Словарь типа доставки -> имя иконки"
+        },
+        {
+          "name": "PAYMENT_OPTIONS",
+          "kind": "const",
+          "hash": "975f338a",
+          "purpose": "Опции выбора оплаты (только cash/card) для селектов"
+        },
+        {
+          "name": "DELIVERY_OPTIONS",
+          "kind": "const",
+          "hash": "76bc2a7b",
+          "purpose": "Опции выбора доставки (доставка/самовывоз) для селектов"
+        },
+        {
+          "name": "PAYMENT_ICON_MAP",
+          "kind": "const",
+          "hash": "5c42c591",
+          "purpose": "Словарь типа оплаты -> IconName для бейджей"
+        }
+      ]
+    },
+    "config/order-status-groups.ts": {
+      "kind": "ts",
+      "hash": "85fa67161dec",
+      "purpose": "Цвета/типы UiTag и лейблы для групп статусов заказа (new/in_progress/completed/cancelled)",
+      "symbols": [
+        {
+          "name": "STATUS_GROUP_TAG_TYPES",
+          "kind": "const",
+          "hash": "cdf68f65",
+          "purpose": "Группа -> тип UiTag (primary/warning/success/error)"
+        },
+        {
+          "name": "STATUS_GROUP_COLORS",
+          "kind": "const",
+          "hash": "ae6c9aed",
+          "purpose": "Группа -> hex-цвет (через TAG_TYPE_COLOR из @fastio/kit)"
+        },
+        {
+          "name": "STATUS_GROUP_LABELS",
+          "kind": "const",
+          "hash": "0519ec0f",
+          "purpose": "Группа -> русский лейбл"
+        }
+      ]
+    },
+    "config/team-roles.ts": {
+      "kind": "ts",
+      "hash": "2f4057519670",
+      "purpose": "Группы прав ролей команды для редактора кастомных ролей (меню/заказы/кухня/...)",
+      "symbols": [
+        {
+          "name": "PermissionGroup",
+          "kind": "type",
+          "hash": "db22e1b3",
+          "purpose": "{ label: string; permissions: { key, label }[] }"
+        },
+        {
+          "name": "permissionGroups",
+          "kind": "const",
+          "hash": "d33cc3d8",
+          "purpose": "Список групп прав с лейблами для UI редактора роли"
+        }
+      ]
+    },
+    "config/theme-presets.ts": {
+      "kind": "ts",
+      "hash": "6ea79b5e45e1",
+      "purpose": "Пресеты темы и список шрифтов для селектора темы витрины (системный + Google Fonts по категориям)",
+      "symbols": [
+        {
+          "name": "themePresets",
+          "kind": "const",
+          "hash": "ecc45b97",
+          "purpose": "Опции селектора темы (value/label/palette из THEME_PRESETS)"
+        },
+        {
+          "name": "fontOptions",
+          "kind": "const",
+          "hash": "f8052402",
+          "purpose": "Группированные опции шрифта для UiSelect (системный + категории Google)"
+        }
+      ]
+    },
+    "columns/_promo-shared.ts": {
+      "kind": "ts",
+      "hash": "cd653728b97b",
+      "purpose": "Общие колонки таблиц промо/промокодов: статус с фильтром, активный период, actions (toggle/edit/delete)",
+      "symbols": [
+        {
+          "name": "buildPromoStatusColumn",
+          "kind": "function",
+          "hash": "ca856b26",
+          "purpose": "Колонка статус с фильтром по PROMO_STATUS_FILTER_OPTIONS и UiTag"
+        },
+        {
+          "name": "buildPromoActivePeriodColumn",
+          "kind": "function",
+          "hash": "32df7e38",
+          "purpose": "Колонка периода 'с DD-MM-YYYY по DD-MM-YYYY' с сортировкой по activeFrom"
+        },
+        {
+          "name": "buildPromoActionsColumn",
+          "kind": "function",
+          "hash": "9f8446a4",
+          "purpose": "Колонка actions: switch активности + AppActionsBlock (edit/delete)"
+        }
+      ]
+    },
+    "columns/addons.ts": {
+      "kind": "ts",
+      "hash": "4167af946e68",
+      "purpose": "Колонки таблиц добавок и пресетов добавок (DishList): имя, цена, вес, switch, actions",
+      "symbols": [
+        {
+          "name": "buildAddonColumns",
+          "kind": "function",
+          "hash": "29c1e770",
+          "purpose": "Колонки для таблицы Addon: name (sortable), price, weight, actions"
+        },
+        {
+          "name": "buildAddonPresetColumns",
+          "kind": "function",
+          "hash": "b18032d4",
+          "purpose": "Колонки для таблицы AddonPreset: имя, привязанные addons, actions"
+        }
+      ]
+    },
+    "columns/modifiers.ts": {
+      "kind": "ts",
+      "hash": "f5fab0408280",
+      "purpose": "Колонки таблицы групп модификаторов: имя, опции (теги), switch активности, actions",
+      "symbols": [
+        {
+          "name": "buildModifierColumns",
+          "kind": "function",
+          "hash": "d08e3b7c",
+          "purpose": "Колонки для таблицы ModifierGroup с edit/remove/toggle"
+        }
+      ]
+    },
+    "columns/promo-codes.ts": {
+      "kind": "ts",
+      "hash": "42ffeef51620",
+      "purpose": "Колонки таблицы промокодов: код, статус, скидка, период, лимиты, actions",
+      "symbols": [
+        {
+          "name": "buildPromoCodeColumns",
+          "kind": "function",
+          "hash": "66e9a9cb",
+          "purpose": "Колонки для таблицы PromoCode (использует _promo-shared)"
+        }
+      ]
+    },
+    "columns/promotions.ts": {
+      "kind": "ts",
+      "hash": "78239e95cdac",
+      "purpose": "Колонки таблицы акций: название с типом (min_order/happy_hour/weekday/first_order/free_item), статус, период, actions",
+      "symbols": [
+        {
+          "name": "buildPromotionColumns",
+          "kind": "function",
+          "hash": "979c3467",
+          "purpose": "Колонки для таблицы Promotion (использует _promo-shared)"
+        }
+      ]
+    },
+    "columns/reservations.ts": {
+      "kind": "ts",
+      "hash": "e9eea32f2b42",
+      "purpose": "Колонки таблицы бронирований: дата/время с днём недели, гость, телефон, кол-во гостей с фильтром-диапазоном, стол, статус",
+      "symbols": [
+        {
+          "name": "buildReservationColumns",
+          "kind": "function",
+          "hash": "412a9703",
+          "purpose": "Колонки для таблицы Reservation с фильтрами и опциональной колонкой стола"
+        }
+      ]
+    },
+    "columns/team.ts": {
+      "kind": "ts",
+      "hash": "d9e8597c5995",
+      "purpose": "Колонки таблиц команды: участники (роль, филиалы, блокировка) и приглашения (статус, дата)",
+      "symbols": [
+        {
+          "name": "buildMemberColumns",
+          "kind": "function",
+          "hash": "b5c9a672",
+          "purpose": "Колонки для TenantMember: имя, роль (owner-флаг), филиалы, статус блокировки, actions"
+        },
+        {
+          "name": "buildInviteColumns",
+          "kind": "function",
+          "hash": "da66be3a",
+          "purpose": "Колонки для TenantInvitation: email, роль, дата, actions (отозвать)"
+        }
+      ]
+    },
+    "middleware/auth.global.ts": {
+      "kind": "ts",
+      "hash": "c4aa5a6326da",
+      "purpose": "Глобальный auth-guard навигации: ждёт инициализации auth/tenant, редиректит на /login, /set-password, /no-access, /suspended",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "9791eea6",
+          "purpose": "defineNuxtRouteMiddleware: invite/recovery flow + auth + tenant.init() + suspended"
+        }
+      ]
+    },
+    "middleware/gate.global.ts": {
+      "kind": "ts",
+      "hash": "e30e0eedcb9c",
+      "purpose": "Глобальный gate-guard: закрывает прямой URL-доступ к недоступным разделам, редиректит на ближайший доступный fallback",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "cefd0a73",
+          "purpose": "defineNuxtRouteMiddleware: resolveRouteGate + useGate + REDIRECT_FALLBACKS"
+        }
+      ]
+    },
+    "plugins/apexcharts.client.ts": {
+      "kind": "ts",
+      "hash": "1063c8719049",
+      "purpose": "Регистрирует vue3-apexcharts глобально для дашборда и аналитики",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "298d2322",
+          "purpose": "nuxtApp.vueApp.use(VueApexCharts)"
+        }
+      ]
+    },
+    "plugins/supabase.client.ts": {
+      "kind": "ts",
+      "hash": "5f97931a0fc6",
+      "purpose": "Инициализирует Supabase-клиент: ловит invite/recovery hash, читает getSession, провайдит $supabase и слушает onAuthStateChange",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "c548d2d2",
+          "purpose": "Создаёт supabase, обновляет authStore.setUser и редиректит на /login при SIGNED_OUT"
+        }
+      ]
+    },
+    "plugins/vocab.client.ts": {
+      "kind": "ts",
+      "hash": "d316276a2377",
+      "purpose": "Связывает текущий тенант со словарём терминов (useTerms) при логине, switchTenant, изменении businessType/menuStyle",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "a94cdf0e",
+          "purpose": "watch tenantStore.maybeTenant -> setVocab(businessType, menuStyle)"
+        }
+      ]
+    },
+    "plugins/yandex-maps.client.ts": {
+      "kind": "ts",
+      "hash": "432fd6385667",
+      "purpose": "Инициализация Yandex Maps API через vue-yandex-maps (createYmapsOptions с apikey из runtimeConfig)",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "a94cdf0e",
+          "purpose": "createYmapsOptions({ apikey })"
+        }
+      ]
+    },
+    "layouts/default.vue": {
+      "kind": "vue",
+      "hash": "025e63b52eb7",
+      "purpose": "Главный layout админки: sidebar (logo/AppNav/TenantSwitcher/BranchSelector/account), topbar (burger/title/KB-link/theme), realtime-каналы, OnboardingWizard/Checklist, AiChat",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Default layout с collapsible sidebar и slot для страницы"
+        }
+      ]
+    },
+    "components/layout/AppNav.vue": {
+      "kind": "vue",
+      "hash": "2469b4332605",
+      "purpose": "Боковая навигация sidebar: пункты с иконками, счётчиками новых заказов/броней/непрочитанных тикетов, видимостью через useGate",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1941fee3",
+          "purpose": "{ collapsed?: boolean }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "246eb91c",
+          "purpose": "navigate — закрытие mobile sidebar при переходе"
+        },
+        {
+          "name": "expose",
+          "kind": "component-expose",
+          "hash": "d759f99f",
+          "purpose": "Внутренние навигационные айтемы (для тестов/туров)"
+        }
+      ]
+    },
+    "components/layout/BranchSelector.vue": {
+      "kind": "vue",
+      "hash": "3a5502c4e542",
+      "purpose": "Селектор филиала в sidebar: список доступных филиалов + опция 'Все филиалы' (для owner и members с пустым branchIds)",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Скрывается, если филиал один; меняет branchStore.currentBranchId"
+        }
+      ]
+    },
+    "components/layout/PastDueBanner.vue": {
+      "kind": "vue",
+      "hash": "bb57bd8f447b",
+      "purpose": "Жёлтый баннер сверху layout при subscription.status='past_due': дни до приостановки + кнопка 'Оплатить'",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Считает оставшиеся дни графика по pastDueAt+gracePeriodDays"
+        }
+      ]
+    },
+    "components/ui/AddressSuggestInput.vue": {
+      "kind": "vue",
+      "hash": "b94c469e6adf",
+      "purpose": "Инпут адреса с подсказками DaData (через useDadataSuggestions) и dropdown",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "348519de",
+          "purpose": "{ label?, placeholder?, rules?, disabled? } + v-model:value"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "3504eaf7",
+          "purpose": "update:modelValue + select(suggestion с координатами)"
+        }
+      ]
+    },
+    "components/ui/AppActionsBlock.vue": {
+      "kind": "vue",
+      "hash": "e6c69cb8d30e",
+      "purpose": "Стандартный блок действий строки таблицы: pencil/copy/trash icon-buttons + слоты prepend/append для switch/extra",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9a3c7eb5",
+          "purpose": "{ size?, showEdit?, disableEdit?, showCopy?, showDelete? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "6f95a9f9",
+          "purpose": "edit/copy/delete"
+        }
+      ]
+    },
+    "components/ui/AppBrand.vue": {
+      "kind": "vue",
+      "hash": "d2a3d4ada295",
+      "purpose": "Брендовая отметка: AppLogo + текст 'Fastio' (для login/auth-страниц)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e4a6730d",
+          "purpose": "{ size?: 'small' | 'medium' }"
+        }
+      ]
+    },
+    "components/ui/AppBurger.vue": {
+      "kind": "vue",
+      "hash": "62d007a08dd1",
+      "purpose": "Кнопка-бургер для мобильного открытия sidebar (3 полосы с анимацией в крест)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8b3524fb",
+          "purpose": "{ open?: boolean }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "755dca6a",
+          "purpose": "click"
+        }
+      ]
+    },
+    "components/ui/AppCategoryList.vue": {
+      "kind": "vue",
+      "hash": "b73a5a635cde",
+      "purpose": "Сортируемый список категорий (drag) с иконкой, тегом типа (виртуальная/комбо), счётчиком блюд, switch и actions",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "7d74bafc",
+          "purpose": "{ categories, loading, showThumbs?, itemCounts?, countText?, emptyText }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "97fc9347",
+          "purpose": "reorder/edit/delete/toggleActive"
+        },
+        {
+          "name": "CategoryListItem",
+          "kind": "type",
+          "hash": "27c0dea3",
+          "purpose": "Минимум полей категории для рендера в списке"
+        }
+      ]
+    },
+    "components/ui/AppDraggableList.vue": {
+      "kind": "vue",
+      "hash": "0aa13b5db09c",
+      "purpose": "Сортируемый список на vue-draggable-plus: handle .drag-handle, ghost-class, animation 180ms",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "0fb30420",
+          "purpose": "{ modelValue: unknown[] }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "7fd27ffa",
+          "purpose": "update:modelValue/reorder"
+        }
+      ]
+    },
+    "components/ui/AppEditableTag.vue": {
+      "kind": "vue",
+      "hash": "80a9613a192a",
+      "purpose": "Редактируемый тег (категория/фильтр) с inline-режимом: grip, label, счётчик, actions (rename/delete) и хоткеи",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8356e580",
+          "purpose": "{ label, type?, selected?, count?, editing?, inactive?, animationDelay? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "bb3b4308",
+          "purpose": "click/rename/delete"
+        }
+      ]
+    },
+    "components/ui/AppListRow.vue": {
+      "kind": "vue",
+      "hash": "1b38cdb2592f",
+      "purpose": "Строка списка с drag-handle, опциональной превью-картинкой, name-слотом и details/append-слотами",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1a6617f2",
+          "purpose": "{ name?, thumbUrl?, thumbWidth?, thumbHeight?, disabled? }"
+        }
+      ]
+    },
+    "components/ui/AppLogo.vue": {
+      "kind": "vue",
+      "hash": "150961d16745",
+      "purpose": "Иконка лого Fastio из /logo-mark.svg (управляемый размер)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "d64da962",
+          "purpose": "{ size?: number = 28 }"
+        }
+      ]
+    },
+    "components/ui/AppMenuItemList.vue": {
+      "kind": "vue",
+      "hash": "7f8de74e9fb1",
+      "purpose": "Универсальный layout правой панели меню (DishList/Services): SegmentedControl (карточки/таблица), поиск, header с кнопкой добавления, empty-state",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "501916ee",
+          "purpose": "{ categoryId, title, addDataTour, emptyHintText, emptyIcon, ... }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "7e229751",
+          "purpose": "add/search/view-change"
+        }
+      ]
+    },
+    "components/ui/AppStorefrontAlert.vue": {
+      "kind": "vue",
+      "hash": "749c90f20c23",
+      "purpose": "Список UiAlert о проблемах видимости фичи на витрине (страница/секция/nav выключены) со ссылкой 'настроить'",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5cbbf965",
+          "purpose": "{ featureKey: SiteFeatureKey }"
+        }
+      ]
+    },
+    "components/ui/ColorPicker.vue": {
+      "kind": "vue",
+      "hash": "374729c2db94",
+      "purpose": "Контрол выбора цвета: пресеты-сваотчи + нативный input[type=color] для custom-значения",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e80e3ce0",
+          "purpose": "{ modelValue, label?, presets? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "2508c3d7",
+          "purpose": "update:modelValue"
+        }
+      ]
+    },
+    "components/ui/DishItemRow.vue": {
+      "kind": "vue",
+      "hash": "7df6a6d2d107",
+      "purpose": "Строка позиции заказа в OrderModal/чеке: категория, название, модификаторы тегами, удалённые ингредиенты, итоговая цена",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "6215ccef",
+          "purpose": "{ name, categoryName?, price?, modifiers?, modifiersDelta?, removedIngredients? }"
+        }
+      ]
+    },
+    "components/ui/HintPopover.vue": {
+      "kind": "vue",
+      "hash": "2c678e3895ef",
+      "purpose": "Мини-подсказка по hover на иконке help: UiPopover trigger=hover, width 260px, delay 500ms",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Wrapper над UiPopover с иконкой help"
+        }
+      ]
+    },
+    "components/ui/ImageListManager.vue": {
+      "kind": "vue",
+      "hash": "5a9a5fdea3ba",
+      "purpose": "Сетка картинок галереи блюда: drag&drop переупорядочивание, замена через ImageUploadModal, switch видимости",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5940e698",
+          "purpose": "{ items: ImageItem[], aspectRatio? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "41a51f2d",
+          "purpose": "update:items/reorder/replace"
+        }
+      ]
+    },
+    "components/ui/ImageUploadModal.vue": {
+      "kind": "vue",
+      "hash": "b1ed0736fac3",
+      "purpose": "Модалка загрузки картинки: drag&drop/file picker/URL, шаги pick->crop, кадрирование с ImageAspectRatio",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "d4d87ac6",
+          "purpose": "{ modelValue, title?, aspectRatio? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "47f95b9b",
+          "purpose": "update:modelValue/uploaded(blob)"
+        },
+        {
+          "name": "ImageAspectRatio",
+          "kind": "type",
+          "hash": "fa6e3df6",
+          "purpose": "Соотношение сторон при кадрировании"
+        }
+      ]
+    },
+    "components/ui/ImageUploadTrigger.vue": {
+      "kind": "vue",
+      "hash": "689393211d34",
+      "purpose": "Триггер загрузки картинки: показ preview с overlay 'Заменить' или empty-state, открывает ImageUploadModal",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "fbaf4c65",
+          "purpose": "{ previewUrl, compact?, aspectRatio?, ... }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "3372f16f",
+          "purpose": "uploaded/remove"
+        }
+      ]
+    },
+    "components/ui/RichTextEditor.vue": {
+      "kind": "vue",
+      "hash": "e537d46650ee",
+      "purpose": "Редактор форматированного текста на TipTap: bold/italic/list, дропдаун стилей блоков (heading/paragraph), hero-режим",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "91c064ac",
+          "purpose": "{ modelValue, label?, hero? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "5f03b126",
+          "purpose": "update:modelValue"
+        }
+      ]
+    },
+    "components/ui/SettingToggle.vue": {
+      "kind": "vue",
+      "hash": "0c94372df523",
+      "purpose": "Строка настройки: UiSwitch + label + опциональная подсказка hint, выравнивание start/end",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "cecfeeef",
+          "purpose": "{ modelValue, label, hint?, disabled?, align? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue"
+        }
+      ]
+    },
+    "components/ui/TabsLayout.vue": {
+      "kind": "vue",
+      "hash": "1a1f48b50c33",
+      "purpose": "Layout страницы с UiTabs наверху и NuxtPage в main-col + опциональным sidebar-слотом; навигация через router",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "06395625",
+          "purpose": "{ tabs: Tab[], basePath, card?, fullHeight?, hideSingle? }"
+        }
+      ]
+    }
+  },
+  "pages": {},
+  "folders": {}
+}

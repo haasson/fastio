@@ -1,0 +1,75 @@
+{
+  "project": "packages/icons",
+  "submap": "main",
+  "purpose": "Универсальная иконка UiIcon на базе Lucide с реестром и адаптивными размерами",
+  "generated_at": "2026-04-30T04:03:27.081Z",
+  "stats": {
+    "files": 3,
+    "pages": 0,
+    "symbols": 6,
+    "undescribed_files": 0,
+    "undescribed_pages": 0,
+    "undescribed_symbols": 0
+  },
+  "files": {
+    "src/UiIcon.vue": {
+      "kind": "vue",
+      "hash": "cfadfb5e5e99",
+      "purpose": "Универсальная иконка на базе Lucide: имя из реестра, адаптивный размер по брейкпоинтам, цвет (HEX/CSS-var/токен темы) и трансформации flip/rotate",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e3b58286",
+          "purpose": "name (IconName), size (number | { s?, m?, l?, xl? }), color, bg (deprecated), strokeWidth, flipX, flipY, rotate"
+        }
+      ]
+    },
+    "src/icons.ts": {
+      "kind": "ts",
+      "hash": "c97107a88ffd",
+      "purpose": "Реестр Lucide-иконок, маппит kebab-case имена в Vue-компоненты lucide-vue-next и выводит тип IconName",
+      "symbols": [
+        {
+          "name": "iconRegistry",
+          "kind": "const",
+          "hash": "5cb9a6b3",
+          "purpose": "Объект-словарь kebab-имя -> Lucide компонент (X, ChevronDown, Calendar, Settings и др.)"
+        },
+        {
+          "name": "IconName",
+          "kind": "type",
+          "hash": "579c82b9",
+          "purpose": "Объединение допустимых имён иконок (keyof typeof iconRegistry)"
+        }
+      ]
+    },
+    "src/index.ts": {
+      "kind": "ts",
+      "hash": "db93eaf6952d",
+      "purpose": "Публичный entry @fastio/icons — реэкспорт UiIcon, iconRegistry и типа IconName",
+      "symbols": [
+        {
+          "name": "UiIcon",
+          "kind": "re-export",
+          "hash": "5e2e5dff",
+          "purpose": "Реэкспорт компонента UiIcon"
+        },
+        {
+          "name": "iconRegistry",
+          "kind": "re-export",
+          "hash": "93829523",
+          "purpose": "Реэкспорт реестра иконок iconRegistry"
+        },
+        {
+          "name": "IconName",
+          "kind": "re-export",
+          "hash": "93829523",
+          "purpose": "Реэкспорт типа IconName"
+        }
+      ]
+    }
+  },
+  "pages": {},
+  "folders": {}
+}

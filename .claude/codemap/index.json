@@ -1,0 +1,137 @@
+{
+  "rule": "Это индекс карт проектов монорепо. Сами карты НЕ в контексте — Read только нужные. 1. Когда юзер ставит задачу — определи затронутый проект (apps/admin, packages/shared и т.д.) 2. Прочитай core-карту проекта (если есть) + субкарту нужного модуля 3. Если по ходу работы выяснилось, что нужно править другой проект — СНАЧАЛА прочитай его карты, потом меняй код 4. НЕ читай карты «на всякий случай» — это перегружает контекст 5. Карта говорит ЧТО есть и ДЛЯ ЧЕГО. Сигнатуры/реализацию смотри в самом файле, когда нужно",
+  "generated_at": "2026-04-30T04:03:27.084Z",
+  "totals": {
+    "files": 318,
+    "symbols": 718,
+    "undescribed": 0
+  },
+  "projects": {
+    "apps/admin": {
+      "purpose": "Админ-панель Nuxt 3 SPA: меню, заказы, кухня, бронирования, онлайн-запись, акции, настройки тенанта",
+      "stats": {
+        "files": 113,
+        "symbols": 196,
+        "undescribed": 0
+      },
+      "maps": {
+        "main": {
+          "file": ".claude/codemap/apps/admin.json",
+          "purpose": null,
+          "files": 113,
+          "symbols": 196,
+          "pages": 0,
+          "undescribed": 0
+        }
+      }
+    },
+    "apps/storefront": {
+      "purpose": "Витрина для гостя Nuxt 3 SSR: меню, корзина, чекаут, аккаунт, бронирования, онлайн-запись",
+      "stats": {
+        "files": 63,
+        "symbols": 90,
+        "undescribed": 0
+      },
+      "maps": {
+        "main": {
+          "file": ".claude/codemap/apps/storefront.json",
+          "purpose": null,
+          "files": 63,
+          "symbols": 90,
+          "pages": 0,
+          "undescribed": 0
+        }
+      }
+    },
+    "packages/shared": {
+      "purpose": "Общие утилиты и composables проекта (pluralize, planLevel, scheduling, vocabulary, geo, useDadataSuggestions и т.д.). Доменные типы НЕ картируются — читаются напрямую через импорты.",
+      "stats": {
+        "files": 36,
+        "symbols": 141,
+        "undescribed": 0
+      },
+      "maps": {
+        "main": {
+          "file": ".claude/codemap/packages/shared.json",
+          "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
+          "files": 36,
+          "symbols": 141,
+          "pages": 0,
+          "undescribed": 0
+        }
+      }
+    },
+    "packages/ui": {
+      "purpose": "UI-компоненты на базе Naive UI (UiCard, UiText, UiButton, UiTitle, UiTag и т.д.) для admin",
+      "stats": {
+        "files": 52,
+        "symbols": 148,
+        "undescribed": 0
+      },
+      "maps": {
+        "main": {
+          "file": ".claude/codemap/packages/ui.json",
+          "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
+          "files": 52,
+          "symbols": 148,
+          "pages": 0,
+          "undescribed": 0
+        }
+      }
+    },
+    "packages/public-ui": {
+      "purpose": "UI-компоненты для витрины (storefront): SfButton, SfBottomSheet, SfDishCard и т.д.",
+      "stats": {
+        "files": 35,
+        "symbols": 81,
+        "undescribed": 0
+      },
+      "maps": {
+        "main": {
+          "file": ".claude/codemap/packages/public-ui.json",
+          "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
+          "files": 35,
+          "symbols": 81,
+          "pages": 0,
+          "undescribed": 0
+        }
+      }
+    },
+    "packages/kit": {
+      "purpose": "Общий рантайм-кит для storefront/public-ui: брейкпоинты, модалки, query/mutation, валидация форм, layer-стек, цветовые токены",
+      "stats": {
+        "files": 16,
+        "symbols": 56,
+        "undescribed": 0
+      },
+      "maps": {
+        "main": {
+          "file": ".claude/codemap/packages/kit.json",
+          "purpose": "Общий рантайм-кит для storefront/public-ui: composables (брейкпоинты, модалки, confirm, query/mutation), валидаторы форм, layer/throttle утилиты и базовые константы",
+          "files": 16,
+          "symbols": 56,
+          "pages": 0,
+          "undescribed": 0
+        }
+      }
+    },
+    "packages/icons": {
+      "purpose": "SVG-иконки как Vue-компоненты (UiIcon + реестр Lucide)",
+      "stats": {
+        "files": 3,
+        "symbols": 6,
+        "undescribed": 0
+      },
+      "maps": {
+        "main": {
+          "file": ".claude/codemap/packages/icons.json",
+          "purpose": "Универсальная иконка UiIcon на базе Lucide с реестром и адаптивными размерами",
+          "files": 3,
+          "symbols": 6,
+          "pages": 0,
+          "undescribed": 0
+        }
+      }
+    }
+  }
+}

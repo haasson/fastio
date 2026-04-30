@@ -1,0 +1,466 @@
+{
+  "project": "packages/kit",
+  "submap": "main",
+  "purpose": "Общий рантайм-кит для storefront/public-ui: composables (брейкпоинты, модалки, confirm, query/mutation), валидаторы форм, layer/throttle утилиты и базовые константы",
+  "generated_at": "2026-04-30T04:03:27.070Z",
+  "stats": {
+    "files": 16,
+    "pages": 0,
+    "symbols": 56,
+    "undescribed_files": 0,
+    "undescribed_pages": 0,
+    "undescribed_symbols": 0
+  },
+  "files": {
+    "src/composables/useBreakpoints.ts": {
+      "kind": "ts",
+      "hash": "471bb2aafc4f",
+      "purpose": "Реактивные брейкпоинты s/m/l/xl с SSR-fallback на 'l', троттлинг resize 100ms и singleton-state на window",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "aa936e11",
+          "purpose": "useBreakpoints() — { breakpoints, active, current, s/m/l/xl, sOnly/mOnly/lOnly/xlOnly }; подключает window resize при первом вызове"
+        }
+      ]
+    },
+    "src/composables/useConfirm.ts": {
+      "kind": "ts",
+      "hash": "0df7b2f329b6",
+      "purpose": "Программный confirm-диалог через системную модалку '__confirm__' с Promise<boolean|null> и преднастроенными кнопками",
+      "symbols": [
+        {
+          "name": "ConfirmOptions",
+          "kind": "type",
+          "hash": "0f75a232",
+          "purpose": "Опции confirm: title, message, alert, confirmDisabled, cancel/confirm Text/Type, closable, stackedActions, reverseActions, width"
+        },
+        {
+          "name": "confirmState",
+          "kind": "const",
+          "hash": "3b00b076",
+          "purpose": "Глобальный ref текущих опций для рендера системной confirm-модалки"
+        },
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "15febb00",
+          "purpose": "useConfirm() — { confirm(options): Promise<boolean|null> }, открывает '__confirm__' через useModals"
+        }
+      ]
+    },
+    "src/composables/useModals.ts": {
+      "kind": "ts",
+      "hash": "0105fd1ad7ec",
+      "purpose": "Singleton-менеджер именованных модалок: регистрация контроллеров, async open() с Promise-результатом (confirm/decline/dismiss) и стек открытых",
+      "symbols": [
+        {
+          "name": "modalManager",
+          "kind": "const",
+          "hash": "3d4ac060",
+          "purpose": "Низкоуровневое API: register, unregister, getModalConfig, createController, getOpenModals"
+        },
+        {
+          "name": "useModalConfig",
+          "kind": "function",
+          "hash": "b525aaed",
+          "purpose": "useModalConfig(name) — computed-конфиг переданный в open(name, config)"
+        },
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "7a9b19a6",
+          "purpose": "useModals() — { open, close, closeAll, isOpen, getStack } для управления модалками по имени"
+        }
+      ]
+    },
+    "src/composables/useMutation.ts": {
+      "kind": "ts",
+      "hash": "e8615bf801f9",
+      "purpose": "Обёртка для async-мутаций с reactive loading/error и execute(...args), возвращает результат или null при ошибке",
+      "symbols": [
+        {
+          "name": "useMutation",
+          "kind": "function",
+          "hash": "6a5b811d",
+          "purpose": "useMutation(fn) — { execute, loading, error }; ловит исключения и пишет message в error.value"
+        }
+      ]
+    },
+    "src/composables/useQuery.ts": {
+      "kind": "ts",
+      "hash": "0eef8d12f0f7",
+      "purpose": "Реактивный fetcher с авто-выполнением при изменении deps (immediate+deep), отдаёт data/loading/error и ручной execute",
+      "symbols": [
+        {
+          "name": "useQuery",
+          "kind": "function",
+          "hash": "30f838ba",
+          "purpose": "useQuery(fn, deps?) — { data, loading, error, execute }; вызывает fn при старте и любом изменении deps"
+        }
+      ]
+    },
+    "src/composables/useResponsiveSize.ts": {
+      "kind": "ts",
+      "hash": "918250f42a1c",
+      "purpose": "Резолвит Size (tiny/small/medium/large) от текущего брейкпоинта по карте responsive с fallback на FORM_SIZE_KEY и default size",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "8a499d51",
+          "purpose": "useResponsiveSize({ size, responsive? }) — ComputedRef<Size>; ищет ближайший меньший брейкпоинт в карте"
+        }
+      ]
+    },
+    "src/constants/colors.ts": {
+      "kind": "ts",
+      "hash": "4c19a67c9c4d",
+      "purpose": "Палитра HEX-цветов (yellow/blue/grey/green/orange/red + системные алиасы PRIMARY/SUCCESS/ERROR/...) для использования вне CSS",
+      "symbols": [
+        {
+          "name": "COLORS",
+          "kind": "const",
+          "hash": "01c3813f",
+          "purpose": "Объект-словарь HEX-цветов (брендовые шкалы и семантические алиасы)"
+        }
+      ]
+    },
+    "src/constants/form-size.ts": {
+      "kind": "ts",
+      "hash": "739ba9eec203",
+      "purpose": "InjectionKey для прокидывания ResponsiveSizeMap из формы в дочерние контролы (через provide/inject)",
+      "symbols": [
+        {
+          "name": "FORM_SIZE_KEY",
+          "kind": "const",
+          "hash": "51bf34fe",
+          "purpose": "InjectionKey<Ref<ResponsiveSizeMap>> — ключ контекста для размеров полей формы"
+        }
+      ]
+    },
+    "src/index.ts": {
+      "kind": "ts",
+      "hash": "a0a5ae7d5c26",
+      "purpose": "Публичный entry @fastio/kit — реэкспорт composables, типов, утилит валидации, throttle/layerManager и констант",
+      "symbols": [
+        {
+          "name": "useBreakpoints",
+          "kind": "re-export",
+          "hash": "e3ace023",
+          "purpose": "Реэкспорт composable useBreakpoints"
+        },
+        {
+          "name": "useModals",
+          "kind": "re-export",
+          "hash": "72edd13b",
+          "purpose": "Реэкспорт composable useModals"
+        },
+        {
+          "name": "useModalConfig",
+          "kind": "re-export",
+          "hash": "72edd13b",
+          "purpose": "Реэкспорт useModalConfig"
+        },
+        {
+          "name": "modalManager",
+          "kind": "re-export",
+          "hash": "72edd13b",
+          "purpose": "Реэкспорт modalManager (низкоуровневое API)"
+        },
+        {
+          "name": "useConfirm",
+          "kind": "re-export",
+          "hash": "1b663ba5",
+          "purpose": "Реэкспорт composable useConfirm"
+        },
+        {
+          "name": "confirmState",
+          "kind": "re-export",
+          "hash": "1b663ba5",
+          "purpose": "Реэкспорт confirmState (опции системной confirm-модалки)"
+        },
+        {
+          "name": "ConfirmOptions",
+          "kind": "re-export",
+          "hash": "1b663ba5",
+          "purpose": "Реэкспорт типа ConfirmOptions"
+        },
+        {
+          "name": "useResponsiveSize",
+          "kind": "re-export",
+          "hash": "aa3eada5",
+          "purpose": "Реэкспорт composable useResponsiveSize"
+        },
+        {
+          "name": "useQuery",
+          "kind": "re-export",
+          "hash": "1b25490f",
+          "purpose": "Реэкспорт composable useQuery"
+        },
+        {
+          "name": "useMutation",
+          "kind": "re-export",
+          "hash": "79c00948",
+          "purpose": "Реэкспорт composable useMutation"
+        },
+        {
+          "name": "Size",
+          "kind": "re-export",
+          "hash": "27cd3d04",
+          "purpose": "Реэкспорт типа Size (tiny/small/medium/large)"
+        },
+        {
+          "name": "Breakpoint",
+          "kind": "re-export",
+          "hash": "27cd3d04",
+          "purpose": "Реэкспорт типа Breakpoint (s/m/l/xl)"
+        },
+        {
+          "name": "ResponsiveSizeMap",
+          "kind": "re-export",
+          "hash": "27cd3d04",
+          "purpose": "Реэкспорт типа ResponsiveSizeMap"
+        },
+        {
+          "name": "BREAKPOINTS_ORDER",
+          "kind": "re-export",
+          "hash": "27cd3d04",
+          "purpose": "Реэкспорт константы порядка брейкпоинтов"
+        },
+        {
+          "name": "ModalController",
+          "kind": "re-export",
+          "hash": "bfd5d4de",
+          "purpose": "Реэкспорт типа ModalController"
+        },
+        {
+          "name": "ModalConfig",
+          "kind": "re-export",
+          "hash": "bfd5d4de",
+          "purpose": "Реэкспорт типа ModalConfig"
+        },
+        {
+          "name": "UseModalsReturn",
+          "kind": "re-export",
+          "hash": "bfd5d4de",
+          "purpose": "Реэкспорт типа UseModalsReturn"
+        },
+        {
+          "name": "ValidationRule",
+          "kind": "re-export",
+          "hash": "fbc7e6f7",
+          "purpose": "Реэкспорт типа ValidationRule"
+        },
+        {
+          "name": "ValidationRuleType",
+          "kind": "re-export",
+          "hash": "fbc7e6f7",
+          "purpose": "Реэкспорт типа ValidationRuleType"
+        },
+        {
+          "name": "FormValues",
+          "kind": "re-export",
+          "hash": "fbc7e6f7",
+          "purpose": "Реэкспорт типа FormValues"
+        },
+        {
+          "name": "FormContext",
+          "kind": "re-export",
+          "hash": "fbc7e6f7",
+          "purpose": "Реэкспорт типа FormContext"
+        },
+        {
+          "name": "validationRules",
+          "kind": "re-export",
+          "hash": "1cea3438",
+          "purpose": "Реэкспорт пресетов validationRules (phone/email/name/address/password)"
+        },
+        {
+          "name": "validateRule",
+          "kind": "re-export",
+          "hash": "23b52c49",
+          "purpose": "Реэкспорт функции validateRule"
+        },
+        {
+          "name": "validateValue",
+          "kind": "re-export",
+          "hash": "23b52c49",
+          "purpose": "Реэкспорт функции validateValue"
+        },
+        {
+          "name": "layerManager",
+          "kind": "re-export",
+          "hash": "36251606",
+          "purpose": "Реэкспорт layerManager (стек z-index для оверлеев)"
+        },
+        {
+          "name": "throttle",
+          "kind": "re-export",
+          "hash": "fe9cb861",
+          "purpose": "Реэкспорт утилиты throttle"
+        },
+        {
+          "name": "FORM_SIZE_KEY",
+          "kind": "re-export",
+          "hash": "fe7b6e8b",
+          "purpose": "Реэкспорт InjectionKey FORM_SIZE_KEY"
+        },
+        {
+          "name": "COLORS",
+          "kind": "re-export",
+          "hash": "beefcf63",
+          "purpose": "Реэкспорт палитры COLORS"
+        }
+      ]
+    },
+    "src/types/form.ts": {
+      "kind": "ts",
+      "hash": "130fa1166121",
+      "purpose": "Типы валидации форм: правила, значения, контекст регистрации полей в FsForm",
+      "symbols": [
+        {
+          "name": "ValidationRuleType",
+          "kind": "type",
+          "hash": "f0841c40",
+          "purpose": "Типы правил: required/email/phone/minLength/maxLength/pattern/custom"
+        },
+        {
+          "name": "ValidationRule",
+          "kind": "type",
+          "hash": "cc612674",
+          "purpose": "Описание правила: type/required/message/min/max/pattern/validator"
+        },
+        {
+          "name": "FormValues",
+          "kind": "type",
+          "hash": "c831c852",
+          "purpose": "Словарь значений формы { [fieldName]: any }"
+        },
+        {
+          "name": "FormContext",
+          "kind": "type",
+          "hash": "e651cad3",
+          "purpose": "Контекст FsForm: registerField/unregisterField для дочерних полей"
+        }
+      ]
+    },
+    "src/types/modals.ts": {
+      "kind": "ts",
+      "hash": "66afb230ee2a",
+      "purpose": "Типы менеджера модалок: контроллер, конфиг и API useModals()",
+      "symbols": [
+        {
+          "name": "ModalController",
+          "kind": "type",
+          "hash": "9832d052",
+          "purpose": "Контроллер модалки: isShown, open()->Promise, close/decline/confirm/dismiss"
+        },
+        {
+          "name": "ModalConfig",
+          "kind": "type",
+          "hash": "75e4df80",
+          "purpose": "Произвольный конфиг для модалки с обязательным title?"
+        },
+        {
+          "name": "UseModalsReturn",
+          "kind": "type",
+          "hash": "1c20f8a8",
+          "purpose": "Сигнатура useModals(): open/close/closeAll/isOpen/getStack"
+        }
+      ]
+    },
+    "src/types/responsive.ts": {
+      "kind": "ts",
+      "hash": "a939641f669c",
+      "purpose": "Типы для адаптивных размеров: Size, Breakpoint и порядок брейкпоинтов",
+      "symbols": [
+        {
+          "name": "Size",
+          "kind": "type",
+          "hash": "97ae42d2",
+          "purpose": "Размер контрола: tiny | small | medium | large"
+        },
+        {
+          "name": "Breakpoint",
+          "kind": "type",
+          "hash": "47dd30dd",
+          "purpose": "Брейкпоинт: s | m | l | xl"
+        },
+        {
+          "name": "BREAKPOINTS_ORDER",
+          "kind": "const",
+          "hash": "de9ad123",
+          "purpose": "Упорядоченный список брейкпоинтов ['s','m','l','xl']"
+        },
+        {
+          "name": "ResponsiveSizeMap",
+          "kind": "type",
+          "hash": "aac85a41",
+          "purpose": "Partial-карта Breakpoint -> Size для адаптивного размера"
+        }
+      ]
+    },
+    "src/utils/layers.ts": {
+      "kind": "ts",
+      "hash": "e29ec1a166f4",
+      "purpose": "Менеджер z-index для стека оверлеев: push/pop с шагом 10 от базового 2000",
+      "symbols": [
+        {
+          "name": "layerManager",
+          "kind": "const",
+          "hash": "3990aaa7",
+          "purpose": "{ push(): number, pop(): void, getCurrentZIndex(): number } — выдача z-index по глубине стека"
+        }
+      ]
+    },
+    "src/utils/throttle.ts": {
+      "kind": "ts",
+      "hash": "6b19dbbbe5bd",
+      "purpose": "Throttle с trailing-вызовом: первый вызов сразу, последний попадает по таймеру если внутри окна",
+      "symbols": [
+        {
+          "name": "throttle",
+          "kind": "function",
+          "hash": "c5b4a3a6",
+          "purpose": "throttle(fn, delay) — обёртка ограничивающая частоту вызовов с гарантией trailing-вызова"
+        }
+      ]
+    },
+    "src/utils/validation-rules.ts": {
+      "kind": "ts",
+      "hash": "4e195abb92e0",
+      "purpose": "Готовые пресеты ValidationRule: phone/email/name/address/password (required/format/minLength) с RU-сообщениями",
+      "symbols": [
+        {
+          "name": "validationRules",
+          "kind": "const",
+          "hash": "b4eee88c",
+          "purpose": "Объект пресетов { phone, email, name, address, password } с готовыми ValidationRule"
+        }
+      ]
+    },
+    "src/utils/validators.ts": {
+      "kind": "ts",
+      "hash": "a28da223772f",
+      "purpose": "Реализация валидаторов: required/email/phone/minLength/maxLength/pattern/custom — возвращают message или null",
+      "symbols": [
+        {
+          "name": "validateRule",
+          "kind": "function",
+          "hash": "2a1cb908",
+          "purpose": "validateRule(value, rule) — проверяет одно правило, отдаёт message или null"
+        },
+        {
+          "name": "validateValue",
+          "kind": "function",
+          "hash": "99bf9f7a",
+          "purpose": "validateValue(value, rules[]) — прогоняет правила по порядку, возвращает первую ошибку или null"
+        }
+      ]
+    }
+  },
+  "pages": {},
+  "folders": {}
+}

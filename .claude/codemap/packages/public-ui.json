@@ -1,0 +1,749 @@
+{
+  "project": "packages/public-ui",
+  "submap": "main",
+  "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
+  "generated_at": "2026-04-30T04:03:27.035Z",
+  "stats": {
+    "files": 35,
+    "pages": 0,
+    "symbols": 81,
+    "undescribed_files": 0,
+    "undescribed_pages": 0,
+    "undescribed_symbols": 0
+  },
+  "files": {
+    "src/components/base/FsAlert.vue": {
+      "kind": "vue",
+      "hash": "b354cb4b7473",
+      "purpose": "Инлайн-уведомление с типами success/error/warning/info/muted и опциональной иконкой",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "91fd6e53",
+          "purpose": "type (success/error/warning/info/muted), icon (Component)"
+        }
+      ]
+    },
+    "src/components/base/FsBadge.vue": {
+      "kind": "vue",
+      "hash": "824cbfaed826",
+      "purpose": "Маленький бейдж-метка с вариантами цвета и режимом dot (точка-индикатор без текста)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e7d38fdc",
+          "purpose": "variant (default/primary/success/warning/error/info), size (small/medium), dot"
+        }
+      ]
+    },
+    "src/components/base/FsButton.vue": {
+      "kind": "vue",
+      "hash": "354a915adfc8",
+      "purpose": "Базовая кнопка витрины с вариантами primary/secondary/ghost/outline/destructive, состоянием loading и слотом sub для подписи",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "75690a51",
+          "purpose": "variant, size, responsive, disabled, loading, as (тег/компонент), type"
+        }
+      ]
+    },
+    "src/components/base/FsDivider.vue": {
+      "kind": "vue",
+      "hash": "f67e5c471354",
+      "purpose": "Разделитель горизонтальный/вертикальный с настраиваемым отступом (none/sm/md/lg)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "29d51133",
+          "purpose": "orientation (horizontal/vertical), spacing"
+        }
+      ]
+    },
+    "src/components/base/FsDropdownList.vue": {
+      "kind": "vue",
+      "hash": "aa771d740c5b",
+      "purpose": "Абсолютно-позиционируемый список выпадашки под триггером с эмитом select при клике",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "4140bae2",
+          "purpose": "items: { value, label, ... }[]"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "0dd70eeb",
+          "purpose": "select(item) — выбран элемент списка"
+        }
+      ]
+    },
+    "src/components/base/FsIconButton.vue": {
+      "kind": "vue",
+      "hash": "06aa57eb53dc",
+      "purpose": "Квадратная кнопка-иконка с теми же вариантами что FsButton + responsive-увеличение на lg+",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "d0878dc3",
+          "purpose": "variant (primary/secondary/ghost/outline), size, responsive, disabled, loading, as, ariaLabel"
+        }
+      ]
+    },
+    "src/components/base/FsSkeleton.vue": {
+      "kind": "vue",
+      "hash": "23effb374a98",
+      "purpose": "Скелетон-плейсхолдер с shimmer-анимацией в вариантах line/circle/rect",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1f0b385c",
+          "purpose": "variant (line/circle/rect), width, height, rounded"
+        }
+      ]
+    },
+    "src/components/base/FsSpinner.vue": {
+      "kind": "vue",
+      "hash": "b06fecab1811",
+      "purpose": "SVG-спиннер с вращающейся дугой в трёх размерах (small/medium/large)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5a0f59f5",
+          "purpose": "size (small/medium/large)"
+        }
+      ]
+    },
+    "src/components/base/FsTag.vue": {
+      "kind": "vue",
+      "hash": "54f80736fab0",
+      "purpose": "Тег-чип с состояниями active/removed/disabled, рендерится как button по умолчанию (для фильтров)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "b60e841b",
+          "purpose": "active, removed, disabled, size (small/medium), responsive, as"
+        }
+      ]
+    },
+    "src/components/form/FsCheckbox.vue": {
+      "kind": "vue",
+      "hash": "4ef22197c732",
+      "purpose": "Чекбокс на reka-ui CheckboxRoot с поддержкой indeterminate и подписью",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9835e653",
+          "purpose": "modelValue (boolean | indeterminate), disabled, size (sm/md), label"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "bf68a7a9",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/form/FsField.vue": {
+      "kind": "vue",
+      "hash": "aaf4a89f75cd",
+      "purpose": "Обёртка поля формы: лейбл + слот контрола + ошибка/подсказка, регистрируется в FsForm и валидируется через @fastio/kit",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a56b7aee",
+          "purpose": "label, hint, error, required, size, name, modelValue, rules (ValidationRule[])"
+        }
+      ]
+    },
+    "src/components/form/FsForm.vue": {
+      "kind": "vue",
+      "hash": "01d9306855da",
+      "purpose": "Контейнер формы: собирает FsField через provide/inject, валидирует все поля и эмитит submit только при success",
+      "symbols": [
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "56c98d13",
+          "purpose": "submit() — после успешной валидации всех полей"
+        }
+      ]
+    },
+    "src/components/form/FsInput.vue": {
+      "kind": "vue",
+      "hash": "f63e9e984105",
+      "purpose": "Универсальный input с тремя режимами: number-stepper (+/- кнопки), prefix/suffix-обёртка и обычный текстовый, поддерживает маски через maska",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a4153ea4",
+          "purpose": "modelValue, type, placeholder, disabled, readonly, error, size, responsive, prefix, suffix, success, min, max, step, mask"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "5e881d60",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/form/FsLabel.vue": {
+      "kind": "vue",
+      "hash": "5a95fef8250f",
+      "purpose": "Лейбл поля формы со звёздочкой для required",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5fae6149",
+          "purpose": "htmlFor, required, size (sm/md)"
+        }
+      ]
+    },
+    "src/components/form/FsRadioGroup.vue": {
+      "kind": "vue",
+      "hash": "66d7d0a7aa97",
+      "purpose": "Группа радиокнопок на reka-ui RadioGroup с горизонтальной/вертикальной ориентацией",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "0efd5643",
+          "purpose": "modelValue, options ({value,label,disabled}[]), disabled, orientation, size"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "5e881d60",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/form/FsSelect.vue": {
+      "kind": "vue",
+      "hash": "00017fa252cc",
+      "purpose": "Селект адаптивный: на десктопе reka-ui dropdown, на мобиле (<=639px) bottom-sheet через FsDrawer",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "fae8ca9e",
+          "purpose": "modelValue, placeholder, label, disabled, error, size, options"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "5e881d60",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/form/FsSwitch.vue": {
+      "kind": "vue",
+      "hash": "ea73f4ffa3f6",
+      "purpose": "Переключатель-тумблер на reka-ui Switch с подписью и двумя размерами",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "137238fe",
+          "purpose": "modelValue, disabled, size (sm/md), label"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/form/FsTextarea.vue": {
+      "kind": "vue",
+      "hash": "ee7a73f0f77c",
+      "purpose": "Многострочное поле ввода с настраиваемым resize и состоянием error",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e7cca7d8",
+          "purpose": "modelValue, placeholder, disabled, readonly, error, rows, resize, size"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "2508c3d7",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/layout/FsCard.vue": {
+      "kind": "vue",
+      "hash": "ce9125298dce",
+      "purpose": "Карточка-контейнер с опциональным изображением (вертикальный/горизонтальный layout) и hover-zoom",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "7149d4e1",
+          "purpose": "as, image, imageAlt, imageAspect, imageSize, horizontal"
+        }
+      ]
+    },
+    "src/components/layout/FsSection.vue": {
+      "kind": "vue",
+      "hash": "b0d637c2b45c",
+      "purpose": "Секция-обёртка с центрированным container max-width 1280px и адаптивным padding-inline",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "10b1ca45",
+          "purpose": "as (тег обёртки)"
+        }
+      ]
+    },
+    "src/components/layout/FsStack.vue": {
+      "kind": "vue",
+      "hash": "24843ccc3919",
+      "purpose": "Flex-контейнер для вертикального/горизонтального стека с настройкой gap/align/justify",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a19b1667",
+          "purpose": "direction (col/row), gap (px), align, justify"
+        }
+      ]
+    },
+    "src/components/nav/FsBurger.vue": {
+      "kind": "vue",
+      "hash": "cdfd2c5a5a3e",
+      "purpose": "Кнопка-бургер мобильного меню с анимацией трёх линий в крестик при active, скрыта на lg+",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "7f0cdd16",
+          "purpose": "modelValue (открыто/закрыто)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/nav/FsMobileMenu.vue": {
+      "kind": "vue",
+      "hash": "37486e2e1e1f",
+      "purpose": "Мобильное меню-оверлей через Teleport под header с body scroll-lock и slide-down анимацией",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "7f0cdd16",
+          "purpose": "modelValue (открыто/закрыто)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/nav/FsScrollNav.vue": {
+      "kind": "vue",
+      "hash": "053cc0509e2c",
+      "purpose": "Горизонтальная скролл-навигация (категории/табы) с fade-edges по краям и автоскроллом активного итема в зону видимости",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "2480bf6d",
+          "purpose": "items ({id,label,count?}[]), modelValue, size (sm/md), overflow (scroll/wrap)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "1096b2ed",
+          "purpose": "update:modelValue(id)"
+        }
+      ]
+    },
+    "src/components/nav/FsTabs.vue": {
+      "kind": "vue",
+      "hash": "3c48e072f31f",
+      "purpose": "Табы на reka-ui Tabs с вариантами line/pill, опциональным badge и full-width режимом",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "62803d35",
+          "purpose": "modelValue, tabs ({value,label,disabled?,badge?}[]), variant (line/pill), size, fullWidth"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "2508c3d7",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/overlay/FsDialog.vue": {
+      "kind": "vue",
+      "hash": "c74a63098e1f",
+      "purpose": "Модалка адаптивная: на мобиле (<=767px) превращается в FsDrawer-bottom-sheet, на десктопе reka-ui Dialog по центру; интегрируется с back-навигацией через useModalHistory",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "21f7527f",
+          "purpose": "modelValue, title, description, size (sm/md/lg), drawerSize, closable, closeOnOverlay, forceDialog"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/overlay/FsDrawer.vue": {
+      "kind": "vue",
+      "hash": "8a0e163a61fc",
+      "purpose": "Drawer-шторка: bottom через vaul-vue со swipe-to-dismiss, right через reka-ui Dialog (slide-in); back-жест закрывает через useModalHistory только для bottom",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "aa6fa8ec",
+          "purpose": "modelValue, title, side (bottom/right), size (sm/md/lg/full), closable, closeOnOverlay"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue(value)"
+        }
+      ]
+    },
+    "src/components/overlay/FsToast.vue": {
+      "kind": "vue",
+      "hash": "c3d028d3524a",
+      "purpose": "Toast-уведомление на reka-ui Toast с вариантами success/error/warning, иконкой, swipe-to-dismiss и авто-закрытием",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "466ffee9",
+          "purpose": "open, title, description, variant (default/success/error/warning), duration (ms)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "2cd8b1ac",
+          "purpose": "update:open(value)"
+        }
+      ]
+    },
+    "src/components/overlay/FsToastProvider.vue": {
+      "kind": "vue",
+      "hash": "1410086226f4",
+      "purpose": "Провайдер очереди тостов: рендерит список FsToast в фиксированный viewport (правый-низ с safe-area)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a9c59048",
+          "purpose": "toasts (ToastItem[]), onDismiss(id) — колбэк на закрытие"
+        }
+      ]
+    },
+    "src/components/overlay/FsTooltip.vue": {
+      "kind": "vue",
+      "hash": "2db3a8c5b4ea",
+      "purpose": "Тултип на reka-ui Tooltip с настраиваемой стороной и задержкой появления",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "fcf12d70",
+          "purpose": "content (текст), side (top/right/bottom/left), delay (ms), disabled"
+        }
+      ]
+    },
+    "src/components/typography/FsHeading.vue": {
+      "kind": "vue",
+      "hash": "32268f888505",
+      "purpose": "Семантический заголовок h1-h6 с адаптивными размерами на lg+ и цветовыми токенами",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "3498a5ca",
+          "purpose": "as (h1-h6), size, align, color (default/primary/muted/inherit), weight"
+        }
+      ]
+    },
+    "src/components/typography/FsRichContent.vue": {
+      "kind": "vue",
+      "hash": "10aac0ed6393",
+      "purpose": "Безопасный рендер HTML-строки в FsHeading/FsText через node-html-parser, поддерживает p/h*/strong/em/br/a/ul/ol/li с фильтрацией протоколов",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "f9bf0fbc",
+          "purpose": "FsRichContent — компонент через defineComponent с пропом html"
+        }
+      ]
+    },
+    "src/components/typography/FsText.vue": {
+      "kind": "vue",
+      "hash": "bfe0e1322520",
+      "purpose": "Типографический текст с вариантами body/body-sm/caption/xs/label/overline, поддерживает truncate и line-clamp",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "bdc1d268",
+          "purpose": "as, variant, weight, responsive, color, align, truncate, lines (clamp)"
+        }
+      ]
+    },
+    "src/composables/useModalHistory.ts": {
+      "kind": "ts",
+      "hash": "1d9cdf91479b",
+      "purpose": "Singleton-менеджер интеграции модалок с history.back: пушит запись при открытии и закрывает верхнюю модалку по popstate (нативный back-жест на мобиле)",
+      "symbols": [
+        {
+          "name": "useModalHistory",
+          "kind": "function",
+          "hash": "af79f4c3",
+          "purpose": "Подключает модалку к стеку back-history; принимает (isOpen, close) и сам вызывает history.pushState/back"
+        }
+      ]
+    },
+    "src/index.ts": {
+      "kind": "ts",
+      "hash": "1a0e4f618153",
+      "purpose": "Публичный entry @fastio/public-ui — реэкспорт всех Fs*-компонентов (typography/base/layout/nav/form/overlay)",
+      "symbols": [
+        {
+          "name": "FsHeading",
+          "kind": "re-export",
+          "hash": "2d5ff20f",
+          "purpose": "Реэкспорт компонента FsHeading"
+        },
+        {
+          "name": "FsText",
+          "kind": "re-export",
+          "hash": "87cd1ea1",
+          "purpose": "Реэкспорт компонента FsText"
+        },
+        {
+          "name": "FsRichContent",
+          "kind": "re-export",
+          "hash": "7c8ba011",
+          "purpose": "Реэкспорт компонента FsRichContent"
+        },
+        {
+          "name": "FsButton",
+          "kind": "re-export",
+          "hash": "9c9df6cf",
+          "purpose": "Реэкспорт компонента FsButton"
+        },
+        {
+          "name": "FsIconButton",
+          "kind": "re-export",
+          "hash": "c4ee0f56",
+          "purpose": "Реэкспорт компонента FsIconButton"
+        },
+        {
+          "name": "FsBadge",
+          "kind": "re-export",
+          "hash": "233e5471",
+          "purpose": "Реэкспорт компонента FsBadge"
+        },
+        {
+          "name": "FsTag",
+          "kind": "re-export",
+          "hash": "eb644d3d",
+          "purpose": "Реэкспорт компонента FsTag"
+        },
+        {
+          "name": "FsDivider",
+          "kind": "re-export",
+          "hash": "44d3d246",
+          "purpose": "Реэкспорт компонента FsDivider"
+        },
+        {
+          "name": "FsSkeleton",
+          "kind": "re-export",
+          "hash": "6247ac33",
+          "purpose": "Реэкспорт компонента FsSkeleton"
+        },
+        {
+          "name": "FsSpinner",
+          "kind": "re-export",
+          "hash": "e1fb7798",
+          "purpose": "Реэкспорт компонента FsSpinner"
+        },
+        {
+          "name": "FsAlert",
+          "kind": "re-export",
+          "hash": "ccecf31a",
+          "purpose": "Реэкспорт компонента FsAlert"
+        },
+        {
+          "name": "FsDropdownList",
+          "kind": "re-export",
+          "hash": "bf877c36",
+          "purpose": "Реэкспорт компонента FsDropdownList"
+        },
+        {
+          "name": "FsCard",
+          "kind": "re-export",
+          "hash": "c78664e1",
+          "purpose": "Реэкспорт компонента FsCard"
+        },
+        {
+          "name": "FsSection",
+          "kind": "re-export",
+          "hash": "fc178a8e",
+          "purpose": "Реэкспорт компонента FsSection"
+        },
+        {
+          "name": "FsStack",
+          "kind": "re-export",
+          "hash": "36297c2d",
+          "purpose": "Реэкспорт компонента FsStack"
+        },
+        {
+          "name": "FsTabs",
+          "kind": "re-export",
+          "hash": "3d67aa48",
+          "purpose": "Реэкспорт компонента FsTabs"
+        },
+        {
+          "name": "FsScrollNav",
+          "kind": "re-export",
+          "hash": "cf4211ac",
+          "purpose": "Реэкспорт компонента FsScrollNav"
+        },
+        {
+          "name": "FsBurger",
+          "kind": "re-export",
+          "hash": "51db107f",
+          "purpose": "Реэкспорт компонента FsBurger"
+        },
+        {
+          "name": "FsMobileMenu",
+          "kind": "re-export",
+          "hash": "2cbbc28f",
+          "purpose": "Реэкспорт компонента FsMobileMenu"
+        },
+        {
+          "name": "FsInput",
+          "kind": "re-export",
+          "hash": "0470e5c0",
+          "purpose": "Реэкспорт компонента FsInput"
+        },
+        {
+          "name": "FsTextarea",
+          "kind": "re-export",
+          "hash": "c227727d",
+          "purpose": "Реэкспорт компонента FsTextarea"
+        },
+        {
+          "name": "FsSelect",
+          "kind": "re-export",
+          "hash": "d46d2e66",
+          "purpose": "Реэкспорт компонента FsSelect"
+        },
+        {
+          "name": "FsCheckbox",
+          "kind": "re-export",
+          "hash": "f1550798",
+          "purpose": "Реэкспорт компонента FsCheckbox"
+        },
+        {
+          "name": "FsRadioGroup",
+          "kind": "re-export",
+          "hash": "b146f492",
+          "purpose": "Реэкспорт компонента FsRadioGroup"
+        },
+        {
+          "name": "FsSwitch",
+          "kind": "re-export",
+          "hash": "ae23939e",
+          "purpose": "Реэкспорт компонента FsSwitch"
+        },
+        {
+          "name": "FsLabel",
+          "kind": "re-export",
+          "hash": "4c992dd0",
+          "purpose": "Реэкспорт компонента FsLabel"
+        },
+        {
+          "name": "FsField",
+          "kind": "re-export",
+          "hash": "2c67ebd2",
+          "purpose": "Реэкспорт компонента FsField"
+        },
+        {
+          "name": "FsForm",
+          "kind": "re-export",
+          "hash": "780070c6",
+          "purpose": "Реэкспорт компонента FsForm"
+        },
+        {
+          "name": "FsDialog",
+          "kind": "re-export",
+          "hash": "6a516ba4",
+          "purpose": "Реэкспорт компонента FsDialog"
+        },
+        {
+          "name": "FsDrawer",
+          "kind": "re-export",
+          "hash": "71679ddc",
+          "purpose": "Реэкспорт компонента FsDrawer"
+        },
+        {
+          "name": "FsToast",
+          "kind": "re-export",
+          "hash": "644a0868",
+          "purpose": "Реэкспорт компонента FsToast"
+        },
+        {
+          "name": "FsToastProvider",
+          "kind": "re-export",
+          "hash": "5196a1a3",
+          "purpose": "Реэкспорт компонента FsToastProvider"
+        },
+        {
+          "name": "FsTooltip",
+          "kind": "re-export",
+          "hash": "d8b558b2",
+          "purpose": "Реэкспорт компонента FsTooltip"
+        }
+      ]
+    }
+  },
+  "pages": {},
+  "folders": {}
+}

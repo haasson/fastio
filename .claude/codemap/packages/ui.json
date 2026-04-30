@@ -1,0 +1,1270 @@
+{
+  "project": "packages/ui",
+  "submap": "main",
+  "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
+  "generated_at": "2026-04-30T04:03:26.972Z",
+  "stats": {
+    "files": 52,
+    "pages": 0,
+    "symbols": 148,
+    "undescribed_files": 0,
+    "undescribed_pages": 0,
+    "undescribed_symbols": 0
+  },
+  "files": {
+    "src/components/UiAlert.vue": {
+      "kind": "vue",
+      "hash": "329870421923",
+      "purpose": "Информационный алерт-блок (обёртка n-alert) с опциональной иконкой, инлайн-режимом и поддержкой адаптивных размеров",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c20046ca",
+          "purpose": "Пропсы UiAlert: size, responsive, inline, icon, iconBg, iconFg"
+        }
+      ]
+    },
+    "src/components/UiBadge.vue": {
+      "kind": "vue",
+      "hash": "b0eee56b660d",
+      "purpose": "Бейдж-маркер (обёртка n-badge) с поддержкой пульсации и primary-варианта — для нотификаций над иконками",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "fd79a83e",
+          "purpose": "Пропсы UiBadge: pulse (анимация), primary (цветовая схема)"
+        }
+      ]
+    },
+    "src/components/UiBottomSheet.vue": {
+      "kind": "vue",
+      "hash": "8b0b93a3086e",
+      "purpose": "Нижний шит на vaul-vue с управлением z-index через layerManager и блокировкой скролла body — для мобильных диалогов",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "89356b08",
+          "purpose": "Пропсы UiBottomSheet: modelValue, title, contentClass, vh (макс. высота в vh), fullWidth"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "3fac5286",
+          "purpose": "Эмиты UiBottomSheet: update:modelValue, opened, closed"
+        },
+        {
+          "name": "UiBottomSheetProps",
+          "kind": "type",
+          "hash": "7c49322d",
+          "purpose": "Тип пропсов UiBottomSheet"
+        }
+      ]
+    },
+    "src/components/UiButton.vue": {
+      "kind": "vue",
+      "hash": "4e7ec51fca19",
+      "purpose": "Универсальная кнопка (обёртка n-button) с адаптивными размерами, иконкой, режимами icon-only, full-width и text-типом",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "074146b1",
+          "purpose": "Пропсы UiButton: size, responsive, submit (тип submit), fullWidth, iconBg, iconFg"
+        }
+      ]
+    },
+    "src/components/UiCard.vue": {
+      "kind": "vue",
+      "hash": "986b6cdb8d98",
+      "purpose": "Контейнер-карточка (border-radius + bg + padding) — основной строительный блок интерфейса; адаптивные паддинги по mq-l и опциональный clickable-режим",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a2e2ba9e",
+          "purpose": "Пропсы UiCard: size (small/medium/large), clickable (рендерит как button), accent"
+        },
+        {
+          "name": "UiCardProps",
+          "kind": "type",
+          "hash": "7ef0c6da",
+          "purpose": "Тип пропсов UiCard"
+        }
+      ]
+    },
+    "src/components/UiCheckbox.vue": {
+      "kind": "vue",
+      "hash": "4ae3cd9f85b9",
+      "purpose": "Чекбокс (обёртка n-checkbox) внутри FormItem с поддержкой валидации, label, round-варианта",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "d09041eb",
+          "purpose": "Пропсы UiCheckbox: label, message, round, size, name, rules"
+        }
+      ]
+    },
+    "src/components/UiChip.vue": {
+      "kind": "vue",
+      "hash": "a89c6a252887",
+      "purpose": "Чип-карточка с лейблом и доп.строкой sub, типизирована по семантике (default/success/warning/error/info), кликабельная",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "58df4a0e",
+          "purpose": "Пропсы UiChip: type (default/success/warning/error/info), sub, selected, disabled"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "4838fa2f",
+          "purpose": "Эмиты UiChip: click"
+        }
+      ]
+    },
+    "src/components/UiCollapse.vue": {
+      "kind": "vue",
+      "hash": "e3b0fcf023fc",
+      "purpose": "Аккордеон (обёртка n-collapse) с layout-вариантами default/clean и provide expandedNames для дочерних элементов",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5b3b70a3",
+          "purpose": "Пропсы UiCollapse: expandedNames, layout (default/clean)"
+        }
+      ]
+    },
+    "src/components/UiCollapseItem.vue": {
+      "kind": "vue",
+      "hash": "16c9f48217fc",
+      "purpose": "Элемент аккордеона (обёртка n-collapse-item) с дефолтным заголовком через UiText и слотами header/header-extra",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "058efaa4",
+          "purpose": "Пропсы UiCollapseItem: name (ключ для expandedNames)"
+        }
+      ]
+    },
+    "src/components/UiConfigProvider.vue": {
+      "kind": "vue",
+      "hash": "3ae2fd970324",
+      "purpose": "Корневой провайдер темы Naive UI (ru-локаль, light/dark theme overrides, n-message-provider) — оборачивает приложение",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "456f7d15",
+          "purpose": "Пропсы UiConfigProvider: isDark"
+        }
+      ]
+    },
+    "src/components/UiConfirmModal.vue": {
+      "kind": "vue",
+      "hash": "ee554fb0897d",
+      "purpose": "Глобальная модалка подтверждения, привязанная к confirmState из @fastio/kit — рендерится один раз и реагирует на императивные вызовы",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Компонент UiConfirmModal"
+        }
+      ]
+    },
+    "src/components/UiCounter.vue": {
+      "kind": "vue",
+      "hash": "6eb44096edf0",
+      "purpose": "Счётчик-бейджик с типами (default/primary/success/warning/error), размерами и режимами filled/solid — для значков на табах и кнопках",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "793de4fa",
+          "purpose": "Пропсы UiCounter: value, type, size (tiny/small/medium), filled, solid"
+        }
+      ]
+    },
+    "src/components/UiDataTable.vue": {
+      "kind": "vue",
+      "hash": "919c1ac4e3ee",
+      "purpose": "Таблица данных (обёртка n-data-table) с дизайном проекта: серый header, разделители строк, hover, скруглённый бордер",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Компонент UiDataTable"
+        }
+      ]
+    },
+    "src/components/UiDatepicker.vue": {
+      "kind": "vue",
+      "hash": "3f1bd6a6b185",
+      "purpose": "Пикер даты (обёртка n-date-picker) внутри FormItem — ru-формат, кастомные иконки календаря/шевронов, year-range до +10 лет",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "3e4272e9",
+          "purpose": "Пропсы UiDatepicker: label, message, type, size, responsive, name, rules"
+        }
+      ]
+    },
+    "src/components/UiDivider.vue": {
+      "kind": "vue",
+      "hash": "d0f4c86f6242",
+      "purpose": "Разделитель: горизонтальная/вертикальная линия, опционально с заголовком в слоте и dashed-стилем",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "f4b50f26",
+          "purpose": "Пропсы UiDivider: vertical, dashed, titlePlacement (left/center/right)"
+        }
+      ]
+    },
+    "src/components/UiDrawer.vue": {
+      "kind": "vue",
+      "hash": "7174bc090928",
+      "purpose": "Боковая панель (обёртка n-drawer): на десктопе — фиксированной ширины, на мобильном — на всю ширину; шапка, actions, layerManager",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "cabb5956",
+          "purpose": "Пропсы UiDrawer: modelValue, title, width, closable, placement, to, showMask, maskClosable, zIndex, headerAlign, actions, onConfirm, onDecline"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "3fac5286",
+          "purpose": "Эмиты UiDrawer: update:modelValue, opened, closed"
+        },
+        {
+          "name": "DrawerAction",
+          "kind": "type",
+          "hash": "ef242f9d",
+          "purpose": "Тип кнопки в подвале drawer-а: text, type, disabled, loading, actionType (confirm/decline), attrs"
+        },
+        {
+          "name": "UiDrawerProps",
+          "kind": "type",
+          "hash": "68cdd718",
+          "purpose": "Тип пропсов UiDrawer"
+        }
+      ]
+    },
+    "src/components/UiEditButton.vue": {
+      "kind": "vue",
+      "hash": "d46894de2b9f",
+      "purpose": "Маленькая иконочная кнопка-карандаш с приглушённой непрозрачностью — для inline-редактирования полей",
+      "symbols": [
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "755dca6a",
+          "purpose": "Эмиты UiEditButton: click"
+        }
+      ]
+    },
+    "src/components/UiEmpty.vue": {
+      "kind": "vue",
+      "hash": "29b5184ce047",
+      "purpose": "Заглушка пустого состояния с иконкой и текстом по центру — стандартный empty state для списков",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "cbe06a8c",
+          "purpose": "Пропсы UiEmpty: text (по умолчанию 'Тут пока ничего нет'), icon"
+        }
+      ]
+    },
+    "src/components/UiFilterReset.vue": {
+      "kind": "vue",
+      "hash": "8c9c05c03da2",
+      "purpose": "Кнопка 'Сбросить фильтры' с бейджем-счётчиком активных фильтров; рендерится только при count > 0",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9f87236e",
+          "purpose": "Пропсы UiFilterReset: count (число активных фильтров)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "164dc167",
+          "purpose": "Эмиты UiFilterReset: reset"
+        }
+      ]
+    },
+    "src/components/UiForm.vue": {
+      "kind": "vue",
+      "hash": "90296bfbb8bb",
+      "purpose": "Форма с собственным реестром полей и валидацией перед submit; provide formContext для FormItem-ов; expose validate/reset/values",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1c4665a7",
+          "purpose": "Пропсы UiForm: form (значения), error (общая ошибка), responsive (адаптивные размеры полей)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "876b17a4",
+          "purpose": "Эмиты UiForm: submit (после успешной валидации)"
+        },
+        {
+          "name": "expose",
+          "kind": "component-expose",
+          "hash": "5008bd15",
+          "purpose": "Expose UiForm: validate(), reset(), values"
+        }
+      ]
+    },
+    "src/components/UiGrid.vue": {
+      "kind": "vue",
+      "hash": "33a405662ac9",
+      "purpose": "Адаптивная грид-сетка с responsive columns/gap, режимами expandable (показать ещё) и async (load-more), TransitionGroup-анимациями",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "3bc8ac9e",
+          "purpose": "Пропсы UiGrid: columns, gap (responsive), items, expandable, batchSize, keyField, noAnimation, async, loading, endReached"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "64a74f10",
+          "purpose": "Эмиты UiGrid: load-more, collapse"
+        }
+      ]
+    },
+    "src/components/UiInput.vue": {
+      "kind": "vue",
+      "hash": "524b1e5ccf71",
+      "purpose": "Текстовое поле (обёртка n-input) внутри FormItem: маска телефона, password-toggle, callable-кнопка 'Позвонить', статус-иконки и кастомные плейсхолдеры",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "61adbdbc",
+          "purpose": "Пропсы UiInput: label, clearable, size, responsive, name, rules, stateless, message, status, feedback, inputmode, maxlength, callable"
+        }
+      ]
+    },
+    "src/components/UiInputNumber.vue": {
+      "kind": "vue",
+      "hash": "481b079a7600",
+      "purpose": "Числовое поле (обёртка n-input-number) с фильтрацией клавиш, отключёнными ArrowUp/Down, кастомной clear-иконкой и валидацией",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9410ed73",
+          "purpose": "Пропсы UiInputNumber: label, min, max, step, precision, placeholder, clearable, showButton, size, responsive, name, rules, message, status, feedback"
+        }
+      ]
+    },
+    "src/components/UiMenu.vue": {
+      "kind": "vue",
+      "hash": "464d0c84bf24",
+      "purpose": "Вертикальное меню (обёртка n-menu) с поддержкой иконок, footer-вариантов и аккордеонной раскладки — основная навигация админки",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c5a23aea",
+          "purpose": "Пропсы UiMenu: options, expandedKeys, value"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "211c79db",
+          "purpose": "Эмиты UiMenu: update:expandedKeys, update:value"
+        },
+        {
+          "name": "UiMenuKey",
+          "kind": "type",
+          "hash": "d896f640",
+          "purpose": "Тип ключа пункта меню: string | number"
+        },
+        {
+          "name": "UiMenuOption",
+          "kind": "type",
+          "hash": "c4819f08",
+          "purpose": "Опция меню: key, label, icon, children, disabled, isFooter"
+        }
+      ]
+    },
+    "src/components/UiMenuDropdown.vue": {
+      "kind": "vue",
+      "hash": "2453a4bf9b74",
+      "purpose": "Дропдаун-меню действий через UiPopover (с автопереключением в bottom-sheet на мобильном) или inline-режим",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "96e5fb9a",
+          "purpose": "Пропсы UiMenuDropdown: items, inline, show, compact"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "8953580e",
+          "purpose": "Эмиты UiMenuDropdown: item-click, update:show"
+        },
+        {
+          "name": "UiMenuDropdownItem",
+          "kind": "type",
+          "hash": "e5844e05",
+          "purpose": "Пункт дропдаун-меню: label, name, icon, iconColor, color, link, onClick, isDivider, disabled, checked"
+        }
+      ]
+    },
+    "src/components/UiModal.vue": {
+      "kind": "vue",
+      "hash": "cacd575a999d",
+      "purpose": "Модальное окно (обёртка n-modal) с заголовком, hint-поповером, actions, лоадер-оверлеем и интеграцией с modalManager/layerManager",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a7208cf4",
+          "purpose": "Пропсы UiModal: name, modelValue, title, titleHint, width, actions, stackedActions, reverseActions, closable, loading, onConfirm, onDecline"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "39ca2ce3",
+          "purpose": "Эмиты UiModal: update:modelValue, open, close"
+        },
+        {
+          "name": "ModalAction",
+          "kind": "type",
+          "hash": "fbb65ab9",
+          "purpose": "Кнопка-действие модалки: text, type, disabled, loading, actionType (confirm/decline), buttonProps"
+        },
+        {
+          "name": "UiModalProps",
+          "kind": "type",
+          "hash": "20f7533a",
+          "purpose": "Тип пропсов UiModal"
+        }
+      ]
+    },
+    "src/components/UiPagination.vue": {
+      "kind": "vue",
+      "hash": "42019c5d9ae1",
+      "purpose": "Пагинация (обёртка n-pagination) с адаптивными размерами и кастомным числом видимых страниц",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "740bc091",
+          "purpose": "Пропсы UiPagination: showArrows, pageSlot, size, responsive"
+        }
+      ]
+    },
+    "src/components/UiPhotoPlaceholder.vue": {
+      "kind": "vue",
+      "hash": "cfd6ed2243f7",
+      "purpose": "Декоративный плейсхолдер для пустого изображения с тремя вариантами: food (тарелка с приборами), catalog (package), services (briefcase)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9470b051",
+          "purpose": "Пропсы UiPhotoPlaceholder: size (small/medium/large), variant (food/catalog/services)"
+        }
+      ]
+    },
+    "src/components/UiPicture.vue": {
+      "kind": "vue",
+      "hash": "800c5fbfee27",
+      "purpose": "Адаптивная картинка <picture> с source-наборами по брейкпоинтам в формате WebP",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a27570de",
+          "purpose": "Пропсы UiPicture: sources (мапа breakpoint → url)"
+        },
+        {
+          "name": "UiPictureProps",
+          "kind": "interface",
+          "hash": "04e31c0a",
+          "purpose": "Тип пропсов UiPicture"
+        }
+      ]
+    },
+    "src/components/UiPopover.vue": {
+      "kind": "vue",
+      "hash": "34d97509337a",
+      "purpose": "Поповер (обёртка n-popover) с автоматическим переключением в UiBottomSheet ниже sheetUntil-брейкпоинта; dark/accent варианты",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e77f7d06",
+          "purpose": "Пропсы UiPopover: dark, offset, padding, sheetUntil, width, disabled, noSheet, accent"
+        }
+      ]
+    },
+    "src/components/UiRadioGroup.vue": {
+      "kind": "vue",
+      "hash": "913790b837b6",
+      "purpose": "Группа радио-кнопок (обёртка n-radio-group) внутри FormItem с горизонтальной/вертикальной раскладкой через n-space",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "600075c5",
+          "purpose": "Пропсы UiRadioGroup: label, message, options, vertical, space, size, name, rules"
+        }
+      ]
+    },
+    "src/components/UiSectionHeader.vue": {
+      "kind": "vue",
+      "hash": "55e9368d765d",
+      "purpose": "Заголовок секции с uppercase-лейблом слева и слотами left/right для дополнительных контролов",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "bd26aa11",
+          "purpose": "Пропсы UiSectionHeader: title"
+        }
+      ]
+    },
+    "src/components/UiSegmentedControl.vue": {
+      "kind": "vue",
+      "hash": "7ae35d031120",
+      "purpose": "Сегментированный переключатель (обёртка n-tabs type=segment) для выбора одного из нескольких значений",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c8c9ef49",
+          "purpose": "Пропсы UiSegmentedControl: items, modelValue, size (small/medium/large)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "5e881d60",
+          "purpose": "Эмиты UiSegmentedControl: update:modelValue"
+        },
+        {
+          "name": "SegmentedControlItem",
+          "kind": "type",
+          "hash": "5e84207a",
+          "purpose": "Тип элемента сегмента: label, value"
+        }
+      ]
+    },
+    "src/components/UiSelect.vue": {
+      "kind": "vue",
+      "hash": "1a29736316ed",
+      "purpose": "Селект (обёртка n-select) внутри FormItem с фильтруемым поиском в шапке выпадающего списка, кастомной стрелкой и поддержкой групп",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "3b8efedd",
+          "purpose": "Пропсы UiSelect: label, message, size, responsive, name, rules, filterable"
+        },
+        {
+          "name": "UiSelectProps",
+          "kind": "type",
+          "hash": "c733dfec",
+          "purpose": "Тип пропсов UiSelect"
+        }
+      ]
+    },
+    "src/components/UiSkeleton.vue": {
+      "kind": "vue",
+      "hash": "368e6deb3cad",
+      "purpose": "Скелетон-плейсхолдер (обёртка n-skeleton) для лоадинг-состояний с адаптивными размерами и формами (text/round/circle)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "3dff7f41",
+          "purpose": "Пропсы UiSkeleton: size, responsive, text, round, circle, sharp, repeat, width, height, animated"
+        }
+      ]
+    },
+    "src/components/UiSlider.vue": {
+      "kind": "vue",
+      "hash": "2e06db3a755c",
+      "purpose": "Слайдер выбора числового значения (обёртка n-slider) с форматированием подсказки в формате 'Х ч Y мин'",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "4528959d",
+          "purpose": "Пропсы UiSlider: modelValue, label, min, max, step, marks, disabled"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "b9fa713b",
+          "purpose": "Эмиты UiSlider: update:modelValue"
+        }
+      ]
+    },
+    "src/components/UiSpace.vue": {
+      "kind": "vue",
+      "hash": "61b5498ecb60",
+      "purpose": "Раскладка-флекс с фиксированным или адаптивным гэпом между детьми (обёртка n-space) с режимом fill (равные доли)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "3f897784",
+          "purpose": "Пропсы UiSpace: size (число), responsive (мапа breakpoint → размер), fill"
+        },
+        {
+          "name": "UiSpaceProps",
+          "kind": "type",
+          "hash": "c0125437",
+          "purpose": "Тип пропсов UiSpace"
+        }
+      ]
+    },
+    "src/components/UiStepper.vue": {
+      "kind": "vue",
+      "hash": "db0a3965da24",
+      "purpose": "Степпер +/- для увеличения/уменьшения числового значения с границами min/max — для счётчиков количества",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "a9cd3c51",
+          "purpose": "Пропсы UiStepper: modelValue, min, max, size (small/medium)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "b9fa713b",
+          "purpose": "Эмиты UiStepper: update:modelValue"
+        }
+      ]
+    },
+    "src/components/UiSwitch.vue": {
+      "kind": "vue",
+      "hash": "b77103460fb3",
+      "purpose": "Переключатель-тумблер (обёртка n-switch) внутри FormItem со слотами checked/unchecked для лейблов",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "7462aa59",
+          "purpose": "Пропсы UiSwitch: label, message, size, name, rules"
+        }
+      ]
+    },
+    "src/components/UiTabs.vue": {
+      "kind": "vue",
+      "hash": "655fc2e60757",
+      "purpose": "Табы с вариантами line (горизонтальная прокрутка с теневыми индикаторами) и pill (теги, на мобильном — UiSelect)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e0cd579f",
+          "purpose": "Пропсы UiTabs: tabs (value/label/icon/count/type), variant (line/pill), size, responsive"
+        }
+      ]
+    },
+    "src/components/UiTag.vue": {
+      "kind": "vue",
+      "hash": "66f083b98acf",
+      "purpose": "Тег (обёртка n-tag) с типами по семантике, режимами empty/secondary/hoverable/closable/square и иконкой-аватаркой",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "0fdc1596",
+          "purpose": "Пропсы UiTag: type, empty, secondary, hoverable, closable, square, icon, iconBg, iconFg, size, responsive"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "e39307c0",
+          "purpose": "Эмиты UiTag: close"
+        }
+      ]
+    },
+    "src/components/UiText.vue": {
+      "kind": "vue",
+      "hash": "27584858371f",
+      "purpose": "Типографика для основного текста с адаптивными размерами (tiny/small/medium) и dark-side-вариантом — заменяет нативные p/span",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "be344e7a",
+          "purpose": "Пропсы UiText: size (tiny/small/medium), span (рендерить как span), darkSide"
+        }
+      ]
+    },
+    "src/components/UiTimeline.vue": {
+      "kind": "vue",
+      "hash": "f14751095f85",
+      "purpose": "Таймлайн-список (обёртка n-timeline) для отображения хронологии событий",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "0ebd56aa",
+          "purpose": "Пропсы UiTimeline: size (medium/large)"
+        }
+      ]
+    },
+    "src/components/UiTimelineItem.vue": {
+      "kind": "vue",
+      "hash": "b05b8288dcd2",
+      "purpose": "Элемент таймлайна (обёртка n-timeline-item) со слотами icon/header/footer и dashed-линией по умолчанию",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5fcff0e8",
+          "purpose": "Пропсы UiTimelineItem: color, title, time, lineType (default/dashed)"
+        }
+      ]
+    },
+    "src/components/UiTimepicker.vue": {
+      "kind": "vue",
+      "hash": "fe4f99b3423b",
+      "purpose": "Пикер времени (обёртка n-time-picker) внутри FormItem — работает со значением в формате 'HH:mm', 24-часовой режим",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "903d96c3",
+          "purpose": "Пропсы UiTimepicker: label, message, size, responsive, name, rules"
+        }
+      ]
+    },
+    "src/components/UiTitle.vue": {
+      "kind": "vue",
+      "hash": "bea1e096e3b4",
+      "purpose": "Типографика заголовков h1-h5 с возможностью кастомного тега и адаптивных размеров на mq-l — заменяет нативные h*",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "093010de",
+          "purpose": "Пропсы UiTitle: size (h1-h5), tag (кастомный тег), responsive (увеличение на десктопе), darkSide"
+        }
+      ]
+    },
+    "src/components/internal/ClientOnly.vue": {
+      "kind": "vue",
+      "hash": "01553ae3298b",
+      "purpose": "Внутренняя обёртка для рендеринга только на клиенте (после mount) с fallback-слотом для SSR",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Компонент ClientOnly"
+        }
+      ]
+    },
+    "src/components/internal/FormItem.vue": {
+      "kind": "vue",
+      "hash": "e82cda3e184a",
+      "purpose": "Внутренняя обёртка поля формы: label, control-слот, валидация по rules, error/feedback/message — регистрируется в formContext",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "502b3ba7",
+          "purpose": "Пропсы FormItem: label, size, name, rules, modelValue, status, feedback, message"
+        }
+      ]
+    },
+    "src/components/internal/MenuDropdownContent.vue": {
+      "kind": "vue",
+      "hash": "547c5628a74d",
+      "purpose": "Внутренний контент дропдаун-меню: список items с иконками/чекбоксами/диваидерами, header/footer-слотами и compact-режимом",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1bb9af68",
+          "purpose": "Пропсы MenuDropdownContent: items, compact"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "901321f0",
+          "purpose": "Эмиты MenuDropdownContent: item-click, close"
+        }
+      ]
+    },
+    "src/composables/useMessage.ts": {
+      "kind": "ts",
+      "hash": "c937c26d1439",
+      "purpose": "Composable-обёртка над naive-ui useMessage — даёт метод success/error/warning/info(content) для тостов",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "134213f5",
+          "purpose": "Функция useMessage — возвращает объект с методами success/error/warning/info"
+        }
+      ]
+    },
+    "src/config/naive-ui-theme-overrides.ts": {
+      "kind": "ts",
+      "hash": "c05a3192acc6",
+      "purpose": "Темовые оверрайды Naive UI — base + light/dark наборы для UiConfigProvider; используют COLORS из @fastio/kit",
+      "symbols": [
+        {
+          "name": "lightThemeOverrides",
+          "kind": "const",
+          "hash": "3e12bf5b",
+          "purpose": "Оверрайды светлой темы Naive UI"
+        },
+        {
+          "name": "darkThemeOverrides",
+          "kind": "const",
+          "hash": "58657465",
+          "purpose": "Оверрайды тёмной темы Naive UI"
+        },
+        {
+          "name": "default",
+          "kind": "const",
+          "hash": "3e12bf5b",
+          "purpose": "Дефолтный экспорт = lightThemeOverrides"
+        }
+      ]
+    },
+    "src/index.ts": {
+      "kind": "ts",
+      "hash": "6ffac7c2d386",
+      "purpose": "Публичный barrel-экспорт пакета @fastio/ui: все Ui*-компоненты, типы пропсов, useMessage, theme-overrides",
+      "symbols": [
+        {
+          "name": "*",
+          "kind": "re-export",
+          "hash": "218b7991",
+          "purpose": "Реэкспорт всех символов из barrel-модуля"
+        },
+        {
+          "name": "UiButton",
+          "kind": "re-export",
+          "hash": "a04646db",
+          "purpose": "Реэкспорт UiButton"
+        },
+        {
+          "name": "UiText",
+          "kind": "re-export",
+          "hash": "8a90ab46",
+          "purpose": "Реэкспорт UiText"
+        },
+        {
+          "name": "UiTitle",
+          "kind": "re-export",
+          "hash": "b4a07781",
+          "purpose": "Реэкспорт UiTitle"
+        },
+        {
+          "name": "UiBadge",
+          "kind": "re-export",
+          "hash": "862c07f4",
+          "purpose": "Реэкспорт UiBadge"
+        },
+        {
+          "name": "UiCounter",
+          "kind": "re-export",
+          "hash": "38ed667d",
+          "purpose": "Реэкспорт UiCounter"
+        },
+        {
+          "name": "UiTag",
+          "kind": "re-export",
+          "hash": "c67b0249",
+          "purpose": "Реэкспорт UiTag"
+        },
+        {
+          "name": "UiChip",
+          "kind": "re-export",
+          "hash": "b0d4bd2d",
+          "purpose": "Реэкспорт UiChip"
+        },
+        {
+          "name": "UiFilterReset",
+          "kind": "re-export",
+          "hash": "a2e18c96",
+          "purpose": "Реэкспорт UiFilterReset"
+        },
+        {
+          "name": "UiDivider",
+          "kind": "re-export",
+          "hash": "f8528ef6",
+          "purpose": "Реэкспорт UiDivider"
+        },
+        {
+          "name": "UiForm",
+          "kind": "re-export",
+          "hash": "b85f7ed0",
+          "purpose": "Реэкспорт UiForm"
+        },
+        {
+          "name": "UiInput",
+          "kind": "re-export",
+          "hash": "96085fba",
+          "purpose": "Реэкспорт UiInput"
+        },
+        {
+          "name": "UiInputNumber",
+          "kind": "re-export",
+          "hash": "2574c315",
+          "purpose": "Реэкспорт UiInputNumber"
+        },
+        {
+          "name": "UiSelect",
+          "kind": "re-export",
+          "hash": "55de26ca",
+          "purpose": "Реэкспорт UiSelect"
+        },
+        {
+          "name": "UiCheckbox",
+          "kind": "re-export",
+          "hash": "86db86ba",
+          "purpose": "Реэкспорт UiCheckbox"
+        },
+        {
+          "name": "UiRadioGroup",
+          "kind": "re-export",
+          "hash": "f0616581",
+          "purpose": "Реэкспорт UiRadioGroup"
+        },
+        {
+          "name": "UiSwitch",
+          "kind": "re-export",
+          "hash": "2dff9976",
+          "purpose": "Реэкспорт UiSwitch"
+        },
+        {
+          "name": "UiSegmentedControl",
+          "kind": "re-export",
+          "hash": "d2f4fbca",
+          "purpose": "Реэкспорт UiSegmentedControl"
+        },
+        {
+          "name": "UiDatepicker",
+          "kind": "re-export",
+          "hash": "ea51b806",
+          "purpose": "Реэкспорт UiDatepicker"
+        },
+        {
+          "name": "UiTimepicker",
+          "kind": "re-export",
+          "hash": "7ac078ab",
+          "purpose": "Реэкспорт UiTimepicker"
+        },
+        {
+          "name": "UiSlider",
+          "kind": "re-export",
+          "hash": "c4ffd190",
+          "purpose": "Реэкспорт UiSlider"
+        },
+        {
+          "name": "SegmentedControlItem",
+          "kind": "re-export",
+          "hash": "d2f4fbca",
+          "purpose": "Реэкспорт типа SegmentedControlItem"
+        },
+        {
+          "name": "UiSelectProps",
+          "kind": "re-export",
+          "hash": "55de26ca",
+          "purpose": "Реэкспорт типа UiSelectProps"
+        },
+        {
+          "name": "UiCard",
+          "kind": "re-export",
+          "hash": "1cf34277",
+          "purpose": "Реэкспорт UiCard"
+        },
+        {
+          "name": "UiTimeline",
+          "kind": "re-export",
+          "hash": "4d05f885",
+          "purpose": "Реэкспорт UiTimeline"
+        },
+        {
+          "name": "UiTimelineItem",
+          "kind": "re-export",
+          "hash": "2ef0a4e7",
+          "purpose": "Реэкспорт UiTimelineItem"
+        },
+        {
+          "name": "UiModal",
+          "kind": "re-export",
+          "hash": "772a3c57",
+          "purpose": "Реэкспорт UiModal"
+        },
+        {
+          "name": "UiConfirmModal",
+          "kind": "re-export",
+          "hash": "3e8df7c4",
+          "purpose": "Реэкспорт UiConfirmModal"
+        },
+        {
+          "name": "UiBottomSheet",
+          "kind": "re-export",
+          "hash": "e83f8be2",
+          "purpose": "Реэкспорт UiBottomSheet"
+        },
+        {
+          "name": "UiDrawer",
+          "kind": "re-export",
+          "hash": "a2beacf4",
+          "purpose": "Реэкспорт UiDrawer"
+        },
+        {
+          "name": "UiDrawerProps",
+          "kind": "re-export",
+          "hash": "a2beacf4",
+          "purpose": "Реэкспорт типа UiDrawerProps"
+        },
+        {
+          "name": "DrawerAction",
+          "kind": "re-export",
+          "hash": "a2beacf4",
+          "purpose": "Реэкспорт типа DrawerAction"
+        },
+        {
+          "name": "UiPopover",
+          "kind": "re-export",
+          "hash": "017c10e6",
+          "purpose": "Реэкспорт UiPopover"
+        },
+        {
+          "name": "UiCollapse",
+          "kind": "re-export",
+          "hash": "fe2c55af",
+          "purpose": "Реэкспорт UiCollapse"
+        },
+        {
+          "name": "UiCollapseItem",
+          "kind": "re-export",
+          "hash": "ed535bf9",
+          "purpose": "Реэкспорт UiCollapseItem"
+        },
+        {
+          "name": "UiTabs",
+          "kind": "re-export",
+          "hash": "ec01ae76",
+          "purpose": "Реэкспорт UiTabs"
+        },
+        {
+          "name": "UiCardProps",
+          "kind": "re-export",
+          "hash": "1cf34277",
+          "purpose": "Реэкспорт типа UiCardProps"
+        },
+        {
+          "name": "UiModalProps",
+          "kind": "re-export",
+          "hash": "772a3c57",
+          "purpose": "Реэкспорт типа UiModalProps"
+        },
+        {
+          "name": "ModalAction",
+          "kind": "re-export",
+          "hash": "772a3c57",
+          "purpose": "Реэкспорт типа ModalAction"
+        },
+        {
+          "name": "UiBottomSheetProps",
+          "kind": "re-export",
+          "hash": "e83f8be2",
+          "purpose": "Реэкспорт типа UiBottomSheetProps"
+        },
+        {
+          "name": "UiMenu",
+          "kind": "re-export",
+          "hash": "8f900c34",
+          "purpose": "Реэкспорт UiMenu"
+        },
+        {
+          "name": "UiMenuDropdown",
+          "kind": "re-export",
+          "hash": "fb7260ff",
+          "purpose": "Реэкспорт UiMenuDropdown"
+        },
+        {
+          "name": "UiMenuOption",
+          "kind": "re-export",
+          "hash": "8f900c34",
+          "purpose": "Реэкспорт типа UiMenuOption"
+        },
+        {
+          "name": "UiMenuKey",
+          "kind": "re-export",
+          "hash": "8f900c34",
+          "purpose": "Реэкспорт типа UiMenuKey"
+        },
+        {
+          "name": "UiMenuDropdownItem",
+          "kind": "re-export",
+          "hash": "fb7260ff",
+          "purpose": "Реэкспорт типа UiMenuDropdownItem"
+        },
+        {
+          "name": "UiConfigProvider",
+          "kind": "re-export",
+          "hash": "addb152f",
+          "purpose": "Реэкспорт UiConfigProvider"
+        },
+        {
+          "name": "UiSectionHeader",
+          "kind": "re-export",
+          "hash": "7399e840",
+          "purpose": "Реэкспорт UiSectionHeader"
+        },
+        {
+          "name": "UiEmpty",
+          "kind": "re-export",
+          "hash": "ca66e955",
+          "purpose": "Реэкспорт UiEmpty"
+        },
+        {
+          "name": "UiEditButton",
+          "kind": "re-export",
+          "hash": "66107113",
+          "purpose": "Реэкспорт UiEditButton"
+        },
+        {
+          "name": "UiDataTable",
+          "kind": "re-export",
+          "hash": "9ffda627",
+          "purpose": "Реэкспорт UiDataTable"
+        },
+        {
+          "name": "DataTableColumns",
+          "kind": "re-export",
+          "hash": "b93a649b",
+          "purpose": "Реэкспорт типа DataTableColumns из naive-ui"
+        },
+        {
+          "name": "DataTableColumn",
+          "kind": "re-export",
+          "hash": "b93a649b",
+          "purpose": "Реэкспорт типа DataTableColumn из naive-ui"
+        },
+        {
+          "name": "UiAlert",
+          "kind": "re-export",
+          "hash": "13063b75",
+          "purpose": "Реэкспорт UiAlert"
+        },
+        {
+          "name": "UiSpace",
+          "kind": "re-export",
+          "hash": "479e81ef",
+          "purpose": "Реэкспорт UiSpace"
+        },
+        {
+          "name": "UiStepper",
+          "kind": "re-export",
+          "hash": "1686c73d",
+          "purpose": "Реэкспорт UiStepper"
+        },
+        {
+          "name": "UiPagination",
+          "kind": "re-export",
+          "hash": "7bf65a4c",
+          "purpose": "Реэкспорт UiPagination"
+        },
+        {
+          "name": "UiSkeleton",
+          "kind": "re-export",
+          "hash": "597deb33",
+          "purpose": "Реэкспорт UiSkeleton"
+        },
+        {
+          "name": "UiGrid",
+          "kind": "re-export",
+          "hash": "13b6de83",
+          "purpose": "Реэкспорт UiGrid"
+        },
+        {
+          "name": "UiPicture",
+          "kind": "re-export",
+          "hash": "8a413400",
+          "purpose": "Реэкспорт UiPicture"
+        },
+        {
+          "name": "UiPhotoPlaceholder",
+          "kind": "re-export",
+          "hash": "bf74a456",
+          "purpose": "Реэкспорт UiPhotoPlaceholder"
+        },
+        {
+          "name": "UiSpaceProps",
+          "kind": "re-export",
+          "hash": "479e81ef",
+          "purpose": "Реэкспорт типа UiSpaceProps"
+        },
+        {
+          "name": "UiPictureProps",
+          "kind": "re-export",
+          "hash": "8a413400",
+          "purpose": "Реэкспорт типа UiPictureProps"
+        },
+        {
+          "name": "*",
+          "kind": "re-export",
+          "hash": "12cf6aa1",
+          "purpose": "Реэкспорт всех символов из вторичного barrel-модуля"
+        },
+        {
+          "name": "useMessage",
+          "kind": "re-export",
+          "hash": "f8b6427e",
+          "purpose": "Реэкспорт composable useMessage"
+        },
+        {
+          "name": "naiveUiThemeOverrides",
+          "kind": "re-export",
+          "hash": "48b5ee4c",
+          "purpose": "Реэкспорт темовых оверрайдов Naive UI (default)"
+        },
+        {
+          "name": "lightThemeOverrides",
+          "kind": "re-export",
+          "hash": "48b5ee4c",
+          "purpose": "Реэкспорт оверрайдов светлой темы"
+        },
+        {
+          "name": "darkThemeOverrides",
+          "kind": "re-export",
+          "hash": "48b5ee4c",
+          "purpose": "Реэкспорт оверрайдов тёмной темы"
+        }
+      ]
+    }
+  },
+  "pages": {},
+  "folders": {}
+}

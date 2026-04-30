@@ -1,0 +1,999 @@
+{
+  "project": "apps/storefront",
+  "submap": "main",
+  "purpose": null,
+  "generated_at": "2026-04-30T04:03:26.874Z",
+  "stats": {
+    "files": 63,
+    "pages": 0,
+    "symbols": 90,
+    "undescribed_files": 0,
+    "undescribed_pages": 0,
+    "undescribed_symbols": 0
+  },
+  "files": {
+    "composables/useAnalytics.ts": {
+      "kind": "ts",
+      "hash": "b983363fe5cc",
+      "purpose": "Подключает скрипты Google Analytics и Яндекс.Метрики через useHead на основе SEO-настроек тенанта",
+      "symbols": [
+        {
+          "name": "useAnalytics",
+          "kind": "function",
+          "hash": "a2a11972",
+          "purpose": "Регистрирует gtag/ym счётчики в head, если в TenantSeo заданы соответствующие ID"
+        }
+      ]
+    },
+    "composables/useBooking.ts": {
+      "kind": "ts",
+      "hash": "f05cb9c2819b",
+      "purpose": "Стейт мастера бронирования столика: шаги, форма, доступные слоты, отправка на /api/reservations",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "df904c73",
+          "purpose": "Возвращает step/form/slots/loading/error и методы fetchSlots/submit для формы брони"
+        }
+      ]
+    },
+    "composables/useCartEdit.ts": {
+      "kind": "ts",
+      "hash": "2f48749f7d99",
+      "purpose": "Открытие модалки редактирования позиции корзины с адресацией по стабильному _key (не индексу)",
+      "symbols": [
+        {
+          "name": "useCartEdit",
+          "kind": "function",
+          "hash": "e8888453",
+          "purpose": "Возвращает editKey/editState и методы openEdit(index)/onItemEdited(item) для редактирования dish-позиции"
+        }
+      ]
+    },
+    "composables/useCartReconciler.ts": {
+      "kind": "ts",
+      "hash": "7a6ed6738917",
+      "purpose": "Сверяет содержимое корзины с актуальным меню и услугами, удаляет/обновляет позиции, показывает тосты об изменениях",
+      "symbols": [
+        {
+          "name": "useCartReconciler",
+          "kind": "function",
+          "hash": "bca43707",
+          "purpose": "Watcher: при загрузке menu/services и восстановлении корзины вызывает reconcileCart/reconcileServices и patchByKey"
+        }
+      ]
+    },
+    "composables/useCatalogMode.ts": {
+      "kind": "ts",
+      "hash": "6f6a5661de1e",
+      "purpose": "Определяет режим каталога (services/menu) по типу бизнеса тенанта и отдаёт visibleCategories из нужного стора",
+      "symbols": [
+        {
+          "name": "useCatalogMode",
+          "kind": "function",
+          "hash": "ddc62785",
+          "purpose": "Возвращает isServicesMode и visibleCategories для CategoryBar/навигации по категориям"
+        }
+      ]
+    },
+    "composables/useConfirm.ts": {
+      "kind": "ts",
+      "hash": "db97d60faad9",
+      "purpose": "Глобальная очередь confirm-диалогов: confirm(message, opts) → Promise<boolean> и состояние для рендера модалки",
+      "symbols": [
+        {
+          "name": "useConfirm",
+          "kind": "function",
+          "hash": "15febb00",
+          "purpose": "Отдаёт confirm(message, options) и state/onConfirm/onCancel для глобального компонента подтверждения"
+        }
+      ]
+    },
+    "composables/useCurrency.ts": {
+      "kind": "ts",
+      "hash": "036262956c1a",
+      "purpose": "Реактивный символ валюты тенанта (по умолчанию ₽) из useNuxtData('tenant')",
+      "symbols": [
+        {
+          "name": "useCurrency",
+          "kind": "function",
+          "hash": "518f7b68",
+          "purpose": "Computed со значением tenant.currency либо ₽ как fallback"
+        }
+      ]
+    },
+    "composables/useDadataSuggestions.ts": {
+      "kind": "ts",
+      "hash": "e49834134902",
+      "purpose": "Обёртка над shared-композаблом DaData с прокси-роутом /api/dadata/suggest и debounce 500мс",
+      "symbols": [
+        {
+          "name": "useDadataSuggestions",
+          "kind": "function",
+          "hash": "fdf31941",
+          "purpose": "Подсказки адресов DaData через серверный прокси (чтобы не светить токен на клиенте)"
+        },
+        {
+          "name": "DadataSuggestion",
+          "kind": "re-export",
+          "hash": "c44bae0c",
+          "purpose": "Реэкспорт типа подсказки DaData из @fastio/shared"
+        }
+      ]
+    },
+    "composables/useDishCustomization.ts": {
+      "kind": "ts",
+      "hash": "d8864f1ce251",
+      "purpose": "Стейт кастомизации блюда в модалке: количество, удалённые ингредиенты, выбранные модификаторы и аддоны, расчёт цены",
+      "symbols": [
+        {
+          "name": "useDishCustomization",
+          "kind": "function",
+          "hash": "4d3e17a2",
+          "purpose": "Управляет выбором модификаторов/аддонов/удалений и собирает CartItem через buildCartItem()"
+        },
+        {
+          "name": "ComboItemInfo",
+          "kind": "type",
+          "hash": "95391df3",
+          "purpose": "Описание одной позиции в составе комбо для отображения в модалке (имя, фото, выбранные модификатор/аддоны)"
+        },
+        {
+          "name": "ModalItem",
+          "kind": "type",
+          "hash": "4dcdf8fb",
+          "purpose": "Унифицированная модель блюда/комбо для модалки кастомизации (id, имя, цена, фото, нутриенты, состав)"
+        }
+      ]
+    },
+    "composables/useIsMobile.ts": {
+      "kind": "ts",
+      "hash": "e55915dfda5a",
+      "purpose": "Реактивный флаг мобильной ширины экрана через matchMedia (SSR-безопасный, по умолчанию true)",
+      "symbols": [
+        {
+          "name": "useIsMobile",
+          "kind": "function",
+          "hash": "9b47ce4b",
+          "purpose": "Отдаёт ref<boolean>, true если ширина меньше указанного breakpoint (768 по умолчанию)"
+        }
+      ]
+    },
+    "composables/useItemPlaceholder.ts": {
+      "kind": "ts",
+      "hash": "9567d173f883",
+      "purpose": "Подбирает иконку-плейсхолдер для карточки товара по типу бизнеса (food/catalog/services)",
+      "symbols": [
+        {
+          "name": "useItemPlaceholder",
+          "kind": "function",
+          "hash": "f005964b",
+          "purpose": "Возвращает placeholderIcon (lucide-компонент) синхронно с UiPhotoPlaceholder из @fastio/ui"
+        }
+      ]
+    },
+    "composables/useLegalCompliance.ts": {
+      "kind": "ts",
+      "hash": "eac32023807a",
+      "purpose": "Признак заполненности юридических данных тенанта (для блокировки оформления заказа)",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "defad570",
+          "purpose": "Computed legalInfoComplete — все обязательные поля legalInfo заполнены"
+        }
+      ]
+    },
+    "composables/useModal.ts": {
+      "kind": "ts",
+      "hash": "c6104a8c0af7",
+      "purpose": "Глобальный реестр модалок по имени: общий ref<boolean> для open/close из любого места",
+      "symbols": [
+        {
+          "name": "useModal",
+          "kind": "function",
+          "hash": "4a57f5f8",
+          "purpose": "Возвращает isOpen/open()/close() для именованной модалки (например 'auth-login')"
+        }
+      ]
+    },
+    "composables/usePhotoSwipe.ts": {
+      "kind": "ts",
+      "hash": "dad6c1172d16",
+      "purpose": "Инициализация PhotoSwipe-лайтбокса для галереи фотографий с фоновой подгрузкой размеров",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "01daabc8",
+          "purpose": "Подключает обработчик кликов по data-pswp-index и открывает фото в lightbox"
+        }
+      ]
+    },
+    "composables/useResourceLabel.ts": {
+      "kind": "ts",
+      "hash": "327cd6a59ca0",
+      "purpose": "Подставляемое название ресурса для онлайн-записи (мастер/специалист/...) из настроек appointment",
+      "symbols": [
+        {
+          "name": "useResourceLabel",
+          "kind": "function",
+          "hash": "e08189a4",
+          "purpose": "Отдаёт lower/capitalized/anyLabel для динамической подписи ресурса"
+        }
+      ]
+    },
+    "composables/useSafeHtml.ts": {
+      "kind": "ts",
+      "hash": "52e5b287dc0a",
+      "purpose": "Sanitize пользовательского HTML через DOMPurify, без обработки на сервере (raw на SSR)",
+      "symbols": [
+        {
+          "name": "useSafeHtml",
+          "kind": "function",
+          "hash": "22f59e1c",
+          "purpose": "Computed с очищенным HTML для безопасного v-html"
+        }
+      ]
+    },
+    "composables/useStorefrontTerms.ts": {
+      "kind": "ts",
+      "hash": "95fcca3ad345",
+      "purpose": "Provide/inject доменных терминов витрины (вместо «блюдо»/«меню» — настраиваемые слова в зависимости от типа бизнеса)",
+      "symbols": [
+        {
+          "name": "useStorefrontTerms",
+          "kind": "function",
+          "hash": "aa64cbb2",
+          "purpose": "Computed menu/item с терминами из selectVocabulary(businessType, menuStyle)"
+        }
+      ]
+    },
+    "composables/useSupabaseClient.ts": {
+      "kind": "ts",
+      "hash": "24aa1c8e97bb",
+      "purpose": "Singleton Supabase-клиента витрины с кастомным storageKey 'fs-auth' и persistSession",
+      "symbols": [
+        {
+          "name": "useSupabaseClient",
+          "kind": "function",
+          "hash": "4b22170a",
+          "purpose": "Лениво создаёт и кэширует SupabaseClient на основе runtimeConfig"
+        }
+      ]
+    },
+    "composables/useTableRealtime.ts": {
+      "kind": "ts",
+      "hash": "b83b4ec52428",
+      "purpose": "Realtime-подписка на изменения order_items/kitchen_queue для режима стола + fallback-поллинг 30с",
+      "symbols": [
+        {
+          "name": "useTableRealtime",
+          "kind": "function",
+          "hash": "4ec54e37",
+          "purpose": "Подписывается на postgres_changes и вызывает onChange при обновлении заказа за столом"
+        }
+      ]
+    },
+    "composables/useTheme.ts": {
+      "kind": "ts",
+      "hash": "848c431035f8",
+      "purpose": "Текущая тема витрины (палитра CSS-переменных), переключение и рандомизация пресетов с автоподбором on-primary по WCAG",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "f596ac3a",
+          "purpose": "Возвращает currentTheme/themes/themeStyle и методы setTheme(name)/randomize()"
+        }
+      ]
+    },
+    "composables/useToast.ts": {
+      "kind": "ts",
+      "hash": "1d27a1e55066",
+      "purpose": "Глобальная очередь тостов витрины (success/error/warning) с автозакрытием",
+      "symbols": [
+        {
+          "name": "useToast",
+          "kind": "function",
+          "hash": "463c4027",
+          "purpose": "Отдаёт toasts/show/dismiss/success/error/warning для уведомлений пользователя"
+        }
+      ]
+    },
+    "utils/deliveryText.ts": {
+      "kind": "ts",
+      "hash": "53b1616d4753",
+      "purpose": "Форматирование человекочитаемого текста стоимости и условий доставки по зонам/тарифу",
+      "symbols": [
+        {
+          "name": "buildDeliveryText",
+          "kind": "function",
+          "hash": "6e6fa6a0",
+          "purpose": "Собирает строку «Доставка X ₽, бесплатно от Y» либо «зависит от адреса»"
+        },
+        {
+          "name": "formatZoneConditions",
+          "kind": "function",
+          "hash": "279a5744",
+          "purpose": "Текст условий конкретной зоны: тариф, бесплатная доставка от, минимальный заказ"
+        }
+      ]
+    },
+    "utils/format-removed-toast.ts": {
+      "kind": "ts",
+      "hash": "820442bb7341",
+      "purpose": "Превращает результат reconcileCart.removed в дедуплицированные тосты с понятной причиной",
+      "symbols": [
+        {
+          "name": "formatRemovedToasts",
+          "kind": "function",
+          "hash": "1baeea21",
+          "purpose": "Группирует удалённые позиции по dishName+reason и возвращает массив RemovedToast"
+        },
+        {
+          "name": "RemovedToast",
+          "kind": "type",
+          "hash": "1890cc0f",
+          "purpose": "Структура тоста о выпавшей из корзины позиции (title + description)"
+        }
+      ]
+    },
+    "utils/google-fonts.ts": {
+      "kind": "ts",
+      "hash": "39b2936ecc35",
+      "purpose": "Хелперы выбора шрифта тенанта: проверка системы vs Google Fonts, формирование font-family и URL CSS",
+      "symbols": [
+        {
+          "name": "isGoogleFontValue",
+          "kind": "function",
+          "hash": "2474e930",
+          "purpose": "true если value — имя гугл-шрифта, а не системного стека или fallback"
+        },
+        {
+          "name": "fontFamilyCSS",
+          "kind": "function",
+          "hash": "a3c4f415",
+          "purpose": "Строка font-family: подставляет шрифт в кавычки или системный стек для пустого/некорректного value"
+        },
+        {
+          "name": "googleFontUrl",
+          "kind": "function",
+          "hash": "4ebcfb6e",
+          "purpose": "URL для подключения Google Fonts CSS с заданными весами и display=swap"
+        }
+      ]
+    },
+    "utils/reportError.ts": {
+      "kind": "ts",
+      "hash": "a054a510d5ce",
+      "purpose": "Тонкая обёртка для отправки ошибок в Sentry через captureException",
+      "symbols": [
+        {
+          "name": "reportError",
+          "kind": "function",
+          "hash": "2919befe",
+          "purpose": "Передаёт ошибку в Sentry; используется во всех catch-блоках витрины"
+        }
+      ]
+    },
+    "utils/tag-icons.ts": {
+      "kind": "ts",
+      "hash": "8df3446c0631",
+      "purpose": "Маппинг имён тегов блюд на lucide-иконки с дефолтом Tag",
+      "symbols": [
+        {
+          "name": "resolveTagIcon",
+          "kind": "function",
+          "hash": "87f412ff",
+          "purpose": "По имени иконки возвращает lucide-компонент или Tag в качестве fallback"
+        }
+      ]
+    },
+    "stores/addresses.ts": {
+      "kind": "ts",
+      "hash": "feb79989f9bf",
+      "purpose": "Pinia: список сохранённых адресов клиента с CRUD через /api/customer/addresses (требует авторизации)",
+      "symbols": [
+        {
+          "name": "useAddressesStore",
+          "kind": "const",
+          "hash": "d76f860f",
+          "purpose": "Стор addresses+loading и методы fetch/add/update/remove с прокидыванием Bearer-токена Supabase"
+        }
+      ]
+    },
+    "stores/auth.ts": {
+      "kind": "ts",
+      "hash": "98464f9ef351",
+      "purpose": "Pinia: профиль текущего покупателя, поддерживает два режима — Supabase email/password и Telegram cookie",
+      "symbols": [
+        {
+          "name": "useAuthStore",
+          "kind": "const",
+          "hash": "5256a5be",
+          "purpose": "customer/loading/authMode + методы init/login/register/loginWithTelegram/logout/updateProfile"
+        }
+      ]
+    },
+    "stores/cart.ts": {
+      "kind": "ts",
+      "hash": "38ff342dbeb7",
+      "purpose": "Pinia: корзина с разделением на блюда и услуги, persist в localStorage с миграцией старого формата",
+      "symbols": [
+        {
+          "name": "DishCartItem",
+          "kind": "type",
+          "hash": "1c34111d",
+          "purpose": "Позиция-блюдо в корзине: OrderItem + kind:'dish' + photo + стабильный _key"
+        },
+        {
+          "name": "ServiceCartItem",
+          "kind": "type",
+          "hash": "bc0dcb3e",
+          "purpose": "Позиция-услуга в корзине: serviceId, имя, цена, длительность и preferredResourceId"
+        },
+        {
+          "name": "CartItem",
+          "kind": "type",
+          "hash": "9d119672",
+          "purpose": "Дискриминированное объединение DishCartItem | ServiceCartItem"
+        },
+        {
+          "name": "isDishItem",
+          "kind": "function",
+          "hash": "c2ac6797",
+          "purpose": "Type guard для DishCartItem (i.kind === 'dish')"
+        },
+        {
+          "name": "isServiceItem",
+          "kind": "function",
+          "hash": "920f5ab8",
+          "purpose": "Type guard для ServiceCartItem (i.kind === 'service')"
+        },
+        {
+          "name": "useCartStore",
+          "kind": "const",
+          "hash": "a22e2e4b",
+          "purpose": "items/count/subtotal + add/remove/replace/patchByKey/clearDishes/restore с защитой от гонок до restored"
+        }
+      ]
+    },
+    "stores/checkout.ts": {
+      "kind": "ts",
+      "hash": "ef31d52bb7ea",
+      "purpose": "Pinia: форма чекаута, авто-промо, проверка промокода, расчёт доставки/скидки/итога с учётом выбранной зоны и времени",
+      "symbols": [
+        {
+          "name": "CheckoutDeliveryZone",
+          "kind": "type",
+          "hash": "a5acba73",
+          "purpose": "Выбранная зона доставки в чекауте: id, тариф, минимальный заказ, порог бесплатной доставки"
+        },
+        {
+          "name": "useCheckoutStore",
+          "kind": "const",
+          "hash": "4f039344",
+          "purpose": "form/promoResult/autoPromo/deliveryZone + computed deliveryFee/discountAmount/orderTotal/belowMinOrder"
+        }
+      ]
+    },
+    "stores/menu.ts": {
+      "kind": "ts",
+      "hash": "4b1cff050049",
+      "purpose": "Pinia-обёртка над useNuxtData('menu'): группирует блюда/комбо по категориям, фильтрует видимые категории",
+      "symbols": [
+        {
+          "name": "ClientAddon",
+          "kind": "type",
+          "hash": "5f62bc95",
+          "purpose": "Аддон для блюда на клиенте: id/name/weight/price/order"
+        },
+        {
+          "name": "useMenuStore",
+          "kind": "const",
+          "hash": "2c38b256",
+          "purpose": "allDishes/allCombos/dishesByCategory/combosByCategory/visibleCategories и теги с режимом отображения"
+        }
+      ]
+    },
+    "stores/services.ts": {
+      "kind": "ts",
+      "hash": "59aa3073150e",
+      "purpose": "Pinia-обёртка над useNuxtData('services-catalog'): услуги, категории и видимые категории для бизнес-типа services",
+      "symbols": [
+        {
+          "name": "ServiceCard",
+          "kind": "type",
+          "hash": "b1cc9f3e",
+          "purpose": "Карточка услуги для витрины: id, имя, цена, длительность, фото, isBookable, bookingMode, разрешение выбора ресурса"
+        },
+        {
+          "name": "useServicesStore",
+          "kind": "const",
+          "hash": "2838f9f4",
+          "purpose": "allServices/servicesByCategory/visibleCategories + теги для отображения карточек услуг"
+        }
+      ]
+    },
+    "stores/table.ts": {
+      "kind": "ts",
+      "hash": "36b998f9d213",
+      "purpose": "Pinia: режим стола в зале — id/имя стола и текущий чек (позиции с pending/confirmed статусами)",
+      "symbols": [
+        {
+          "name": "CheckItem",
+          "kind": "type",
+          "hash": "36702bf8",
+          "purpose": "Позиция чека за столом: имя, цена, кол-во, модификаторы/аддоны и кухонный статус"
+        },
+        {
+          "name": "useTableStore",
+          "kind": "const",
+          "hash": "8177dcc7",
+          "purpose": "tableId/tableName/checkItems + computed isTableMode/checkTotal/itemCount и методы setTable/setCheckItems/clear"
+        }
+      ]
+    },
+    "middleware/no-promotions.ts": {
+      "kind": "ts",
+      "hash": "8210ede0eaa5",
+      "purpose": "Route middleware: редиректит на главную, если у тенанта отключён модуль promotions",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "52c2ad43",
+          "purpose": "navigateTo('/') когда tenant.modules.promotions === false"
+        }
+      ]
+    },
+    "middleware/no-services.ts": {
+      "kind": "ts",
+      "hash": "2ed5c3361b0b",
+      "purpose": "Route middleware: редиректит на главную для тенантов с businessType='services' (страницы меню/корзины не для них)",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "52c2ad43",
+          "purpose": "navigateTo('/') когда tenant.businessType === 'services'"
+        }
+      ]
+    },
+    "plugins/cart-restore.client.ts": {
+      "kind": "ts",
+      "hash": "1d1aea65bc99",
+      "purpose": "Client-плагин: после nuxtReady восстанавливает корзину из localStorage через cart.restore()",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "a94cdf0e",
+          "purpose": "Hook onNuxtReady → useCartStore().restore()"
+        }
+      ]
+    },
+    "plugins/preserve-slug.client.ts": {
+      "kind": "ts",
+      "hash": "65f503132f6a",
+      "purpose": "Dev-only плагин: пробрасывает query.slug между переходами для локальной разработки мульти-тенантности",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "a94cdf0e",
+          "purpose": "router.beforeEach: добавляет ?slug=... в next route, если он был в текущем"
+        }
+      ]
+    },
+    "plugins/yandex-maps.client.ts": {
+      "kind": "ts",
+      "hash": "fb6116427a10",
+      "purpose": "Client-плагин: инициализация vue-yandex-maps с API-ключом из runtimeConfig",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "a94cdf0e",
+          "purpose": "createYmapsOptions({ apikey }) для последующего использования карт в чекауте"
+        }
+      ]
+    },
+    "layouts/table.vue": {
+      "kind": "vue",
+      "hash": "f10888c7f938",
+      "purpose": "Лейаут режима стола: sticky-шапка с логотипом и номером стола + sticky CategoryBar + slot контента",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Компоновка страниц /table/[id] с фиксированной навигацией по категориям"
+        }
+      ]
+    },
+    "app/router.options.ts": {
+      "kind": "ts",
+      "hash": "3414e1bed870",
+      "purpose": "Кастомный scrollBehavior: восстанавливает позицию или скроллит наверх (хеши обрабатываются в SiteHeader)",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "8b23bd0f",
+          "purpose": "RouterConfig со scrollBehavior, отключающим автоскролл к hash"
+        }
+      ]
+    },
+    "components/layout/StorePageLayout.vue": {
+      "kind": "vue",
+      "hash": "5a87e2732861",
+      "purpose": "Каркас внутренней страницы магазина: хлебные крошки, заголовок и slot — для разделов меню/услуг/каталога",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c9bcf072",
+          "purpose": "breadcrumbs (массив link-объектов) и current (текущая страница)"
+        }
+      ]
+    },
+    "components/sf/domain/DishChips.vue": {
+      "kind": "vue",
+      "hash": "34695370574e",
+      "purpose": "Список chip-тегов (FsTag) с режимами radio/checkbox/toggle: модификаторы блюда, удаляемые ингредиенты, аддоны",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "61c2c50c",
+          "purpose": "title/items/mode/modelValue + опционально disabledSelect/currency/groupName"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "2137fc79",
+          "purpose": "update:modelValue с новым массивом id выбранных чипов"
+        }
+      ]
+    },
+    "components/sf/domain/DishCustomization.vue": {
+      "kind": "vue",
+      "hash": "163eca4a3557",
+      "purpose": "Тело модалки кастомизации: состав комбо + три DishChips (модификаторы/удалить/аддоны) с прокидыванием выборов наверх",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "88549e1a",
+          "purpose": "Все группы и текущий выбор: comboItems, modifiers, removableIngredients, addons и selectedXxx"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "271f9896",
+          "purpose": "selectModifier/update:removedIngredients/update:selectedAddonIds"
+        }
+      ]
+    },
+    "components/sf/domain/DishModal.vue": {
+      "kind": "vue",
+      "hash": "d91303416a59",
+      "purpose": "Модалка блюда: фото + описание + БЖУ + DishCustomization + футер со степпером и кнопкой Добавить/Сохранить/Заказать",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "3a4de761",
+          "purpose": "modelValue/item/modifiers/addons + начальные значения и режим (add/edit/order)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "0912cd59",
+          "purpose": "update:modelValue, add (новый CartItem), edit (изменённый CartItem)"
+        }
+      ]
+    },
+    "components/sf/domain/DishModalBody.vue": {
+      "kind": "vue",
+      "hash": "3d042a8dbc11",
+      "purpose": "Содержимое модалки блюда без обёртки FsDialog: БЖУ + кастомизация + футер (для встраивания в SfProductModal)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "598c09dc",
+          "purpose": "item/modifiers/addons + viewOnly/mode и initial-значения для useDishCustomization"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "75ddc5fc",
+          "purpose": "add/edit/close"
+        }
+      ]
+    },
+    "components/sf/domain/DishModalFooter.vue": {
+      "kind": "vue",
+      "hash": "88f9da3cacfe",
+      "purpose": "Sticky-футер модалки блюда: степпер количества + основная CTA с лейблом по mode (Добавить/Сохранить/Заказать) и итоговой ценой",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "0fee15dc",
+          "purpose": "modelValue (qty), totalPrice, currency, mode"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "cbd16d97",
+          "purpose": "update:modelValue (количество) и confirm (нажатие CTA)"
+        }
+      ]
+    },
+    "components/sf/domain/DishNutrition.vue": {
+      "kind": "vue",
+      "hash": "d1cb191a0471",
+      "purpose": "Строка с весом блюда и иконкой-tooltip с пересчитанной БЖУ на 100 г/мл",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "6168d0ba",
+          "purpose": "nutrition (weight/calories/protein/fat/carbs), weightUnit, size"
+        }
+      ]
+    },
+    "components/sf/domain/SfBookingFab.vue": {
+      "kind": "vue",
+      "hash": "bd64b1abbcb8",
+      "purpose": "Плавающая кнопка «Забронировать» внизу экрана с анимацией появления (для услуг с онлайн-записью)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5d4d520b",
+          "purpose": "visible — показ/скрытие FAB"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "755dca6a",
+          "purpose": "click — открытие модалки бронирования"
+        }
+      ]
+    },
+    "components/sf/domain/SfCartFab.vue": {
+      "kind": "vue",
+      "hash": "8469dc73dbee",
+      "purpose": "Плавающая кнопка корзины внизу экрана с количеством позиций и итоговой суммой (обёртка над SfFab)",
+      "symbols": [
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "755dca6a",
+          "purpose": "click — переход в корзину/чекаут"
+        }
+      ]
+    },
+    "components/sf/domain/SfDishCard.vue": {
+      "kind": "vue",
+      "hash": "4f3cf27dbf2e",
+      "purpose": "Карточка блюда в каталоге: вертикальный layout на десктопе и компактный горизонтальный на мобильном, степпер количества и теги-бейджи",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "46d6fbfd",
+          "purpose": "dish, currency, mobileCompact, hideStepper, orderingEnabled, hasModifiers"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "61b0947d",
+          "purpose": "cardClick/add/increment/decrement"
+        }
+      ]
+    },
+    "components/sf/domain/SfEmptyState.vue": {
+      "kind": "vue",
+      "hash": "a4a8e5b5ee4d",
+      "purpose": "Пустое состояние с иконкой-слотом, заголовком, описанием и опциональным action-слотом",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "cd2661a1",
+          "purpose": "title, description, size (sm/md/lg)"
+        }
+      ]
+    },
+    "components/sf/domain/SfFab.vue": {
+      "kind": "vue",
+      "hash": "cee97d3e2ee2",
+      "purpose": "Базовая плавающая кнопка fixed-снизу (safe-area aware) с иконкой/счётчиком/лейблом/ценой и анимацией enter/leave",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "895f0053",
+          "purpose": "visible, count, label, price"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "755dca6a",
+          "purpose": "click"
+        }
+      ]
+    },
+    "components/sf/domain/SfOrderItemsList.vue": {
+      "kind": "vue",
+      "hash": "2dfe3db51566",
+      "purpose": "Список позиций заказа с именем, количеством, ценой и подписью с модификаторами/аддонами + бейдж pending",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "d194f1b5",
+          "purpose": "items (OrderItem[]) и currency"
+        }
+      ]
+    },
+    "components/sf/domain/SfOrderStatus.vue": {
+      "kind": "vue",
+      "hash": "8fe94f5591e3",
+      "purpose": "Цветной chip-статус заказа (Новый/В работе/Выполнен/Отменён) с цветовой точкой и поддержкой кастомного label",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9ff71987",
+          "purpose": "group (статус-группа), label, size"
+        }
+      ]
+    },
+    "components/sf/domain/SfOrderTotals.vue": {
+      "kind": "vue",
+      "hash": "f2571595d6c1",
+      "purpose": "Блок Подытог/Доставка/Скидка/Итого с условным показом строк и выделенной финальной строкой",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "bdefd5c8",
+          "purpose": "subtotal/deliveryFee/discountAmount/discountLabel/total/currency"
+        }
+      ]
+    },
+    "components/sf/domain/SfPriceTag.vue": {
+      "kind": "vue",
+      "hash": "7bda0e1b58f6",
+      "purpose": "Бейдж цены с опциональным префиксом «от» и зачёркнутой старой ценой, размер и responsive-режим",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5b242072",
+          "purpose": "price, oldPrice, prefix, currency, size, responsive"
+        }
+      ]
+    },
+    "components/sf/domain/SfProductCard.vue": {
+      "kind": "vue",
+      "hash": "3b951e0f6b26",
+      "purpose": "Универсальная карточка товара/услуги в каталоге: компактный мобильный layout vs вертикальный, степпер или CTA в зависимости от состояния (в корзине/нет)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1a6abf41",
+          "purpose": "product, currency, mobileCompact, isService, duration, stepperCount, buttonAction, dishPricePrefix"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "217b6701",
+          "purpose": "cardClick/buttonClick/stepperUpdate"
+        }
+      ]
+    },
+    "components/sf/domain/SfProductModal.vue": {
+      "kind": "vue",
+      "hash": "8b9b1b024a70",
+      "purpose": "Универсальная модалка товара/услуги: фото + описание + meta-слот + основной слот контента (используется для услуг и не-food каталога)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "540d1488",
+          "purpose": "modelValue, title, photo, description"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue"
+        }
+      ]
+    },
+    "components/sf/domain/SfStepper.vue": {
+      "kind": "vue",
+      "hash": "fee0e608d702",
+      "purpose": "Степпер количества (минус/значение/плюс) с разными размерами и блокировкой на min/max",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "335f7501",
+          "purpose": "modelValue, min, max, size, responsive"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "b9fa713b",
+          "purpose": "update:modelValue (новое количество)"
+        }
+      ]
+    },
+    "components/sf/icons/SfIconMax.vue": {
+      "kind": "vue",
+      "hash": "5fc017125efc",
+      "purpose": "SVG-иконка мессенджера MAX с режимами currentColor и фирменного градиента (colored)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8287349c",
+          "purpose": "size (px) и colored (true → бренд-градиент)"
+        }
+      ]
+    },
+    "components/sf/icons/SfIconTelegram.vue": {
+      "kind": "vue",
+      "hash": "06f86cd1c284",
+      "purpose": "SVG-иконка Telegram с режимом currentColor или фирменного цвета",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8287349c",
+          "purpose": "size (px) и colored (true → бренд-цвет)"
+        }
+      ]
+    },
+    "components/sf/icons/SfIconVk.vue": {
+      "kind": "vue",
+      "hash": "6f418a8f33d8",
+      "purpose": "SVG-иконка ВКонтакте с режимом currentColor или фирменного цвета",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8287349c",
+          "purpose": "size (px) и colored (true → бренд-цвет)"
+        }
+      ]
+    },
+    "components/sf/icons/SfIconWhatsapp.vue": {
+      "kind": "vue",
+      "hash": "394176b4af8f",
+      "purpose": "SVG-иконка WhatsApp с режимом currentColor или фирменного цвета",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8287349c",
+          "purpose": "size (px) и colored (true → бренд-цвет)"
+        }
+      ]
+    }
+  },
+  "pages": {},
+  "folders": {}
+}
