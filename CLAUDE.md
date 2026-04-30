@@ -52,6 +52,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 4. Не грузи карты «на всякий случай» — обычно достаточно карты проекта в котором работаешь + `packages/shared.json` если нужны утилки
 5. **Перед написанием стилей** (.scss / `<style>` в .vue) — Read нужную styles-карту. ВСЕГДА используй существующие токены `var(--…)` и миксины `@include …` вместо хардкода значений
 
+**Сигналь юзеру что читаешь карту:**
+
+Каждый раз когда Read'аешь файл из `.claude/codemap/`, в начале следующего ответа юзеру **обязательно** добавь отдельную строку:
+
+```
+📋 загружена карта: <путь относительно .claude/codemap/>
+```
+
+Например: `📋 загружена карта: packages/shared.json`. Если за один шаг прочитал несколько карт — выведи строки списком. Это даёт юзеру видимое подтверждение, что инструменты codemap действительно используются, а не игнорируются.
+
 **Поддержание актуальности (автоматически):**
 
 При коммите через агента (`git commit` через Bash) срабатывает PreToolUse hook (`scripts/codemap/precommit-hook.mjs`):
@@ -66,18 +76,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ручной запуск: `pnpm codemap:scan --all` (полная регенерация), `--project=apps/admin`, `--files=foo.ts,bar.vue`.
 
-**Hook требует регистрации в личных настройках** (один раз на каждой машине, не коммитится):
-добавить в `~/.claude/settings.json` или `.claude/settings.local.json` блок:
+**Hooks требуют регистрации в личных настройках** (один раз на каждой машине, `.claude/settings.local.json` в gitignore):
 ```json
 {
   "hooks": {
     "PreToolUse": [{
       "matcher": "Bash",
       "hooks": [{ "type": "command", "command": "node /Users/evgeniy/WebstormProjects/fastio/scripts/codemap/precommit-hook.mjs" }]
+    }],
+    "PostToolUse": [{
+      "matcher": "Read",
+      "hooks": [{ "type": "command", "command": "node /Users/evgeniy/WebstormProjects/fastio/scripts/codemap/read-tracker-hook.mjs" }]
     }]
   }
 }
 ```
+- **PreToolUse на Bash** — обновляет карты при `git commit`, блокирует если есть `purpose: null`
+- **PostToolUse на Read** — печатает `📋 [codemap] загружена карта: …` каждый раз когда агент читает карту, чтобы юзер видел использование
 
 ---
 
