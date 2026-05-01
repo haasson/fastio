@@ -1,4 +1,5 @@
 import type { WorkingHoursSchedule } from './tenant'
+import type { BookingMode } from './service'
 
 export type ResourceType = 'person' | 'object'
 
@@ -97,6 +98,7 @@ export type Appointment = {
   startsAt: string         // UTC ISO timestamp
   endsAt: string           // UTC ISO timestamp — расчётное (starts + duration)
   actualEndsAt: string | null  // фактическое окончание для open_ended
+  bookingMode: BookingMode    // снапшот режима бронирования услуги
   status: AppointmentStatus
   resourceAssignedBy: ResourceAssignedBy | null
   notes: string | null

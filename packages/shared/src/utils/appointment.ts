@@ -6,6 +6,7 @@ import type {
 } from '../types/appointment'
 import type { Visit, VisitStatus } from '../types/visit'
 import type { AppointmentRequestService } from '../types/appointmentRequest'
+import type { BookingMode } from '../types/service'
 
 export const mapResource = (raw: Record<string, unknown>): Resource => ({
   id: raw.id as string,
@@ -87,6 +88,7 @@ export const mapAppointment = (raw: Record<string, unknown>): Appointment => ({
   startsAt: raw.starts_at as string,
   endsAt: raw.ends_at as string,
   actualEndsAt: (raw.actual_ends_at as string | null) ?? null,
+  bookingMode: ((raw.booking_mode as string | undefined) ?? 'fixed') as BookingMode,
   status: raw.status as AppointmentStatus,
   resourceAssignedBy: (raw.resource_assigned_by as ResourceAssignedBy | null) ?? null,
   notes: raw.notes as string | null,

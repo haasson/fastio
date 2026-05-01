@@ -7,7 +7,7 @@ import { query } from '~/utils/query'
 const FIELDS = `
   id, tenant_id, branch_id, service_id, service_name, service_price, resource_id, user_id,
   customer_name, customer_phone,
-  starts_at, ends_at, actual_ends_at, status, resource_assigned_by, notes,
+  starts_at, ends_at, actual_ends_at, booking_mode, status, resource_assigned_by, notes,
   cancel_reason, cancelled_by, cancelled_at,
   confirmed_at, confirmed_by,
   created_at, updated_at
@@ -331,21 +331,17 @@ export const appointmentsApi = {
 
   /**
    * Продлевает запись на N минут — для open_ended (бильярд, баня и т. п.).
-   * Сдвигает actual_ends_at, если задан, иначе ends_at.
+   * RPC extend_appointment: advisory lock на resource + capacity-чек + UPDATE.
+   * При overlap бросает ошибку с ERRCODE P0002 и ISO-временем следующей записи
+   * в message: 'OVERLAP:2024-01-15T10:00:00Z'. Вызывающий код должен поймать
+   * её и показать пользователю понятный алерт.
    */
   async extend(sb: SupabaseClient, id: string, minutes: number): Promise<Appointment> {
-    const existing = await query(
-      sb.from('appointments').select('ends_at, actual_ends_at').eq('id', id).single(),
-    ) as { ends_at: string; actual_ends_at: string | null }
+    const { data, error } = await sb.rpc('extend_appointment', { p_id: id, p_minutes: minutes })
 
-    const baseIso = existing.actual_ends_at ?? existing.ends_at
-    const next = new Date(new Date(baseIso).getTime() + minutes * 60_000).toISOString()
+    if (error) throw new Error(error.message)
 
-    const result = await query(
-      sb.from('appointments').update({ actual_ends_at: next }).eq('id', id).select(FIELDS).single(),
-    )
-
-    return mapAppointment(result as unknown as AppointmentRow)
+    return mapAppointment(data as unknown as AppointmentRow)
   },
 
   /**

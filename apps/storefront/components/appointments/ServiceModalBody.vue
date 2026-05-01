@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'nuxt/app'
 import { FsButton, FsSkeleton } from '@fastio/public-ui'
 import DishChips from '~/components/sf/domain/DishChips.vue'
 import { useCartStore } from '~/stores/cart'
@@ -31,6 +32,9 @@ import { useToast } from '~/composables/useToast'
 
 const { capitalized: resourceLabelCapitalized, anyLabel: resourceAnyLabel } = useResourceLabel()
 const toast = useToast()
+const route = useRoute()
+
+const branchId = computed(() => (route.query.branchId as string | undefined) ?? null)
 
 type ServiceInfo = {
   id: string
@@ -70,8 +74,10 @@ async function loadResources(serviceId: string) {
   selectedResourceId.value = current?.preferredResourceId ?? ANY_VALUE
   resources.value = null
   try {
+    const params = new URLSearchParams({ serviceId })
+    if (branchId.value) params.set('branchId', branchId.value)
     const data = await $fetch<Array<{ id: string; name: string }>>(
-      `/api/appointments/resources?serviceId=${serviceId}`,
+      `/api/appointments/resources?${params}`,
     )
     if (gen === loadGen) resources.value = data
   } catch (err) {

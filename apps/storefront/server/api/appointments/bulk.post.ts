@@ -1,4 +1,5 @@
-import { getServerSupabase, getAuthSupabase } from '../../utils/supabase'
+import { getServerSupabase } from '../../utils/supabase'
+import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
 import { createRateLimiter, todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr } from '@fastio/shared'
 import { reportError } from '~/utils/reportError'
 
@@ -361,21 +362,17 @@ export default defineEventHandler(async (event) => {
   }
 
   // Определяем userId и customerId. Гость: оба null.
+  // getAuthenticatedContextWithCustomer поддерживает оба способа входа: Bearer JWT и Telegram-куку.
   let userId: string | null = null
   let customerId: string | null = null
-  const authHeader = getHeader(event, 'authorization')
-  if (authHeader) {
-    const { data: { user } } = await getAuthSupabase(authHeader).auth.getUser()
-    userId = user?.id ?? null
-    if (userId) {
-      const { data: customerRow } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('tenant_id', tenantId)
-        .eq('auth_user_id', userId)
-        .maybeSingle()
-      customerId = (customerRow?.id as string | undefined) ?? null
-    }
+  try {
+    const authCtx = await getAuthenticatedContextWithCustomer(event)
+    customerId = authCtx.customer.id
+    userId = authCtx.customer.authUserId
+  } catch (e: unknown) {
+    const status = (e as { statusCode?: number })?.statusCode
+    if (status !== 401 && status !== 404) throw e
+    // гость или сессия истекла — продолжаем без идентификации
   }
 
   // Атомарная вставка через RPC: advisory_xact_lock per resource + capacity-aware

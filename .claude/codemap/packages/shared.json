@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-01T14:00:23.279Z",
+  "generated_at": "2026-05-01T14:34:36.122Z",
   "stats": {
     "files": 37,
     "pages": 0,
@@ -14,8 +14,8 @@
   "files": {
     "src/utils/appointment.ts": {
       "kind": "ts",
-      "hash": "80aee68d4db8",
-      "purpose": "Мапперы строк БД в доменные типы (Resource, Appointment, Visit, AppointmentSettings и связанные расписания) — единая точка нормализации snake_case → camelCase",
+      "hash": "6f9f7d97a516",
+      "purpose": "Маппинг сырых DB-строк в доменные типы: mapResource, mapAppointment, mapVisit, mapAppointmentSettings и вспомогательные функции",
       "symbols": [
         {
           "name": "mapResource",
