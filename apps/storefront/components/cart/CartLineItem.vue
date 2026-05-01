@@ -241,7 +241,7 @@ async function onDeleteClick() {
 
 .line-master {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .line-controls {

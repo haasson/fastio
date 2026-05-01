@@ -195,6 +195,6 @@ function itemsLabel(n: number) {
 }
 
 .order-arrow {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 </style>

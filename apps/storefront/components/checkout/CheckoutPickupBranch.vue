@@ -264,7 +264,7 @@ defineExpose({ validate })
 
 .branch-hours {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 
   &.closing-soon {
     color: var(--color-warning);

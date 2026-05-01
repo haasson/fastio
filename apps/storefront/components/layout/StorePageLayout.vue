@@ -64,14 +64,14 @@ defineProps<Props>()
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--color-text-muted);
+  background: var(--color-text-secondary);
   opacity: 0.5;
   flex-shrink: 0;
 }
 
 .crumb-current {
   @include text-caption;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .heading {

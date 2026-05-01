@@ -199,7 +199,7 @@ watch(visibleDays, (days) => {
 
 .day-name {
   @include text-micro(400);
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .day-num {
@@ -227,7 +227,7 @@ watch(visibleDays, (days) => {
 .legend-item {
   @include flex-row(6px);
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .legend-dot {

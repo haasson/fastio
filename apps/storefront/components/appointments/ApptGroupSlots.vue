@@ -261,7 +261,7 @@ watch(
 }
 
 .master-arrow {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   flex-shrink: 0;
 }
 

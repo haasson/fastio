@@ -216,7 +216,7 @@ const paymentLabel = computed(() => {
 
 .order-id {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-family: monospace;
 }
 

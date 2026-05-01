@@ -61,9 +61,9 @@
       <div v-if="branches.length > 1" class="footer-branches">
         <div v-for="branch in branches" :key="branch.id" class="footer-branch">
           <FsText variant="body-sm" class="branch-name">{{ branch.name }}</FsText>
-          <FsText v-if="branch.address" variant="caption" color="muted">{{ branch.address }}</FsText>
+          <FsText v-if="branch.address" variant="caption" color="secondary">{{ branch.address }}</FsText>
           <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`">{{ branch.phone }}</a>
-          <FsText v-if="branch.workingHoursSchedule" variant="caption" color="muted">
+          <FsText v-if="branch.workingHoursSchedule" variant="caption" color="secondary">
             {{ formatWorkingHours(branch.workingHoursSchedule) }}
           </FsText>
         </div>
@@ -73,7 +73,7 @@
         <FsText v-if="tenant?.contacts?.phone" variant="body-sm">
           {{ tenant.contacts.phone }}
         </FsText>
-        <FsText v-if="formattedHours" variant="body-sm" color="muted">
+        <FsText v-if="formattedHours" variant="body-sm" color="secondary">
           {{ formattedHours }}
         </FsText>
       </div>

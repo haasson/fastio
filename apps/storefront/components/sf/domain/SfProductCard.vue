@@ -367,7 +367,7 @@ function onStepperUpdate(newVal: number) {
 }
 
 .product-duration {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .product-footer {
@@ -440,7 +440,7 @@ function onStepperUpdate(newVal: number) {
 
 .compact-duration {
   @include text-xs;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
 }

@@ -2,7 +2,7 @@
   "project": "packages/public-ui",
   "submap": "main",
   "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
-  "generated_at": "2026-04-30T05:12:38.460Z",
+  "generated_at": "2026-05-01T14:12:35.873Z",
   "stats": {
     "files": 35,
     "pages": 0,
@@ -367,8 +367,8 @@
     },
     "src/components/nav/FsScrollNav.vue": {
       "kind": "vue",
-      "hash": "053cc0509e2c",
-      "purpose": "Горизонтальная скролл-навигация (категории/табы) с fade-edges по краям и автоскроллом активного итема в зону видимости",
+      "hash": "bcb1c7e1883c",
+      "purpose": "Горизонтальная навигация с прокруткой и счётчиками — для вкладок категорий меню и т.п.",
       "symbols": [
         {
           "name": "props",
