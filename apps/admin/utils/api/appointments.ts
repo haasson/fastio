@@ -7,7 +7,7 @@ import { query } from '~/utils/query'
 const FIELDS = `
   id, tenant_id, branch_id, service_id, service_name, service_price, resource_id, user_id,
   customer_name, customer_phone,
-  starts_at, ends_at, actual_ends_at, status, notes,
+  starts_at, ends_at, actual_ends_at, status, resource_assigned_by, notes,
   cancel_reason, cancelled_by, cancelled_at,
   confirmed_at, confirmed_by,
   created_at, updated_at
@@ -137,14 +137,14 @@ export const appointmentsApi = {
   },
 
   /**
-   * Добавляет одно appointment в существующую группу через RPC
-   * `add_appointment_to_group` (capacity-чек + advisory lock).
-   * Используется редактором группы при добавлении услуги в edit-mode.
+   * Добавляет одно appointment в существующий визит через RPC
+   * `add_service_to_visit` (capacity-чек + advisory lock).
+   * Используется редактором визита при добавлении услуги в edit-mode.
    */
-  async addToGroup(
+  async addToVisit(
     sb: SupabaseClient,
     payload: {
-      groupId: string
+      visitId: string
       serviceId: string
       resourceId: string | null
       startsAt: string
@@ -152,10 +152,11 @@ export const appointmentsApi = {
       serviceName: string
       servicePrice: number
       status?: AppointmentStatus
+      resourceAssignedBy?: 'client' | 'auto' | 'admin'
     },
   ): Promise<{ id: string }> {
-    const { data, error } = await sb.rpc('add_appointment_to_group', {
-      p_group_id: payload.groupId,
+    const { data, error } = await sb.rpc('add_service_to_visit', {
+      p_visit_id: payload.visitId,
       p_service_id: payload.serviceId,
       p_resource_id: payload.resourceId,
       p_starts_at: payload.startsAt,
@@ -163,22 +164,23 @@ export const appointmentsApi = {
       p_service_name: payload.serviceName,
       p_service_price: payload.servicePrice,
       p_status: payload.status ?? 'new',
+      p_resource_assigned_by: payload.resourceAssignedBy ?? null,
     })
 
     if (error) throw new Error(error.message)
 
     const row = data as { id?: string } | null
 
-    if (!row?.id) throw new Error('add_appointment_to_group вернул некорректный ответ')
+    if (!row?.id) throw new Error('add_service_to_visit вернул некорректный ответ')
 
     return { id: row.id }
   },
 
   /**
    * Меняет слот/исполнителя/снапшот услуги через RPC `update_appointment`
-   * (capacity-чек + advisory lock). Используется редактором группы
+   * (capacity-чек + advisory lock). Используется редактором визита
    * для существующих appointments. Поля customer_, notes, status, group_id
-   * этим RPC не трогаются — для них есть `appointmentGroups.updateMeta`
+   * этим RPC не трогаются — для них есть `visits.updateMeta`
    * и отдельные status-переходы.
    */
   async reschedule(
@@ -191,6 +193,7 @@ export const appointmentsApi = {
       serviceId?: string | null
       serviceName?: string | null
       servicePrice?: number | null
+      resourceAssignedBy?: 'client' | 'auto' | 'admin'
     },
   ): Promise<void> {
     const { error } = await sb.rpc('update_appointment', {
@@ -201,9 +204,55 @@ export const appointmentsApi = {
       p_service_id: payload.serviceId ?? null,
       p_service_name: payload.serviceName ?? null,
       p_service_price: payload.servicePrice ?? null,
+      p_resource_assigned_by: payload.resourceAssignedBy ?? null,
     })
 
     if (error) throw new Error(error.message)
+  },
+
+  /**
+   * Атомарный перенос записи через RPC `move_appointment`. Если новая business_date
+   * совпадает с текущей — обычный reschedule. Если нет — RPC находит/создаёт
+   * целевой визит того же tenant+branch+customer на новую дату и перевешивает
+   * group_id. Опустевший старый визит удаляется.
+   */
+  async move(
+    sb: SupabaseClient,
+    id: string,
+    payload: {
+      startsAt: string
+      endsAt: string
+      resourceId: string | null
+      serviceId?: string | null
+      resourceAssignedBy?: 'client' | 'auto' | 'admin'
+    },
+  ): Promise<{ id: string; visitId: string; visitChanged: boolean; oldVisitId: string | null }> {
+    const { data, error } = await sb.rpc('move_appointment', {
+      p_appt_id: id,
+      p_starts_at: payload.startsAt,
+      p_ends_at: payload.endsAt,
+      p_resource_id: payload.resourceId,
+      p_service_id: payload.serviceId ?? null,
+      p_resource_assigned_by: payload.resourceAssignedBy ?? null,
+    })
+
+    if (error) throw new Error(error.message)
+
+    const r = data as {
+      id: string
+      visit_id: string
+      visit_changed: boolean
+      old_visit_id?: string | null
+    } | null
+
+    if (!r?.id) throw new Error('move_appointment вернул некорректный ответ')
+
+    return {
+      id: r.id,
+      visitId: r.visit_id,
+      visitChanged: !!r.visit_changed,
+      oldVisitId: r.old_visit_id ?? null,
+    }
   },
 
   async confirm(sb: SupabaseClient, id: string, confirmedBy: string): Promise<Appointment> {
@@ -225,6 +274,19 @@ export const appointmentsApi = {
         cancelled_at: new Date().toISOString(),
         cancel_reason: reason ?? null,
         cancelled_by: cancelledBy ?? 'admin',
+      }).eq('id', id),
+    )
+  },
+
+  // Soft-delete: услуга физически убирается из визита (скрыта из UI), запись
+  // остаётся для аудита/восстановления. Отдельно от cancel — последний это
+  // бизнес-отмена визита целиком, видна клиенту в ЛК.
+  async softDelete(sb: SupabaseClient, id: string, reason?: string, deletedBy?: string): Promise<void> {
+    await query(
+      sb.from('appointments').update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: deletedBy ?? 'admin',
+        deleted_reason: reason ?? null,
       }).eq('id', id),
     )
   },

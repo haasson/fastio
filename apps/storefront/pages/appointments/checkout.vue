@@ -24,6 +24,7 @@
             :loading="loading"
             :selected-entry="selectedEntry"
             :service-names="serviceNames"
+            :preferred-resource-by-index="cart.serviceItems.map((it) => it.preferredResourceId ?? null)"
             @update:selected-entry="selectedEntry = $event"
             @confirm="step = 'contact'"
             @request-only="step = 'request'"
@@ -101,6 +102,7 @@ import { useResourceLabel } from '~/composables/useResourceLabel'
 
 type Step = 'date' | 'slots' | 'request' | 'contact' | 'success'
 type GroupResult = {
+  visitId?: string
   appointments: Array<{ id: string; startsAt: string; endsAt: string; serviceId: string }>
 }
 
@@ -314,10 +316,16 @@ const submitGroupBooking = async () => {
   const commitClearServices = cart.clearServices()
 
   try {
+    // Для items, у которых клиент в корзине выбрал «любой исполнитель»
+    // (preferredResourceId == null), шлём resourceId=null — бэк сам подберёт
+    // по round-robin и пометит как 'auto'. Иначе передаём конкретного, кого
+    // подобрал group-slots под клиентское предпочтение → бэк сохранит как 'client'.
+    // Порядок selectedEntry.schedule совпадает с cart.serviceItems по построению
+    // (group-slots получает items в том же порядке через itemsForApi).
     const body = {
-      items: selectedEntry.value.schedule.map((entry) => ({
+      items: selectedEntry.value.schedule.map((entry, i) => ({
         serviceId: entry.serviceId,
-        resourceId: entry.resourceId,
+        resourceId: cart.serviceItems[i]?.preferredResourceId ? entry.resourceId : null,
         startTime: entry.startTime,
       })),
       date: groupDate.value,

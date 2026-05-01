@@ -365,13 +365,13 @@ export function findGroupSlots(
     let allFit = true
 
     for (const item of items) {
-      let foundResourceId: string | null = null
-      let foundResourceName = ''
+      // Собираем ВСЕХ свободных ресурсов в этот слот (для UI выбора замены).
+      // foundResourceId = первый из найденных (или preferred если он свободен).
+      const freeResourceIds: string[] = []
 
       for (const resourceId of item.resourceIds) {
         const data = resourceSlotData.get(resourceId)
 
-        // Ресурс должен работать в эту дату (нет override is_working=false и попадает в график).
         if (data) {
           const hours = resolveResourceWorkingHours(date, data)
           if (!hours) continue
@@ -379,7 +379,6 @@ export function findGroupSlots(
           const resCloseMin = timeToMinutes(hours.closeTime)
           if (cursor < resOpenMin || cursor + item.duration > resCloseMin) continue
 
-          // Disabled-слоты тоже исключаем.
           const disabled = resolveDisabledSlots(date, data, slotStep)
           if (disabled.has(minutesToTimeStr(cursor))) continue
         }
@@ -389,18 +388,22 @@ export function findGroupSlots(
         const endUtc = localDateTimeToUtcIso(date, minutesToTimeStr(cursor + item.duration), timezone)
 
         if (countConflicts(startUtc, endUtc, appointments) === 0) {
-          foundResourceId = resourceId
-          foundResourceName = item.resourceNames.get(resourceId) ?? resourceId
-          break
+          freeResourceIds.push(resourceId)
         }
       }
 
-      if (foundResourceId === null) {
+      if (freeResourceIds.length === 0) {
         allFit = false
         break
       }
 
+      // Если предпочтительный мастер среди свободных — берём его, иначе первого.
       const prefId = item.preferredResourceId ?? null
+      const foundResourceId = (prefId !== null && freeResourceIds.includes(prefId))
+        ? prefId
+        : freeResourceIds[0]
+      const foundResourceName = item.resourceNames.get(foundResourceId) ?? foundResourceId
+
       const wasReplaced = prefId !== null && prefId !== foundResourceId
       schedule.push({
         serviceId: item.serviceId,
@@ -412,6 +415,7 @@ export function findGroupSlots(
           : null,
         startTime: minutesToTimeStr(cursor),
         endTime: minutesToTimeStr(cursor + item.duration),
+        availableResourceIds: freeResourceIds,
       })
       cursor += item.duration
     }
@@ -561,4 +565,40 @@ export function getGroupDateAvailability(
   if (result.type !== 'slots') return null
   if (result.entries.length === 0) return null
   return result.entries.some(e => e.match === 'preferred') ? 'preferred' : 'any'
+}
+
+// ─── Helpers для UI слот-чипсов (admin SlotChipGrid + storefront ApptGroupSlots) ─
+
+export type SlotChipTone = 'success' | 'warning' | 'default'
+
+/**
+ * Цветовая семантика чипса по типу матча в slot engine:
+ *   preferred → success (зелёный) — мастера-предпочтения свободны
+ *   any       → warning (жёлтый)  — пришлось взять замену
+ *   default   — fallback, в обычном flow не используется
+ */
+export const computeSlotTone = (entry: Pick<GroupSlotEntry, 'match'>): SlotChipTone => {
+  if (entry.match === 'preferred') return 'success'
+  if (entry.match === 'any') return 'warning'
+  return 'default'
+}
+
+/**
+ * Группирует записи по часу старта для рендера сетки 11:00 / 11:30 в одной
+ * строке. Любой объект с полем startTime в формате "HH:MM" подойдёт — это
+ * чисто UI-группировка, не зависит от GroupSlotEntry.
+ */
+export const groupSlotsByHour = <T extends { startTime: string }>(entries: readonly T[]): Map<number, T[]> => {
+  const map = new Map<number, T[]>()
+
+  for (const e of entries) {
+    const h = parseInt(e.startTime.split(':')[0]!, 10)
+
+    if (Number.isNaN(h)) continue
+    const arr = map.get(h)
+
+    if (arr) arr.push(e)
+    else map.set(h, [e])
+  }
+  return map
 }

@@ -24,8 +24,8 @@ watch(currentTenantId, () => settingsStore.load(), { immediate: true })
 
 const tabs = computed(() => {
   const items: { value: string; label: string }[] = [
-    { value: 'timeline', label: 'Расписание' },
     { value: 'list', label: 'Записи' },
+    { value: 'timeline', label: 'Расписание' },
   ]
 
   if (resourceMode.value !== 'objects') items.push({ value: 'staff', label: 'Сотрудники' })
@@ -41,7 +41,7 @@ const tabs = computed(() => {
 const route = useRoute()
 
 if (route.path === '/appointments') {
-  await navigateTo('/appointments/timeline', { replace: true })
+  await navigateTo('/appointments/list', { replace: true })
 }
 </script>
 

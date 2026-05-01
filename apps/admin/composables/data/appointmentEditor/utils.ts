@@ -1,5 +1,5 @@
 import type {
-  Appointment, AppointmentGroup, AppointmentRequest,
+  Appointment, Visit,
 } from '@fastio/shared'
 import { utcIsoToLocalDateTime } from '@fastio/shared'
 import type { EditorService, EditorState } from '~/components/appointments/types'
@@ -7,11 +7,17 @@ import type { EditorService, EditorState } from '~/components/appointments/types
 /** Уникальный ключ для reactive list (трекинг строк услуг при ре-сортировке/удалении). */
 export const newKey = (): string => `svc-${crypto.randomUUID()}`
 
-/** Стабильный ключ состава активных услуг для сравнения снапшотов. */
+/** Стабильный ключ состава активных услуг для сравнения снапшотов.
+ *  Учитывает выбранный слот и мастера — изменение любого из них делает форму dirty. */
 export const buildServicesKey = (services: EditorService[]): string => JSON.stringify(
   services
     .filter((s) => !s.pendingRemove)
-    .map((s) => ({ serviceId: s.serviceId, preferredResourceId: s.preferredResourceId ?? null })),
+    .map((s) => ({
+      serviceId: s.serviceId,
+      preferredResourceId: s.preferredResourceId ?? null,
+      currentResourceId: s.currentResourceId ?? null,
+      currentStartTime: s.currentStartTime ?? null,
+    })),
 )
 
 export const durationFromAppointment = (a: Appointment): number => Math.max(
@@ -20,21 +26,21 @@ export const durationFromAppointment = (a: Appointment): number => Math.max(
 )
 
 /**
- * Заполняет state из существующей группы (edit-mode). Берёт первую запись для
+ * Заполняет state из существующего визита (edit-mode). Берёт первую запись для
  * определения даты, отменённые записи отбрасывает. ServiceId для записей с
  * удалённой услугой → пустая строка (UI покажет «—»).
  */
-export const prefillFromGroup = (
+export const prefillFromVisit = (
   state: EditorState,
-  group: AppointmentGroup,
+  visit: Visit,
   appointments: Appointment[],
   tz: string,
 ): void => {
-  state.customerName = group.customerName
-  state.customerPhone = group.customerPhone
-  state.customerEmail = group.customerEmail ?? ''
-  state.notes = group.notes ?? ''
-  state.branchId = group.branchId
+  state.customerName = visit.customerName
+  state.customerPhone = visit.customerPhone
+  state.customerEmail = visit.customerEmail ?? ''
+  state.notes = visit.notes ?? ''
+  state.branchId = visit.branchId
 
   if (appointments.length > 0) {
     const { dateStr } = utcIsoToLocalDateTime(appointments[0].startsAt, tz)
@@ -44,29 +50,48 @@ export const prefillFromGroup = (
 
   state.services = appointments
     .filter((a) => a.status !== 'cancelled')
-    .map((a) => ({
-      _key: newKey(),
-      serviceId: a.serviceId ?? '',
-      serviceName: a.serviceName,
-      durationMinutes: durationFromAppointment(a),
-      price: a.servicePrice,
-      preferredResourceId: a.resourceId,
-      appointmentId: a.id,
-      pendingRemove: false,
-    }))
+    .map((a) => {
+      const start = utcIsoToLocalDateTime(a.startsAt, tz)
+      const end = utcIsoToLocalDateTime(a.endsAt, tz)
+
+      // Если мастер был назначен автоподбором — клиенту был безразличен.
+      // При смене даты/слота не считаем его «предпочтительным» (иначе все
+      // слоты с другими мастерами стали бы жёлтыми «с заменой»). currentResourceId
+      // остаётся реальным, чтобы карточка показала кого назначили.
+      const isAutoAssigned = a.resourceAssignedBy === 'auto'
+
+      return {
+        _key: newKey(),
+        serviceId: a.serviceId ?? '',
+        serviceName: a.serviceName,
+        durationMinutes: durationFromAppointment(a),
+        price: a.servicePrice,
+        preferredResourceId: isAutoAssigned ? null : a.resourceId,
+        appointmentId: a.id,
+        pendingRemove: false,
+        currentResourceId: a.resourceId,
+        currentStartTime: start.timeStr,
+        currentEndTime: end.timeStr,
+        originalResourceId: a.resourceId,
+        originalStartTime: start.timeStr,
+        originalEndTime: end.timeStr,
+      }
+    })
 }
 
 /**
- * Заполняет state из заявки (create-mode при конвертации заявки в запись).
- * Услуги переносятся в исходном порядке, preferredResourceId сохраняется как есть.
+ * Заполняет state для оформления request-визита: метаданные клиента из визита +
+ * услуги-черновики из visit.requestedServices. Дата/слоты пустые — менеджер
+ * выбирает в редакторе и при save вызывается convert_visit_request.
  */
-export const prefillFromRequest = (state: EditorState, req: AppointmentRequest): void => {
-  state.customerName = req.customerName
-  state.customerPhone = req.customerPhone
-  state.customerEmail = req.customerEmail ?? ''
-  state.notes = req.notes ?? ''
-  state.branchId = req.branchId
-  state.services = req.services.map((s) => ({
+export const prefillFromRequestVisit = (state: EditorState, visit: Visit): void => {
+  state.customerName = visit.customerName
+  state.customerPhone = visit.customerPhone
+  state.customerEmail = visit.customerEmail ?? ''
+  state.notes = visit.notes ?? ''
+  state.branchId = visit.branchId
+
+  state.services = (visit.requestedServices ?? []).map((s) => ({
     _key: newKey(),
     serviceId: s.serviceId,
     serviceName: s.serviceName,
@@ -75,5 +100,11 @@ export const prefillFromRequest = (state: EditorState, req: AppointmentRequest):
     preferredResourceId: s.preferredResourceId,
     appointmentId: null,
     pendingRemove: false,
+    currentResourceId: null,
+    currentStartTime: null,
+    currentEndTime: null,
+    originalResourceId: null,
+    originalStartTime: null,
+    originalEndTime: null,
   }))
 }

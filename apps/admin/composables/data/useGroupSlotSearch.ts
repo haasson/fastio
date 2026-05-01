@@ -29,6 +29,11 @@ export type GroupSlotSearchInput = {
   // Полный список услуг — нужен чтобы развернуть категории ресурсов в эффективные
   // serviceId через `getEffectiveServiceIds` (как в storefront-endpoint).
   allServices: Service[]
+  // Если передан — этот appointment исключается из проверки конфликтов.
+  // Нужно при перекладке слота существующей записи: её собственный слот не должен
+  // считаться занятым ею же, иначе подсветка её же текущего слота среди чипсов
+  // никогда не пройдёт.
+  excludeAppointmentId?: string | null
 }
 
 /**
@@ -191,6 +196,7 @@ export function useGroupSlotSearch() {
 
     for (const a of bundle.appointments) {
       if (!a.resource_id) continue
+      if (input.excludeAppointmentId && a.id === input.excludeAppointmentId) continue
       const arr = appointmentsByResource.get(a.resource_id) ?? []
 
       arr.push({ startsAt: a.starts_at, endsAt: a.actual_ends_at ?? a.ends_at })

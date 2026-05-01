@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-01T04:28:05.409Z",
+  "generated_at": "2026-05-01T14:00:22.662Z",
   "stats": {
     "files": 113,
     "pages": 0,
@@ -609,8 +609,8 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "481206319964",
-      "purpose": "Точка входа для всех realtime-каналов админки (orders, table-calls, kitchen, reservations, support, appointments + groups/requests/inbox); вызывается один раз из default-layout",
+      "hash": "691118350c1b",
+      "purpose": "Агрегатор Supabase Realtime каналов админки: orders, kitchen, tables, visits, alerts — стартует один раз в default-layout",
       "symbols": [
         {
           "name": "useRealtimeChannels",

@@ -148,26 +148,23 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  const { data: insertedRow, error: insertError } = await supabase
-    .from('appointment_requests')
-    .insert({
-      tenant_id: tenantId,
-      branch_id: branchId,
-      customer_id: customerId,
-      customer_name: customerName,
-      customer_phone: customerPhone,
-      customer_email: customerEmail,
-      notes,
-      services: servicesPayload,
-      status: 'new',
-    })
-    .select('id')
-    .single()
+  // После 230 заявка — это визит со status='request' (отдельной таблицы нет).
+  // RPC create_visit_request инкапсулирует INSERT.
+  const { data: rpcRow, error: rpcError } = await supabase.rpc('create_visit_request', {
+    p_tenant_id: tenantId,
+    p_branch_id: branchId,
+    p_customer_id: customerId,
+    p_customer_name: customerName,
+    p_customer_phone: customerPhone,
+    p_customer_email: customerEmail,
+    p_notes: notes,
+    p_requested_services: servicesPayload,
+  })
 
-  if (insertError) {
-    reportError(insertError)
+  if (rpcError) {
+    reportError(rpcError)
     throw createError({ statusCode: 500, message: 'Не удалось сохранить заявку' })
   }
 
-  return { id: (insertedRow as { id: string }).id }
+  return { id: (rpcRow as { id: string }).id }
 })

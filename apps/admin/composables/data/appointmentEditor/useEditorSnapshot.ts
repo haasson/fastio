@@ -7,10 +7,6 @@ import { buildServicesKey } from './utils'
  * полей формы, который сравнивается с текущим state для определения «есть ли
  * несохранённые изменения». В create-mode snapshot всегда пуст и dirty=true,
  * как только юзер ввёл хоть что-то.
- *
- * `slotRequired` — отдельный сигнал: true если изменилась дата ИЛИ состав услуг
- * (или мы в create-mode). При его срабатывании UI обязан показать слот-пикер
- * и не дать сохранить пока слот не выбран.
  */
 export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
   const snapshot = ref<EditorSnapshot | null>(null)
@@ -27,6 +23,25 @@ export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
     }
   }
 
+  // Частичный снапшот только для меты клиента/филиала. Используется в
+  // saveConvertRequest когда updateMeta уже прошла, а convertRequest ещё нет —
+  // мета в БД зафиксирована, services — нет, поэтому date/servicesKey не трогаем.
+  const takeMetaSnapshot = (): void => {
+    if (!snapshot.value) {
+      takeSnapshot()
+
+      return
+    }
+    snapshot.value = {
+      ...snapshot.value,
+      customerName: state.customerName,
+      customerPhone: state.customerPhone,
+      customerEmail: state.customerEmail,
+      notes: state.notes,
+      branchId: state.branchId,
+    }
+  }
+
   const dateDirty = computed(() => state.date !== snapshot.value?.date)
 
   const servicesDirty = computed(() => {
@@ -34,8 +49,6 @@ export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
 
     return buildServicesKey(state.services) !== snapshot.value?.servicesKey || hasPendingCancels
   })
-
-  const slotRequired = computed(() => mode === 'create' || dateDirty.value || servicesDirty.value)
 
   const dirty = computed((): boolean => {
     if (mode === 'create') {
@@ -45,7 +58,6 @@ export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
         || state.notes !== ''
         || state.date !== null
         || state.services.length > 0
-        || state.selectedSlotEntry !== null
     }
 
     return state.customerName !== snapshot.value?.customerName
@@ -54,8 +66,7 @@ export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
       || state.notes !== snapshot.value?.notes
       || dateDirty.value
       || servicesDirty.value
-      || state.selectedSlotEntry !== null
   })
 
-  return { snapshot, takeSnapshot, dirty, slotRequired }
+  return { snapshot, takeSnapshot, takeMetaSnapshot, dirty }
 }

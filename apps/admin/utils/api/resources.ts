@@ -18,9 +18,9 @@ import { query } from '~/utils/query'
 
 // ─── Bulk-load для availability/presence composables ─────
 //
-// Composables (`useAppointmentAvailability`, `useResourcePresence`) грузили
-// до 10 разных таблиц напрямую через `sb.from(...)` — нарушение архитектуры
-// `pages → composables/data → utils/api → Supabase`. Перенесли сюда.
+// `useResourcePresence` (плашки working/off-hours) и `useGroupSlotSearch`
+// (поиск слотов в админ-редакторе) грузят до 10 разных таблиц одной пачкой
+// через эти бандлы вместо прямых `sb.from(...)`.
 
 export type AvailabilityBundle = {
   serviceResources: ServiceResourceRow[]
@@ -370,8 +370,7 @@ export const resourcesApi = {
 
   /**
    * Загружает одной пачкой все данные расписания/занятости/компетенций
-   * для списка ресурсов на конкретную дату — используется в
-   * `useAppointmentAvailability` для проверки слотов в AppointmentDrawer.
+   * для списка ресурсов на конкретную дату.
    */
   async bulkLoadAvailability(
     sb: SupabaseClient,

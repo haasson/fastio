@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-01T04:28:05.681Z",
+  "generated_at": "2026-05-01T14:00:23.279Z",
   "stats": {
     "files": 37,
     "pages": 0,
-    "symbols": 149,
+    "symbols": 151,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -14,8 +14,8 @@
   "files": {
     "src/utils/appointment.ts": {
       "kind": "ts",
-      "hash": "00b4b6d27261",
-      "purpose": "Мапперы snake_case → camelCase для всех сущностей записи: ресурсы, расписания, настройки, аппойнтменты, группы, заявки",
+      "hash": "80aee68d4db8",
+      "purpose": "Мапперы строк БД в доменные типы (Resource, Appointment, Visit, AppointmentSettings и связанные расписания) — единая точка нормализации snake_case → camelCase",
       "symbols": [
         {
           "name": "mapResource",
@@ -60,22 +60,16 @@
           "purpose": "Маппит одиночную запись (Appointment) — строка из аппойнтмент-группы с услугой и ресурсом"
         },
         {
-          "name": "mapAppointmentGroup",
+          "name": "mapVisit",
           "kind": "function",
-          "hash": "2f42cbee",
-          "purpose": "Маппит группу записей одного клиента (несколько услуг подряд) с total_price и source"
+          "hash": "ecfdb4b8",
+          "purpose": "Маппит строку appointment_groups в Visit (бывший AppointmentGroup): шапка визита с requestedServices если status='request'"
         },
         {
           "name": "mapAppointmentRequestService",
           "kind": "function",
           "hash": "2c0925be",
           "purpose": "Маппит одну услугу внутри заявки на запись (часть JSON-массива services)"
-        },
-        {
-          "name": "mapAppointmentRequest",
-          "kind": "function",
-          "hash": "c8d9e347",
-          "purpose": "Маппит заявку на запись (необработанный запрос клиента до конвертации в группу)"
         }
       ]
     },
@@ -130,8 +124,8 @@
     },
     "src/utils/appointmentSlots.ts": {
       "kind": "ts",
-      "hash": "ea24738cd7d9",
-      "purpose": "Чистые функции расчёта слотов записи: рабочие часы ресурса, поиск слотов на дату, объединение по услуге, поиск групп слотов с фолбэком и доступностью на дату",
+      "hash": "1d69c0647d0c",
+      "purpose": "Алгоритмы поиска слотов: одиночные/групповые, с цветовой маркировкой preferred/any, рендер-хелперы для admin/storefront чипсов",
       "symbols": [
         {
           "name": "resolveResourceWorkingHours",
@@ -198,6 +192,24 @@
           "kind": "const",
           "hash": "41686d84",
           "purpose": "Дефолтная длина рабочего дня (8 часов) когда расписание тенанта/филиала не задано — используется для определения «длиннее дня» в группах услуг"
+        },
+        {
+          "name": "SlotChipTone",
+          "kind": "type",
+          "hash": "cadbd605",
+          "purpose": "Тип цвета чипа слота для UI: 'success' (preferred) / 'warning' (any/замена) / 'default' (нейтральный)"
+        },
+        {
+          "name": "computeSlotTone",
+          "kind": "function",
+          "hash": "b397b287",
+          "purpose": "По entry с match-полем возвращает SlotChipTone — единая логика для admin SlotChipGrid и storefront ApptGroupSlots"
+        },
+        {
+          "name": "groupSlotsByHour",
+          "kind": "function",
+          "hash": "c9c56544",
+          "purpose": "Группирует entries[] по часу старта для рендера сетки чипсов «по часам»"
         }
       ]
     },
@@ -908,8 +920,8 @@
     },
     "src/utils/themePresets.ts": {
       "kind": "ts",
-      "hash": "e4f9aa940f31",
-      "purpose": "Каталог из ~50 пресетов тем (палитры primary/bg/surface/text/border, флаг dark) и хелперы для CSS-переменных",
+      "hash": "5fc05732e098",
+      "purpose": "Готовые пресеты темы для тенантов (палитры light/dark): источник для tenant.theme_preset и UI-выбора в настройках",
       "symbols": [
         {
           "name": "ThemePresetDef",

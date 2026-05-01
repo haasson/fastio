@@ -8,7 +8,8 @@ const NOTES_MAX_LENGTH = 1000
 
 type BulkItem = {
   serviceId: string
-  resourceId: string
+  // null = клиент выбрал «любой исполнитель», бэк сам подберёт по round-robin.
+  resourceId: string | null
   startTime: string  // "HH:MM"
 }
 
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
   }
   for (const item of body.items as BulkItem[]) {
     if (!item.serviceId) throw createError({ statusCode: 400, message: 'Каждый элемент должен содержать serviceId' })
-    if (!item.resourceId) throw createError({ statusCode: 400, message: 'Каждый элемент должен содержать resourceId' })
+    // resourceId может быть null — это «любой исполнитель», бэк подберёт сам.
     if (!item.startTime || !/^\d{2}:\d{2}$/.test(item.startTime)) {
       throw createError({ statusCode: 400, message: 'Каждый элемент должен содержать startTime (HH:MM)' })
     }
@@ -100,7 +101,9 @@ export default defineEventHandler(async (event) => {
 
   const items = body.items as BulkItem[]
   const serviceIds = [...new Set(items.map((i) => i.serviceId))]
-  const resourceIds = [...new Set(items.map((i) => i.resourceId))]
+  // Только для items с явно заданным мастером — для них валидируем тенант/компетенции.
+  // Items с null собираются отдельно ниже и для каждого бэк сам подбирает кандидата.
+  const resourceIds = [...new Set(items.map((i) => i.resourceId).filter((r): r is string => r !== null))]
 
   // Загружаем услуги (фильтрация по tenant)
   const { data: servicesData } = await supabase
@@ -167,6 +170,7 @@ export default defineEventHandler(async (event) => {
   }
 
   for (const item of items) {
+    if (!item.resourceId) continue
     const svc = serviceById.get(item.serviceId)!
     const directLink = explicitLinkSet.has(`${item.serviceId}|${item.resourceId}`)
     const categoryLink = svc.category_id
@@ -181,7 +185,18 @@ export default defineEventHandler(async (event) => {
   }
 
   // Вычисляем временные интервалы для каждого item
-  type ResolvedItem = BulkItem & { startsAt: string; endsAt: string; duration: number; serviceName: string; servicePrice: number }
+  type ResolvedItem = {
+    serviceId: string
+    resourceId: string | null
+    startTime: string
+    startsAt: string
+    endsAt: string
+    duration: number
+    serviceName: string
+    servicePrice: number
+    // 'client' если клиент явно выбрал мастера, 'auto' если бэк подобрал.
+    assignedBy: 'client' | 'auto'
+  }
 
   const resolvedItems: ResolvedItem[] = items.map((item) => {
     const svc = serviceById.get(item.serviceId)!
@@ -194,8 +209,156 @@ export default defineEventHandler(async (event) => {
     const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`
     const endsAt = localDateTimeToUtcIso(body.date as string, endTime, tz)
 
-    return { ...item, startsAt, endsAt, duration, serviceName: svc.name, servicePrice: svc.price }
+    return {
+      serviceId: item.serviceId,
+      resourceId: item.resourceId,
+      startTime: item.startTime,
+      startsAt, endsAt, duration,
+      serviceName: svc.name, servicePrice: svc.price,
+      assignedBy: item.resourceId ? 'client' : 'auto',
+    }
   })
+
+  // Авто-подбор для items без resourceId («любой исполнитель»). Round-robin по
+  // дневной нагрузке: среди свободных кандидатов выбираем того, у кого меньше
+  // всего активных броней в этот календарный день. При равной нагрузке —
+  // стабильный порядок (по resource.id), чтобы тесты были детерминированы.
+  const autoItems = resolvedItems.filter((it) => !it.resourceId)
+
+  if (autoItems.length > 0) {
+    // Кандидатов соберём из service_resources + resource_categories для нужных услуг,
+    // затем отфильтруем по тенанту/active/филиалу.
+    const autoServiceIds = [...new Set(autoItems.map((it) => it.serviceId))]
+    const autoCategoryIds = [...new Set(
+      autoServiceIds.map((sid) => serviceById.get(sid)?.category_id).filter((id): id is string => !!id),
+    )]
+
+    const [{ data: directRes }, { data: categoryRes }, { data: candidatesRows }] = await Promise.all([
+      supabase.from('service_resources').select('service_id, resource_id').in('service_id', autoServiceIds),
+      autoCategoryIds.length
+        ? supabase.from('resource_categories').select('category_id, resource_id').in('category_id', autoCategoryIds)
+        : Promise.resolve({ data: [] as Array<{ category_id: string; resource_id: string }> }),
+      supabase.from('resources').select('id').eq('tenant_id', tenantId).eq('is_active', true),
+    ])
+
+    const activeIds = new Set((candidatesRows ?? []).map((r) => r.id as string))
+
+    const candidatesByService = new Map<string, Set<string>>()
+    for (const sid of autoServiceIds) candidatesByService.set(sid, new Set())
+
+    for (const row of (directRes ?? []) as Array<{ service_id: string; resource_id: string }>) {
+      if (activeIds.has(row.resource_id)) candidatesByService.get(row.service_id)?.add(row.resource_id)
+    }
+    const categoryToServices = new Map<string, string[]>()
+    for (const sid of autoServiceIds) {
+      const cid = serviceById.get(sid)?.category_id
+      if (!cid) continue
+      const arr = categoryToServices.get(cid) ?? []
+      arr.push(sid)
+      categoryToServices.set(cid, arr)
+    }
+    for (const row of (categoryRes ?? []) as Array<{ category_id: string; resource_id: string }>) {
+      if (!activeIds.has(row.resource_id)) continue
+      for (const sid of categoryToServices.get(row.category_id) ?? []) {
+        candidatesByService.get(sid)?.add(row.resource_id)
+      }
+    }
+
+    // Если задан филиал — отбрасываем кандидатов, не привязанных к нему.
+    if (branchId) {
+      const allCandidateIds = [...new Set(
+        Array.from(candidatesByService.values()).flatMap((s) => Array.from(s)),
+      )]
+      if (allCandidateIds.length) {
+        const { data: branchLinks } = await supabase
+          .from('resource_branches')
+          .select('resource_id, branch_id')
+          .in('resource_id', allCandidateIds)
+
+        const linksByResource = new Map<string, string[]>()
+        for (const row of (branchLinks ?? []) as Array<{ resource_id: string; branch_id: string }>) {
+          const arr = linksByResource.get(row.resource_id) ?? []
+          arr.push(row.branch_id)
+          linksByResource.set(row.resource_id, arr)
+        }
+        for (const set of candidatesByService.values()) {
+          for (const id of Array.from(set)) {
+            const links = linksByResource.get(id) ?? []
+            if (links.length > 0 && !links.includes(branchId)) set.delete(id)
+          }
+        }
+      }
+    }
+
+    // Дневная нагрузка: COUNT по resource_id за весь календарный день.
+    const dayStartUtc = localDateTimeToUtcIso(body.date as string, '00:00', tz)
+    const dayEndUtc = localDateTimeToUtcIso(addDaysToDateStr(body.date as string, 1), '00:00', tz)
+
+    const allCandIds = [...new Set(
+      Array.from(candidatesByService.values()).flatMap((s) => Array.from(s)),
+    )]
+
+    const loadByResource = new Map<string, number>()
+    if (allCandIds.length) {
+      const { data: loadRows } = await supabase
+        .from('appointments')
+        .select('resource_id')
+        .in('resource_id', allCandIds)
+        .neq('status', 'cancelled')
+        .gte('starts_at', dayStartUtc)
+        .lt('starts_at', dayEndUtc)
+
+      for (const row of (loadRows ?? []) as Array<{ resource_id: string }>) {
+        loadByResource.set(row.resource_id, (loadByResource.get(row.resource_id) ?? 0) + 1)
+      }
+    }
+
+    // Локальные «уже забронированные внутри текущего bulk» — учитываем чтобы
+    // round-robin не выбрал одного и того же мастера два раза подряд.
+    const localBookings = new Map<string, number>()
+    const reserveLocal = (rid: string) => localBookings.set(rid, (localBookings.get(rid) ?? 0) + 1)
+
+    for (const it of resolvedItems) {
+      if (it.resourceId) continue
+      const candidates = Array.from(candidatesByService.get(it.serviceId) ?? [])
+      if (candidates.length === 0) {
+        throw createError({ statusCode: 400, message: `Для услуги "${it.serviceName}" нет доступных исполнителей` })
+      }
+
+      // Отсеиваем тех, кто уже занят на (it.startsAt, it.endsAt). Простой запрос
+      // overlap по каждому кандидату — RPC всё равно сделает атомарный capacity-чек,
+      // мы лишь подбираем «обоснованного» кандидата.
+      const { data: busyRows } = await supabase
+        .from('appointments')
+        .select('resource_id')
+        .in('resource_id', candidates)
+        .neq('status', 'cancelled')
+        .lt('starts_at', it.endsAt)
+        .gt('ends_at', it.startsAt)
+
+      const busy = new Set((busyRows ?? []).map((r) => r.resource_id as string))
+      const free = candidates.filter((id) => !busy.has(id) && (localBookings.get(id) ?? 0) === 0)
+
+      if (free.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message: `На время ${it.startTime} нет свободных исполнителей для "${it.serviceName}". Выберите другое время.`,
+        })
+      }
+
+      // Round-robin: min нагрузки + стабильный порядок при равенстве.
+      free.sort((a, b) => {
+        const la = (loadByResource.get(a) ?? 0) + (localBookings.get(a) ?? 0)
+        const lb = (loadByResource.get(b) ?? 0) + (localBookings.get(b) ?? 0)
+        if (la !== lb) return la - lb
+
+        return a < b ? -1 : 1
+      })
+
+      it.resourceId = free[0]
+      reserveLocal(free[0])
+    }
+  }
 
   // Определяем userId и customerId. Гость: оба null.
   let userId: string | null = null
@@ -225,6 +388,7 @@ export default defineEventHandler(async (event) => {
     ends_at: it.endsAt,
     service_name: it.serviceName,
     service_price: it.servicePrice,
+    resource_assigned_by: it.assignedBy,
   }))
 
   const { data: rpcResult, error } = await supabase.rpc('create_appointments_bulk', {
@@ -245,14 +409,15 @@ export default defineEventHandler(async (event) => {
 
   if (error) {
     const code = (error as { code?: string }).code
-    if (code === 'P0002') {
+    const message = (error as { message?: string }).message
+    if (code === 'P0002' || message?.includes('Slot is taken')) {
       throw createError({
         statusCode: 409,
-        message: 'Один из выбранных слотов уже занят. Выберите другое время.',
+        statusMessage: 'Время уже занято, выберите другое',
       })
     }
     if (code === 'P0001') {
-      throw createError({ statusCode: 400, message: 'Исполнитель недоступен' })
+      throw createError({ statusCode: 400, statusMessage: message ?? 'Не удалось создать запись' })
     }
     reportError(error)
     throw createError({ statusCode: 500, message: 'Не удалось создать запись' })
@@ -260,14 +425,14 @@ export default defineEventHandler(async (event) => {
 
   type RpcResponse = { group_id: string; appointments: Array<{ id: string; service_id: string; starts_at: string; ends_at: string }> }
   const parsed = rpcResult as RpcResponse | null
-  if (!parsed?.group_id) {
+  if (!parsed?.appointments?.length) {
     reportError(new Error('[bulk] RPC returned unexpected result'))
     throw createError({ statusCode: 500, message: 'Не удалось создать запись' })
   }
 
   return {
-    groupId: parsed.group_id,
-    appointments: (parsed.appointments ?? []).map((row) => ({
+    visitId: parsed.group_id,
+    appointments: parsed.appointments.map((row) => ({
       id: row.id,
       serviceId: row.service_id,
       startsAt: row.starts_at,

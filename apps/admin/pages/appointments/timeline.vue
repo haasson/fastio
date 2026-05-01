@@ -95,23 +95,15 @@
       </div>
     </div>
 
-    <AppointmentDrawer
-      v-model="drawerOpen"
-      :appointment="selectedAppointment"
-      :resources="resources"
-      :services="services"
-      :settings="settings"
-      :create-preset="createPreset"
-      @saved="onSaved"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onUnmounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from '#imports'
 import { UiButton, UiDatepicker, UiSelect, UiSkeleton, UiEmpty, UiText, useMessage } from '@fastio/ui'
-import type { Appointment, Service } from '@fastio/shared'
+import type { Appointment } from '@fastio/shared'
 import { todayInTz, getAllSlotsInWindow, timeToMinutes, getBranchWidestWindow, getBranchHoursForDow } from '@fastio/shared'
 import type { WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
@@ -119,8 +111,9 @@ import { useBranchStore } from '~/stores/branch'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { appointmentBus } from '~/composables/data/useAppointmentsChannel'
-import AppointmentDrawer from '~/components/appointments/AppointmentDrawer.vue'
 import { reportError } from '~/utils/reportError'
+
+const router = useRouter()
 
 const message = useMessage()
 
@@ -176,7 +169,6 @@ const branchOptions = computed(() => [
 const resources = ref<import('@fastio/shared').Resource[]>([])
 const appointments = ref<Appointment[]>([])
 
-const services = ref<Service[]>([])
 const loading = ref(false)
 
 const fetch = async () => {
@@ -187,18 +179,16 @@ const fetch = async () => {
     // и слушаются через store. На случай миса при первом рендере — догружаем.
     if (!appointmentSettingsStore.settings) await appointmentSettingsStore.load()
 
-    const [res, appts, svcList] = await Promise.all([
+    const [res, appts] = await Promise.all([
       api.resources.list(currentTenantId.value),
       api.appointments.listForDay(currentTenantId.value, selectedDate.value, {
         branchId: selectedBranchId.value ?? undefined,
         timezone: tz.value,
       }),
-      api.services.listActive(currentTenantId.value),
     ])
 
     resources.value = res.filter((r) => r.isActive)
     appointments.value = appts
-    services.value = svcList
   } catch (e) {
     reportError(e)
     message.error('Не удалось загрузить расписание')
@@ -313,30 +303,32 @@ const apptBlockModifiers = (a: Appointment, slotTime: string): string[] => {
   return ['appt-block--continuation']
 }
 
-const getServiceName = (serviceId: string): string => services.value.find((s) => s.id === serviceId)?.name ?? ''
-
-// ─── Drawer ───────────────────────────────────────────────
-
-const drawerOpen = ref(false)
-const selectedAppointment = ref<Appointment | null>(null)
-const createPreset = ref<{ date: string; slotTime: string; resourceId: string | null } | null>(null)
+// ─── Navigation ───────────────────────────────────────────
+//
+// Клик по занятой ячейке → страница визита (group_id у appointment теперь NOT NULL).
+// Клик по пустой → /appointments/visits/new с префиллом даты/филиала/исполнителя.
+// Дровер выпилен — единая страница для создания и редактирования.
 
 const handleCellClick = (resourceId: string, slot: string) => {
   const appt = getAppointment(resourceId, slot)
 
   if (appt) {
-    selectedAppointment.value = appt
-    createPreset.value = null
-  } else {
-    selectedAppointment.value = null
-    createPreset.value = { date: selectedDate.value, slotTime: slot, resourceId }
-  }
-  drawerOpen.value = true
-}
+    router.push(`/appointments/visits/${appt.groupId}`)
 
-const onSaved = () => {
-  drawerOpen.value = false
-  fetch()
+    return
+  }
+
+  const branchQuery = selectedBranchId.value ? { branchId: selectedBranchId.value } : {}
+
+  router.push({
+    path: '/appointments/visits/new',
+    query: {
+      date: selectedDate.value,
+      slotTime: slot,
+      resourceId,
+      ...branchQuery,
+    },
+  })
 }
 
 // Realtime: подхватываем новые/обновлённые/удалённые записи.

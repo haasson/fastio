@@ -49,7 +49,7 @@
       v-model="cancelModal.show"
       v-model:reason="cancelModal.reason"
       :loading="cancelModal.loading"
-      :on-confirm="submitCancelGroup"
+      :on-confirm="submitCancelVisit"
     />
   </div>
 </template>
@@ -59,15 +59,18 @@ import { ref, computed, watch, reactive, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from '#imports'
 import { UiButton, UiDataTable, UiText, UiSkeleton, UiEmpty, useMessage } from '@fastio/ui'
-import { appointmentGroupBus } from '~/composables/data/useAppointmentGroupsChannel'
-import { appointmentRequestBus } from '~/composables/data/useAppointmentRequestsChannel'
-import type { Branch, InboxRow, GroupListRow, RequestListRow, InboxFilter } from '@fastio/shared'
-import { useConfirm } from '@fastio/kit'
+import { visitsBus } from '~/composables/data/useVisitsChannel'
+import type {
+  Branch,
+  InboxRow,
+  VisitListRow,
+  InboxFilter,
+} from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
-import { useAppointmentGroupsList } from '~/composables/data/useAppointmentGroupsList'
+import { useVisitsList } from '~/composables/data/useVisitsList'
 import { useAppointmentInboxCounter } from '~/composables/data/useAppointmentInboxCounter'
 import { useInboxTableColumns, type RowActionKind } from '~/composables/data/useInboxTableColumns'
 import { reportError } from '~/utils/reportError'
@@ -81,7 +84,6 @@ const gate = useGate()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
-const { confirm } = useConfirm()
 
 const ALLOWED_FILTERS: readonly InboxFilter[] = ['new', 'today', 'week', 'archive', 'all']
 
@@ -106,7 +108,7 @@ const pushToUrl = () => {
 
 const {
   loading, rows, total, totalPages, pageSize, refresh,
-} = useAppointmentGroupsList({ tenantId: currentTenantId, timezone, filter, page })
+} = useVisitsList({ tenantId: currentTenantId, timezone, filter, page })
 
 const { count: newCount } = useAppointmentInboxCounter()
 
@@ -118,10 +120,8 @@ const scheduleRefresh = () => {
 }
 
 const realtimeSubs = [
-  appointmentGroupBus.onInsert(scheduleRefresh),
-  appointmentGroupBus.onUpdate(scheduleRefresh),
-  appointmentRequestBus.onInsert(scheduleRefresh),
-  appointmentRequestBus.onUpdate(scheduleRefresh),
+  visitsBus.onInsert(scheduleRefresh),
+  visitsBus.onUpdate(scheduleRefresh),
 ]
 
 onUnmounted(() => {
@@ -158,90 +158,46 @@ const cancelModal = reactive({
   loading: false,
 })
 
-const handleConfirmGroup = async (row: GroupListRow) => {
+const handleConfirmVisit = async (row: VisitListRow) => {
   const userId = authStore.user?.id
 
   if (!userId) return
 
   setRowLoading(row.id, 'confirm')
   try {
-    await api.appointmentGroups.confirm(row.id, userId)
+    await api.visits.confirm(row.id, userId)
     refresh()
   } catch (e) {
     reportError(e)
-    message.error('Не удалось подтвердить группу')
+    message.error('Не удалось подтвердить визит')
   } finally {
     setRowLoading(row.id, null)
   }
 }
 
-const openCancelGroupModal = (row: GroupListRow) => {
+const openCancelVisitModal = (row: VisitListRow) => {
   cancelModal.targetId = row.id
   cancelModal.reason = ''
   cancelModal.loading = false
   cancelModal.show = true
 }
 
-const submitCancelGroup = async (): Promise<boolean | void> => {
+const submitCancelVisit = async (): Promise<boolean | void> => {
   cancelModal.loading = true
   try {
-    await api.appointmentGroups.cancelAll(cancelModal.targetId, cancelModal.reason || null)
+    await api.visits.cancelAll(cancelModal.targetId, cancelModal.reason || null)
     refresh()
   } catch (e) {
     reportError(e)
-    message.error('Не удалось отменить группу')
+    message.error('Не удалось отменить визит')
     cancelModal.loading = false
 
     return false
   }
 }
 
-const handleMarkInProgress = async (row: RequestListRow) => {
-  const userId = authStore.user?.id
-
-  if (!userId) return
-
-  setRowLoading(row.id, 'inProgress')
-  try {
-    await api.appointmentRequests.markInProgress(row.id, userId)
-    refresh()
-  } catch (e) {
-    reportError(e)
-    message.error('Не удалось взять заявку в работу')
-  } finally {
-    setRowLoading(row.id, null)
-  }
-}
-
-const handleDeclineRequest = async (row: RequestListRow) => {
-  const ok = await confirm({
-    title: 'Отклонить заявку?',
-    message: 'Заявка будет помечена как отклонённая.',
-    confirmType: 'error',
-    confirmText: 'Отклонить',
-  })
-
-  if (!ok) return
-
-  const userId = authStore.user?.id
-
-  if (!userId) return
-
-  setRowLoading(row.id, 'decline')
-  try {
-    await api.appointmentRequests.decline(row.id, userId)
-    refresh()
-  } catch (e) {
-    reportError(e)
-    message.error('Не удалось отклонить заявку')
-  } finally {
-    setRowLoading(row.id, null)
-  }
-}
-
 const openRow = (row: InboxRow) => {
-  if (row.kind === 'group') router.push(`/appointments/groups/${row.id}`)
-  else router.push(`/appointments/requests/${row.id}`)
+  router.push(`/appointments/visits/${row.id}`)
 }
 
 const rowProps = (row: InboxRow) => ({
@@ -256,10 +212,8 @@ const { columns } = useInboxTableColumns({
   timezone,
   rowLoading,
   canManage,
-  onConfirmGroup: handleConfirmGroup,
-  onCancelGroup: openCancelGroupModal,
-  onMarkInProgress: handleMarkInProgress,
-  onDeclineRequest: handleDeclineRequest,
+  onConfirmVisit: handleConfirmVisit,
+  onCancelVisit: openCancelVisitModal,
   onOpenRow: openRow,
 })
 

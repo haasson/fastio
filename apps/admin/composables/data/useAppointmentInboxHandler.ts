@@ -1,52 +1,50 @@
 import { watch, onUnmounted, type Ref } from 'vue'
-import { appointmentGroupBus } from '~/composables/data/useAppointmentGroupsChannel'
-import { appointmentRequestBus } from '~/composables/data/useAppointmentRequestsChannel'
+import { useDebounceFn } from '@vueuse/core'
+import { visitsBus } from '~/composables/data/useVisitsChannel'
 import { useAppointmentInboxCounter } from '~/composables/data/useAppointmentInboxCounter'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reportError } from '~/utils/reportError'
 
+// Счётчик «Новых» в инбоксе. После 230 заявка — это визит со status='request',
+// отдельной таблицы appointment_requests больше нет. countNew учитывает оба
+// случая (request-визит ИЛИ active-визит с услугами в new).
 export function useAppointmentInboxHandler(tenantId: Ref<string | null>) {
   const counter = useAppointmentInboxCounter()
   const api = useDatabase()
 
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null
-
-  const recount = async (tid: string) => {
+  const recount = async (tid: string): Promise<void> => {
     try {
-      const [g, r] = await Promise.all([
-        api.appointmentGroups.countNew(tid),
-        api.appointmentRequests.countNew(tid),
-      ])
+      const n = await api.visits.countNew(tid)
 
-      counter.set(g + r)
+      counter.set(n)
     } catch (e) {
       reportError(e)
     }
   }
 
-  const scheduleRecount = () => {
+  // Realtime-подписка на appointment_groups шумит при bulk-bookings (5 услуг = 5
+  // INSERT-эвентов в течение ~100ms). Дебаунс 300ms склеивает шквал в один recount.
+  const scheduleRecount = useDebounceFn(() => {
     const tid = tenantId.value
 
     if (!tid) return
-    if (debounceTimer) clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(() => recount(tid), 500)
-  }
 
+    return recount(tid)
+  }, 300)
+
+  // Первый recount при mount/смене тенанта — без дебаунса, чтобы бейдж не висел
+  // пустым 300ms на старте.
   watch(tenantId, (tid) => {
     if (tid) recount(tid)
   }, { immediate: true })
 
   const subs = [
-    appointmentGroupBus.onInsert(scheduleRecount),
-    appointmentGroupBus.onUpdate(scheduleRecount),
-    appointmentGroupBus.onDelete(scheduleRecount),
-    appointmentRequestBus.onInsert(scheduleRecount),
-    appointmentRequestBus.onUpdate(scheduleRecount),
-    appointmentRequestBus.onDelete(scheduleRecount),
+    visitsBus.onInsert(scheduleRecount),
+    visitsBus.onUpdate(scheduleRecount),
+    visitsBus.onDelete(scheduleRecount),
   ]
 
   onUnmounted(() => {
     subs.forEach((off) => off())
-    if (debounceTimer) clearTimeout(debounceTimer)
   })
 }

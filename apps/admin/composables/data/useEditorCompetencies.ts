@@ -7,8 +7,8 @@ import { useDatabase } from '~/composables/data/useDatabase'
  * Загружает компетенции (явные через `service_resources` + категории через
  * `resource_categories`) и собирает Map<resourceId, Set<serviceId>>.
  *
- * Используется в `AppointmentGroupContent` / `AppointmentRequestContent` чтобы
- * фильтровать селект мастера по принципу «ресурс умеет эту услугу».
+ * Используется в `VisitContent` чтобы фильтровать селект мастера по принципу
+ * «ресурс умеет эту услугу».
  */
 export function useEditorCompetencies() {
   const api = useDatabase()

@@ -2,6 +2,7 @@
 
 ## What Works
 - **Admin панель** — полностью рабочая: меню, заказы, кухня, столы, бронирования, акции, контент, внешний вид, настройки, команда, аккаунт
+- **Визиты (онлайн-запись)** — визит = посещение клиентом в один бизнес-день, 1+ услуг с независимыми статусами. Инвариант «один бизнес-день» проверяется в БД через `compute_business_date` (учитывает overnight-смены филиала). Per-service экшены, split (через серию move_appointment), единая страница для создания и редактирования (дровер выпилен)
 - **`useGate` — единая система контроля доступа** (2026-04-25): объединяет 7 слоёв (suspended / business type / plan / module toggle / role / config / compile-time flag). Возвращает `{enabled, reason}` для UI-баннеров с причиной отказа. Покрытие тестами: 27 кейсов матрицы приоритетов. Замигрирован весь admin (AppNav, orders, kitchen, menu, tables, reservations, team, settings, audit-log, banners). `useAccess` удалён.
 - **Route-level гейтинг** (2026-04-25): `middleware/gate.global.ts` + `composables/plan/useGate.routes.ts` — закрывают прямой URL-доступ к закрытым секциям (выключенный модуль / нет прав / locked план). Используют ту же карту, что и `AppNav`.
 - **Scheduled orders (заказы ко времени)** — admin + kitchen: секция "Запланировано" на странице заказов, панель "Скоро" в очереди кухни, pg_cron release, ручной early release, UiSlider для lead time

@@ -31,7 +31,7 @@
             type="button"
             class="chip"
             :class="[
-              entry.match === 'preferred' ? 'chip-green' : 'chip-yellow',
+              `chip-${computeSlotTone(entry)}`,
               { selected: selectedEntry?.startTime === entry.startTime },
             ]"
             @click="emit('update:selectedEntry', entry)"
@@ -54,7 +54,11 @@
               <span class="row-service">{{ serviceNames[entry.serviceId] ?? '—' }}</span>
               <span class="row-time">{{ entry.startTime }}–{{ entry.endTime }}</span>
             </div>
-            <div class="row-master">
+            <!-- Если клиент выбрал «любой исполнитель» — не раскрываем кому
+                 система собирается отдать слот: окончательное распределение делает
+                 админ-панель уже после подачи заявки, и для клиента это шум.
+                 Иначе — показываем подобранного мастера, при замене со старым зачёркнутым. -->
+            <div v-if="(preferredResourceByIndex?.[i] ?? null) !== null" class="row-master">
               <template v-if="entry.preferredResourceName">
                 <span class="master-old">{{ entry.preferredResourceName }}</span>
                 <ArrowRight :size="11" class="master-arrow" />
@@ -88,12 +92,17 @@ import { ref, watch } from 'vue'
 import { Check, AlertTriangle, ArrowRight } from 'lucide-vue-next'
 import { FsButton, FsSkeleton, FsAlert } from '@fastio/public-ui'
 import type { GroupSlotsResult, GroupSlotEntry } from '@fastio/shared'
+import { computeSlotTone } from '@fastio/shared'
 
 const props = defineProps<{
   result: GroupSlotsResult | null
   loading: boolean
   selectedEntry: GroupSlotEntry | null
   serviceNames: Record<string, string>
+  // Параллельный массив preferredResourceId по индексу schedule. Если для услуги
+  // null → клиент выбрал «Любой исполнитель», в превью НЕ светим конкретного,
+  // которого подобрал алгоритм. Дефолт — пустой массив (все «любые»).
+  preferredResourceByIndex?: Array<string | null>
 }>()
 
 const emit = defineEmits<{
@@ -171,14 +180,19 @@ watch(
 
   &:active { transform: scale(0.97); }
 
-  &.chip-green {
+  &.chip-success {
     background: color-mix(in srgb, var(--color-success) 18%, var(--color-surface));
     border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
   }
 
-  &.chip-yellow {
+  &.chip-warning {
     background: color-mix(in srgb, var(--color-warning) 20%, var(--color-surface));
     border-color: color-mix(in srgb, var(--color-warning) 55%, transparent);
+  }
+
+  &.chip-default {
+    background: var(--color-bg-subtle);
+    border-color: var(--color-border);
   }
 
   &.selected {

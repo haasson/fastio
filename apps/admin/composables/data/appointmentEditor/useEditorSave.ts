@@ -2,78 +2,36 @@ import { ref, computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { useRouter } from '#imports'
 import { useMessage } from '@fastio/ui'
-import type { AppointmentGroup, AppointmentRequest } from '@fastio/shared'
+import type { Visit } from '@fastio/shared'
 import { localDateTimeToUtcIso } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { reportError } from '~/utils/reportError'
 import type { EditorState } from '~/components/appointments/types'
+import { isSlotChanged } from '~/components/appointments/types'
 
 type SaveDeps = {
   mode: 'create' | 'edit'
   state: EditorState
-  initialGroup?: AppointmentGroup | null
-  initialRequest?: AppointmentRequest | null
+  initialVisit?: Visit | null
   tz: ComputedRef<string>
   dirty: ComputedRef<boolean>
-  slotRequired: ComputedRef<boolean>
   isReadOnly: ComputedRef<boolean>
   takeSnapshot: () => void
+  takeMetaSnapshot: () => void
 }
 
-/**
- * Извлекает запись изменения из ошибки RPC и показывает осмысленное сообщение.
- * Распознаёт собственные коды P0001/P0002 из миграций (см. RAISE EXCEPTION).
- */
 const handleSaveError = (e: unknown, message: ReturnType<typeof useMessage>): void => {
   reportError(e)
   const msg = (e as Error)?.message ?? ''
 
   if (msg.includes('Slot is taken')) message.error('Один из слотов уже занят. Подберите другое время.')
-  else if (msg.includes('Cannot add to closed group')) message.error('Нельзя добавить услугу в закрытую группу.')
   else if (msg.includes('Cannot update cancelled appointment') || msg.includes('Cannot update completed appointment')) {
     message.error('Эту услугу уже нельзя редактировать — она закрыта.')
+  } else if (msg.includes('бизнес-день')) {
+    message.error(msg)
   } else message.error(msg || 'Не удалось сохранить запись')
-}
-
-/**
- * Собирает items для `create_appointments_bulk` из выбранного слота и активных
- * услуг state. Порядок строк = порядок state.services (без pendingRemove),
- * соответствует entry.schedule[i] по индексу.
- */
-const buildItemsForCreate = (state: EditorState, tz: string) => {
-  const entry = state.selectedSlotEntry!
-  const date = state.date!
-
-  return state.services
-    .filter((s) => !s.pendingRemove)
-    .map((svc, i) => {
-      const sched = entry.schedule[i]
-
-      return {
-        serviceId: svc.serviceId,
-        resourceId: sched.resourceId,
-        startsAt: localDateTimeToUtcIso(date, sched.startTime, tz),
-        endsAt: localDateTimeToUtcIso(date, sched.endTime, tz),
-        serviceName: svc.serviceName,
-        servicePrice: svc.price,
-      }
-    })
-}
-
-/**
- * Map<_key, scheduleEntry> для edit-mode — позволяет находить расписание по
- * ключу услуги независимо от того, добавлена она или существующая.
- */
-const buildScheduleByKey = (state: EditorState) => {
-  const entry = state.selectedSlotEntry!
-  const active = state.services.filter((s) => !s.pendingRemove)
-  const map = new Map<string, (typeof entry.schedule)[number]>()
-
-  for (let i = 0; i < active.length; i++) map.set(active[i]._key, entry.schedule[i])
-
-  return map
 }
 
 export function useEditorSave(deps: SaveDeps) {
@@ -85,20 +43,44 @@ export function useEditorSave(deps: SaveDeps) {
 
   const saving = ref(false)
 
+  // Все активные услуги обязаны иметь выбранный слот (currentStartTime). Имя
+  // и телефон тоже обязательны. Иначе нельзя сохранить.
   const canSave = computed<boolean>(() => {
     if (deps.isReadOnly.value) return false
     if (!deps.state.customerName.trim() || !deps.state.customerPhone.trim()) return false
-    if (deps.slotRequired.value && !deps.state.selectedSlotEntry) return false
+    if (!deps.state.date) return false
 
-    return true
+    const active = deps.state.services.filter((s) => !s.pendingRemove)
+
+    if (active.length === 0) return false
+
+    return active.every((s) => !!s.currentStartTime && !!s.currentEndTime)
   })
 
+  // Create-mode: создаём визит одной транзакцией через create_appointments_bulk.
+  // Каждая услуга обязана иметь выбранный currentStartTime/currentEndTime/currentResourceId
+  // — иначе canSave=false и сюда не попадаем.
   const saveCreate = async (): Promise<void> => {
     const tenantId = tenantStore.currentTenantId
 
     if (!tenantId) throw new Error('Тенант не выбран')
 
-    const result = await api.appointmentGroups.createBulk({
+    const date = deps.state.date!
+    const tzVal = deps.tz.value
+
+    const items = deps.state.services
+      .filter((s) => !s.pendingRemove)
+      .map((s) => ({
+        serviceId: s.serviceId,
+        resourceId: s.currentResourceId,
+        startsAt: localDateTimeToUtcIso(date, s.currentStartTime!, tzVal),
+        endsAt: localDateTimeToUtcIso(date, s.currentEndTime!, tzVal),
+        serviceName: s.serviceName,
+        servicePrice: s.price,
+        resourceAssignedBy: 'admin' as const,
+      }))
+
+    const result = await api.visits.createBulk({
       tenantId,
       branchId: deps.state.branchId,
       customerId: null,
@@ -106,53 +88,46 @@ export function useEditorSave(deps: SaveDeps) {
       customerPhone: deps.state.customerPhone.trim(),
       customerEmail: deps.state.customerEmail.trim() || null,
       notes: deps.state.notes.trim() || null,
-      items: buildItemsForCreate(deps.state, deps.tz.value),
+      items,
       autoConfirm: true,
       allowReschedule: false,
       allowCancel: false,
-      source: deps.initialRequest ? 'request' : 'admin',
+      source: 'admin',
     })
 
-    if (deps.initialRequest) {
-      const userId = authStore.user?.id
+    message.success('Визит создан')
 
-      if (userId) {
-        try {
-          await api.appointmentRequests.markConverted(deps.initialRequest.id, result.groupId, userId)
-        } catch (e) {
-          reportError(e)
-          message.warning('Запись создана, но не удалось пометить заявку как обработанную.')
-        }
-      }
-      try {
-        await api.appointmentGroups.updateMeta(result.groupId, { requestId: deps.initialRequest.id })
-      } catch (e) {
-        reportError(e)
-      }
-    }
-
-    message.success('Запись сохранена')
-
-    const path = deps.initialRequest
-      ? `/appointments/groups/${result.groupId}?fromRequest=${deps.initialRequest.id}`
-      : `/appointments/groups/${result.groupId}`
-
-    await router.push(path)
+    await router.push(`/appointments/visits/${result.visitId}`)
   }
 
-  // Edit-flow: cancel/reschedule паралелим (разные appointment_id, advisory locks
-  // не конфликтуют), addToGroup — последовательно (если две новые услуги попадают
-  // на одного мастера, параллельные INSERT'ы прошли бы capacity-проверку и упали
-  // в гонке). Порядок этапов: cancel → reschedule → addToGroup. Cancel первым
-  // освобождает слоты, иначе reschedule уперся бы в «Slot is taken» от тех же
-  // записей, которые мы и так удаляем. После addToGroup пишем appointmentId в
-  // state, иначе повторный save задублирует INSERT.
-  const saveEdit = async (): Promise<void> => {
-    const groupId = deps.initialGroup!.id
+  // Конверсия request-визита в active: метаданные уже в БД, нужно лишь добавить
+  // appointments + сменить status. Делается одним RPC convert_visit_request.
+  const saveConvertRequest = async (): Promise<void> => {
+    const visit = deps.initialVisit!
+    const userId = authStore.user?.id
+
+    if (!userId) throw new Error('Не авторизован')
+
     const date = deps.state.date!
     const tzVal = deps.tz.value
 
-    await api.appointmentGroups.updateMeta(groupId, {
+    const items = deps.state.services
+      .filter((s) => !s.pendingRemove)
+      .map((s) => ({
+        serviceId: s.serviceId,
+        resourceId: s.currentResourceId,
+        startsAt: localDateTimeToUtcIso(date, s.currentStartTime!, tzVal),
+        endsAt: localDateTimeToUtcIso(date, s.currentEndTime!, tzVal),
+        serviceName: s.serviceName,
+        servicePrice: s.price,
+        resourceAssignedBy: 'admin' as const,
+      }))
+
+    // Метаданные клиента/филиала могли быть отредактированы — апдейтим до конвертации.
+    // Если convertRequest упадёт — мета уже сохранена в БД, поэтому фиксируем
+    // partial snapshot чтобы повторный save не дёргал updateMeta зря и юзер видел
+    // в state ровно то что лежит в БД (правило feedback_optimistic_updates).
+    await api.visits.updateMeta(visit.id, {
       customerName: deps.state.customerName.trim(),
       customerPhone: deps.state.customerPhone.trim(),
       customerEmail: deps.state.customerEmail.trim() || null,
@@ -160,61 +135,206 @@ export function useEditorSave(deps: SaveDeps) {
       branchId: deps.state.branchId,
     })
 
-    if (deps.slotRequired.value && deps.state.selectedSlotEntry) {
-      const scheduleByKey = buildScheduleByKey(deps.state)
+    deps.takeMetaSnapshot()
 
-      const toCancel = deps.state.services.filter((s) => s.pendingRemove && s.appointmentId)
+    try {
+      await api.visits.convertRequest(visit.id, userId, items)
+    } catch (e) {
+      message.error('Данные клиента сохранены, но создание услуг упало — попробуйте ещё раз')
+      throw e
+    }
 
-      await Promise.all(toCancel.map((svc) => api.appointments.cancel(
-        svc.appointmentId!, 'Изменено в редакторе', 'admin',
-      )))
+    message.success('Заявка оформлена')
+  }
 
-      const toReschedule = deps.state.services.filter((s) => !s.pendingRemove && s.appointmentId)
+  // Edit-mode: применяем изменения по типам отдельными RPC. Порядок:
+  //   1) отмены помеченных существующих → освобождаем capacity
+  //   2) reschedule существующих с slotChanged → применяем новые слоты
+  //   3) добавления новых услуг (с выбранным слотом) → INSERT в визит
+  // Метаданные визита (имя/телефон/...) — отдельным UPDATE до 1).
+  // Каждая операция атомарна, цепочка best-effort: при ошибке уже применённые
+  // не откатываются. Юзер увидит сообщение и часть данных в БД будет обновлена.
+  const saveEdit = async (): Promise<void> => {
+    const visitId = deps.initialVisit!.id
+    const date = deps.state.date!
+    const tzVal = deps.tz.value
 
-      await Promise.all(toReschedule.map((svc) => {
-        const sched = scheduleByKey.get(svc._key)!
+    await api.visits.updateMeta(visitId, {
+      customerName: deps.state.customerName.trim(),
+      customerPhone: deps.state.customerPhone.trim(),
+      customerEmail: deps.state.customerEmail.trim() || null,
+      notes: deps.state.notes.trim() || null,
+      branchId: deps.state.branchId,
+    })
 
-        return api.appointments.reschedule(svc.appointmentId!, {
-          resourceId: sched.resourceId,
-          startsAt: localDateTimeToUtcIso(date, sched.startTime, tzVal),
-          endsAt: localDateTimeToUtcIso(date, sched.endTime, tzVal),
-          serviceId: svc.serviceId,
-          serviceName: svc.serviceName,
-          servicePrice: svc.price,
-        })
-      }))
+    const toCancel = deps.state.services.filter((s) => s.pendingRemove && s.appointmentId)
 
-      for (const svc of deps.state.services.filter((s) => !s.pendingRemove && !s.appointmentId)) {
-        const sched = scheduleByKey.get(svc._key)!
+    await Promise.all(toCancel.map((svc) => api.appointments.softDelete(
+      svc.appointmentId!, 'Изменено в редакторе', 'admin',
+    )))
 
-        const created = await api.appointments.addToGroup({
-          groupId,
-          serviceId: svc.serviceId,
-          resourceId: sched.resourceId,
-          startsAt: localDateTimeToUtcIso(date, sched.startTime, tzVal),
-          endsAt: localDateTimeToUtcIso(date, sched.endTime, tzVal),
-          serviceName: svc.serviceName,
-          servicePrice: svc.price,
-        })
+    const toReschedule = deps.state.services.filter((s) => !s.pendingRemove && s.appointmentId && isSlotChanged(s) && s.currentStartTime && s.currentEndTime)
 
-        svc.appointmentId = created.id
-      }
+    await Promise.all(toReschedule.map((svc) => api.appointments.reschedule(svc.appointmentId!, {
+      resourceId: svc.currentResourceId,
+      startsAt: localDateTimeToUtcIso(date, svc.currentStartTime!, tzVal),
+      endsAt: localDateTimeToUtcIso(date, svc.currentEndTime!, tzVal),
+      serviceId: svc.serviceId,
+      serviceName: svc.serviceName,
+      servicePrice: svc.price,
+      // Любая правка мастера/слота через editor — это admin-действие.
+      resourceAssignedBy: 'admin',
+    })))
+
+    // Новые услуги добавляем последовательно (advisory lock per resource —
+    // параллельные INSERT'ы могли бы завершиться двойной записью одного слота
+    // без error если pg_advisory_xact_lock запросов не пересекается; перестраховка).
+    for (const svc of deps.state.services.filter((s) => !s.pendingRemove && !s.appointmentId && s.currentStartTime && s.currentEndTime)) {
+      const created = await api.appointments.addToVisit({
+        visitId,
+        serviceId: svc.serviceId,
+        resourceId: svc.currentResourceId,
+        startsAt: localDateTimeToUtcIso(date, svc.currentStartTime!, tzVal),
+        endsAt: localDateTimeToUtcIso(date, svc.currentEndTime!, tzVal),
+        serviceName: svc.serviceName,
+        servicePrice: svc.price,
+        resourceAssignedBy: 'admin',
+      })
+
+      svc.appointmentId = created.id
+      // После insert «новый» слот становится original (записан в БД) — синхронизируем
+      // снапшот, иначе isSlotChanged будет постоянно true для этой услуги.
+      svc.originalResourceId = svc.currentResourceId
+      svc.originalStartTime = svc.currentStartTime
+      svc.originalEndTime = svc.currentEndTime
+    }
+
+    // После reschedule в БД лежит то что в state.current* — обновляем original*.
+    for (const svc of toReschedule) {
+      svc.originalResourceId = svc.currentResourceId
+      svc.originalStartTime = svc.currentStartTime
+      svc.originalEndTime = svc.currentEndTime
     }
 
     deps.state.services = deps.state.services.filter((s) => !s.pendingRemove)
-    deps.state.selectedSlotEntry = null
     deps.takeSnapshot()
   }
 
+  // Edit-mode для request-визита = «Оформить заявку»: ту же кнопку «Сохранить» зовём,
+  // но внутри идёт convertRequest вместо обычного diff-save.
+  const isRequestMode = computed(() => deps.mode === 'edit' && deps.initialVisit?.status === 'request')
+
+  // «Дата визита изменилась относительно сохранённой». В этом режиме reschedule
+  // не подходит (его триггер enforce_visit_business_date упадёт — у визита
+  // прежний business_date). Используем move_appointment для каждой услуги:
+  // он атомарно создаёт/находит целевой визит на новую дату и перевешивает.
+  const isDateMoved = computed(() => deps.mode === 'edit'
+    && deps.initialVisit?.status === 'active'
+    && !!deps.initialVisit.businessDate
+    && deps.state.date !== deps.initialVisit.businessDate)
+
+  // Полный перенос всего визита на другой день — атомарный RPC move_visit_to_date.
+  // Соft-deletes для toRemove, RPC для переноса всех existing услуг одной транзакцией,
+  // INSERT для новых. При ошибке RPC старый визит остаётся целым (атомарность БД).
+  const saveMoveVisitDate = async (): Promise<string | null> => {
+    const oldId = deps.initialVisit!.id
+    const newDate = deps.state.date!
+    const tzVal = deps.tz.value
+
+    await api.visits.updateMeta(oldId, {
+      customerName: deps.state.customerName.trim(),
+      customerPhone: deps.state.customerPhone.trim(),
+      customerEmail: deps.state.customerEmail.trim() || null,
+      notes: deps.state.notes.trim() || null,
+      branchId: deps.state.branchId,
+    })
+
+    // Soft-delete помеченных к удалению — их не двигаем на новую дату.
+    const toRemove = deps.state.services.filter((s) => s.pendingRemove && s.appointmentId)
+
+    await Promise.all(toRemove.map((svc) => api.appointments.softDelete(
+      svc.appointmentId!, 'Изменено в редакторе', 'admin',
+    )))
+
+    // Атомарный перенос на новую дату — RPC сдвигает все активные услуги.
+    const remaining = deps.state.services.filter((s) => !s.pendingRemove && s.appointmentId)
+
+    let newVisitId = oldId
+
+    if (remaining.length > 0) {
+      const moveResult = await api.visits.moveVisitToDate(
+        oldId, newDate, authStore.user?.id ?? null,
+      )
+
+      newVisitId = moveResult.newVisitId ?? oldId
+    }
+
+    // После переноса даты — slot changes (мастер/время) применяем отдельным reschedule.
+    // Это уже не атомарно с move, но в большинстве кейсов юзер меняет только дату.
+    const toReschedule = deps.state.services.filter((s) => !s.pendingRemove && s.appointmentId && isSlotChanged(s) && s.currentStartTime && s.currentEndTime)
+
+    await Promise.all(toReschedule.map((svc) => api.appointments.reschedule(svc.appointmentId!, {
+      resourceId: svc.currentResourceId,
+      startsAt: localDateTimeToUtcIso(newDate, svc.currentStartTime!, tzVal),
+      endsAt: localDateTimeToUtcIso(newDate, svc.currentEndTime!, tzVal),
+      serviceId: svc.serviceId,
+      serviceName: svc.serviceName,
+      servicePrice: svc.price,
+      resourceAssignedBy: 'admin',
+    })))
+
+    // Новые услуги (без appointmentId) — добавляем в (возможно новый) визит.
+    for (const svc of deps.state.services.filter((s) => !s.pendingRemove && !s.appointmentId && s.currentStartTime && s.currentEndTime)) {
+      const created = await api.appointments.addToVisit({
+        visitId: newVisitId,
+        serviceId: svc.serviceId,
+        resourceId: svc.currentResourceId,
+        startsAt: localDateTimeToUtcIso(newDate, svc.currentStartTime!, tzVal),
+        endsAt: localDateTimeToUtcIso(newDate, svc.currentEndTime!, tzVal),
+        serviceName: svc.serviceName,
+        servicePrice: svc.price,
+        resourceAssignedBy: 'admin',
+      })
+
+      svc.appointmentId = created.id
+      svc.originalResourceId = svc.currentResourceId
+      svc.originalStartTime = svc.currentStartTime
+      svc.originalEndTime = svc.currentEndTime
+    }
+
+    // После reschedule original* должен совпадать с current* — иначе isSlotChanged
+    // всё ещё будет true и при следующем save попробуем reschedule повторно.
+    for (const svc of toReschedule) {
+      svc.originalResourceId = svc.currentResourceId
+      svc.originalStartTime = svc.currentStartTime
+      svc.originalEndTime = svc.currentEndTime
+    }
+
+    deps.state.services = deps.state.services.filter((s) => !s.pendingRemove)
+    deps.takeSnapshot()
+
+    return newVisitId !== oldId ? newVisitId : null
+  }
+
   const save = async (): Promise<boolean> => {
-    if (!deps.dirty.value || !canSave.value || saving.value) return false
+    if (!canSave.value || saving.value) return false
+    if (!isRequestMode.value && !deps.dirty.value) return false
+
     saving.value = true
     try {
       if (deps.mode === 'create') {
         await saveCreate()
+      } else if (isRequestMode.value) {
+        await saveConvertRequest()
+      } else if (isDateMoved.value) {
+        const newId = await saveMoveVisitDate()
+
+        message.success('Визит перенесён')
+        // id визита мог измениться — переходим на новую страницу.
+        if (newId) await router.push(`/appointments/visits/${newId}`)
       } else {
         await saveEdit()
-        message.success('Запись сохранена')
+        message.success('Визит сохранён')
       }
 
       return true

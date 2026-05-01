@@ -4,6 +4,12 @@ export type ResourceType = 'person' | 'object'
 
 export type AppointmentStatus = 'new' | 'confirmed' | 'cancelled' | 'done'
 
+// Кто назначил мастера для этой записи. UI показывает бейдж «автоподбор» при 'auto'.
+//   client — клиент с витрины явно выбрал мастера
+//   auto   — клиент выбрал «любой», бэк подобрал автоматически
+//   admin  — менеджер из админки назначил/переназначил
+export type ResourceAssignedBy = 'client' | 'auto' | 'admin'
+
 export type StaffNameFormat = 'first_name' | 'first_name_last_initial' | 'full_name'
 
 export type Resource = {
@@ -79,7 +85,7 @@ export type Appointment = {
   id: string
   tenantId: string
   branchId: string | null
-  groupId: string
+  groupId: string | null
   serviceId: string | null  // null если услуга удалена; см. service_name/service_price
   serviceName: string       // снапшот имени услуги на момент записи
   servicePrice: number      // снапшот цены услуги на момент записи
@@ -92,6 +98,7 @@ export type Appointment = {
   endsAt: string           // UTC ISO timestamp — расчётное (starts + duration)
   actualEndsAt: string | null  // фактическое окончание для open_ended
   status: AppointmentStatus
+  resourceAssignedBy: ResourceAssignedBy | null
   notes: string | null
   cancelReason: string | null
   cancelledBy: string | null  // 'client' | 'admin'
@@ -172,6 +179,10 @@ export type GroupSlotOption = {
     preferredResourceName: string | null
     startTime: string // "HH:MM"
     endTime: string   // "HH:MM"
+    // Все ресурсы (включая выбранного), которые свободны в этом окне для этой услуги.
+    // Используется в UI «выбрать другого мастера» для жёлтых слотов — показываем
+    // только реально свободных, без RPC-проверки. Всегда содержит resourceId.
+    availableResourceIds: string[]
   }>
 }
 

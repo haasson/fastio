@@ -3,32 +3,25 @@ import type { ComputedRef, Ref } from 'vue'
 import { UiButton, UiText, UiTag } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import {
-  APPOINTMENT_GROUP_STATUS_LABELS,
-  APPOINTMENT_GROUP_STATUS_TAG_TYPES,
-  APPOINTMENT_REQUEST_STATUS_LABELS,
-  APPOINTMENT_REQUEST_STATUS_TAG_TYPES,
-  formatPrice, formatMinutes,
+  formatMinutes,
+  VISIT_AGGREGATE_STATUS_LABELS,
+  VISIT_AGGREGATE_STATUS_TAG_TYPES,
 } from '@fastio/shared'
-import type { InboxRow, GroupListRow, RequestListRow } from '@fastio/shared'
+import type { InboxRow, VisitListRow } from '@fastio/shared'
 
-export type RowActionKind = 'confirm' | 'cancel' | 'inProgress' | 'decline'
+export type RowActionKind = 'confirm' | 'cancel'
 
 type Params = {
   branchMap: ComputedRef<Map<string, string>>
   timezone: Ref<string>
   rowLoading: Ref<Record<string, RowActionKind>>
   canManage: ComputedRef<boolean>
-  onConfirmGroup: (row: GroupListRow) => void
-  onCancelGroup: (row: GroupListRow) => void
-  onMarkInProgress: (row: RequestListRow) => void
-  onDeclineRequest: (row: RequestListRow) => void
+  onConfirmVisit: (row: VisitListRow) => void
+  onCancelVisit: (row: VisitListRow) => void
   onOpenRow: (row: InboxRow) => void
 }
 
 export function useInboxTableColumns(params: Params) {
-  // Компактный формат «25.04 14:30» в TZ тенанта — для ячеек таблицы инбокса.
-  // Отдельная функция, потому что shared `formatDateTime` использует месяц словом
-  // («25 апр, 14:30») и не принимает TZ — а здесь нужен tz.value тенанта.
   const formatShortDate = (iso: string): string => {
     const parts = new Intl.DateTimeFormat('ru', {
       timeZone: params.timezone.value,
@@ -45,82 +38,60 @@ export function useInboxTableColumns(params: Params) {
     const isBusy = currentAction !== null
     const canManage = params.canManage.value
 
-    if (row.kind === 'group') {
-      const status = (row as GroupListRow).status
-
-      if (status === 'new') {
-        return h('div', { class: 'action-btns' }, [
-          h(UiButton, {
-            type: 'primary',
-            size: 'small',
-            loading: currentAction === 'confirm',
-            disabled: !canManage || isBusy,
-            onClick: (e: MouseEvent) => {
-              e.stopPropagation()
-              params.onConfirmGroup(row as GroupListRow)
-            },
-          }, () => 'Подтвердить'),
-          h(UiButton, {
-            size: 'small',
-            loading: currentAction === 'cancel',
-            disabled: !canManage || isBusy,
-            class: 'btn-danger',
-            onClick: (e: MouseEvent) => {
-              e.stopPropagation()
-              params.onCancelGroup(row as GroupListRow)
-            },
-          }, () => 'Отменить'),
-        ])
-      }
-      const isArchived = status === 'cancelled' || status === 'done'
-
-      return h(UiButton, {
-        type: 'text',
-        size: 'small',
-        class: isArchived ? 'btn-muted' : '',
-        onClick: (e: MouseEvent) => {
-          e.stopPropagation()
-          params.onOpenRow(row)
-        },
-      }, () => '→ Открыть')
-    }
-
-    const status = (row as RequestListRow).status
-
-    if (status === 'new') {
-      return h('div', { class: 'action-btns' }, [
-        h(UiButton, {
-          size: 'small',
-          loading: currentAction === 'inProgress',
-          disabled: !canManage || isBusy,
-          onClick: (e: MouseEvent) => {
-            e.stopPropagation()
-            params.onMarkInProgress(row as RequestListRow)
-          },
-        }, () => 'В работу'),
-        h(UiButton, {
-          size: 'small',
-          loading: currentAction === 'decline',
-          disabled: !canManage || isBusy,
-          class: 'btn-danger',
-          onClick: (e: MouseEvent) => {
-            e.stopPropagation()
-            params.onDeclineRequest(row as RequestListRow)
-          },
-        }, () => 'Отклонить'),
-      ])
-    }
-    const isArchived = status === 'converted' || status === 'declined'
-
-    return h(UiButton, {
-      type: 'text',
-      size: 'small',
-      class: isArchived ? 'btn-muted' : '',
+    const openBtn = (label: string, type: 'text' | 'primary' = 'text') => h(UiButton, {
+      type, size: 'small', class: type === 'text' ? 'btn-muted' : undefined,
       onClick: (e: MouseEvent) => {
         e.stopPropagation()
         params.onOpenRow(row)
       },
-    }, () => '→ Открыть')
+    }, () => label)
+
+    const cancelBtn = () => h(UiButton, {
+      size: 'small',
+      loading: currentAction === 'cancel',
+      disabled: !canManage || isBusy,
+      class: 'btn-danger',
+      onClick: (e: MouseEvent) => {
+        e.stopPropagation()
+        params.onCancelVisit(row)
+      },
+    }, () => 'Отменить')
+
+    // Финальные состояния — только «Открыть».
+    if (row.aggregateStatus === 'cancelled' || row.aggregateStatus === 'done') {
+      return openBtn('→ Открыть')
+    }
+
+    // Заявка → «Открыть» (для оформления слотов) + «Отменить».
+    if (row.aggregateStatus === 'request') {
+      return h('div', { class: 'action-btns' }, [
+        openBtn('Открыть', 'primary'),
+        cancelBtn(),
+      ])
+    }
+
+    // Только pending имеет смысл «Принять» (есть услуги new).
+    if (row.aggregateStatus === 'pending') {
+      return h('div', { class: 'action-btns' }, [
+        h(UiButton, {
+          type: 'primary',
+          size: 'small',
+          loading: currentAction === 'confirm',
+          disabled: !canManage || isBusy,
+          onClick: (e: MouseEvent) => {
+            e.stopPropagation()
+            params.onConfirmVisit(row)
+          },
+        }, () => 'Принять'),
+        cancelBtn(),
+      ])
+    }
+
+    // confirmed / mixed — нечего принимать, но можно открыть/отменить.
+    return h('div', { class: 'action-btns' }, [
+      openBtn('Открыть', 'primary'),
+      cancelBtn(),
+    ])
   }
 
   const columns = computed<DataTableColumns<InboxRow>>(() => [
@@ -128,9 +99,13 @@ export function useInboxTableColumns(params: Params) {
       title: 'Тип',
       key: 'kind',
       width: 110,
-      render: (row) => row.kind === 'group'
-        ? h(UiTag, { type: 'primary', size: 'small', empty: true }, () => '📅 Запись')
-        : h(UiTag, { type: 'default', size: 'small', empty: true }, () => '✉️ Заявка'),
+      render: (row) => {
+        if (row.aggregateStatus === 'request') {
+          return h(UiTag, { type: 'primary', size: 'small', empty: true }, () => '✉️ Заявка')
+        }
+
+        return h(UiTag, { type: 'default', size: 'small', empty: true }, () => '📅 Визит')
+      },
     },
     {
       title: 'Клиент',
@@ -144,38 +119,18 @@ export function useInboxTableColumns(params: Params) {
     {
       title: 'Услуги',
       key: 'services',
-      render: (row) => {
-        const names = row.kind === 'group'
-          ? (row as GroupListRow).servicesList.join(', ')
-          : (row as RequestListRow).services.map((s) => s.serviceName).join(', ')
-
-        return h(UiText, { size: 'tiny' }, () => names || '—')
-      },
+      render: (row) => h(UiText, { size: 'tiny' }, () => row.servicesList.join(', ') || '—'),
     },
     {
       title: 'Дата визита',
       key: 'visitDate',
       width: 130,
       render: (row) => {
-        if (row.kind === 'group' && (row as GroupListRow).firstStartsAt) {
-          return h(UiText, { size: 'tiny' }, () => formatShortDate((row as GroupListRow).firstStartsAt!))
+        if (row.firstStartsAt) {
+          return h(UiText, { size: 'tiny' }, () => formatShortDate(row.firstStartsAt!))
         }
 
         return h(UiText, { size: 'tiny', class: 'muted' }, () => '—')
-      },
-    },
-    {
-      title: 'Цена',
-      key: 'price',
-      width: 110,
-      render: (row) => {
-        const price = row.kind === 'group'
-          ? (row as GroupListRow).totalPrice
-          : (row as RequestListRow).services.reduce((s, x) => s + x.price, 0)
-
-        if (!price) return h(UiText, { size: 'tiny', class: 'muted' }, () => '—')
-
-        return h(UiText, { size: 'tiny' }, () => formatPrice(price))
       },
     },
     {
@@ -183,29 +138,19 @@ export function useInboxTableColumns(params: Params) {
       key: 'duration',
       width: 90,
       render: (row) => {
-        const mins = row.kind === 'group'
-          ? (row as GroupListRow).totalDurationMinutes
-          : (row as RequestListRow).services.reduce((s, x) => s + x.durationMinutes, 0)
+        if (!row.totalDurationMinutes) return h(UiText, { size: 'tiny', class: 'muted' }, () => '—')
 
-        if (!mins) return h(UiText, { size: 'tiny', class: 'muted' }, () => '—')
-
-        return h(UiText, { size: 'tiny' }, () => formatMinutes(mins))
+        return h(UiText, { size: 'tiny' }, () => formatMinutes(row.totalDurationMinutes))
       },
     },
     {
       title: 'Статус',
       key: 'status',
       width: 170,
-      render: (row) => {
-        if (row.kind === 'group') {
-          const s = (row as GroupListRow).status
-
-          return h(UiTag, { type: APPOINTMENT_GROUP_STATUS_TAG_TYPES[s] ?? 'default', size: 'small', empty: true }, () => APPOINTMENT_GROUP_STATUS_LABELS[s])
-        }
-        const s = (row as RequestListRow).status
-
-        return h(UiTag, { type: APPOINTMENT_REQUEST_STATUS_TAG_TYPES[s] ?? 'default', size: 'small', empty: true }, () => APPOINTMENT_REQUEST_STATUS_LABELS[s])
-      },
+      render: (row) => h(UiTag, {
+        type: VISIT_AGGREGATE_STATUS_TAG_TYPES[row.aggregateStatus] ?? 'default',
+        size: 'small', empty: true,
+      }, () => VISIT_AGGREGATE_STATUS_LABELS[row.aggregateStatus] ?? row.aggregateStatus),
     },
     {
       title: 'Филиал',
