@@ -264,7 +264,7 @@ export const useCartStore = defineStore('cart', () => {
                 _key: dishItem._key || crypto.randomUUID(),
               }]
             }
-            return [{ ...(item as ServiceCartItem), allowResourceChoice: (item as ServiceCartItem).allowResourceChoice ?? true, _key: item._key || crypto.randomUUID() }]
+            return [{ ...(item as ServiceCartItem), _key: item._key || crypto.randomUUID() }]
           })
         }
       } catch (e) {
