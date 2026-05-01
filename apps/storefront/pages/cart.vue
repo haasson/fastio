@@ -217,6 +217,7 @@ const editServiceInfo = computed(() => {
     price: it.price,
     duration: it.duration,
     photos: it.photo ? [it.photo] : [],
+    allowResourceChoice: it.allowResourceChoice,
   }
 })
 

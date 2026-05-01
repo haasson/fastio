@@ -43,6 +43,7 @@ type ServiceInfo = {
   price: number
   duration: number
   photos: string[]
+  allowResourceChoice?: boolean
 }
 
 const props = withDefaults(defineProps<{
@@ -75,6 +76,10 @@ async function loadResources(serviceId: string) {
   const gen = ++loadGen
   const current = cart.serviceItems.find((i) => i.serviceId === serviceId)
   selectedResourceId.value = current?.preferredResourceId ?? ANY_VALUE
+  if (props.service.allowResourceChoice === false) {
+    resources.value = []
+    return
+  }
   resources.value = null
   try {
     const params = new URLSearchParams({ serviceId })
@@ -116,6 +121,7 @@ const onConfirm = () => {
       duration: props.service.duration,
       photo: props.service.photos[0] ?? null,
       preferredResourceId: resourceId,
+      allowResourceChoice: props.service.allowResourceChoice ?? true,
       _key: crypto.randomUUID(),
     })
   }

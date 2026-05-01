@@ -204,6 +204,7 @@ function addServiceToCart(svc: ServiceCard) {
     duration: svc.duration,
     photo: svc.photos[0] ?? null,
     preferredResourceId: null,
+    allowResourceChoice: svc.allowResourceChoice,
     _key: crypto.randomUUID(),
   })
 }

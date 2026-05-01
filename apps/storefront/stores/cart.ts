@@ -18,6 +18,7 @@ export type ServiceCartItem = {
   duration: number
   photo: string | null
   preferredResourceId: string | null
+  allowResourceChoice: boolean
 }
 
 export type CartItem = DishCartItem | ServiceCartItem
@@ -263,7 +264,7 @@ export const useCartStore = defineStore('cart', () => {
                 _key: dishItem._key || crypto.randomUUID(),
               }]
             }
-            return [{ ...(item as ServiceCartItem), _key: item._key || crypto.randomUUID() }]
+            return [{ ...(item as ServiceCartItem), allowResourceChoice: (item as ServiceCartItem).allowResourceChoice ?? true, _key: item._key || crypto.randomUUID() }]
           })
         }
       } catch (e) {

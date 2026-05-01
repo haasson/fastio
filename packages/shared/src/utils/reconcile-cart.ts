@@ -39,6 +39,7 @@ export type ReconcileServiceItem = {
   duration: number
   photo: string | null
   preferredResourceId: string | null
+  allowResourceChoice: boolean
 }
 
 export type ReconcileService = {
