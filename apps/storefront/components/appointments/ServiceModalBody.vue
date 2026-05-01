@@ -61,10 +61,13 @@ const ANY_VALUE = '__any__'
 const resources = ref<Array<{ id: string; name: string }> | null>(null)
 const selectedResourceId = ref<string>(ANY_VALUE)
 
-const resourceChips = computed(() => [
-  { id: ANY_VALUE, label: resourceAnyLabel.value },
-  ...(resources.value ?? []).map((r) => ({ id: r.id, label: r.name })),
-])
+const resourceChips = computed(() => {
+  if (!resources.value?.length) return []
+  return [
+    { id: ANY_VALUE, label: resourceAnyLabel.value },
+    ...resources.value.map((r) => ({ id: r.id, label: r.name })),
+  ]
+})
 
 let loadGen = 0
 

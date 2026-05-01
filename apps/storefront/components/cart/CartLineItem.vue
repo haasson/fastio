@@ -17,7 +17,7 @@
 
       <div v-if="isService && serviceItem" class="line-meta">
         <FsText as="span" variant="caption" class="line-duration">{{ serviceItem.duration }} мин</FsText>
-        <FsText as="span" variant="caption" class="line-master">{{ masterLabel }}</FsText>
+        <FsText v-if="masterLabel" as="span" variant="caption" class="line-master">{{ masterLabel }}</FsText>
       </div>
 
       <div class="line-controls">
@@ -69,10 +69,8 @@ import SfStepper from '~/components/sf/domain/SfStepper.vue'
 import { FsIconButton, FsText } from '@fastio/public-ui'
 import { useConfirm } from '~/composables/useConfirm'
 import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
-import { useResourceLabel } from '~/composables/useResourceLabel'
 
 const { placeholderIcon } = useItemPlaceholder()
-const { anyLabel: anyResourceLabel } = useResourceLabel()
 
 type Props = {
   item: CartItem
@@ -126,10 +124,9 @@ const totalPrice = computed<number | null>(() => {
 
 const masterLabel = computed(() => {
   const sv = serviceItem.value
-  if (!sv) return ''
-  if (!sv.preferredResourceId) return anyResourceLabel.value
+  if (!sv || !sv.preferredResourceId) return ''
   const found = props.resources.find((r) => r.id === sv.preferredResourceId)
-  return found?.name ?? anyResourceLabel.value
+  return found?.name ?? ''
 })
 
 const confirmTitle = computed(() =>

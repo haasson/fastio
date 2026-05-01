@@ -35,7 +35,7 @@
     </div>
 
     <!-- Legend -->
-    <div class="legend">
+    <div v-if="showLegend" class="legend">
       <span class="legend-item"><span class="legend-dot dot-green" />по выбору</span>
       <span class="legend-item"><span class="legend-dot dot-yellow" />с заменой</span>
     </div>
@@ -56,7 +56,10 @@ const props = withDefaults(defineProps<{
   // /api/appointments/group-slots и group-week. Дефолт — Москва, как фолбэк
   // на ранний рендер до загрузки tenant.
   timezone?: string
-}>(), { timezone: DEFAULT_TIMEZONE })
+  // Показывать легенду «по выбору / с заменой». Скрывать когда ни одна услуга
+  // не имеет предпочтительного мастера — цветовые метки тогда не несут смысла.
+  showLegend?: boolean
+}>(), { timezone: DEFAULT_TIMEZONE, showLegend: true })
 
 const emit = defineEmits<{
   'update:selectedDate': [date: string]

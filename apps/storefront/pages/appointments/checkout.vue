@@ -14,6 +14,7 @@
             :horizon-days="horizonDays"
             :week-matches="weekMatches"
             :timezone="timezone"
+            :show-legend="anyServiceHasPreferred"
             @update:selected-date="onSelectDate"
             @fetch-week="fetchWeek"
           />
@@ -142,6 +143,8 @@ const serviceNames = computed<Record<string, string>>(() => {
 const resourceNamesMap = ref<Map<string, string>>(new Map())
 const { anyLabel: anyResourceLabel } = useResourceLabel()
 
+const anyServiceHasPreferred = computed(() => cart.serviceItems.some((i) => i.preferredResourceId))
+
 const servicesList = computed(() =>
   cart.serviceItems.map((item) => ({
     id: item.serviceId,
@@ -149,7 +152,7 @@ const servicesList = computed(() =>
     duration: item.duration,
     masterName: item.preferredResourceId
       ? resourceNamesMap.value.get(item.preferredResourceId) ?? anyResourceLabel.value
-      : anyResourceLabel.value,
+      : undefined,
   })),
 )
 
