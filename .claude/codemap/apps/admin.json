@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-04-30T05:12:38.062Z",
+  "generated_at": "2026-05-01T04:28:05.409Z",
   "stats": {
     "files": 113,
     "pages": 0,
@@ -609,8 +609,8 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "0d9e67c21ee6",
-      "purpose": "Поднимает все realtime-каналы тенанта (заказы/вызовы/кухня/брони/поддержка/записи) и обработчики звуковых алертов",
+      "hash": "481206319964",
+      "purpose": "Точка входа для всех realtime-каналов админки (orders, table-calls, kitchen, reservations, support, appointments + groups/requests/inbox); вызывается один раз из default-layout",
       "symbols": [
         {
           "name": "useRealtimeChannels",
@@ -1580,8 +1580,8 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "2469b4332605",
-      "purpose": "Боковая навигация sidebar: пункты с иконками, счётчиками новых заказов/броней/непрочитанных тикетов, видимостью через useGate",
+      "hash": "4c6a84020dbe",
+      "purpose": "Боковая навигация админки: список разделов с иконками и счётчиками (заказы, бронирования, инбокс записей, поддержка), фильтрация по plan-гейтам и модулям тенанта",
       "symbols": [
         {
           "name": "props",

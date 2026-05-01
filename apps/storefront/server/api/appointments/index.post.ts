@@ -241,6 +241,8 @@ export default defineEventHandler(async (event) => {
     p_allow_cancel_snapshot: allowCancel,
     p_service_name: serviceSnapshot.name,
     p_service_price: serviceSnapshot.price,
+    p_customer_email: (body.customerEmail as string | undefined)?.trim() || null,
+    p_source: 'storefront',
   })
 
   if (error) {

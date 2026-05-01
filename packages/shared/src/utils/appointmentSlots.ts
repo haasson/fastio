@@ -10,6 +10,9 @@ import type { WorkingHoursSchedule } from '../types/tenant'
 import { getDaySchedule } from './workingHours'
 import { timeToMinutes, minutesToTimeStr, localDateTimeToUtcIso, getIsoDayForDate, todayInTz, nowTimeInTz } from './timezone'
 
+/** Дефолтная длина рабочего дня в минутах когда расписание тенанта/филиала не задано. */
+export const DEFAULT_WORKING_DAY_MINUTES = 8 * 60
+
 /**
  * Чистая разница в днях между двумя YYYY-MM-DD строками (отрицательная если b < a).
  * Используем UTC чтобы исключить эффект DST.

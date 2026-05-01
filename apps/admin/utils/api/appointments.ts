@@ -95,24 +95,115 @@ export const appointmentsApi = {
   },
 
   async create(sb: SupabaseClient, tenantId: string, form: AppointmentFormData & { endsAt: string; status?: AppointmentStatus; serviceName: string; servicePrice: number }): Promise<Appointment> {
+    // Используем RPC вместо прямого INSERT — appointments.group_id NOT NULL,
+    // create_appointment создаёт группу из 1 элемента автоматически.
+    //
+    // RPC возвращает только {id} → второй SELECT нужен для маппинга в полный
+    // Appointment. Это +1 round-trip; не критично (одиночный create — не hot path).
+    // Когда соберёмся переписывать create_appointment — поменяем на RETURNS jsonb
+    // как у create_appointments_bulk и уберём SELECT. См. TECHDEBT.md.
+    const { data: rpcRows, error: rpcError } = await sb.rpc('create_appointment', {
+      p_tenant_id: tenantId,
+      p_branch_id: form.branchId ?? null,
+      p_service_id: form.serviceId,
+      p_resource_id: form.resourceId ?? null,
+      p_user_id: null,
+      p_customer_id: null,
+      p_customer_name: form.customerName,
+      p_customer_phone: form.customerPhone,
+      p_starts_at: form.startsAt,
+      p_ends_at: form.endsAt,
+      p_status: (form.status ?? 'new') as AppointmentStatus,
+      p_notes: form.notes ?? null,
+      p_allow_reschedule_snapshot: false,
+      p_allow_cancel_snapshot: false,
+      p_service_name: form.serviceName,
+      p_service_price: form.servicePrice,
+      p_customer_email: null,
+      p_source: 'admin',
+    })
+
+    if (rpcError) throw new Error(rpcError.message)
+
+    const created = (rpcRows as Array<{ id: string }>)?.[0]
+
+    if (!created?.id) throw new Error('create_appointment returned no row')
+
     const result = await query(
-      sb.from('appointments').insert({
-        tenant_id: tenantId,
-        branch_id: form.branchId ?? null,
-        service_id: form.serviceId,
-        service_name: form.serviceName,
-        service_price: form.servicePrice,
-        resource_id: form.resourceId ?? null,
-        customer_name: form.customerName,
-        customer_phone: form.customerPhone,
-        starts_at: form.startsAt,
-        ends_at: form.endsAt,
-        status: form.status ?? 'new',
-        notes: form.notes ?? null,
-      }).select(FIELDS).single(),
+      sb.from('appointments').select(FIELDS).eq('id', created.id).single(),
     )
 
     return mapAppointment(result as unknown as AppointmentRow)
+  },
+
+  /**
+   * Добавляет одно appointment в существующую группу через RPC
+   * `add_appointment_to_group` (capacity-чек + advisory lock).
+   * Используется редактором группы при добавлении услуги в edit-mode.
+   */
+  async addToGroup(
+    sb: SupabaseClient,
+    payload: {
+      groupId: string
+      serviceId: string
+      resourceId: string | null
+      startsAt: string
+      endsAt: string
+      serviceName: string
+      servicePrice: number
+      status?: AppointmentStatus
+    },
+  ): Promise<{ id: string }> {
+    const { data, error } = await sb.rpc('add_appointment_to_group', {
+      p_group_id: payload.groupId,
+      p_service_id: payload.serviceId,
+      p_resource_id: payload.resourceId,
+      p_starts_at: payload.startsAt,
+      p_ends_at: payload.endsAt,
+      p_service_name: payload.serviceName,
+      p_service_price: payload.servicePrice,
+      p_status: payload.status ?? 'new',
+    })
+
+    if (error) throw new Error(error.message)
+
+    const row = data as { id?: string } | null
+
+    if (!row?.id) throw new Error('add_appointment_to_group вернул некорректный ответ')
+
+    return { id: row.id }
+  },
+
+  /**
+   * Меняет слот/исполнителя/снапшот услуги через RPC `update_appointment`
+   * (capacity-чек + advisory lock). Используется редактором группы
+   * для существующих appointments. Поля customer_, notes, status, group_id
+   * этим RPC не трогаются — для них есть `appointmentGroups.updateMeta`
+   * и отдельные status-переходы.
+   */
+  async reschedule(
+    sb: SupabaseClient,
+    id: string,
+    payload: {
+      resourceId: string | null
+      startsAt: string
+      endsAt: string
+      serviceId?: string | null
+      serviceName?: string | null
+      servicePrice?: number | null
+    },
+  ): Promise<void> {
+    const { error } = await sb.rpc('update_appointment', {
+      p_id: id,
+      p_resource_id: payload.resourceId,
+      p_starts_at: payload.startsAt,
+      p_ends_at: payload.endsAt,
+      p_service_id: payload.serviceId ?? null,
+      p_service_name: payload.serviceName ?? null,
+      p_service_price: payload.servicePrice ?? null,
+    })
+
+    if (error) throw new Error(error.message)
   },
 
   async confirm(sb: SupabaseClient, id: string, confirmedBy: string): Promise<Appointment> {

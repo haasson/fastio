@@ -79,6 +79,7 @@ export type Appointment = {
   id: string
   tenantId: string
   branchId: string | null
+  groupId: string
   serviceId: string | null  // null если услуга удалена; см. service_name/service_price
   serviceName: string       // снапшот имени услуги на момент записи
   servicePrice: number      // снапшот цены услуги на момент записи
@@ -185,3 +186,40 @@ export type GroupSlotEntry = GroupSlotOption & { match: GroupSlotMatch }
 export type GroupSlotsResult =
   | { type: 'slots'; entries: GroupSlotEntry[] }
   | { type: 'request_only' }                                // суммарная длительность > рабочего дня
+
+// ─── RPC create_appointments_bulk ────────────────────────────────────────────
+
+export type CreateAppointmentsBulkItem = {
+  service_id: string
+  resource_id: string | null
+  starts_at: string  // ISO timestamptz
+  ends_at: string    // ISO timestamptz
+  service_name: string
+  service_price: number
+}
+
+export type CreateAppointmentsBulkPayload = {
+  p_tenant_id: string
+  p_branch_id: string | null
+  p_user_id: string | null
+  p_customer_id: string | null
+  p_customer_name: string
+  p_customer_phone: string
+  p_customer_email: string | null
+  p_status: AppointmentStatus
+  p_notes: string | null
+  p_allow_reschedule_snapshot: boolean
+  p_allow_cancel_snapshot: boolean
+  p_source: 'storefront' | 'admin'
+  p_items: CreateAppointmentsBulkItem[]
+}
+
+export type CreateAppointmentsBulkResponse = {
+  group_id: string
+  appointments: Array<{
+    id: string
+    service_id: string
+    starts_at: string
+    ends_at: string
+  }>
+}

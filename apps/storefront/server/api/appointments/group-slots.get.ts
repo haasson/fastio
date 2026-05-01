@@ -4,6 +4,7 @@ import {
   findGroupSlotsWithFallback,
   getBranchHoursForDow, timeToMinutes,
   localDateTimeToUtcIso, addDaysToDateStr,
+  DEFAULT_WORKING_DAY_MINUTES,
 } from '@fastio/shared'
 import type { ResourceSlotData, AppointmentInterval, WorkingHoursSchedule, GroupSlotsResult } from '@fastio/shared'
 
@@ -351,7 +352,7 @@ export default defineEventHandler(async (event): Promise<GroupSlotsResult> => {
 
   // Считаем workingDayMinutes из расписания на эту дату; ISO-ключи в WorkingHoursSchedule
   // (1..7), потому используем общий хелпер getBranchHoursForDow с dow 0=Sun..6=Sat.
-  let workingDayMinutes = 8 * 60
+  let workingDayMinutes = DEFAULT_WORKING_DAY_MINUTES
   if (branchSchedule) {
     const dow = new Date(date + 'T12:00:00').getDay()
     const hours = getBranchHoursForDow(branchSchedule, dow)

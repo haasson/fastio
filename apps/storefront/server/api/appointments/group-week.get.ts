@@ -3,6 +3,7 @@ import {
   createRateLimiter, todayInTz, DEFAULT_TIMEZONE,
   getGroupDateAvailability,
   localDateTimeToUtcIso, addDaysToDateStr, utcIsoToLocalDateTime,
+  DEFAULT_WORKING_DAY_MINUTES,
 } from '@fastio/shared'
 import type {
   ResourceSlotData,
@@ -280,7 +281,7 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
   }
 
   // Working day minutes — для проверки request_only
-  let workingDayMinutes = 8 * 60
+  let workingDayMinutes = DEFAULT_WORKING_DAY_MINUTES
   let branchSchedule: WorkingHoursSchedule | null = tenantSchedule
   if (branchId) {
     const sched = branchScheduleById.get(branchId)

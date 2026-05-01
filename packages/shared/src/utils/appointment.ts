@@ -4,6 +4,8 @@ import type {
   AppointmentSettings, StaffNameFormat,
   Appointment, AppointmentStatus,
 } from '../types/appointment'
+import type { AppointmentGroup } from '../types/appointmentGroup'
+import type { AppointmentRequest, AppointmentRequestService } from '../types/appointmentRequest'
 
 export const mapResource = (raw: Record<string, unknown>): Resource => ({
   id: raw.id as string,
@@ -73,6 +75,7 @@ export const mapAppointment = (raw: Record<string, unknown>): Appointment => ({
   id: raw.id as string,
   tenantId: raw.tenant_id as string,
   branchId: raw.branch_id as string | null,
+  groupId: raw.group_id as string,
   serviceId: (raw.service_id as string | null) ?? null,
   serviceName: (raw.service_name as string) ?? '',
   servicePrice: (raw.service_price as number) ?? 0,
@@ -91,6 +94,52 @@ export const mapAppointment = (raw: Record<string, unknown>): Appointment => ({
   cancelledAt: raw.cancelled_at as string | null,
   confirmedAt: raw.confirmed_at as string | null,
   confirmedBy: raw.confirmed_by as string | null,
+  createdAt: raw.created_at as string,
+  updatedAt: raw.updated_at as string,
+})
+
+export const mapAppointmentGroup = (raw: Record<string, unknown>): AppointmentGroup => ({
+  id: raw.id as string,
+  tenantId: raw.tenant_id as string,
+  branchId: raw.branch_id as string | null,
+  customerId: (raw.customer_id as string | null) ?? null,
+  customerName: raw.customer_name as string,
+  customerPhone: raw.customer_phone as string,
+  customerEmail: (raw.customer_email as string | null) ?? null,
+  notes: raw.notes as string | null,
+  status: raw.status as AppointmentGroup['status'],
+  totalPrice: (raw.total_price as number | null) ?? null,
+  totalDurationMinutes: (raw.total_duration_minutes as number | null) ?? null,
+  source: raw.source as AppointmentGroup['source'],
+  requestId: (raw.request_id as string | null) ?? null,
+  createdAt: raw.created_at as string,
+  updatedAt: raw.updated_at as string,
+})
+
+export const mapAppointmentRequestService = (raw: Record<string, unknown>): AppointmentRequestService => ({
+  serviceId: raw.service_id as string,
+  serviceName: raw.service_name as string,
+  preferredResourceId: (raw.preferred_resource_id as string | null) ?? null,
+  durationMinutes: raw.duration_minutes as number,
+  price: raw.price as number,
+})
+
+export const mapAppointmentRequest = (raw: Record<string, unknown>): AppointmentRequest => ({
+  id: raw.id as string,
+  tenantId: raw.tenant_id as string,
+  branchId: raw.branch_id as string | null,
+  customerId: (raw.customer_id as string | null) ?? null,
+  customerName: raw.customer_name as string,
+  customerPhone: raw.customer_phone as string,
+  customerEmail: (raw.customer_email as string | null) ?? null,
+  notes: raw.notes as string | null,
+  services: Array.isArray(raw.services)
+    ? (raw.services as Record<string, unknown>[]).map(mapAppointmentRequestService)
+    : [],
+  status: raw.status as AppointmentRequest['status'],
+  convertedGroupId: (raw.converted_group_id as string | null) ?? null,
+  processedBy: (raw.processed_by as string | null) ?? null,
+  processedAt: (raw.processed_at as string | null) ?? null,
   createdAt: raw.created_at as string,
   updatedAt: raw.updated_at as string,
 })

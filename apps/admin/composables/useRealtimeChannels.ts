@@ -8,7 +8,9 @@ import { useReservationsChannel } from '~/composables/data/useReservationsChanne
 import { useReservationAlertHandler } from '~/composables/data/useReservationAlertHandler'
 import { useSupportChannel } from '~/composables/data/useSupportChannel'
 import { useAppointmentsChannel } from '~/composables/data/useAppointmentsChannel'
-import { useAppointmentAlertHandler } from '~/composables/data/useAppointmentAlertHandler'
+import { useAppointmentGroupsChannel } from '~/composables/data/useAppointmentGroupsChannel'
+import { useAppointmentRequestsChannel } from '~/composables/data/useAppointmentRequestsChannel'
+import { useAppointmentInboxHandler } from '~/composables/data/useAppointmentInboxHandler'
 
 export function useRealtimeChannels(tenantId: Ref<string | null>) {
   useOrdersChannel(tenantId)
@@ -25,5 +27,8 @@ export function useRealtimeChannels(tenantId: Ref<string | null>) {
   useSupportChannel(tenantId)
 
   useAppointmentsChannel(tenantId)
-  useAppointmentAlertHandler()
+
+  useAppointmentGroupsChannel(tenantId)
+  useAppointmentRequestsChannel(tenantId)
+  useAppointmentInboxHandler(tenantId)
 }

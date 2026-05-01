@@ -1,0 +1,173 @@
+import { getServerSupabase } from '../../utils/supabase'
+import { getAuthenticatedContext } from '../../utils/customerAuth'
+import { createRateLimiter } from '@fastio/shared'
+import { reportError } from '~/utils/reportError'
+
+const rateLimiter = createRateLimiter(5, 60_000)
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const PHONE_REGEX = /^[0-9+\-() ]+$/
+// Простая проверка вида user@host.tld — ровно один @, точка в host. Длиной до 254
+// (RFC 5321). Не претендует на полное соответствие RFC 5322 — задача отсечь мусор
+// и явные опечатки на этапе INSERT, а не валидировать «всё что разрешено».
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export default defineEventHandler(async (event) => {
+  const tenantId = event.context.tenantId as string | undefined
+  if (!tenantId) throw createError({ statusCode: 404 })
+
+  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  if (!rateLimiter.check(`appointments-request:${ip}`)) {
+    throw createError({ statusCode: 429, message: 'Слишком много заявок, попробуйте через минуту.' })
+  }
+
+  const body = await readBody(event)
+
+  // Валидация
+  const customerName = (body.customerName as string | undefined)?.trim() ?? ''
+  if (customerName.length < 1 || customerName.length > 200) {
+    throw createError({ statusCode: 400, message: 'Укажите корректное имя (1–200 символов)' })
+  }
+
+  const customerPhone = (body.customerPhone as string | undefined)?.trim() ?? ''
+  if (customerPhone.length < 5 || customerPhone.length > 30 || !PHONE_REGEX.test(customerPhone)) {
+    throw createError({ statusCode: 400, message: 'Укажите корректный номер телефона' })
+  }
+
+  const notes = (body.notes as string | undefined)?.trim() || null
+  if (notes && notes.length > 1000) {
+    throw createError({ statusCode: 400, message: 'Примечания слишком длинные (макс. 1000 символов)' })
+  }
+
+  const customerEmail = (body.customerEmail as string | undefined)?.trim() || null
+  if (customerEmail !== null) {
+    if (customerEmail.length > 254 || !EMAIL_REGEX.test(customerEmail)) {
+      throw createError({ statusCode: 400, message: 'Некорректный email' })
+    }
+  }
+
+  const branchId = (body.branchId as string | undefined) ?? null
+  if (branchId && !UUID_REGEX.test(branchId)) {
+    throw createError({ statusCode: 400, message: 'Некорректный идентификатор филиала' })
+  }
+
+  const rawServices = body.services as Array<{ serviceId?: string; preferredResourceId?: string | null }> | undefined
+  if (!Array.isArray(rawServices) || rawServices.length < 1) {
+    throw createError({ statusCode: 400, message: 'Укажите хотя бы одну услугу' })
+  }
+  if (rawServices.length > 20) {
+    throw createError({ statusCode: 400, message: 'Слишком много услуг (макс. 20)' })
+  }
+  for (const svc of rawServices) {
+    if (!svc.serviceId || !UUID_REGEX.test(svc.serviceId)) {
+      throw createError({ statusCode: 400, message: 'Некорректный идентификатор услуги' })
+    }
+  }
+
+  const supabase = getServerSupabase()
+
+  // Опциональная аутентификация: guest-запросы разрешены
+  let customerId: string | null = null
+  try {
+    const authCtx = await getAuthenticatedContext(event)
+    customerId = authCtx.customerId
+  } catch {
+    // гость — продолжаем без customer_id
+  }
+
+  // Дозагрузка услуг, проверка принадлежности тенанту и доступности
+  const serviceIds = [...new Set(rawServices.map((s) => s.serviceId as string))]
+  const { data: servicesData, error: servicesError } = await supabase
+    .from('services')
+    .select('id, name, duration, price, is_bookable')
+    .in('id', serviceIds)
+    .eq('tenant_id', tenantId)
+
+  if (servicesError) {
+    reportError(servicesError)
+    throw createError({ statusCode: 500, message: 'Ошибка загрузки услуг' })
+  }
+
+  type ServiceRow = { id: string; name: string; duration: number; price: number; is_bookable: boolean }
+  const serviceById = new Map<string, ServiceRow>(
+    (servicesData ?? []).map((r) => [r.id as string, r as unknown as ServiceRow]),
+  )
+
+  for (const id of serviceIds) {
+    const svc = serviceById.get(id)
+    if (!svc) {
+      throw createError({ statusCode: 400, message: `Услуга не найдена в этом тенанте` })
+    }
+    if (!svc.is_bookable) {
+      throw createError({ statusCode: 400, message: `Услуга "${svc.name}" недоступна для записи` })
+    }
+  }
+
+  // Дозагрузка предпочтительных исполнителей (тихо игнорируем невалидные)
+  const preferredIds = rawServices
+    .map((s) => s.preferredResourceId ?? null)
+    .filter((id): id is string => id !== null && UUID_REGEX.test(id))
+
+  const validPreferredIds = new Set<string>()
+  if (preferredIds.length > 0) {
+    const { data: resourceRows } = await supabase
+      .from('resources')
+      .select('id')
+      .in('id', preferredIds)
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+
+    for (const r of (resourceRows ?? [])) validPreferredIds.add(r.id as string)
+  }
+
+  // Валидация филиала
+  if (branchId) {
+    const { data: branchRow } = await supabase
+      .from('branches')
+      .select('id')
+      .eq('id', branchId)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+    if (!branchRow) {
+      throw createError({ statusCode: 400, message: 'Указанный филиал не найден в этом тенанте' })
+    }
+  }
+
+  // Формируем services для INSERT
+  const servicesPayload = rawServices.map((s) => {
+    const svc = serviceById.get(s.serviceId as string)!
+    const preferred = s.preferredResourceId && validPreferredIds.has(s.preferredResourceId)
+      ? s.preferredResourceId
+      : null
+    return {
+      service_id: svc.id,
+      service_name: svc.name,
+      preferred_resource_id: preferred,
+      duration_minutes: svc.duration,
+      price: svc.price,
+    }
+  })
+
+  const { data: insertedRow, error: insertError } = await supabase
+    .from('appointment_requests')
+    .insert({
+      tenant_id: tenantId,
+      branch_id: branchId,
+      customer_id: customerId,
+      customer_name: customerName,
+      customer_phone: customerPhone,
+      customer_email: customerEmail,
+      notes,
+      services: servicesPayload,
+      status: 'new',
+    })
+    .select('id')
+    .single()
+
+  if (insertError) {
+    reportError(insertError)
+    throw createError({ statusCode: 500, message: 'Не удалось сохранить заявку' })
+  }
+
+  return { id: (insertedRow as { id: string }).id }
+})

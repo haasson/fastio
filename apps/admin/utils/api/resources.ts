@@ -152,6 +152,30 @@ export const resourcesApi = {
 
   // ─── Resource ↔ Service ─────────────────────────────────
 
+  /**
+   * Batch-загрузка явных компетенций (`service_resources`) и категорий
+   * (`resource_categories`) для списка ресурсов. Используется когда нужно
+   * показать «какой мастер умеет какую услугу» без полного `bulkLoadAvailability`
+   * (например — фильтр селекта мастера в редакторе группы записи до выбора даты).
+   */
+  async bulkLoadCompetencies(
+    sb: SupabaseClient,
+    resourceIds: string[],
+  ): Promise<{ serviceResources: ServiceResourceRow[]; resourceCategories: ResourceCategoryRow[] }> {
+    if (resourceIds.length === 0) {
+      return { serviceResources: [], resourceCategories: [] }
+    }
+    const [explicitRes, categoryRes] = await Promise.all([
+      sb.from('service_resources').select('service_id, resource_id').in('resource_id', resourceIds),
+      sb.from('resource_categories').select('category_id, resource_id').in('resource_id', resourceIds),
+    ])
+
+    return {
+      serviceResources: (explicitRes.data ?? []) as ServiceResourceRow[],
+      resourceCategories: (categoryRes.data ?? []) as ResourceCategoryRow[],
+    }
+  },
+
   async getServiceIds(sb: SupabaseClient, resourceId: string): Promise<string[]> {
     const { data } = await sb.from('service_resources').select('service_id').eq('resource_id', resourceId)
 

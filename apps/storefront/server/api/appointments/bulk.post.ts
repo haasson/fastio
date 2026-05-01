@@ -217,6 +217,7 @@ export default defineEventHandler(async (event) => {
 
   // Атомарная вставка через RPC: advisory_xact_lock per resource + capacity-aware
   // checks + INSERT'ы. Либо все ок, либо ничего не записано.
+  // Audit-event 'group_created' пока не пишется — см. TECHDEBT.md.
   const rpcItems = resolvedItems.map((it) => ({
     service_id: it.serviceId,
     resource_id: it.resourceId,
@@ -226,17 +227,19 @@ export default defineEventHandler(async (event) => {
     service_price: it.servicePrice,
   }))
 
-  const { data: rpcRows, error } = await supabase.rpc('create_appointments_bulk', {
+  const { data: rpcResult, error } = await supabase.rpc('create_appointments_bulk', {
     p_tenant_id: tenantId,
     p_branch_id: branchId,
     p_user_id: userId,
     p_customer_id: customerId,
     p_customer_name: body.customerName.trim(),
     p_customer_phone: normalizedPhone,
+    p_customer_email: (body.customerEmail as string | undefined)?.trim() || null,
     p_status: autoConfirm ? 'confirmed' : 'new',
     p_notes: body.notes?.trim() || null,
     p_allow_reschedule_snapshot: allowReschedule,
     p_allow_cancel_snapshot: allowCancel,
+    p_source: 'storefront',
     p_items: rpcItems,
   })
 
@@ -255,13 +258,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Не удалось создать запись' })
   }
 
-  type CreatedRow = { id: string; service_id: string; starts_at: string; ends_at: string }
-  const created = ((rpcRows as CreatedRow[]) ?? []).map((row) => ({
-    id: row.id,
-    serviceId: row.service_id,
-    startsAt: row.starts_at,
-    endsAt: row.ends_at,
-  }))
+  type RpcResponse = { group_id: string; appointments: Array<{ id: string; service_id: string; starts_at: string; ends_at: string }> }
+  const parsed = rpcResult as RpcResponse | null
+  if (!parsed?.group_id) {
+    reportError(new Error('[bulk] RPC returned unexpected result'))
+    throw createError({ statusCode: 500, message: 'Не удалось создать запись' })
+  }
 
-  return { appointments: created }
+  return {
+    groupId: parsed.group_id,
+    appointments: (parsed.appointments ?? []).map((row) => ({
+      id: row.id,
+      serviceId: row.service_id,
+      startsAt: row.starts_at,
+      endsAt: row.ends_at,
+    })),
+  }
 })

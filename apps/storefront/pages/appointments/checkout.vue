@@ -95,6 +95,7 @@ import ApptGroupRequest from '~/components/appointments/ApptGroupRequest.vue'
 import ApptStepContact from '~/components/appointments/ApptStepContact.vue'
 import ApptGroupSuccess from '~/components/appointments/ApptGroupSuccess.vue'
 import { useCartStore } from '~/stores/cart'
+import { useToast } from '~/composables/useToast'
 import { reportError } from '~/utils/reportError'
 import { useResourceLabel } from '~/composables/useResourceLabel'
 
@@ -106,6 +107,7 @@ type GroupResult = {
 const rfetch = useRequestFetch()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const cart = useCartStore()
+const { success: showSuccess, error: showError } = useToast()
 
 const timezone = computed(() => tenant.value?.timezone ?? DEFAULT_TIMEZONE)
 
@@ -267,21 +269,37 @@ const onSelectDate = async (date: string) => {
 const onRequestSubmit = async (form: { customerName: string; customerPhone: string; notes: string }) => {
   submitting.value = true
   error.value = ''
+
+  const commitClearServices = cart.clearServices()
+
   try {
     await $fetch('/api/appointments/request', {
       method: 'POST',
       body: {
-        serviceIds: cart.serviceItems.map((i) => i.serviceId),
+        branchId: null,
         customerName: form.customerName,
         customerPhone: form.customerPhone,
-        notes: form.notes || undefined,
+        notes: form.notes || null,
+        services: cart.serviceItems.map((i) => ({
+          serviceId: i.serviceId,
+          preferredResourceId: i.preferredResourceId ?? null,
+        })),
       },
     })
-    groupResult.value = { appointments: [] }
-    step.value = 'success'
-  } catch (e) {
+    commitClearServices()
+    showSuccess('Заявка отправлена! Менеджер свяжется с вами.')
+    await navigateTo('/')
+  } catch (e: unknown) {
     reportError(e instanceof Error ? e : new Error('[appointments/checkout] failed to submit request'))
-    error.value = 'Не удалось отправить заявку. Попробуйте ещё раз.'
+    const status = (e as { status?: number })?.status
+    const msg = (e as { data?: { message?: string } })?.data?.message
+    if (status === 429) {
+      showError('Слишком много заявок, попробуйте через минуту.')
+    } else if (status === 400 && msg) {
+      showError(msg)
+    } else {
+      showError('Не удалось отправить заявку. Попробуйте ещё раз.')
+    }
   } finally {
     submitting.value = false
   }

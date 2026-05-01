@@ -1,5 +1,5 @@
 <template>
-  <div class="appointments-root" @click="resetCount">
+  <div class="appointments-root">
     <TabsLayout :tabs="tabs" base-path="/appointments" />
   </div>
 </template>
@@ -7,7 +7,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useNewAppointmentCounter } from '~/composables/data/useNewAppointmentCounter'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 import { useRoute, navigateTo } from '#imports'
@@ -15,10 +14,6 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 
 usePageTitle('Запись')
-
-const { reset: resetCount } = useNewAppointmentCounter()
-
-resetCount()
 
 const tenantStore = useTenantStore()
 const { currentTenantId } = storeToRefs(tenantStore)
@@ -30,7 +25,7 @@ watch(currentTenantId, () => settingsStore.load(), { immediate: true })
 const tabs = computed(() => {
   const items: { value: string; label: string }[] = [
     { value: 'timeline', label: 'Расписание' },
-    { value: 'history', label: 'История' },
+    { value: 'list', label: 'Записи' },
   ]
 
   if (resourceMode.value !== 'objects') items.push({ value: 'staff', label: 'Сотрудники' })

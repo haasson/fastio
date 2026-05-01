@@ -34,6 +34,8 @@ import { rolesApi } from '~/utils/api/roles'
 import { supportApi } from '~/utils/api/support'
 import { auditLogsApi } from '~/utils/api/audit-logs'
 import { appointmentsApi } from '~/utils/api/appointments'
+import { appointmentGroupsApi } from '~/utils/api/appointmentGroups'
+import { appointmentRequestsApi } from '~/utils/api/appointmentRequests'
 import { appointmentSettingsApi } from '~/utils/api/appointment-settings'
 import { appointmentEventsApi } from '~/utils/api/appointment-events'
 import { servicesApi } from '~/utils/api/services'
@@ -93,6 +95,8 @@ export const useDatabase = () => {
     support: bindAll(supportApi, sb),
     auditLogs: bindAll(auditLogsApi, sb),
     appointments: bindAll(appointmentsApi, sb),
+    appointmentGroups: bindAll(appointmentGroupsApi, sb),
+    appointmentRequests: bindAll(appointmentRequestsApi, sb),
     appointmentSettings: bindAll(appointmentSettingsApi, sb),
     appointmentEvents: bindAll(appointmentEventsApi, sb),
     services: bindAll(servicesApi, sb),

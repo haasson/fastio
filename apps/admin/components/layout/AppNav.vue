@@ -36,6 +36,7 @@ import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
 import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
 import { useUnreadSupportCounter } from '~/composables/data/useUnreadSupportCounter'
+import { useAppointmentInboxCounter } from '~/composables/data/useAppointmentInboxCounter'
 
 defineProps<{ collapsed?: boolean }>()
 
@@ -55,6 +56,7 @@ const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
 const { count: newReservationCount } = useNewReservationCounter()
 const { count: unreadSupportCount } = useUnreadSupportCounter()
+const { count: appointmentInboxCount } = useAppointmentInboxCounter()
 
 const orderCounter = computed(() => blinkingCounter.value ? newOrderCount.value : 0)
 const orderBlink = computed(() => blinkingCounter.value && newOrderCount.value > 0)
@@ -70,7 +72,7 @@ const navItems = computed(() => {
     { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: toEnabled(gate.viewKitchen) },
     { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: toEnabled(gate.viewTables) },
     { to: '/reservations', icon: 'calendar', label: terms.reservationsLabel, visible: toEnabled(gate.viewReservations), counter: newReservationCount },
-    { to: '/appointments', icon: 'calendarCheck', label: 'Запись', visible: toEnabled(gate.viewAppointments) },
+    { to: '/appointments', icon: 'calendarCheck', label: 'Запись', visible: toEnabled(gate.viewAppointments), counter: appointmentInboxCount },
     { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: toEnabled(gate.managePromotions) },
     { to: '/team/members', icon: 'users', label: 'Команда', visible: toEnabled(gate.manageTeam) },
     { to: '/branches', icon: 'mapPin', label: branchNavLabel.value, visible: toEnabled(gate.viewBranches) },
