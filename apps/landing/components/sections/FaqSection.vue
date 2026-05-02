@@ -34,6 +34,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useHead } from '#imports'
 import { ChevronDown } from 'lucide-vue-next'
 import SectionHeader from './SectionHeader.vue'
 
@@ -96,6 +97,31 @@ const items: FaqItem[] = [
     a: ['В любой момент — через личный кабинет. Без штрафов и скрытых условий.'],
   },
 ]
+
+function answerToPlainText(parts: AnswerPart[]): string {
+  return parts
+    .map(p => (typeof p === 'string' ? p : p.text).trim())
+    .filter(Boolean)
+    .join(' ')
+}
+
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: items.map(item => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: answerToPlainText(item.a),
+        },
+      })),
+    }),
+  }],
+})
 
 const openIndexes = ref(new Set<number>())
 
