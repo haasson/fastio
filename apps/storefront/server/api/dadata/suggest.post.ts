@@ -1,15 +1,20 @@
 import { createRateLimiter } from '@fastio/shared'
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const perMinuteLimit = createRateLimiter(20, 60_000)
 const per12hLimit = createRateLimiter(250, 12 * 60 * 60 * 1000)
 
 const tenantCoordsCache = new Map<string, { lat: number; lon: number } | null>()
 
-async function getTenantCoords(tenantId: string): Promise<{ lat: number; lon: number } | null> {
+async function getTenantCoords(
+  tenantId: string,
+  // safe: querying branches by tenant_id using service_role client
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any>,
+): Promise<{ lat: number; lon: number } | null> {
   if (tenantCoordsCache.has(tenantId)) return tenantCoordsCache.get(tenantId)!
 
-  const supabase = getServerSupabase()
   const { data } = await supabase
     .from('branches')
     .select('latitude, longitude')
@@ -27,11 +32,10 @@ async function getTenantCoords(tenantId: string): Promise<{ lat: number; lon: nu
 }
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
-  const key = `${tenantId}:${ip}`
+  const key = `${db.tenantId}:${ip}`
   if (!perMinuteLimit.check(key) || !per12hLimit.check(key)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов' })
   }
@@ -43,7 +47,7 @@ export default defineEventHandler(async (event) => {
   const apiKey = useRuntimeConfig().dadataApiKey
   if (!apiKey) throw createError({ statusCode: 500, message: 'DaData API key not configured' })
 
-  const coords = await getTenantCoords(tenantId)
+  const coords = await getTenantCoords(db.tenantId, db.raw)
 
   const dadataBody: Record<string, unknown> = { query, count: 5 }
   if (coords) {

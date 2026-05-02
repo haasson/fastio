@@ -1,23 +1,19 @@
-import { getServerSupabase, resolveMaxGuests } from '../../utils/supabase'
+import { resolveMaxGuests } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import type { ReservationSettings } from '@fastio/shared'
 
 export default defineEventHandler(async (event): Promise<ReservationSettings | null> => {
-  const tenantId = event.context.tenantId as string | undefined
+  const db = getTenantDb(event)
 
-  if (!tenantId) throw createError({ statusCode: 404 })
-
-  const supabase = getServerSupabase()
-
-  const { data } = await supabase
+  const { data } = await db
     .from('reservation_settings')
     .select('*')
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (!data) return null
 
   const maxGuestsAuto = (data.max_guests_auto as boolean) ?? false
-  const maxGuests = await resolveMaxGuests(supabase, tenantId, data)
+  const maxGuests = await resolveMaxGuests(db.raw, db.tenantId, data)
 
   return {
     id: data.id as string,

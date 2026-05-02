@@ -1,26 +1,22 @@
-import { getServerSupabase } from '../../../../utils/supabase'
+import { getTenantDb } from '../../../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../../../utils/customerAuth'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   // Поддерживаем оба способа авторизации: email/password (Bearer) и Telegram (cookie).
   // Telegram-only клиенты в записи имеют user_id=null, поэтому проверка владения
   // ведётся через сопоставление customer.authUserId или customer.phone с записью.
   const { customer } = await getAuthenticatedContextWithCustomer(event)
-  if (customer.tenantId !== tenantId) throw createError({ statusCode: 403 })
+  if (customer.tenantId !== db.tenantId) throw createError({ statusCode: 403 })
 
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400 })
 
-  const supabase = getServerSupabase()
-
-  const { data: appt } = await supabase
+  const { data: appt } = await db
     .from('appointments')
     .select('id, customer_id, status, starts_at, tenant_id, allow_cancel_snapshot')
     .eq('id', id)
-    .eq('tenant_id', tenantId)
     .single()
 
   if (!appt) throw createError({ statusCode: 404 })
@@ -31,10 +27,9 @@ export default defineEventHandler(async (event) => {
   // Check cancellation deadline. Prefer the snapshot taken at booking time —
   // tightening the live setting after the fact must not retroactively forbid
   // a cancellation the customer had a right to.
-  const { data: settingsData } = await supabase
+  const { data: settingsData } = await db
     .from('appointment_settings')
     .select('allow_client_cancellation, cancellation_deadline_hours')
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   const allowCancel = (appt.allow_cancel_snapshot as boolean | null)
@@ -55,7 +50,7 @@ export default defineEventHandler(async (event) => {
 
   // Возвращаем строку и проверяем error: иначе при RLS-deny клиент получает {ok:true},
   // а запись остаётся живой.
-  const { data: updated, error: updateError } = await supabase
+  const { data: updated, error: updateError } = await db
     .from('appointments')
     .update({
       status: 'cancelled',

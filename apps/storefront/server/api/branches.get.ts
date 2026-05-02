@@ -1,16 +1,13 @@
-import { getServerSupabase } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string
+  const db = getTenantDb(event)
   const tenant = event.context.tenant as Tenant
 
-  const supabase = getServerSupabase()
-
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('branches')
     .select('id, name, address, phone, working_hours_schedule')
-    .eq('tenant_id', tenantId)
     .eq('is_active', true)
     .is('archived_at', null)
     .order('created_at')

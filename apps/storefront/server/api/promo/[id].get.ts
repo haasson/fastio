@@ -1,4 +1,4 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 
 type PromoPageData = {
   id: string
@@ -10,19 +10,16 @@ type PromoPageData = {
 }
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
+  const db = getTenantDb(event)
   const id = getRouterParam(event, 'id')
 
-  if (!tenantId || !id) throw createError({ statusCode: 404 })
-
-  const supabase = getServerSupabase()
+  if (!id) throw createError({ statusCode: 404 })
 
   // Баннер является основной сущностью — id это id баннера
-  const { data: banner } = await supabase
+  const { data: banner } = await db
     .from('banners')
     .select('id, url, content, enabled, promotion_id, promo_code_id')
     .eq('id', id)
-    .eq('tenant_id', tenantId)
     .single()
 
   if (!banner || !banner.enabled) throw createError({ statusCode: 404 })
@@ -33,7 +30,8 @@ export default defineEventHandler(async (event) => {
   let code: string | undefined
 
   if (banner.promotion_id) {
-    const { data: promo } = await supabase
+    // safe: promotion_id came from the banner row which is already filtered by tenant_id above
+    const { data: promo } = await db
       .from('promotions')
       .select('title, active, deleted_at')
       .eq('id', banner.promotion_id)
@@ -43,7 +41,8 @@ export default defineEventHandler(async (event) => {
     title = promo.title
     type = 'promotion'
   } else if (banner.promo_code_id) {
-    const { data: promoCode } = await supabase
+    // safe: promo_code_id came from the banner row which is already filtered by tenant_id above
+    const { data: promoCode } = await db
       .from('promo_codes')
       .select('code, active, deleted_at')
       .eq('id', banner.promo_code_id)

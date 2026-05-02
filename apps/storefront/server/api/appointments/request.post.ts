@@ -1,4 +1,4 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
 import { createRateLimiter } from '@fastio/shared'
 import { reportError } from '~/utils/reportError'
@@ -13,8 +13,8 @@ const PHONE_REGEX = /^[0-9+\-() ]+$/
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
+  const { tenantId } = db
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!rateLimiter.check(`appointments-request:${ip}`)) {
@@ -64,8 +64,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const supabase = getServerSupabase()
-
   // Опциональная аутентификация: guest-запросы разрешены
   let customerId: string | null = null
   try {
@@ -77,11 +75,10 @@ export default defineEventHandler(async (event) => {
 
   // Дозагрузка услуг, проверка принадлежности тенанту и доступности
   const serviceIds = [...new Set(rawServices.map((s) => s.serviceId as string))]
-  const { data: servicesData, error: servicesError } = await supabase
+  const { data: servicesData, error: servicesError } = await db
     .from('services')
     .select('id, name, duration, price, is_bookable')
     .in('id', serviceIds)
-    .eq('tenant_id', tenantId)
 
   if (servicesError) {
     reportError(servicesError)
@@ -110,11 +107,10 @@ export default defineEventHandler(async (event) => {
 
   const validPreferredIds = new Set<string>()
   if (preferredIds.length > 0) {
-    const { data: resourceRows } = await supabase
+    const { data: resourceRows } = await db
       .from('resources')
       .select('id')
       .in('id', preferredIds)
-      .eq('tenant_id', tenantId)
       .eq('is_active', true)
 
     for (const r of (resourceRows ?? [])) validPreferredIds.add(r.id as string)
@@ -122,11 +118,10 @@ export default defineEventHandler(async (event) => {
 
   // Валидация филиала
   if (branchId) {
-    const { data: branchRow } = await supabase
+    const { data: branchRow } = await db
       .from('branches')
       .select('id')
       .eq('id', branchId)
-      .eq('tenant_id', tenantId)
       .maybeSingle()
     if (!branchRow) {
       throw createError({ statusCode: 400, message: 'Указанный филиал не найден в этом тенанте' })
@@ -150,7 +145,7 @@ export default defineEventHandler(async (event) => {
 
   // После 230 заявка — это визит со status='request' (отдельной таблицы нет).
   // RPC create_visit_request инкапсулирует INSERT.
-  const { data: rpcRow, error: rpcError } = await supabase.rpc('create_visit_request', {
+  const { data: rpcRow, error: rpcError } = await db.raw.rpc('create_visit_request', {
     p_tenant_id: tenantId,
     p_branch_id: branchId,
     p_customer_id: customerId,

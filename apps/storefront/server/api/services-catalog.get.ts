@@ -1,5 +1,6 @@
 import type { Tenant, DishTagDefinition } from '@fastio/shared'
-import { getServerSupabase, mapCategory } from '../utils/supabase'
+import { mapCategory } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 
 type ServiceCard = {
   id: string
@@ -18,41 +19,37 @@ type ServiceCard = {
 }
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
+  const db = getTenantDb(event)
   const tenant = event.context.tenant as Tenant | undefined
 
-  if (!tenantId || !tenant) throw createError({ statusCode: 404 })
+  if (!tenant) throw createError({ statusCode: 404 })
 
   const empty = { categories: [], services: [], tagDefinitions: [], tagDisplayMode: 'both' as const }
 
   if (tenant.businessType !== 'services' || !tenant.modules?.services) return empty
 
-  const supabase = getServerSupabase()
-
   const [{ data: categoriesData }, { data: servicesData }, { data: tagRowsData }] = await Promise.all([
-    supabase
+    db
       .from('categories')
       .select('*')
-      .eq('tenant_id', tenantId)
       .eq('kind', 'service')
       .eq('active', true)
       .is('deleted_at', null)
       .order('sort_order'),
-    supabase
+    db
       .from('services')
       .select('id, tenant_id, category_id, name, description, price, duration, photos, tags, is_bookable, booking_mode, allow_resource_choice')
-      .eq('tenant_id', tenantId)
       .eq('active', true)
       .order('sort_order')
       .order('name'),
-    supabase.from('dish_tags').select('*').eq('tenant_id', tenantId).order('sort_order'),
+    db.from('dish_tags').select('*').order('sort_order'),
   ])
 
-  // service_branches: фильтруем уже на стороне DB по service_id, чтобы не тянуть
-  // линки чужих тенантов (даже несмотря на то, что service_id уникален).
+  // service_branches has no tenant_id column; safe: serviceIds are derived from the
+  // tenant-validated services query above (.eq('tenant_id', tenantId))
   const serviceIds = (servicesData ?? []).map((r) => r.id as string)
   const { data: serviceBranchData } = serviceIds.length
-    ? await supabase.from('service_branches').select('service_id, branch_id').in('service_id', serviceIds)
+    ? await db.junction('service_branches').select('service_id, branch_id').in('service_id', serviceIds)
     : { data: [] as { service_id: string; branch_id: string }[] }
 
   const branchIdsByService = new Map<string, string[]>()

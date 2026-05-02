@@ -3,6 +3,8 @@ import { getAuthenticatedContext } from '../../../utils/customerAuth'
 
 export default defineEventHandler(async (event) => {
   const { customerId, supabase } = await getAuthenticatedContext(event)
+  // safe: customer_addresses has no tenant_id column; customerId is already
+  // validated against tenantId inside getAuthenticatedContext → customers.tenant_id
 
   const { data, error } = await supabase
     .from('customer_addresses')

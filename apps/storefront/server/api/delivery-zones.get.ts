@@ -1,25 +1,21 @@
-import { getServerSupabase, mapDeliveryZoneRow } from '../utils/supabase'
+import { mapDeliveryZoneRow } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
-  const supabase = getServerSupabase()
-
-  const { data: activeBranches } = await supabase
+  const { data: activeBranches } = await db
     .from('branches')
     .select('id')
-    .eq('tenant_id', tenantId)
     .eq('is_active', true)
     .is('archived_at', null)
 
   const activeBranchIds = (activeBranches ?? []).map((b) => b.id)
   if (activeBranchIds.length === 0) return []
 
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await db
     .from('delivery_zones')
     .select('*')
-    .eq('tenant_id', tenantId)
     .eq('is_active', true)
     .in('branch_id', activeBranchIds)
     .order('sort_order')

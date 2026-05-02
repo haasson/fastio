@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import { ensureCustomer } from '../../utils/authHelpers'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
+  const { tenantId } = db
 
   const body = await readBody(event)
   const { name, email, password } = body ?? {}
@@ -35,8 +35,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Не удалось создать аккаунт' })
   }
 
-  const serverSupabase = getServerSupabase()
-
   // Если identities пустой — юзер уже существует в Supabase Auth (другой тенант или повторная регистрация)
   // Пробуем залогиниться с предоставленным паролем чтобы получить сессию
   let authUser = authData.user
@@ -52,10 +50,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // Проверяем, нет ли уже кастомера в этом тенанте
-  const { data: existingCustomer } = await serverSupabase
+  const { data: existingCustomer } = await db
     .from('customers')
     .select('id')
-    .eq('tenant_id', tenantId)
     .eq('auth_user_id', authUser.id)
     .maybeSingle()
 

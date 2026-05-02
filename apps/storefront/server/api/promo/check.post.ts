@@ -1,11 +1,10 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import { createRateLimiter } from '@fastio/shared'
 
 const promoRateLimiter = createRateLimiter(10, 60_000)
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!promoRateLimiter.check(ip)) {
@@ -22,10 +21,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Некорректная сумма заказа' })
   }
 
-  const supabase = getServerSupabase()
-
-  const { data, error } = await supabase.rpc('check_promo_code', {
-    p_tenant_id: tenantId,
+  const { data, error } = await db.raw.rpc('check_promo_code', {
+    p_tenant_id: db.tenantId,
     p_code: code,
     p_subtotal: subtotal,
     ...(scheduledAt && { p_delivery_time: scheduledAt }),

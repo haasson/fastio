@@ -1,15 +1,12 @@
-import { getServerSupabase } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 import type { Gallery, GalleryPhoto } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string
+  const db = getTenantDb(event)
 
-  const supabase = getServerSupabase()
-
-  const { data } = await supabase
+  const { data } = await db
     .from('galleries')
     .select('*, gallery_photos(*)')
-    .eq('tenant_id', tenantId)
     .order('sort_order', { ascending: true })
 
   return (data ?? []).map((row): Gallery => ({

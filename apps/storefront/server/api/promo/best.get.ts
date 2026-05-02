@@ -1,9 +1,8 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const query = getQuery(event)
   const subtotal = Number(query.subtotal ?? 0)
@@ -13,9 +12,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Некорректная сумма' })
   }
 
-  const supabase = getServerSupabase()
-  const { data, error } = await supabase.rpc('get_best_promotion', {
-    p_tenant_id: tenantId,
+  const { data, error } = await db.raw.rpc('get_best_promotion', {
+    p_tenant_id: db.tenantId,
     p_subtotal: subtotal,
     ...(scheduledAt && { p_delivery_time: scheduledAt }),
   })

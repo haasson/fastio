@@ -1,17 +1,15 @@
-import { getServerSupabase } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 import type { Banner, Tenant } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string
+  const db = getTenantDb(event)
   const tenant = event.context.tenant as Tenant
 
-  const supabase = getServerSupabase()
   const promoModuleEnabled = tenant.modules.promotions
 
-  const { data } = await supabase
+  const { data } = await db
     .from('banners')
     .select('*, promotions:banners_promotion_id_fkey(*), promo_codes:banners_promo_code_id_fkey(*)')
-    .eq('tenant_id', tenantId)
     .eq('enabled', true)
     .order('sort_order', { ascending: true })
 

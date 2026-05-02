@@ -1,4 +1,4 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import {
   createRateLimiter, todayInTz, DEFAULT_TIMEZONE,
   getGroupDateAvailability,
@@ -28,8 +28,7 @@ type WeekResponse = Array<{ date: string; match: GroupSlotMatch | null }>
  * диапазон. Затем для каждой даты собирает срез и считает доступность.
  */
 export default defineEventHandler(async (event): Promise<WeekResponse> => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!rateLimiter.check(ip)) {
@@ -74,12 +73,9 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
     return dates.map((d) => ({ date: d, match: null }))
   }
 
-  const supabase = getServerSupabase()
-
-  const { data: tenantData } = await supabase
+  const { data: tenantData } = await db
     .from('tenants')
     .select('modules, timezone, working_hours_schedule')
-    .eq('id', tenantId)
     .single()
 
   if (!tenantData?.modules?.services) {
@@ -90,10 +86,9 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
   const tenantSchedule = (tenantData.working_hours_schedule as WorkingHoursSchedule | null) ?? null
   const todayStr = todayInTz(tz)
 
-  const { data: settingsData } = await supabase
+  const { data: settingsData } = await db
     .from('appointment_settings')
     .select('slot_step_minutes, booking_horizon_days')
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   const slotStep = (settingsData?.slot_step_minutes as number) ?? 30
@@ -114,11 +109,10 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
 
   const serviceIds = [...new Set(parsedItems.map((i) => i.serviceId))]
 
-  const { data: servicesData } = await supabase
+  const { data: servicesData } = await db
     .from('services')
     .select('id, duration, is_bookable, category_id')
     .in('id', serviceIds)
-    .eq('tenant_id', tenantId)
 
   const serviceById = new Map<string, { duration: number; categoryId: string | null }>(
     (servicesData ?? []).map((row) => [
@@ -138,10 +132,12 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
     Array.from(serviceById.values()).map((s) => s.categoryId).filter((id): id is string => id !== null),
   )]
 
+  // safe: serviceIds are validated against tenantId in the services query above;
+  // categoryIds are derived from those tenant-validated service rows
   const [{ data: explicitResourcesData }, { data: categoryResourcesData }] = await Promise.all([
-    supabase.from('service_resources').select('service_id, resource_id').in('service_id', serviceIds),
+    db.junction('service_resources').select('service_id, resource_id').in('service_id', serviceIds),
     categoryIds.length > 0
-      ? supabase.from('resource_categories').select('category_id, resource_id').in('category_id', categoryIds)
+      ? db.junction('resource_categories').select('category_id, resource_id').in('category_id', categoryIds)
       : Promise.resolve({ data: [] as Array<{ category_id: string; resource_id: string }> }),
   ])
 
@@ -171,7 +167,7 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
   const resourceNameById = new Map<string, string>()
 
   if (allResourceIds.length > 0) {
-    const { data: resourcesData } = await supabase
+    const { data: resourcesData } = await db
       .from('resources')
       .select('id, name, capacity, is_active, applied_template_id, cycle_start_date')
       .in('id', allResourceIds)
@@ -194,8 +190,8 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
     }
 
     if (branchId && activeResourceIds.length) {
-      const { data: branchLinks } = await supabase
-        .from('resource_branches')
+      const { data: branchLinks } = await db
+        .junction('resource_branches')
         .select('resource_id, branch_id')
         .in('resource_id', activeResourceIds)
 
@@ -215,10 +211,10 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
   const shiftTemplateIds = [...new Set(Array.from(shiftAnchor.values()).map((a) => a.templateId))]
   const [shiftTemplatesRes, shiftSlotsRes] = await Promise.all([
     shiftTemplateIds.length
-      ? supabase.from('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
+      ? db.junction('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
       : Promise.resolve({ data: [] as Array<{ id: string; cycle_length: number }> }),
     shiftTemplateIds.length
-      ? supabase.from('schedule_template_slots').select('template_id, day_index, slot_time').in('template_id', shiftTemplateIds)
+      ? db.junction('schedule_template_slots').select('template_id, day_index, slot_time').in('template_id', shiftTemplateIds)
       : Promise.resolve({ data: [] as Array<{ template_id: string; day_index: number; slot_time: string }> }),
   ])
 
@@ -253,22 +249,22 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
     appointmentsData,
     resourceBranchData,
   ] = await Promise.all([
-    supabase.from('resource_schedules').select('*').in('resource_id', activeResourceIds),
-    supabase.from('resource_disabled_slots').select('*').in('resource_id', activeResourceIds),
-    supabase.from('resource_date_overrides').select('*').in('resource_id', activeResourceIds).in('date', validDates),
-    supabase.from('resource_date_disabled_slots').select('*').in('resource_id', activeResourceIds).in('date', validDates),
-    supabase.from('appointments')
+    db.junction('resource_schedules').select('*').in('resource_id', activeResourceIds),
+    db.junction('resource_disabled_slots').select('*').in('resource_id', activeResourceIds),
+    db.junction('resource_date_overrides').select('*').in('resource_id', activeResourceIds).in('date', validDates),
+    db.junction('resource_date_disabled_slots').select('*').in('resource_id', activeResourceIds).in('date', validDates),
+    db.from('appointments')
       .select('resource_id, starts_at, ends_at, actual_ends_at')
       .in('resource_id', activeResourceIds)
       .gte('starts_at', rangeStart)
       .lt('starts_at', rangeEnd)
       .not('status', 'eq', 'cancelled'),
-    supabase.from('resource_branches').select('resource_id, branch_id').in('resource_id', activeResourceIds),
+    db.junction('resource_branches').select('resource_id, branch_id').in('resource_id', activeResourceIds),
   ])
 
   const resourceBranchIds = [...new Set(((resourceBranchData.data ?? []) as { branch_id: string }[]).map((r) => r.branch_id))]
   const { data: branchSchedRows } = resourceBranchIds.length
-    ? await supabase.from('branches').select('id, working_hours_schedule').in('id', resourceBranchIds)
+    ? await db.raw.from('branches').select('id, working_hours_schedule').in('id', resourceBranchIds)
     : { data: [] as { id: string; working_hours_schedule: WorkingHoursSchedule | null }[] }
 
   const branchScheduleById = new Map<string, WorkingHoursSchedule | null>(

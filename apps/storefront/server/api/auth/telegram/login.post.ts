@@ -1,7 +1,8 @@
 import { defineEventHandler, readBody, getRequestIP, getRequestProtocol, setCookie } from 'h3'
 import { createRateLimiter } from '@fastio/shared'
 import { useRuntimeConfig } from '#imports'
-import { getServerSupabase } from '../../../utils/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { getTenantDb } from '../../../utils/tenantDb'
 import {
   verifyTelegramAuth,
   issueSessionToken,
@@ -16,8 +17,8 @@ const SESSION_TTL_SEC = SESSION_TTL_MS / 1000
 const loginRateLimiter = createRateLimiter(10, 60_000)
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
+  const { tenantId } = db
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!loginRateLimiter.check(ip)) {
@@ -38,9 +39,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const { telegramId, firstName, lastName, photoUrl } = verification
-  const supabase = getServerSupabase()
 
-  const customerId = await findOrCreateCustomer(supabase, {
+  const customerId = await findOrCreateCustomer(db.raw, {
     tenantId,
     telegramId,
     name: [firstName, lastName].filter(Boolean).join(' ') || null,
@@ -50,7 +50,8 @@ export default defineEventHandler(async (event) => {
   const { token, hash } = issueSessionToken()
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString()
 
-  const { error: sessionError } = await supabase
+  // INSERT: tenant_id is in the payload, use raw client to avoid WHERE-clause conflict
+  const { error: sessionError } = await db.raw
     .from('customer_sessions')
     .insert({
       token_hash: hash,
@@ -86,7 +87,7 @@ type CustomerSeed = {
 }
 
 async function findOrCreateCustomer(
-  supabase: ReturnType<typeof getServerSupabase>,
+  supabase: SupabaseClient,
   seed: CustomerSeed,
 ): Promise<string> {
   const existing = await lookupCustomer(supabase, seed.tenantId, seed.telegramId)
@@ -116,7 +117,7 @@ async function findOrCreateCustomer(
 }
 
 async function lookupCustomer(
-  supabase: ReturnType<typeof getServerSupabase>,
+  supabase: SupabaseClient,
   tenantId: string,
   telegramId: string,
 ): Promise<string | null> {

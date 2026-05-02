@@ -1,12 +1,11 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import { createRateLimiter, getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(30, 60_000)
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!rateLimiter.check(ip)) {
@@ -20,13 +19,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Параметр date обязателен (YYYY-MM-DD)' })
   }
 
-  const supabase = getServerSupabase()
-
   const [{ data: tenantData }, { data: settingsData }, { data: branchData }] = await Promise.all([
-    supabase.from('tenants').select('modules, working_hours_schedule, timezone').eq('id', tenantId).single(),
-    supabase.from('reservation_settings').select('slot_step, close_buffer_minutes, enabled').eq('tenant_id', tenantId).maybeSingle(),
+    db.from('tenants').select('modules, working_hours_schedule, timezone').single(),
+    db.from('reservation_settings').select('slot_step, close_buffer_minutes, enabled').maybeSingle(),
     branchId
-      ? supabase.from('branches').select('working_hours_schedule').eq('id', branchId).eq('tenant_id', tenantId).maybeSingle()
+      ? db.from('branches').select('working_hours_schedule').eq('id', branchId).maybeSingle()
       : Promise.resolve({ data: null }),
   ])
 

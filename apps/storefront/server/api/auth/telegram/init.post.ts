@@ -2,7 +2,7 @@ import { defineEventHandler, getRequestIP } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { createRateLimiter } from '@fastio/shared'
 import { useRuntimeConfig } from '#imports'
-import { getServerSupabase } from '../../../utils/supabase'
+import { getTenantDb } from '../../../utils/tenantDb'
 import { reportError } from '~/utils/reportError'
 
 const NONCE_TTL_MS = 15 * 60 * 1000
@@ -10,8 +10,7 @@ const NONCE_TTL_MS = 15 * 60 * 1000
 const rateLimiter = createRateLimiter(5, 60_000)
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!rateLimiter.check(ip)) {
@@ -25,10 +24,10 @@ export default defineEventHandler(async (event) => {
   const nonce = randomUUID().replace(/-/g, '')
   const expiresAt = new Date(Date.now() + NONCE_TTL_MS).toISOString()
 
-  const supabase = getServerSupabase()
-  const { error } = await supabase
+  // INSERT: tenant_id is in the payload, use raw client to avoid WHERE-clause conflict
+  const { error } = await db.raw
     .from('pending_telegram_auths')
-    .insert({ nonce, tenant_id: tenantId, expires_at: expiresAt })
+    .insert({ nonce, tenant_id: db.tenantId, expires_at: expiresAt })
 
   if (error) {
     reportError(error)

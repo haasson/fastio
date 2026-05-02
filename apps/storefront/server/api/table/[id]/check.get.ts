@@ -1,20 +1,16 @@
-import { getServerSupabase } from '../../../utils/supabase'
+import { getTenantDb } from '../../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const tableId = getRouterParam(event, 'id')
   if (!tableId) throw createError({ statusCode: 400 })
 
-  const supabase = getServerSupabase()
-
   // Загружаем стол чтобы получить opened_at
-  const { data: table } = await supabase
+  const { data: table } = await db
     .from('tables')
     .select('id, opened_at, is_open')
     .eq('id', tableId)
-    .eq('tenant_id', tenantId)
     .single()
 
   if (!table || !table.is_open || !table.opened_at) {
@@ -22,11 +18,10 @@ export default defineEventHandler(async (event) => {
   }
 
   // Все заказы этого стола после opened_at
-  const { data: orders } = await supabase
+  const { data: orders } = await db
     .from('orders')
     .select('id')
     .eq('table_id', tableId)
-    .eq('tenant_id', tenantId)
     .eq('delivery_type', 'dine_in')
     .gte('created_at', table.opened_at)
 
@@ -38,13 +33,11 @@ export default defineEventHandler(async (event) => {
 
   // Загружаем items и kitchen_queue параллельно
   const [{ data: itemRows }, { data: kitchenRows }] = await Promise.all([
-    supabase
-      .from('order_items')
+    db.junction('order_items')
       .select('id, order_id, dish_name, price, quantity, modifiers, addons, removed_ingredients, status, sort_order')
       .in('order_id', orderIds)
       .order('sort_order'),
-    supabase
-      .from('kitchen_queue')
+    db.junction('kitchen_queue')
       .select('order_item_id, status')
       .in('order_id', orderIds),
   ])

@@ -1,5 +1,6 @@
 import { defineEventHandler, getQuery, getRequestProtocol, setCookie } from 'h3'
-import { getServerSupabase } from '../../../utils/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { getTenantDb } from '../../../utils/tenantDb'
 import { issueSessionToken, TG_SESSION_COOKIE_NAME } from '../../../utils/telegramAuth'
 import { reportError } from '~/utils/reportError'
 
@@ -7,21 +8,18 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
 const SESSION_TTL_SEC = SESSION_TTL_MS / 1000
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
+  const { tenantId } = db
 
   const { nonce } = getQuery(event)
   if (!nonce || typeof nonce !== 'string') {
     throw createError({ statusCode: 400, message: 'Нет nonce' })
   }
 
-  const supabase = getServerSupabase()
-
-  const { data: pending, error } = await supabase
+  const { data: pending, error } = await db
     .from('pending_telegram_auths')
     .select('nonce, tenant_id, telegram_id, telegram_data, phone, expires_at, completed_at')
     .eq('nonce', nonce)
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (error) {
@@ -39,12 +37,13 @@ export default defineEventHandler(async (event) => {
   const name = [data.first_name, data.last_name].filter(Boolean).join(' ') || null
   const phone = (pending.phone as string | null) ?? null
 
-  const customerId = await findOrCreateCustomer(supabase, { tenantId, telegramId, name, phone })
+  const customerId = await findOrCreateCustomer(db.raw, { tenantId, telegramId, name, phone })
 
   const { token, hash } = issueSessionToken()
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString()
 
-  const { error: sessionError } = await supabase
+  // INSERT: tenant_id is in the payload, use raw client to avoid WHERE-clause conflict
+  const { error: sessionError } = await db.raw
     .from('customer_sessions')
     .insert({
       token_hash: hash,
@@ -60,7 +59,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Delete nonce — single use
-  await supabase.from('pending_telegram_auths').delete().eq('nonce', nonce)
+  await db.raw.from('pending_telegram_auths').delete().eq('nonce', nonce)
 
   setCookie(event, TG_SESSION_COOKIE_NAME, token, {
     httpOnly: true,
@@ -76,7 +75,7 @@ export default defineEventHandler(async (event) => {
 type CustomerSeed = { tenantId: string; telegramId: string; name: string | null; phone: string | null }
 
 async function findOrCreateCustomer(
-  supabase: ReturnType<typeof getServerSupabase>,
+  supabase: SupabaseClient,
   seed: CustomerSeed,
 ): Promise<string> {
   const { data: existing } = await supabase

@@ -1,4 +1,4 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
 import { createRateLimiter, todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr } from '@fastio/shared'
 import { reportError } from '~/utils/reportError'
@@ -15,8 +15,8 @@ type BulkItem = {
 }
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
+  const { tenantId } = db
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!rateLimiter.check(ip)) {
@@ -49,13 +49,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const supabase = getServerSupabase()
-
   // Проверяем модуль и получаем настройки тенанта
-  const { data: tenantData } = await supabase
+  const { data: tenantData } = await db
     .from('tenants')
     .select('modules, timezone')
-    .eq('id', tenantId)
     .single()
 
   if (!tenantData?.modules?.services) {
@@ -70,10 +67,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // Получаем настройки модуля
-  const { data: settingsData } = await supabase
+  const { data: settingsData } = await db
     .from('appointment_settings')
     .select('auto_confirm, booking_horizon_days, allow_client_reschedule, allow_client_cancellation')
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   const autoConfirm = settingsData?.auto_confirm ?? false
@@ -89,11 +85,10 @@ export default defineEventHandler(async (event) => {
   // Tenant validation: branch must belong to this tenant.
   const branchId: string | null = body.branchId ?? null
   if (branchId) {
-    const { data: branchRow } = await supabase
+    const { data: branchRow } = await db
       .from('branches')
       .select('id')
       .eq('id', branchId)
-      .eq('tenant_id', tenantId)
       .maybeSingle()
     if (!branchRow) {
       throw createError({ statusCode: 400, message: 'Указанный филиал не найден в этом тенанте' })
@@ -107,11 +102,10 @@ export default defineEventHandler(async (event) => {
   const resourceIds = [...new Set(items.map((i) => i.resourceId).filter((r): r is string => r !== null))]
 
   // Загружаем услуги (фильтрация по tenant)
-  const { data: servicesData } = await supabase
+  const { data: servicesData } = await db
     .from('services')
     .select('id, duration, is_bookable, name, price, category_id')
     .in('id', serviceIds)
-    .eq('tenant_id', tenantId)
 
   type ServiceRow = { id: string; duration: number; is_bookable: boolean; name: string; price: number; category_id: string | null }
   const serviceById = new Map<string, ServiceRow>(
@@ -139,11 +133,10 @@ export default defineEventHandler(async (event) => {
   }
 
   // Tenant validation: каждый ресурс принадлежит этому тенанту и активен.
-  const { data: resourceRows } = await supabase
+  const { data: resourceRows } = await db
     .from('resources')
     .select('id, name')
     .in('id', resourceIds)
-    .eq('tenant_id', tenantId)
     .eq('is_active', true)
 
   const validResourceIds = new Set((resourceRows ?? []).map((r) => r.id as string))
@@ -154,9 +147,10 @@ export default defineEventHandler(async (event) => {
   }
 
   // Связь service↔resource: либо явная (service_resources), либо через категорию услуги.
+  // safe: serviceIds and resourceIds are both validated against tenantId in the queries above
   const [{ data: explicitLinks }, { data: categoryLinks }] = await Promise.all([
-    supabase.from('service_resources').select('service_id, resource_id').in('service_id', serviceIds).in('resource_id', resourceIds),
-    supabase.from('resource_categories').select('category_id, resource_id').in('resource_id', resourceIds),
+    db.junction('service_resources').select('service_id, resource_id').in('service_id', serviceIds).in('resource_id', resourceIds),
+    db.junction('resource_categories').select('category_id, resource_id').in('resource_id', resourceIds),
   ])
 
   const explicitLinkSet = new Set(
@@ -234,12 +228,13 @@ export default defineEventHandler(async (event) => {
       autoServiceIds.map((sid) => serviceById.get(sid)?.category_id).filter((id): id is string => !!id),
     )]
 
+    // safe: autoServiceIds and autoCategoryIds are derived from tenant-validated service rows above
     const [{ data: directRes }, { data: categoryRes }, { data: candidatesRows }] = await Promise.all([
-      supabase.from('service_resources').select('service_id, resource_id').in('service_id', autoServiceIds),
+      db.junction('service_resources').select('service_id, resource_id').in('service_id', autoServiceIds),
       autoCategoryIds.length
-        ? supabase.from('resource_categories').select('category_id, resource_id').in('category_id', autoCategoryIds)
+        ? db.junction('resource_categories').select('category_id, resource_id').in('category_id', autoCategoryIds)
         : Promise.resolve({ data: [] as Array<{ category_id: string; resource_id: string }> }),
-      supabase.from('resources').select('id').eq('tenant_id', tenantId).eq('is_active', true),
+      db.from('resources').select('id').eq('is_active', true),
     ])
 
     const activeIds = new Set((candidatesRows ?? []).map((r) => r.id as string))
@@ -271,8 +266,8 @@ export default defineEventHandler(async (event) => {
         Array.from(candidatesByService.values()).flatMap((s) => Array.from(s)),
       )]
       if (allCandidateIds.length) {
-        const { data: branchLinks } = await supabase
-          .from('resource_branches')
+        const { data: branchLinks } = await db
+          .junction('resource_branches')
           .select('resource_id, branch_id')
           .in('resource_id', allCandidateIds)
 
@@ -301,7 +296,7 @@ export default defineEventHandler(async (event) => {
 
     const loadByResource = new Map<string, number>()
     if (allCandIds.length) {
-      const { data: loadRows } = await supabase
+      const { data: loadRows } = await db
         .from('appointments')
         .select('resource_id')
         .in('resource_id', allCandIds)
@@ -329,7 +324,7 @@ export default defineEventHandler(async (event) => {
       // Отсеиваем тех, кто уже занят на (it.startsAt, it.endsAt). Простой запрос
       // overlap по каждому кандидату — RPC всё равно сделает атомарный capacity-чек,
       // мы лишь подбираем «обоснованного» кандидата.
-      const { data: busyRows } = await supabase
+      const { data: busyRows } = await db
         .from('appointments')
         .select('resource_id')
         .in('resource_id', candidates)
@@ -388,7 +383,7 @@ export default defineEventHandler(async (event) => {
     resource_assigned_by: it.assignedBy,
   }))
 
-  const { data: rpcResult, error } = await supabase.rpc('create_appointments_bulk', {
+  const { data: rpcResult, error } = await db.raw.rpc('create_appointments_bulk', {
     p_tenant_id: tenantId,
     p_branch_id: branchId,
     p_user_id: userId,

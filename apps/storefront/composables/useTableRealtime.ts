@@ -9,7 +9,7 @@ export function useTableRealtime(tenantId: string, onChange: () => void) {
   onMounted(() => {
     channel = supabase
       .channel('table-check')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => onChange())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items', filter: `tenant_id=eq.${tenantId}` }, () => onChange())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kitchen_queue', filter: `tenant_id=eq.${tenantId}` }, () => onChange())
       .subscribe()
 

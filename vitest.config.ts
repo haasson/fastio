@@ -16,6 +16,8 @@ export default defineConfig({
       '@fastio/ui': resolve(__dirname, 'packages/ui/src'),
       '@fastio/icons': resolve(__dirname, 'packages/icons/src'),
       '@fastio/kit': resolve(__dirname, 'packages/kit/src'),
+      // Прямой путь в pnpm store — при обновлении h3 обновить версию здесь вручную (см. TECHDEBT.md)
+      'h3': resolve(__dirname, 'node_modules/.pnpm/h3@1.15.5/node_modules/h3/dist/index.mjs'),
     },
   },
   test: {

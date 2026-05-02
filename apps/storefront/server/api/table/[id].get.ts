@@ -1,19 +1,15 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const tableId = getRouterParam(event, 'id')
   if (!tableId) throw createError({ statusCode: 400, message: 'Table ID required' })
 
-  const supabase = getServerSupabase()
-
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tables')
     .select('id, name, is_open, is_active')
     .eq('id', tableId)
-    .eq('tenant_id', tenantId)
     .single()
 
   if (error || !data) {
@@ -29,10 +25,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // Проверяем что dineIn модуль включён
-  const { data: tenant } = await supabase
+  const { data: tenant } = await db
     .from('tenants')
     .select('modules')
-    .eq('id', tenantId)
     .single()
 
   if (!tenant?.modules?.dineIn) {

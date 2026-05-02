@@ -1,17 +1,15 @@
-import { getServerSupabase, mapOrder } from '../../utils/supabase'
+import { mapOrder } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const id = getRouterParam(event, 'id')!
-  const supabase = getServerSupabase()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('orders')
     .select('*, order_items(*)')
     .eq('id', id)
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (!data) throw createError({ statusCode: 404, message: 'Заказ не найден' })
@@ -19,7 +17,7 @@ export default defineEventHandler(async (event) => {
   // status — text column (UUID or legacy string), no FK — separate lookup
   let statusInfo: { group_type: string; name: string } | null = null
   if (data.status) {
-    const { data: statusRow } = await supabase
+    const { data: statusRow } = await db
       .from('order_statuses')
       .select('group_type, name')
       .eq('id', data.status)
@@ -29,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   let branchInfo: { address: string | null } | null = null
   if (data.branch_id) {
-    const { data: branchRow } = await supabase
+    const { data: branchRow } = await db.raw
       .from('branches')
       .select('address')
       .eq('id', data.branch_id)

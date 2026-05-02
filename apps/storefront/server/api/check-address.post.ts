@@ -1,9 +1,10 @@
 import { findDeliveryZone } from '@fastio/shared'
 import type { DeliveryZone, Tenant } from '@fastio/shared'
-import { getServerSupabase, mapDeliveryZoneRow, getActiveBranchIds } from '../utils/supabase'
+import { mapDeliveryZoneRow } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string
+  const db = getTenantDb(event)
   const tenant = event.context.tenant as Tenant
 
   if (!tenant.modules?.delivery) {
@@ -29,15 +30,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'lat и lon обязательны' })
   }
 
-  const supabase = getServerSupabase()
-
-  const activeBranchIds = await getActiveBranchIds(supabase, tenantId)
+  const { data: activeBranches } = await db
+    .from('branches')
+    .select('id')
+    .eq('is_active', true)
+    .is('archived_at', null)
+  const activeBranchIds = (activeBranches ?? []).map((b) => b.id as string)
   if (activeBranchIds.length === 0) return { zone: null }
 
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await db
     .from('delivery_zones')
     .select('*')
-    .eq('tenant_id', tenantId)
     .eq('is_active', true)
     .in('branch_id', activeBranchIds)
     .order('sort_order')
@@ -61,7 +64,7 @@ export default defineEventHandler(async (event) => {
   // Fetch branch schedule for the matched zone's branch
   let branchSchedule = null
   if (zone.branchId) {
-    const { data: branch } = await supabase
+    const { data: branch } = await db.raw
       .from('branches')
       .select('working_hours_schedule')
       .eq('id', zone.branchId)

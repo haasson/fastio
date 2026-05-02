@@ -1,6 +1,6 @@
 import { normalizePhone, createRateLimiter } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
-import { getServerSupabase } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType, validatePaymentMethod } from '../services/order-validation'
 import { resolveCustomer } from '../services/order-customer'
 import { resolveDelivery } from '../services/order-delivery'
@@ -11,8 +11,8 @@ import { calcOrderTotal } from '../services/order-calc'
 const orderRateLimiter = createRateLimiter(5, 60_000)
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
+  const { tenantId } = db
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!orderRateLimiter.check(ip)) {
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const supabase = getServerSupabase()
+  const supabase = db.raw
 
   // 1. Валидация входных данных
   const { deliveryType, paymentType } = validateBasicFields(body)
@@ -107,11 +107,10 @@ export default defineEventHandler(async (event) => {
 
   if (error) {
     if (error.code === '23505' && idempotencyKey) {
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('orders')
         .select('id, order_number')
         .eq('idempotency_key', idempotencyKey)
-        .eq('tenant_id', tenantId)
         .single()
 
       if (existing) return { id: existing.id, orderNumber: existing.order_number ?? null }

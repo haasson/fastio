@@ -1,12 +1,12 @@
-import { getServerSupabase, getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
+import { getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import { createRateLimiter, todayInTz, addDaysToDateStr, DEFAULT_TIMEZONE } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
+  const { tenantId } = db
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
 
@@ -34,13 +34,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Укажите количество гостей' })
   }
 
-  const supabase = getServerSupabase()
-
   // Check module enabled
-  const { data: tenantData } = await supabase
+  const { data: tenantData } = await db
     .from('tenants')
     .select('modules, timezone')
-    .eq('id', tenantId)
     .single()
 
   if (!tenantData?.modules?.reservations) {
@@ -48,10 +45,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get and validate settings
-  const { data: settings } = await supabase
+  const { data: settings } = await db
     .from('reservation_settings')
     .select('*')
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (settings && !settings.enabled) {
@@ -61,7 +57,7 @@ export default defineEventHandler(async (event) => {
   const minGuests = settings?.min_guests ?? 1
   const maxAdvanceDays = settings?.max_advance_days ?? 30
   const autoConfirm = settings?.auto_confirm ?? false
-  const maxGuests = await resolveMaxGuests(supabase, tenantId, settings ?? {})
+  const maxGuests = await resolveMaxGuests(db.raw, tenantId, settings ?? {})
 
   // Validate guest count
   if (body.guestCount < minGuests || body.guestCount > maxGuests) {
@@ -95,10 +91,9 @@ export default defineEventHandler(async (event) => {
       const { data: { user } } = await authClient.auth.getUser()
 
       if (user) {
-        const { data: customerData } = await supabase
+        const { data: customerData } = await db
           .from('customers')
           .select('id')
-          .eq('tenant_id', tenantId)
           .eq('auth_user_id', user.id)
           .maybeSingle()
 
@@ -111,7 +106,7 @@ export default defineEventHandler(async (event) => {
 
   const status = autoConfirm ? 'confirmed' : 'pending'
 
-  const { data, error } = await supabase
+  const { data, error } = await db.raw
     .from('reservations')
     .insert({
       tenant_id: tenantId,

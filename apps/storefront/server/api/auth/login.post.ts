@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
-import { getServerSupabase, mapCustomer } from '../../utils/supabase'
+import { mapCustomer } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const body = await readBody(event)
   const { email, password } = body ?? {}
@@ -24,11 +24,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Неверный email или пароль' })
   }
 
-  const serverSupabase = getServerSupabase()
-  const { data: existingCustomer } = await serverSupabase
+  const { data: existingCustomer } = await db
     .from('customers')
     .select('*')
-    .eq('tenant_id', tenantId)
     .eq('auth_user_id', authData.user.id)
     .maybeSingle()
 

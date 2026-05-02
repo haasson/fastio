@@ -1,5 +1,6 @@
 import type { DishModifierGroup, DishModifierOption, DishTagDefinition, Tenant } from '@fastio/shared'
-import { getServerSupabase, mapCategory, mapCombo, mapDish } from '../utils/supabase'
+import { mapCategory, mapCombo, mapDish } from '../utils/supabase'
+import { getTenantDb } from '../utils/tenantDb'
 
 type GroupBindingRow = {
   dish_id: string
@@ -19,36 +20,31 @@ type OptionBindingRow = {
 }
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string
+  const db = getTenantDb(event)
   const tenant = event.context.tenant as Tenant
   const tenantModules = tenant.modules
   const modifiersEnabled = tenantModules?.modifiers ?? true
   const addonsEnabled = tenantModules?.addons ?? true
   const combosEnabled = tenantModules?.combos ?? true
 
-  const supabase = getServerSupabase()
-
   const [{ data: categoriesData }, { data: dishesData }, { data: combosData }] = await Promise.all([
-    supabase
+    db
       .from('categories')
       .select('*')
-      .eq('tenant_id', tenantId)
       .eq('kind', 'food')
       .eq('active', true)
       .is('deleted_at', null)
       .order('sort_order'),
-    supabase
+    db
       .from('dishes')
       .select('*')
-      .eq('tenant_id', tenantId)
       .eq('active', true)
       .is('deleted_at', null)
       .order('sort_order'),
     combosEnabled
-      ? supabase
+      ? db
           .from('combos')
           .select('*')
-          .eq('tenant_id', tenantId)
           .eq('active', true)
           .order('sort_order')
       : Promise.resolve({ data: [] }),
@@ -75,6 +71,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Round 2: all secondary queries in parallel — they all depend only on dishIds/comboIds
+  // safe: dishIds and comboIds are derived from tenant-validated queries above (.eq('tenant_id', tenantId))
   const [
     groupBindingsResult,
     optionBindingsResult,
@@ -85,39 +82,39 @@ export default defineEventHandler(async (event) => {
     comboTagRowsResult,
   ] = await Promise.all([
     dishIds.length > 0
-      ? supabase
-          .from('dish_modifier_groups')
+      ? db
+          .junction('dish_modifier_groups')
           .select('dish_id, group_id, sort_order, modifier_groups(id, name, active)')
           .in('dish_id', dishIds)
           .order('sort_order')
       : Promise.resolve({ data: [] }),
     dishIds.length > 0
-      ? supabase
-          .from('dish_modifier_options')
+      ? db
+          .junction('dish_modifier_options')
           .select('dish_id, option_id, price_delta, weight, is_default, sort_order, modifier_options(id, name, group_id, sort_order, active)')
           .in('dish_id', dishIds)
           .eq('active', true)
           .order('sort_order')
       : Promise.resolve({ data: [] }),
     dishIds.length > 0 && addonsEnabled
-      ? supabase
-          .from('dish_addons')
+      ? db
+          .junction('dish_addons')
           .select('dish_id, addon_id, sort_order, addons(id, name, weight, price, active)')
           .in('dish_id', dishIds)
           .order('sort_order')
           .returns<AddonBindingRow[]>()
       : Promise.resolve({ data: [] as AddonBindingRow[] }),
     comboIds.length > 0
-      ? supabase
-          .from('combo_items')
+      ? db
+          .junction('combo_items')
           .select('combo_id, sort_order, modifier_option_ids, addon_ids, dishes(name, photos, active, deleted_at)')
           .in('combo_id', comboIds)
           .order('sort_order')
           .returns<ComboItemRow[]>()
       : Promise.resolve({ data: [] as ComboItemRow[] }),
-    supabase.from('dish_tags').select('*').eq('tenant_id', tenantId).order('sort_order'),
-    supabase.from('dish_tag_assignments').select('dish_id, tag_id').eq('tenant_id', tenantId),
-    supabase.from('combo_tag_assignments').select('combo_id, tag_id').eq('tenant_id', tenantId),
+    db.from('dish_tags').select('*').order('sort_order'),
+    db.from('dish_tag_assignments').select('dish_id, tag_id'),
+    db.from('combo_tag_assignments').select('combo_id, tag_id'),
   ])
 
   const groupBindings = groupBindingsResult.data
@@ -226,8 +223,8 @@ export default defineEventHandler(async (event) => {
     const optionNames: Record<string, string> = {}
     const inactiveOptionIds = new Set<string>()
     if (allOptionIds.size > 0) {
-      const { data: optData } = await supabase
-        .from('modifier_options')
+      const { data: optData } = await db
+        .junction('modifier_options')
         .select('id, name, active, modifier_groups(active)')
         .in('id', [...allOptionIds])
 
@@ -242,8 +239,8 @@ export default defineEventHandler(async (event) => {
     const addonNames: Record<string, string> = {}
     const inactiveAddonIds = new Set<string>()
     if (allAddonIds.size > 0) {
-      const { data: addonData } = await supabase
-        .from('addons')
+      const { data: addonData } = await db
+        .junction('addons')
         .select('id, name, active')
         .in('id', [...allAddonIds])
 

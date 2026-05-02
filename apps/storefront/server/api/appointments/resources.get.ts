@@ -1,8 +1,7 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const query = getQuery(event)
   const serviceId = query.serviceId as string | undefined
@@ -10,12 +9,9 @@ export default defineEventHandler(async (event) => {
 
   if (!serviceId) throw createError({ statusCode: 400, message: 'Параметр serviceId обязателен' })
 
-  const supabase = getServerSupabase()
-
-  const { data: tenantData } = await supabase
+  const { data: tenantData } = await db
     .from('tenants')
     .select('modules')
-    .eq('id', tenantId)
     .single()
 
   if (!tenantData?.modules?.services) {
@@ -23,16 +19,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const [{ data: settingsData }, { data: serviceData }] = await Promise.all([
-    supabase
+    db
       .from('appointment_settings')
       .select('staff_name_format')
-      .eq('tenant_id', tenantId)
       .maybeSingle(),
-    supabase
+    db
       .from('services')
       .select('allow_resource_choice, category_id')
       .eq('id', serviceId)
-      .eq('tenant_id', tenantId)
       .maybeSingle(),
   ])
 
@@ -46,10 +40,11 @@ export default defineEventHandler(async (event) => {
   if (!allowChoice) return []
 
   // Эффективные ресурсы = явные через service_resources ∪ через категорию (resource_categories)
+  // safe: serviceId and category_id are validated against tenantId in the services query above
   const [{ data: explicitData }, { data: categoryData }] = await Promise.all([
-    supabase.from('service_resources').select('resource_id').eq('service_id', serviceId),
+    db.junction('service_resources').select('resource_id').eq('service_id', serviceId),
     serviceData?.category_id
-      ? supabase.from('resource_categories').select('resource_id').eq('category_id', serviceData.category_id as string)
+      ? db.junction('resource_categories').select('resource_id').eq('category_id', serviceData.category_id as string)
       : Promise.resolve({ data: [] as { resource_id: string }[] }),
   ])
 
@@ -60,18 +55,17 @@ export default defineEventHandler(async (event) => {
 
   if (!ids.length) return []
 
-  const { data: resources } = await supabase
+  const { data: resources } = await db
     .from('resources')
     .select('id, name, type, is_active')
     .in('id', ids)
-    .eq('tenant_id', tenantId)
     .eq('is_active', true)
 
   let active = (resources ?? []) as { id: string; name: string; type: string; is_active: boolean }[]
 
   if (branchId && active.length) {
-    const { data: branchLinks } = await supabase
-      .from('resource_branches')
+    const { data: branchLinks } = await db
+      .junction('resource_branches')
       .select('resource_id, branch_id')
       .in('resource_id', active.map((r) => r.id))
 

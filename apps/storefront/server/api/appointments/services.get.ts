@@ -1,32 +1,27 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
-  const supabase = getServerSupabase()
-
-  const { data: tenantData } = await supabase
+  const { data: tenantData } = await db
     .from('tenants')
     .select('modules')
-    .eq('id', tenantId)
     .single()
 
   if (!tenantData?.modules?.services) {
     throw createError({ statusCode: 400, message: 'Онлайн-запись недоступна' })
   }
 
-  const { data: servicesData } = await supabase
+  const { data: servicesData } = await db
     .from('services')
     .select('id, name, description, price, duration, photos, tags, category_id, booking_mode, allow_resource_choice')
-    .eq('tenant_id', tenantId)
     .eq('active', true)
     .eq('is_bookable', true)
     .order('sort_order')
 
   const serviceIds = (servicesData ?? []).map((s) => s.id as string)
   const { data: branchLinksData } = serviceIds.length
-    ? await supabase.from('service_branches').select('service_id, branch_id').in('service_id', serviceIds)
+    ? await db.junction('service_branches').select('service_id, branch_id').in('service_id', serviceIds)
     : { data: [] as { service_id: string; branch_id: string }[] }
 
   const branchIdsByService = new Map<string, string[]>()

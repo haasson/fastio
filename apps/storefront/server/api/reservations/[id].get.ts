@@ -1,5 +1,5 @@
-import { getServerSupabase } from '../../utils/supabase'
 import { mapReservation } from '@fastio/shared'
+import { getTenantDb } from '../../utils/tenantDb'
 
 const SELECT_FIELDS = `
   id, tenant_id, branch_id, customer_id,
@@ -12,21 +12,16 @@ const SELECT_FIELDS = `
 `.trim()
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const id = getRouterParam(event, 'id')
 
   if (!id) throw createError({ statusCode: 400 })
 
-  const supabase = getServerSupabase()
-
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('reservations')
     .select(SELECT_FIELDS)
     .eq('id', id)
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if (error) throw createError({ statusCode: 500, message: error.message })

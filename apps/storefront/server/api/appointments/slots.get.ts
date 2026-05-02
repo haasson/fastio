@@ -1,4 +1,4 @@
-import { getServerSupabase } from '../../utils/supabase'
+import { getTenantDb } from '../../utils/tenantDb'
 import {
   createRateLimiter, todayInTz, DEFAULT_TIMEZONE,
   getResourceSlotsForDate, mergeResourceSlots, getBranchSlotsForDate,
@@ -12,8 +12,7 @@ const sliceTime = (v: unknown): string | null =>
   typeof v === 'string' ? v.slice(0, 5) : null
 
 export default defineEventHandler(async (event) => {
-  const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 404 })
+  const db = getTenantDb(event)
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
   if (!rateLimiter.check(ip)) {
@@ -33,12 +32,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Параметр serviceId обязателен' })
   }
 
-  const supabase = getServerSupabase()
-
-  const { data: tenantData } = await supabase
+  const { data: tenantData } = await db
     .from('tenants')
     .select('modules, timezone')
-    .eq('id', tenantId)
     .single()
 
   if (!tenantData?.modules?.services) {
@@ -52,10 +48,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Нельзя выбрать прошедшую дату' })
   }
 
-  const { data: settingsData } = await supabase
+  const { data: settingsData } = await db
     .from('appointment_settings')
     .select('slot_step_minutes, booking_horizon_days')
-    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   const slotStep = (settingsData?.slot_step_minutes as number) ?? 30
@@ -66,11 +61,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Дата вне горизонта бронирования' })
   }
 
-  const { data: serviceData } = await supabase
+  const { data: serviceData } = await db
     .from('services')
     .select('duration, is_bookable, category_id')
     .eq('id', serviceId)
-    .eq('tenant_id', tenantId)
     .single()
 
   if (!serviceData?.is_bookable || !serviceData.duration) {
@@ -81,8 +75,9 @@ export default defineEventHandler(async (event) => {
 
   // Услуга недоступна в этом филиале (если service_branches не пуст и branchId не входит)
   if (branchId) {
-    const { data: svcBranches } = await supabase
-      .from('service_branches')
+    // safe: serviceId is validated against tenantId above
+    const { data: svcBranches } = await db
+      .junction('service_branches')
       .select('branch_id')
       .eq('service_id', serviceId)
     const list = (svcBranches ?? []).map((r) => r.branch_id as string)
@@ -91,11 +86,12 @@ export default defineEventHandler(async (event) => {
 
   // ─── Эффективные ресурсы для услуги ───────────────────────
   // Объединяем явные (service_resources) и через категорию (resource_categories).
+  // safe: serviceId and category_id are validated against tenantId in the services query above
 
   const [{ data: explicitData }, { data: categoryData }] = await Promise.all([
-    supabase.from('service_resources').select('resource_id').eq('service_id', serviceId),
+    db.junction('service_resources').select('resource_id').eq('service_id', serviceId),
     serviceData.category_id
-      ? supabase.from('resource_categories').select('resource_id').eq('category_id', serviceData.category_id as string)
+      ? db.junction('resource_categories').select('resource_id').eq('category_id', serviceData.category_id as string)
       : Promise.resolve({ data: [] as { resource_id: string }[] }),
   ])
 
@@ -108,7 +104,7 @@ export default defineEventHandler(async (event) => {
 
   // Фильтруем по ресурсу/филиалу
   if (activeResourceIds.length) {
-    let resQuery = supabase
+    let resQuery = db
       .from('resources')
       .select('id, capacity, is_active, applied_template_id, cycle_start_date')
       .in('id', activeResourceIds)
@@ -134,8 +130,8 @@ export default defineEventHandler(async (event) => {
     const shiftTemplateIds = Array.from(new Set(Array.from(shiftAnchor.values()).map((a) => a.templateId)))
 
     if (branchId && activeResourceIds.length) {
-      const { data: branchLinks } = await supabase
-        .from('resource_branches')
+      const { data: branchLinks } = await db
+        .junction('resource_branches')
         .select('resource_id, branch_id')
         .in('resource_id', activeResourceIds)
       const linksByResource = new Map<string, string[]>()
@@ -161,22 +157,22 @@ export default defineEventHandler(async (event) => {
       const dayEnd = localDateTimeToUtcIso(addDaysToDateStr(date, 1), '00:00', tz)
 
       const [schedulesData, disabledData, overridesData, dateDisabledData, appointmentsData, resourceBranchData, shiftTemplatesData, shiftSlotsData] = await Promise.all([
-        supabase.from('resource_schedules').select('*').in('resource_id', activeResourceIds),
-        supabase.from('resource_disabled_slots').select('*').in('resource_id', activeResourceIds),
-        supabase.from('resource_date_overrides').select('*').in('resource_id', activeResourceIds).eq('date', date),
-        supabase.from('resource_date_disabled_slots').select('*').in('resource_id', activeResourceIds).eq('date', date),
-        supabase.from('appointments')
+        db.junction('resource_schedules').select('*').in('resource_id', activeResourceIds),
+        db.junction('resource_disabled_slots').select('*').in('resource_id', activeResourceIds),
+        db.junction('resource_date_overrides').select('*').in('resource_id', activeResourceIds).eq('date', date),
+        db.junction('resource_date_disabled_slots').select('*').in('resource_id', activeResourceIds).eq('date', date),
+        db.from('appointments')
           .select('resource_id, starts_at, ends_at, actual_ends_at')
           .in('resource_id', activeResourceIds)
           .gte('starts_at', dayStart)
           .lt('starts_at', dayEnd)
           .not('status', 'eq', 'cancelled'),
-        supabase.from('resource_branches').select('resource_id, branch_id').in('resource_id', activeResourceIds),
+        db.junction('resource_branches').select('resource_id, branch_id').in('resource_id', activeResourceIds),
         shiftTemplateIds.length
-          ? supabase.from('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
+          ? db.junction('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
           : Promise.resolve({ data: [] as Array<{ id: string; cycle_length: number }> }),
         shiftTemplateIds.length
-          ? supabase.from('schedule_template_slots').select('template_id, day_index, slot_time').in('template_id', shiftTemplateIds)
+          ? db.junction('schedule_template_slots').select('template_id, day_index, slot_time').in('template_id', shiftTemplateIds)
           : Promise.resolve({ data: [] as Array<{ template_id: string; day_index: number; slot_time: string }> }),
       ])
 
@@ -199,9 +195,9 @@ export default defineEventHandler(async (event) => {
       const resourceBranchIds = Array.from(new Set(((resourceBranchData.data ?? []) as { branch_id: string }[]).map((r) => r.branch_id)))
       const [branchSchedRes, tenantSchedRes] = await Promise.all([
         resourceBranchIds.length
-          ? supabase.from('branches').select('id, working_hours_schedule').in('id', resourceBranchIds)
+          ? db.raw.from('branches').select('id, working_hours_schedule').in('id', resourceBranchIds)
           : Promise.resolve({ data: [] as { id: string; working_hours_schedule: WorkingHoursSchedule | null }[] }),
-        supabase.from('tenants').select('working_hours_schedule').eq('id', tenantId).maybeSingle(),
+        db.from('tenants').select('working_hours_schedule').maybeSingle(),
       ])
       const tenantSchedule = (tenantSchedRes.data?.working_hours_schedule as WorkingHoursSchedule | null) ?? null
       const branchScheduleById = new Map<string, WorkingHoursSchedule | null>(
@@ -299,7 +295,7 @@ export default defineEventHandler(async (event) => {
   // Если задан конкретный resourceId — это ошибка фильтрации, выходим.
   if (resourceId) return []
 
-  const branchQuery = supabase.from('branches').select('id, working_hours_schedule').eq('tenant_id', tenantId)
+  const branchQuery = db.from('branches').select('id, working_hours_schedule')
   const { data: branchesData } = branchId
     ? await branchQuery.eq('id', branchId)
     : await branchQuery
@@ -310,14 +306,14 @@ export default defineEventHandler(async (event) => {
   const branch = branchesData[0]
   let branchSchedule = (branch.working_hours_schedule as WorkingHoursSchedule | null) ?? null
   if (!branchSchedule) {
-    const { data: t } = await supabase.from('tenants').select('working_hours_schedule').eq('id', tenantId).maybeSingle()
+    const { data: t } = await db.from('tenants').select('working_hours_schedule').maybeSingle()
     branchSchedule = (t?.working_hours_schedule as WorkingHoursSchedule | null) ?? null
   }
 
   const dayStart = localDateTimeToUtcIso(date, '00:00', tz)
   const dayEnd = localDateTimeToUtcIso(addDaysToDateStr(date, 1), '00:00', tz)
 
-  const { data: appointmentsData } = await supabase
+  const { data: appointmentsData } = await db
     .from('appointments')
     .select('starts_at, ends_at, actual_ends_at')
     .eq('service_id', serviceId)
