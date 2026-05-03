@@ -18,7 +18,7 @@ export type Resource = {
   tenantId: string
   name: string
   type: ResourceType
-  memberId: string | null   // обязателен для type='person', null для 'object'
+  memberId: string | null   // ссылка на TenantMember; null для безучётных исполнителей и 'object'
   capacity: number          // 1+ параллельных бронирований
   isActive: boolean
   sortOrder: number

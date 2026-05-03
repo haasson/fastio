@@ -2,7 +2,7 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-03T12:17:14.106Z",
+  "generated_at": "2026-05-03T13:41:14.511Z",
   "stats": {
     "files": 63,
     "pages": 0,
@@ -53,8 +53,8 @@
     },
     "composables/useCartReconciler.ts": {
       "kind": "ts",
-      "hash": "d3b1e6445525",
-      "purpose": "Watcher-composable: запускает reconcileCart/reconcileServices при загрузке меню/услуг и показывает тосты об изменениях",
+      "hash": "a6d1238037b7",
+      "purpose": "Реконсиляция корзины при загрузке меню/услуг: удаляет несуществующие позиции, обновляет цены и сбрасывает предпочтения при изменении настроек",
       "symbols": [
         {
           "name": "useCartReconciler",

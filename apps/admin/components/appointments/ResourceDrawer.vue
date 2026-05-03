@@ -10,15 +10,28 @@
   >
     <div :key="formKey" class="content">
       <UiForm ref="formRef">
-        <UiSelect
-          v-if="type === 'person'"
-          v-model:value="form.memberId"
-          name="memberId"
-          label="Сотрудник"
-          :options="memberOptions"
-          placeholder="Выберите из команды"
-          :rules="[{ type: 'required', message: 'Выберите сотрудника' }]"
-        />
+        <template v-if="type === 'person'">
+          <UiSwitch :model-value="isLinkedToMember" label="Выбрать из команды" @update:model-value="onToggleLinked" />
+
+          <UiSelect
+            v-if="isLinkedToMember"
+            v-model:value="form.memberId"
+            name="memberId"
+            label="Сотрудник"
+            :options="memberOptions"
+            placeholder="Выберите из команды"
+            :rules="[{ type: 'required', message: 'Выберите сотрудника' }]"
+          />
+
+          <UiInput
+            v-else
+            v-model="form.name"
+            label="Имя"
+            name="name"
+            placeholder="Например: Анна"
+            :rules="[{ type: 'required', message: 'Укажите имя' }]"
+          />
+        </template>
 
         <UiInput
           v-if="type === 'object'"
@@ -53,6 +66,10 @@
           :data="treeData"
           :default-expanded-keys="defaultExpandedKeys"
         />
+
+        <UiAlert v-if="!checkedKeys.length" type="info" size="small">
+          Выберите хотя бы одну услугу или категорию
+        </UiAlert>
       </UiForm>
 
       <!-- Schedule via template -->
@@ -62,7 +79,8 @@
         <UiSkeleton v-if="templatesLoading" :repeat="1" />
 
         <UiAlert v-else-if="!allTemplates.length" type="info" size="small">
-          Сначала создайте шаблон графика в разделе «Шаблоны».
+          Без шаблона сотрудник будет работать по графику филиала.
+          Чтобы задать персональный график — <NuxtLink to="/appointments/templates" class="alert-link">создайте шаблон</NuxtLink>.
         </UiAlert>
 
         <template v-else>
@@ -71,8 +89,6 @@
             name="templateId"
             label="Шаблон"
             :options="templateOptions"
-            placeholder="Не выбран"
-            :rules="!resource ? [{ required: true, message: 'Выберите шаблон графика' }] : []"
           />
 
           <UiDatepicker
@@ -83,7 +99,7 @@
             message="Дальше шаблон повторяется по кругу"
           />
 
-          <UiAlert v-if="form.templateId && resource" type="info" size="small">
+          <UiAlert v-if="form.templateId !== 'branch' && resource" type="info" size="small">
             После сохранения шаблон заменит текущий график. Периоды отсутствий не затронутся.
           </UiAlert>
         </template>
@@ -96,7 +112,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiDrawer, UiForm, UiInput, UiSelect, UiTitle, UiButton, UiAlert, UiDatepicker, UiInputNumber, UiSkeleton, UiTree, useConfirm, useMessage } from '@fastio/ui'
+import { UiDrawer, UiForm, UiInput, UiSelect, UiSwitch, UiTitle, UiButton, UiAlert, UiDatepicker, UiInputNumber, UiSkeleton, UiTree, useConfirm, useMessage } from '@fastio/ui'
 import type { UiTreeNode } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
 import type { Resource, Service, Category, ScheduleTemplate, ResourceType } from '@fastio/shared'
@@ -134,6 +150,7 @@ const { findConflicts } = useScheduleConflictCheck()
 const formRef = ref<{ validate: () => Promise<boolean> } | null>(null)
 const offPeriodsRef = ref<InstanceType<typeof OffPeriodsSection> | null>(null)
 const saving = ref(false)
+const isLinkedToMember = ref(false)
 
 // Перемонтируем содержимое дровера при каждом открытии, чтобы FormItem'ы
 // не наследовали touched/error от прошлой сессии.
@@ -152,13 +169,14 @@ const form = reactive({
   branchId: null as string | null,
   serviceIds: [] as string[],
   categoryIds: [] as string[],
-  templateId: null as string | null,
+  templateId: 'branch' as string,
 })
 
 const applyStartTs = ref<number>(Date.now())
 const services = ref<Service[]>([])
 const categories = ref<Category[]>([])
 const allTemplates = ref<ScheduleTemplate[]>([])
+const existingResources = ref<Resource[]>([])
 const templatesLoading = ref(true)
 
 const showBranchField = computed(() => branchStore.branches.length > 1)
@@ -166,10 +184,15 @@ const showBranchField = computed(() => branchStore.branches.length > 1)
 const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })),
 )
 
-// В исполнители записи может попасть любой member команды — это про назначение
-// в запись, а не про права админить раздел (тот, кто открыл этот дровер, уже
-// прошёл гейт manageAppointments).
-const memberOptions = computed(() => teamMembers.value.map((m) => ({ label: m.displayName || m.email || m.id, value: m.id })),
+const usedMemberIds = computed(() => new Set(
+  existingResources.value
+    .filter((r) => r.memberId && r.id !== props.resource?.id)
+    .map((r) => r.memberId as string),
+))
+
+const memberOptions = computed(() => teamMembers.value
+  .filter((m) => !usedMemberIds.value.has(m.id))
+  .map((m) => ({ label: m.displayName || m.email || m.id, value: m.id })),
 )
 
 const treeData = computed<UiTreeNode[]>(() => categories.value.map((c) => ({
@@ -207,11 +230,13 @@ const checkedKeys = computed<string[]>({
 
 const defaultExpandedKeys = ref<string[]>([])
 
-const templateOptions = computed(() => allTemplates.value.map((t) => ({
-  label: t.type === 'shift' ? `${t.name} (цикл ${t.cycleLength} дн.)` : t.name,
-  value: t.id,
-})),
-)
+const templateOptions = computed(() => [
+  { label: 'По графику работы филиала', value: 'branch' },
+  ...allTemplates.value.map((t) => ({
+    label: t.type === 'shift' ? `${t.name} (цикл ${t.cycleLength} дн.)` : t.name,
+    value: t.id,
+  })),
+])
 
 const selectedTemplate = computed<ScheduleTemplate | null>(() => allTemplates.value.find((t) => t.id === form.templateId) ?? null,
 )
@@ -228,7 +253,6 @@ const tsToDateStr = (ts: number | null): string | null => {
 // ─── Apply template ───────────────────────────────────────
 
 const applyTemplate = async (resourceId: string) => {
-  if (!form.templateId) return
   const tpl = selectedTemplate.value
 
   if (!tpl) return
@@ -249,6 +273,7 @@ const applyTemplate = async (resourceId: string) => {
 // ─── Init ─────────────────────────────────────────────────
 
 const applyResource = async (resource: Resource) => {
+  isLinkedToMember.value = resource.memberId !== null
   form.name = resource.name
   form.memberId = resource.memberId
   form.capacity = resource.capacity
@@ -274,15 +299,17 @@ watch(() => props.modelValue, async (open) => {
 
   await loadTeam()
 
-  const [svcList, catList, tplList] = await Promise.all([
+  const [svcList, catList, tplList, resourceList] = await Promise.all([
     api.services.listActive(tid),
     api.categories.list(tid, 'service'),
     api.scheduleTemplates.list(tid),
+    api.resources.list(tid),
   ])
 
   services.value = svcList
   categories.value = catList
   allTemplates.value = tplList
+  existingResources.value = resourceList
   templatesLoading.value = false
 
   if (props.resource) {
@@ -292,8 +319,9 @@ watch(() => props.modelValue, async (open) => {
       name: '', memberId: null, capacity: 1,
       branchId: branchStore.branches.length === 1 ? branchStore.branches[0]!.id : null,
       serviceIds: [], categoryIds: [],
-      templateId: null,
+      templateId: 'branch',
     })
+    isLinkedToMember.value = false
     applyStartTs.value = Date.now()
   }
 
@@ -303,6 +331,12 @@ watch(() => props.modelValue, async (open) => {
     .map((c) => `cat:${c.id}`)
 })
 
+const onToggleLinked = (val: boolean) => {
+  isLinkedToMember.value = val
+  form.memberId = null
+  form.name = ''
+}
+
 // Если стало 1 филиала — авто-привязка.
 watch(() => branchStore.branches.length, (n) => {
   if (n === 1 && !form.branchId) {
@@ -311,7 +345,7 @@ watch(() => branchStore.branches.length, (n) => {
 })
 
 const validateTemplateApply = async (): Promise<boolean> => {
-  if (!props.resource || !form.templateId) return true
+  if (!props.resource || form.templateId === 'branch') return true
 
   const tid = tenantStore.currentTenantId
 
@@ -385,6 +419,19 @@ const onSave = async () => {
 
   if (!valid) return false
 
+  if (props.type === 'person' && !isLinkedToMember.value) {
+    const trimmed = form.name.trim().toLowerCase()
+    const duplicate = existingResources.value.find(
+      (r) => r.type === 'person' && r.name.toLowerCase() === trimmed && r.id !== props.resource?.id,
+    )
+
+    if (duplicate) {
+      message.error(`Сотрудник с именем «${form.name.trim()}» уже существует`)
+
+      return false
+    }
+  }
+
   if (!form.categoryIds.length && !form.serviceIds.length) {
     message.error('Выберите хотя бы одну услугу или категорию')
 
@@ -401,11 +448,15 @@ const onSave = async () => {
   try {
     const isCreate = !props.resource
 
-    // Для person имя — это displayName сотрудника из профиля.
-    // Для object — то, что админ ввёл в форме.
     const name = props.type === 'person'
-      ? (teamMembers.value.find((m) => m.id === form.memberId)?.displayName ?? '').trim()
+      ? isLinkedToMember.value
+        ? (teamMembers.value.find((m) => m.id === form.memberId)?.displayName ?? '').trim()
+        : form.name.trim()
       : form.name.trim()
+
+    const effectiveMemberId = props.type === 'person' && isLinkedToMember.value
+      ? form.memberId
+      : null
 
     // Если филиал один — авто-привязка, даже если поле скрыто.
     const effectiveBranchId = form.branchId
@@ -416,13 +467,13 @@ const onSave = async () => {
       ? await api.resources.update(props.resource.id, {
           name,
           type: props.type,
-          memberId: props.type === 'person' ? form.memberId : null,
+          memberId: effectiveMemberId,
           capacity: props.type === 'object' ? Number(form.capacity) : 1,
         })
       : await api.resources.create(tid, {
           name,
           type: props.type,
-          memberId: props.type === 'person' ? form.memberId : null,
+          memberId: effectiveMemberId,
           capacity: props.type === 'object' ? Number(form.capacity) : 1,
         })
 
@@ -432,10 +483,7 @@ const onSave = async () => {
       api.resources.setCategoryIds(resource.id, form.categoryIds),
     ])
 
-    // Шаблон применяется при сохранении: для нового ресурса — обязательный
-    // (валидация на required), для существующего — только если выбран
-    // (мы не трекаем «текущий шаблон», поэтому при загрузке он null).
-    if (form.templateId) {
+    if (form.templateId !== 'branch') {
       await applyTemplate(resource.id)
       // Перечитаем overrides — applyShift может добавить date_overrides.
       if (!isCreate) await offPeriodsRef.value?.reload()
@@ -471,5 +519,15 @@ const drawerActions: DrawerAction[] = [
   display: flex;
   flex-direction: column;
   gap: var(--space-12);
+}
+
+.alert-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    opacity: 0.75;
+  }
 }
 </style>
