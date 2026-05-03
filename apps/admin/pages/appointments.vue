@@ -9,7 +9,6 @@ import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
-import { useRoute, navigateTo } from '#imports'
 import { useTenantStore } from '~/stores/tenant'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 
@@ -37,12 +36,6 @@ const tabs = computed(() => {
 
   return items
 })
-
-const route = useRoute()
-
-if (route.path === '/appointments') {
-  await navigateTo('/appointments/list', { replace: true })
-}
 </script>
 
 <style scoped lang="scss">

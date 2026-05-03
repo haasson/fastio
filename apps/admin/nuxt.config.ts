@@ -26,6 +26,8 @@ export default defineNuxtConfig({
     '/content': { redirect: '/content/banners' },
     '/promotions': { redirect: '/promotions/list' },
     '/menu': { redirect: '/menu/dishes' },
+    '/services': { redirect: '/services/items' },
+    '/appointments': { redirect: '/appointments/list' },
     '/tables': { redirect: '/tables/list' },
     '/reservations': { redirect: '/reservations/list' },
     '/appearance': { redirect: '/appearance/sections' },
