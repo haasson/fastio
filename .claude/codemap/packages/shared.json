@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-01T14:34:36.122Z",
+  "generated_at": "2026-05-03T06:12:19.811Z",
   "stats": {
     "files": 37,
     "pages": 0,
-    "symbols": 151,
+    "symbols": 153,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -598,8 +598,8 @@
     },
     "src/utils/reconcile-cart.ts": {
       "kind": "ts",
-      "hash": "d58bcebfe65d",
-      "purpose": "Реконсиляция корзины со свежим меню: удаляет несуществующие, обновляет цены/имена, помечает изменённые позиции",
+      "hash": "408fb44f7d3c",
+      "purpose": "Реконсиляция корзины блюд и услуг: удаление/обновление позиций при расхождении со снапшотом каталога",
       "symbols": [
         {
           "name": "reconcileServices",
@@ -640,20 +640,32 @@
         {
           "name": "ReconcileServiceItem",
           "kind": "type",
-          "hash": "73227359",
-          "purpose": "Позиция корзины услуг с preferredResourceId"
+          "hash": "7a746957",
+          "purpose": "Позиция корзины услуг: serviceId, name, price, duration, photo, preferredResourceId, allowResourceChoice, _key"
         },
         {
           "name": "ReconcileService",
           "kind": "type",
-          "hash": "4b693d60",
-          "purpose": "Минимальное представление услуги (для матчинга в reconcileServices)"
+          "hash": "40703423",
+          "purpose": "Минимальное представление услуги для reconciler: id, name, price, duration, photos, isBookable, allowResourceChoice"
+        },
+        {
+          "name": "ServiceRemovalReason",
+          "kind": "type",
+          "hash": "532d4636",
+          "purpose": "Причина удаления услуги из корзины: service_missing | service_not_bookable"
+        },
+        {
+          "name": "RemovedServiceItem",
+          "kind": "type",
+          "hash": "c8d585d5",
+          "purpose": "Удалённая позиция корзины услуг с причиной удаления (симметрично RemovedItem для блюд)"
         },
         {
           "name": "ReconcileServiceResult",
           "kind": "type",
-          "hash": "f4a80047",
-          "purpose": "Результат реконсиляции услуг: items / removed / updated"
+          "hash": "7d446671",
+          "purpose": "Результат reconcileServices: { items, removed: RemovedServiceItem[], updated }"
         },
         {
           "name": "ReconcileMenuData",

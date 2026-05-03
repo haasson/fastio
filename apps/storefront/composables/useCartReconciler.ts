@@ -2,7 +2,7 @@ import { watch } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { reconcileCart, reconcileServices } from '@fastio/shared'
-import type { ReconcileService, Dish, Combo, DishModifierGroup } from '@fastio/shared'
+import type { ReconcileService, Dish, Combo, DishModifierGroup, RemovedServiceItem } from '@fastio/shared'
 import { useCartStore, type DishCartItem, type ServiceCartItem } from '~/stores/cart'
 import type { ClientAddon } from '~/stores/menu'
 import { useToast } from '~/composables/useToast'
@@ -74,13 +74,16 @@ export function useCartReconciler(menuRef: Ref<MenuData | null>) {
       }
 
       if (serviceResult && serviceResult.removed.length > 0) {
-        for (const item of serviceResult.removed) {
-          warning('Услуга больше недоступна', `«${item.serviceName}» убрана из корзины`)
+        for (const { item, reason } of serviceResult.removed) {
+          const msg = reason === 'service_not_bookable'
+            ? 'Онлайн-запись отключена'
+            : 'Услуга больше недоступна'
+          warning(msg, `«${item.serviceName}» убрана из корзины`)
         }
       }
 
       if (serviceResult && serviceResult.updated.length > 0) {
-        warning('Услуги обновились', 'Цены и длительность пересчитаны')
+        warning('Услуги в корзине обновлены', 'Цены, длительность или условия записи изменились')
       }
     },
     { immediate: true },

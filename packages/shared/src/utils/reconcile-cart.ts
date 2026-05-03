@@ -48,11 +48,20 @@ export type ReconcileService = {
   price: number
   duration: number
   photos: string[]
+  isBookable: boolean
+  allowResourceChoice: boolean
+}
+
+export type ServiceRemovalReason = 'service_missing' | 'service_not_bookable'
+
+export type RemovedServiceItem = {
+  item: ReconcileServiceItem
+  reason: ServiceRemovalReason
 }
 
 export type ReconcileServiceResult = {
   items: ReconcileServiceItem[]
-  removed: ReconcileServiceItem[]
+  removed: RemovedServiceItem[]
   updated: ReconcileServiceItem[]
 }
 
@@ -64,7 +73,7 @@ export function reconcileServices(
   services: ReconcileService[],
 ): ReconcileServiceResult {
   const items: ReconcileServiceItem[] = []
-  const removed: ReconcileServiceItem[] = []
+  const removed: RemovedServiceItem[] = []
   const updated: ReconcileServiceItem[] = []
 
   const serviceMap = new Map(services.map((s) => [s.id, s]))
@@ -72,16 +81,22 @@ export function reconcileServices(
   for (const item of cartItems) {
     const svc = serviceMap.get(item.serviceId)
     if (!svc) {
-      removed.push(item)
+      removed.push({ item, reason: 'service_missing' })
+      continue
+    }
+    if (!svc.isBookable) {
+      removed.push({ item, reason: 'service_not_bookable' })
       continue
     }
 
     const newPhoto = svc.photos[0] ?? null
+    const newPreferredResourceId = svc.allowResourceChoice ? item.preferredResourceId : null
     const changed
       = svc.name !== item.serviceName
       || svc.price !== item.price
       || svc.duration !== item.duration
       || newPhoto !== item.photo
+      || newPreferredResourceId !== item.preferredResourceId
 
     const next: ReconcileServiceItem = {
       ...item,
@@ -89,6 +104,8 @@ export function reconcileServices(
       price: svc.price,
       duration: svc.duration,
       photo: newPhoto,
+      allowResourceChoice: svc.allowResourceChoice,
+      preferredResourceId: newPreferredResourceId,
     }
 
     items.push(next)
