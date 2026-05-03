@@ -14,15 +14,6 @@
         <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
       </div>
 
-      <UiInput
-        v-model="form.phone"
-        name="phone"
-        label="Телефон"
-        class="phone-input"
-        placeholder="+7 (999) 000-00-00"
-        :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
-      />
-
       <UiSelect
         v-model:value="form.timezone"
         label="Часовой пояс"
@@ -30,12 +21,11 @@
         filterable
         class="timezone-select"
       />
-    </UiCard>
 
-    <UiCard size="large" class="section">
-      <UiSectionHeader title="Часы работы" />
-
-      <WorkingHoursEditor v-model="form.workingHoursSchedule" />
+      <UiText v-if="!branchesOptedOut" size="tiny" class="hint">
+        Телефон и часы работы заведения настраиваются в разделе
+        <NuxtLink to="/branches" class="hint-link">«{{ branchSectionLabel }}»</NuxtLink>.
+      </UiText>
     </UiCard>
 
     <UiCard size="large" class="section">
@@ -64,22 +54,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { UiCard, UiForm, UiInput, UiButton, useMessage, UiSectionHeader, UiSelect } from '@fastio/ui'
-import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
+import { ref, reactive, computed, watch } from 'vue'
+import { UiCard, UiForm, UiInput, UiButton, UiText, useMessage, UiSectionHeader, UiSelect } from '@fastio/ui'
+import type { Tenant } from '@fastio/shared'
 import { TIMEZONE_OPTIONS } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
+import { useGate } from '~/composables/plan/useGate'
+import { isLockedBy } from '~/composables/plan/useGate.helpers'
 import { useFormDirty } from '~/composables/ui/useFormDirty'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
+const gate = useGate()
 
-const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
+const isVenueMode = isLockedBy(gate.branches, 'locked')
+const branchesOptedOut = isLockedBy(gate.branches, 'opted-out')
+const branchSectionLabel = computed(() => isVenueMode.value ? 'Заведение' : 'Филиалы')
 
 const buildForm = (t: Tenant) => ({
   name: t.name ?? '',
-  phone: t.contacts?.phone ?? '',
   email: t.contacts?.email ?? '',
   instagram: t.contacts?.instagram ?? '',
   vk: t.contacts?.vk ?? '',
@@ -87,7 +80,6 @@ const buildForm = (t: Tenant) => ({
   whatsapp: t.contacts?.whatsapp ?? '',
   max: t.contacts?.max ?? '',
   timezone: t.timezone,
-  workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_SCHEDULE,
 })
 
 const form = reactive(buildForm(tenantStore.tenant))
@@ -111,7 +103,6 @@ const handleSave = async () => {
       timezone: form.timezone,
       contacts: {
         ...tenantStore.tenant.contacts,
-        phone: form.phone,
         email: form.email,
         instagram: form.instagram || null,
         vk: form.vk || null,
@@ -119,7 +110,6 @@ const handleSave = async () => {
         whatsapp: form.whatsapp || null,
         max: form.max || null,
       },
-      workingHoursSchedule: form.workingHoursSchedule,
     })
     reset()
     success('Сохранено')
@@ -154,12 +144,19 @@ const handleSave = async () => {
   }
 }
 
-.phone-input {
+.timezone-select {
   max-width: 320px;
 }
 
-.timezone-select {
-  max-width: 320px;
+.hint {
+  color: var(--color-text-hint);
+}
+
+.hint-link {
+  color: var(--color-primary);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
 }
 
 .footer {

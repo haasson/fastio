@@ -8,87 +8,104 @@
       На вашем тарифе доступно {{ maxBranches }} {{ branchLimitLabel }}. Обновите тариф для добавления новых точек.
     </UiAlert>
 
-    <div v-if="!isVenueMode" class="header-actions">
-      <UiButton
-        type="primary"
-        icon="plus"
-        size="small"
-        :disabled="branchLimitReached"
-        :title="branchLimitReached ? 'Лимит филиалов на вашем тарифе' : undefined"
-        @click="openAdd"
-      >Добавить</UiButton>
-    </div>
-
     <UiSkeleton v-if="loading" text :repeat="3" />
 
-    <template v-else-if="branches.length">
-      <div v-for="branch in branches" :key="branch.id" class="branch-row">
-        <div class="branch-info">
-          <div class="branch-name-wrap">
-            <UiText size="medium" class="branch-name">{{ branch.name }}</UiText>
-            <UiTag v-if="!branch.isActive" type="warning" size="small">Неактивен</UiTag>
-          </div>
-          <UiText v-if="branch.address" size="tiny" class="branch-address">{{ branch.address }}</UiText>
-          <UiText v-if="branch.phone" size="tiny" class="branch-phone">{{ branch.phone }}</UiText>
-          <div v-if="deliveryEnabled && hasAnyZones && branchHasNoZones(branch.id)" class="branch-warning">
-            <span class="branch-warning-text">Нет зон доставки — доставка не работает.</span>
-            <NuxtLink to="/orders/delivery" class="branch-warning-link">Настроить зоны</NuxtLink>
-          </div>
-        </div>
-
-        <div class="branch-actions">
-          <UiIcon
-            name="pencil"
-            :size="18"
-            class="branch-action"
-            title="Настройки"
-            @click="openEdit(branch)"
-          />
-          <UiIcon
-            v-if="branches.length > 1"
-            name="archive"
-            :size="18"
-            class="branch-action danger"
-            title="Архивировать"
-            @click="handleArchive(branch)"
-          />
-        </div>
-      </div>
+    <!-- Single-branch (venueMode): редактируем единственный филиал прямо на странице -->
+    <template v-else-if="isVenueMode">
+      <BranchAddressBlock v-if="primaryBranch" :branch="primaryBranch" />
+      <TenantContactsBlock />
     </template>
 
-    <UiText v-else size="small">Нет активных филиалов.</UiText>
+    <!-- Multi-branch: общие настройки сверху, потом список филиалов -->
+    <template v-else>
+      <TenantContactsBlock
+        title="Общие настройки заведения"
+        subtitle="Используются по умолчанию во всех филиалах. В каждом филиале можно переопределить."
+      />
 
-    <!-- Архив -->
-    <template v-if="archivedBranches.length">
-      <UiDivider />
-      <UiSectionHeader title="Архив" />
-      <div v-for="branch in archivedBranches" :key="branch.id" class="branch-row archived">
-        <div class="branch-info">
-          <UiText size="medium" class="branch-name">{{ branch.name }}</UiText>
-          <UiText v-if="branch.address" size="tiny" class="branch-address">{{ branch.address }}</UiText>
-        </div>
-        <UiButton
-          type="text"
-          size="medium"
-          icon="archiveRestore"
-          title="Восстановить"
-          @click="handleRestore(branch)"
-        />
-      </div>
+      <UiCard size="large" class="branches-card">
+        <UiSectionHeader title="Филиалы">
+          <template #right>
+            <UiButton
+              type="primary"
+              icon="plus"
+              size="small"
+              :disabled="branchLimitReached"
+              :title="branchLimitReached ? 'Лимит филиалов на вашем тарифе' : undefined"
+              @click="openAdd"
+            >Добавить</UiButton>
+          </template>
+        </UiSectionHeader>
+
+        <template v-if="branches.length">
+          <div v-for="branch in branches" :key="branch.id" class="branch-row">
+            <div class="branch-info">
+              <div class="branch-name-wrap">
+                <UiText size="medium" class="branch-name">{{ branch.name }}</UiText>
+                <UiTag v-if="!branch.isActive" type="warning" size="small">Неактивен</UiTag>
+              </div>
+              <UiText v-if="branch.address" size="tiny" class="branch-address">{{ branch.address }}</UiText>
+              <UiText v-if="branch.phone" size="tiny" class="branch-phone">{{ branch.phone }}</UiText>
+              <div v-if="deliveryEnabled && hasAnyZones && branchHasNoZones(branch.id)" class="branch-warning">
+                <span class="branch-warning-text">Нет зон доставки — доставка не работает.</span>
+                <NuxtLink to="/orders/delivery" class="branch-warning-link">Настроить зоны</NuxtLink>
+              </div>
+            </div>
+
+            <div class="branch-actions">
+              <UiIcon
+                name="pencil"
+                :size="18"
+                class="branch-action"
+                title="Настройки"
+                @click="openEdit(branch)"
+              />
+              <UiIcon
+                v-if="branches.length > 1"
+                name="archive"
+                :size="18"
+                class="branch-action danger"
+                title="Архивировать"
+                @click="handleArchive(branch)"
+              />
+            </div>
+          </div>
+        </template>
+
+        <UiText v-else size="small">Нет активных филиалов.</UiText>
+
+        <template v-if="archivedBranches.length">
+          <UiDivider />
+          <UiSectionHeader title="Архив" />
+          <div v-for="branch in archivedBranches" :key="branch.id" class="branch-row archived">
+            <div class="branch-info">
+              <UiText size="medium" class="branch-name">{{ branch.name }}</UiText>
+              <UiText v-if="branch.address" size="tiny" class="branch-address">{{ branch.address }}</UiText>
+            </div>
+            <UiButton
+              type="text"
+              size="medium"
+              icon="archiveRestore"
+              title="Восстановить"
+              @click="handleRestore(branch)"
+            />
+          </div>
+        </template>
+      </UiCard>
+
+      <BranchDrawer
+        v-model="drawerOpen"
+        :branch="editingBranch"
+        @save="handleSave"
+      />
     </template>
-
-    <BranchDrawer
-      v-model="drawerOpen"
-      :branch="editingBranch"
-      @save="handleSave"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, UiSectionHeader, UiAlert } from '@fastio/ui'
+import { UiButton, UiCard, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, UiSectionHeader, UiAlert } from '@fastio/ui'
 import { usePageTitle } from '~/composables/usePageTitle'
 import { useConfirm } from '@fastio/kit'
 import type { Branch, BranchFormData } from '@fastio/shared'
@@ -100,6 +117,8 @@ import { isLockedBy } from '~/composables/plan/useGate.helpers'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useDeliveryZoneStore } from '~/stores/deliveryZone'
 import BranchDrawer from '~/components/settings/BranchDrawer.vue'
+import BranchAddressBlock from '~/components/settings/BranchAddressBlock.vue'
+import TenantContactsBlock from '~/components/settings/TenantContactsBlock.vue'
 import useDrawer from '~/composables/ui/useDrawer'
 
 const tenantStore = useTenantStore()
@@ -121,6 +140,8 @@ usePageTitle(computed(() => isVenueMode.value ? 'Заведение' : 'Фили
 const deliveryEnabled = computed(() => gate.delivery.value.enabled)
 const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
+
+const primaryBranch = computed(() => branches.value[0] ?? null)
 
 const { isOpen: drawerOpen, data: editingBranch, open: openBranchDrawer, close: closeBranchDrawer } = useDrawer<Branch>()
 
@@ -191,11 +212,6 @@ const handleRestore = async (branch: Branch) => {
   @include flex-col(var(--space-16));
 }
 
-.header-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .upsell-link {
   color: var(--color-primary);
   text-decoration: none;
@@ -203,6 +219,10 @@ const handleRestore = async (branch: Branch) => {
   margin-left: var(--space-4);
 
   &:hover { text-decoration: underline; }
+}
+
+.branches-card {
+  gap: var(--space-12);
 }
 
 .branch-row {

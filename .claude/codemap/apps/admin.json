@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-01T14:34:35.852Z",
+  "generated_at": "2026-05-03T05:57:11.116Z",
   "stats": {
-    "files": 113,
+    "files": 114,
     "pages": 0,
-    "symbols": 196,
+    "symbols": 197,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1230,8 +1230,8 @@
     },
     "config/onboarding.ts": {
       "kind": "ts",
-      "hash": "d1851588aa6e",
-      "purpose": "Конфиг шагов онбординга владельца: динамическая сборка flow по активным модулям и терминологии",
+      "hash": "ae9570e7eabe",
+      "purpose": "Конфиг шагов онбординга: набор OnboardingStep'ов (доставка, самовывоз, dine-in, бронирования, сайт и т.д.) и сборка финального флоу под текущий тенант",
       "symbols": [
         {
           "name": "OnboardingLabels",
@@ -1645,6 +1645,19 @@
           "kind": "component-emits",
           "hash": "3504eaf7",
           "purpose": "update:modelValue + select(suggestion с координатами)"
+        }
+      ]
+    },
+    "components/ui/AddressWithMap.vue": {
+      "kind": "vue",
+      "hash": "10e489d81ff8",
+      "purpose": "Композитный инпут адреса (DaData) + миникарта Яндекс с маркером координат. v-model:address/latitude/longitude — общий блок для BranchDrawer и BranchAddressBlock",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "4b0d0401",
+          "purpose": "{ placeholder?, rules?, mapLabel?, mapHeight? } + v-model:address/latitude/longitude"
         }
       ]
     },

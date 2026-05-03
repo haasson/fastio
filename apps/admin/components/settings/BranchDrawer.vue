@@ -18,36 +18,13 @@
 
       <UiColorPicker v-model="form.color" label="Цвет филиала" :presets="BRANCH_COLORS" />
 
-      <AddressSuggestInput
-        v-model="form.address"
-        placeholder="ул. Ленина, 1"
-        @pick="onAddressPick"
+      <AddressWithMap
+        v-model:address="form.address"
+        v-model:latitude="form.latitude"
+        v-model:longitude="form.longitude"
+        map-label="Координаты на карте"
+        :map-height="200"
       />
-
-      <!-- Координаты на миникарте -->
-      <div class="coords-block">
-        <UiText size="small" class="coords-label">Координаты на карте</UiText>
-        <div class="coords-map">
-          <YandexMap
-            :settings="miniMapSettings"
-            width="100%"
-            height="100%"
-          >
-            <YandexMapDefaultSchemeLayer />
-            <YandexMapDefaultFeaturesLayer />
-            <YandexMapMarker
-              v-if="form.latitude != null && form.longitude != null"
-              :settings="{ coordinates: [form.longitude!, form.latitude!] }"
-            >
-              <div class="coords-pin" />
-            </YandexMapMarker>
-          </YandexMap>
-        </div>
-        <UiText v-if="form.latitude != null" size="tiny" class="coords-hint">
-          {{ form.latitude.toFixed(6) }}, {{ form.longitude?.toFixed(6) }}
-        </UiText>
-        <UiText v-else size="tiny" class="coords-hint">Введите адрес — точка появится автоматически</UiText>
-      </div>
       <template v-if="hasMultipleBranches">
         <UiInput
           v-model="form.phone"
@@ -96,20 +73,13 @@ import {
   UiForm, UiInput, UiSwitch, UiText, UiSectionHeader,
 } from '@fastio/ui'
 import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
-import {
-  YandexMap,
-  YandexMapDefaultSchemeLayer,
-  YandexMapDefaultFeaturesLayer,
-  YandexMapMarker,
-} from 'vue-yandex-maps'
 
 import type { Branch, BranchFormData, WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 import { validationRules } from '@fastio/kit'
 import UiColorPicker from '~/components/ui/ColorPicker.vue'
-import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
+import AddressWithMap from '~/components/ui/AddressWithMap.vue'
 
 const BRANCH_COLORS = ['#FF5500', '#FFA500', '#00C853', '#2979FF', '#AA00FF', '#E91E63', '#795548']
 
@@ -117,13 +87,6 @@ const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const prefixLocked = computed(() => tenantStore.tenant.orderNumberConfig?.scope !== 'per_branch')
 const hasMultipleBranches = computed(() => branchStore.branches.length > 1)
-
-const onAddressPick = (s: DadataSuggestion) => {
-  if (s.data.geo_lat && s.data.geo_lon) {
-    form.latitude = parseFloat(s.data.geo_lat)
-    form.longitude = parseFloat(s.data.geo_lon)
-  }
-}
 
 const props = defineProps<{
   modelValue: boolean
@@ -142,16 +105,6 @@ const drawerActions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
   { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
 ])
-
-const MOSCOW: [number, number] = [37.617617, 55.755864]
-
-const miniMapSettings = computed(() => {
-  const center = form.latitude != null && form.longitude != null
-    ? [form.longitude!, form.latitude!] as [number, number]
-    : MOSCOW
-
-  return { location: { center, zoom: 14 } }
-})
 
 const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
 
@@ -243,36 +196,5 @@ const onConfirm = async () => {
 
 .inherit-hint {
   color: var(--color-text-secondary);
-}
-
-.coords-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-}
-
-.coords-label {
-  font-weight: var(--font-weight-medium);
-}
-
-.coords-map {
-  height: 200px;
-  border-radius: var(--radius-8);
-  overflow: hidden;
-  border: 1px solid var(--color-border-light);
-}
-
-.coords-pin {
-  width: 14px;
-  height: 14px;
-  background: var(--color-primary);
-  border: 2px solid var(--color-white);
-  border-radius: var(--radius-full);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transform: translate(-50%, -50%);
-}
-
-.coords-hint {
-  color: var(--color-text-hint);
 }
 </style>

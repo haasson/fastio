@@ -1,6 +1,9 @@
 <template>
   <div class="hours-editor-root">
-    <UiCheckbox v-model="state.allDay">Круглосуточно</UiCheckbox>
+    <label class="toggle-row">
+      <UiSwitch v-model="state.allDay" size="small" />
+      <UiText size="small">Круглосуточно</UiText>
+    </label>
 
     <template v-if="!state.allDay">
       <div class="hours-default">
@@ -8,17 +11,20 @@
         <UiTimepicker v-model="state.close" label="Закрытие" />
       </div>
 
-      <UiCheckbox v-model="state.useCustomDays">Разное время по дням</UiCheckbox>
+      <label class="toggle-row">
+        <UiSwitch v-model="state.useCustomDays" size="small" />
+        <UiText size="small">Разное время по дням</UiText>
+      </label>
 
       <div v-if="state.useCustomDays" class="days-grid">
         <div v-for="day in DAYS" :key="day.key" class="day-row">
+          <UiSwitch v-model="state.days[day.key].enabled" size="small" />
           <span class="day-name">{{ day.label }}</span>
-          <template v-if="!state.days[day.key].dayOff">
+          <template v-if="state.days[day.key].enabled">
             <UiTimepicker v-model="state.days[day.key].open" />
             <UiTimepicker v-model="state.days[day.key].close" />
           </template>
           <span v-else class="day-off-label">Выходной</span>
-          <UiCheckbox v-model="state.days[day.key].dayOff" class="day-off-toggle">Вых.</UiCheckbox>
         </div>
       </div>
     </template>
@@ -27,7 +33,7 @@
 
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { UiTimepicker, UiCheckbox } from '@fastio/ui'
+import { UiTimepicker, UiSwitch, UiText } from '@fastio/ui'
 import type { WorkingHoursSchedule } from '@fastio/shared'
 
 const DAYS = [
@@ -49,7 +55,7 @@ const buildDays = (s: WorkingHoursSchedule) => Object.fromEntries(DAYS.map((d) =
   return [d.key, {
     open: override?.open ?? s.default.open,
     close: override?.close ?? s.default.close,
-    dayOff: override?.dayOff ?? false,
+    enabled: !(override?.dayOff ?? false),
   }]
 }))
 
@@ -88,9 +94,9 @@ watch(state, () => {
     for (const day of DAYS) {
       const d = state.days[day.key]
 
-      days[day.key] = d.dayOff
-        ? { open: d.open, close: d.close, dayOff: true }
-        : { open: d.open, close: d.close }
+      days[day.key] = d.enabled
+        ? { open: d.open, close: d.close }
+        : { open: d.open, close: d.close, dayOff: true }
     }
   }
   emit('update:modelValue', { default: { open: state.open, close: state.close }, days })
@@ -104,6 +110,14 @@ watch(state, () => {
   gap: var(--space-12);
 }
 
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  cursor: pointer;
+  width: fit-content;
+}
+
 .hours-default {
   display: flex;
   align-items: flex-end;
@@ -114,6 +128,7 @@ watch(state, () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
+  max-width: 360px;
 }
 
 .day-row {
@@ -132,10 +147,5 @@ watch(state, () => {
 .day-off-label {
   font-size: var(--font-size-base);
   color: var(--color-text-hint);
-  flex: 1;
-}
-
-.day-off-toggle {
-  flex-shrink: 0;
 }
 </style>

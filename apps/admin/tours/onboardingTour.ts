@@ -65,7 +65,7 @@ const buildNavSteps = (): NavStep[] => {
     {
       selector: 'a[href="/settings"]',
       title: 'Настройки',
-      description: `Контакты, часы работы, зоны доставки, модули и интеграции.`,
+      description: `Соцсети, часовой пояс, модули, уведомления и юр. данные.`,
     },
   ]
 }

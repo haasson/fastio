@@ -3,7 +3,7 @@
     <AppStorefrontAlert feature-key="booking" />
     <UiAlert v-if="!hasSchedule" type="warning">
       Расписание работы не настроено — перейди в
-      <a href="/settings/contacts">Настройки → Контакты</a>
+      <a href="/branches">«Заведение»</a>
       и заполни часы работы по дням.
     </UiAlert>
 
