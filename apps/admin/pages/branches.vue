@@ -12,13 +12,14 @@
 
     <!-- Single-branch (venueMode): редактируем единственный филиал прямо на странице -->
     <template v-else-if="isVenueMode">
-      <BranchAddressBlock v-if="primaryBranch" :branch="primaryBranch" />
-      <TenantContactsBlock />
+      <BranchAddressBlock v-if="primaryBranch" ref="addressBlockRef" :branch="primaryBranch" />
+      <TenantContactsBlock ref="contactsBlockRef" />
     </template>
 
     <!-- Multi-branch: общие настройки сверху, потом список филиалов -->
     <template v-else>
       <TenantContactsBlock
+        ref="contactsBlockRef"
         title="Общие настройки заведения"
         subtitle="Используются по умолчанию во всех филиалах. В каждом филиале можно переопределить."
       />
@@ -103,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, shallowRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton, UiCard, UiIcon, UiText, UiTag, UiSkeleton, UiDivider, UiSectionHeader, UiAlert } from '@fastio/ui'
 import { usePageTitle } from '~/composables/usePageTitle'
@@ -120,6 +121,9 @@ import BranchDrawer from '~/components/settings/BranchDrawer.vue'
 import BranchAddressBlock from '~/components/settings/BranchAddressBlock.vue'
 import TenantContactsBlock from '~/components/settings/TenantContactsBlock.vue'
 import useDrawer from '~/composables/ui/useDrawer'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import type { FormHandle } from '~/composables/ui/useEditableForm'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
@@ -142,6 +146,30 @@ const hasAnyZones = computed(() => zones.value.length > 0)
 const branchHasNoZones = (branchId: string) => !zones.value.some((z) => z.branchId === branchId)
 
 const primaryBranch = computed(() => branches.value[0] ?? null)
+
+// shallowRef обязателен: внутри handle лежат ComputedRef, которые ref() развернёт и сломает.
+const contactsBlockRef = shallowRef<{ handle: FormHandle } | null>(null)
+const addressBlockRef = shallowRef<{ handle: FormHandle } | null>(null)
+
+// Динамический набор: блоки появляются/исчезают (venue-mode vs multi, primaryBranch). Стабильный
+// handle с computed-полями внутри — чтобы не пересоздавать bundle на каждый mount.
+const blockHandles = computed<FormHandle[]>(
+  () => [contactsBlockRef.value?.handle, addressBlockRef.value?.handle].filter(Boolean) as FormHandle[],
+)
+
+const pageHandle: FormHandle = {
+  isDirty: computed(() => blockHandles.value.some((f) => f.isDirty.value)),
+  saving: computed(() => blockHandles.value.some((f) => f.saving.value)),
+  submit: async () => {
+    for (const f of blockHandles.value) {
+      if (f.isDirty.value) await f.submit()
+    }
+  },
+  reset: () => blockHandles.value.forEach((f) => f.reset()),
+}
+
+useRegisterPageForm(pageHandle)
+useUnsavedGuard(pageHandle.isDirty)
 
 const { isOpen: drawerOpen, data: editingBranch, open: openBranchDrawer, close: closeBranchDrawer } = useDrawer<Branch>()
 

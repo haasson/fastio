@@ -59,7 +59,7 @@ const api = useDatabase()
 const modules = useModules()
 const { configs } = useModuleConfigs()
 const { getPlanLabel } = usePlans()
-const { warning } = useMessage()
+const { success, warning } = useMessage()
 
 const toggleIssues = ref<ToggleIssue[]>([])
 const pendingToggleKey = ref<ModuleKey | null>(null)
@@ -73,9 +73,13 @@ const availableModules = computed(() => moduleList.value.filter((m) => !m.state.
 const lockedModules = computed(() => moduleList.value.filter((m) => m.state.locked))
 
 const doToggle = async (key: ModuleKey, val: boolean) => {
+  const name = configs.value.find((c) => c.key === key)?.name ?? 'Модуль'
+
   await tenantStore.update({
     modules: { ...tenantStore.tenant.modules, [key]: val },
-  }).catch(() => warning('Не удалось сохранить изменения'))
+  })
+    .then(() => success(`Модуль «${name}» ${val ? 'включён' : 'отключён'}`))
+    .catch(() => warning('Не удалось сохранить изменения'))
 }
 
 const toggle = async (key: ModuleKey, val: boolean) => {

@@ -1,5 +1,5 @@
 <template>
-  <UiForm class="form" @submit="handleSave">
+  <UiForm class="form" @submit.prevent="page.submit">
     <UiAlert v-if="!legalInfoComplete" type="warning">
       Заполните юридические данные — без них приём заказов и бронирование на витрине недоступны
     </UiAlert>
@@ -101,49 +101,55 @@
         </div>
       </div>
     </UiCard>
-
-    <div class="footer">
-      <UiButton
-        submit
-        type="primary"
-        :loading="saving"
-        :disabled="!isDirty"
-      >
-        Сохранить
-      </UiButton>
-    </div>
   </UiForm>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { UiCard, UiForm, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiSectionHeader } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { isLegalInfoComplete } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useFormDirty } from '~/composables/ui/useFormDirty'
+import { useEditableForm } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 const db = useDatabase()
+const { error } = useMessage()
 
-const buildForm = (t: Tenant) => ({
-  legalName: t.legalInfo?.legalName ?? '',
-  inn: t.legalInfo?.inn ?? '',
-  ogrn: t.legalInfo?.ogrn ?? '',
-  legalAddress: t.legalInfo?.legalAddress ?? '',
-  privacyEmail: t.legalInfo?.privacyEmail ?? '',
-  offerUrl: t.contacts?.offerUrl ?? null,
+const tenant = computed(() => tenantStore.tenant)
+
+const page = useEditableForm({
+  source: tenant,
+  build: (t: Tenant) => ({
+    legalName: t.legalInfo?.legalName ?? '',
+    inn: t.legalInfo?.inn ?? '',
+    ogrn: t.legalInfo?.ogrn ?? '',
+    legalAddress: t.legalInfo?.legalAddress ?? '',
+    privacyEmail: t.legalInfo?.privacyEmail ?? '',
+    offerUrl: t.contacts?.offerUrl ?? null as string | null,
+  }),
+  save: (data) => tenantStore.update({
+    legalInfo: {
+      legalName: data.legalName,
+      inn: data.inn,
+      ogrn: data.ogrn,
+      legalAddress: data.legalAddress,
+      privacyEmail: data.privacyEmail,
+    },
+    contacts: {
+      ...tenantStore.tenant.contacts,
+      offerUrl: data.offerUrl,
+    },
+  }),
 })
 
-const form = reactive(buildForm(tenantStore.tenant))
-const { isDirty, reset } = useFormDirty(form)
+const { form } = page
 
-watch(() => tenantStore.tenant, (t) => {
-  Object.assign(form, buildForm(t))
-  reset()
-})
+useRegisterPageForm(page)
+useUnsavedGuard(page.isDirty)
 
 const legalInfoComplete = computed(() => isLegalInfoComplete({
   legalName: form.legalName,
@@ -153,11 +159,7 @@ const legalInfoComplete = computed(() => isLegalInfoComplete({
   privacyEmail: form.privacyEmail,
 }))
 
-const saving = ref(false)
 const uploading = ref(false)
-const { success, error } = useMessage()
-
-useUnsavedGuard(isDirty)
 
 const uploadOffer = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
@@ -173,39 +175,14 @@ const uploadOffer = async (event: Event) => {
     ;(event.target as HTMLInputElement).value = ''
   }
 }
-
-const handleSave = async () => {
-  saving.value = true
-  try {
-    await tenantStore.update({
-      legalInfo: {
-        legalName: form.legalName,
-        inn: form.inn,
-        ogrn: form.ogrn,
-        legalAddress: form.legalAddress,
-        privacyEmail: form.privacyEmail,
-      },
-      contacts: {
-        ...tenantStore.tenant.contacts,
-        offerUrl: form.offerUrl,
-      },
-    })
-    reset()
-    success('Сохранено')
-  } finally {
-    saving.value = false
-  }
-}
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
   @include flex-col(var(--space-12));
-  @include save-bar-offset;
   max-width: 680px;
 }
 
@@ -269,9 +246,5 @@ const handleSave = async () => {
   border-radius: var(--radius-4);
 
   &:hover { color: var(--color-error); }
-}
-
-.footer {
-  @include fixed-save-bar;
 }
 </style>

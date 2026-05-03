@@ -1,5 +1,5 @@
 <template>
-  <UiForm class="form" @submit="handleSave">
+  <UiForm class="form" @submit.prevent="page.submit">
     <UiCard size="large" class="section">
       <UiSectionHeader title="Основное" />
 
@@ -39,29 +39,19 @@
         <UiInput v-model="form.max" label="MAX" placeholder="@vasya_pizza" />
       </div>
     </UiCard>
-
-    <div class="footer">
-      <UiButton
-        submit
-        type="primary"
-        :loading="saving"
-        :disabled="!isDirty"
-      >
-        Сохранить
-      </UiButton>
-    </div>
   </UiForm>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
-import { UiCard, UiForm, UiInput, UiButton, UiText, useMessage, UiSectionHeader, UiSelect } from '@fastio/ui'
+import { computed } from 'vue'
+import { UiCard, UiForm, UiInput, UiText, UiSectionHeader, UiSelect } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { TIMEZONE_OPTIONS } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useGate } from '~/composables/plan/useGate'
 import { isLockedBy } from '~/composables/plan/useGate.helpers'
-import { useFormDirty } from '~/composables/ui/useFormDirty'
+import { useEditableForm } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
@@ -71,62 +61,47 @@ const isVenueMode = isLockedBy(gate.branches, 'locked')
 const branchesOptedOut = isLockedBy(gate.branches, 'opted-out')
 const branchSectionLabel = computed(() => isVenueMode.value ? 'Заведение' : 'Филиалы')
 
-const buildForm = (t: Tenant) => ({
-  name: t.name ?? '',
-  email: t.contacts?.email ?? '',
-  instagram: t.contacts?.instagram ?? '',
-  vk: t.contacts?.vk ?? '',
-  telegram: t.contacts?.telegram ?? '',
-  whatsapp: t.contacts?.whatsapp ?? '',
-  max: t.contacts?.max ?? '',
-  timezone: t.timezone,
+const tenant = computed(() => tenantStore.tenant)
+
+const page = useEditableForm({
+  source: tenant,
+  build: (t: Tenant) => ({
+    name: t.name ?? '',
+    email: t.contacts?.email ?? '',
+    instagram: t.contacts?.instagram ?? '',
+    vk: t.contacts?.vk ?? '',
+    telegram: t.contacts?.telegram ?? '',
+    whatsapp: t.contacts?.whatsapp ?? '',
+    max: t.contacts?.max ?? '',
+    timezone: t.timezone,
+  }),
+  save: (data) => tenantStore.update({
+    name: data.name,
+    timezone: data.timezone,
+    contacts: {
+      ...tenantStore.tenant.contacts,
+      email: data.email,
+      instagram: data.instagram || null,
+      vk: data.vk || null,
+      telegram: data.telegram || null,
+      whatsapp: data.whatsapp || null,
+      max: data.max || null,
+    },
+  }),
 })
 
-const form = reactive(buildForm(tenantStore.tenant))
-const { isDirty, reset } = useFormDirty(form)
+const { form } = page
 
-watch(() => tenantStore.tenant, (t) => {
-  Object.assign(form, buildForm(t))
-  reset()
-})
-
-const saving = ref(false)
-const { success } = useMessage()
-
-useUnsavedGuard(isDirty)
-
-const handleSave = async () => {
-  saving.value = true
-  try {
-    await tenantStore.update({
-      name: form.name,
-      timezone: form.timezone,
-      contacts: {
-        ...tenantStore.tenant.contacts,
-        email: form.email,
-        instagram: form.instagram || null,
-        vk: form.vk || null,
-        telegram: form.telegram || null,
-        whatsapp: form.whatsapp || null,
-        max: form.max || null,
-      },
-    })
-    reset()
-    success('Сохранено')
-  } finally {
-    saving.value = false
-  }
-}
+useRegisterPageForm(page)
+useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
   @include flex-col(var(--space-12));
-  @include save-bar-offset;
   max-width: 680px;
 }
 
@@ -157,9 +132,5 @@ const handleSave = async () => {
   text-decoration: none;
 
   &:hover { text-decoration: underline; }
-}
-
-.footer {
-  @include fixed-save-bar;
 }
 </style>

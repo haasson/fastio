@@ -2,7 +2,7 @@
   <div class="settings-root">
     <UiSkeleton v-if="loading" :repeat="4" />
 
-    <UiForm v-else class="form" @submit="save">
+    <UiForm v-else class="form" @submit.prevent="page.submit">
       <UiAlert type="info">
         Эти настройки применяются автоматически при создании новой услуги. Для каждой услуги их можно изменить отдельно в её настройках.
       </UiAlert>
@@ -35,101 +35,51 @@
         :show-button="true"
         message="Применяется ко всем услугам с произвольной длительностью, у которых не задан индивидуальный максимум"
       />
-
-      <div class="footer">
-        <UiButton
-          submit
-          type="primary"
-          :loading="saving"
-          :disabled="!isDirty"
-        >Сохранить</UiButton>
-      </div>
     </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiAlert, UiButton, UiForm, UiInputNumber, UiSelect, UiSkeleton, UiSwitch, useConfirm, useMessage } from '@fastio/ui'
-import type { AppointmentSettings, BookingMode } from '@fastio/shared'
+import { UiAlert, UiForm, UiInputNumber, UiSelect, UiSkeleton, UiSwitch, useConfirm } from '@fastio/ui'
+import type { BookingMode } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useFormDirty } from '~/composables/ui/useFormDirty'
+import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
-import { reportError } from '~/utils/reportError'
 
 const tenantStore = useTenantStore()
-const { currentTenantId } = storeToRefs(tenantStore)
 const api = useDatabase()
-const { success, error } = useMessage()
 const { confirm } = useConfirm()
 const settingsStore = useAppointmentSettingsStore()
-
-const loading = ref(false)
-const saving = ref(false)
+const { settings, loading } = storeToRefs(settingsStore)
 
 const bookingModeOptions: { label: string; value: BookingMode }[] = [
   { label: 'Фикс. длительность', value: 'fixed' },
   { label: 'Произвольная (клиент выбирает)', value: 'variable' },
 ]
 
-type Form = {
-  defaultIsBookable: boolean
-  defaultBookingMode: BookingMode
-  defaultAllowResourceChoice: boolean
-  defaultMaxDuration: number
-}
+const page = useEditableForm({
+  source: settings,
+  build: (s) => ({
+    defaultIsBookable: s?.defaultIsBookable ?? true,
+    defaultBookingMode: (s?.defaultBookingMode ?? 'fixed') as BookingMode,
+    defaultAllowResourceChoice: s?.defaultAllowResourceChoice ?? true,
+    defaultMaxDuration: s?.defaultMaxDuration ?? 180,
+  }),
+  errorMessage: 'Не удалось сохранить настройки',
+  save: async (data) => {
+    const tid = tenantStore.currentTenantId
 
-const form = reactive<Form>({
-  defaultIsBookable: true,
-  defaultBookingMode: 'fixed',
-  defaultAllowResourceChoice: true,
-  defaultMaxDuration: 180,
-})
+    if (!tid) return
 
-const { isDirty, reset } = useFormDirty(form)
-
-useUnsavedGuard(isDirty)
-
-const applySettings = (s: AppointmentSettings) => {
-  form.defaultIsBookable = s.defaultIsBookable
-  form.defaultBookingMode = s.defaultBookingMode
-  form.defaultAllowResourceChoice = s.defaultAllowResourceChoice
-  form.defaultMaxDuration = s.defaultMaxDuration
-  reset()
-}
-
-const fetch = async () => {
-  if (!currentTenantId.value) return
-  loading.value = true
-  try {
-    const s = await api.appointmentSettings.get(currentTenantId.value)
-
-    if (s) applySettings(s)
-  } catch (e) {
-    reportError(e)
-    error('Не удалось загрузить настройки')
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(currentTenantId, fetch, { immediate: true })
-
-const save = async () => {
-  const tid = currentTenantId.value
-
-  if (!tid) return
-
-  saving.value = true
-  try {
     const mismatch = await api.services.countMismatch(tid, {
-      isBookable: form.defaultIsBookable,
-      bookingMode: form.defaultBookingMode,
-      allowResourceChoice: form.defaultAllowResourceChoice,
+      isBookable: data.defaultIsBookable,
+      bookingMode: data.defaultBookingMode,
+      allowResourceChoice: data.defaultAllowResourceChoice,
     })
 
     let applyToAll = false
@@ -146,35 +96,29 @@ const save = async () => {
         stackedActions: true,
       })
 
-      if (result === null) return
+      // Юзер закрыл confirm — отменяем сабмит без error-тоста и без сброса dirty.
+      if (result === null) throw cancelSubmit()
       applyToAll = result
     }
 
-    await api.appointmentSettings.upsert(tid, {
-      defaultIsBookable: form.defaultIsBookable,
-      defaultBookingMode: form.defaultBookingMode,
-      defaultAllowResourceChoice: form.defaultAllowResourceChoice,
-      defaultMaxDuration: form.defaultMaxDuration,
-    })
+    await api.appointmentSettings.upsert(tid, data)
     await settingsStore.refresh()
 
     if (applyToAll) {
       await api.services.bulkPatch(tid, {
-        isBookable: form.defaultIsBookable,
-        bookingMode: form.defaultBookingMode,
-        allowResourceChoice: form.defaultAllowResourceChoice,
+        isBookable: data.defaultIsBookable,
+        bookingMode: data.defaultBookingMode,
+        allowResourceChoice: data.defaultAllowResourceChoice,
       })
     }
+  },
+  successMessage: 'Настройки сохранены',
+})
 
-    reset()
-    success('Настройки сохранены')
-  } catch (e) {
-    reportError(e)
-    error('Не удалось сохранить настройки')
-  } finally {
-    saving.value = false
-  }
-}
+const { form } = page
+
+useRegisterPageForm(page)
+useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
@@ -188,9 +132,5 @@ const save = async () => {
 
 .form {
   @include modal-form;
-}
-
-.footer {
-  padding-top: var(--space-4);
 }
 </style>

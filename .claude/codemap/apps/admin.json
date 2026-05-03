@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-03T13:41:14.303Z",
+  "generated_at": "2026-05-03T15:33:00.404Z",
   "stats": {
-    "files": 114,
+    "files": 117,
     "pages": 0,
-    "symbols": 197,
+    "symbols": 204,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -332,10 +332,41 @@
         }
       ]
     },
+    "composables/ui/useEditableForm.ts": {
+      "kind": "ts",
+      "hash": "398c960cb932",
+      "purpose": "Универсальная фабрика settings-формы поверх reactive source: build/reset/submit с дефолтным success/error-тостом и reportError",
+      "symbols": [
+        {
+          "name": "FormHandle",
+          "kind": "type",
+          "hash": "ad7f782f",
+          "purpose": "Контракт активной формы страницы (isDirty/saving/submit/reset) — то, что регистрируется в pageForm и читается action-bar"
+        },
+        {
+          "name": "EditableForm",
+          "kind": "type",
+          "hash": "bc3f6458",
+          "purpose": "FormHandle + reactive form-объект — возвращаемый тип useEditableForm"
+        },
+        {
+          "name": "cancelSubmit",
+          "kind": "function",
+          "hash": "5737616f",
+          "purpose": "Создаёт sentinel-ошибку для отмены submit без error-тоста и без сброса dirty (когда юзер закрыл confirm)"
+        },
+        {
+          "name": "useEditableForm",
+          "kind": "function",
+          "hash": "666a6155",
+          "purpose": "Создаёт reactive-форму из source через build, watch на source, submit с success/error-обвязкой и dirty-снапшотом"
+        }
+      ]
+    },
     "composables/ui/useFormDirty.ts": {
       "kind": "ts",
-      "hash": "481940aa2dfe",
-      "purpose": "Снапшот формы через JSON.stringify для определения isDirty (для plain-объектов без Date/Map/Set)",
+      "hash": "122a31afac0a",
+      "purpose": "Снимок формы + структурный deepEqual для isDirty: поддерживает Date/Map/Set/массивы/RegExp/циклы поверх reactive-прокси",
       "symbols": [
         {
           "name": "useFormDirty",
@@ -419,6 +450,25 @@
           "kind": "const",
           "hash": "eda24fb5",
           "purpose": "Опции выбора видимых колонок (имя/телефон/состав/...) для column-picker"
+        }
+      ]
+    },
+    "composables/ui/usePageForm.ts": {
+      "kind": "ts",
+      "hash": "3c2f4b6e4b88",
+      "purpose": "Глобальный shallowRef на активную FormHandle страницы — связывает форму с плавающим AppPageActionBar",
+      "symbols": [
+        {
+          "name": "useRegisterPageForm",
+          "kind": "function",
+          "hash": "12e9a3c6",
+          "purpose": "Регистрирует FormHandle как активную форму страницы; авто-clean через onScopeDispose, warn при коллизии"
+        },
+        {
+          "name": "usePageForm",
+          "kind": "function",
+          "hash": "e955ff42",
+          "purpose": "Возвращает shallowRef на текущую активную форму — читается из layout/action-bar"
         }
       ]
     },
@@ -519,14 +569,14 @@
     },
     "composables/ui/useUnsavedGuard.ts": {
       "kind": "ts",
-      "hash": "5d06a165b974",
-      "purpose": "Защита от потери несохранённых изменений: confirm на onBeforeRouteLeave + browser beforeunload",
+      "hash": "06f5e5bbc315",
+      "purpose": "Confirm-модалка при уходе с грязной страницы: onBeforeRouteLeave + window.beforeunload, принимает Ref|ComputedRef|getter",
       "symbols": [
         {
           "name": "useUnsavedGuard",
           "kind": "function",
-          "hash": "537d2542",
-          "purpose": "Подключает router-guard и beforeunload-listener при isDirty=true"
+          "hash": "b6a9dd9c",
+          "purpose": "Вешает route-leave guard и beforeunload listener; пропускает уход только при не-dirty или подтверждении пользователя"
         }
       ]
     },
@@ -1567,8 +1617,8 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "025e63b52eb7",
-      "purpose": "Главный layout админки: sidebar (logo/AppNav/TenantSwitcher/BranchSelector/account), topbar (burger/title/KB-link/theme), realtime-каналы, OnboardingWizard/Checklist, AiChat",
+      "hash": "c46b4f9b142b",
+      "purpose": "Главный layout админки: collapsible sidebar, topbar с переключателем темы, плавающий AppPageActionBar, онбординг-виджеты и AI-чат",
       "symbols": [
         {
           "name": "component",
@@ -1817,6 +1867,19 @@
           "kind": "component-emits",
           "hash": "7e229751",
           "purpose": "add/search/view-change"
+        }
+      ]
+    },
+    "components/ui/AppPageActionBar.vue": {
+      "kind": "vue",
+      "hash": "c2e6dc482846",
+      "purpose": "Плавающий action-bar внизу страницы: появляется при dirty-форме, кнопки Отменить/Сохранить + Cmd/Ctrl+S, читает форму из usePageForm",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Floating save-bar страницы — рендерится из default-layout"
         }
       ]
     },

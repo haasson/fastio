@@ -43,7 +43,7 @@
         <template #append>
           <UiSwitch
             :model-value="banner.enabled"
-            @update:model-value="toggleEnabled(banner.id, $event)"
+            @update:model-value="onToggleEnabled(banner.id, $event)"
           />
           <AppActionsBlock
             size="small"
@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch, UiTag } from '@fastio/ui'
+import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch, UiTag, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Banner, BannerFormData } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
@@ -95,8 +95,14 @@ const editing = ref<Banner | null>(null)
 const saving = ref(false)
 
 const { confirm } = useConfirm()
+const { success } = useMessage()
 
 const onReorder = () => reorder(banners.value)
+
+const onToggleEnabled = async (id: string, enabled: boolean) => {
+  await toggleEnabled(id, enabled)
+  success('Сохранено')
+}
 
 const isBroken = (banner: Banner): string | null => {
   if (banner.promotionId) {

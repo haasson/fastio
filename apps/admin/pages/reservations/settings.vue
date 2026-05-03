@@ -7,7 +7,7 @@
       и заполни часы работы по дням.
     </UiAlert>
 
-    <UiForm class="form" @submit="handleSave">
+    <UiForm class="form" @submit.prevent="page.submit">
       <UiSectionHeader title="Слоты и доступность" />
       <div class="row">
         <UiSelect
@@ -51,20 +51,20 @@
           label="Авто: брать вместимость самого большого стола"
         />
       </div>
-
-      <div class="footer">
-        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
-      </div>
     </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
-import { UiAlert, UiButton, UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiSwitch, useMessage } from '@fastio/ui'
+import { ref, computed, onMounted } from 'vue'
+import { UiAlert, UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiSwitch } from '@fastio/ui'
+import type { ReservationSettings } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useGate } from '~/composables/plan/useGate'
+import { useEditableForm } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
 
 const SLOT_STEP_OPTIONS = [
@@ -84,46 +84,42 @@ const BUFFER_OPTIONS = [
 const tenantStore = useTenantStore()
 const gate = useGate()
 const api = useDatabase()
-const { success } = useMessage()
 
-const saving = ref(false)
-const form = reactive({
-  slotStep: 30,
-  maxAdvanceDays: 30,
-  closeBufferMinutes: 60,
-  maxGuests: 20,
-  maxGuestsAuto: false,
+const source = ref<ReservationSettings | null>(null)
+
+// Смена тенанта = hard reload страницы (см. tenantStore.setCurrent), поэтому fetch один раз на mount.
+onMounted(async () => {
+  const id = tenantStore.currentTenantId
+
+  if (!id) return
+  source.value = await api.reservationSettings.get(id)
 })
+
+const page = useEditableForm({
+  source,
+  build: (s) => ({
+    slotStep: s?.slotStep ?? 30,
+    maxAdvanceDays: s?.maxAdvanceDays ?? 30,
+    closeBufferMinutes: s?.closeBufferMinutes ?? 60,
+    maxGuests: s?.maxGuests ?? 20,
+    maxGuestsAuto: s?.maxGuestsAuto ?? false,
+  }),
+  save: async (data) => {
+    const tenantId = tenantStore.currentTenantId
+
+    if (!tenantId) return
+    source.value = await api.reservationSettings.upsert(tenantId, { ...data })
+  },
+  successMessage: 'Настройки сохранены',
+})
+
+const { form } = page
+
+useRegisterPageForm(page)
+useUnsavedGuard(page.isDirty)
 
 const hasSchedule = computed(() => !!tenantStore.tenant.workingHoursSchedule)
 const hasDineIn = computed(() => gate.dineIn.value.enabled)
-
-watch(() => tenantStore.currentTenantId, async (id) => {
-  if (!id) return
-  const data = await api.reservationSettings.get(id)
-
-  if (data) {
-    form.slotStep = data.slotStep
-    form.maxAdvanceDays = data.maxAdvanceDays
-    form.closeBufferMinutes = data.closeBufferMinutes
-    form.maxGuests = data.maxGuests
-    form.maxGuestsAuto = data.maxGuestsAuto
-  }
-}, { immediate: true })
-
-const handleSave = async () => {
-  const tenantId = tenantStore.currentTenantId
-
-  if (!tenantId) return
-
-  saving.value = true
-  try {
-    await api.reservationSettings.upsert(tenantId, { ...form })
-    success('Настройки сохранены')
-  } finally {
-    saving.value = false
-  }
-}
 </script>
 
 <style scoped lang="scss">
@@ -152,9 +148,5 @@ const handleSave = async () => {
 .guests-row {
   @include flex-row(var(--space-20));
   align-items: flex-end;
-}
-
-.footer {
-  padding-top: var(--space-4);
 }
 </style>

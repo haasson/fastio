@@ -76,11 +76,12 @@
         />
       </header>
 
-      <main class="content">
+      <main class="content" :class="{ 'has-action-bar': isPageFormDirty }">
         <slot />
       </main>
     </div>
 
+    <AppPageActionBar />
     <OnboardingWizard v-if="showOnboarding" />
     <OnboardingChecklist v-if="showChecklist" />
     <AiChat />
@@ -103,6 +104,8 @@ import PastDueBanner from '~/components/layout/PastDueBanner.vue'
 import UiAppBurger from '~/components/ui/AppBurger.vue'
 import UiAppLogo from '~/components/ui/AppLogo.vue'
 import AiChat from '~/components/ai/AiChat.vue'
+import AppPageActionBar from '~/components/ui/AppPageActionBar.vue'
+import { usePageForm } from '~/composables/ui/usePageForm'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
@@ -146,6 +149,11 @@ const showChecklist = computed(() => {
 const userName = computed(() => authStore.user?.user_metadata?.full_name || authStore.user?.email || '')
 const userRole = computed(() => tenantStore.currentRoleName ?? '')
 
+const pageForm = usePageForm()
+// Padding-bottom нужен только когда бар реально виден (т.е. форма грязная).
+// Просто факт регистрации формы — не повод держать 128px отступа всегда.
+const isPageFormDirty = computed(() => pageForm.value?.isDirty.value === true)
+
 const pageTitle = usePageTitle()
 
 const route = useRoute()
@@ -164,6 +172,7 @@ const kbUrl = computed(() => {
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/media-queries' as *;
 @use '@fastio/styles/mixins/layout' as *;
+@use '@fastio/styles/mixins/form' as *;
 
 .layout-root {
   --topbar-height: 60px;
@@ -515,6 +524,9 @@ const kbUrl = computed(() => {
   overflow-x: auto;
   padding: var(--content-padding);
 
+  &.has-action-bar {
+    @include save-bar-offset;
+  }
 }
 
 .overlay {

@@ -104,6 +104,7 @@ import VisitContent from '~/components/appointments/VisitContent.vue'
 import CancelGroupModal from '~/components/appointments/CancelGroupModal.vue'
 import SplitVisitModal from '~/components/appointments/SplitVisitModal.vue'
 import { useVisitAggregate } from '~/composables/data/useVisitAggregate'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const route = useRoute()
 const router = useRouter()
@@ -123,6 +124,11 @@ const appointments = ref<Appointment[]>([])
 const events = ref<AppointmentEvent[]>([])
 
 const contentRef = ref<InstanceType<typeof VisitContent> | null>(null)
+
+// Guard читает dirty из VisitContent через template ref.
+const isDirty = computed(() => Boolean(contentRef.value?.dirty))
+
+useUnsavedGuard(isDirty)
 
 const splitOpen = ref(false)
 

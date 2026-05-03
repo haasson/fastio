@@ -1,5 +1,5 @@
 <template>
-  <UiForm class="form" @submit="handleSave">
+  <UiForm class="form" @submit.prevent="page.submit">
     <UiSectionHeader title="Нумерация заказов" />
 
     <div data-tour="order-format">
@@ -74,22 +74,19 @@
       <span class="preview-label">Пример номера:</span>
       <span class="preview-value">{{ preview }}</span>
     </div>
-
-    <div class="footer">
-      <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
-    </div>
   </UiForm>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
-import { UiForm, UiInput, UiInputNumber, UiButton, UiRadioGroup, UiSectionHeader, UiAlert, useMessage } from '@fastio/ui'
+import { computed } from 'vue'
+import { UiForm, UiInput, UiInputNumber, UiRadioGroup, UiSectionHeader, UiAlert } from '@fastio/ui'
 import type { OrderNumberConfig } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
+import { useEditableForm } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
-const { success } = useMessage()
-const saving = ref(false)
 
 const tenant = computed(() => tenantStore.tenant)
 
@@ -131,15 +128,20 @@ const buildForm = (t: { orderNumberConfig?: OrderNumberConfig | null }): OrderNu
   ...t.orderNumberConfig,
 })
 
-const form = reactive<OrderNumberConfig>(buildForm(tenant.value ?? {}))
+const page = useEditableForm({
+  source: tenant,
+  build: buildForm,
+  save: (data) => tenantStore.update({ orderNumberConfig: { ...data } }),
+})
 
-watch(tenant, (t) => t && Object.assign(form, buildForm(t)))
+const { form } = page
 
-const showPrefix = computed(() => form.format === 'prefix_counter' || form.format === 'prefix_date_counter',
-)
+useRegisterPageForm(page)
+useUnsavedGuard(page.isDirty)
 
-const showDateFormat = computed(() => form.format === 'date_counter' || form.format === 'prefix_date_counter',
-)
+const showPrefix = computed(() => form.format === 'prefix_counter' || form.format === 'prefix_date_counter')
+
+const showDateFormat = computed(() => form.format === 'date_counter' || form.format === 'prefix_date_counter')
 
 const preview = computed(() => {
   const pad = form.padLength
@@ -172,15 +174,6 @@ const preview = computed(() => {
   }
 })
 
-const handleSave = async () => {
-  saving.value = true
-  try {
-    await tenantStore.update({ orderNumberConfig: { ...form } })
-    success('Сохранено')
-  } finally {
-    saving.value = false
-  }
-}
 </script>
 
 <style scoped lang="scss">
@@ -221,9 +214,5 @@ const handleSave = async () => {
   font-weight: var(--font-weight-bold);
   font-family: monospace;
   color: var(--color-primary);
-}
-
-.footer {
-  padding-top: var(--space-4);
 }
 </style>

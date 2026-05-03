@@ -100,7 +100,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiSkeleton, UiAlert, UiSegmentedControl } from '@fastio/ui'
+import { UiSkeleton, UiAlert, UiSegmentedControl, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { DeliveryMode } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
@@ -128,6 +128,7 @@ const modeItems = [
 ]
 
 const { confirm } = useConfirm()
+const { success } = useMessage()
 const deliveryMode = computed(() => tenantStore.tenant.deliveryMode ?? 'zones')
 
 const confirmMessages: Record<string, { title: string; message: string }> = {
@@ -157,6 +158,9 @@ async function switchMode(mode: string | number) {
   if (!ok) return
 
   await tenantStore.update({ deliveryMode: target as DeliveryMode })
+  const label = modeItems.find((i) => i.value === target)?.label ?? target
+
+  success(`Режим доставки: ${label}`)
 }
 
 const branches = computed(() => branchStore.branches)

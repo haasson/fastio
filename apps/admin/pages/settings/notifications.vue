@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { UiCard, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal } from '@fastio/ui'
+import { UiCard, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal, useMessage } from '@fastio/ui'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useTenantStore } from '~/stores/tenant'
 import { useGate } from '~/composables/plan/useGate'
@@ -99,6 +99,7 @@ const tenantStore = useTenantStore()
 const gate = useGate()
 const { $supabase } = useNuxtApp()
 const { confirm } = useConfirm()
+const { success } = useMessage()
 
 const generating = ref(false)
 const disconnecting = ref(false)
@@ -192,6 +193,7 @@ const disconnectTelegram = async () => {
         telegramChatTitle: null,
       },
     })
+    success('Telegram отключён')
   } finally {
     disconnecting.value = false
   }

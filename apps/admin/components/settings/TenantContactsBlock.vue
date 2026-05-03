@@ -3,7 +3,7 @@
     <UiSectionHeader :title="title" />
     <UiText v-if="subtitle" size="tiny" class="subtitle">{{ subtitle }}</UiText>
 
-    <UiForm class="form" @submit="handleSave">
+    <UiForm class="form" @submit.prevent="page.submit">
       <UiInput
         v-model="form.phone"
         name="phone"
@@ -17,31 +17,22 @@
         <UiText size="small" class="hours-label">Часы работы</UiText>
         <WorkingHoursEditor v-model="form.workingHoursSchedule" />
       </div>
-
-      <div class="actions">
-        <UiButton
-          submit
-          type="primary"
-          :loading="saving"
-          :disabled="!isDirty"
-        >
-          Сохранить
-        </UiButton>
-      </div>
     </UiForm>
   </UiCard>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { UiCard, UiForm, UiInput, UiButton, UiText, useMessage, UiSectionHeader } from '@fastio/ui'
+// Блок не self-contained: своих кнопок и unsaved-guard'а у него нет. Родитель должен
+// забрать `handle` через template ref и зарегистрировать в pageForm — иначе save-bar
+// не появится. Сейчас единственный потребитель — pages/branches.vue.
+import { computed } from 'vue'
+import { UiCard, UiForm, UiInput, UiText, UiSectionHeader } from '@fastio/ui'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
-import { useFormDirty } from '~/composables/ui/useFormDirty'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import { useEditableForm } from '~/composables/ui/useEditableForm'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   title?: string
   subtitle?: string
 }>(), {
@@ -50,43 +41,28 @@ const props = withDefaults(defineProps<{
 })
 
 const tenantStore = useTenantStore()
+const tenant = computed(() => tenantStore.tenant)
 
 const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
 
-const buildForm = (t: Tenant) => ({
-  phone: t.contacts?.phone ?? '',
-  workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_SCHEDULE,
+const page = useEditableForm({
+  source: tenant,
+  build: (t: Tenant) => ({
+    phone: t.contacts?.phone ?? '',
+    workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_SCHEDULE,
+  }),
+  save: (data) => tenantStore.update({
+    contacts: {
+      ...tenantStore.tenant.contacts,
+      phone: data.phone,
+    },
+    workingHoursSchedule: data.workingHoursSchedule,
+  }),
 })
 
-const form = reactive(buildForm(tenantStore.tenant))
-const { isDirty, reset } = useFormDirty(form)
+const { form } = page
 
-watch(() => tenantStore.tenant, (t) => {
-  Object.assign(form, buildForm(t))
-  reset()
-})
-
-const saving = ref(false)
-const { success } = useMessage()
-
-useUnsavedGuard(isDirty)
-
-const handleSave = async () => {
-  saving.value = true
-  try {
-    await tenantStore.update({
-      contacts: {
-        ...tenantStore.tenant.contacts,
-        phone: form.phone,
-      },
-      workingHoursSchedule: form.workingHoursSchedule,
-    })
-    reset()
-    success('Сохранено')
-  } finally {
-    saving.value = false
-  }
-}
+defineExpose({ handle: page })
 </script>
 
 <style scoped lang="scss">
@@ -115,10 +91,5 @@ const handleSave = async () => {
 .subtitle {
   color: var(--color-text-hint);
   margin-top: calc(var(--space-8) * -1);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

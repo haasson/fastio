@@ -63,4 +63,69 @@ describe('useFormDirty', () => {
     form.email = 'a@b.c'
     expect(isDirty.value).toBe(true)
   })
+
+  it('detects array push/pop', () => {
+    const form = reactive<{ tags: string[] }>({ tags: ['a'] })
+    const { isDirty, reset } = useFormDirty(form)
+
+    form.tags.push('b')
+    expect(isDirty.value).toBe(true)
+    form.tags.pop()
+    expect(isDirty.value).toBe(false)
+
+    reset()
+    form.tags = ['x']
+    expect(isDirty.value).toBe(true)
+  })
+
+  it('handles Date by value, not reference', () => {
+    const form = reactive<{ when: Date }>({ when: new Date('2026-01-01') })
+    const { isDirty } = useFormDirty(form)
+
+    form.when = new Date('2026-01-01')
+    expect(isDirty.value).toBe(false)
+
+    form.when = new Date('2026-01-02')
+    expect(isDirty.value).toBe(true)
+  })
+
+  it('handles Map by content', () => {
+    const form = reactive<{ m: Map<string, number> }>({ m: new Map([['a', 1]]) })
+    const { isDirty, reset } = useFormDirty(form)
+
+    form.m.set('a', 1)
+    expect(isDirty.value).toBe(false)
+
+    form.m.set('b', 2)
+    expect(isDirty.value).toBe(true)
+
+    reset()
+    form.m.delete('b')
+    expect(isDirty.value).toBe(true)
+  })
+
+  it('handles Set by content', () => {
+    const form = reactive<{ s: Set<string> }>({ s: new Set(['a', 'b']) })
+    const { isDirty } = useFormDirty(form)
+
+    form.s.add('a')
+    expect(isDirty.value).toBe(false)
+
+    form.s.add('c')
+    expect(isDirty.value).toBe(true)
+  })
+
+  it('handles cyclic references without infinite loop', () => {
+    type Node = { name: string; self?: Node }
+    const node: Node = { name: 'a' }
+
+    node.self = node
+
+    const form = reactive<Node>(node)
+    const { isDirty } = useFormDirty(form)
+
+    expect(isDirty.value).toBe(false)
+    form.name = 'b'
+    expect(isDirty.value).toBe(true)
+  })
 })

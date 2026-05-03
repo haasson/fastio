@@ -2,73 +2,48 @@
   <UiCard size="large" class="block">
     <UiSectionHeader title="Адрес и координаты" />
 
-    <UiForm class="form" @submit="handleSave">
+    <UiForm class="form" @submit.prevent="page.submit">
       <AddressWithMap
         v-model:address="form.address"
         v-model:latitude="form.latitude"
         v-model:longitude="form.longitude"
       />
-
-      <div class="actions">
-        <UiButton
-          submit
-          type="primary"
-          :loading="saving"
-          :disabled="!isDirty"
-        >
-          Сохранить
-        </UiButton>
-      </div>
     </UiForm>
   </UiCard>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { UiCard, UiForm, UiButton, useMessage, UiSectionHeader } from '@fastio/ui'
+// Блок не self-contained: своих кнопок и unsaved-guard'а у него нет. Родитель должен
+// забрать `handle` через template ref и зарегистрировать в pageForm — иначе save-bar
+// не появится. Сейчас единственный потребитель — pages/branches.vue.
+import { toRef } from 'vue'
+import { UiCard, UiForm, UiSectionHeader } from '@fastio/ui'
 import type { Branch } from '@fastio/shared'
 import { useBranchStore } from '~/stores/branch'
 import AddressWithMap from '~/components/ui/AddressWithMap.vue'
-import { useFormDirty } from '~/composables/ui/useFormDirty'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import { useEditableForm } from '~/composables/ui/useEditableForm'
 
 const props = defineProps<{ branch: Branch }>()
 
 const branchStore = useBranchStore()
 
-const buildForm = (b: Branch) => ({
-  address: b.address,
-  latitude: b.latitude,
-  longitude: b.longitude,
+const page = useEditableForm({
+  source: toRef(props, 'branch'),
+  build: (b: Branch) => ({
+    address: b.address,
+    latitude: b.latitude,
+    longitude: b.longitude,
+  }),
+  save: (data) => branchStore.update(props.branch.id, {
+    address: data.address,
+    latitude: data.latitude,
+    longitude: data.longitude,
+  }),
 })
 
-const form = reactive(buildForm(props.branch))
-const { isDirty, reset } = useFormDirty(form)
+const { form } = page
 
-watch(() => props.branch, (b) => {
-  Object.assign(form, buildForm(b))
-  reset()
-})
-
-const saving = ref(false)
-const { success } = useMessage()
-
-useUnsavedGuard(isDirty)
-
-const handleSave = async () => {
-  saving.value = true
-  try {
-    await branchStore.update(props.branch.id, {
-      address: form.address,
-      latitude: form.latitude,
-      longitude: form.longitude,
-    })
-    reset()
-    success('Сохранено')
-  } finally {
-    saving.value = false
-  }
-}
+defineExpose({ handle: page })
 </script>
 
 <style scoped lang="scss">
@@ -80,10 +55,5 @@ const handleSave = async () => {
 
 .form {
   @include flex-col(var(--space-16));
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

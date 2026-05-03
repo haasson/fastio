@@ -1,6 +1,6 @@
 <template>
   <UiCard size="large">
-    <UiForm @submit="handleSave">
+    <UiForm @submit.prevent="page.submit">
       <div class="form">
         <div class="row">
           <div class="field" data-tour="kitchen-setting-source-status">
@@ -62,27 +62,25 @@
           :show-button="true"
           data-tour="kitchen-setting-urgency"
         />
-
-        <div class="footer">
-          <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
-        </div>
       </div>
     </UiForm>
   </UiCard>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiCard, UiForm, UiSelect, UiInputNumber, UiButton, useMessage } from '@fastio/ui'
+import { UiCard, UiForm, UiSelect, UiInputNumber } from '@fastio/ui'
 import { useTenantStore } from '~/stores/tenant'
 import { useOrderStatusesStore } from '~/stores/order-statuses'
 import { useGate } from '~/composables/plan/useGate'
+import { useEditableForm } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 const { statuses } = storeToRefs(useOrderStatusesStore())
 const gate = useGate()
-const { success } = useMessage()
 
 const tenant = computed(() => tenantStore.tenant)
 
@@ -91,44 +89,32 @@ const pickupActive = computed(() => gate.pickup.value.enabled)
 
 const statusOptions = computed(() => statuses.value.map((s) => ({ label: s.name, value: s.id })))
 
-const form = reactive({
-  sourceStatusId: tenant.value.kitchenConfig?.sourceStatusId ?? null as string | null,
-  cookingStatusId: tenant.value.kitchenConfig?.cookingStatusId ?? null as string | null,
-  completedStatusMap: {
-    delivery: tenant.value.kitchenConfig?.completedStatusMap?.delivery ?? null as string | null,
-    pickup: tenant.value.kitchenConfig?.completedStatusMap?.pickup ?? null as string | null,
-    dine_in: tenant.value.kitchenConfig?.completedStatusMap?.dine_in ?? null as string | null,
-  },
-  urgencyMinutes: tenant.value.kitchenUrgencyMinutes ?? 15,
+const page = useEditableForm({
+  source: tenant,
+  build: (t) => ({
+    sourceStatusId: t.kitchenConfig?.sourceStatusId ?? null as string | null,
+    cookingStatusId: t.kitchenConfig?.cookingStatusId ?? null as string | null,
+    completedStatusMap: {
+      delivery: t.kitchenConfig?.completedStatusMap?.delivery ?? null as string | null,
+      pickup: t.kitchenConfig?.completedStatusMap?.pickup ?? null as string | null,
+      dine_in: t.kitchenConfig?.completedStatusMap?.dine_in ?? null as string | null,
+    },
+    urgencyMinutes: t.kitchenUrgencyMinutes ?? 15,
+  }),
+  save: (data) => tenantStore.update({
+    kitchenConfig: {
+      sourceStatusId: data.sourceStatusId,
+      cookingStatusId: data.cookingStatusId,
+      completedStatusMap: data.completedStatusMap,
+    },
+    kitchenUrgencyMinutes: data.urgencyMinutes,
+  }),
 })
 
-watch(tenant, (t) => {
-  form.sourceStatusId = t.kitchenConfig?.sourceStatusId ?? null
-  form.cookingStatusId = t.kitchenConfig?.cookingStatusId ?? null
-  form.completedStatusMap.delivery = t.kitchenConfig?.completedStatusMap?.delivery ?? null
-  form.completedStatusMap.pickup = t.kitchenConfig?.completedStatusMap?.pickup ?? null
-  form.completedStatusMap.dine_in = t.kitchenConfig?.completedStatusMap?.dine_in ?? null
-  form.urgencyMinutes = t.kitchenUrgencyMinutes ?? 15
-})
+const { form } = page
 
-const saving = ref(false)
-
-const handleSave = async () => {
-  saving.value = true
-  try {
-    await tenantStore.update({
-      kitchenConfig: {
-        sourceStatusId: form.sourceStatusId,
-        cookingStatusId: form.cookingStatusId,
-        completedStatusMap: form.completedStatusMap,
-      },
-      kitchenUrgencyMinutes: form.urgencyMinutes,
-    })
-    success('Сохранено')
-  } finally {
-    saving.value = false
-  }
-}
+useRegisterPageForm(page)
+useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
@@ -147,9 +133,5 @@ const handleSave = async () => {
     flex: 1;
     min-width: 200px;
   }
-}
-
-.footer {
-  padding-top: var(--space-8);
 }
 </style>

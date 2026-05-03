@@ -34,11 +34,17 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { UiButton } from '@fastio/ui'
 import VisitContent, { type EditorPreset } from '~/components/appointments/VisitContent.vue'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const route = useRoute()
 const router = useRouter()
 
 const contentRef = ref<InstanceType<typeof VisitContent> | null>(null)
+
+// Guard читает dirty из VisitContent через template ref. До mount'а ref=null → false (clean) — норм.
+const isDirty = computed(() => Boolean(contentRef.value?.dirty))
+
+useUnsavedGuard(isDirty)
 
 // Префилл из таймлайна: ?date=YYYY-MM-DD&slotTime=HH:MM&resourceId=...&branchId=...
 const preset = computed<EditorPreset | null>(() => {

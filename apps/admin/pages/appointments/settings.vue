@@ -2,7 +2,7 @@
   <div class="settings-root">
     <UiSkeleton v-if="loading" :repeat="4" />
 
-    <UiForm v-else class="form" @submit="save">
+    <UiForm v-else class="form" @submit.prevent="page.submit">
       <UiSectionHeader title="Тип ресурсов" />
       <UiSelect
         v-model:value="form.resourceMode"
@@ -74,34 +74,27 @@
         :show-button="true"
         class="deadline-input"
       />
-
-      <div class="footer">
-        <UiButton submit type="primary" :loading="saving">Сохранить</UiButton>
-      </div>
     </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiForm, UiInput, UiInputNumber, UiSelect, UiSectionHeader, UiSkeleton, UiSwitch, useConfirm, useMessage } from '@fastio/ui'
+import { UiForm, UiInput, UiInputNumber, UiSelect, UiSectionHeader, UiSkeleton, UiSwitch, useConfirm } from '@fastio/ui'
 import { navigateTo } from '#imports'
-import type { AppointmentResourceMode, AppointmentSettings, StaffNameFormat } from '@fastio/shared'
+import type { AppointmentResourceMode, StaffNameFormat } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { reportError } from '~/utils/reportError'
+import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/composables/ui/usePageForm'
+import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
-const { currentTenantId } = storeToRefs(tenantStore)
 const api = useDatabase()
-const { success, error } = useMessage()
 const { confirm } = useConfirm()
 const settingsStore = useAppointmentSettingsStore()
-
-const loading = ref(false)
-const saving = ref(false)
+const { settings, loading } = storeToRefs(settingsStore)
 
 const SLOT_STEP_OPTIONS = [
   { label: '15 мин', value: 15 },
@@ -133,95 +126,57 @@ type Form = {
   cancellationDeadlineHours: number
 }
 
-const form = reactive<Form>({
-  resourceLabel: 'мастер',
-  resourceMode: 'staff',
-  staffNameFormat: 'first_name',
-  autoConfirm: false,
-  bookingHorizonDays: 30,
-  slotStepMinutes: 30,
-  allowClientCancellation: true,
-  allowClientReschedule: false,
-  cancellationDeadlineHours: 2,
+const page = useEditableForm({
+  source: settings,
+  build: (s): Form => ({
+    resourceLabel: s?.resourceLabel ?? 'мастер',
+    resourceMode: s?.resourceMode ?? 'staff',
+    staffNameFormat: s?.staffNameFormat ?? 'first_name',
+    autoConfirm: s?.autoConfirm ?? false,
+    bookingHorizonDays: s?.bookingHorizonDays ?? 30,
+    slotStepMinutes: s?.slotStepMinutes ?? 30,
+    allowClientCancellation: s?.allowClientCancellation ?? true,
+    allowClientReschedule: s?.allowClientReschedule ?? false,
+    cancellationDeadlineHours: s?.cancellationDeadlineHours ?? 2,
+  }),
+  errorMessage: 'Не удалось сохранить настройки',
+  save: async (data) => {
+    const tid = tenantStore.currentTenantId
+
+    if (!tid) return
+
+    if (data.resourceMode !== 'both') {
+      const counts = await api.resources.countActiveByType(tid)
+      const blockedKind = data.resourceMode === 'staff' && counts.object > 0
+        ? { count: counts.object, label: 'объектов', target: '/appointments/objects', tab: 'Объекты' }
+        : data.resourceMode === 'objects' && counts.person > 0
+          ? { count: counts.person, label: 'сотрудников', target: '/appointments/staff', tab: 'Сотрудники' }
+          : null
+
+      if (blockedKind) {
+        const goNow = await confirm({
+          title: 'Нельзя сменить тип ресурсов',
+          message: `Активных ${blockedKind.label}: ${blockedKind.count}. Откройте вкладку «${blockedKind.tab}», деактивируйте или удалите их, затем вернитесь сюда.`,
+          confirmText: `Перейти к «${blockedKind.tab}»`,
+          cancelText: 'Закрыть',
+          confirmType: 'primary',
+        })
+
+        if (goNow) await navigateTo(blockedKind.target)
+        throw cancelSubmit()
+      }
+    }
+
+    await api.appointmentSettings.upsert(tid, data)
+    await settingsStore.refresh()
+  },
+  successMessage: 'Настройки сохранены',
 })
 
-const applySettings = (s: AppointmentSettings) => {
-  form.resourceLabel = s.resourceLabel
-  form.resourceMode = s.resourceMode
-  form.staffNameFormat = s.staffNameFormat
-  form.autoConfirm = s.autoConfirm
-  form.bookingHorizonDays = s.bookingHorizonDays
-  form.slotStepMinutes = s.slotStepMinutes
-  form.allowClientCancellation = s.allowClientCancellation
-  form.allowClientReschedule = s.allowClientReschedule
-  form.cancellationDeadlineHours = s.cancellationDeadlineHours
-}
+const { form } = page
 
-const fetch = async () => {
-  if (!currentTenantId.value) return
-  loading.value = true
-  try {
-    const s = await api.appointmentSettings.get(currentTenantId.value)
-
-    if (s) applySettings(s)
-  } catch (e) {
-    reportError(e)
-    error('Не удалось загрузить настройки')
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(currentTenantId, fetch, { immediate: true })
-
-const save = async () => {
-  if (!currentTenantId.value) return
-
-  if (form.resourceMode !== 'both') {
-    const counts = await api.resources.countActiveByType(currentTenantId.value)
-    const blockedKind = form.resourceMode === 'staff' && counts.object > 0
-      ? { count: counts.object, label: 'объектов', target: '/appointments/objects', tab: 'Объекты' }
-      : form.resourceMode === 'objects' && counts.person > 0
-        ? { count: counts.person, label: 'сотрудников', target: '/appointments/staff', tab: 'Сотрудники' }
-        : null
-
-    if (blockedKind) {
-      const goNow = await confirm({
-        title: 'Нельзя сменить тип ресурсов',
-        message: `Активных ${blockedKind.label}: ${blockedKind.count}. Откройте вкладку «${blockedKind.tab}», деактивируйте или удалите их, затем вернитесь сюда.`,
-        confirmText: `Перейти к «${blockedKind.tab}»`,
-        cancelText: 'Закрыть',
-        confirmType: 'primary',
-      })
-
-      if (goNow) await navigateTo(blockedKind.target)
-
-      return
-    }
-  }
-
-  saving.value = true
-  try {
-    await api.appointmentSettings.upsert(currentTenantId.value, {
-      resourceLabel: form.resourceLabel,
-      resourceMode: form.resourceMode,
-      staffNameFormat: form.staffNameFormat,
-      autoConfirm: form.autoConfirm,
-      bookingHorizonDays: form.bookingHorizonDays,
-      slotStepMinutes: form.slotStepMinutes,
-      allowClientCancellation: form.allowClientCancellation,
-      allowClientReschedule: form.allowClientReschedule,
-      cancellationDeadlineHours: form.cancellationDeadlineHours,
-    })
-    await settingsStore.refresh()
-    success('Настройки сохранены')
-  } catch (e) {
-    reportError(e)
-    error('Не удалось сохранить настройки')
-  } finally {
-    saving.value = false
-  }
-}
+useRegisterPageForm(page)
+useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
@@ -245,9 +200,5 @@ const save = async () => {
 
 .deadline-input {
   max-width: 260px;
-}
-
-.footer {
-  padding-top: var(--space-4);
 }
 </style>
