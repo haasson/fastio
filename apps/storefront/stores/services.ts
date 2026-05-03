@@ -1,23 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
-import type { Category, DishTagDefinition } from '@fastio/shared'
+import type { Category, DishTagDefinition, ServiceCard } from '@fastio/shared'
 
-export type ServiceCard = {
-  id: string
-  tenantId: string
-  categoryId: string | null
-  name: string
-  description: string
-  price: number
-  duration: number
-  photos: string[]
-  tags: string[]
-  isBookable: boolean
-  bookingMode: 'fixed' | 'open_ended'
-  allowResourceChoice: boolean
-  branchIds: string[]
-}
+export type { ServiceCard }
 
 type ServicesCatalogData = {
   categories: Category[]

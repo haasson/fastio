@@ -2,11 +2,11 @@
   "project": "packages/ui",
   "submap": "main",
   "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-  "generated_at": "2026-04-30T05:12:38.384Z",
+  "generated_at": "2026-05-03T12:17:14.206Z",
   "stats": {
-    "files": 52,
+    "files": 53,
     "pages": 0,
-    "symbols": 148,
+    "symbols": 153,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -772,6 +772,31 @@
         }
       ]
     },
+    "src/components/UiTree.vue": {
+      "kind": "vue",
+      "hash": "c814d992ccb8",
+      "purpose": "Дерево с чекбоксами на базе NaiveUI NTree: cascade-выбор категорий/услуг, hint-суффикс у выбранных узлов",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "88125dbb",
+          "purpose": "modelValue (выбранные ключи), data (дерево UiTreeNode[]), defaultExpandedKeys"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "578bb195",
+          "purpose": "update:modelValue — новый массив выбранных string-ключей"
+        },
+        {
+          "name": "UiTreeNode",
+          "kind": "type",
+          "hash": "f736e07b",
+          "purpose": "Узел дерева: key, label, hint (показывается при выборе), children"
+        }
+      ]
+    },
     "src/components/internal/ClientOnly.vue": {
       "kind": "vue",
       "hash": "01553ae3298b",
@@ -857,8 +882,8 @@
     },
     "src/index.ts": {
       "kind": "ts",
-      "hash": "6ffac7c2d386",
-      "purpose": "Публичный barrel-экспорт пакета @fastio/ui: все Ui*-компоненты, типы пропсов, useMessage, theme-overrides",
+      "hash": "cc90b24beb71",
+      "purpose": "Barrel-экспорт всех компонентов и типов пакета @fastio/ui",
       "symbols": [
         {
           "name": "*",
@@ -1069,6 +1094,18 @@
           "kind": "re-export",
           "hash": "ed535bf9",
           "purpose": "Реэкспорт UiCollapseItem"
+        },
+        {
+          "name": "UiTree",
+          "kind": "re-export",
+          "hash": "136a0b2a",
+          "purpose": "Реэкспорт UiTree"
+        },
+        {
+          "name": "UiTreeNode",
+          "kind": "re-export",
+          "hash": "136a0b2a",
+          "purpose": "Реэкспорт типа UiTreeNode"
         },
         {
           "name": "UiTabs",

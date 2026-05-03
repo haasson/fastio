@@ -1,12 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Service, ServiceFormData, ServiceWithBranchIds } from '@fastio/shared'
+import type { BookingMode, Service, ServiceFormData, ServiceWithBranchIds } from '@fastio/shared'
 import { mapService } from '@fastio/shared'
 import type { ServiceRow } from '~/utils/api/db-types'
 import { query } from '~/utils/query'
 
 const SERVICE_FIELDS = `
-  id, tenant_id, category_id, name, description, price, duration,
-  photos, tags, is_bookable, booking_mode, allow_resource_choice,
+  id, tenant_id, category_id, name, description, long_description, price, duration,
+  photos, tags, is_bookable, booking_mode, max_duration, allow_resource_choice,
   active, sort_order, created_at, updated_at
 `.trim()
 
@@ -41,9 +41,11 @@ const writeServicePatch = (form: Partial<ServiceFormData>): Record<string, unkno
   if (form.tags !== undefined) patch.tags = form.tags
   if (form.isBookable !== undefined) patch.is_bookable = form.isBookable
   if (form.bookingMode !== undefined) patch.booking_mode = form.bookingMode
+  if (form.maxDuration !== undefined) patch.max_duration = form.maxDuration
   if (form.allowResourceChoice !== undefined) patch.allow_resource_choice = form.allowResourceChoice
   if (form.active !== undefined) patch.active = form.active
   if (form.sortOrder !== undefined) patch.sort_order = form.sortOrder
+  if (form.longDescription !== undefined) patch.long_description = form.longDescription ?? null
 
   return patch
 }
@@ -98,9 +100,11 @@ export const servicesApi = {
         tags: form.tags,
         is_bookable: form.isBookable,
         booking_mode: form.bookingMode,
+        max_duration: form.maxDuration ?? null,
         allow_resource_choice: form.allowResourceChoice,
         active: form.active,
         sort_order: form.sortOrder,
+        long_description: form.longDescription ?? null,
       }).select(SERVICE_FIELDS).single(),
     )
     const service = mapService(result as unknown as ServiceRow)
@@ -147,6 +151,39 @@ export const servicesApi = {
     }
 
     return counts
+  },
+
+  async countMismatch(
+    sb: SupabaseClient,
+    tenantId: string,
+    defaults: { isBookable?: boolean; bookingMode?: BookingMode; allowResourceChoice?: boolean },
+  ): Promise<number> {
+    const filters: string[] = []
+
+    if (defaults.isBookable !== undefined) filters.push(`is_bookable.neq.${defaults.isBookable}`)
+    if (defaults.bookingMode !== undefined) filters.push(`booking_mode.neq.${defaults.bookingMode}`)
+    if (defaults.allowResourceChoice !== undefined) filters.push(`allow_resource_choice.neq.${defaults.allowResourceChoice}`)
+    if (filters.length === 0) return 0
+
+    const { count, error } = await sb.from('services')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .or(filters.join(','))
+
+    if (error) throw new Error(error.message)
+
+    return count ?? 0
+  },
+
+  async bulkPatch(
+    sb: SupabaseClient,
+    tenantId: string,
+    form: { isBookable?: boolean; bookingMode?: BookingMode; allowResourceChoice?: boolean },
+  ): Promise<void> {
+    const patch = writeServicePatch(form)
+
+    if (Object.keys(patch).length === 0) return
+    await query(sb.from('services').update(patch).eq('tenant_id', tenantId))
   },
 
   async uploadPhoto(sb: SupabaseClient, tenantId: string, file: File): Promise<string> {

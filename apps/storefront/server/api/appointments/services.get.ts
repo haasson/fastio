@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: servicesData } = await db
     .from('services')
-    .select('id, name, description, price, duration, photos, tags, category_id, booking_mode, allow_resource_choice')
+    .select('id, name, description, price, duration, photos, tags, category_id, booking_mode, max_duration, allow_resource_choice')
     .eq('active', true)
     .eq('is_bookable', true)
     .order('sort_order')
@@ -40,7 +40,8 @@ export default defineEventHandler(async (event) => {
     photos: (row.photos as string[]) ?? [],
     tags: (row.tags as string[]) ?? [],
     categoryId: row.category_id as string | null,
-    bookingMode: ((row.booking_mode as string) ?? 'fixed') as 'fixed' | 'open_ended',
+    bookingMode: ((row.booking_mode as string) ?? 'fixed') as 'fixed' | 'variable',
+    maxDuration: (row.max_duration as number | null) ?? null,
     allowResourceChoice: (row.allow_resource_choice as boolean) ?? true,
     branchIds: branchIdsByService.get(row.id as string) ?? [],
   }))

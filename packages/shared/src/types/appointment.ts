@@ -78,6 +78,10 @@ export type AppointmentSettings = {
   allowClientCancellation: boolean
   allowClientReschedule: boolean
   cancellationDeadlineHours: number
+  defaultIsBookable: boolean
+  defaultBookingMode: BookingMode
+  defaultAllowResourceChoice: boolean
+  defaultMaxDuration: number
   createdAt: string
   updatedAt: string
 }
@@ -97,7 +101,7 @@ export type Appointment = {
   customerPhone: string
   startsAt: string         // UTC ISO timestamp
   endsAt: string           // UTC ISO timestamp — расчётное (starts + duration)
-  actualEndsAt: string | null  // фактическое окончание для open_ended
+  actualEndsAt: string | null  // фактическое окончание — overrides endsAt при variable-режиме
   bookingMode: BookingMode    // снапшот режима бронирования услуги
   status: AppointmentStatus
   resourceAssignedBy: ResourceAssignedBy | null
@@ -146,7 +150,7 @@ export type ResourceSlotData = {
 // Существующая запись для проверки конфликтов (UTC timestamps)
 export type AppointmentInterval = {
   startsAt: string  // UTC ISO timestamp
-  endsAt: string    // UTC ISO timestamp — для open_ended: COALESCE(actual_ends_at, ends_at)
+  endsAt: string    // UTC ISO timestamp — COALESCE(actual_ends_at, ends_at)
 }
 
 export type AppointmentEventType

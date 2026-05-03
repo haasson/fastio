@@ -1,22 +1,6 @@
-import type { Tenant, DishTagDefinition } from '@fastio/shared'
+import type { Tenant, DishTagDefinition, ServiceCard } from '@fastio/shared'
 import { mapCategory } from '../utils/supabase'
 import { getTenantDb } from '../utils/tenantDb'
-
-type ServiceCard = {
-  id: string
-  tenantId: string
-  categoryId: string | null
-  name: string
-  description: string
-  price: number
-  duration: number
-  photos: string[]
-  tags: string[]
-  isBookable: boolean
-  bookingMode: 'fixed' | 'open_ended'
-  allowResourceChoice: boolean
-  branchIds: string[]
-}
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
@@ -38,7 +22,7 @@ export default defineEventHandler(async (event) => {
       .order('sort_order'),
     db
       .from('services')
-      .select('id, tenant_id, category_id, name, description, price, duration, photos, tags, is_bookable, booking_mode, allow_resource_choice')
+      .select('id, tenant_id, category_id, name, description, price, duration, photos, tags, is_bookable, booking_mode, max_duration, allow_resource_choice')
       .eq('active', true)
       .order('sort_order')
       .order('name'),
@@ -70,7 +54,8 @@ export default defineEventHandler(async (event) => {
     photos: (row.photos as string[]) ?? [],
     tags: (row.tags as string[]) ?? [],
     isBookable: (row.is_bookable as boolean) ?? false,
-    bookingMode: ((row.booking_mode as string) ?? 'fixed') as 'fixed' | 'open_ended',
+    bookingMode: ((row.booking_mode as string) ?? 'fixed') as 'fixed' | 'variable',
+    maxDuration: (row.max_duration as number | null) ?? null,
     allowResourceChoice: (row.allow_resource_choice as boolean) ?? true,
     branchIds: branchIdsByService.get(row.id as string) ?? [],
   }))

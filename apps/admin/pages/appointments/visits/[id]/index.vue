@@ -72,44 +72,6 @@
         @saved="onSaved"
       />
 
-      <UiCard v-if="canManage && openEndedActive.length > 0" class="extend-card">
-        <UiTitle size="h4" class="card-title">Продление (открытое окончание)</UiTitle>
-        <div
-          v-for="appt in openEndedActive"
-          :key="appt.id"
-          class="extend-row"
-        >
-          <div class="extend-info">
-            <UiText>{{ appt.serviceName }}</UiText>
-            <UiText size="small" class="muted">
-              до {{ formatApptEnd(appt) }}
-            </UiText>
-          </div>
-          <div class="extend-actions">
-            <UiButton
-              size="small"
-              type="default"
-              :loading="extendLoadingId === appt.id"
-              :disabled="!!extendLoadingId || !!closeLoadingId"
-              @click="handleExtend(appt.id, 30)"
-            >+30 мин</UiButton>
-            <UiButton
-              size="small"
-              type="default"
-              :loading="extendLoadingId === appt.id"
-              :disabled="!!extendLoadingId || !!closeLoadingId"
-              @click="handleExtend(appt.id, 60)"
-            >+60 мин</UiButton>
-            <UiButton
-              size="small"
-              :loading="closeLoadingId === appt.id"
-              :disabled="!!extendLoadingId || !!closeLoadingId"
-              @click="handleCloseNow(appt.id)"
-            >Закрыть сейчас</UiButton>
-          </div>
-        </div>
-      </UiCard>
-
       <SplitVisitModal
         v-if="canManage && visit && hasActive"
         v-model="splitOpen"
@@ -285,73 +247,6 @@ const submitCancel = async (): Promise<boolean | void> => {
   }
 }
 
-// ─── Extend / CloseNow (open_ended) ──────────────────────────────────────────
-
-const openEndedActive = computed(() => appointments.value.filter(
-  (a) => a.bookingMode === 'open_ended' && (a.status === 'confirmed' || a.status === 'new'),
-))
-
-const extendLoadingId = ref<string | null>(null)
-const closeLoadingId = ref<string | null>(null)
-
-const tz = computed(() => tenantStore.tenant?.timezone ?? 'UTC')
-
-const formatApptEnd = (appt: Appointment): string => {
-  const iso = appt.actualEndsAt ?? appt.endsAt
-
-  return new Intl.DateTimeFormat('ru', {
-    timeZone: tz.value,
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  }).format(new Date(iso))
-}
-
-const formatOverlapTime = (isoOrEmpty: string): string => {
-  if (!isoOrEmpty) return 'ближайшее время'
-  try {
-    return new Intl.DateTimeFormat('ru', {
-      timeZone: tz.value,
-      hour: '2-digit', minute: '2-digit', hour12: false,
-    }).format(new Date(isoOrEmpty))
-  } catch {
-    return isoOrEmpty
-  }
-}
-
-const handleExtend = async (apptId: string, minutes: number) => {
-  extendLoadingId.value = apptId
-  try {
-    await api.appointments.extend(apptId, minutes)
-    message.success(`Запись продлена на ${minutes} минут`)
-    await loadData()
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-
-    if (msg.startsWith('OVERLAP:')) {
-      const nextTime = formatOverlapTime(msg.slice('OVERLAP:'.length))
-
-      message.error(`Нельзя продлить — следующий клиент в ${nextTime}`)
-    } else {
-      reportError(e)
-      message.error('Не удалось продлить запись')
-    }
-  } finally {
-    extendLoadingId.value = null
-  }
-}
-
-const handleCloseNow = async (apptId: string) => {
-  closeLoadingId.value = apptId
-  try {
-    await api.appointments.closeNow(apptId)
-    message.success('Запись закрыта')
-    await loadData()
-  } catch (e) {
-    reportError(e)
-    message.error('Не удалось закрыть запись')
-  } finally {
-    closeLoadingId.value = null
-  }
-}
 </script>
 
 <style scoped lang="scss">

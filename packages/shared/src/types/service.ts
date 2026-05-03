@@ -1,4 +1,4 @@
-export type BookingMode = 'fixed' | 'open_ended'
+export type BookingMode = 'fixed' | 'variable'
 
 /**
  * Услуга. `branchIds` тут НЕТ — связка services↔branches хранится в junction
@@ -16,14 +16,16 @@ export type Service = {
   name: string
   description: string
   price: number
-  duration: number   // минуты — для open_ended трактуется как минимальное окно
+  duration: number
   photos: string[]
   tags: string[]
   isBookable: boolean
   bookingMode: BookingMode
+  maxDuration: number | null  // только для variable; null = берётся из appointment_settings
   allowResourceChoice: boolean
   active: boolean
   sortOrder: number
+  longDescription: string | null
   createdAt: string
   updatedAt: string
 }
@@ -33,6 +35,14 @@ export type ServiceWithBranchIds = Service & {
   /** Пусто = доступна во всех филиалах. */
   branchIds: string[]
 }
+
+/** Карточка услуги для витрины — публичные поля без admin-специфики. */
+export type ServiceCard = Pick<ServiceWithBranchIds,
+  | 'id' | 'tenantId' | 'categoryId' | 'name' | 'description'
+  | 'price' | 'duration' | 'photos' | 'tags'
+  | 'isBookable' | 'bookingMode' | 'maxDuration' | 'allowResourceChoice'
+  | 'branchIds'
+>
 
 export type ServiceFormData = {
   categoryId: string | null
@@ -44,8 +54,10 @@ export type ServiceFormData = {
   tags: string[]
   isBookable: boolean
   bookingMode: BookingMode
+  maxDuration: number | null
   allowResourceChoice: boolean
   branchIds: string[]
   active: boolean
   sortOrder: number
+  longDescription: string | null
 }

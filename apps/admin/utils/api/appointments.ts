@@ -329,29 +329,4 @@ export const appointmentsApi = {
     return mapAppointment(result as unknown as AppointmentRow)
   },
 
-  /**
-   * Продлевает запись на N минут — для open_ended (бильярд, баня и т. п.).
-   * RPC extend_appointment: advisory lock на resource + capacity-чек + UPDATE.
-   * При overlap бросает ошибку с ERRCODE P0002 и ISO-временем следующей записи
-   * в message: 'OVERLAP:2024-01-15T10:00:00Z'. Вызывающий код должен поймать
-   * её и показать пользователю понятный алерт.
-   */
-  async extend(sb: SupabaseClient, id: string, minutes: number): Promise<Appointment> {
-    const { data, error } = await sb.rpc('extend_appointment', { p_id: id, p_minutes: minutes })
-
-    if (error) throw new Error(error.message)
-
-    return mapAppointment(data as unknown as AppointmentRow)
-  },
-
-  /**
-   * Закрывает open_ended запись «сейчас» — actual_ends_at = now().
-   */
-  async closeNow(sb: SupabaseClient, id: string): Promise<Appointment> {
-    const result = await query(
-      sb.from('appointments').update({ actual_ends_at: new Date().toISOString() }).eq('id', id).select(FIELDS).single(),
-    )
-
-    return mapAppointment(result as unknown as AppointmentRow)
-  },
 }

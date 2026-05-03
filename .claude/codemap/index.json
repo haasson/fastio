@@ -1,9 +1,9 @@
 {
   "rule": "Это индекс карт проектов монорепо. Сами карты НЕ в контексте — Read только нужные. 1. Когда юзер ставит задачу — определи затронутый проект (apps/admin, packages/shared и т.д.) 2. Прочитай core-карту проекта (если есть) + субкарту нужного модуля 3. Если по ходу работы выяснилось, что нужно править другой проект — СНАЧАЛА прочитай его карты, потом меняй код 4. НЕ читай карты «на всякий случай» — это перегружает контекст 5. Карта говорит ЧТО есть и ДЛЯ ЧЕГО. Сигнатуры/реализацию смотри в самом файле, когда нужно 6. При работе со стилями (.scss / <style> в .vue) — Read нужную styles-карту из секции \"styles\" ниже. ВСЕГДА используй существующие токены/миксины вместо хардкода значений.",
-  "generated_at": "2026-05-03T06:12:19.868Z",
+  "generated_at": "2026-05-03T12:17:14.277Z",
   "totals": {
-    "files": 320,
-    "symbols": 731,
+    "files": 321,
+    "symbols": 736,
     "undescribed": 0
   },
   "projects": {
@@ -29,7 +29,7 @@
       "purpose": "Витрина для гостя Nuxt 3 SSR: меню, корзина, чекаут, аккаунт, бронирования, онлайн-запись",
       "stats": {
         "files": 63,
-        "symbols": 90,
+        "symbols": 89,
         "undescribed": 0
       },
       "maps": {
@@ -37,7 +37,7 @@
           "file": ".claude/codemap/apps/storefront.json",
           "purpose": null,
           "files": 63,
-          "symbols": 90,
+          "symbols": 89,
           "pages": 0,
           "undescribed": 0
         }
@@ -47,7 +47,7 @@
       "purpose": "Общие утилиты и composables проекта (pluralize, planLevel, scheduling, vocabulary, geo, useDadataSuggestions и т.д.). Доменные типы НЕ картируются — читаются напрямую через импорты.",
       "stats": {
         "files": 37,
-        "symbols": 153,
+        "symbols": 154,
         "undescribed": 0
       },
       "maps": {
@@ -55,7 +55,7 @@
           "file": ".claude/codemap/packages/shared.json",
           "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
           "files": 37,
-          "symbols": 153,
+          "symbols": 154,
           "pages": 0,
           "undescribed": 0
         }
@@ -64,16 +64,16 @@
     "packages/ui": {
       "purpose": "UI-компоненты на базе Naive UI (UiCard, UiText, UiButton, UiTitle, UiTag и т.д.) для admin",
       "stats": {
-        "files": 52,
-        "symbols": 148,
+        "files": 53,
+        "symbols": 153,
         "undescribed": 0
       },
       "maps": {
         "main": {
           "file": ".claude/codemap/packages/ui.json",
           "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-          "files": 52,
-          "symbols": 148,
+          "files": 53,
+          "symbols": 153,
           "pages": 0,
           "undescribed": 0
         }

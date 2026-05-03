@@ -63,6 +63,44 @@ export const resourcesApi = {
     return (data ?? []).map((r) => mapResource(r as unknown as ResourceRow))
   },
 
+  /**
+   * Ресурсы, привязанные к категории (через resource_categories) + к конкретной
+   * услуге напрямую (через service_resources). Используется в дравере услуги.
+   */
+  async listByCategory(
+    sb: SupabaseClient,
+    tenantId: string,
+    categoryId: string,
+    serviceId?: string,
+  ): Promise<Resource[]> {
+    const [catRes, svcRes] = await Promise.all([
+      sb.from('resource_categories').select('resource_id').eq('category_id', categoryId),
+      serviceId
+        ? sb.from('service_resources').select('resource_id').eq('service_id', serviceId)
+        : Promise.resolve({ data: [] }),
+    ])
+
+    const ids = [
+      ...((catRes.data ?? []) as { resource_id: string }[]).map((r) => r.resource_id),
+      ...((svcRes.data ?? []) as { resource_id: string }[]).map((r) => r.resource_id),
+    ]
+    const unique = [...new Set(ids)]
+
+    if (unique.length === 0) return []
+
+    const data = await query(
+      sb.from('resources')
+        .select(RESOURCE_FIELDS)
+        .in('id', unique)
+        .eq('tenant_id', tenantId)
+        .eq('is_active', true)
+        .order('sort_order')
+        .order('name'),
+    )
+
+    return (data ?? []).map((r) => mapResource(r as unknown as ResourceRow))
+  },
+
   async countActiveByType(sb: SupabaseClient, tenantId: string): Promise<{ person: number; object: number }> {
     const [{ count: personCount }, { count: objectCount }] = await Promise.all([
       sb.from('resources').select('id', { count: 'exact', head: true })

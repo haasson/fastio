@@ -63,6 +63,19 @@ export function addDaysToDateStr(dateStr: string, days: number): string {
 }
 
 /**
+ * Все даты "YYYY-MM-DD" от `from` до `to` включительно.
+ */
+export function datesInRange(from: string, to: string): string[] {
+  const result: string[] = []
+  let cur = from
+  while (cur <= to) {
+    result.push(cur)
+    cur = addDaysToDateStr(cur, 1)
+  }
+  return result
+}
+
+/**
  * Конвертирует наивную дату + время в таймзоне тенанта в UTC ISO string.
  * dateStr: "YYYY-MM-DD", timeStr: "HH:mm", timezone: IANA.
  */

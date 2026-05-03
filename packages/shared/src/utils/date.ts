@@ -1,6 +1,7 @@
-/** "1 мар 2024" — короткий месяц */
+/** "1 мар 2024" — короткий месяц. Принимает ISO string или bare "YYYY-MM-DD". */
 export const formatDate = (iso: string): string =>
-  new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
+  new Date(iso.includes('T') ? iso : iso + 'T12:00:00')
+    .toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
 
 /** "1 мар" — без года */
 export const formatDateShort = (iso: string): string =>

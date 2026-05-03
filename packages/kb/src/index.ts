@@ -190,6 +190,7 @@ export const KB_STRUCTURE: KbSectionMeta[] = [
       { id: 'services-items', title: 'Услуги', file: '14-services-items' },
       { id: 'services-categories', title: 'Категории услуг', file: '14-services-categories' },
       { id: 'services-tags', title: 'Теги услуг', file: '14-services-tags' },
+      { id: 'services-settings', title: 'Настройки услуг', file: '14-services-settings' },
     ],
   },
 ]

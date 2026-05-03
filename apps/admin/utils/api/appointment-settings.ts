@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { AppointmentSettings, AppointmentResourceMode, StaffNameFormat } from '@fastio/shared'
+import type { AppointmentSettings, AppointmentResourceMode, BookingMode, StaffNameFormat } from '@fastio/shared'
 import { mapAppointmentSettings } from '@fastio/shared'
 import type { AppointmentSettingsRow } from '~/utils/api/db-types'
 import { query } from '~/utils/query'
@@ -14,6 +14,10 @@ export type AppointmentSettingsFormData = {
   allowClientCancellation?: boolean
   allowClientReschedule?: boolean
   cancellationDeadlineHours?: number
+  defaultIsBookable?: boolean
+  defaultBookingMode?: BookingMode
+  defaultAllowResourceChoice?: boolean
+  defaultMaxDuration?: number
 }
 
 export const appointmentSettingsApi = {
@@ -41,6 +45,10 @@ export const appointmentSettingsApi = {
     if (form.allowClientCancellation !== undefined) payload.allow_client_cancellation = form.allowClientCancellation
     if (form.allowClientReschedule !== undefined) payload.allow_client_reschedule = form.allowClientReschedule
     if (form.cancellationDeadlineHours !== undefined) payload.cancellation_deadline_hours = form.cancellationDeadlineHours
+    if (form.defaultIsBookable !== undefined) payload.default_is_bookable = form.defaultIsBookable
+    if (form.defaultBookingMode !== undefined) payload.default_booking_mode = form.defaultBookingMode
+    if (form.defaultAllowResourceChoice !== undefined) payload.default_allow_resource_choice = form.defaultAllowResourceChoice
+    if (form.defaultMaxDuration !== undefined) payload.default_max_duration = form.defaultMaxDuration
 
     const result = await query(
       sb.from('appointment_settings')

@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-03T06:12:19.811Z",
+  "generated_at": "2026-05-03T12:17:14.169Z",
   "stats": {
     "files": 37,
     "pages": 0,
-    "symbols": 153,
+    "symbols": 154,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -14,8 +14,8 @@
   "files": {
     "src/utils/appointment.ts": {
       "kind": "ts",
-      "hash": "6f9f7d97a516",
-      "purpose": "Маппинг сырых DB-строк в доменные типы: mapResource, mapAppointment, mapVisit, mapAppointmentSettings и вспомогательные функции",
+      "hash": "1df6b6f7e91a",
+      "purpose": "Маппинг сырых строк БД в доменные типы: Resource, ResourceSchedule, ResourceDateOverride, Appointment, AppointmentSettings и связанные",
       "symbols": [
         {
           "name": "mapResource",
@@ -215,8 +215,8 @@
     },
     "src/utils/date.ts": {
       "kind": "ts",
-      "hash": "6cf76ecbdca8",
-      "purpose": "Форматирование дат на ru-RU и конверсии между ISO/timestamp/YYYY-MM-DD без UTC-сюрпризов",
+      "hash": "60a5ec6d2d1e",
+      "purpose": "Форматирование дат и времени для отображения в UI (formatDate, formatDateShort, formatMinutes, isoToTs и др.)",
       "symbols": [
         {
           "name": "formatMinutes",
@@ -790,8 +790,8 @@
     },
     "src/utils/service.ts": {
       "kind": "ts",
-      "hash": "20567cfe858c",
-      "purpose": "Маппер услуги (services) из сырой записи БД в Service",
+      "hash": "3a73886bc8ec",
+      "purpose": "Маппинг сырой строки БД услуги в доменный тип Service",
       "symbols": [
         {
           "name": "mapService",
@@ -969,8 +969,8 @@
     },
     "src/utils/timezone.ts": {
       "kind": "ts",
-      "hash": "ca4a8e5bf1fe",
-      "purpose": "Работа с таймзонами тенанта: today/now в TZ, конверсия local↔UTC, генерация слотов с overnight, ASAP-проверка",
+      "hash": "b664c84472aa",
+      "purpose": "Утилиты работы с датами в таймзоне тенанта: сегодня, конвертация UTC↔локальное, диапазоны дат",
       "symbols": [
         {
           "name": "todayInTz",
@@ -995,6 +995,12 @@
           "kind": "function",
           "hash": "2994e89d",
           "purpose": "Прибавляет N дней к 'YYYY-MM-DD' (через UTC, не зависит от локали сервера)"
+        },
+        {
+          "name": "datesInRange",
+          "kind": "function",
+          "hash": "69a0c65e",
+          "purpose": "Все даты YYYY-MM-DD от from до to включительно (используется для периодов отсутствия)"
         },
         {
           "name": "localDateTimeToUtcIso",

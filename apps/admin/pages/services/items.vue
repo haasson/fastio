@@ -25,10 +25,10 @@
   />
 
   <ServiceDrawer
-    v-if="selectedCategoryId"
+    v-if="categories.length > 0"
     v-model="drawerOpen"
     :service="editingService"
-    :category-id="selectedCategoryId"
+    :initial-category-id="selectedCategoryId"
     :categories="categories"
     @saved="onSaved"
   />

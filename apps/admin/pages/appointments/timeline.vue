@@ -246,7 +246,7 @@ const toLocalMinutes = (iso: string): number => {
 }
 
 // Запись, чьё окно [start, end) накрывает слот. Учитываем actualEndsAt
-// для open_ended (по той же логике, что и в slot engine).
+// при variable-режиме (по той же логике, что и в slot engine).
 const getAppointment = (resourceId: string, slotTime: string): Appointment | null => appointments.value.find((a) => {
   if (a.resourceId !== resourceId) return false
   const slotMin = timeToMinutes(slotTime)

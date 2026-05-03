@@ -42,21 +42,23 @@
         @update:model-value="$emit('update:description', $event ?? '')"
       />
 
-      <UiCheckbox
-        :checked="showLongDescription"
-        @update:checked="$emit('update:showLongDescription', $event)"
-      >
-        Подробное описание
-      </UiCheckbox>
+      <template v-if="showLongDescriptionOption">
+        <UiCheckbox
+          :checked="showLongDescription"
+          @update:checked="$emit('update:showLongDescription', $event)"
+        >
+          Подробное описание
+        </UiCheckbox>
 
-      <UiInput
-        v-if="showLongDescription"
-        :model-value="longDescription"
-        label="Подробное описание"
-        type="textarea"
-        :rows="5"
-        @update:model-value="$emit('update:longDescription', $event ?? '')"
-      />
+        <UiInput
+          v-if="showLongDescription"
+          :model-value="longDescription"
+          label="Подробное описание"
+          type="textarea"
+          :rows="5"
+          @update:model-value="$emit('update:longDescription', $event ?? '')"
+        />
+      </template>
 
       <div class="category-row">
         <UiSelect
@@ -99,7 +101,7 @@ const unitItems = [
   { label: 'мл', value: 'мл' },
 ]
 
-defineProps<{
+withDefaults(defineProps<{
   photoUrl: string | null
   name: string
   price: number | null
@@ -114,7 +116,10 @@ defineProps<{
   showWeight?: boolean
   longDescription?: string
   showLongDescription?: boolean
-}>()
+  showLongDescriptionOption?: boolean
+}>(), {
+  showLongDescriptionOption: true,
+})
 
 defineEmits<{
   'update:photoUrl': [value: string | null]

@@ -68,6 +68,10 @@ export const mapAppointmentSettings = (raw: Record<string, unknown>): Appointmen
   allowClientCancellation: raw.allow_client_cancellation as boolean,
   allowClientReschedule: (raw.allow_client_reschedule as boolean | undefined) ?? false,
   cancellationDeadlineHours: raw.cancellation_deadline_hours as number,
+  defaultIsBookable: (raw.default_is_bookable as boolean | undefined) ?? true,
+  defaultBookingMode: (raw.default_booking_mode as AppointmentSettings['defaultBookingMode'] | undefined) ?? 'fixed',
+  defaultAllowResourceChoice: (raw.default_allow_resource_choice as boolean | undefined) ?? true,
+  defaultMaxDuration: (raw.default_max_duration as number | undefined) ?? 180,
   createdAt: raw.created_at as string,
   updatedAt: raw.updated_at as string,
 })

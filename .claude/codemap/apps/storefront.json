@@ -2,11 +2,11 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-03T06:12:19.675Z",
+  "generated_at": "2026-05-03T12:17:14.106Z",
   "stats": {
     "files": 63,
     "pages": 0,
-    "symbols": 90,
+    "symbols": 89,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -501,15 +501,9 @@
     },
     "stores/services.ts": {
       "kind": "ts",
-      "hash": "59aa3073150e",
-      "purpose": "Pinia-обёртка над useNuxtData('services-catalog'): услуги, категории и видимые категории для бизнес-типа services",
+      "hash": "cb044a20e397",
+      "purpose": "Pinia: каталог услуг витрины (из useNuxtData 'services-catalog') — allServices, servicesByCategory, visibleCategories, теги",
       "symbols": [
-        {
-          "name": "ServiceCard",
-          "kind": "type",
-          "hash": "b1cc9f3e",
-          "purpose": "Карточка услуги для витрины: id, имя, цена, длительность, фото, isBookable, bookingMode, разрешение выбора ресурса"
-        },
         {
           "name": "useServicesStore",
           "kind": "const",

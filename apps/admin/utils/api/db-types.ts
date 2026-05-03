@@ -412,6 +412,10 @@ export type AppointmentSettingsRow = {
   allow_client_cancellation: boolean
   allow_client_reschedule: boolean
   cancellation_deadline_hours: number
+  default_is_bookable: boolean
+  default_booking_mode: string
+  default_allow_resource_choice: boolean
+  default_max_duration: number
   created_at: string
   updated_at: string
 }
@@ -428,6 +432,7 @@ export type ServiceRow = {
   tags: string[]
   is_bookable: boolean
   booking_mode: BookingMode
+  max_duration: number | null
   allow_resource_choice: boolean
   active: boolean
   sort_order: number
