@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { computed, watch, onMounted } from 'vue'
 import { useRoute, useAsyncData, useHead, useRequestFetch } from 'nuxt/app'
-import type { Tenant } from '@fastio/shared'
+import type { BranchPublic, Tenant } from '@fastio/shared'
 import { paletteToCssVars } from '@fastio/shared'
 import { useAuthStore } from '~/stores/auth'
 import AuthLoginModal from '~/components/auth/AuthLoginModal.vue'
@@ -29,6 +29,7 @@ import ConfirmDialog from '~/components/ConfirmDialog.vue'
 import { useToast } from '~/composables/useToast'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { useCartReconciler } from '~/composables/useCartReconciler'
+import { useSelectedBranchStore } from '~/stores/selectedBranch'
 
 const { toasts, dismiss } = useToast()
 
@@ -41,11 +42,39 @@ onMounted(() => {
 const route = useRoute()
 const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
-const [{ data: tenant }, { data: menuData }] = await Promise.all([
-  // @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
-  useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery)),
-  useAsyncData('menu', () => rfetch('/api/menu', slugQuery)),
-  useAsyncData('services-catalog', () => rfetch('/api/services-catalog', slugQuery)),
+
+const selectedBranch = useSelectedBranchStore()
+
+// Tenant грузим первым: его branchSelectionMode нужен computed'у catalogQuery,
+// который дальше определяет query-параметры для /api/menu и /api/services-catalog.
+// Если запросить tenant параллельно с menu, на старте получим TDZ
+// «Cannot access 'tenant' before initialization».
+// @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
+const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
+
+// Реактивный query для /api/menu и /api/services-catalog: добавляет branchId,
+// если тенант в режиме per_branch и пользователь выбрал филиал. На SSR это поле
+// всегда будет пустым (selectedBranch гидрируется только на клиенте), а после
+// гидрации watcher автоматически перезапросит каталог с фильтром.
+const catalogQuery = computed<Record<string, string>>(() => {
+  const base: Record<string, string> = route.query.slug ? { slug: String(route.query.slug) } : {}
+  if (tenant.value?.branchSelectionMode === 'per_branch' && selectedBranch.id) {
+    base.branchId = selectedBranch.id
+  }
+  return base
+})
+
+// Параллельный fetch: всё попадает в SSR-payload, дальше доступно через useNuxtData()
+// в любом компоненте. Деструктуризация в await Promise.all выпрямляет семантику —
+// useAsyncData возвращает thenable, и мы явно ждём первый разрешённый AsyncData.
+const [{ data: menuData }] = await Promise.all([
+  useAsyncData('menu', () => rfetch('/api/menu', { query: catalogQuery.value }), {
+    watch: [catalogQuery],
+  }),
+  useAsyncData('services-catalog', () => rfetch('/api/services-catalog', { query: catalogQuery.value }), {
+    watch: [catalogQuery],
+  }),
+  useAsyncData<BranchPublic[]>('branches', () => rfetch('/api/branches', slugQuery)),
 ])
 
 useCartReconciler(menuData)

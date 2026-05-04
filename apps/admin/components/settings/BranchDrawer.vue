@@ -16,14 +16,16 @@
         :rules="[validationRules.name.required]"
       />
 
-      <UiColorPicker v-model="form.color" label="Цвет филиала" :presets="BRANCH_COLORS" />
+      <UiColorPicker v-model="form.color" label="Цвет филиала" :presets="BRANCH_COLOR_PRESETS" />
 
       <AddressWithMap
         v-model:address="form.address"
         v-model:latitude="form.latitude"
         v-model:longitude="form.longitude"
+        name="address"
         map-label="Координаты на карте"
         :map-height="200"
+        :rules="[validationRules.address.required]"
       />
       <template v-if="hasMultipleBranches">
         <UiInput
@@ -75,13 +77,13 @@ import {
 import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
 
 import type { Branch, BranchFormData, WorkingHoursSchedule } from '@fastio/shared'
+import { BRANCH_COLOR_PRESETS } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { validationRules } from '@fastio/kit'
 import UiColorPicker from '~/components/ui/ColorPicker.vue'
 import AddressWithMap from '~/components/ui/AddressWithMap.vue'
-
-const BRANCH_COLORS = ['#FF5500', '#FFA500', '#00C853', '#2979FF', '#AA00FF', '#E91E63', '#795548']
+import { defaultBranchFormData } from '~/utils/branch'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
@@ -108,20 +110,7 @@ const drawerActions = computed(() => [
 
 const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
 
-const defaultForm = (): BranchFormData => ({
-  name: '',
-  color: BRANCH_COLORS[0],
-  address: null,
-  phone: null,
-  isActive: true,
-  workingHoursSchedule: null,
-  deliveryMinOrder: null,
-  deliveryFee: null,
-  notifications: null,
-  latitude: null,
-  longitude: null,
-  orderNumberPrefix: null,
-})
+const defaultForm = (): BranchFormData => defaultBranchFormData()
 
 const form = reactive<BranchFormData>(defaultForm())
 

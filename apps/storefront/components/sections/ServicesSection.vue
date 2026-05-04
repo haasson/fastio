@@ -67,13 +67,14 @@
     v-model="showModal"
     :title="modalService.name"
     :photo="modalService.photos[0] ?? null"
-    :description="modalService.description || null"
+    :description="modalService.longDescription || modalService.description || null"
   >
     <template #meta>
       <div class="meta">
         <span class="meta-item">{{ modalService.duration }} мин</span>
         <span v-if="modalService.price" class="meta-item meta-price">{{ modalService.price }} {{ currency }}</span>
       </div>
+      <BranchAvailabilityHint :branch-ids="modalService.branchIds" />
     </template>
     <ServiceModalBody
       v-if="bookingEnabled"
@@ -102,6 +103,7 @@ import SfProductCard from '~/components/sf/domain/SfProductCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import SfProductModal from '~/components/sf/domain/SfProductModal.vue'
 import ServiceModalBody from '~/components/appointments/ServiceModalBody.vue'
+import BranchAvailabilityHint from '~/components/branch/BranchAvailabilityHint.vue'
 import { useConfirm } from '~/composables/useConfirm'
 
 defineOptions({ inheritAttrs: false })

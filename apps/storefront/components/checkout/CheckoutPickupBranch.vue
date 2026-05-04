@@ -8,35 +8,45 @@
     </div>
 
     <!-- Single branch: info only -->
-    <div v-else-if="branches.length === 1" class="branch-info" :class="{ disabled: !branchStatuses[0]?.open }">
-      <div v-if="branches[0].address" class="branch-address">{{ branches[0].address }}</div>
-      <a v-if="branches[0].phone" class="branch-phone" :href="`tel:${branches[0].phone}`">{{ branches[0].phone }}</a>
-      <div v-if="branchStatuses[0]" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(branchStatuses[0]) }">
-        {{ getOpenStatusText(branchStatuses[0], branches[0].workingHoursSchedule) }}
+    <div v-else-if="singleBranch" class="branch-info" :class="{ disabled: !singleStatus?.open }">
+      <div class="branch-address">{{ singleBranch.address }}</div>
+      <a v-if="singleBranch.phone" class="branch-phone" :href="`tel:${singleBranch.phone}`">{{ singleBranch.phone }}</a>
+      <div v-if="singleStatus" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(singleStatus) }">
+        {{ getOpenStatusText(singleStatus, singleBranch.workingHoursSchedule) }}
       </div>
-      <div v-if="branchStatuses[0] && !branchStatuses[0].open && branchStatuses[0].nextChange" class="branch-closed">
-        Откроется {{ branchStatuses[0].nextChange.day }} в {{ branchStatuses[0].nextChange.time }}
+      <div v-if="singleStatus && !singleStatus.open && singleStatus.nextChange" class="branch-closed">
+        Откроется {{ singleStatus.nextChange.day }} в {{ singleStatus.nextChange.time }}
+      </div>
+      <div v-if="branchCompat.get(singleBranch.id) === 'yellow'" class="branch-partial-note">
+        Соберут не всё
       </div>
     </div>
 
     <!-- 2-4 branches: cards -->
-    <div v-else-if="branches.length <= 4" class="branch-cards">
+    <div v-else-if="sortedBranches.length <= 4" class="branch-cards">
       <button
-        v-for="(branch, idx) in branches"
+        v-for="branch in sortedBranches"
         :key="branch.id"
         type="button"
         class="branch-card"
-        :class="{ selected: checkout.form.pickupBranchId === branch.id, disabled: !branchStatuses[idx]?.open }"
-        :disabled="!branchStatuses[idx]?.open"
+        :class="{
+          selected: checkout.form.pickupBranchId === branch.id,
+          disabled: !branchStatusByID.get(branch.id)?.open || branchCompat.get(branch.id) === 'red',
+          partial: branchCompat.get(branch.id) === 'yellow',
+        }"
+        :disabled="!branchStatusByID.get(branch.id)?.open || branchCompat.get(branch.id) === 'red'"
         @click="selectBranch(branch.id)"
       >
-        <span v-if="branch.address" class="branch-address">{{ branch.address }}</span>
+        <span class="branch-address">{{ branch.address }}</span>
         <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`" @click.stop>{{ branch.phone }}</a>
-        <span v-if="branchStatuses[idx]" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(branchStatuses[idx]!) }">
-          {{ getOpenStatusText(branchStatuses[idx]!, branch.workingHoursSchedule) }}
+        <span v-if="branchStatusByID.get(branch.id)" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(branchStatusByID.get(branch.id)!) }">
+          {{ getOpenStatusText(branchStatusByID.get(branch.id)!, branch.workingHoursSchedule) }}
         </span>
-        <span v-if="!branchStatuses[idx]?.open && branchStatuses[idx]?.nextChange" class="branch-closed">
-          Откроется {{ branchStatuses[idx].nextChange!.day }} в {{ branchStatuses[idx].nextChange!.time }}
+        <span v-if="!branchStatusByID.get(branch.id)?.open && branchStatusByID.get(branch.id)?.nextChange" class="branch-closed">
+          Откроется {{ branchStatusByID.get(branch.id)!.nextChange!.day }} в {{ branchStatusByID.get(branch.id)!.nextChange!.time }}
+        </span>
+        <span v-if="branchCompat.get(branch.id) === 'yellow'" class="branch-partial-note">
+          Соберут не всё
         </span>
       </button>
     </div>
@@ -51,13 +61,16 @@
       />
       <!-- Show details of selected branch -->
       <div v-if="selectedBranch" class="branch-details">
-        <div v-if="selectedBranch.address" class="branch-address">{{ selectedBranch.address }}</div>
+        <div class="branch-address">{{ selectedBranch.address }}</div>
         <a v-if="selectedBranch.phone" class="branch-phone" :href="`tel:${selectedBranch.phone}`">{{ selectedBranch.phone }}</a>
         <div v-if="selectedBranchStatus" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(selectedBranchStatus) }">
           {{ getOpenStatusText(selectedBranchStatus, selectedBranch.workingHoursSchedule) }}
         </div>
         <div v-if="selectedBranchStatus && !selectedBranchStatus.open && selectedBranchStatus.nextChange" class="branch-closed">
           Откроется {{ selectedBranchStatus.nextChange.day }} в {{ selectedBranchStatus.nextChange.time }}
+        </div>
+        <div v-if="branchCompat.get(selectedBranch.id) === 'yellow'" class="branch-partial-note">
+          Соберут не всё
         </div>
       </div>
     </div>
@@ -70,9 +83,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { useCheckoutStore } from '~/stores/checkout'
+import { useCartStore } from '~/stores/cart'
+import { useMenuStore } from '~/stores/menu'
+import { computeBranchCompat, type BranchStatus as CompatStatus } from '~/utils/branchCompat'
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
 import { formatWorkingHours, isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
-import type { WorkingHoursSchedule, Tenant } from '@fastio/shared'
+import type { BranchPublic, WorkingHoursSchedule, Tenant } from '@fastio/shared'
 
 type BranchStatus = ReturnType<typeof isOpenNow>
 
@@ -95,15 +111,11 @@ function getOpenStatusText(status: BranchStatus, schedule: WorkingHoursSchedule 
   return formatWorkingHours(schedule)
 }
 
-type PickupBranch = {
-  id: string
-  name: string
-  address: string | null
-  phone: string | null
-  workingHoursSchedule: WorkingHoursSchedule | null
-}
+type PickupBranch = BranchPublic
 
 const checkout = useCheckoutStore()
+const cart = useCartStore()
+const menu = useMenuStore()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const branches = ref<PickupBranch[]>([])
@@ -116,29 +128,88 @@ let clockTimer: ReturnType<typeof setInterval>
 onMounted(() => { clockTimer = setInterval(() => { now.value = new Date() }, 60_000) })
 onUnmounted(() => clearInterval(clockTimer))
 
-const branchStatuses = computed(() =>
-  branches.value.map((b) =>
-    isOpenNow(b.workingHoursSchedule, tenant.value?.timezone ?? DEFAULT_TIMEZONE, now.value)
+// Statuses keyed by branch id — устойчиво к сортировке/фильтрации.
+const branchStatusByID = computed(() => {
+  const map = new Map<string, BranchStatus>()
+  for (const b of branches.value) {
+    map.set(b.id, isOpenNow(b.workingHoursSchedule, tenant.value?.timezone ?? DEFAULT_TIMEZONE, now.value))
+  }
+  return map
+})
+
+// В режиме per_branch каталог уже отфильтрован под выбранный филиал —
+// все позиции по определению совместимы, светофор не нужен.
+const isUnified = computed(() => tenant.value?.branchSelectionMode !== 'per_branch')
+
+const branchCompat = computed<Map<string, CompatStatus>>(() => {
+  const map = new Map<string, CompatStatus>()
+  if (!isUnified.value) return map
+  if (branches.value.length === 0) return map
+  if (cart.dishItems.length === 0) {
+    for (const b of branches.value) map.set(b.id, 'green')
+    return map
+  }
+  const dishesById = new Map(menu.allDishes.map((d) => [d.id, d]))
+  const result = computeBranchCompat(
+    cart.dishItems,
+    dishesById,
+    branches.value,
+    branches.value.length,
   )
-)
+  for (const r of result) map.set(r.id, r.status)
+  return map
+})
+
+const allRed = computed(() => {
+  if (!isUnified.value) return false
+  if (branches.value.length === 0) return false
+  if (branchCompat.value.size === 0) return false
+  return branches.value.every((b) => branchCompat.value.get(b.id) === 'red')
+})
+
+// Скрываем красные филиалы (не выполнят корзину) — кроме случая,
+// когда красные ВСЕ: тогда показываем всех, чтобы пользователь увидел проблему.
+const visibleBranches = computed(() => {
+  if (!isUnified.value) return branches.value
+  if (branchCompat.value.size === 0) return branches.value
+  if (allRed.value) return branches.value
+  return branches.value.filter((b) => branchCompat.value.get(b.id) !== 'red')
+})
+
+// Сортировка: green → yellow → red, внутри группы порядок исходного fetch'а.
+const sortedBranches = computed(() => {
+  if (!isUnified.value) return visibleBranches.value
+  const order: Record<CompatStatus, number> = { green: 0, yellow: 1, red: 2 }
+  return [...visibleBranches.value].sort((a, b) => {
+    const sa = branchCompat.value.get(a.id) ?? 'green'
+    const sb = branchCompat.value.get(b.id) ?? 'green'
+    return order[sa] - order[sb]
+  })
+})
 
 const branchOptions = computed(() =>
-  branches.value.map((b, idx) => {
-    const status = branchStatuses.value[idx]
-    const parts = [b.address || b.name, formatWorkingHours(b.workingHoursSchedule)].filter(Boolean)
-    const label = parts.join(' · ') + (status?.open === false ? ' (закрыто)' : '')
-    return { value: b.id, label, disabled: !status?.open }
-  })
+  sortedBranches.value.map((b) => {
+    const status = branchStatusByID.value.get(b.id)
+    const compat = branchCompat.value.get(b.id) ?? 'green'
+    const compatSuffix = compat === 'yellow' ? ' (соберут не всё)' : ''
+    const parts = [b.address, formatWorkingHours(b.workingHoursSchedule)].filter(Boolean)
+    const label = parts.join(' · ') + compatSuffix + (status?.open === false ? ' (закрыто)' : '')
+    return { value: b.id, label, disabled: !status?.open || compat === 'red' }
+  }),
 )
 
 const selectedBranch = computed(() =>
-  branches.value.find((b) => b.id === checkout.form.pickupBranchId) ?? null
+  branches.value.find((b) => b.id === checkout.form.pickupBranchId) ?? null,
 )
 
 const selectedBranchStatus = computed(() => {
-  const idx = branches.value.findIndex((b) => b.id === checkout.form.pickupBranchId)
-  return idx !== -1 ? branchStatuses.value[idx] : null
+  if (!selectedBranch.value) return null
+  return branchStatusByID.value.get(selectedBranch.value.id) ?? null
 })
+
+// Шорткаты для шаблона single-branch ветки — иначе шаблон захлёбывается в `branchStatusByID.get(sortedBranches[0].id)!`.
+const singleBranch = computed(() => sortedBranches.value.length === 1 ? sortedBranches.value[0] : null)
+const singleStatus = computed(() => singleBranch.value ? branchStatusByID.value.get(singleBranch.value.id) ?? null : null)
 
 function selectBranch(id: string) {
   checkout.form.pickupBranchId = id
@@ -146,11 +217,19 @@ function selectBranch(id: string) {
 
 onMounted(async () => {
   try {
-    branches.value = await $fetch<PickupBranch[]>('/api/branches')
+    // Используем глобальный кэш /api/branches (D1) — без повторного запроса.
+    const cached = useNuxtData<PickupBranch[]>('branches').data.value
+    branches.value = cached ?? await $fetch<PickupBranch[]>('/api/branches')
 
-    // Auto-select if single open branch
-    if (branches.value.length === 1 && branchStatuses.value[0]?.open) {
-      checkout.form.pickupBranchId = branches.value[0].id
+    // Auto-select if single open branch — но только если он совместим с корзиной.
+    // Красный единственный филиал не автоселектим, чтобы клиент увидел предупреждение.
+    if (sortedBranches.value.length === 1) {
+      const only = sortedBranches.value[0]
+      const open = branchStatusByID.value.get(only.id)?.open
+      const compat = branchCompat.value.get(only.id) ?? 'green'
+      if (open && compat !== 'red') {
+        checkout.form.pickupBranchId = only.id
+      }
     }
   } catch {
     error.value = 'Не удалось загрузить пункты самовывоза'
@@ -169,9 +248,13 @@ function validate(): string | null {
     error.value = 'Выберите пункт самовывоза'
     return error.value
   }
-  const selectedIdx = branches.value.findIndex((b) => b.id === checkout.form.pickupBranchId)
-  if (selectedIdx !== -1 && !branchStatuses.value[selectedIdx]?.open) {
+  const status = branchStatusByID.value.get(checkout.form.pickupBranchId)
+  if (status && !status.open) {
     error.value = 'Выбранный пункт сейчас закрыт'
+    return error.value
+  }
+  if (branchCompat.value.get(checkout.form.pickupBranchId) === 'red') {
+    error.value = 'Выбранный филиал не выполнит ваш заказ'
     return error.value
   }
   error.value = ''
@@ -236,6 +319,10 @@ defineExpose({ validate })
     background: color-mix(in srgb, var(--primary) 8%, transparent);
   }
 
+  &.partial {
+    border-color: var(--color-warning);
+  }
+
   &.disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -281,6 +368,12 @@ defineExpose({ validate })
 .branch-closed {
   @include text-xs;
   color: var(--color-error);
+}
+
+.branch-partial-note {
+  @include text-xs;
+  color: var(--color-warning);
+  font-style: italic;
 }
 
 .branch-error {

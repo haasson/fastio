@@ -27,3 +27,16 @@
 - Перешли с глобальных стилей на design tokens в packages/ui
 - KB вынесен в отдельный пакет `@fastio/kb` для переиспользования в admin AI и help-приложении
 - Auto-import отключён во всех Nuxt-приложениях для явного контроля зависимостей
+
+## Changelog
+
+### 2026-05-03 — Branch cart compatibility
+- Миграция **239**: `dish_branches` и `combo_branches` junction-таблицы (RLS, публичный read для витрины)
+- Миграция **240**: `tenants.branch_selection_mode` (`'unified'` | `'per_branch'`, default `'unified'`)
+- Admin: `DishFormDrawer` и `ComboFormDrawer` получили мультиселект «Филиалы» (виден если 2+ филиала и включён модуль `branches`)
+- Admin: новая секция «Выбор филиала клиентом» в `Заказы → Настройки` (`pages/orders/settings.vue`)
+- Storefront unified-режим: подсказка «Доступно не во всех филиалах» в `DishModal`, виджет светофора готовности филиалов в корзине, сортировка пунктов самовывоза по совместимости, warning'и про доставку
+- Storefront per_branch-режим: `useSelectedBranchStore` + плагин восстановления из localStorage, `BranchPickerModal` (несдвигаема на первом заходе), pill-кнопка в `SiteHeader`, проброс `?branchId=` в `/api/menu` и `/api/services-catalog`
+- Утилка `apps/storefront/utils/branchCompat.ts` с unit-тестами
+- KB обновлён: `11-team-branches.md` (новые секции про привязку позиций и режимы выбора филиала), `02-menu-dishes.md` и `14-services-items.md` (упоминание поля «Филиалы»)
+- План: `docs/plans/2026-05-03-branch-cart-compatibility.md`

@@ -58,6 +58,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config as Record<string, unknown> | null),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
     paymentMethods: ((row.payment_methods as string[] | null) ?? ['cash', 'card']) as PaymentMethod[],
+    branchSelectionMode: row.branch_selection_mode as Tenant['branchSelectionMode'],
     createdAt: row.created_at as string,
   }
 }
@@ -78,7 +79,7 @@ export function mapCategory(row: Record<string, unknown>): Category {
   }
 }
 
-export function mapCombo(row: Record<string, unknown>): Combo {
+export function mapCombo(row: Record<string, unknown>, branchIds: string[] = []): Combo {
   return {
     id: row.id as string,
     tenantId: row.tenant_id as string,
@@ -90,10 +91,11 @@ export function mapCombo(row: Record<string, unknown>): Combo {
     tags: [],
     active: row.active as boolean,
     order: row.sort_order as number,
+    branchIds,
   }
 }
 
-export function mapDish(row: Record<string, unknown>): Dish {
+export function mapDish(row: Record<string, unknown>, branchIds: string[] = []): Dish {
   return {
     id: row.id as string,
     tenantId: row.tenant_id as string,
@@ -111,6 +113,7 @@ export function mapDish(row: Record<string, unknown>): Dish {
     order: row.sort_order as number,
     requiresKitchen: row.requires_kitchen as boolean,
     maxAddons: (row.max_addons as number | null) ?? null,
+    branchIds,
   }
 }
 

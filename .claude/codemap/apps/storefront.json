@@ -2,11 +2,11 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-03T13:41:14.511Z",
+  "generated_at": "2026-05-04T04:35:55.182Z",
   "stats": {
-    "files": 63,
+    "files": 67,
     "pages": 0,
-    "symbols": 89,
+    "symbols": 97,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -35,6 +35,19 @@
           "kind": "function",
           "hash": "df904c73",
           "purpose": "Возвращает step/form/slots/loading/error и методы fetchSlots/submit для формы брони"
+        }
+      ]
+    },
+    "composables/useBranchSwitcher.ts": {
+      "kind": "ts",
+      "hash": "5f6262edfa90",
+      "purpose": "Единая точка смены филиала в режиме per_branch: confirm + чистка несовместимых dish-позиций + запись в selectedBranch",
+      "symbols": [
+        {
+          "name": "useBranchSwitcher",
+          "kind": "function",
+          "hash": "51da64aa",
+          "purpose": "Возвращает switchTo(id) — ставит филиал, спросив подтверждение если в корзине есть позиции, недоступные в новом филиале"
         }
       ]
     },
@@ -303,6 +316,43 @@
         }
       ]
     },
+    "utils/branchCompat.ts": {
+      "kind": "ts",
+      "hash": "6f1934852fca",
+      "purpose": "Чистая функция совместимости dish-корзины с филиалами (зелёный/жёлтый/красный) — ядро светофора в чекауте, корзине и пикере",
+      "symbols": [
+        {
+          "name": "computeBranchCompat",
+          "kind": "function",
+          "hash": "525d6210",
+          "purpose": "Возвращает BranchCompat[] для каждого филиала с цветовой меткой и списком отсутствующих блюд"
+        },
+        {
+          "name": "getMissingBranchDishNames",
+          "kind": "function",
+          "hash": "02e83032",
+          "purpose": "Тонкая обёртка: имена блюд из корзины, которых нет в указанном филиале"
+        },
+        {
+          "name": "BranchStatus",
+          "kind": "type",
+          "hash": "9308056e",
+          "purpose": "'green' | 'yellow' | 'red' — категория совместимости филиала с корзиной"
+        },
+        {
+          "name": "BranchCompat",
+          "kind": "type",
+          "hash": "36d0cab5",
+          "purpose": "Запись о совместимости одного филиала: id, name, status, missingNames"
+        },
+        {
+          "name": "BranchInfo",
+          "kind": "type",
+          "hash": "0763b073",
+          "purpose": "Минимальный {id,name} для совместимости — то, что нужно computeBranchCompat"
+        }
+      ]
+    },
     "utils/deliveryText.ts": {
       "kind": "ts",
       "hash": "53b1616d4753",
@@ -463,14 +513,14 @@
     },
     "stores/checkout.ts": {
       "kind": "ts",
-      "hash": "ef31d52bb7ea",
-      "purpose": "Pinia: форма чекаута, авто-промо, проверка промокода, расчёт доставки/скидки/итога с учётом выбранной зоны и времени",
+      "hash": "1f516cd22bb5",
+      "purpose": "Pinia: форма чекаута (адрес/контакты/тип доставки/время/промокод/оплата) + расчёт скидки и доставки",
       "symbols": [
         {
           "name": "CheckoutDeliveryZone",
           "kind": "type",
-          "hash": "a5acba73",
-          "purpose": "Выбранная зона доставки в чекауте: id, тариф, минимальный заказ, порог бесплатной доставки"
+          "hash": "5982a251",
+          "purpose": "Подобранная по адресу зона доставки: id/branchId/тариф/мин-заказ/расписание филиала"
         },
         {
           "name": "useCheckoutStore",
@@ -482,8 +532,8 @@
     },
     "stores/menu.ts": {
       "kind": "ts",
-      "hash": "4b1cff050049",
-      "purpose": "Pinia-обёртка над useNuxtData('menu'): группирует блюда/комбо по категориям, фильтрует видимые категории",
+      "hash": "0309d9facabd",
+      "purpose": "Pinia: каталог меню витрины из useNuxtData('menu') + список филиалов и хелперы dish/comboAvailableBranchIds, isDish/isComboEverywhere",
       "symbols": [
         {
           "name": "ClientAddon",
@@ -496,6 +546,19 @@
           "kind": "const",
           "hash": "2c38b256",
           "purpose": "allDishes/allCombos/dishesByCategory/combosByCategory/visibleCategories и теги с режимом отображения"
+        }
+      ]
+    },
+    "stores/selectedBranch.ts": {
+      "kind": "ts",
+      "hash": "20d5f94a92ed",
+      "purpose": "Pinia: id выбранного клиентом филиала (режим per_branch) с persist в localStorage и флагом restored для SSR",
+      "symbols": [
+        {
+          "name": "useSelectedBranchStore",
+          "kind": "const",
+          "hash": "c97ee923",
+          "purpose": "id/restored + restore()/set()/clear() — гидрация на клиенте через plugin branch-restore.client"
         }
       ]
     },
@@ -554,6 +617,19 @@
           "kind": "other",
           "hash": "52c2ad43",
           "purpose": "navigateTo('/') когда tenant.businessType === 'services'"
+        }
+      ]
+    },
+    "plugins/branch-restore.client.ts": {
+      "kind": "ts",
+      "hash": "d578234c88e8",
+      "purpose": "Client-плагин: после nuxtReady восстанавливает выбранный филиал из localStorage через selectedBranch.restore()",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "a94cdf0e",
+          "purpose": "definedNuxtPlugin → onNuxtReady(branchStore.restore) — гидрирует selectedBranch на клиенте"
         }
       ]
     },
@@ -675,8 +751,8 @@
     },
     "components/sf/domain/DishModal.vue": {
       "kind": "vue",
-      "hash": "d91303416a59",
-      "purpose": "Модалка блюда: фото + описание + БЖУ + DishCustomization + футер со степпером и кнопкой Добавить/Сохранить/Заказать",
+      "hash": "0ea9c3780383",
+      "purpose": "Модалка блюда (планшет/десктоп): описание, нутриенты, BranchAvailabilityHint, кастомизация и sticky-футер",
       "symbols": [
         {
           "name": "props",
@@ -694,8 +770,8 @@
     },
     "components/sf/domain/DishModalBody.vue": {
       "kind": "vue",
-      "hash": "3d042a8dbc11",
-      "purpose": "Содержимое модалки блюда без обёртки FsDialog: БЖУ + кастомизация + футер (для встраивания в SfProductModal)",
+      "hash": "49fa4a465051",
+      "purpose": "Тело bottom-sheet'а блюда (мобильный): нутриенты, BranchAvailabilityHint, DishCustomization, footer",
       "symbols": [
         {
           "name": "props",

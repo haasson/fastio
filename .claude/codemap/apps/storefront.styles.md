@@ -47,6 +47,7 @@ _Карта SCSS-токенов и миксинов проекта. Исполь
 - `--border-hover` — `color-mix(in srgb, var(--color-border) 60%, var(-…`
 - `--radius-btn` — `8px` — Radius (defaults, перекрываются useTheme из tenant.theme)
 - `--radius-card` — `14px`
+- `--radius-pill` — `9999px`
 - `--shadow-card` — `0 2px 8px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, …` — Shadows (defaults, перекрываются useTheme)
 - `--shadow-card-md` — `0 4px 16px rgba(0, 0, 0, 0.10), 0 2px 4px rgba(0,…`
 - `--section-spacing` — `24px` — Section spacing

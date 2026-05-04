@@ -1,9 +1,18 @@
 # Active Context: Fastio
 
 ## Current Work Focus
-Переход с «групп записей» на «визиты» (2026-05-01). Концепция: визит = посещение клиентом заведения в один бизнес-день, может содержать 1+ услуг с независимыми статусами. Главный принцип: визит живёт независимо от статусов услуг внутри (раньше группа разваливалась на confirm).
+Совместимость корзины с филиалами (2026-05-03). Tenant-настройка `branch_selection_mode` (`unified` vs `per_branch`), привязка позиций к филиалам через `dish_branches`/`combo_branches`, виджет светофора готовности филиалов в корзине витрины и модалка выбора филиала для per-branch режима. Полный план: `docs/plans/2026-05-03-branch-cart-compatibility.md`.
+
+Параллельный трек — переход с «групп записей» на «визиты» (2026-05-01): визит = посещение клиентом заведения в один бизнес-день, может содержать 1+ услуг с независимыми статусами. Главный принцип: визит живёт независимо от статусов услуг внутри.
 
 ## Recent Changes
+- **Branch cart compatibility** (2026-05-03):
+  - Миграции **239** (`dish_branches` + `combo_branches` junction-таблицы с RLS и публичным read'ом) и **240** (`tenants.branch_selection_mode` default `'unified'`)
+  - Admin: в `DishFormDrawer`/`ComboFormDrawer` добавлен мультиселект «Филиалы» (виден если 2+ филиала и включён модуль `branches`); новая секция «Выбор филиала клиентом» в `pages/orders/settings.vue`
+  - Storefront unified-режим: подсказка «Доступно не во всех филиалах» на карточках/в модалке блюда (пунктир + тултип), виджет «Готовность филиалов» в корзине (зелёный/жёлтый/красный), сортировка пунктов самовывоза по совместимости, warning'и про доставку если зона привязана к филиалу с пробелами
+  - Storefront per_branch-режим: `useSelectedBranchStore` + плагин восстановления из localStorage, `BranchPickerModal` (несдвигаема на первом заходе), pill-кнопка в `SiteHeader`, проброс `?branchId=` в `/api/menu` и `/api/services-catalog`
+  - Утилка `apps/storefront/utils/branchCompat.ts` с unit-тестами
+- **Визиты вместо групп записей** (2026-05-01, миграции 224-232):
 - **Визиты вместо групп записей** (2026-05-01, миграции 224-232):
   - 224: `compute_business_date(branch, tenant, ts)` — порт логики overnight из `workingHours.ts:isOpenNow` на SQL. `appointment_groups.business_date NOT NULL` + триггер инварианта на appointments. Откат «inbox-коробки» из 222/223. Бэкфилл standalone-appointments через `COALESCE(customer_id, customer_phone)` ключ (customer_id приоритетен — телефон может меняться). Удаление пустых зомби-визитов до `SET NOT NULL`.
   - 225: `add_service_to_visit` (синоним `add_appointment_to_group`). `move_appointment` — атомарный перенос: same-day reschedule, cross-day создаёт/находит целевой визит и чистит опустевший старый.

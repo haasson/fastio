@@ -38,7 +38,7 @@ export type ServiceWithBranchIds = Service & {
 
 /** Карточка услуги для витрины — публичные поля без admin-специфики. */
 export type ServiceCard = Pick<ServiceWithBranchIds,
-  | 'id' | 'tenantId' | 'categoryId' | 'name' | 'description'
+  | 'id' | 'tenantId' | 'categoryId' | 'name' | 'description' | 'longDescription'
   | 'price' | 'duration' | 'photos' | 'tags'
   | 'isBookable' | 'bookingMode' | 'maxDuration' | 'allowResourceChoice'
   | 'branchIds'

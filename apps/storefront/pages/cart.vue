@@ -45,6 +45,7 @@
           </div>
 
           <aside class="cart-sidebar">
+            <CartBranchStatus v-if="cart.dishItems.length" />
             <FsCard v-if="cart.dishItems.length" class="summary-card">
               <div class="summary-body">
                 <FsAlert v-if="closedStatus" type="warning" :icon="Clock" class="closed-alert">
@@ -120,13 +121,14 @@
       v-model="showServiceModal"
       :title="editServiceInfo.name"
       :photo="editServiceInfo.photos[0] ?? null"
-      :description="null"
+      :description="editServiceInfo.longDescription || editServiceInfo.description || null"
     >
       <template #meta>
         <div class="service-meta">
           <FsText as="span" variant="caption">{{ editServiceInfo.duration }} мин</FsText>
           <FsText v-if="editServiceInfo.price" as="span" variant="caption" :weight="700" class="meta-price">{{ editServiceInfo.price }} {{ currency }}</FsText>
         </div>
+        <BranchAvailabilityHint :branch-ids="editServiceInfo.branchIds" />
       </template>
       <ServiceModalBody
         :key="editServiceInfo.id"
@@ -148,6 +150,7 @@ import { isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
 import { useCartStore, type ServiceCartItem } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
+import { useServicesStore } from '~/stores/services'
 import { useCartEdit } from '~/composables/useCartEdit'
 import { useCurrency } from '~/composables/useCurrency'
 import { reportError } from '~/utils/reportError'
@@ -156,13 +159,16 @@ import { FsSection, FsButton, FsSpinner, FsCard, FsAlert, FsText } from '@fastio
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CartLineItem from '~/components/cart/CartLineItem.vue'
+import CartBranchStatus from '~/components/cart/CartBranchStatus.vue'
 import SfProductModal from '~/components/sf/domain/SfProductModal.vue'
 import DishModalBody from '~/components/sf/domain/DishModalBody.vue'
 import ServiceModalBody from '~/components/appointments/ServiceModalBody.vue'
+import BranchAvailabilityHint from '~/components/branch/BranchAvailabilityHint.vue'
 
 const { menu, item: itemTerm } = useStorefrontTerms()
 const cart = useCartStore()
 const menuStore = useMenuStore()
+const servicesStore = useServicesStore()
 const currency = useCurrency()
 const { editKey, editState, openEdit, onItemEdited } = useCartEdit()
 
@@ -211,6 +217,7 @@ const showServiceModal = ref(false)
 const editServiceInfo = computed(() => {
   const it = editServiceItem.value
   if (!it) return null
+  const full = servicesStore.allServices.find((s) => s.id === it.serviceId)
   return {
     id: it.serviceId,
     name: it.serviceName,
@@ -218,6 +225,9 @@ const editServiceInfo = computed(() => {
     duration: it.duration,
     photos: it.photo ? [it.photo] : [],
     allowResourceChoice: it.allowResourceChoice,
+    branchIds: full?.branchIds ?? [],
+    description: full?.description ?? null,
+    longDescription: full?.longDescription ?? null,
   }
 })
 

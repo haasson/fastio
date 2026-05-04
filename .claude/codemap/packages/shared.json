@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-03T13:41:14.581Z",
+  "generated_at": "2026-05-04T04:35:55.310Z",
   "stats": {
     "files": 37,
     "pages": 0,
-    "symbols": 154,
+    "symbols": 155,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -503,8 +503,8 @@
     },
     "src/utils/planConstants.ts": {
       "kind": "ts",
-      "hash": "9f181fbe521f",
-      "purpose": "Дефолтные константы планов и филиалов (длительность триала, цвет нового филиала)",
+      "hash": "d77d93f1a236",
+      "purpose": "Доменные константы тарифа и филиалов: длительность триала, палитра цветов филиала и дефолтный цвет",
       "symbols": [
         {
           "name": "DEFAULT_TRIAL_DAYS",
@@ -513,10 +513,16 @@
           "purpose": "Длительность триала по умолчанию (14 дней) — fallback если billing_config недоступен"
         },
         {
+          "name": "BRANCH_COLOR_PRESETS",
+          "kind": "const",
+          "hash": "4dbf7fba",
+          "purpose": "Палитра цветов филиала для UiColorPicker; первый элемент — дефолт DEFAULT_BRANCH_COLOR"
+        },
+        {
           "name": "DEFAULT_BRANCH_COLOR",
           "kind": "const",
-          "hash": "ca4fe0f8",
-          "purpose": "Цвет нового филиала по умолчанию (#6366f1, индиго)"
+          "hash": "7224af06",
+          "purpose": "Дефолтный цвет нового филиала — первый из BRANCH_COLOR_PRESETS (#FF5500)"
         }
       ]
     },

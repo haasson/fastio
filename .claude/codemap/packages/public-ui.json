@@ -2,7 +2,7 @@
   "project": "packages/public-ui",
   "submap": "main",
   "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
-  "generated_at": "2026-05-01T14:12:35.873Z",
+  "generated_at": "2026-05-04T04:35:55.263Z",
   "stats": {
     "files": 35,
     "pages": 0,
@@ -475,8 +475,8 @@
     },
     "src/components/overlay/FsTooltip.vue": {
       "kind": "vue",
-      "hash": "2db3a8c5b4ea",
-      "purpose": "Тултип на reka-ui Tooltip с настраиваемой стороной и задержкой появления",
+      "hash": "13ebe725de7b",
+      "purpose": "Tooltip на Reka UI с анимацией, max-width 240px и сохранением переносов строк (white-space: pre-line)",
       "symbols": [
         {
           "name": "props",

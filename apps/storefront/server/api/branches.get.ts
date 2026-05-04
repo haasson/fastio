@@ -1,7 +1,7 @@
 import { getTenantDb } from '../utils/tenantDb'
-import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
+import type { BranchPublic, Tenant, WorkingHoursSchedule } from '@fastio/shared'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<BranchPublic[]> => {
   const db = getTenantDb(event)
   const tenant = event.context.tenant as Tenant
 
@@ -15,10 +15,10 @@ export default defineEventHandler(async (event) => {
   if (error) throw createError({ statusCode: 500, message: error.message })
 
   return (data ?? []).map((row) => ({
-    id: row.id,
-    name: row.name,
-    address: row.address ?? tenant.contacts?.address ?? null,
-    phone: row.phone ?? tenant.contacts?.phone ?? null,
+    id: row.id as string,
+    name: row.name as string,
+    address: row.address as string,
+    phone: (row.phone as string | null) ?? tenant.contacts?.phone ?? null,
     workingHoursSchedule: (row.working_hours_schedule as WorkingHoursSchedule | null) ?? tenant.workingHoursSchedule ?? null,
   }))
 })

@@ -31,7 +31,7 @@
         @update:show-long-description="form.showLongDescription = $event"
       />
 
-      <UiCollapse :expanded-names="['booking']" class="sections">
+      <UiCollapse :expanded-names="['booking', 'availability']" class="sections">
         <UiCollapseItem name="booking" title="Запись">
           <div class="booking-section">
             <div :class="form.bookingMode === 'fixed' ? 'row-2' : ''">
@@ -65,15 +65,6 @@
               message="Клиент выбирает время в пределах от 1 слота до этого максимума"
             />
 
-            <UiSelect
-              v-if="branchOptions.length > 1"
-              v-model:value="form.branchIds"
-              label="Филиалы"
-              :options="branchOptions"
-              multiple
-              placeholder="Все филиалы"
-            />
-
             <div class="toggles">
               <div class="toggle-row">
                 <UiText size="small" span>Запись онлайн</UiText>
@@ -105,11 +96,27 @@
 
         <TagsSection v-model="form.tags" :available-tags="availableTags" />
 
-        <UiCollapseItem name="settings" title="Настройки">
+        <UiCollapseItem name="availability" title="Доступность">
           <div class="settings-section">
-            <div class="toggle-row">
+            <div class="toggle-row toggle-row--first">
               <UiText size="small" span>Активна</UiText>
               <UiSwitch v-model="form.active" />
+            </div>
+
+            <div v-if="form.active && branchOptions.length > 1" class="branches-block">
+              <div class="branches-label">Филиалы</div>
+              <div
+                v-for="b in branchOptions"
+                :key="b.value"
+                class="branch-toggle-row"
+              >
+                <span class="label">{{ b.label }}</span>
+                <UiSwitch
+                  :model-value="branchToggle.isOn(b.value)"
+                  :disabled="branchToggle.isLastOn(b.value)"
+                  @update:model-value="branchToggle.toggle(b.value, $event)"
+                />
+              </div>
             </div>
           </div>
         </UiCollapseItem>
@@ -119,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, toRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiDrawer, UiForm, UiInputNumber, UiSwitch, UiCollapse, UiCollapseItem, UiSelect, UiText, UiAlert, UiTag, UiSkeleton, useMessage } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
@@ -130,6 +137,7 @@ import { useBranchStore } from '~/stores/branch'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTags } from '~/composables/data/useTags'
+import { useBranchToggle } from '~/composables/useBranchToggle'
 import { reportError } from '~/utils/reportError'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
 import TagsSection from '~/components/menu/form/TagsSection.vue'
@@ -315,6 +323,12 @@ const onSave = async () => {
   }
 }
 
+const branchToggle = useBranchToggle(
+  toRef(form, 'branchIds'),
+  branchOptions,
+  (next) => { form.branchIds = next },
+)
+
 const drawerActions = computed<DrawerAction[]>(() => [
   { text: 'Отмена', type: 'default', actionType: 'decline' },
   { text: 'Сохранить', type: 'primary', actionType: 'confirm', loading: saving.value },
@@ -355,11 +369,39 @@ const drawerActions = computed<DrawerAction[]>(() => [
   justify-content: space-between;
   padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
+
+  &--first {
+    border-top: none;
+  }
 }
 
 .settings-section {
   display: flex;
   flex-direction: column;
+}
+
+.branches-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.branches-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-12) 0 var(--space-4);
+}
+
+.branch-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-8) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.branch-toggle-row .label {
+  font-size: var(--font-size-md);
+  color: var(--color-text);
 }
 
 .resources-block {

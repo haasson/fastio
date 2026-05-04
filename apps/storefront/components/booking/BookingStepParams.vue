@@ -10,7 +10,7 @@
           @click="form.branchId = branch.id"
         >
           {{ branch.name }}
-          <template v-if="branch.address" #sub>{{ branch.address }}</template>
+          <template #sub>{{ branch.address }}</template>
         </FsButton>
       </div>
     </FsField>

@@ -7,6 +7,8 @@
         v-model:address="form.address"
         v-model:latitude="form.latitude"
         v-model:longitude="form.longitude"
+        name="address"
+        :rules="[validationRules.address.required]"
       />
     </UiForm>
   </UiCard>
@@ -19,6 +21,7 @@
 import { toRef } from 'vue'
 import { UiCard, UiForm, UiSectionHeader } from '@fastio/ui'
 import type { Branch } from '@fastio/shared'
+import { validationRules } from '@fastio/kit'
 import { useBranchStore } from '~/stores/branch'
 import AddressWithMap from '~/components/ui/AddressWithMap.vue'
 import { useEditableForm } from '~/composables/ui/useEditableForm'

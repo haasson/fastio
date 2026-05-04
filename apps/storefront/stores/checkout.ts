@@ -5,7 +5,9 @@ import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
 import { localDateTimeToUtcIso, addDaysToDateStr, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { useCartStore } from '~/stores/cart'
+import { useMenuStore } from '~/stores/menu'
 import { useAuthStore } from '~/stores/auth'
+import { computeBranchCompat } from '~/utils/branchCompat'
 import { reportError } from '~/utils/reportError'
 
 type AutoPromo = {
@@ -25,6 +27,7 @@ type RawPromoCheck = { valid: boolean; discount_type?: string; discount_value?: 
 
 export type CheckoutDeliveryZone = {
   id: string
+  branchId: string | null
   deliveryFee: number
   minOrder: number
   freeDeliveryFrom: number | null
@@ -226,6 +229,29 @@ export const useCheckoutStore = defineStore('checkout', () => {
 
   const orderTotal = computed(() => useCartStore().subtotal - discountAmount.value + deliveryFee.value)
 
+  // Названия dish-позиций, которые не выполнит филиал, привязанный к выбранной зоне доставки.
+  // Пусто, если: режим не delivery, режим тенанта per_branch (каталог уже отфильтрован),
+  // нет совпавшей зоны/branchId, корзина без блюд, либо филиал тащит всё.
+  const deliveryMissingItems = computed<{ name: string }[]>(() => {
+    if (form.deliveryType !== 'delivery') return []
+    if (tenant.value?.branchSelectionMode === 'per_branch') return []
+    const branchId = deliveryZone.value?.branchId ?? null
+    if (!branchId) return []
+    const cs = useCartStore()
+    if (cs.dishItems.length === 0) return []
+    const menu = useMenuStore()
+    const dishesById = new Map(menu.allDishes.map((d) => [d.id, d]))
+    const compat = computeBranchCompat(
+      cs.dishItems,
+      dishesById,
+      [{ id: branchId, name: '' }],
+      menu.branchesAll.length,
+    )
+    const branchCompat = compat[0]
+    if (!branchCompat || branchCompat.status === 'green') return []
+    return branchCompat.missingNames.map((name) => ({ name }))
+  })
+
   function prefillFromAuth() {
     const authStore = useAuthStore()
     if (!authStore.isAuthenticated) return
@@ -251,5 +277,6 @@ export const useCheckoutStore = defineStore('checkout', () => {
     discountAmount,
     appliedDiscount,
     orderTotal,
+    deliveryMissingItems,
   }
 })

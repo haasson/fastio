@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-03T15:33:00.404Z",
+  "generated_at": "2026-05-04T04:35:54.939Z",
   "stats": {
-    "files": 117,
+    "files": 119,
     "pages": 0,
-    "symbols": 204,
+    "symbols": 206,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -593,6 +593,19 @@
         }
       ]
     },
+    "composables/useBranchToggle.ts": {
+      "kind": "ts",
+      "hash": "33dde19ea7d4",
+      "purpose": "Тогглеры филиалов с инвариантом «хотя бы один включён» и схлопыванием полного набора в пустой массив (= «во всех филиалах»)",
+      "symbols": [
+        {
+          "name": "useBranchToggle",
+          "kind": "function",
+          "hash": "59fe8ca8",
+          "purpose": "Возвращает isOn/isLastOn/toggle для select-листа филиалов с общей семантикой dish/combo/service-branches"
+        }
+      ]
+    },
     "composables/useItemVariant.ts": {
       "kind": "ts",
       "hash": "7cdd736fe749",
@@ -775,6 +788,19 @@
           "kind": "function",
           "hash": "3eb19ee0",
           "purpose": "Возвращает подобъект только с указанными ключами"
+        }
+      ]
+    },
+    "utils/branch.ts": {
+      "kind": "ts",
+      "hash": "c6a7666070b4",
+      "purpose": "Дефолтные значения формы филиала — единый источник для BranchDrawer и OnboardingStepBranch",
+      "symbols": [
+        {
+          "name": "defaultBranchFormData",
+          "kind": "function",
+          "hash": "a6d0c9c8",
+          "purpose": "Возвращает свежий BranchFormData с DEFAULT_BRANCH_COLOR и nullable-полями по умолчанию"
         }
       ]
     },
@@ -1681,14 +1707,14 @@
     },
     "components/ui/AddressSuggestInput.vue": {
       "kind": "vue",
-      "hash": "b94c469e6adf",
-      "purpose": "Инпут адреса с подсказками DaData (через useDadataSuggestions) и dropdown",
+      "hash": "6ebaaa4cb128",
+      "purpose": "UiInput с DaData-подсказками адреса; пробрасывает name/rules для валидации внутри UiForm",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "348519de",
-          "purpose": "{ label?, placeholder?, rules?, disabled? } + v-model:value"
+          "hash": "5c9c0a7b",
+          "purpose": "{ name?, label?, placeholder?, rules?, disabled? }"
         },
         {
           "name": "emits",
@@ -1700,14 +1726,14 @@
     },
     "components/ui/AddressWithMap.vue": {
       "kind": "vue",
-      "hash": "10e489d81ff8",
-      "purpose": "Композитный инпут адреса (DaData) + миникарта Яндекс с маркером координат. v-model:address/latitude/longitude — общий блок для BranchDrawer и BranchAddressBlock",
+      "hash": "216faa3d2fcc",
+      "purpose": "AddressSuggestInput + Яндекс.Карта с маркером и координатами; v-model:address/latitude/longitude",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "4b0d0401",
-          "purpose": "{ placeholder?, rules?, mapLabel?, mapHeight? } + v-model:address/latitude/longitude"
+          "hash": "5a1a408c",
+          "purpose": "{ name?, placeholder?, rules?, mapLabel?, mapHeight? }"
         }
       ]
     },

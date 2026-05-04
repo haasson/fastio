@@ -4,7 +4,7 @@ import { query } from '~/utils/query'
 import type { ComboRow } from './db-types'
 import { optimizeImage } from '~/utils/imageOptimize'
 
-export const mapCombo = (raw: Record<string, unknown>): Combo => {
+export const mapCombo = (raw: Record<string, unknown>, branchIds: string[] = []): Combo => {
   const row = raw as ComboRow
 
   return {
@@ -18,24 +18,34 @@ export const mapCombo = (raw: Record<string, unknown>): Combo => {
     tags: [],
     active: row.active,
     order: row.sort_order,
+    branchIds,
   }
+}
+
+// Один select с nested join вместо отдельного запроса к combo_branches.
+const SELECT_WITH_BRANCHES = '*, combo_branches(branch_id)'
+
+type ComboRowWithBranches = ComboRow & { combo_branches: { branch_id: string }[] | null }
+
+function branchIdsFrom(row: ComboRowWithBranches): string[] {
+  return (row.combo_branches ?? []).map((b) => b.branch_id)
 }
 
 export const combosApi = {
   async listAllActive(sb: SupabaseClient, tenantId: string): Promise<Combo[]> {
     const data = await query(
-      sb.from('combos').select('*').eq('tenant_id', tenantId).eq('active', true).order('sort_order'),
+      sb.from('combos').select(SELECT_WITH_BRANCHES).eq('tenant_id', tenantId).eq('active', true).order('sort_order'),
     )
 
-    return (data ?? []).map(mapCombo)
+    return ((data ?? []) as ComboRowWithBranches[]).map((c) => mapCombo(c, branchIdsFrom(c)))
   },
 
   async list(sb: SupabaseClient, tenantId: string, categoryId: string): Promise<Combo[]> {
     const data = await query(
-      sb.from('combos').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).order('sort_order'),
+      sb.from('combos').select(SELECT_WITH_BRANCHES).eq('tenant_id', tenantId).eq('category_id', categoryId).order('sort_order'),
     )
 
-    return (data ?? []).map(mapCombo)
+    return ((data ?? []) as ComboRowWithBranches[]).map((c) => mapCombo(c, branchIdsFrom(c)))
   },
 
   async add(sb: SupabaseClient, tenantId: string, categoryId: string, data: ComboFormData): Promise<Combo | null> {
@@ -59,8 +69,12 @@ export const combosApi = {
 
     if (!result) return null
 
-    const combo = mapCombo(result)
+    const combo = mapCombo(result, data.branchIds)
 
+    // Items пишем напрямую (свой ON DELETE CASCADE через combo_id), а branches —
+    // через RPC combos_set_branch_ids (миграция 243), чтобы delete+insert junction
+    // прошли в одной транзакции. Combo на этом шаге уже сохранена, так что нужно
+    // только не оставить полусохранённое состояние; RPC даёт это «дёшево».
     if (data.items.length > 0) {
       await query(
         sb.from('combo_items').insert(
@@ -75,6 +89,13 @@ export const combosApi = {
       )
     }
 
+    if (data.branchIds.length > 0) {
+      await query(sb.rpc('combos_set_branch_ids', {
+        p_combo_id: combo.id,
+        p_branch_ids: data.branchIds,
+      }))
+    }
+
     return combo
   },
 
@@ -87,7 +108,9 @@ export const combosApi = {
     if (data.photos !== undefined) updatePayload.photos = data.photos
     if (data.active !== undefined) updatePayload.active = data.active
 
-    const result = await query(sb.from('combos').update(updatePayload).eq('id', id).select().single())
+    const result = await query(
+      sb.from('combos').update(updatePayload).eq('id', id).select(SELECT_WITH_BRANCHES).single(),
+    ) as ComboRowWithBranches | null
 
     if (!result) return null
 
@@ -109,7 +132,13 @@ export const combosApi = {
       }
     }
 
-    return mapCombo(result)
+    if (data.branchIds !== undefined) {
+      await query(sb.rpc('combos_set_branch_ids', { p_combo_id: id, p_branch_ids: data.branchIds }))
+
+      return mapCombo(result, data.branchIds)
+    }
+
+    return mapCombo(result, branchIdsFrom(result))
   },
 
   async remove(sb: SupabaseClient, id: string): Promise<void> {

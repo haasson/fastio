@@ -66,6 +66,7 @@ export type TenantRow = {
   order_scheduling_config: Record<string, unknown>
   legal_info: Record<string, unknown> | null
   payment_methods: string[]
+  branch_selection_mode: 'unified' | 'per_branch'
   created_at: string
 }
 
@@ -343,7 +344,7 @@ export type BranchRow = {
   tenant_id: string
   name: string
   color: string
-  address: string | null
+  address: string
   phone: string | null
   is_active: boolean
   working_hours_schedule: WorkingHoursSchedule | null

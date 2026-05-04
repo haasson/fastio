@@ -213,7 +213,7 @@ async function checkAddress(lat: number, lon: number) {
   addressCheckLoading.value = true
   try {
     const result = await $fetch<{
-      zone: { id: string; deliveryFee: number; minOrder: number; freeDeliveryFrom: number | null; effectiveDeliveryFee?: number; branchSchedule?: WorkingHoursSchedule | null } | null
+      zone: { id: string; branchId: string | null; deliveryFee: number; minOrder: number; freeDeliveryFrom: number | null; effectiveDeliveryFee?: number; branchSchedule?: WorkingHoursSchedule | null } | null
       outsideZones?: boolean
     }>('/api/check-address', { method: 'POST', body: { lat, lon, subtotal: cart.subtotal } })
 

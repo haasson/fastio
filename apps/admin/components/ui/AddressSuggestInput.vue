@@ -2,6 +2,7 @@
   <div class="address-field">
     <UiInput
       v-model="model"
+      :name="name"
       :label="label"
       :placeholder="placeholder"
       :rules="rules"
@@ -29,12 +30,13 @@ import type { ValidationRule } from '@fastio/kit'
 import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 
 withDefaults(defineProps<{
+  name?: string
   label?: string
   placeholder?: string
   rules?: ValidationRule[]
   disabled?: boolean
 }>(), {
-  label: 'Адрес',
+  label: 'Адрес *',
   placeholder: 'Начните вводить адрес...',
 })
 

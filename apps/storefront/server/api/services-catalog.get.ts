@@ -12,6 +12,9 @@ export default defineEventHandler(async (event) => {
 
   if (tenant.businessType !== 'services' || !tenant.modules?.services) return empty
 
+  const query = getQuery(event)
+  const requestedBranchId = typeof query.branchId === 'string' ? query.branchId : null
+
   const [{ data: categoriesData }, { data: servicesData }, { data: tagRowsData }] = await Promise.all([
     db
       .from('categories')
@@ -22,7 +25,7 @@ export default defineEventHandler(async (event) => {
       .order('sort_order'),
     db
       .from('services')
-      .select('id, tenant_id, category_id, name, description, price, duration, photos, tags, is_bookable, booking_mode, max_duration, allow_resource_choice')
+      .select('id, tenant_id, category_id, name, description, long_description, price, duration, photos, tags, is_bookable, booking_mode, max_duration, allow_resource_choice')
       .eq('active', true)
       .order('sort_order')
       .order('name'),
@@ -43,12 +46,13 @@ export default defineEventHandler(async (event) => {
     branchIdsByService.set(row.service_id, arr)
   }
 
-  const services: ServiceCard[] = (servicesData ?? []).map((row) => ({
+  const allServices: ServiceCard[] = (servicesData ?? []).map((row) => ({
     id: row.id as string,
     tenantId: row.tenant_id as string,
     categoryId: (row.category_id as string | null) ?? null,
     name: row.name as string,
     description: (row.description as string) ?? '',
+    longDescription: (row.long_description as string | null) ?? null,
     price: (row.price as number) ?? 0,
     duration: row.duration as number,
     photos: (row.photos as string[]) ?? [],
@@ -59,6 +63,15 @@ export default defineEventHandler(async (event) => {
     allowResourceChoice: (row.allow_resource_choice as boolean) ?? true,
     branchIds: branchIdsByService.get(row.id as string) ?? [],
   }))
+
+  // В режиме per_branch отдаём только услуги, привязанные к выбранному филиалу
+  // (или с пустым branchIds = «во всех филиалах»).
+  const services
+    = tenant.branchSelectionMode === 'per_branch' && requestedBranchId
+      ? allServices.filter(
+        (s) => s.branchIds.length === 0 || s.branchIds.includes(requestedBranchId),
+      )
+      : allServices
 
   // Теги услуг живут только в `services.tags` (text[]) — отдельной junction-таблицы нет.
   // dish_tag_assignments — это для блюд, не для услуг.

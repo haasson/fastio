@@ -158,6 +158,8 @@ export type PaymentMethod = 'cash' | 'card' | 'online'
 
 export type BusinessType = 'retail' | 'services'
 
+export type BranchSelectionMode = 'unified' | 'per_branch'
+
 export type MenuStyle = 'food' | 'catalog'
 
 export type PlanTier = 'showcase' | 'start' | 'pro'
@@ -294,5 +296,6 @@ export type Tenant = {
   orderSchedulingConfig: OrderSchedulingConfig
   legalInfo: TenantLegalInfo | null
   paymentMethods: PaymentMethod[]
+  branchSelectionMode: BranchSelectionMode
   createdAt: string
 }

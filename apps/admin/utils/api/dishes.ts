@@ -7,7 +7,7 @@ import { optimizeImage } from '~/utils/imageOptimize'
 
 export type DishFormData = Omit<Dish, 'id' | 'tenantId'>
 
-export const mapDish = (raw: Record<string, unknown>): Dish => {
+export const mapDish = (raw: Record<string, unknown>, branchIds: string[] = []): Dish => {
   const row = raw as DishRow
 
   return {
@@ -27,39 +27,51 @@ export const mapDish = (raw: Record<string, unknown>): Dish => {
     order: row.sort_order,
     requiresKitchen: row.requires_kitchen,
     maxAddons: row.max_addons ?? null,
+    branchIds,
   }
+}
+
+// Один select с nested join вместо отдельного запроса к dish_branches.
+const SELECT_WITH_BRANCHES = '*, dish_branches(branch_id)'
+
+type DishRowWithBranches = DishRow & { dish_branches: { branch_id: string }[] | null }
+
+function branchIdsFrom(row: DishRowWithBranches): string[] {
+  return (row.dish_branches ?? []).map((b) => b.branch_id)
 }
 
 export const dishesApi = {
   async listAllActive(sb: SupabaseClient, tenantId: string): Promise<Dish[]> {
     const data = await query(
-      sb.from('dishes').select('*').eq('tenant_id', tenantId).is('deleted_at', null).eq('active', true).order('name'),
+      sb.from('dishes').select(SELECT_WITH_BRANCHES).eq('tenant_id', tenantId).is('deleted_at', null).eq('active', true).order('name'),
     )
 
-    return (data ?? []).map(mapDish)
+    return ((data ?? []) as DishRowWithBranches[]).map((d) => mapDish(d, branchIdsFrom(d)))
   },
 
   async listAllIncludingInactive(sb: SupabaseClient, tenantId: string): Promise<Dish[]> {
     const data = await query(
-      sb.from('dishes').select('*').eq('tenant_id', tenantId).is('deleted_at', null).order('name'),
+      sb.from('dishes').select(SELECT_WITH_BRANCHES).eq('tenant_id', tenantId).is('deleted_at', null).order('name'),
     )
 
-    return (data ?? []).map(mapDish)
+    return ((data ?? []) as DishRowWithBranches[]).map((d) => mapDish(d, branchIdsFrom(d)))
   },
 
   async listByIds(sb: SupabaseClient, tenantId: string, ids: string[]): Promise<Dish[]> {
     if (ids.length === 0) return []
     const data = await query(
-      sb.from('dishes').select('*').eq('tenant_id', tenantId).in('id', ids),
+      sb.from('dishes').select(SELECT_WITH_BRANCHES).eq('tenant_id', tenantId).in('id', ids),
     )
 
-    return (data ?? []).map(mapDish)
+    return ((data ?? []) as DishRowWithBranches[]).map((d) => mapDish(d, branchIdsFrom(d)))
   },
 
   async list(sb: SupabaseClient, tenantId: string, categoryId: string) {
-    const data = await query(sb.from('dishes').select('*').eq('tenant_id', tenantId).eq('category_id', categoryId).is('deleted_at', null).order('sort_order'))
+    const data = await query(
+      sb.from('dishes').select(SELECT_WITH_BRANCHES).eq('tenant_id', tenantId).eq('category_id', categoryId).is('deleted_at', null).order('sort_order'),
+    )
 
-    return (data ?? []).map(mapDish)
+    return ((data ?? []) as DishRowWithBranches[]).map((d) => mapDish(d, branchIdsFrom(d)))
   },
 
   async add(sb: SupabaseClient, tenantId: string, data: DishFormData): Promise<Dish | null> {
@@ -80,7 +92,18 @@ export const dishesApi = {
       max_addons: data.maxAddons,
     }).select().single())
 
-    return result ? mapDish(result) : null
+    if (!result) return null
+
+    // RPC dishes_set_branch_ids — атомарный delete+insert внутри одной транзакции (миграция 243).
+    // Без него после успешного insert dish и упавшего insert junction оставались зомби-ряды.
+    if (data.branchIds.length > 0) {
+      await query(sb.rpc('dishes_set_branch_ids', {
+        p_dish_id: (result as DishRow).id,
+        p_branch_ids: data.branchIds,
+      }))
+    }
+
+    return mapDish(result, data.branchIds)
   },
 
   async update(sb: SupabaseClient, id: string, data: Partial<DishFormData>): Promise<Dish | null> {
@@ -100,9 +123,17 @@ export const dishesApi = {
         requires_kitchen: data.requiresKitchen,
         max_addons: data.maxAddons,
       }),
-    ).eq('id', id).select().single())
+    ).eq('id', id).select(SELECT_WITH_BRANCHES).single()) as DishRowWithBranches | null
 
-    return result ? mapDish(result) : null
+    if (!result) return null
+
+    if (data.branchIds !== undefined) {
+      await query(sb.rpc('dishes_set_branch_ids', { p_dish_id: id, p_branch_ids: data.branchIds }))
+
+      return mapDish(result, data.branchIds)
+    }
+
+    return mapDish(result, branchIdsFrom(result))
   },
 
   async remove(sb: SupabaseClient, id: string) {

@@ -75,10 +75,11 @@
           entity="dish"
           :active="form.active"
           :requires-kitchen="form.requiresKitchen"
-          :entity-id="dish?.id ?? null"
-          :refresh-key="refreshKey"
+          :branch-ids="form.branchIds"
+          :branch-options="tenantStore.tenant.modules.branches ? branchOptions : []"
           @update:active="form.active = $event"
           @update:requires-kitchen="form.requiresKitchen = $event"
+          @update:branch-ids="form.branchIds = $event"
         />
       </UiCollapse>
     </UiForm>
@@ -135,7 +136,6 @@ const db = useDatabase()
 const { uploadPhoto, deletePhoto, saveDishModifiers, saveDishAddons } = useDishSave(tenantIdRef)
 const branchStore = useBranchStore()
 const { addons: allAddons, loading: addonsLoading, presets, loadPresets } = useAddons(tenantIdRef)
-const branches = computed(() => branchStore.branches)
 
 const formRef = ref()
 const modifiersRef = ref<InstanceType<typeof DishModifiersSection> | null>(null)
@@ -151,7 +151,11 @@ const currentPhotoUrl = ref<string | null>(null)
 const pendingPhotoFile = ref<File | null>(null)
 const photoRemoved = ref(false)
 
-const categoryOptions = computed(() => props.categories.map((c) => ({ label: c.name, value: c.id })))
+const categoryOptions = computed(() => props.categories
+  .filter((c) => c.type === 'regular' && !c.tagId)
+  .map((c) => ({ label: c.name, value: c.id })),
+)
+const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
 
 const drawerActions = computed(() => [
   { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
@@ -171,6 +175,7 @@ const defaultForm = () => ({
   order: 0,
   longDescription: '',
   showLongDescription: false,
+  branchIds: [] as string[],
 })
 
 const form = reactive(defaultForm())
@@ -191,6 +196,7 @@ watch(
       form.order = dish.order
       form.longDescription = dish.longDescription ?? ''
       form.showLongDescription = !!dish.longDescription
+      form.branchIds = [...(dish.branchIds ?? [])]
     } else {
       Object.assign(form, defaultForm())
     }
@@ -269,6 +275,7 @@ const onConfirm = async () => {
       weightUnit: form.weightUnit,
       maxAddons: maxAddons !== undefined ? maxAddons : null,
       photos,
+      branchIds: form.branchIds,
     }
 
     if (props.dish) {

@@ -2,6 +2,7 @@
   <div class="address-with-map">
     <AddressSuggestInput
       v-model="address"
+      :name="name"
       :placeholder="placeholder"
       :rules="rules"
       @pick="onPick"
@@ -47,6 +48,7 @@ import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 
 withDefaults(defineProps<{
+  name?: string
   placeholder?: string
   rules?: ValidationRule[]
   mapLabel?: string

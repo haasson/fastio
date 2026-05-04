@@ -81,6 +81,19 @@
               :currency="currency"
             />
 
+            <FsAlert
+              v-if="checkout.form.deliveryType === 'delivery' && checkout.deliveryMissingItems.length"
+              type="warning"
+              :icon="AlertTriangle"
+              class="delivery-missing-warning"
+            >
+              <strong>В выбранную зону доставит филиал, в котором нет:</strong>
+              <ul class="missing-list">
+                <li v-for="m in checkout.deliveryMissingItems" :key="m.name">{{ m.name }}</li>
+              </ul>
+              <span class="missing-hint">Уберите эти позиции или попробуйте другой адрес.</span>
+            </FsAlert>
+
             <!-- Timing -->
             <section v-if="schedulingEnabled" class="form-section">
               <FsHeading as="h6" class="section-title">Время</FsHeading>
@@ -148,7 +161,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useNuxtData, navigateTo } from 'nuxt/app'
-import { Truck, PersonStanding } from 'lucide-vue-next'
+import { Truck, PersonStanding, AlertTriangle } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
 import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots, DEFAULT_TIMEZONE } from '@fastio/shared'
@@ -160,7 +173,7 @@ import { useConfirm } from '~/composables/useConfirm'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useCurrency } from '~/composables/useCurrency'
 import PageShell from '~/components/sections/PageShell.vue'
-import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup, FsSelect, FsCheckbox } from '@fastio/public-ui'
+import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup, FsSelect, FsCheckbox, FsAlert } from '@fastio/public-ui'
 import StorePageLayout from '~/components/layout/StorePageLayout.vue'
 import CheckoutAddressSection from '~/components/checkout/CheckoutAddressSection.vue'
 import CheckoutPickupBranch from '~/components/checkout/CheckoutPickupBranch.vue'
@@ -527,6 +540,23 @@ async function submitOrder() {
   flex-direction: column;
   gap: 6px;
   margin-bottom: 14px;
+}
+
+.delivery-missing-warning {
+  margin-top: 12px;
+}
+
+.missing-list {
+  margin: 8px 0 4px 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.missing-hint {
+  display: block;
+  margin-top: 6px;
+  opacity: 0.85;
+  @include text-caption;
 }
 
 .info-row {

@@ -27,6 +27,9 @@ export default defineEventHandler(async (event) => {
   const addonsEnabled = tenantModules?.addons ?? true
   const combosEnabled = tenantModules?.combos ?? true
 
+  const query = getQuery(event)
+  const requestedBranchId = typeof query.branchId === 'string' ? query.branchId : null
+
   const [{ data: categoriesData }, { data: dishesData }, { data: combosData }] = await Promise.all([
     db
       .from('categories')
@@ -37,22 +40,41 @@ export default defineEventHandler(async (event) => {
       .order('sort_order'),
     db
       .from('dishes')
-      .select('*')
+      .select('*, dish_branches(branch_id)')
       .eq('active', true)
       .is('deleted_at', null)
       .order('sort_order'),
     combosEnabled
       ? db
           .from('combos')
-          .select('*')
+          .select('*, combo_branches(branch_id)')
           .eq('active', true)
           .order('sort_order')
       : Promise.resolve({ data: [] }),
   ])
 
-  const dishes = (dishesData ?? []).map(mapDish)
+  // Маппим, передавая branchIds из nested-select сразу — никакой постфактум-мутации
+  // и никакого второго round-trip к dish_branches/combo_branches.
+  type WithDishBranches = { dish_branches: { branch_id: string }[] | null }
+  type WithComboBranches = { combo_branches: { branch_id: string }[] | null }
+  const allDishes = (dishesData ?? []).map((d) =>
+    mapDish(d, ((d as unknown as WithDishBranches).dish_branches ?? []).map((b) => b.branch_id)),
+  )
+  const allCombos = (combosData ?? []).map((c) =>
+    mapCombo(c, ((c as unknown as WithComboBranches).combo_branches ?? []).map((b) => b.branch_id)),
+  )
+
+  // Фильтр по выбранному филиалу до загрузки модификаторов/аддонов.
+  // Пустой branchIds = «во всех филиалах».
+  const perBranchActive = tenant.branchSelectionMode === 'per_branch' && requestedBranchId
+  const filterByBranch = <T extends { branchIds: string[] }>(items: T[]): T[] =>
+    perBranchActive
+      ? items.filter((i) => i.branchIds.length === 0 || i.branchIds.includes(requestedBranchId))
+      : items
+
+  const dishes = filterByBranch(allDishes)
   const dishIds = dishes.map((d) => d.id)
-  const combos = (combosData ?? []).map(mapCombo)
+  const combos = filterByBranch(allCombos)
   const comboIds = combos.map((c) => c.id)
 
   type ClientAddon = { id: string; name: string; weight: number | null; price: number; order: number }

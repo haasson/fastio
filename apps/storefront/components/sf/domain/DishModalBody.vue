@@ -1,5 +1,7 @@
 <template>
   <div class="dish-body-root">
+    <BranchAvailabilityHint v-if="fullItem" :branch-ids="fullItem.branchIds" />
+
     <DishNutrition
       v-if="displayNutrition"
       :nutrition="displayNutrition"
@@ -35,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import type { CartItem } from '~/stores/cart'
 import type { ClientAddon } from '~/stores/menu'
@@ -42,7 +45,9 @@ import type { ModalItem } from '~/composables/useDishCustomization'
 import DishCustomization from '~/components/sf/domain/DishCustomization.vue'
 import DishNutrition from '~/components/sf/domain/DishNutrition.vue'
 import DishModalFooter from '~/components/sf/domain/DishModalFooter.vue'
+import BranchAvailabilityHint from '~/components/branch/BranchAvailabilityHint.vue'
 import { useDishCustomization } from '~/composables/useDishCustomization'
+import { useMenuStore } from '~/stores/menu'
 
 type Props = {
   item: ModalItem
@@ -100,6 +105,16 @@ function onConfirm() {
   }
   emit('close')
 }
+
+const menuStore = useMenuStore()
+
+// Полный объект (блюдо или комбо) нужен ради `branchIds` — в ModalItem его нет.
+const fullItem = computed(() => {
+  const id = props.item.id
+  return props.item.comboId
+    ? menuStore.allCombos.find((c) => c.id === id) ?? null
+    : menuStore.allDishes.find((d) => d.id === id) ?? null
+})
 </script>
 
 <style scoped lang="scss">

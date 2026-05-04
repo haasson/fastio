@@ -64,6 +64,7 @@ export type Dish = {
   order: number
   requiresKitchen: boolean
   maxAddons: number | null
+  branchIds: string[]
 }
 
 export type ComboItem = {
@@ -90,6 +91,7 @@ export type Combo = {
   tags: string[]
   active: boolean
   order: number
+  branchIds: string[]
 }
 
 export type ComboFormData = {
@@ -100,4 +102,5 @@ export type ComboFormData = {
   tags: string[]
   active: boolean
   items: ComboItemInput[]
+  branchIds: string[]
 }

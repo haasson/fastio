@@ -16,7 +16,7 @@
         <UiIcon name="check" :size="24" class="done-icon" />
         <div>
           <UiText size="medium" class="done-title">{{ branchStore.branches[0]?.name }}</UiText>
-          <UiText size="small" class="done-address">{{ branchStore.branches[0]?.address || 'Адрес не указан' }}</UiText>
+          <UiText size="small" class="done-address">{{ branchStore.branches[0]?.address }}</UiText>
         </div>
       </UiCard>
     </template>
@@ -31,7 +31,12 @@
           :rules="branchNameRules"
         />
 
-        <AddressSuggestInput v-model="branchAddress" @pick="onAddressPick" />
+        <AddressSuggestInput
+          v-model="branchAddress"
+          name="branchAddress"
+          :rules="[validationRules.address.required]"
+          @pick="onAddressPick"
+        />
       </UiForm>
 
       <UiButton
@@ -57,11 +62,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon, UiForm, UiCheckbox, UiAlert, useMessage } from '@fastio/ui'
-import { DEFAULT_BRANCH_COLOR } from '@fastio/shared'
+import { validationRules } from '@fastio/kit'
 import { useBranchStore } from '~/stores/branch'
 import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 import { reportError } from '~/utils/reportError'
+import { defaultBranchFormData } from '~/utils/branch'
 
 const branchStore = useBranchStore()
 const { error } = useMessage()
@@ -129,18 +135,11 @@ const createBranch = async () => {
   saving.value = true
   try {
     await branchStore.add({
+      ...defaultBranchFormData(),
       name: branchName.value.trim(),
-      address: branchAddress.value?.trim() || null,
-      phone: null,
-      isActive: true,
-      workingHoursSchedule: null,
-      deliveryMinOrder: null,
-      deliveryFee: null,
-      notifications: null,
-      color: DEFAULT_BRANCH_COLOR,
+      address: (branchAddress.value ?? '').trim(),
       latitude: branchLat.value,
       longitude: branchLon.value,
-      orderNumberPrefix: null,
     })
   } catch (e) {
     reportError(e)

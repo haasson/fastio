@@ -45,9 +45,10 @@
         <SettingsSection
           entity="combo"
           :active="form.active"
-          :entity-id="combo?.id ?? null"
-          :refresh-key="refreshKey"
+          :branch-ids="form.branchIds"
+          :branch-options="tenantStore.tenant.modules.branches ? branchOptions : []"
           @update:active="form.active = $event"
+          @update:branch-ids="form.branchIds = $event"
         />
       </UiCollapse>
     </UiForm>
@@ -60,6 +61,8 @@ import { UiDrawer, UiForm, UiCollapse, UiAlert } from '@fastio/ui'
 import type { Combo, Category, ComboItemInput, DishTagDefinition } from '@fastio/shared'
 import type { ComboFormData } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/stores/tenant'
 import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
 import ComboCompositionSection from '~/components/menu/form/ComboCompositionSection.vue'
 import TagsSection from '~/components/menu/form/TagsSection.vue'
@@ -81,6 +84,9 @@ const emit = defineEmits<{
 }>()
 
 const api = useDatabase()
+const tenantStore = useTenantStore()
+const branchStore = useBranchStore()
+const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
 const saving = ref(false)
 const refreshKey = ref(0)
 const visibilityIssues = ref<string[]>([])
@@ -103,6 +109,7 @@ const defaultForm = () => ({
   tags: [] as string[],
   active: true,
   items: [] as ComboItemInput[],
+  branchIds: [] as string[],
 })
 
 const form = reactive(defaultForm())
@@ -135,6 +142,7 @@ watch(
       form.tags = tags
       form.active = props.combo.active
       form.items = items
+      form.branchIds = [...(props.combo.branchIds ?? [])]
       visibilityIssues.value = issues
     } else {
       originalPhotoUrl.value = null
@@ -170,6 +178,7 @@ const onConfirm = async () => {
       tags: form.tags,
       active: form.active,
       items: form.items,
+      branchIds: form.branchIds,
     }
 
     if (props.combo) {

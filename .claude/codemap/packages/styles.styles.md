@@ -144,6 +144,7 @@ _Карта SCSS-токенов и миксинов проекта. Исполь
 - `--radius-12` — `12px`
 - `--radius-16` — `16px`
 - `--radius-full` — `999px`
+- `--radius-pill` — `9999px`
 - `--radius-default` — `var(--radius-8)`
 - `--radius-card` — `var(--radius-12)`
 

@@ -23,6 +23,18 @@
       </nav>
 
       <div class="right">
+        <button
+          v-if="showBranchPill"
+          class="branch-pill"
+          type="button"
+          aria-label="Сменить филиал"
+          @click="branchPickerRef?.open()"
+        >
+          <Store :size="14" :stroke-width="1.7" />
+          <span class="pill-label">{{ currentBranchName }}</span>
+          <ChevronDown :size="12" :stroke-width="1.7" />
+        </button>
+
         <div v-if="header.showPhone || header.showWorkingHours" class="venue-info">
           <span v-if="header.showWorkingHours" class="venue-hours">{{ formattedHours }}</span>
           <a v-if="header.showPhone" class="venue-phone" :href="`tel:${tenant?.contacts?.phone}`">
@@ -36,6 +48,8 @@
       </div>
     </div>
   </FsSection>
+
+  <BranchPickerModal ref="branchPickerRef" />
 
   <FsMobileMenu v-model="menuOpen">
     <nav v-if="header.showNav && navLinks.length" class="mm-nav">
@@ -68,12 +82,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute, navigateTo } from 'nuxt/app'
-import type { Tenant, SiteLayout } from '@fastio/shared'
+import { useRoute, navigateTo, useNuxtData } from 'nuxt/app'
+import { Store, ChevronDown } from 'lucide-vue-next'
+import type { BranchPublic, Tenant, SiteLayout } from '@fastio/shared'
 import { featureLabel, isFeatureAvailable, formatWorkingHours } from '@fastio/shared'
 import { FsSection, FsBurger, FsMobileMenu } from '@fastio/public-ui'
 import HeaderUserMenu from '~/components/HeaderUserMenu.vue'
 import MobileUserCard from '~/components/MobileUserCard.vue'
+import BranchPickerModal from '~/components/branch/BranchPickerModal.vue'
+import { useSelectedBranchStore } from '~/stores/selectedBranch'
 
 const props = defineProps<{
   tenant: Tenant | null
@@ -81,6 +98,18 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+
+const branchStore = useSelectedBranchStore()
+const branchPickerRef = ref<InstanceType<typeof BranchPickerModal> | null>(null)
+const { data: branchesData } = useNuxtData<BranchPublic[]>('branches')
+
+const showBranchPill = computed(
+  () => props.tenant?.branchSelectionMode === 'per_branch' && branchStore.id !== null,
+)
+
+const currentBranchName = computed(
+  () => branchesData.value?.find((b) => b.id === branchStore.id)?.name ?? 'Филиал',
+)
 
 const formattedHours = computed(() => formatWorkingHours(props.tenant?.workingHoursSchedule))
 
@@ -229,6 +258,39 @@ const handleNavClick = async (link: NavLink) => {
   @include text-caption(600);
   color: var(--color-text);
   text-decoration: none;
+}
+
+.branch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  @include text-caption(500);
+  cursor: pointer;
+  flex-shrink: 0;
+  max-width: 200px;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: var(--primary-subtle);
+    border-color: var(--primary);
+  }
+}
+
+.pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+
+  @include lg {
+    max-width: 180px;
+  }
 }
 
 

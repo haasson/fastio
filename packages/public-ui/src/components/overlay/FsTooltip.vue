@@ -47,6 +47,7 @@ withDefaults(defineProps<Props>(), {
   max-width: 240px;
   z-index: var(--z-toast, 500);
   line-height: 1.4;
+  white-space: pre-line;
 
   &[data-state='delayed-open'] { animation: fs-tooltip-in 0.15s ease; }
   &[data-state='closed'] { animation: fs-tooltip-out 0.1s ease; }

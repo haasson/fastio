@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
-import type { Category, Dish, Combo, DishModifierGroup, DishTagDefinition } from '@fastio/shared'
+import type { BranchPublic, Category, Dish, Combo, DishModifierGroup, DishTagDefinition } from '@fastio/shared'
 
 export type ClientAddon = {
   id: string
@@ -25,6 +25,7 @@ type MenuData = {
 
 export const useMenuStore = defineStore('menu', () => {
   const { data: menu } = useNuxtData<MenuData>('menu')
+  const { data: branchesData } = useNuxtData<BranchPublic[]>('branches')
 
   const allDishes = computed(() => menu.value?.dishes ?? [])
   const allCombos = computed(() => menu.value?.combos ?? [])
@@ -66,5 +67,38 @@ export const useMenuStore = defineStore('menu', () => {
     }),
   )
 
-  return { allDishes, allCombos, dishModifiers, dishAddons, comboItems, tagDefinitions, tagDisplayMode, maxAddonsDefault, dishesByCategory, combosByCategory, visibleCategories }
+  const branchesAll = computed<BranchPublic[]>(() => branchesData.value ?? [])
+
+  // Пустой branchIds = «во всех филиалах» (как ServiceWithBranchIds).
+  // Длина равная числу филиалов трактуется так же — селектор просто перечислил всех.
+  const dishAvailableBranchIds = (dish: Dish): string[] =>
+    dish.branchIds.length === 0 ? branchesAll.value.map((b) => b.id) : dish.branchIds
+
+  const comboAvailableBranchIds = (combo: Combo): string[] =>
+    combo.branchIds.length === 0 ? branchesAll.value.map((b) => b.id) : combo.branchIds
+
+  const isDishEverywhere = (dish: Dish): boolean =>
+    dish.branchIds.length === 0 || dish.branchIds.length === branchesAll.value.length
+
+  const isComboEverywhere = (combo: Combo): boolean =>
+    combo.branchIds.length === 0 || combo.branchIds.length === branchesAll.value.length
+
+  return {
+    allDishes,
+    allCombos,
+    dishModifiers,
+    dishAddons,
+    comboItems,
+    tagDefinitions,
+    tagDisplayMode,
+    maxAddonsDefault,
+    dishesByCategory,
+    combosByCategory,
+    visibleCategories,
+    branchesAll,
+    dishAvailableBranchIds,
+    comboAvailableBranchIds,
+    isDishEverywhere,
+    isComboEverywhere,
+  }
 })
