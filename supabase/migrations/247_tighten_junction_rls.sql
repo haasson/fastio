@@ -1,4 +1,6 @@
--- Migration 234: Tighten junction table RLS — close cross-tenant leaks.
+-- Migration 247: Tighten junction table RLS — close cross-tenant leaks.
+-- (Изначально создана с номером 234 — переименована из-за коллизии с
+-- 234_order_items_tenant_id.sql, применённой раньше.)
 --
 -- Problem: the following junction/schedule tables had USING (true) on their
 -- public SELECT policy, meaning any anon user could read ALL tenants' data via
