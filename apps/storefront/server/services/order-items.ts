@@ -58,14 +58,16 @@ export async function validateAndBuildItems(
   const dishIds = items.map(item => item.dishId).filter(Boolean) as string[]
 
   const [{ data: dishes, error: dishesError }, { data: allDishOptions }, { data: allDishAddons }] = await Promise.all([
-    supabase.from('dishes').select('id, price, active, tenant_id').in('id', dishIds),
+    supabase.from('dishes').select('id, price, active, tenant_id').eq('tenant_id', tenantId).in('id', dishIds),
     supabase
       .from('dish_modifier_options')
-      .select('dish_id, option_id, price_delta, modifier_options(id, name, group_id, modifier_groups(name))')
+      .select('dish_id, option_id, price_delta, modifier_options(id, name, group_id, modifier_groups(name)), dishes!inner(tenant_id)')
+      .eq('dishes.tenant_id', tenantId)
       .in('dish_id', dishIds),
     supabase
       .from('dish_addons')
-      .select('dish_id, addon_id, addons(id, name, price, active)')
+      .select('dish_id, addon_id, addons(id, name, price, active), dishes!inner(tenant_id)')
+      .eq('dishes.tenant_id', tenantId)
       .in('dish_id', dishIds),
   ])
 
@@ -81,10 +83,26 @@ export async function validateAndBuildItems(
   const comboPriceMap = new Map<string, number>()
 
   if (comboIds.length > 0) {
-    const [{ data: comboItemRows }, { data: comboRows }] = await Promise.all([
-      supabase.from('combo_items').select('combo_id, dish_id, dishes(name, categories(name))').in('combo_id', comboIds).order('sort_order'),
-      supabase.from('combos').select('id, price').in('id', comboIds),
+    const [
+      { data: comboItemRows, error: comboItemsError },
+      { data: comboRows, error: combosError },
+    ] = await Promise.all([
+      supabase
+        .from('combo_items')
+        .select('combo_id, dish_id, dishes(name, categories(name)), combos!inner(tenant_id)')
+        .eq('combos.tenant_id', tenantId)
+        .in('combo_id', comboIds)
+        .order('sort_order'),
+      supabase.from('combos').select('id, price, tenant_id').eq('tenant_id', tenantId).in('id', comboIds),
     ])
+
+    if (comboItemsError || combosError) {
+      throw createError({ statusCode: 500, message: 'Не удалось получить данные комбо-наборов' })
+    }
+
+    if (!comboRows || comboRows.length !== comboIds.length) {
+      throw createError({ statusCode: 400, message: 'Один из комбо-наборов не найден или принадлежит другому ресторану' })
+    }
 
     if (comboItemRows) {
       for (const row of comboItemRows as unknown as { combo_id: string; dish_id: string; dishes: { name: string; categories: { name: string } | null } | null }[]) {

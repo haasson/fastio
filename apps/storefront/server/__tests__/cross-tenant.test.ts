@@ -10,7 +10,7 @@
  * Стратегия: мокаем supabase-клиент и проверяем вызовы .eq('tenant_id', ...).
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createError, getCookie, getQuery, getRouterParam } from 'h3'
 
 // ---------------------------------------------------------------------------
@@ -66,8 +66,11 @@ vi.mock('../utils/supabase', () => ({
   getAuthSupabase: () => mockClient,
   mapOrder: (row: any) => row,
   mapCustomer: (row: any) => row,
+  mapCustomerAddress: (row: any) => row,
   mapCategory: (row: any) => row,
+  mapCombo: (row: any) => row,
   mapDish: (row: any) => row,
+  mapTenant: (row: any) => row,
 }))
 
 vi.mock('../utils/customerAuth', () => ({
@@ -594,5 +597,329 @@ describe('POST /api/appointments/request — tenant isolation', () => {
     await handler(makeEvent('tenant-A'))
 
     expect(mockChain.eq).not.toHaveBeenCalledWith('tenant_id', 'tenant-B')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// J. orders/[id].get.ts — branchInfo через db.raw.from('branches') (Proxy auto-tenant)
+// ---------------------------------------------------------------------------
+
+describe('GET /api/orders/[id] — tenant isolation', () => {
+  beforeEach(resetAll)
+  afterEach(() => {
+    ;(globalThis as any).getRouterParam = getRouterParam
+  })
+
+  it('применяет tenant_id фильтр на orders + branches (через Proxy)', async () => {
+    // orders.maybeSingle()
+    mockChain.maybeSingle
+      .mockResolvedValueOnce({
+        data: { id: 'order-1', tenant_id: 'tenant-A', branch_id: 'branch-1', status: null, order_items: [] },
+        error: null,
+      })
+      // branches.maybeSingle() через db.raw
+      .mockResolvedValueOnce({ data: { address: 'ул. Пушкина 1' }, error: null })
+
+    ;(globalThis as any).getRouterParam = vi.fn().mockReturnValue('order-1')
+
+    const mod = await import('../api/orders/[id].get')
+    const handler = mod.default as Function
+    await handler(makeEvent('tenant-A'))
+
+    // orders.from()
+    expect(mockFrom).toHaveBeenCalledWith('orders')
+    // branches.from() через db.raw — Proxy должен автоинжектить tenant_id
+    expect(mockFrom).toHaveBeenCalledWith('branches')
+    expect(mockChain.eq).toHaveBeenCalledWith('tenant_id', 'tenant-A')
+  })
+
+  it('бросает 404 если заказа нет в тенанте', async () => {
+    mockChain.maybeSingle.mockResolvedValueOnce({ data: null, error: null })
+    ;(globalThis as any).getRouterParam = vi.fn().mockReturnValue('foreign-order')
+
+    const mod = await import('../api/orders/[id].get')
+    const handler = mod.default as Function
+
+    let caught: any
+    try {
+      await handler(makeEvent('tenant-A'))
+    } catch (e) {
+      caught = e
+    }
+
+    expect(caught).toBeDefined()
+    expect(caught.statusCode).toBe(404)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// K. branches.get.ts — публичный список филиалов
+// ---------------------------------------------------------------------------
+
+describe('GET /api/branches — tenant isolation', () => {
+  beforeEach(resetAll)
+
+  it('применяет tenant_id фильтр при запросе филиалов', async () => {
+    mockChain.order.mockResolvedValueOnce({ data: [], error: null })
+
+    const mod = await import('../api/branches.get')
+    const handler = mod.default as Function
+    await handler(makeEvent('tenant-A', { context: { tenantId: 'tenant-A', tenant: { contacts: {}, workingHoursSchedule: null } } }))
+
+    expect(mockFrom).toHaveBeenCalledWith('branches')
+    expect(mockChain.eq).toHaveBeenCalledWith('tenant_id', 'tenant-A')
+  })
+
+  it('НЕ применяет tenant_id другого тенанта', async () => {
+    mockChain.order.mockResolvedValueOnce({ data: [], error: null })
+
+    const mod = await import('../api/branches.get')
+    const handler = mod.default as Function
+    await handler(makeEvent('tenant-A', { context: { tenantId: 'tenant-A', tenant: { contacts: {}, workingHoursSchedule: null } } }))
+
+    expect(mockChain.eq).not.toHaveBeenCalledWith('tenant_id', 'tenant-B')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// L. menu.get.ts — каталог блюд/категорий/комбо
+// ---------------------------------------------------------------------------
+
+describe('GET /api/menu — tenant isolation', () => {
+  beforeEach(resetAll)
+
+  it('применяет tenant_id фильтр на categories/dishes/combos', async () => {
+    // три параллельных запроса в Promise.all возвращают пустые data
+    mockChain.order.mockResolvedValue({ data: [], error: null })
+
+    const mod = await import('../api/menu.get')
+    const handler = mod.default as Function
+    await handler(makeEvent('tenant-A', {
+      context: { tenantId: 'tenant-A', tenant: { modules: { combos: false, modifiers: false, addons: false }, dishTags: [] } },
+    }))
+
+    expect(mockFrom).toHaveBeenCalledWith('categories')
+    expect(mockFrom).toHaveBeenCalledWith('dishes')
+    expect(mockChain.eq).toHaveBeenCalledWith('tenant_id', 'tenant-A')
+  })
+
+  it('НЕ применяет tenant_id другого тенанта на основных таблицах', async () => {
+    mockChain.order.mockResolvedValue({ data: [], error: null })
+
+    const mod = await import('../api/menu.get')
+    const handler = mod.default as Function
+    await handler(makeEvent('tenant-A', {
+      context: { tenantId: 'tenant-A', tenant: { modules: { combos: false, modifiers: false, addons: false }, dishTags: [] } },
+    }))
+
+    expect(mockChain.eq).not.toHaveBeenCalledWith('tenant_id', 'tenant-B')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// M. customer/addresses/index.get.ts — фильтр по customer_id (без tenant_id)
+// ---------------------------------------------------------------------------
+
+describe('GET /api/customer/addresses — customer_id isolation', () => {
+  beforeEach(resetAll)
+
+  it('фильтрует по customer_id (tenant gated через customerAuth)', async () => {
+    mockChain.order.mockResolvedValueOnce({ data: [], error: null })
+
+    const mod = await import('../api/customer/addresses/index.get')
+    const handler = mod.default as Function
+    await handler(makeEvent('tenant-A'))
+
+    expect(mockFrom).toHaveBeenCalledWith('customer_addresses')
+    // customer_id из мока = 'customer-id-1'
+    expect(mockChain.eq).toHaveBeenCalledWith('customer_id', 'customer-id-1')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// N. customer/addresses/[id].patch.ts — UPDATE с двойным фильтром
+// ---------------------------------------------------------------------------
+
+describe('PATCH /api/customer/addresses/[id] — customer_id isolation', () => {
+  beforeEach(() => {
+    resetAll()
+    ;(globalThis as any).readBody = vi.fn().mockResolvedValue({ label: 'Дом' })
+    ;(globalThis as any).getRouterParam = vi.fn().mockReturnValue('addr-1')
+  })
+
+  afterEach(() => {
+    ;(globalThis as any).getRouterParam = getRouterParam
+  })
+
+  it('требует совпадения address.id И customer_id', async () => {
+    mockChain.single.mockResolvedValueOnce({ data: { id: 'addr-1' }, error: null })
+
+    const mod = await import('../api/customer/addresses/[id].patch')
+    const handler = mod.default as Function
+    await handler(makeEvent('tenant-A'))
+
+    expect(mockFrom).toHaveBeenCalledWith('customer_addresses')
+    expect(mockChain.eq).toHaveBeenCalledWith('id', 'addr-1')
+    expect(mockChain.eq).toHaveBeenCalledWith('customer_id', 'customer-id-1')
+  })
+
+  it('бросает 404 если адрес не найден или принадлежит другому customer', async () => {
+    mockChain.single.mockResolvedValueOnce({ data: null, error: { message: 'No rows' } })
+
+    const mod = await import('../api/customer/addresses/[id].patch')
+    const handler = mod.default as Function
+
+    let caught: any
+    try {
+      await handler(makeEvent('tenant-A'))
+    } catch (e) {
+      caught = e
+    }
+    expect(caught.statusCode).toBe(404)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// O. db.raw — Proxy инжектит tenant_id для tenant-таблиц
+// ---------------------------------------------------------------------------
+
+describe('db.raw — Proxy автозащита tenant-таблиц', () => {
+  beforeEach(resetAll)
+
+  it('db.raw.from(<tenant-таблица>) автоматически инжектит tenant_id', async () => {
+    const { getTenantDb } = await import('../utils/tenantDb')
+    const db = getTenantDb(makeEvent('tenant-A'))
+
+    db.raw.from('branches').select('address').eq('id', 'b-1')
+
+    expect(mockFrom).toHaveBeenCalledWith('branches')
+    expect(mockChain.eq).toHaveBeenCalledWith('tenant_id', 'tenant-A')
+  })
+
+  it('db.raw.from(<unknown>) НЕ инжектит tenant_id (pass-through)', async () => {
+    const { getTenantDb } = await import('../utils/tenantDb')
+    const db = getTenantDb(makeEvent('tenant-A'))
+
+    db.raw.from('totally_unknown_table').select('*')
+
+    expect(mockFrom).toHaveBeenCalledWith('totally_unknown_table')
+    expect(mockChain.eq).not.toHaveBeenCalledWith('tenant_id', expect.anything())
+  })
+
+  it('db.raw.from(<tenant-таблица>).insert() требует переключиться на crossTenant', async () => {
+    const { getTenantDb } = await import('../utils/tenantDb')
+    const db = getTenantDb(makeEvent('tenant-A'))
+
+    expect(() => db.raw.from('branches').insert({ name: 'x' })).toThrow(/crossTenant/)
+  })
+
+  it('db.crossTenant.from(<tenant-таблица>) НЕ инжектит — escape hatch для умышленного cross-tenant', async () => {
+    const { getTenantDb } = await import('../utils/tenantDb')
+    const db = getTenantDb(makeEvent('tenant-A'))
+
+    db.crossTenant.from('branches').select('*')
+
+    expect(mockFrom).toHaveBeenCalledWith('branches')
+    expect(mockChain.eq).not.toHaveBeenCalledWith('tenant_id', expect.anything())
+  })
+})
+
+// ---------------------------------------------------------------------------
+// P. order-items.ts — combos фильтруются по tenant_id (фикс 2026-05-04)
+// ---------------------------------------------------------------------------
+
+describe('order-items.ts — combos cross-tenant защита', () => {
+  beforeEach(resetAll)
+  // ВАЖНО: порядок mockResolvedValueOnce ниже совпадает с порядком запросов в
+  // `validateAndBuildItems` (apps/storefront/server/services/order-items.ts):
+  //   1) dishes.in (Promise.all #1)
+  //   2) dish_modifier_options.in (Promise.all #2)
+  //   3) dish_addons.in (Promise.all #3)
+  //   4) combo_items chain → .order (если есть combos)
+  //   5) combos.in (Promise.all #2 второго блока)
+  // Если поменяется порядок Promise.all — тесты упадут, обновить сюда параллельно.
+
+  it('combos подгружаются с .eq("tenant_id", tenantId)', async () => {
+    // dishes / dish_modifier_options / dish_addons — пустые
+    mockChain.in
+      .mockResolvedValueOnce({ data: [], error: null })  // dishes
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_modifier_options
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_addons
+      .mockReturnValueOnce(mockChain)  // combo_items chain (.order)
+      .mockResolvedValueOnce({ data: [{ id: 'combo-1', price: 500 }], error: null })  // combos
+
+    mockChain.order.mockResolvedValueOnce({ data: [], error: null })  // combo_items.order
+
+    const { validateAndBuildItems } = await import('../services/order-items')
+    await validateAndBuildItems(mockClient as any, 'tenant-A', [
+      { dishId: null, comboId: 'combo-1', dishName: 'Сет', quantity: 1, removedIngredients: [] },
+    ])
+
+    expect(mockFrom).toHaveBeenCalledWith('combos')
+    expect(mockChain.eq).toHaveBeenCalledWith('tenant_id', 'tenant-A')
+  })
+
+  it('бросает 400 если combo не принадлежит тенанту (length mismatch)', async () => {
+    mockChain.in
+      .mockResolvedValueOnce({ data: [], error: null })  // dishes
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_modifier_options
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_addons
+      .mockReturnValueOnce(mockChain)  // combo_items chain
+      .mockResolvedValueOnce({ data: [], error: null })  // combos — пустой массив (foreign tenant)
+
+    mockChain.order.mockResolvedValueOnce({ data: [], error: null })
+
+    const { validateAndBuildItems } = await import('../services/order-items')
+
+    let caught: any
+    try {
+      await validateAndBuildItems(mockClient as any, 'tenant-A', [
+        { dishId: null, comboId: 'foreign-combo', dishName: 'Чужой сет', quantity: 1, removedIngredients: [] },
+      ])
+    } catch (e) {
+      caught = e
+    }
+    expect(caught).toBeDefined()
+    expect(caught.statusCode).toBe(400)
+    expect(caught.message).toMatch(/комбо/i)
+  })
+
+  it('dishes фильтруются по tenant_id', async () => {
+    mockChain.in
+      .mockResolvedValueOnce({ data: [{ id: 'dish-1', price: 200, active: true, tenant_id: 'tenant-A' }], error: null })  // dishes
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_modifier_options
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_addons
+
+    const { validateAndBuildItems } = await import('../services/order-items')
+    await validateAndBuildItems(mockClient as any, 'tenant-A', [
+      { dishId: 'dish-1', dishName: 'Бургер', quantity: 1, removedIngredients: [] },
+    ])
+
+    expect(mockFrom).toHaveBeenCalledWith('dishes')
+    expect(mockChain.eq).toHaveBeenCalledWith('tenant_id', 'tenant-A')
+  })
+
+  it('бросает 500 если supabase вернул error на combos (не молча отдаёт price=0)', async () => {
+    mockChain.in
+      .mockResolvedValueOnce({ data: [], error: null })  // dishes
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_modifier_options
+      .mockResolvedValueOnce({ data: [], error: null })  // dish_addons
+      .mockReturnValueOnce(mockChain)  // combo_items chain
+      .mockResolvedValueOnce({ data: null, error: { message: 'connection lost' } })  // combos — error
+
+    mockChain.order.mockResolvedValueOnce({ data: [], error: null })
+
+    const { validateAndBuildItems } = await import('../services/order-items')
+
+    let caught: any
+    try {
+      await validateAndBuildItems(mockClient as any, 'tenant-A', [
+        { dishId: null, comboId: 'combo-1', dishName: 'Сет', quantity: 1, removedIngredients: [] },
+      ])
+    } catch (e) {
+      caught = e
+    }
+    expect(caught).toBeDefined()
+    expect(caught.statusCode).toBe(500)
   })
 })

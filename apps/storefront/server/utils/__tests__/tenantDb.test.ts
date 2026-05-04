@@ -31,7 +31,8 @@ for (const key of Object.keys(mockChain) as (keyof typeof mockChain)[]) {
 }
 
 const mockFrom = vi.fn().mockReturnValue(mockChain)
-const mockClient = { from: mockFrom }
+const mockRpc = vi.fn()
+const mockClient = { from: mockFrom, rpc: mockRpc }
 
 vi.mock('../supabase', () => ({
   getServerSupabase: () => mockClient,
@@ -70,12 +71,13 @@ describe('getTenantDb', () => {
 
   // --- Базовое поведение ---------------------------------------------------
 
-  it('возвращает объект с полями tenantId, from, junction, raw при валидном tenantId', () => {
+  it('возвращает объект с полями tenantId, from, junction, raw, crossTenant при валидном tenantId', () => {
     const db = getTenantDb(makeEvent('tenant-abc'))
     expect(db.tenantId).toBe('tenant-abc')
     expect(typeof db.from).toBe('function')
     expect(typeof db.junction).toBe('function')
-    expect(db.raw).toBe(mockClient)
+    expect(db.raw).toBeDefined()
+    expect(db.crossTenant).toBe(mockClient)
   })
 
   it('tenantId совпадает с тем что передали в event.context', () => {
@@ -155,11 +157,53 @@ describe('getTenantDb', () => {
     expect(mockChain.eq).not.toHaveBeenCalled()
   })
 
-  // --- db.raw — прямой доступ к клиенту ------------------------------------
+  // --- db.raw — Proxy с защитой tenant-таблиц ------------------------------
 
-  it('db.raw возвращает оригинальный supabase клиент', () => {
+  it('db.raw.from(<tenant-таблица>) автоматически инжектит .eq("tenant_id", tenantId)', () => {
     const db = getTenantDb(makeEvent('tenant-123'))
-    expect(db.raw).toBe(mockClient)
+    db.raw.from('branches').select('id, address')
+    expect(mockFrom).toHaveBeenCalledWith('branches')
+    expect(mockChain.eq).toHaveBeenCalledWith('tenant_id', 'tenant-123')
+  })
+
+  it('db.raw.from(<unknown-таблица>) НЕ инжектит tenant фильтр (pass-through)', () => {
+    const db = getTenantDb(makeEvent('tenant-123'))
+    db.raw.from('some_global_table').select('*')
+    expect(mockFrom).toHaveBeenCalledWith('some_global_table')
+    expect(mockChain.eq).not.toHaveBeenCalledWith('tenant_id', expect.anything())
+  })
+
+  it('db.raw.from(<tenant-таблица>).insert() бросает — направляет на crossTenant', () => {
+    const db = getTenantDb(makeEvent('tenant-123'))
+    expect(() => db.raw.from('branches').insert({ name: 'x' })).toThrow(/crossTenant/)
+  })
+
+  it('db.raw.rpc() — pass-through', () => {
+    const db = getTenantDb(makeEvent('tenant-123'))
+    db.raw.rpc('some_function', { arg: 1 })
+    expect(mockRpc).toHaveBeenCalledWith('some_function', { arg: 1 })
+  })
+
+  it('select() результат остаётся chainable (.eq инжект работает только если select возвращает QueryBuilder)', () => {
+    // Защита от регрессии: если кто-то заменит mock select на Promise напрямую,
+    // tenant-фильтр не сработает. Этот тест фиксирует допущение «select() → chainable».
+    const db = getTenantDb(makeEvent('tenant-123'))
+    const result = db.from('branches').select('id')
+    expect(result).toBe(mockChain)
+    expect(typeof (result as { eq?: unknown }).eq).toBe('function')
+  })
+
+  // --- db.crossTenant — escape hatch ---------------------------------------
+
+  it('db.crossTenant — голый клиент без защиты', () => {
+    const db = getTenantDb(makeEvent('tenant-123'))
+    expect(db.crossTenant).toBe(mockClient)
+  })
+
+  it('db.crossTenant.from() НЕ инжектит tenant_id (для умышленных cross-tenant операций)', () => {
+    const db = getTenantDb(makeEvent('tenant-123'))
+    db.crossTenant.from('branches').select('*')
+    expect(mockChain.eq).not.toHaveBeenCalledWith('tenant_id', expect.anything())
   })
 
   // --- Cross-tenant изоляция -----------------------------------------------

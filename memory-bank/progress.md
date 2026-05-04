@@ -1,6 +1,7 @@
 # Progress: Fastio
 
 ## What Works
+- **Cross-tenant isolation hardening** (2026-05-04, миграции 245+246) — закрыты `customers`/`customer_addresses` клиентские RLS-policies на write, добавлена валидация tenant вторичных uuid в RPC (`*_set_*_ids`, `apply_shift_template_to_resource`), все `branches.eq('id', ...)` в storefront-серверах теперь с tenant-фильтром, combos в `order-items.ts` валидируются по tenant. Осталось: `enforceTenantContext(event)` helper и integration-тесты с двумя тенантами.
 - **Admin панель** — полностью рабочая: меню, заказы, кухня, столы, бронирования, акции, контент, внешний вид, настройки, команда, аккаунт
 - **Визиты (онлайн-запись)** — визит = посещение клиентом в один бизнес-день, 1+ услуг с независимыми статусами. Инвариант «один бизнес-день» проверяется в БД через `compute_business_date` (учитывает overnight-смены филиала). Per-service экшены, split (через серию move_appointment), единая страница для создания и редактирования (дровер выпилен)
 - **`useGate` — единая система контроля доступа** (2026-04-25): объединяет 7 слоёв (suspended / business type / plan / module toggle / role / config / compile-time flag). Возвращает `{enabled, reason}` для UI-баннеров с причиной отказа. Покрытие тестами: 27 кейсов матрицы приоритетов. Замигрирован весь admin (AppNav, orders, kitchen, menu, tables, reservations, team, settings, audit-log, banners). `useAccess` удалён.
