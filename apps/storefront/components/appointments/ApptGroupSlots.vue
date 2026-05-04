@@ -46,8 +46,8 @@
             <span>Ваше расписание</span>
           </div>
           <div
-            v-for="(entry, i) in selectedEntry.schedule"
-            :key="i"
+            v-for="entry in selectedEntry.schedule"
+            :key="entry.serviceId"
             class="schedule-row"
           >
             <div class="row-head">
@@ -58,7 +58,7 @@
                  система собирается отдать слот: окончательное распределение делает
                  админ-панель уже после подачи заявки, и для клиента это шум.
                  Иначе — показываем подобранного мастера, при замене со старым зачёркнутым. -->
-            <div v-if="(preferredResourceByIndex?.[i] ?? null) !== null" class="row-master">
+            <div v-if="(preferredResourceByService?.[entry.serviceId] ?? null) !== null" class="row-master">
               <template v-if="entry.preferredResourceName">
                 <span class="master-old">{{ entry.preferredResourceName }}</span>
                 <ArrowRight :size="11" class="master-arrow" />
@@ -99,10 +99,14 @@ const props = defineProps<{
   loading: boolean
   selectedEntry: GroupSlotEntry | null
   serviceNames: Record<string, string>
-  // Параллельный массив preferredResourceId по индексу schedule. Если для услуги
-  // null → клиент выбрал «Любой исполнитель», в превью НЕ светим конкретного,
-  // которого подобрал алгоритм. Дефолт — пустой массив (все «любые»).
-  preferredResourceByIndex?: Array<string | null>
+  // Карта serviceId → preferredResourceId. Если для услуги null → клиент выбрал
+  // «Любой исполнитель», в превью НЕ светим конкретного, которого подобрал алгоритм.
+  // Маппинг по serviceId (а не по индексу), потому что serverside перестановка
+  // услуг может выдать schedule в порядке отличном от cart.serviceItems.
+  // Инвариант: одна услуга встречается в cart и в schedule максимум один раз
+  // (см. cart.add() — повторный add для service это no-op). Если когда-нибудь
+  // разрешим дубликаты услуг — карта и :key="entry.serviceId" сломаются.
+  preferredResourceByService?: Record<string, string | null>
 }>()
 
 const emit = defineEmits<{

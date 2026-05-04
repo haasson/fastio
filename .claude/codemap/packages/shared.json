@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-04T05:08:21.971Z",
+  "generated_at": "2026-05-04T09:04:39.762Z",
   "stats": {
     "files": 38,
     "pages": 0,
@@ -124,8 +124,8 @@
     },
     "src/utils/appointmentSlots.ts": {
       "kind": "ts",
-      "hash": "1d69c0647d0c",
-      "purpose": "Алгоритмы поиска слотов: одиночные/групповые, с цветовой маркировкой preferred/any, рендер-хелперы для admin/storefront чипсов",
+      "hash": "51224d441823",
+      "purpose": "Алгоритмы расчёта слотов для онлайн-записи: одиночные слоты ресурса, объединение по «любому исполнителю», группа услуг с перестановками и preferred-fallback, доступность дня для стрипа",
       "symbols": [
         {
           "name": "resolveResourceWorkingHours",

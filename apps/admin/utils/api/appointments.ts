@@ -295,6 +295,21 @@ export const appointmentsApi = {
     await query(sb.from('appointments').update({ status: 'done' }).eq('id', id))
   },
 
+  // «Активная» = со статусом new/confirmed и ещё не закончилась. Фильтр по
+  // ends_at, а не starts_at — чтобы учитывать запись, которая началась в
+  // прошлом и идёт сейчас. У нас все услуги с фиксированной/гибкой
+  // длительностью (open-ended нет), поэтому ends_at гарантированно проставлен.
+  async countActiveFuture(sb: SupabaseClient, tenantId: string): Promise<number> {
+    const { count } = await sb
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .in('status', ['new', 'confirmed'])
+      .gte('ends_at', new Date().toISOString())
+
+    return count ?? 0
+  },
+
   async update(sb: SupabaseClient, id: string, patch: Partial<{
     serviceId: string
     serviceName: string

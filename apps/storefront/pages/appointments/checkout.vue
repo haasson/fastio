@@ -25,7 +25,7 @@
             :loading="loading"
             :selected-entry="selectedEntry"
             :service-names="serviceNames"
-            :preferred-resource-by-index="cart.serviceItems.map((it) => it.preferredResourceId ?? null)"
+            :preferred-resource-by-service="preferredResourceByService"
             @update:selected-entry="selectedEntry = $event"
             @confirm="step = 'contact'"
             @request-only="step = 'request'"
@@ -144,6 +144,14 @@ const resourceNamesMap = ref<Map<string, string>>(new Map())
 const { anyLabel: anyResourceLabel } = useResourceLabel()
 
 const anyServiceHasPreferred = computed(() => cart.serviceItems.some((i) => i.preferredResourceId))
+
+const preferredResourceByService = computed<Record<string, string | null>>(() => {
+  const map: Record<string, string | null> = {}
+  for (const item of cart.serviceItems) {
+    map[item.serviceId] = item.preferredResourceId ?? null
+  }
+  return map
+})
 
 const servicesList = computed(() =>
   cart.serviceItems.map((item) => ({
@@ -323,12 +331,13 @@ const submitGroupBooking = async () => {
     // (preferredResourceId == null), шлём resourceId=null — бэк сам подберёт
     // по round-robin и пометит как 'auto'. Иначе передаём конкретного, кого
     // подобрал group-slots под клиентское предпочтение → бэк сохранит как 'client'.
-    // Порядок selectedEntry.schedule совпадает с cart.serviceItems по построению
-    // (group-slots получает items в том же порядке через itemsForApi).
+    // Лукап по serviceId, не по индексу: серверная перестановка может выдать
+    // schedule в другом порядке относительно cart.serviceItems (см. план 10.1).
+    const preferredMap = preferredResourceByService.value
     const body = {
-      items: selectedEntry.value.schedule.map((entry, i) => ({
+      items: selectedEntry.value.schedule.map((entry) => ({
         serviceId: entry.serviceId,
-        resourceId: cart.serviceItems[i]?.preferredResourceId ? entry.resourceId : null,
+        resourceId: preferredMap[entry.serviceId] ? entry.resourceId : null,
         startTime: entry.startTime,
       })),
       date: groupDate.value,

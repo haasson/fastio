@@ -130,6 +130,17 @@ export const checkModuleDisable = async (
     }
   }
 
+  if (moduleKey === 'services') {
+    const count = await api.appointments.countActiveFuture(tenantId)
+
+    if (count > 0) {
+      issues.push({
+        severity: 'blocker',
+        message: `Нельзя выключить: есть активные записи (${count}). Завершите или отмените их в разделе Записи.`,
+      })
+    }
+  }
+
   if (moduleKey === 'kitchen') {
     const count = await api.kitchenQueue.countActive(tenantId)
 

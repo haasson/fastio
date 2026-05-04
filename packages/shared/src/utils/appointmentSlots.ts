@@ -432,6 +432,46 @@ export function findGroupSlots(
 }
 
 /**
+ * Все перестановки массива. Используется в findGroupSlotsWithFallback чтобы найти
+ * стартовые времена, недоступные в исходном порядке услуг (см. план 10.1).
+ *
+ * Для length<=PERMUTATION_LIMIT (5) перебираем все 120 перестановок — быстро.
+ * Для length>PERMUTATION_LIMIT возвращаем только исходный порядок (24 → 120 → 720
+ * → 5040 факториал растёт слишком быстро, и более 5 услуг в групповой брони
+ * — редкий кейс, для которого UX «попробуйте поменять услуги местами» приемлем).
+ */
+const PERMUTATION_LIMIT = 5
+
+function permutations<T>(items: T[]): T[][] {
+  if (items.length <= 1) return [items.slice()]
+
+  if (items.length > PERMUTATION_LIMIT) return [items.slice()]
+
+  const result: T[][] = []
+
+  for (let i = 0; i < items.length; i++) {
+    const rest = [...items.slice(0, i), ...items.slice(i + 1)]
+
+    for (const p of permutations(rest)) {
+      result.push([items[i], ...p])
+    }
+  }
+
+  return result
+}
+
+/**
+ * Лучше ли новый кандидат предыдущего по этому стартовому времени?
+ * 'preferred' побеждает 'any'; в равных условиях оставляем первое пришедшее
+ * (первая перестановка = исходный порядок услуг → не меняем поведение зря).
+ */
+function isBetterCandidate(prev: GroupSlotEntry | undefined, candidate: GroupSlotEntry): boolean {
+  if (!prev) return true
+
+  return prev.match === 'any' && candidate.match === 'preferred'
+}
+
+/**
  * Тип «общий» для сборки items: преобразует input-структуру в варианты для findGroupSlots.
  */
 function buildPreferredAndAnyItems(
@@ -500,35 +540,44 @@ export function findGroupSlotsWithFallback(
     return { type: 'request_only' }
   }
 
-  const { preferredItems, anyItems, hasAnyPreferences } = buildPreferredAndAnyItems(items)
+  // Лучшее попадание на каждый стартовый слот, накопленное по всем перестановкам.
+  const bestByStart = new Map<string, GroupSlotEntry>()
 
-  const anyOptions = findGroupSlots(
-    anyItems, date, resourceSlotData, existingAppointments, settings, branchSchedule,
-  )
+  for (const perm of permutations(items)) {
+    const { preferredItems, anyItems, hasAnyPreferences } = buildPreferredAndAnyItems(perm)
 
-  if (anyOptions.length === 0) {
-    return { type: 'slots', entries: [] }
+    const anyOptions = findGroupSlots(
+      anyItems, date, resourceSlotData, existingAppointments, settings, branchSchedule,
+    )
+
+    if (anyOptions.length === 0) continue
+
+    let preferredByStart: Map<string, GroupSlotOption> | null = null
+
+    if (hasAnyPreferences) {
+      const preferredOptions = findGroupSlots(
+        preferredItems, date, resourceSlotData, existingAppointments, settings, branchSchedule,
+      )
+
+      preferredByStart = new Map<string, GroupSlotOption>()
+      for (const opt of preferredOptions) preferredByStart.set(opt.startTime, opt)
+    }
+
+    for (const opt of anyOptions) {
+      const pref = preferredByStart?.get(opt.startTime) ?? null
+      const match: GroupSlotMatch = !hasAnyPreferences || pref ? 'preferred' : 'any'
+      const candidate: GroupSlotEntry = pref
+        ? { ...pref, match }
+        : { ...opt, match }
+
+      if (isBetterCandidate(bestByStart.get(opt.startTime), candidate)) {
+        bestByStart.set(opt.startTime, candidate)
+      }
+    }
   }
 
-  // Если ни у одной услуги нет предпочтения — все anyOptions считаются 'preferred'.
-  if (!hasAnyPreferences) {
-    const entries: GroupSlotEntry[] = anyOptions.map(opt => ({ ...opt, match: 'preferred' as GroupSlotMatch }))
-    entries.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
-    return { type: 'slots', entries }
-  }
-
-  const preferredOptions = findGroupSlots(
-    preferredItems, date, resourceSlotData, existingAppointments, settings, branchSchedule,
-  )
-  const preferredByStart = new Map<string, GroupSlotOption>()
-  for (const opt of preferredOptions) preferredByStart.set(opt.startTime, opt)
-
-  const entries: GroupSlotEntry[] = anyOptions.map((opt) => {
-    const pref = preferredByStart.get(opt.startTime)
-    if (pref) return { ...pref, match: 'preferred' as GroupSlotMatch }
-    return { ...opt, match: 'any' as GroupSlotMatch }
-  })
-  entries.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
+  const entries = Array.from(bestByStart.values())
+    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
 
   return { type: 'slots', entries }
 }
@@ -540,8 +589,9 @@ export function findGroupSlotsWithFallback(
  * Возвращает 'preferred' если есть хотя бы один зелёный слот, 'any' если только
  * жёлтые, null если ничего нет (или общая длительность > рабочего дня).
  *
- * Реализация — простая: вызывает findGroupSlotsWithFallback и смотрит на entries[0].
- * Не самый дешёвый вариант, но переиспользует одну и ту же логику.
+ * Не вызывает findGroupSlotsWithFallback напрямую: тот всегда обходит ВСЕ
+ * перестановки чтобы построить полный список слотов. Здесь нам достаточно
+ * первого preferred-попадания → выходим из перебора как только нашли его.
  */
 export function getGroupDateAvailability(
   items: Array<{
@@ -558,13 +608,33 @@ export function getGroupDateAvailability(
   workingDayMinutes: number,
   branchSchedule?: WorkingHoursSchedule | null,
 ): GroupSlotMatch | null {
-  const result = findGroupSlotsWithFallback(
-    items, date, resourceSlotData, existingAppointments,
-    settings, workingDayMinutes, branchSchedule,
-  )
-  if (result.type !== 'slots') return null
-  if (result.entries.length === 0) return null
-  return result.entries.some(e => e.match === 'preferred') ? 'preferred' : 'any'
+  const totalDuration = items.reduce((sum, item) => sum + item.duration, 0)
+
+  if (totalDuration > workingDayMinutes) return null
+
+  let foundAny = false
+
+  for (const perm of permutations(items)) {
+    const { preferredItems, anyItems, hasAnyPreferences } = buildPreferredAndAnyItems(perm)
+
+    const anyOptions = findGroupSlots(
+      anyItems, date, resourceSlotData, existingAppointments, settings, branchSchedule,
+    )
+
+    if (anyOptions.length === 0) continue
+
+    foundAny = true
+
+    if (!hasAnyPreferences) return 'preferred'
+
+    const preferredOptions = findGroupSlots(
+      preferredItems, date, resourceSlotData, existingAppointments, settings, branchSchedule,
+    )
+
+    if (preferredOptions.length > 0) return 'preferred'
+  }
+
+  return foundAny ? 'any' : null
 }
 
 // ─── Helpers для UI слот-чипсов (admin SlotChipGrid + storefront ApptGroupSlots) ─

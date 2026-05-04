@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-04T05:08:21.680Z",
+  "generated_at": "2026-05-04T09:04:39.428Z",
   "stats": {
     "files": 119,
     "pages": 0,
@@ -922,8 +922,8 @@
     },
     "utils/moduleToggleChecks.ts": {
       "kind": "ts",
-      "hash": "bcf0a7e0d2c2",
-      "purpose": "Проверки перед отключением модуля: блокеры (активные заказы/брони/столы/очередь кухни) и warnings (баннеры с акциями, секции витрины)",
+      "hash": "b2ad7cbc681b",
+      "purpose": "Проверки блокеров/warnings перед отключением модуля тенанта (активные заказы, бронирования, открытые столы, очередь кухни, кастомные роли, активные записи, баннеры акций, секции/страницы витрины)",
       "symbols": [
         {
           "name": "ToggleIssue",
@@ -1707,8 +1707,8 @@
     },
     "components/ui/AddressSuggestInput.vue": {
       "kind": "vue",
-      "hash": "9cfb0b236bcd",
-      "purpose": "UiInput с DaData-подсказками + встроенный pickedRule, требующий выбор подсказки (v-model:address-data синхронизирован с input)",
+      "hash": "48d3cc61ba81",
+      "purpose": "Поле ввода адреса с подсказками DaData; emit('select') возвращает выбранную suggestion с координатами; опционально валидирует что выбрана именно подсказка (requirePicked)",
       "symbols": [
         {
           "name": "props",
