@@ -83,7 +83,7 @@ const pick = (s: DadataSuggestion) => {
 // внешний required, чтобы не дублировать сообщения.
 const pickedRule: ValidationRule = {
   type: 'custom',
-  message: 'Выберите адрес из подсказок DaData',
+  message: 'Выберите адрес из всплывающей подсказки',
   validator: (value: unknown) => {
     if (!props.requirePicked) return true
 

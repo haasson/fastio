@@ -25,6 +25,11 @@ async function getTenantCoords(tenantId: string): Promise<{ lat: number; lon: nu
   return coords
 }
 
+// Привязываем поиск к координатам первого филиала тенанта (радиус 50 км). Сейчас
+// продукт ориентирован на работу в одном городе, и без гео-фильтра подсказки
+// засоряются однофамильными улицами из других регионов. locations_geo в DaData —
+// жёсткий фильтр, поэтому если у тенанта ещё нет филиала с координатами,
+// фильтр не применяется (на онбординге это первый ввод адреса).
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const tenantId = String(body.tenantId ?? '').trim()

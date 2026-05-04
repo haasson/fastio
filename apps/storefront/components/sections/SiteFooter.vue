@@ -178,20 +178,19 @@ const hasSocials = computed(() => {
 }
 
 .footer-branches {
-  @include flex-col(16px);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px 24px;
 
   @include md {
+    grid-template-columns: repeat(2, 1fr);
     margin-left: auto;
-    align-items: flex-end;
   }
 }
 
 .footer-branch {
   @include flex-col(2px);
-
-  @include md {
-    align-items: flex-end;
-  }
+  min-width: 0;
 }
 
 .branch-name {

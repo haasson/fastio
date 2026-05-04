@@ -139,7 +139,7 @@ const createBranch = async () => {
   // CHECK-constraint в БД упадёт; pickedRule в AddressSuggestInput уже подсветит поле,
   // здесь — финальная страховка чтобы не словить серверную ошибку при сабмите.
   if (!branchAddressData.value) {
-    error('Выберите адрес из подсказок')
+    error('Выберите адрес во всплывающей подсказке')
 
     return
   }

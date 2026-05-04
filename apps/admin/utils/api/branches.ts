@@ -62,11 +62,11 @@ const branchToDb = (data: BranchFormData) => {
  */
 function validateAddressDataConsistency(address: string, addressData: BranchAddressData): void {
   if (!addressData || typeof addressData.value !== 'string') {
-    throw new Error('Адрес филиала должен быть выбран из подсказок DaData (отсутствует address_data)')
+    throw new Error('Адрес филиала должен быть выбран во всплывающей подсказке (отсутствует address_data)')
   }
 
   if (addressData.value !== address) {
-    throw new Error('Адрес филиала должен быть выбран из подсказок DaData (address не совпадает с address_data.value)')
+    throw new Error('Адрес филиала должен быть выбран во всплывающей подсказке (address не совпадает с address_data.value)')
   }
 }
 
