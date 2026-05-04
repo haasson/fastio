@@ -1,10 +1,22 @@
 import type { TenantNotifications, WorkingHoursSchedule } from './tenant'
+import type { DadataAddressData } from '../composables/useDadataSuggestions'
+
+/**
+ * Структурный адрес филиала, как пришёл из DaData. Храним весь объект `data`
+ * целиком (jsonb) — Record<string, unknown> для незакрытого хвоста полей.
+ * Используется во фронте через formatBranchAddressShort() и в будущем — для
+ * фильтров «филиалы в Москве», метро рядом с самовывозом и т.д.
+ */
+export type BranchAddressData = DadataAddressData & Record<string, unknown> & {
+  value: string
+}
 
 export type Branch = {
   id: string
   tenantId: string
   name: string
   address: string
+  addressData: BranchAddressData
   phone: string | null
   isActive: boolean
   workingHoursSchedule: WorkingHoursSchedule | null
@@ -30,7 +42,8 @@ export type BranchPublic = {
   id: string
   name: string
   address: string
+  addressData: BranchAddressData
   phone: string | null
-  workingHoursSchedule: import('./tenant').WorkingHoursSchedule | null
+  workingHoursSchedule: WorkingHoursSchedule | null
 }
 

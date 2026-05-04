@@ -2,6 +2,7 @@
   <div class="address-with-map">
     <AddressSuggestInput
       v-model="address"
+      v-model:address-data="addressData"
       :name="name"
       :placeholder="placeholder"
       :rules="rules"
@@ -46,6 +47,7 @@ import { UiText } from '@fastio/ui'
 import type { ValidationRule } from '@fastio/kit'
 import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import type { BranchAddressData } from '@fastio/shared'
 
 withDefaults(defineProps<{
   name?: string
@@ -59,7 +61,8 @@ withDefaults(defineProps<{
   mapHeight: 240,
 })
 
-const address = defineModel<string | null>('address', { default: '' })
+const address = defineModel<string>('address', { default: '' })
+const addressData = defineModel<BranchAddressData | null>('addressData', { default: null })
 const latitude = defineModel<number | null>('latitude', { default: null })
 const longitude = defineModel<number | null>('longitude', { default: null })
 

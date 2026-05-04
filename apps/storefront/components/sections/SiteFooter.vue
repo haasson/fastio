@@ -61,7 +61,7 @@
       <div v-if="branches.length > 1" class="footer-branches">
         <div v-for="branch in branches" :key="branch.id" class="footer-branch">
           <FsText variant="body-sm" class="branch-name">{{ branch.name }}</FsText>
-          <FsText variant="caption" color="secondary">{{ branch.address }}</FsText>
+          <FsText variant="caption" color="secondary">{{ formatBranchAddressShort(branch) }}</FsText>
           <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`">{{ branch.phone }}</a>
           <FsText v-if="branch.workingHoursSchedule" variant="caption" color="secondary">
             {{ formatWorkingHours(branch.workingHoursSchedule) }}
@@ -103,8 +103,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { NuxtLink } from '#components'
-import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
-import { formatWorkingHours, isLegalInfoComplete } from '@fastio/shared'
+import type { BranchPublic, Tenant } from '@fastio/shared'
+import { formatWorkingHours, formatBranchAddressShort, isLegalInfoComplete } from '@fastio/shared'
 import { Instagram, Send } from 'lucide-vue-next'
 import SfIconVk from '~/components/sf/icons/SfIconVk.vue'
 import SfIconWhatsapp from '~/components/sf/icons/SfIconWhatsapp.vue'
@@ -116,9 +116,7 @@ const { data: tenant } = useNuxtData<Tenant>('tenant')
 const year = computed(() => new Date().getFullYear())
 const formattedHours = computed(() => formatWorkingHours(tenant.value?.workingHoursSchedule))
 
-type FooterBranch = { id: string; name: string; address: string | null; phone: string | null; workingHoursSchedule: WorkingHoursSchedule | null }
-
-const branches = ref<FooterBranch[]>([])
+const branches = ref<BranchPublic[]>([])
 
 const hasPrivacy = computed(() => isLegalInfoComplete(tenant.value?.legalInfo))
 const offerUrl = computed(() => tenant.value?.contacts?.offerUrl ?? null)
@@ -126,7 +124,7 @@ const hasDocuments = computed(() => hasPrivacy.value || !!offerUrl.value)
 
 onMounted(async () => {
   try {
-    branches.value = await $fetch<FooterBranch[]>('/api/branches')
+    branches.value = await $fetch<BranchPublic[]>('/api/branches')
   } catch { /* silent */ }
 })
 

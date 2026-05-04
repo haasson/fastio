@@ -20,6 +20,7 @@
 
       <AddressWithMap
         v-model:address="form.address"
+        v-model:address-data="form.addressData"
         v-model:latitude="form.latitude"
         v-model:longitude="form.longitude"
         name="address"
@@ -127,6 +128,7 @@ watch(() => props.modelValue, (val) => {
     form.name = props.branch.name
     form.color = props.branch.color
     form.address = props.branch.address
+    form.addressData = props.branch.addressData
     form.phone = props.branch.phone
     form.isActive = props.branch.isActive
     form.workingHoursSchedule = props.branch.workingHoursSchedule ?? null

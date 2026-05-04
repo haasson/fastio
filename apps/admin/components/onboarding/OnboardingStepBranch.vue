@@ -33,6 +33,7 @@
 
         <AddressSuggestInput
           v-model="branchAddress"
+          v-model:address-data="branchAddressData"
           name="branchAddress"
           :rules="[validationRules.address.required]"
           @pick="onAddressPick"
@@ -63,6 +64,7 @@
 import { ref, watch } from 'vue'
 import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon, UiForm, UiCheckbox, UiAlert, useMessage } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
+import type { BranchAddressData } from '@fastio/shared'
 import { useBranchStore } from '~/stores/branch'
 import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
@@ -101,7 +103,8 @@ defineExpose({
 
 const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 const branchName = ref('')
-const branchAddress = ref<string | null>('')
+const branchAddress = ref<string>('')
+const branchAddressData = ref<BranchAddressData | null>(null)
 const branchLat = ref<number | null>(null)
 const branchLon = ref<number | null>(null)
 const saving = ref(false)
@@ -132,12 +135,22 @@ const createBranch = async () => {
 
   if (!valid) return
 
+  // Жёсткое требование: адрес выбирается только из подсказок DaData. Без addressData
+  // CHECK-constraint в БД упадёт; pickedRule в AddressSuggestInput уже подсветит поле,
+  // здесь — финальная страховка чтобы не словить серверную ошибку при сабмите.
+  if (!branchAddressData.value) {
+    error('Выберите адрес из подсказок')
+
+    return
+  }
+
   saving.value = true
   try {
     await branchStore.add({
       ...defaultBranchFormData(),
       name: branchName.value.trim(),
-      address: (branchAddress.value ?? '').trim(),
+      address: branchAddress.value.trim(),
+      addressData: branchAddressData.value,
       latitude: branchLat.value,
       longitude: branchLon.value,
     })

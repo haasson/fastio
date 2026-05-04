@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-04T04:35:55.310Z",
+  "generated_at": "2026-05-04T05:08:21.971Z",
   "stats": {
-    "files": 37,
+    "files": 38,
     "pages": 0,
-    "symbols": 155,
+    "symbols": 157,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -210,6 +210,19 @@
           "kind": "function",
           "hash": "c9c56544",
           "purpose": "Группирует entries[] по часу старта для рендера сетки чипсов «по часам»"
+        }
+      ]
+    },
+    "src/utils/branchAddress.ts": {
+      "kind": "ts",
+      "hash": "4d9af0be843a",
+      "purpose": "Форматирование адреса филиала для витрины — без региона/города/индекса (клиент уже на сайте конкретного заведения)",
+      "symbols": [
+        {
+          "name": "formatBranchAddressShort",
+          "kind": "function",
+          "hash": "e71efd7c",
+          "purpose": "Возвращает 'street + house + block + flat' из BranchAddressData; fallback на полный address если структуры нет"
         }
       ]
     },
@@ -1165,14 +1178,20 @@
     },
     "src/composables/useDadataSuggestions.ts": {
       "kind": "ts",
-      "hash": "c4425fa107d2",
-      "purpose": "Composable для автокомплита адреса через прокси к DaData с дебаунсом и отложенным скрытием саджестов",
+      "hash": "7b766e1cad59",
+      "purpose": "DaData composable + типы DadataAddressData/DadataSuggestion с типизированными ~12 полями (geo/иерархия/дом/квартира/FIAS/qc) при сохранении остального хвоста",
       "symbols": [
+        {
+          "name": "DadataAddressData",
+          "kind": "type",
+          "hash": "04bbc255",
+          "purpose": "Типизированные поля DaData address-data, которые мы реально читаем (street_with_type, house, block, flat, region/city, fias_id, qc, geo)"
+        },
         {
           "name": "DadataSuggestion",
           "kind": "type",
-          "hash": "55f874e5",
-          "purpose": "Подсказка DaData: value (полный адрес) + data { geo_lat, geo_lon, city, street, house }"
+          "hash": "67017577",
+          "purpose": "{ value, unrestricted_value?, data: DadataAddressData & Record<string, unknown> } — суггестия из /api/dadata/suggest"
         },
         {
           "name": "DadataSuggestionsOptions",

@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-04T04:35:54.939Z",
+  "generated_at": "2026-05-04T05:08:21.680Z",
   "stats": {
     "files": 119,
     "pages": 0,
@@ -793,14 +793,14 @@
     },
     "utils/branch.ts": {
       "kind": "ts",
-      "hash": "c6a7666070b4",
-      "purpose": "Дефолтные значения формы филиала — единый источник для BranchDrawer и OnboardingStepBranch",
+      "hash": "9abc27d14f1e",
+      "purpose": "Дефолтные значения формы филиала — единый источник для BranchDrawer и OnboardingStepBranch (включая заглушку addressData={value:''} до выбора подсказки DaData)",
       "symbols": [
         {
           "name": "defaultBranchFormData",
           "kind": "function",
           "hash": "a6d0c9c8",
-          "purpose": "Возвращает свежий BranchFormData с DEFAULT_BRANCH_COLOR и nullable-полями по умолчанию"
+          "purpose": "Возвращает свежий BranchFormData с DEFAULT_BRANCH_COLOR, пустым addressData и nullable-полями по умолчанию"
         }
       ]
     },
@@ -1707,14 +1707,14 @@
     },
     "components/ui/AddressSuggestInput.vue": {
       "kind": "vue",
-      "hash": "6ebaaa4cb128",
-      "purpose": "UiInput с DaData-подсказками адреса; пробрасывает name/rules для валидации внутри UiForm",
+      "hash": "9cfb0b236bcd",
+      "purpose": "UiInput с DaData-подсказками + встроенный pickedRule, требующий выбор подсказки (v-model:address-data синхронизирован с input)",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "5c9c0a7b",
-          "purpose": "{ name?, label?, placeholder?, rules?, disabled? }"
+          "hash": "c0ecd388",
+          "purpose": "{ name?, label?, placeholder?, rules?, disabled?, requirePicked? } — requirePicked включает pickedRule"
         },
         {
           "name": "emits",
@@ -1726,8 +1726,8 @@
     },
     "components/ui/AddressWithMap.vue": {
       "kind": "vue",
-      "hash": "216faa3d2fcc",
-      "purpose": "AddressSuggestInput + Яндекс.Карта с маркером и координатами; v-model:address/latitude/longitude",
+      "hash": "8e049d5b9d03",
+      "purpose": "AddressSuggestInput + Яндекс.Карта с маркером и координатами; v-model:address/addressData/latitude/longitude",
       "symbols": [
         {
           "name": "props",

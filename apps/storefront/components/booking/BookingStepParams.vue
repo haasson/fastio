@@ -10,7 +10,7 @@
           @click="form.branchId = branch.id"
         >
           {{ branch.name }}
-          <template #sub>{{ branch.address }}</template>
+          <template #sub>{{ formatBranchAddressShort(branch) }}</template>
         </FsButton>
       </div>
     </FsField>
@@ -51,8 +51,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { FsButton, FsField } from '@fastio/public-ui'
-import { todayInTz, addDaysToDateStr, getIsoDayForDate, isDayOff as checkDayOff } from '@fastio/shared'
-import type { WorkingHoursSchedule } from '@fastio/shared'
+import { todayInTz, addDaysToDateStr, formatBranchAddressShort, getIsoDayForDate, isDayOff as checkDayOff } from '@fastio/shared'
+import type { BranchAddressData, WorkingHoursSchedule } from '@fastio/shared'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
 
 type BookingForm = {
@@ -61,7 +61,7 @@ type BookingForm = {
   branchId: string | null
 }
 
-type BookingBranch = { id: string; name: string; address: string | null }
+type BookingBranch = { id: string; name: string; address: string; addressData: BranchAddressData }
 
 const form = defineModel<BookingForm>('form', { required: true })
 

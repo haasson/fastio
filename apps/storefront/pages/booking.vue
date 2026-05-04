@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAsyncData, useNuxtData, useRequestFetch } from 'nuxt/app'
-import type { WorkingHours, WorkingHoursSchedule, ReservationSettings, Tenant } from '@fastio/shared'
+import type { BranchPublic, WorkingHours, WorkingHoursSchedule, ReservationSettings, Tenant } from '@fastio/shared'
 import { getDaySchedule, getIsoDayForDate, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsHeading, FsAlert } from '@fastio/public-ui'
@@ -91,7 +91,7 @@ import BookingSuccess from '~/components/booking/BookingSuccess.vue'
 import useBooking from '~/composables/useBooking'
 import useLegalCompliance from '~/composables/useLegalCompliance'
 
-type BookingBranch = { id: string; name: string; address: string | null; workingHoursSchedule: WorkingHoursSchedule | null }
+type BookingBranch = BranchPublic
 
 const rfetch = useRequestFetch()
 const { step, form, slots, loading, result, wasAuthenticated, error, fetchSlots, submit } = useBooking()

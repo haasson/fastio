@@ -5,7 +5,7 @@
       :name="name"
       :label="label"
       :placeholder="placeholder"
-      :rules="rules"
+      :rules="allRules"
       :disabled="disabled"
       @input="onInput"
       @focus="showSuggestions = true"
@@ -25,40 +25,77 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { UiInput } from '@fastio/ui'
 import type { ValidationRule } from '@fastio/kit'
+import type { BranchAddressData } from '@fastio/shared'
 import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   name?: string
   label?: string
   placeholder?: string
   rules?: ValidationRule[]
   disabled?: boolean
+  /**
+   * true (default) — UiForm-валидация требует, чтобы текущий address был выбран
+   * из подсказок DaData (addressData != null && совпадает с input).
+   * Используется в формах филиала, где BD-CHECK гарантирует структурный адрес.
+   */
+  requirePicked?: boolean
 }>(), {
   label: 'Адрес *',
   placeholder: 'Начните вводить адрес...',
+  requirePicked: true,
 })
 
 const emit = defineEmits<{
   pick: [suggestion: DadataSuggestion]
 }>()
 
-const model = defineModel<string | null>({ default: '' })
+const model = defineModel<string>({ default: '' })
+// addressData либо синхронизирован с model (после pick), либо null (после ручной правки).
+// Parent обязан хранить его рядом с address — серверная валидация заберёт оба поля.
+const addressData = defineModel<BranchAddressData | null>('addressData', { default: null })
 
 const { suggestions, search, clear, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
 
 const onInput = () => {
   showSuggestions.value = true
   search(model.value ?? '')
+  // Любая ручная правка после pick выводит из «verified»-состояния.
+  // Идентично паттерну AddressManualInput на чекауте.
+  addressData.value = null
 }
 
 const pick = (s: DadataSuggestion) => {
   model.value = s.value
+  // Сохраняем сырые данные DaData как addressData. value жёстко синхронизируем
+  // с input, чтобы CHECK-constraint в БД не упал.
+  addressData.value = { ...(s.data as BranchAddressData), value: s.value }
   showSuggestions.value = false
   clear()
   emit('pick', s)
 }
+
+// Встроенная rule «адрес выбран из подсказок» — добавляется к пользовательским
+// rules. Срабатывает только когда уже введено что-то непустое: пустоту ловит
+// внешний required, чтобы не дублировать сообщения.
+const pickedRule: ValidationRule = {
+  type: 'custom',
+  message: 'Выберите адрес из подсказок DaData',
+  validator: (value: unknown) => {
+    if (!props.requirePicked) return true
+
+    const str = typeof value === 'string' ? value.trim() : ''
+
+    if (str === '') return true
+
+    return addressData.value != null && addressData.value.value === value
+  },
+}
+
+const allRules = computed<ValidationRule[]>(() => [...(props.rules ?? []), pickedRule])
 </script>
 
 <style scoped lang="scss">

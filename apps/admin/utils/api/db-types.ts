@@ -345,6 +345,7 @@ export type BranchRow = {
   name: string
   color: string
   address: string
+  address_data: Record<string, unknown>
   phone: string | null
   is_active: boolean
   working_hours_schedule: WorkingHoursSchedule | null

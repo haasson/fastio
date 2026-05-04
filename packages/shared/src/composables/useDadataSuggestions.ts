@@ -1,14 +1,50 @@
 import { ref, getCurrentInstance, onUnmounted } from 'vue'
 
+/**
+ * Поля DaData, которые мы реально используем в коде. DaData отдаёт ~80 полей —
+ * мы храним весь объект `data` целиком (jsonb), но типизируем только то, что
+ * читаем сами. Любые дополнительные поля доступны через приведение типа.
+ *
+ * Канонический справочник всех полей: https://dadata.ru/api/suggest/address/
+ */
+export type DadataAddressData = {
+  // Геокоординаты
+  geo_lat: string | null
+  geo_lon: string | null
+  qc_geo: string | null
+
+  // Иерархия (в виде «с типом» — для отображения)
+  region_with_type: string | null
+  area_with_type: string | null
+  city_with_type: string | null
+  settlement_with_type: string | null
+  street_with_type: string | null
+
+  // Дом/корпус/квартира — отдельно тип и значение
+  house_type: string | null
+  house: string | null
+  block_type: string | null
+  block: string | null
+  flat_type: string | null
+  flat: string | null
+  postal_code: string | null
+
+  // FIAS — для будущих фильтров «филиалы в Москве»
+  fias_id: string | null
+  city_fias_id: string | null
+
+  // Уровень уверенности в адресе (0/1/2/3)
+  qc: string | null
+
+  // legacy/старые поля, которые ещё могут читать клиенты до пересборки
+  city: string | null
+  street: string | null
+}
+
 export type DadataSuggestion = {
   value: string
-  data: {
-    geo_lat: string | null
-    geo_lon: string | null
-    city: string | null
-    street: string | null
-    house: string | null
-  }
+  unrestricted_value?: string
+  data: DadataAddressData & Record<string, unknown>
 }
 
 export type DadataSuggestionsOptions = {

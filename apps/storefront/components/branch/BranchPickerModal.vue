@@ -20,7 +20,7 @@
           @click="pick(b.id)"
         >
           <span class="name">{{ b.name }}</span>
-          <span class="addr">{{ b.address }}</span>
+          <span class="addr">{{ formatBranchAddressShort(b) }}</span>
         </button>
       </li>
     </ul>
@@ -31,6 +31,7 @@
 import { computed, ref } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import type { BranchPublic, Tenant } from '@fastio/shared'
+import { formatBranchAddressShort } from '@fastio/shared'
 import { FsDialog, FsText } from '@fastio/public-ui'
 import { useSelectedBranchStore } from '~/stores/selectedBranch'
 import { useBranchSwitcher } from '~/composables/useBranchSwitcher'

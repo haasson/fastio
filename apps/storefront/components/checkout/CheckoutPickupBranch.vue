@@ -9,7 +9,7 @@
 
     <!-- Single branch: info only -->
     <div v-else-if="singleBranch" class="branch-info" :class="{ disabled: !singleStatus?.open }">
-      <div class="branch-address">{{ singleBranch.address }}</div>
+      <div class="branch-address">{{ formatBranchAddressShort(singleBranch) }}</div>
       <a v-if="singleBranch.phone" class="branch-phone" :href="`tel:${singleBranch.phone}`">{{ singleBranch.phone }}</a>
       <div v-if="singleStatus" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(singleStatus) }">
         {{ getOpenStatusText(singleStatus, singleBranch.workingHoursSchedule) }}
@@ -37,7 +37,7 @@
         :disabled="!branchStatusByID.get(branch.id)?.open || branchCompat.get(branch.id) === 'red'"
         @click="selectBranch(branch.id)"
       >
-        <span class="branch-address">{{ branch.address }}</span>
+        <span class="branch-address">{{ formatBranchAddressShort(branch) }}</span>
         <a v-if="branch.phone" class="branch-phone" :href="`tel:${branch.phone}`" @click.stop>{{ branch.phone }}</a>
         <span v-if="branchStatusByID.get(branch.id)" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(branchStatusByID.get(branch.id)!) }">
           {{ getOpenStatusText(branchStatusByID.get(branch.id)!, branch.workingHoursSchedule) }}
@@ -61,7 +61,7 @@
       />
       <!-- Show details of selected branch -->
       <div v-if="selectedBranch" class="branch-details">
-        <div class="branch-address">{{ selectedBranch.address }}</div>
+        <div class="branch-address">{{ formatBranchAddressShort(selectedBranch) }}</div>
         <a v-if="selectedBranch.phone" class="branch-phone" :href="`tel:${selectedBranch.phone}`">{{ selectedBranch.phone }}</a>
         <div v-if="selectedBranchStatus" class="branch-hours" :class="{ 'closing-soon': isClosingSoon(selectedBranchStatus) }">
           {{ getOpenStatusText(selectedBranchStatus, selectedBranch.workingHoursSchedule) }}
@@ -87,7 +87,7 @@ import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { computeBranchCompat, type BranchStatus as CompatStatus } from '~/utils/branchCompat'
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
-import { formatWorkingHours, isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { formatBranchAddressShort, formatWorkingHours, isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { BranchPublic, WorkingHoursSchedule, Tenant } from '@fastio/shared'
 
 type BranchStatus = ReturnType<typeof isOpenNow>
@@ -192,7 +192,7 @@ const branchOptions = computed(() =>
     const status = branchStatusByID.value.get(b.id)
     const compat = branchCompat.value.get(b.id) ?? 'green'
     const compatSuffix = compat === 'yellow' ? ' (соберут не всё)' : ''
-    const parts = [b.address, formatWorkingHours(b.workingHoursSchedule)].filter(Boolean)
+    const parts = [formatBranchAddressShort(b), formatWorkingHours(b.workingHoursSchedule)].filter(Boolean)
     const label = parts.join(' · ') + compatSuffix + (status?.open === false ? ' (закрыто)' : '')
     return { value: b.id, label, disabled: !status?.open || compat === 'red' }
   }),
