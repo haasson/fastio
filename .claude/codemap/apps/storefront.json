@@ -2,7 +2,7 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-05T12:22:13.674Z",
+  "generated_at": "2026-05-05T12:55:02.580Z",
   "stats": {
     "files": 67,
     "pages": 0,
@@ -470,8 +470,8 @@
     },
     "stores/cart.ts": {
       "kind": "ts",
-      "hash": "5381bdabc7c9",
-      "purpose": "Pinia-стор корзины витрины: позиции блюд и услуг (DishCartItem | ServiceCartItem), подсчёт итога и CRUD с защитой от гонок до hydration",
+      "hash": "da3cc9a15637",
+      "purpose": "Pinia-стор корзины витрины: discriminated union dish|service, persist/restore с legacy-миграцией, patchByKey по _key (для useCartReconciler), snapshot-pattern в clearDishes/clearServices",
       "symbols": [
         {
           "name": "DishCartItem",

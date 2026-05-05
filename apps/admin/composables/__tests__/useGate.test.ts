@@ -578,4 +578,259 @@ describe('useGate', () => {
       expect(gate.manageAppointments.value.enabled).toBe(true)
     })
   })
+
+  // ───── 1.6 расширения ─────
+
+  describe('manageAppointments × роли × состояния модуля', () => {
+    // Перебираем сценарии: модуль services активен / не активен × роль (owner/admin/manager/staff)
+    // Цель: убедиться что гейт корректно реагирует и на доступность фичи, и на permissions.
+
+    it('owner + services enabled → enabled (owner обходит permissions)', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      allEnabled('services')
+      tenantStore.isOwner = true
+      tenantStore.currentPermissions = null
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.enabled).toBe(true)
+    })
+
+    it('owner + services locked → locked (owner не обходит plan-lock)', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      setModule('services', { active: false, locked: true })
+      tenantStore.isOwner = true
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.enabled).toBe(false)
+      expect(gate.manageAppointments.value.reason).toBe('locked')
+    })
+
+    it('admin (с appointments.manage) + services enabled → enabled', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      allEnabled('services')
+      tenantStore.currentPermissions = { 'appointments.manage': true }
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.enabled).toBe(true)
+    })
+
+    it('manager (только reservations.manage, без appointments.*) → forbidden', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      allEnabled('services')
+      tenantStore.currentPermissions = { 'reservations.manage': true }
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.enabled).toBe(false)
+      expect(gate.manageAppointments.value.reason).toBe('forbidden')
+    })
+
+    it('staff (только appointments.view) → forbidden на manage', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      allEnabled('services')
+      tenantStore.currentPermissions = { 'appointments.view': true }
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.enabled).toBe(false)
+      expect(gate.manageAppointments.value.reason).toBe('forbidden')
+      // …при этом view доступен
+      expect(gate.viewAppointments.value.enabled).toBe(true)
+    })
+
+    it('admin + services disabled (модуль выключен на тарифе) → reason=disabled, не forbidden', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      setModule('services', { active: false, locked: false, absent: false })
+      tenantStore.currentPermissions = { 'appointments.manage': true }
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.reason).toBe('disabled')
+    })
+
+    it('admin + services absent → reason=absent', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      setModule('services', { active: false, locked: false, absent: true })
+      tenantStore.currentPermissions = { 'appointments.manage': true }
+
+      const gate = useGate()
+
+      expect(gate.manageAppointments.value.reason).toBe('absent')
+    })
+  })
+
+  describe('viewAppointments на retail-тенанте', () => {
+    it('disabled — модуль services отсутствует у retail', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'retail'
+      // services даже не активирован на retail-плане
+      setModule('services', { active: false, locked: false, absent: true })
+      tenantStore.currentPermissions = { 'appointments.view': true }
+
+      const gate = useGate()
+
+      expect(gate.viewAppointments.value.enabled).toBe(false)
+      expect(gate.viewAppointments.value.reason).toBe('absent')
+    })
+
+    it('даже у owner на retail без модуля services — disabled', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'retail'
+      setModule('services', { active: false })
+      tenantStore.isOwner = true
+
+      const gate = useGate()
+
+      expect(gate.viewAppointments.value.enabled).toBe(false)
+    })
+  })
+
+  describe('menu deny для services-тенанта', () => {
+    // services-tenant не должен видеть «обычные» menu-страницы — только serviceMenu.
+    it('viewMenu = absent для services даже с menu.view', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      tenantStore.currentPermissions = { 'menu.view': true }
+
+      const gate = useGate()
+
+      expect(gate.viewMenu.value.enabled).toBe(false)
+      expect(gate.viewMenu.value.reason).toBe('absent')
+    })
+
+    it('manageMenu = absent для services даже с menu.edit', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      tenantStore.currentPermissions = { 'menu.edit': true }
+
+      const gate = useGate()
+
+      expect(gate.manageMenu.value.enabled).toBe(false)
+      expect(gate.manageMenu.value.reason).toBe('absent')
+    })
+
+    it('owner на services-тенанте всё равно не видит viewMenu (это absent, не permission)', async () => {
+      const useGate = await importGate()
+
+      tenantStore.tenant.businessType = 'services'
+      tenantStore.isOwner = true
+
+      const gate = useGate()
+
+      expect(gate.viewMenu.value.enabled).toBe(false)
+      expect(gate.viewMenu.value.reason).toBe('absent')
+    })
+  })
+
+  describe('suspended consistency — все гейты должны быть false', () => {
+    // Регрессия: suspended-тенант не должен иметь ни одного активного гейта.
+    // Если новый гейт в useGate забыл проверять suspended — падает здесь.
+
+    const ALL_GATES: Array<{
+      key: string
+      // Какие условия сделать «зелёными» в обычном случае: тенант+модули+permissions.
+      setup?: (s: typeof tenantStore) => void
+    }> = [
+      { key: 'kitchen', setup: () => allEnabled('kitchen') },
+      { key: 'orders', setup: () => allEnabled('delivery', 'pickup') },
+      { key: 'dineIn', setup: () => allEnabled('dineIn') },
+      { key: 'reservations', setup: () => allEnabled('reservations') },
+      { key: 'services', setup: () => allEnabled('services') },
+      { key: 'promotions', setup: () => allEnabled('promotions') },
+      { key: 'modifiers', setup: () => allEnabled('modifiers') },
+      { key: 'addons', setup: () => allEnabled('addons') },
+      { key: 'combos', setup: () => allEnabled('combos') },
+      { key: 'branches', setup: () => allEnabled('branches') },
+      { key: 'customers', setup: () => allEnabled('customers') },
+      { key: 'customRoles', setup: () => allEnabled('customRoles') },
+      { key: 'viewMenu' },
+      { key: 'manageMenu' },
+      { key: 'viewKitchen', setup: () => allEnabled('kitchen') },
+      { key: 'viewOrders', setup: () => allEnabled('delivery') },
+      { key: 'viewTables', setup: () => allEnabled('dineIn') },
+      { key: 'manageTables', setup: () => allEnabled('dineIn') },
+      { key: 'viewReservations', setup: () => allEnabled('reservations') },
+      { key: 'manageReservations', setup: () => allEnabled('reservations') },
+      { key: 'viewAppointments', setup: (s) => {
+        s.tenant.businessType = 'services'
+        allEnabled('services')
+      } },
+      { key: 'manageAppointments', setup: (s) => {
+        s.tenant.businessType = 'services'
+        allEnabled('services')
+      } },
+      { key: 'viewPromotions', setup: () => allEnabled('promotions') },
+      { key: 'managePromotions', setup: () => allEnabled('promotions') },
+      { key: 'viewBranches' },
+      { key: 'manageBilling' },
+      { key: 'viewAnalytics' },
+      { key: 'viewTeam' },
+      { key: 'manageTeam' },
+      { key: 'manageRoles' },
+      { key: 'viewSettings' },
+      { key: 'editSettings' },
+      { key: 'viewContent' },
+      { key: 'editContent' },
+      { key: 'addBranch' },
+      { key: 'scheduledOrders', setup: () => {
+        allEnabled('delivery')
+        tenantStore.tenant.orderSchedulingConfig = { enabled: true }
+      } },
+      { key: 'kitchenAutoStatus', setup: () => {
+        allEnabled('kitchen')
+        tenantStore.tenant.kitchenConfig = { sourceStatusId: 's1' }
+      } },
+    ]
+
+    it.each(ALL_GATES)('гейт $key с suspended → enabled=false', async ({ key, setup }) => {
+      const useGate = await importGate()
+
+      // Сначала включаем «зелёный» сценарий, чтобы убедиться что только suspended валит гейт.
+      tenantStore.isOwner = true
+      tenantStore.currentPermissions = {
+        'menu.view': true, 'menu.edit': true,
+        'orders.view': true,
+        'kitchen.view': true,
+        'tables.view': true, 'tables.manage': true,
+        'reservations.view': true, 'reservations.manage': true,
+        'appointments.view': true, 'appointments.manage': true,
+        'promos.view': true, 'promos.manage': true,
+        'branches.view': true,
+        'team.manage': true, 'roles.manage': true,
+        'settings.view': true, 'settings.edit': true,
+        'content.view': true, 'content.edit': true,
+        'analytics.view': true, 'audit_log.view': true, 'billing.manage': true,
+      } as RolePermissions
+      setup?.(tenantStore)
+
+      // Только потом — suspended.
+      tenantStore.maybeTenant.subscription.status = 'suspended'
+
+      const gate = useGate()
+      const target = gate[key as keyof typeof gate]
+
+      expect(target.value.enabled).toBe(false)
+    })
+  })
 })

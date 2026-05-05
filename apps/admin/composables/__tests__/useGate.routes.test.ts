@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { resolveRouteGate, isUngatedRoute, REDIRECT_FALLBACKS } from '../plan/useGate.routes'
+
+const PAGES = resolve(__dirname, '../../pages')
 
 describe('isUngatedRoute', () => {
   it.each([
@@ -197,6 +201,87 @@ describe('resolveRouteGate', () => {
     it('/team/roles → manageRoles (не manageTeam)', () => {
       expect(resolveRouteGate('/team/roles')).toBe('manageRoles')
     })
+  })
+})
+
+describe('appointments routes (1.7 покрытие)', () => {
+  it.each([
+    ['/appointments', 'viewAppointments'],
+    ['/appointments/staff', 'manageAppointments'],
+    ['/appointments/objects', 'manageAppointments'],
+    ['/appointments/templates', 'manageAppointments'],
+    ['/appointments/settings', 'editSettings'],
+  ])('%s → %s', (path, expected) => {
+    expect(resolveRouteGate(path)).toBe(expected)
+  })
+
+  it('/appointments/list (страница архива) наследует от корня → viewAppointments', () => {
+    expect(resolveRouteGate('/appointments/list')).toBe('viewAppointments')
+  })
+
+  it('/appointments/timeline (главная страница записей) → viewAppointments', () => {
+    expect(resolveRouteGate('/appointments/timeline')).toBe('viewAppointments')
+  })
+
+  it('/appointments/visits/<uuid> (карточка визита) → viewAppointments', () => {
+    expect(resolveRouteGate('/appointments/visits/abc-123')).toBe('viewAppointments')
+  })
+
+  it('/appointments/history наследует от корня → viewAppointments (даже если страницы пока нет)', () => {
+    expect(resolveRouteGate('/appointments/history')).toBe('viewAppointments')
+  })
+
+  // S7 регрессия: после ребрендинга «ресурсы» → «исполнители/объекты» страницы
+  // /appointments/resources быть не должно. Если кто-то её случайно вернёт —
+  // тест упадёт и заставит подумать дважды (а заодно onboarding не словит 404).
+  it('S7 регрессия: pages/appointments/resources.vue не существует', () => {
+    expect(existsSync(resolve(PAGES, 'appointments/resources.vue'))).toBe(false)
+  })
+
+  it('S7 регрессия: /appointments/resources не имеет специфичного гейта (только наследование от корня)', () => {
+    // Если бы кто-то добавил в ROUTE_GATES `/appointments/resources` со своим
+    // гейтом, тест поймал бы это. Сейчас он наследует от `/appointments`.
+    expect(resolveRouteGate('/appointments/resources')).toBe('viewAppointments')
+  })
+
+  // Sanity: страницы из pages/appointments действительно существуют — иначе тесты
+  // выше тестируют гейты для несуществующих файлов.
+  it.each([
+    'list.vue',
+    'objects.vue',
+    'settings.vue',
+    'staff.vue',
+    'templates.vue',
+    'timeline.vue',
+  ])('pages/appointments/%s существует', (file) => {
+    expect(existsSync(resolve(PAGES, 'appointments', file))).toBe(true)
+  })
+})
+
+describe('services routes (1.7 покрытие)', () => {
+  it.each([
+    ['/services', 'viewServiceMenu'],
+    ['/services/items', 'viewServiceMenu'],
+    ['/services/categories', 'manageServiceMenu'],
+    ['/services/tags', 'manageServiceMenu'],
+  ])('%s → %s', (path, expected) => {
+    expect(resolveRouteGate(path)).toBe(expected)
+  })
+
+  it('/services/settings наследует от корня → viewServiceMenu', () => {
+    // Сейчас в ROUTE_GATES нет специфичного для /services/settings;
+    // тест сторожит, что если кто-то захочет ужесточить (например до editSettings) —
+    // не забыл сначала актуализировать тест и обсудить.
+    expect(resolveRouteGate('/services/settings')).toBe('viewServiceMenu')
+  })
+
+  it.each([
+    'categories.vue',
+    'items.vue',
+    'settings.vue',
+    'tags.vue',
+  ])('pages/services/%s существует', (file) => {
+    expect(existsSync(resolve(PAGES, 'services', file))).toBe(true)
   })
 })
 

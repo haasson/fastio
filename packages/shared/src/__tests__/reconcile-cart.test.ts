@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { reconcileCart } from '../utils/reconcile-cart'
-import type { ReconcileCartItem, ReconcileMenuData, MenuDish, MenuCombo } from '../utils/reconcile-cart'
+import { reconcileCart, reconcileServices } from '../utils/reconcile-cart'
+import type {
+  ReconcileCartItem,
+  ReconcileMenuData,
+  MenuDish,
+  MenuCombo,
+  ReconcileService,
+  ReconcileServiceItem,
+} from '../utils/reconcile-cart'
 
 function makeDish(overrides: Partial<MenuDish> = {}): MenuDish {
   return {
@@ -513,6 +520,233 @@ describe('reconcileCart', () => {
       const menu = makeMenu({ dishes: [makeDish({ price: 600 })] })
 
       const result = reconcileCart(items, menu)
+
+      expect(result.items[0]).toBe(result.updated[0])
+    })
+  })
+})
+
+// ──────────────────────────────────────────────────────────────────────────
+// reconcileServices
+// ──────────────────────────────────────────────────────────────────────────
+
+function makeServiceItem(overrides: Partial<ReconcileServiceItem> = {}): ReconcileServiceItem {
+  return {
+    _key: 'svc-key-1',
+    serviceId: 'svc-1',
+    serviceName: 'Стрижка',
+    price: 1000,
+    duration: 60,
+    photo: 'p.jpg',
+    preferredResourceId: null,
+    allowResourceChoice: true,
+    ...overrides,
+  }
+}
+
+function makeService(overrides: Partial<ReconcileService> = {}): ReconcileService {
+  return {
+    id: 'svc-1',
+    name: 'Стрижка',
+    price: 1000,
+    duration: 60,
+    photos: ['p.jpg'],
+    isBookable: true,
+    allowResourceChoice: true,
+    ...overrides,
+  }
+}
+
+describe('reconcileServices', () => {
+  it('passes through unchanged services', () => {
+    const result = reconcileServices([makeServiceItem()], [makeService()])
+
+    expect(result.items).toHaveLength(1)
+    expect(result.removed).toHaveLength(0)
+    expect(result.updated).toHaveLength(0)
+  })
+
+  it('preserves _key — критично для cart.patchByKey', () => {
+    const item = makeServiceItem({ _key: 'must-survive' })
+    const result = reconcileServices([item], [makeService({ price: 1500 })])
+
+    expect(result.items[0]._key).toBe('must-survive')
+  })
+
+  describe('removal', () => {
+    it('removes service when serviceId is missing from catalog', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ serviceId: 'gone' })],
+        [makeService()],
+      )
+
+      expect(result.items).toHaveLength(0)
+      expect(result.removed).toHaveLength(1)
+      expect(result.removed[0].reason).toBe('service_missing')
+      expect(result.removed[0].item.serviceId).toBe('gone')
+    })
+
+    it('removes service when isBookable=false (онлайн-запись отключена)', () => {
+      const result = reconcileServices(
+        [makeServiceItem()],
+        [makeService({ isBookable: false })],
+      )
+
+      expect(result.items).toHaveLength(0)
+      expect(result.removed).toHaveLength(1)
+      expect(result.removed[0].reason).toBe('service_not_bookable')
+    })
+
+    it('пустой каталог — все services помечены как missing', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ serviceId: 'a' }), makeServiceItem({ _key: 'k2', serviceId: 'b' })],
+        [],
+      )
+
+      expect(result.items).toHaveLength(0)
+      expect(result.removed).toHaveLength(2)
+      expect(result.removed.every((r) => r.reason === 'service_missing')).toBe(true)
+    })
+  })
+
+  describe('updates', () => {
+    it('меняет price → попадает в updated', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ price: 1000 })],
+        [makeService({ price: 1500 })],
+      )
+
+      expect(result.items[0].price).toBe(1500)
+      expect(result.updated).toHaveLength(1)
+    })
+
+    it('меняет duration → попадает в updated', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ duration: 60 })],
+        [makeService({ duration: 90 })],
+      )
+
+      expect(result.items[0].duration).toBe(90)
+      expect(result.updated).toHaveLength(1)
+    })
+
+    it('меняет name → попадает в updated', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ serviceName: 'Old' })],
+        [makeService({ name: 'New' })],
+      )
+
+      expect(result.items[0].serviceName).toBe('New')
+      expect(result.updated).toHaveLength(1)
+    })
+
+    it('меняет photo на первое из photos[]', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ photo: 'old.jpg' })],
+        [makeService({ photos: ['new.jpg', 'second.jpg'] })],
+      )
+
+      expect(result.items[0].photo).toBe('new.jpg')
+      expect(result.updated).toHaveLength(1)
+    })
+
+    it('photo=null когда photos[] пустой', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ photo: 'old.jpg' })],
+        [makeService({ photos: [] })],
+      )
+
+      expect(result.items[0].photo).toBeNull()
+    })
+  })
+
+  describe('preferredResourceId / allowResourceChoice', () => {
+    it('сбрасывает preferredResourceId если allowResourceChoice стало false', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ preferredResourceId: 'res-1', allowResourceChoice: true })],
+        [makeService({ allowResourceChoice: false })],
+      )
+
+      expect(result.items[0].preferredResourceId).toBeNull()
+      expect(result.items[0].allowResourceChoice).toBe(false)
+      expect(result.updated).toHaveLength(1)
+    })
+
+    it('сохраняет preferredResourceId если allowResourceChoice=true и нет других расхождений', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ preferredResourceId: 'res-1' })],
+        [makeService({ allowResourceChoice: true })],
+      )
+
+      expect(result.items[0].preferredResourceId).toBe('res-1')
+      expect(result.updated).toHaveLength(0)
+    })
+
+    it('синхронизирует флаг allowResourceChoice если расходится со снапшотом', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ allowResourceChoice: false, preferredResourceId: null })],
+        [makeService({ allowResourceChoice: true })],
+      )
+
+      expect(result.items[0].allowResourceChoice).toBe(true)
+      // флаг изменился, но preferredResourceId как был null остаётся null — это считается изменением
+      expect(result.updated).toHaveLength(0)
+    })
+  })
+
+  describe('multiple items', () => {
+    it('mix valid + removed + updated', () => {
+      const items = [
+        makeServiceItem({ _key: 'k1', serviceId: 's1' }), // unchanged
+        makeServiceItem({ _key: 'k2', serviceId: 's2', price: 500 }), // price changed
+        makeServiceItem({ _key: 'k3', serviceId: 'gone' }), // removed
+        makeServiceItem({ _key: 'k4', serviceId: 's4' }), // not bookable
+      ]
+      const services = [
+        makeService({ id: 's1' }),
+        makeService({ id: 's2', price: 800 }),
+        makeService({ id: 's4', isBookable: false }),
+      ]
+
+      const result = reconcileServices(items, services)
+
+      expect(result.items).toHaveLength(2)
+      expect(result.items.map((i) => i.serviceId)).toEqual(['s1', 's2'])
+      expect(result.updated).toHaveLength(1)
+      expect(result.updated[0].serviceId).toBe('s2')
+      expect(result.updated[0].price).toBe(800)
+      expect(result.removed).toHaveLength(2)
+      expect(result.removed.map((r) => r.reason)).toEqual(['service_missing', 'service_not_bookable'])
+    })
+
+    it('сохраняет порядок входных items в результате', () => {
+      const items = [
+        makeServiceItem({ _key: 'a', serviceId: 's3' }),
+        makeServiceItem({ _key: 'b', serviceId: 's1' }),
+        makeServiceItem({ _key: 'c', serviceId: 's2' }),
+      ]
+      const services = [makeService({ id: 's1' }), makeService({ id: 's2' }), makeService({ id: 's3' })]
+
+      const result = reconcileServices(items, services)
+
+      expect(result.items.map((i) => i._key)).toEqual(['a', 'b', 'c'])
+    })
+  })
+
+  describe('edge cases', () => {
+    it('пустые items — пустой результат', () => {
+      const result = reconcileServices([], [makeService()])
+
+      expect(result.items).toEqual([])
+      expect(result.removed).toEqual([])
+      expect(result.updated).toEqual([])
+    })
+
+    it('updated is same reference as in items', () => {
+      const result = reconcileServices(
+        [makeServiceItem({ price: 100 })],
+        [makeService({ price: 200 })],
+      )
 
       expect(result.items[0]).toBe(result.updated[0])
     })

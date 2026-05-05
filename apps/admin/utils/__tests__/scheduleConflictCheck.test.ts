@@ -10,6 +10,7 @@ import type {
 } from '@fastio/shared'
 import {
   checkAppointmentAgainstSchedule,
+  checkAppointmentsAgainstSchedule,
   buildSlotDataFromWeeklyTemplate,
   buildSlotDataFromShiftTemplate,
   type AppointmentLite,
@@ -240,6 +241,177 @@ describe('buildSlotDataFromWeeklyTemplate', () => {
     const data = buildSlotDataFromWeeklyTemplate(tpl, null, [], [])
 
     expect(data.disabledSlots).toEqual([])
+  })
+})
+
+describe('checkAppointmentAgainstSchedule — shift cycle: выходной по циклу', () => {
+  const shiftData = emptyData({
+    shiftCycle: {
+      cycleStartDate: FUTURE_DATE, // '2030-06-15' = день 0 цикла
+      cycleLength: 2,
+      hoursByDayIndex: {
+        0: { openTime: '09:00', closeTime: '18:00' },
+        1: null,
+      },
+    },
+  })
+
+  it('день 0 цикла — рабочий, запись в часах → null', () => {
+    expect(checkAppointmentAgainstSchedule(baseAppt(), shiftData, TZ)).toBeNull()
+  })
+
+  it('день 1 цикла — выходной → "day-off"', () => {
+    // offset=1 % 2 = 1 → hoursByDayIndex[1] = null → day-off
+    const appt = baseAppt({
+      startsAt: '2030-06-16T10:00:00.000Z',
+      endsAt: '2030-06-16T11:00:00.000Z',
+    })
+
+    expect(checkAppointmentAgainstSchedule(appt, shiftData, TZ)).toBe('day-off')
+  })
+
+  it('день 2 цикла (offset=2) — снова рабочий → null', () => {
+    // offset=2 % 2 = 0 → рабочий
+    const appt = baseAppt({
+      startsAt: '2030-06-17T10:00:00.000Z',
+      endsAt: '2030-06-17T11:00:00.000Z',
+    })
+
+    expect(checkAppointmentAgainstSchedule(appt, shiftData, TZ)).toBeNull()
+  })
+})
+
+describe('checkAppointmentAgainstSchedule — особые выходные дни (dateOverride isWorking:false)', () => {
+  const weeklySchedule = [{ id: '', resourceId: 'r1', dayOfWeek: 6, isWorking: true as const, openTime: '09:00', closeTime: '18:00' }]
+
+  it('обычная суббота без override → null', () => {
+    const data = emptyData({ schedules: weeklySchedule })
+
+    expect(checkAppointmentAgainstSchedule(baseAppt(), data, TZ)).toBeNull()
+  })
+
+  it('override isWorking:false перебивает рабочий день → "day-off"', () => {
+    const data = emptyData({
+      schedules: weeklySchedule,
+      dateOverrides: [{
+        id: 'o1', resourceId: 'r1',
+        date: FUTURE_DATE,
+        isWorking: false, openTime: null, closeTime: null,
+      }],
+    })
+
+    expect(checkAppointmentAgainstSchedule(baseAppt(), data, TZ)).toBe('day-off')
+  })
+
+  it('override на другую дату не затрагивает baseAppt → null', () => {
+    const data = emptyData({
+      schedules: weeklySchedule,
+      dateOverrides: [{
+        id: 'o1', resourceId: 'r1',
+        date: '2030-06-14', // пятница, не суббота
+        isWorking: false, openTime: null, closeTime: null,
+      }],
+    })
+
+    expect(checkAppointmentAgainstSchedule(baseAppt(), data, TZ)).toBeNull()
+  })
+})
+
+describe('checkAppointmentAgainstSchedule — частичный рабочий день (dateOverride с другими часами)', () => {
+  it('override сужает часы: запись в исключённом окне → "out-of-hours"', () => {
+    // Обычно суббота 09:00-18:00. Override даёт только 13:00-18:00.
+    // baseAppt 10:00-11:00 теперь до нового открытия.
+    const data = emptyData({
+      schedules: [{ id: '', resourceId: 'r1', dayOfWeek: 6, isWorking: true, openTime: '09:00', closeTime: '18:00' }],
+      dateOverrides: [{ id: 'o1', resourceId: 'r1', date: FUTURE_DATE, isWorking: true, openTime: '13:00', closeTime: '18:00' }],
+    })
+
+    expect(checkAppointmentAgainstSchedule(baseAppt(), data, TZ)).toBe('out-of-hours')
+  })
+
+  it('override расширяет часы: запись которую weekly не пропускал → null', () => {
+    // Обычно суббота с 14:00. Override 08:00-20:00 — запись 10:00-11:00 теперь ОК.
+    const data = emptyData({
+      schedules: [{ id: '', resourceId: 'r1', dayOfWeek: 6, isWorking: true, openTime: '14:00', closeTime: '18:00' }],
+      dateOverrides: [{ id: 'o1', resourceId: 'r1', date: FUTURE_DATE, isWorking: true, openTime: '08:00', closeTime: '20:00' }],
+    })
+
+    expect(checkAppointmentAgainstSchedule(baseAppt(), data, TZ)).toBeNull()
+  })
+
+  it('override задаёт узкое окно: запись ровно в его границах → null', () => {
+    // Override 10:00-12:00. baseAppt 10:00-11:00 — точно в окне.
+    const data = emptyData({
+      schedules: [{ id: '', resourceId: 'r1', dayOfWeek: 6, isWorking: true, openTime: '09:00', closeTime: '18:00' }],
+      dateOverrides: [{ id: 'o1', resourceId: 'r1', date: FUTURE_DATE, isWorking: true, openTime: '10:00', closeTime: '12:00' }],
+    })
+
+    expect(checkAppointmentAgainstSchedule(baseAppt(), data, TZ)).toBeNull()
+  })
+
+  it('override задаёт узкое окно: запись выходит за правую границу → "out-of-hours"', () => {
+    // Override 10:00-10:30. baseAppt 10:00-11:00 — end=11:00 > close=10:30.
+    const data = emptyData({
+      schedules: [{ id: '', resourceId: 'r1', dayOfWeek: 6, isWorking: true, openTime: '09:00', closeTime: '18:00' }],
+      dateOverrides: [{ id: 'o1', resourceId: 'r1', date: FUTURE_DATE, isWorking: true, openTime: '10:00', closeTime: '10:30' }],
+    })
+
+    expect(checkAppointmentAgainstSchedule(baseAppt(), data, TZ)).toBe('out-of-hours')
+  })
+})
+
+describe('checkAppointmentAgainstSchedule — out-of-hours граничные значения', () => {
+  const data = emptyData({
+    schedules: [{ id: '', resourceId: 'r1', dayOfWeek: 6, isWorking: true, openTime: '09:00', closeTime: '18:00' }],
+  })
+
+  it('конец записи позже закрытия → "out-of-hours"', () => {
+    const appt = baseAppt({ startsAt: '2030-06-15T17:00:00.000Z', endsAt: '2030-06-15T19:00:00.000Z' })
+
+    expect(checkAppointmentAgainstSchedule(appt, data, TZ)).toBe('out-of-hours')
+  })
+
+  it('конец записи ровно в момент закрытия → null', () => {
+    const appt = baseAppt({ startsAt: '2030-06-15T17:00:00.000Z', endsAt: '2030-06-15T18:00:00.000Z' })
+
+    expect(checkAppointmentAgainstSchedule(appt, data, TZ)).toBeNull()
+  })
+
+  it('начало записи ровно в момент открытия → null', () => {
+    const appt = baseAppt({ startsAt: '2030-06-15T09:00:00.000Z', endsAt: '2030-06-15T10:00:00.000Z' })
+
+    expect(checkAppointmentAgainstSchedule(appt, data, TZ)).toBeNull()
+  })
+})
+
+describe('checkAppointmentsAgainstSchedule — batch', () => {
+  const data = emptyData({
+    schedules: [{ id: '', resourceId: 'r1', dayOfWeek: 6, isWorking: true, openTime: '09:00', closeTime: '18:00' }],
+  })
+
+  it('пустой список → пустой результат', () => {
+    expect(checkAppointmentsAgainstSchedule([], 'Мастер', data, TZ)).toEqual([])
+  })
+
+  it('возвращает только конфликтные записи, пропускает валидные', () => {
+    const ok = baseAppt({ id: 'ok' })
+    const off = baseAppt({ id: 'off', startsAt: '2030-06-16T10:00:00.000Z', endsAt: '2030-06-16T11:00:00.000Z' }) // воскресенье — нет в расписании
+    const late = baseAppt({ id: 'late', startsAt: '2030-06-15T19:00:00.000Z', endsAt: '2030-06-15T20:00:00.000Z' }) // после закрытия
+
+    const conflicts = checkAppointmentsAgainstSchedule([ok, off, late], 'Мастер Иван', data, TZ)
+
+    expect(conflicts).toHaveLength(2)
+    expect(conflicts[0]).toMatchObject({ appointment: { id: 'off' }, reason: 'day-off', resourceName: 'Мастер Иван' })
+    expect(conflicts[1]).toMatchObject({ appointment: { id: 'late' }, reason: 'out-of-hours' })
+  })
+
+  it('конфликт содержит корректные localDate / localStart / localEnd', () => {
+    const appt = baseAppt({ id: 'x', startsAt: '2030-06-15T19:00:00.000Z', endsAt: '2030-06-15T20:00:00.000Z' })
+    const [conflict] = checkAppointmentsAgainstSchedule([appt], 'Мастер', data, TZ)
+
+    expect(conflict.localDate).toBe('2030-06-15')
+    expect(conflict.localStart).toBe('19:00')
+    expect(conflict.localEnd).toBe('20:00')
   })
 })
 

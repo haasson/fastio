@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-05T12:22:13.448Z",
+  "generated_at": "2026-05-05T12:55:02.368Z",
   "stats": {
-    "files": 119,
+    "files": 120,
     "pages": 0,
-    "symbols": 206,
+    "symbols": 209,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1130,6 +1130,31 @@
           "kind": "const",
           "hash": "ae845004",
           "purpose": "Словарь SupportTicketStatus -> { type, label }"
+        }
+      ]
+    },
+    "utils/timelineAvailability.ts": {
+      "kind": "ts",
+      "hash": "1ab462b57f90",
+      "purpose": "Из бандла bulkLoadAvailability собирает per-resource рабочие часы и disabled-слоты для рендера таймлайна на дату",
+      "symbols": [
+        {
+          "name": "buildTimelineAvailability",
+          "kind": "function",
+          "hash": "a95ad321",
+          "purpose": "Считает рабочие часы и disabled-слоты для всех ресурсов: override на дату → shift-cycle → недельное расписание ресурса → филиал → тенант"
+        },
+        {
+          "name": "ResourceAvailability",
+          "kind": "type",
+          "hash": "0cac4935",
+          "purpose": "Доступность одного ресурса: workingHours {openTime,closeTime}|null + disabledSlots ['HH:MM']"
+        },
+        {
+          "name": "TimelineAvailability",
+          "kind": "type",
+          "hash": "4340b609",
+          "purpose": "Map по resource.id → ResourceAvailability — итог сборки на выбранную дату"
         }
       ]
     },

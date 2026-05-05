@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
 import { reportError } from '~/utils/reportError'
@@ -218,7 +219,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   function persist() {
-    if (import.meta.client) {
+    if (typeof window !== 'undefined') {
       // QuotaExceededError, Safari Private mode, отозванный доступ — не должны
       // ронять корзинную операцию. In-memory state всё равно консистентен.
       try {
@@ -230,7 +231,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   function restore() {
-    if (import.meta.client) {
+    if (typeof window !== 'undefined') {
       try {
         const raw = localStorage.getItem('cart')
         if (raw) {
