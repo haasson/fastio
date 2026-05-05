@@ -4,8 +4,8 @@ import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reportError } from '~/utils/reportError'
 
-type FormSnapshot = {
-  serviceId: string
+export type FormSnapshot = {
+  serviceId: string | null
   resourceId: string | null
   customerName: string
   customerPhone: string
@@ -14,7 +14,7 @@ type FormSnapshot = {
   endsAt: string
 }
 
-type Lookups = {
+export type EventLookups = {
   serviceName: (id: string) => string | null
   resourceName: (id: string | null) => string | null
 }
@@ -56,7 +56,7 @@ export const useAppointmentEventLogger = () => {
    * Логирует diff между формой и текущей записью.
    * Для service_id/resource_id мета содержит человекочитаемые имена через lookups.
    */
-  const logFormDiff = (form: FormSnapshot, before: Appointment, lookups: Lookups) => {
+  const logFormDiff = (form: FormSnapshot, before: Appointment, lookups: EventLookups) => {
     const actor = actorBase(before)
 
     if (!actor) return
@@ -72,8 +72,8 @@ export const useAppointmentEventLogger = () => {
       const change: FieldChange = { field: m.field, old_value: oldVal, new_value: newVal }
 
       if (m.field === 'service_id') {
-        change.old_value = lookups.serviceName(oldVal as string)
-        change.new_value = lookups.serviceName(newVal as string)
+        change.old_value = typeof oldVal === 'string' ? lookups.serviceName(oldVal) : null
+        change.new_value = typeof newVal === 'string' ? lookups.serviceName(newVal) : null
       }
       if (m.field === 'resource_id') {
         change.old_value = lookups.resourceName(oldVal as string | null)

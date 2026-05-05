@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-05T05:07:36.954Z",
+  "generated_at": "2026-05-05T05:36:35.871Z",
   "stats": {
     "files": 38,
     "pages": 0,
@@ -75,8 +75,8 @@
     },
     "src/utils/appointmentEvents.ts": {
       "kind": "ts",
-      "hash": "f8e67a1adce9",
-      "purpose": "Форматирование событий записи (audit log) и changes-полей в человекочитаемые строки для таймлайна",
+      "hash": "4912ff870e5a",
+      "purpose": "Утилиты форматирования событий онлайн-записи: метки статусов, текст события, diff полей, fallback актора",
       "symbols": [
         {
           "name": "formatAppointmentEventText",

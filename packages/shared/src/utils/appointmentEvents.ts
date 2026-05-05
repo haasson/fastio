@@ -25,7 +25,8 @@ export type AppointmentFieldChange = {
 
 export function formatAppointmentEventText(event: AppointmentEvent): string {
   if (event.eventType === 'appointment_created') {
-    return event.meta.source === 'storefront' ? 'Создана клиентом через сайт' : 'Запись создана'
+    const base = event.meta.source === 'storefront' ? 'Создана клиентом через сайт' : 'Запись создана'
+    return event.meta.service_name ? `${base}: ${event.meta.service_name}` : base
   }
   if (event.eventType === 'status_changed') {
     const from = APPOINTMENT_STATUS_LABELS[event.meta.from as AppointmentStatus] ?? '?'

@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { useRouter } from '#imports'
 import { useMessage } from '@fastio/ui'
-import type { Visit } from '@fastio/shared'
+import type { Appointment, Visit } from '@fastio/shared'
 import { localDateTimeToUtcIso } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
@@ -10,11 +10,15 @@ import { useAuthStore } from '~/stores/auth'
 import { reportError } from '~/utils/reportError'
 import type { EditorState } from '~/components/appointments/types'
 import { isSlotChanged } from '~/components/appointments/types'
+import { useAppointmentEventLogger } from '~/composables/data/useAppointmentEventLogger'
 
 type SaveDeps = {
   mode: 'create' | 'edit'
   state: EditorState
   initialVisit?: Visit | null
+  initialAppointments?: Appointment[]
+  serviceNameById?: (id: string) => string | null
+  resourceNameById?: (id: string | null) => string | null
   tz: ComputedRef<string>
   dirty: ComputedRef<boolean>
   isReadOnly: ComputedRef<boolean>
@@ -40,6 +44,7 @@ export function useEditorSave(deps: SaveDeps) {
   const tenantStore = useTenantStore()
   const authStore = useAuthStore()
   const message = useMessage()
+  const logger = useAppointmentEventLogger()
 
   const saving = ref(false)
 
@@ -218,6 +223,58 @@ export function useEditorSave(deps: SaveDeps) {
 
     deps.state.services = deps.state.services.filter((s) => !s.pendingRemove)
     deps.takeSnapshot()
+
+    // Fire-and-forget: логируем изменения в appointment_events.
+    // Мета-поля (имя/телефон/заметки) логируем один раз на первый оставшийся
+    // appointment, слот/ресурс — на каждый reschedule отдельно.
+    const lookups = {
+      serviceName: deps.serviceNameById ?? (() => null),
+      resourceName: deps.resourceNameById ?? (() => null),
+    }
+    const initialAppts = deps.initialAppointments ?? []
+    const firstOrigAppt = initialAppts.find(
+      (a) => !toCancel.some((tc) => tc.appointmentId === a.id),
+    )
+
+    if (firstOrigAppt) {
+      logger.logFormDiff(
+        {
+          serviceId: firstOrigAppt.serviceId,
+          resourceId: firstOrigAppt.resourceId,
+          customerName: deps.state.customerName.trim(),
+          customerPhone: deps.state.customerPhone.trim(),
+          notes: deps.state.notes.trim() || null,
+          startsAt: firstOrigAppt.startsAt,
+          endsAt: firstOrigAppt.endsAt,
+        },
+        firstOrigAppt,
+        lookups,
+      )
+    }
+    for (const svc of toReschedule) {
+      const origAppt = initialAppts.find((a) => a.id === svc.appointmentId)
+
+      if (!origAppt) continue
+      logger.logFormDiff(
+        {
+          serviceId: svc.serviceId,
+          resourceId: svc.currentResourceId,
+          customerName: origAppt.customerName,
+          customerPhone: origAppt.customerPhone,
+          notes: origAppt.notes,
+          startsAt: localDateTimeToUtcIso(date, svc.currentStartTime!, tzVal),
+          endsAt: localDateTimeToUtcIso(date, svc.currentEndTime!, tzVal),
+        },
+        origAppt,
+        lookups,
+      )
+    }
+    for (const svc of toCancel) {
+      const origAppt = initialAppts.find((a) => a.id === svc.appointmentId)
+
+      if (!origAppt) continue
+      logger.logStatusChange(origAppt, origAppt.status, 'cancelled')
+    }
   }
 
   // Edit-mode для request-визита = «Оформить заявку»: ту же кнопку «Сохранить» зовём,
