@@ -92,11 +92,12 @@ export type TenantMemberRow = {
   tenant_roles?: { id: string; name: string; permissions: RolePermissions } | null
 }
 
+// Отражает явный select в invitationsApi.list (не полную строку БД!).
 // `token` намеренно отсутствует — см. комментарий в TenantInvitation типе.
 // Если когда-нибудь добавится копирование ссылки — отдельный server endpoint
 // должен читать токен напрямую из tenant_invitations и не возвращать его как
 // часть list-team response.
-export type TenantInvitationRow = {
+export type TenantInvitationListRow = {
   id: string
   tenant_id: string
   email: string

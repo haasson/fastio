@@ -1,10 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TenantInvitation } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { TenantInvitationRow } from './db-types'
+import type { TenantInvitationListRow } from './db-types'
 
 const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
-  const row = raw as TenantInvitationRow
+  const row = raw as TenantInvitationListRow
   const role = row.tenant_roles
 
   return {
@@ -23,6 +23,8 @@ const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
 
 // Явный список колонок вместо `*` — `tenant_invitations.token` не попадает
 // в client payload даже если кто-то добавит соседнее чувствительное поле в схему.
+// KEEP IN SYNC: тот же набор полей в supabase/functions/list-team/index.ts —
+// если добавляешь/удаляешь колонку здесь, обнови и там (и наоборот).
 const INVITATION_COLUMNS
   = 'id, tenant_id, email, role_id, invited_by, expires_at, accepted_at, created_at, branch_ids, tenant_roles(id, name)'
 

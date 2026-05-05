@@ -119,6 +119,8 @@ Deno.serve(async (req) => {
   // любой member с team.manage увидел бы live-токены в Network tab/Sentry —
   // их хватит чтобы активировать чужой инвайт. Если когда-нибудь понадобится
   // фича «копировать ссылку» — делать отдельным endpoint'ом с rate-limit + audit.
+  // KEEP IN SYNC: тот же набор колонок в apps/admin/utils/api/invitations.ts
+  // (INVITATION_COLUMNS) — правки делать в обоих местах.
   let invitations: unknown[] = []
   if (isOwner || permissions?.['team.manage']) {
     const { data } = await adminSupabase
