@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-05T05:36:35.871Z",
+  "generated_at": "2026-05-05T12:22:13.741Z",
   "stats": {
     "files": 38,
     "pages": 0,
-    "symbols": 160,
+    "symbols": 161,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -124,8 +124,8 @@
     },
     "src/utils/appointmentSlots.ts": {
       "kind": "ts",
-      "hash": "a638611956ec",
-      "purpose": "Slot engine для appointments: вычисление слотов ресурса/филиала/группы на дату, поддержка overnight (close<open) и 24/7 (close==open), пересечение часов ресурса с филиалом",
+      "hash": "fff0f19aa7e2",
+      "purpose": "Генерация слотов для онлайн-записи: разрешение рабочих часов ресурса, подсчёт конфликтов, групповые и индивидуальные слоты, слоты филиала",
       "symbols": [
         {
           "name": "resolveResourceWorkingHours",
@@ -796,8 +796,8 @@
     },
     "src/utils/scheduling.ts": {
       "kind": "ts",
-      "hash": "9f90698c7163",
-      "purpose": "Слоты для планируемого заказа (delivery/pickup): рабочие часы, шаг, lead-time, буфер до закрытия и overnight (+1)",
+      "hash": "efa46adfd018",
+      "purpose": "Утилиты для генерации временных слотов в форме бронирования: getAvailableSlots с учётом расписания, leadTime и overnight",
       "symbols": [
         {
           "name": "getAvailableSlots",
@@ -1165,14 +1165,20 @@
     },
     "src/utils/workingHours.ts": {
       "kind": "ts",
-      "hash": "3312e202c4d9",
-      "purpose": "Расчёт расписания филиала: текстовое отображение (Пн-Пт 10-22), проверка выходного и «открыто сейчас» с учётом overnight",
+      "hash": "8115309a1d9d",
+      "purpose": "Утилиты часов работы: форматирование, isOpenNow с overnight и исключениями, getScheduleForDate с приоритетной цепочкой",
       "symbols": [
         {
           "name": "formatWorkingHours",
           "kind": "function",
           "hash": "84b6838f",
           "purpose": "Расписание в человекочитаемую строку: 'Круглосуточно' / '10:00 – 23:00' / 'Пн–Пт: 10:00 – 22:00, Сб–Вс: выходной'"
+        },
+        {
+          "name": "getScheduleForDate",
+          "kind": "function",
+          "hash": "254e1c05",
+          "purpose": "Расписание на конкретную календарную дату с полным приоритетом: конкретная дата > ежегодное исключение > день недели > дефолт"
         },
         {
           "name": "getDaySchedule",

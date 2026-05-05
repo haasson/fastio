@@ -3,7 +3,7 @@ import type {
   Resource, WorkingHoursSchedule,
 } from '@fastio/shared'
 import {
-  todayInTz, utcIsoToLocalDateTime, timeToMinutes, getDaySchedule, getIsoDayForDate,
+  todayInTz, utcIsoToLocalDateTime, timeToMinutes, getScheduleForDate, getIsoDayForDate,
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
@@ -189,7 +189,7 @@ export function useResourcePresence(resources: Ref<Resource[]>) {
               : tenantSchedule
 
             if (sch) {
-              const day = getDaySchedule(sch, isoDay)
+              const day = getScheduleForDate(sch, today)
 
               if (!day.dayOff && day.open && day.close) {
                 if (day.allDay) {

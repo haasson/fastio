@@ -287,6 +287,10 @@ const applyResource = async (resource: Resource) => {
   form.branchId = branchIds[0] ?? null
   form.serviceIds = serviceIds
   form.categoryIds = categoryIds
+  form.templateId = resource.appliedTemplateId ?? 'branch'
+  if (resource.cycleStartDate) {
+    applyStartTs.value = new Date(resource.cycleStartDate + 'T12:00:00').getTime()
+  }
 }
 
 watch(() => props.modelValue, async (open) => {
@@ -313,7 +317,9 @@ watch(() => props.modelValue, async (open) => {
   templatesLoading.value = false
 
   if (props.resource) {
-    await applyResource(props.resource)
+    const freshResource = resourceList.find((r) => r.id === props.resource!.id) ?? props.resource
+
+    await applyResource(freshResource)
   } else {
     Object.assign(form, {
       name: '', memberId: null, capacity: 1,

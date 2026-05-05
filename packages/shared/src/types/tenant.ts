@@ -107,9 +107,13 @@ export type WorkingHours = {
   allDay?: boolean   // only in default — 24/7, days and open/close ignored
 }
 
+export type ScheduleException = WorkingHours
+
 export type WorkingHoursSchedule = {
   default: WorkingHours
-  days: Record<string, WorkingHours>  // key: "1"=Mon .. "7"=Sun (ISO), only overrides
+  days: Record<string, WorkingHours>              // key: "1"=Mon .. "7"=Sun (ISO), only overrides
+  exceptions?: Record<string, ScheduleException>  // key: "YYYY-MM-DD" — specific calendar date
+  recurringExceptions?: Record<string, ScheduleException> // key: "--MM-DD" — repeats every year
 }
 
 export type TenantLegalInfo = {

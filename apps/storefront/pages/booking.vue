@@ -77,7 +77,7 @@
 import { computed } from 'vue'
 import { useAsyncData, useNuxtData, useRequestFetch } from 'nuxt/app'
 import type { BranchPublic, WorkingHours, WorkingHoursSchedule, ReservationSettings, Tenant } from '@fastio/shared'
-import { getDaySchedule, getIsoDayForDate, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { getScheduleForDate, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsHeading, FsAlert } from '@fastio/public-ui'
 import PageShell from '~/components/sections/PageShell.vue'
@@ -143,7 +143,7 @@ const currentSchedule = computed<WorkingHoursSchedule | null>(() => {
 const workingHoursForDate = computed<WorkingHours | null>(() => {
   const schedule = currentSchedule.value
   if (!schedule || !form.date) return null
-  return getDaySchedule(schedule, getIsoDayForDate(form.date))
+  return getScheduleForDate(schedule, form.date)
 })
 
 const goToStep2 = async () => {

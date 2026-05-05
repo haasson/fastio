@@ -1,5 +1,5 @@
-import type { WorkingHours, WorkingHoursSchedule } from '../types/tenant'
-import { timeToMinutes } from './timezone'
+import type { WorkingHours, WorkingHoursSchedule, ScheduleException } from '../types/tenant'
+import { timeToMinutes, addDaysToDateStr } from './timezone'
 
 const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 const DAY_NAMES_PREPOSITIONAL = ['в понедельник', 'во вторник', 'в среду', 'в четверг', 'в пятницу', 'в субботу', 'в воскресенье']
@@ -62,7 +62,7 @@ export function formatWorkingHours(schedule: WorkingHoursSchedule | null | undef
  * Get current time parts in a given timezone.
  * Uses numeric day extraction to avoid relying on locale-specific weekday strings.
  */
-function getTimeInTimezone(date: Date, timezone: string): { hours: number; minutes: number; isoDay: number } {
+function getTimeInTimezone(date: Date, timezone: string): { hours: number; minutes: number; isoDay: number; dateStr: string } {
   const timeParts = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     hour: 'numeric',
@@ -84,7 +84,33 @@ function getTimeInTimezone(date: Date, timezone: string): { hours: number; minut
   const jsDay = new Date(`${dateStr}T00:00:00`).getDay() // 0=Sun..6=Sat
   const isoDay = jsDay === 0 ? 7 : jsDay // 1=Mon..7=Sun
 
-  return { hours, minutes, isoDay }
+  return { hours, minutes, isoDay, dateStr }
+}
+
+function prevDateStr(dateStr: string): string {
+  const d = new Date(`${dateStr}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
+/**
+ * Resolves WorkingHours for a specific calendar date with full priority chain:
+ * 1. exceptions["YYYY-MM-DD"] — exact date override
+ * 2. recurringExceptions["--MM-DD"] — annual pattern (e.g. "--01-01" for Jan 1)
+ * 3. days["1"-"7"] — weekday override
+ * 4. default — base schedule
+ */
+export function getScheduleForDate(schedule: WorkingHoursSchedule, dateStr: string): WorkingHours | ScheduleException {
+  const specific = schedule.exceptions?.[dateStr]
+  if (specific !== undefined) return specific
+
+  const mmdd = `--${dateStr.slice(5)}`
+  const recurring = schedule.recurringExceptions?.[mmdd]
+  if (recurring !== undefined) return recurring
+
+  const jsDay = new Date(`${dateStr}T12:00:00`).getDay()
+  const isoDay = jsDay === 0 ? 7 : jsDay
+  return getDaySchedule(schedule, isoDay)
 }
 
 export function getDaySchedule(schedule: WorkingHoursSchedule, isoDay: number | string): WorkingHours {
@@ -100,10 +126,6 @@ function isOvernight(wh: WorkingHours): boolean {
   // open === close without allDay is a degenerate config — treat as not overnight
   if (wh.open === wh.close) return false
   return timeToMinutes(wh.close) < timeToMinutes(wh.open)
-}
-
-function prevIsoDay(isoDay: number): number {
-  return isoDay === 1 ? 7 : isoDay - 1
 }
 
 type IsOpenResult = {
@@ -125,12 +147,11 @@ export function isOpenNow(
   if (schedule.default.allDay) return { open: true, nextChange: null, closingAt: null, minutesUntilClose: null }
 
   const date = now ?? new Date()
-  const { hours, minutes, isoDay } = getTimeInTimezone(date, timezone)
+  const { hours, minutes, isoDay, dateStr } = getTimeInTimezone(date, timezone)
   const currentMinutes = hours * 60 + minutes
 
-  const todaySchedule = getDaySchedule(schedule, isoDay)
-  const yesterdayIso = prevIsoDay(isoDay)
-  const yesterdaySchedule = getDaySchedule(schedule, yesterdayIso)
+  const todaySchedule = getScheduleForDate(schedule, dateStr)
+  const yesterdaySchedule = getScheduleForDate(schedule, prevDateStr(dateStr))
 
   // 1. Check yesterday's overnight tail
   if (!yesterdaySchedule.dayOff && isOvernight(yesterdaySchedule)) {
@@ -147,7 +168,7 @@ export function isOpenNow(
 
   // 2. Today is dayOff
   if (todaySchedule.dayOff) {
-    return { open: false, nextChange: findNextOpening(schedule, isoDay, 0), closingAt: null, minutesUntilClose: null }
+    return { open: false, nextChange: findNextOpening(schedule, isoDay, 0, dateStr), closingAt: null, minutesUntilClose: null }
   }
 
   const openMin = timeToMinutes(todaySchedule.open)
@@ -180,26 +201,29 @@ export function isOpenNow(
   }
 
   // 6. After closing — find next opening
-  return { open: false, nextChange: findNextOpening(schedule, isoDay, 1), closingAt: null, minutesUntilClose: null }
+  return { open: false, nextChange: findNextOpening(schedule, isoDay, 1, dateStr), closingAt: null, minutesUntilClose: null }
 }
 
 /**
  * Find the next opening day/time starting from `startIsoDay + offsetDays`.
  * offsetDays: 0 = search from today (for dayOff), 1 = search from tomorrow (after close).
+ * Uses actual calendar dates to respect exceptions.
  */
 function findNextOpening(
   schedule: WorkingHoursSchedule,
   todayIsoDay: number,
   offsetDays: number,
+  todayDateStr: string,
 ): { day: string; time: string; offsetDays: number } | null {
   for (let d = offsetDays; d <= 7; d++) {
-    const checkDay = ((todayIsoDay - 1 + d) % 7) + 1 // wraps 1..7
-    const daySchedule = getDaySchedule(schedule, checkDay)
+    const checkDateStr = addDaysToDateStr(todayDateStr, d)
+    const daySchedule = getScheduleForDate(schedule, checkDateStr)
     if (daySchedule.dayOff) continue
 
+    const checkIsoDay = ((todayIsoDay - 1 + d) % 7) + 1
     const dayLabel = d === 0 ? 'сегодня'
       : d === 1 ? 'завтра'
-        : DAY_NAMES_PREPOSITIONAL[checkDay - 1]
+        : DAY_NAMES_PREPOSITIONAL[checkIsoDay - 1]
 
     return { day: dayLabel, time: daySchedule.open, offsetDays: d }
   }

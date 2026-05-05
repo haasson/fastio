@@ -7,7 +7,7 @@ import type {
   GroupSlotsResult,
 } from '../types/appointment'
 import type { WorkingHoursSchedule } from '../types/tenant'
-import { getDaySchedule } from './workingHours'
+import { getScheduleForDate } from './workingHours'
 import {
   timeToMinutes, minutesToTimeStr,
   localDateTimeToUtcIso, localMinutesToUtcIso,
@@ -105,8 +105,7 @@ function branchHoursForDate(
   branchSchedule: ResourceSlotData['branchSchedule'],
 ): { openTime: string; closeTime: string } | 'allDay' | null {
   if (!branchSchedule) return null
-  const isoDay = Number(getIsoDayForDate(date))
-  const day = getDaySchedule(branchSchedule, isoDay)
+  const day = getScheduleForDate(branchSchedule, date)
   if (day.dayOff) return null
   if (day.allDay) return 'allDay'
   return { openTime: day.open, closeTime: day.close }
@@ -321,8 +320,7 @@ export function getBranchSlotsForDate(
 ): SlotEntry[] {
   if (!branchSchedule) return []
 
-  const isoDay = Number(getIsoDayForDate(date))
-  const day = getDaySchedule(branchSchedule, isoDay)
+  const day = getScheduleForDate(branchSchedule, date)
   if (day.dayOff) return []
 
   const openMin = timeToMinutes(day.open)
@@ -438,8 +436,7 @@ export function findGroupSlots(
 
   // Если через ресурсы не нашли — пробуем через branchSchedule напрямую
   if (!workingHours && branchSchedule) {
-    const isoDay = Number(getIsoDayForDate(date))
-    const day = getDaySchedule(branchSchedule, isoDay)
+    const day = getScheduleForDate(branchSchedule, date)
     if (!day.dayOff) {
       workingHours = { openTime: day.open, closeTime: day.close }
     }

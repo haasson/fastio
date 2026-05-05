@@ -1,6 +1,6 @@
 import type { WorkingHoursSchedule } from '../types/tenant'
-import { getIsoDayForDate, generateTimeSlots, timeToMinutes, minutesToTimeStr } from './timezone'
-import { getDaySchedule } from './workingHours'
+import { generateTimeSlots, timeToMinutes, minutesToTimeStr } from './timezone'
+import { getScheduleForDate } from './workingHours'
 import { formatMinutes } from './date'
 
 export type SlotOption = { value: string; label: string; disabled?: boolean }
@@ -20,15 +20,14 @@ export function getAvailableSlots(
   let close = '22:00'
 
   if (schedule) {
-    if (schedule.default.allDay) {
+    const day = getScheduleForDate(schedule, dateStr)
+    if (day.dayOff) return []
+    if (day.allDay) {
       return Array.from({ length: Math.floor(1440 / step) }, (_, i) => {
         const timeStr = minutesToTimeStr(i * step)
         return { value: timeStr, label: timeStr }
       })
     }
-    const isoDay = Number(getIsoDayForDate(dateStr))
-    const day = getDaySchedule(schedule, isoDay)
-    if (day.dayOff) return []
     open = day.open
     close = day.close
   }
