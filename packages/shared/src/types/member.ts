@@ -15,6 +15,11 @@ export type TenantMember = {
   invitedBy?: string
 }
 
+// `token` НЕ ВКЛЮЧЕН в публичный тип специально (SE5): любой member с team.manage
+// видит инвайты тенанта, и отдавать живой `token` в API response =
+// потенциальная утечка через Sentry/Network tab. Эта аутентификационная
+// тайна должна жить только внутри edge functions accept-invite/get-invite,
+// которые сами читают её из tenant_invitations по hash из URL.
 export type TenantInvitation = {
   id: string
   tenantId: string
@@ -22,7 +27,6 @@ export type TenantInvitation = {
   roleId: string | null
   roleName: string | null
   invitedBy: string
-  token: string
   expiresAt: string
   acceptedAt: string | null
   createdAt: string

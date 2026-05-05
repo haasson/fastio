@@ -14,7 +14,6 @@ const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
     roleId: row.role_id ?? null,
     roleName: role?.name ?? null,
     invitedBy: row.invited_by,
-    token: row.token,
     expiresAt: row.expires_at,
     acceptedAt: row.accepted_at,
     createdAt: row.created_at,
@@ -22,11 +21,16 @@ const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
   }
 }
 
+// Явный список колонок вместо `*` — `tenant_invitations.token` не попадает
+// в client payload даже если кто-то добавит соседнее чувствительное поле в схему.
+const INVITATION_COLUMNS
+  = 'id, tenant_id, email, role_id, invited_by, expires_at, accepted_at, created_at, branch_ids, tenant_roles(id, name)'
+
 export const invitationsApi = {
   async list(sb: SupabaseClient, tenantId: string) {
     const data = await query(
       sb.from('tenant_invitations')
-        .select('*, tenant_roles(id, name)')
+        .select(INVITATION_COLUMNS)
         .eq('tenant_id', tenantId)
         .is('accepted_at', null)
         .order('created_at', { ascending: false }),

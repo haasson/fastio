@@ -92,13 +92,16 @@ export type TenantMemberRow = {
   tenant_roles?: { id: string; name: string; permissions: RolePermissions } | null
 }
 
+// `token` намеренно отсутствует — см. комментарий в TenantInvitation типе.
+// Если когда-нибудь добавится копирование ссылки — отдельный server endpoint
+// должен читать токен напрямую из tenant_invitations и не возвращать его как
+// часть list-team response.
 export type TenantInvitationRow = {
   id: string
   tenant_id: string
   email: string
   role_id: string | null
   invited_by: string
-  token: string
   expires_at: string
   accepted_at: string | null
   created_at: string

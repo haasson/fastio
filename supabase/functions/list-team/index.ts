@@ -114,12 +114,16 @@ Deno.serve(async (req) => {
     }
   })
 
-  // Загружаем pending-инвайты (только для тех кто имеет team.manage)
+  // Загружаем pending-инвайты (только для тех кто имеет team.manage).
+  // Поле `token` намеренно НЕ выбирается из БД и НЕ возвращается клиенту:
+  // любой member с team.manage увидел бы live-токены в Network tab/Sentry —
+  // их хватит чтобы активировать чужой инвайт. Если когда-нибудь понадобится
+  // фича «копировать ссылку» — делать отдельным endpoint'ом с rate-limit + audit.
   let invitations: unknown[] = []
   if (isOwner || permissions?.['team.manage']) {
     const { data } = await adminSupabase
       .from('tenant_invitations')
-      .select('*, tenant_roles(id, name)')
+      .select('id, tenant_id, email, role_id, invited_by, expires_at, accepted_at, created_at, branch_ids, tenant_roles(id, name)')
       .eq('tenant_id', tenantId)
       .is('accepted_at', null)
       .order('created_at', { ascending: false })
@@ -134,7 +138,6 @@ Deno.serve(async (req) => {
         roleId: inv.role_id ?? null,
         roleName: invRoleData?.name ?? null,
         invitedBy: inv.invited_by,
-        token: inv.token,
         expiresAt: inv.expires_at,
         acceptedAt: inv.accepted_at,
         createdAt: inv.created_at,

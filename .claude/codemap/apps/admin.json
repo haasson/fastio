@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-05T12:55:02.368Z",
+  "generated_at": "2026-05-05T13:09:51.214Z",
   "stats": {
     "files": 120,
     "pages": 0,
@@ -1437,8 +1437,8 @@
     },
     "config/team-roles.ts": {
       "kind": "ts",
-      "hash": "2f4057519670",
-      "purpose": "Группы прав ролей команды для редактора кастомных ролей (меню/заказы/кухня/...)",
+      "hash": "edf00c2cc9c7",
+      "purpose": "Конфиг permissionGroups для UI редактора ролей: ярлыки и группировка PermissionKey по разделам (Меню, Заказы, Кухня и т.д.)",
       "symbols": [
         {
           "name": "PermissionGroup",

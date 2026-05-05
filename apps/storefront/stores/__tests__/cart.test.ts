@@ -82,7 +82,7 @@ describe('useCartStore', () => {
     it('блюдо с другими модификаторами — отдельная позиция', () => {
       store.add(makeDish({ modifiers: [] }))
       store.add(makeDish({
-        modifiers: [{ optionId: 'opt1', optionName: 'Большой', groupId: 'g1', groupName: 'Размер', priceDelta: 100 }],
+        modifiers: [{ optionId: 'opt1', optionName: 'Большой', groupName: 'Размер', priceDelta: 100 }],
       }))
       expect(store.dishItems).toHaveLength(2)
     })
@@ -151,7 +151,7 @@ describe('useCartStore', () => {
       store.add(makeDish({
         price: 500,
         quantity: 2,
-        modifiers: [{ optionId: 'o', optionName: 'M', groupId: 'g', groupName: 'G', priceDelta: 100 }],
+        modifiers: [{ optionId: 'o', optionName: 'M', groupName: 'G', priceDelta: 100 }],
         addons: [{ addonId: 'a', addonName: 'Соус', price: 50 }],
       }))
       // unit = 500 + 100 + 50 = 650; × 2 = 1300
