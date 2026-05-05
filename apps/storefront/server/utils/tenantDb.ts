@@ -62,6 +62,11 @@ export const TENANT_TABLES = new Set<string>([
   'tenant_invitations',
   'tenant_members',
   'tenant_roles',
+  // У `tenants` PK `id` совпадает с tenant context, фильтр инжектится как
+  // `.eq('id', tenantId)` — см. wrapTenantTable. Включаем в список, чтобы
+  // нельзя было читать чужого тенанта через db.raw.from('tenants') без
+  // явной cross-tenant ветки (db.crossTenant).
+  'tenants',
 ])
 
 export function getTenantDb(event: H3Event) {
@@ -76,6 +81,9 @@ export function getTenantDb(event: H3Event) {
    * с явным tenant_id в payload.
    */
   function wrapTenantTable(table: string) {
+    // У `tenants` нет колонки `tenant_id` — её PK `id` и есть tenant context.
+    // Фильтр инжектим как `.eq('id', tenantId)`, иначе как `.eq('tenant_id', tenantId)`.
+    const filterColumn = table === 'tenants' ? 'id' : 'tenant_id'
     const qb = sb.from(table)
     return new Proxy(qb, {
       get(target, prop) {
@@ -88,7 +96,7 @@ export function getTenantDb(event: H3Event) {
         if (prop === 'select' || prop === 'update' || prop === 'delete') {
           return (...args: unknown[]) =>
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (target as any)[prop](...args).eq('tenant_id', tenantId)
+            (target as any)[prop](...args).eq(filterColumn, tenantId)
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const val = (target as any)[prop]

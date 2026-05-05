@@ -77,19 +77,21 @@ export function useGroupSlotSearch() {
       shiftTemplateIds,
     })
 
-    // ─── Shift cycles: template_id → { dayIndex → ['HH:MM'] } ──────
-    const shiftSlotsByTemplate = new Map<string, Record<number, string[]>>()
+    // ─── Shift cycles: template_id → { dayIndex → {open, close} | null } ──
+    const shiftHoursByTemplate = new Map<string, Record<number, { openTime: string; closeTime: string } | null>>()
 
-    for (const row of bundle.shiftTemplateSlots) {
-      const map = shiftSlotsByTemplate.get(row.template_id) ?? {}
-      const arr = map[row.day_index] ?? []
+    for (const row of bundle.shiftTemplateDays) {
+      const map = shiftHoursByTemplate.get(row.template_id) ?? {}
 
-      arr.push(row.slot_time.slice(0, 5))
-      map[row.day_index] = arr
-      shiftSlotsByTemplate.set(row.template_id, map)
-    }
-    for (const [, byDay] of shiftSlotsByTemplate) {
-      for (const k of Object.keys(byDay)) byDay[Number(k)].sort()
+      if (!row.is_working || !row.open_time || !row.close_time) {
+        map[row.day_index] = null
+      } else {
+        map[row.day_index] = {
+          openTime: row.open_time.slice(0, 5),
+          closeTime: row.close_time.slice(0, 5),
+        }
+      }
+      shiftHoursByTemplate.set(row.template_id, map)
     }
     const shiftCycleLengthById = new Map<string, number>(
       bundle.shiftTemplates.map((t) => [t.id, t.cycle_length as number]),
@@ -183,11 +185,11 @@ export function useGroupSlotSearch() {
         shiftCycle: (() => {
           if (!r.appliedTemplateId || !r.cycleStartDate) return null
           const cycleLength = shiftCycleLengthById.get(r.appliedTemplateId)
-          const slotsByDayIndex = shiftSlotsByTemplate.get(r.appliedTemplateId)
+          const hoursByDayIndex = shiftHoursByTemplate.get(r.appliedTemplateId)
 
-          if (!cycleLength || !slotsByDayIndex) return null
+          if (!cycleLength || !hoursByDayIndex) return null
 
-          return { cycleStartDate: r.cycleStartDate, cycleLength, slotsByDayIndex }
+          return { cycleStartDate: r.cycleStartDate, cycleLength, hoursByDayIndex }
         })(),
       }
 

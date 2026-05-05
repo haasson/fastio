@@ -7,11 +7,22 @@ const rateLimiter = createRateLimiter(5, 60_000)
 
 const NOTES_MAX_LENGTH = 1000
 
-type BulkItem = {
+export type BulkItem = {
   serviceId: string
   // null = клиент выбрал «любой исполнитель», бэк сам подберёт по round-robin.
   resourceId: string | null
   startTime: string  // "HH:MM"
+  // true ⇒ слот в overnight-фазе следующего дня (смена с 22:00 D, слот 01:00 D+1).
+  // UTC старт строится как `localDateTimeToUtcIso(date+1, startTime, tz)`.
+  isNextDay?: boolean
+}
+
+export type BulkPayload = {
+  customerName: string
+  customerPhone: string
+  date: string
+  items: BulkItem[]
+  branchId: string | null
 }
 
 export default defineEventHandler(async (event) => {
@@ -130,6 +141,12 @@ export default defineEventHandler(async (event) => {
     if (!svc.is_bookable || !svc.duration) {
       throw createError({ statusCode: 400, message: `Услуга "${svc.name}" недоступна для записи` })
     }
+    // Защита расчёта end-даты: если duration ≥ 1440, end может выпрыгнуть на +2
+    // суток, а слот-движок не материализует слоты длиннее окна работы. Услуги
+    // такой длины — продуктовая ошибка, отказываем.
+    if (svc.duration >= 1440) {
+      throw createError({ statusCode: 400, message: `Услуга "${svc.name}" имеет недопустимую длительность (≥ 24 ч)` })
+    }
   }
 
   // Tenant validation: каждый ресурс принадлежит этому тенанту и активен.
@@ -197,12 +214,20 @@ export default defineEventHandler(async (event) => {
     const svc = serviceById.get(item.serviceId)!
     const duration = svc.duration
 
-    const startsAt = localDateTimeToUtcIso(body.date as string, item.startTime, tz)
+    // overnight: если слот в фазе D+1, локальная дата старта = body.date+1.
+    // duration < 1440 (валидация выше) ⇒ end может уехать максимум на +1 сутки
+    // от startDate, две полуночи не пересекаются.
+    const startDate = item.isNextDay ? addDaysToDateStr(body.date as string, 1) : (body.date as string)
+    const startsAt = localDateTimeToUtcIso(startDate, item.startTime, tz)
 
     const [h, m] = item.startTime.split(':').map(Number)
     const endMinutes = h * 60 + m + duration
-    const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`
-    const endsAt = localDateTimeToUtcIso(body.date as string, endTime, tz)
+    // Если end вышел за 24:00 (внутри своих суток), переносим end-дату на +1.
+    const endNextDay = endMinutes >= 1440
+    const endNormalized = endMinutes % 1440
+    const endTime = `${String(Math.floor(endNormalized / 60)).padStart(2, '0')}:${String(endNormalized % 60).padStart(2, '0')}`
+    const endDate = endNextDay ? addDaysToDateStr(startDate, 1) : startDate
+    const endsAt = localDateTimeToUtcIso(endDate, endTime, tz)
 
     return {
       serviceId: item.serviceId,

@@ -4,9 +4,13 @@ import {
   findGroupSlotsWithFallback,
   getResourceSlotsForDate,
   mergeResourceSlots,
+  type SlotEntry,
 } from '../utils/appointmentSlots'
 import type { ResourceSlotData, AppointmentInterval } from '../types/appointment'
 import type { WorkingHoursSchedule } from '../types/tenant'
+
+/** Маппит SlotEntry[] → массив строк HH:MM (для совместимости со старыми ассертами). */
+const times = (entries: SlotEntry[]): string[] => entries.map((e) => e.time)
 
 // Дата в далёком будущем + UTC, чтобы не цеплять `todayInTz` фильтр прошедших слотов.
 const FUTURE_DATE = '2030-06-15'
@@ -319,6 +323,155 @@ describe('findGroupSlotsWithFallback', () => {
     expect(at11.schedule[0].resourceId).toBe('res-A')
   })
 
+  // План 1a: групповая бронь поддерживает overnight (close < open) — 2 услуги
+  // могут размазаться через полночь, schedule entries получают isNextDay флаги.
+  describe('overnight в группе (план 1a)', () => {
+    it('overnight schedule 22:00→04:00, 2 услуги по 60 мин → стартовый слот 23:00 размазывает на D и D+1', () => {
+      const data = makeResData({
+        schedules: [{
+          id: '', resourceId: 'res-A', dayOfWeek: 6,
+          isWorking: true, openTime: '22:00', closeTime: '04:00',
+        }],
+        branchSchedule: null,
+      })
+      const items = [
+        {
+          serviceId: 'svc-1',
+          duration: 60,
+          allResourceIds: ['res-A'],
+          preferredResourceId: null,
+          resourceNames: new Map([['res-A', 'Alice']]),
+        },
+        {
+          serviceId: 'svc-2',
+          duration: 60,
+          allResourceIds: ['res-A'],
+          preferredResourceId: null,
+          resourceNames: new Map([['res-A', 'Alice']]),
+        },
+      ]
+      const slotData = new Map([['res-A', data]])
+      const appts = new Map<string, AppointmentInterval[]>()
+
+      const result = findGroupSlotsWithFallback(
+        items, FUTURE_DATE, slotData, appts, baseSettings, 6 * 60, null,
+      )
+
+      expect(result.type).toBe('slots')
+      if (result.type !== 'slots') return
+
+      // Стартовые слоты: 22:00, 22:30, 23:00, 23:30, 00:00 D+1, 00:30 D+1, 01:00 D+1, 01:30 D+1.
+      // Последний возможный старт — 02:00 D+1 (cursor + 120 = 04:00 ровно close).
+      // Реально: t от 22*60=1320 до closeMinAdj-totalDur=1680-120=1560 включительно.
+      // Шаг 30: 1320,1350,1380,1410,1440,1470,1500,1530,1560 → 9 слотов.
+      expect(result.entries).toHaveLength(9)
+
+      // Слот 23:00 — старт на D, вторая услуга на D+1.
+      const at23 = result.entries.find((e) => e.startTime === '23:00' && !e.startIsNextDay)
+      expect(at23).toBeDefined()
+      expect(at23!.schedule[0]).toMatchObject({
+        startTime: '23:00', startIsNextDay: false,
+        endTime: '00:00', endIsNextDay: true,
+      })
+      expect(at23!.schedule[1]).toMatchObject({
+        startTime: '00:00', startIsNextDay: true,
+        endTime: '01:00', endIsNextDay: true,
+      })
+
+      // Слот 02:00 D+1 — оба item'а полностью в D+1.
+      const at0200Next = result.entries.find((e) => e.startTime === '02:00' && e.startIsNextDay)
+      expect(at0200Next).toBeDefined()
+      expect(at0200Next!.schedule[0]).toMatchObject({ startTime: '02:00', startIsNextDay: true, endTime: '03:00', endIsNextDay: true })
+      expect(at0200Next!.schedule[1]).toMatchObject({ startTime: '03:00', startIsNextDay: true, endTime: '04:00', endIsNextDay: true })
+    })
+
+    it('findGroupSlotsWithFallback overnight: preferred-fallback корректно работает через полночь', () => {
+      // Услуга 1 — preferred res-A, услуга 2 — preferred res-B. Оба ресурса работают
+      // 22:00→04:00. На 23:00 res-A занят бронью 23:00→00:00 → у svc-1 fallback на res-B.
+      // Перестановка может найти slot когда другой order даёт preferred.
+      const data: ResourceSlotData = {
+        schedules: [{
+          id: '', resourceId: 'res-A', dayOfWeek: 6,
+          isWorking: true, openTime: '22:00', closeTime: '04:00',
+        }],
+        disabledSlots: [], dateOverrides: [], dateDisabledSlots: [],
+        branchSchedule: null, shiftCycle: null,
+      }
+      const dataB: ResourceSlotData = {
+        ...data,
+        schedules: [{ id: '', resourceId: 'res-B', dayOfWeek: 6, isWorking: true, openTime: '22:00', closeTime: '04:00' }],
+      }
+      const items = [{
+        serviceId: 'svc-1',
+        duration: 60,
+        allResourceIds: ['res-A', 'res-B'],
+        preferredResourceId: 'res-A',
+        resourceNames: new Map([['res-A', 'Alice'], ['res-B', 'Bob']]),
+      }]
+      const slotData = new Map([['res-A', data], ['res-B', dataB]])
+      const appts = new Map<string, AppointmentInterval[]>([
+        ['res-A', [{ startsAt: '2030-06-15T23:00:00.000Z', endsAt: '2030-06-16T00:00:00.000Z' }]],
+      ])
+
+      const result = findGroupSlotsWithFallback(
+        items, FUTURE_DATE, slotData, appts, baseSettings, 6 * 60, null,
+      )
+
+      expect(result.type).toBe('slots')
+      if (result.type !== 'slots') return
+
+      // Слот 23:00 — res-A занят, fallback на res-B → match='any'.
+      const at23 = result.entries.find((e) => e.startTime === '23:00' && !e.startIsNextDay)
+      expect(at23).toBeDefined()
+      expect(at23!.match).toBe('any')
+      expect(at23!.schedule[0].resourceId).toBe('res-B')
+
+      // Слот 00:00 D+1 — res-A уже свободен → match='preferred'.
+      const at00next = result.entries.find((e) => e.startTime === '00:00' && e.startIsNextDay)
+      expect(at00next).toBeDefined()
+      expect(at00next!.match).toBe('preferred')
+      expect(at00next!.schedule[0].resourceId).toBe('res-A')
+    })
+
+    it('overnight + бронь 23:00→00:00 у мастера → слоты 22:30 / 23:00 / 23:30 заблокированы', () => {
+      const data = makeResData({
+        schedules: [{
+          id: '', resourceId: 'res-A', dayOfWeek: 6,
+          isWorking: true, openTime: '22:00', closeTime: '04:00',
+        }],
+        branchSchedule: null,
+      })
+      const items = [
+        {
+          serviceId: 'svc-1',
+          duration: 60,
+          allResourceIds: ['res-A'],
+          preferredResourceId: null,
+          resourceNames: new Map([['res-A', 'Alice']]),
+        },
+      ]
+      const slotData = new Map([['res-A', data]])
+      const appts = new Map<string, AppointmentInterval[]>([
+        ['res-A', [{ startsAt: '2030-06-15T23:00:00.000Z', endsAt: '2030-06-16T00:00:00.000Z' }]],
+      ])
+
+      const result = findGroupSlotsWithFallback(
+        items, FUTURE_DATE, slotData, appts, baseSettings, 6 * 60, null,
+      )
+
+      expect(result.type).toBe('slots')
+      if (result.type !== 'slots') return
+
+      // 22:30 (22:30→23:30 пересекается), 23:00, 23:30 — заняты. 22:00 свободен (22:00→23:00, конец = старт занятого), 00:00 D+1 — свободен.
+      const present = (time: string, nextDay: boolean) => result.entries.find((e) => e.startTime === time && e.startIsNextDay === nextDay)
+      expect(present('22:00', false)).toBeDefined()
+      expect(present('22:30', false)).toBeUndefined()
+      expect(present('23:00', false)).toBeUndefined()
+      expect(present('23:30', false)).toBeUndefined()
+      expect(present('00:00', true)).toBeDefined()
+    })
+  })
+
   // 10.1: алгоритм перебирает все перестановки услуг при items.length<=5,
   // чтобы найти стартовые времена недоступные в исходном порядке.
   describe('перестановки услуг (план 10.1)', () => {
@@ -479,7 +632,7 @@ describe('getResourceSlotsForDate', () => {
 
   it('capacity=1, ресурс свободен → 8 слотов 60-мин услуги в 8h окне', () => {
     const data = makeResData()
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ))
     // 10:00..17:00 шагом 30 мин = 15 слотов; последний слот 17:00 кончается в 18:00.
     expect(slots).toHaveLength(15)
     expect(slots[0]).toBe('10:00')
@@ -491,7 +644,7 @@ describe('getResourceSlotsForDate', () => {
     const appts: AppointmentInterval[] = [
       { startsAt: '2030-06-15T10:00:00.000Z', endsAt: '2030-06-15T11:00:00.000Z' },
     ]
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, appts, 60, settings.slotStep, TZ, 2)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, appts, 60, settings.slotStep, TZ, 2))
     expect(slots).toContain('10:00')
   })
 
@@ -501,7 +654,7 @@ describe('getResourceSlotsForDate', () => {
       { startsAt: '2030-06-15T10:00:00.000Z', endsAt: '2030-06-15T11:00:00.000Z' },
       { startsAt: '2030-06-15T10:00:00.000Z', endsAt: '2030-06-15T11:00:00.000Z' },
     ]
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, appts, 60, settings.slotStep, TZ, 2)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, appts, 60, settings.slotStep, TZ, 2))
     expect(slots).not.toContain('10:00')
     // 10:30 пересекается с обеими — тоже занят. 11:00 свободен.
     expect(slots).not.toContain('10:30')
@@ -525,8 +678,35 @@ describe('getResourceSlotsForDate', () => {
         isWorking: false, openTime: null, closeTime: null,
       }],
     })
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ))
     expect(slots).toEqual([])
+  })
+
+  it('24/7 филиал + ресурс без своего графика → 47 слотов 00:00..23:00 (duration=60, последний влезает в 24:00 границу)', () => {
+    const data = makeResData({
+      branchSchedule: { default: { open: '00:00', close: '00:00', allDay: true }, days: {} },
+    })
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    // 24h окно / 30 мин шаг = 48 стартовых моментов. duration=60 отсекает
+    // 23:30 (закончится в 00:30 D+1 = вне окна). Остаётся 47: 00:00..23:00.
+    expect(slots).toHaveLength(47)
+    expect(slots[0]).toEqual({ time: '00:00', isNextDay: false })
+    expect(slots[slots.length - 1]).toEqual({ time: '23:00', isNextDay: false })
+    // Все слоты в фазе D — overnight не активен (окно [00:00, 24:00) полностью в D).
+    expect(slots.every((s) => !s.isNextDay)).toBe(true)
+  })
+
+  it('24/7 филиал + ресурс задан 00:00→00:00 (свой 24/7) → то же 47 слотов (без overnight-фазы)', () => {
+    const data = makeResData({
+      branchSchedule: { default: { open: '00:00', close: '00:00', allDay: true }, days: {} },
+      schedules: [{
+        id: 's1', resourceId: 'r', dayOfWeek: 6,
+        isWorking: true, openTime: '00:00', closeTime: '00:00',
+      }],
+    })
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    expect(slots).toHaveLength(47)
+    expect(slots.every((s) => !s.isNextDay)).toBe(true)
   })
 
   it('working override на дату → перебивает обычный график (другие часы)', () => {
@@ -540,46 +720,73 @@ describe('getResourceSlotsForDate', () => {
         isWorking: true, openTime: '13:00', closeTime: '15:00',
       }],
     })
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ))
     expect(slots).toEqual(['13:00', '13:30', '14:00'])
   })
 
-  it('shift cycle: активные слоты включены, между ними disabled (известный техдолг — после последнего активного слота окно не закрывается)', () => {
-    // Цикл 4 дня. День 0 имеет активные слоты [09:00, 10:00, 11:00].
-    // Между ними (09:30, 10:30) blocked. После 11:00 окно остаётся открытым
-    // до closeTime=23:59 (см. TECHDEBT по shift-cycle disable).
+  it('shift cycle: рабочий день цикла → ровно слоты от open до close (без техдолга про дырку)', () => {
+    // Цикл 4 дня. День 0 — рабочий 09:00–12:00. branchSchedule=null чтобы
+    // не наложилось окно филиала и не уменьшило фактический интервал.
+    const data = makeResData({
+      branchSchedule: null,
+      shiftCycle: {
+        cycleStartDate: FUTURE_DATE,
+        cycleLength: 4,
+        hoursByDayIndex: {
+          0: { openTime: '09:00', closeTime: '12:00' },
+          1: { openTime: '09:00', closeTime: '12:00' },
+          2: null,
+          3: null,
+        },
+      },
+    })
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ))
+    // 09:00..11:00 (последний слот 11:00→12:00 умещается в окно).
+    expect(slots).toEqual(['09:00', '09:30', '10:00', '10:30', '11:00'])
+  })
+
+  it('shift cycle: день вне рабочего цикла (idx=2 = выходной) → пустой результат', () => {
+    // FUTURE_DATE — день 0; берём дату через 2 дня → idx=2 = выходной.
     const data = makeResData({
       shiftCycle: {
         cycleStartDate: FUTURE_DATE,
         cycleLength: 4,
-        slotsByDayIndex: {
-          0: ['09:00', '10:00', '11:00'],
-          1: ['09:00', '10:00', '11:00'],
-          2: [],
-          3: [],
+        hoursByDayIndex: {
+          0: { openTime: '09:00', closeTime: '17:00' },
+          1: { openTime: '09:00', closeTime: '17:00' },
+          2: null,
+          3: null,
+        },
+      },
+    })
+    const slots = times(getResourceSlotsForDate('2030-06-17', data, [], 60, settings.slotStep, TZ))
+    expect(slots).toEqual([])
+  })
+
+  it('shift cycle: hoursByDayIndex с close < open (overnight) → slot engine материализует overnight-фазу', () => {
+    // Смена 22:00→02:00. branchSchedule=null чтобы окно филиала не отрезало
+    // overnight (см. отдельные тесты на пересечение с филиалом).
+    const data = makeResData({
+      branchSchedule: null,
+      shiftCycle: {
+        cycleStartDate: FUTURE_DATE,
+        cycleLength: 2,
+        hoursByDayIndex: {
+          0: { openTime: '22:00', closeTime: '02:00' },
+          1: null,
         },
       },
     })
     const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
-    // Активные включены, disabled между ними не отдаются.
-    expect(slots).toContain('09:00')
-    expect(slots).toContain('10:00')
-    expect(slots).toContain('11:00')
-    expect(slots).not.toContain('09:30')
-    expect(slots).not.toContain('10:30')
-  })
-
-  it('shift cycle: день вне рабочего цикла (idx=2) → пустой результат', () => {
-    // FUTURE_DATE — день 0; берём дату через 2 дня → idx=2.
-    const data = makeResData({
-      shiftCycle: {
-        cycleStartDate: FUTURE_DATE,
-        cycleLength: 4,
-        slotsByDayIndex: { 0: ['09:00'], 1: ['09:00'], 2: [], 3: [] },
-      },
-    })
-    const slots = getResourceSlotsForDate('2030-06-17', data, [], 60, settings.slotStep, TZ)
-    expect(slots).toEqual([])
+    expect(slots).toEqual([
+      { time: '22:00', isNextDay: false },
+      { time: '22:30', isNextDay: false },
+      { time: '23:00', isNextDay: false },
+      { time: '23:30', isNextDay: false },
+      { time: '00:00', isNextDay: true },
+      { time: '00:30', isNextDay: true },
+      { time: '01:00', isNextDay: true },
+    ])
   })
 
   it('disabled slot на дату → исключён', () => {
@@ -588,7 +795,7 @@ describe('getResourceSlotsForDate', () => {
         id: 'd1', resourceId: 'r', date: FUTURE_DATE, slotTime: '12:00',
       }],
     })
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ))
     expect(slots).not.toContain('12:00')
     expect(slots).toContain('11:30')
   })
@@ -600,13 +807,11 @@ describe('getResourceSlotsForDate', () => {
         id: 'd1', resourceId: 'r', dayOfWeek: 6, slotTime: '13:00',
       }],
     })
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ))
     expect(slots).not.toContain('13:00')
   })
 
-  it('overnight schedule (close <= open) → пустой результат (план 1a, не поддерживается)', () => {
-    // Документируем текущее поведение: 22:00–02:00 не работает. Тест защищает
-    // от случайной регрессии до того как 1a будет реализован.
+  it('overnight weekly schedule (22:00→02:00) — материализует слоты с isNextDay для D+1 фазы', () => {
     const data = makeResData({
       schedules: [{
         id: 's1', resourceId: 'r', dayOfWeek: 6,
@@ -615,7 +820,91 @@ describe('getResourceSlotsForDate', () => {
       branchSchedule: null,
     })
     const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
-    expect(slots).toEqual([])
+    // 22:00, 22:30, 23:00, 23:30 — день D; 00:00, 00:30, 01:00 — день D+1.
+    expect(slots).toEqual([
+      { time: '22:00', isNextDay: false },
+      { time: '22:30', isNextDay: false },
+      { time: '23:00', isNextDay: false },
+      { time: '23:30', isNextDay: false },
+      { time: '00:00', isNextDay: true },
+      { time: '00:30', isNextDay: true },
+      { time: '01:00', isNextDay: true },
+    ])
+  })
+
+  it('overnight + booked appointment 23:00→00:00 → слоты 22:30, 23:00 заняты', () => {
+    const data = makeResData({
+      schedules: [{
+        id: 's1', resourceId: 'r', dayOfWeek: 6,
+        isWorking: true, openTime: '22:00', closeTime: '02:00',
+      }],
+      branchSchedule: null,
+    })
+    const appts: AppointmentInterval[] = [
+      { startsAt: '2030-06-15T23:00:00.000Z', endsAt: '2030-06-16T00:00:00.000Z' },
+    ]
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, appts, 60, settings.slotStep, TZ)
+    const taken = ['22:30', '23:00', '23:30']
+    for (const t of taken) {
+      expect(slots.find((s) => s.time === t)).toBeUndefined()
+    }
+    expect(slots.find((s) => s.time === '22:00' && !s.isNextDay)).toBeDefined()
+    expect(slots.find((s) => s.time === '00:00' && s.isNextDay)).toBeDefined()
+  })
+
+  it('пересечение с филиалом: мастер 22-04 при филиале 10-22 → 0 слотов', () => {
+    // Юзер-кейс: ресурсу выставлен ночной график, но заведение закрывается в 22.
+    // Без пересечения раньше отдавались слоты ночью «вне» филиала.
+    const data = makeResData({
+      schedules: [{
+        id: 's1', resourceId: 'r', dayOfWeek: 6,
+        isWorking: true, openTime: '22:00', closeTime: '04:00',
+      }],
+      // makeResData по дефолту branch10to18 (10–18). Перебиваем на 10–22 для теста.
+      branchSchedule: { default: { open: '10:00', close: '22:00' }, days: {} },
+    })
+    expect(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)).toEqual([])
+  })
+
+  it('пересечение с филиалом: мастер 09-20 при филиале 10-18 → слоты 10:00..17:00', () => {
+    const data = makeResData({
+      schedules: [{
+        id: 's1', resourceId: 'r', dayOfWeek: 6,
+        isWorking: true, openTime: '09:00', closeTime: '20:00',
+      }],
+    })
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ))
+    expect(slots[0]).toBe('10:00')
+    expect(slots[slots.length - 1]).toBe('17:00')
+  })
+
+  it('пересечение с филиалом: филиал 24/7 (allDay) → не урезает overnight ресурс', () => {
+    const data = makeResData({
+      schedules: [{
+        id: 's1', resourceId: 'r', dayOfWeek: 6,
+        isWorking: true, openTime: '22:00', closeTime: '02:00',
+      }],
+      branchSchedule: { default: { open: '00:00', close: '00:00', allDay: true }, days: {} },
+    })
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)
+    // Полные 4 часа смены = 22:00, 22:30, 23:00, 23:30 + 00:00 (D+1), 00:30, 01:00.
+    expect(slots).toHaveLength(7)
+    expect(slots.find((s) => s.time === '00:00' && s.isNextDay)).toBeDefined()
+  })
+
+  it('пересечение с филиалом: филиал в этот день закрыт (dayOff) → 0 слотов даже если у ресурса свой график', () => {
+    const data = makeResData({
+      schedules: [{
+        id: 's1', resourceId: 'r', dayOfWeek: 6,
+        isWorking: true, openTime: '10:00', closeTime: '17:00',
+      }],
+      branchSchedule: {
+        default: { open: '10:00', close: '18:00' },
+        // 2030-06-15 — суббота, isoDay=6.
+        days: { '6': { dayOff: true, open: '', close: '' } },
+      },
+    })
+    expect(getResourceSlotsForDate(FUTURE_DATE, data, [], 60, settings.slotStep, TZ)).toEqual([])
   })
 
   it('частичное перекрытие: занятая запись 10:30–11:30 блокирует слоты 10:00, 10:30, 11:00', () => {
@@ -623,7 +912,7 @@ describe('getResourceSlotsForDate', () => {
     const appts: AppointmentInterval[] = [
       { startsAt: '2030-06-15T10:30:00.000Z', endsAt: '2030-06-15T11:30:00.000Z' },
     ]
-    const slots = getResourceSlotsForDate(FUTURE_DATE, data, appts, 60, settings.slotStep, TZ)
+    const slots = times(getResourceSlotsForDate(FUTURE_DATE, data, appts, 60, settings.slotStep, TZ))
     expect(slots).not.toContain('10:00') // 10:00–11:00 пересекается с 10:30–11:30
     expect(slots).not.toContain('10:30') // 10:30–11:30 — сама занятая запись
     expect(slots).not.toContain('11:00') // 11:00–12:00 пересекается до 11:30
@@ -647,14 +936,14 @@ describe('mergeResourceSlots', () => {
       }],
     })
 
-    const slots = mergeResourceSlots(
+    const slots = times(mergeResourceSlots(
       FUTURE_DATE,
       [
         { data: dataA, appointments: [] },
         { data: dataB, appointments: [] },
       ],
       60, 30, TZ,
-    )
+    ))
     expect(slots).toEqual(['10:00', '10:30', '11:00', '14:00', '14:30', '15:00'])
   })
 
@@ -673,14 +962,14 @@ describe('mergeResourceSlots', () => {
       }],
     })
 
-    const slots = mergeResourceSlots(
+    const slots = times(mergeResourceSlots(
       FUTURE_DATE,
       [
         { data: dataA, appointments: [] },
         { data: dataB, appointments: [] },
       ],
       60, 30, TZ,
-    )
+    ))
     // 10:00, 10:30, 11:00 (от обоих, но без дубля), 11:30, 12:00 (только B)
     expect(slots).toEqual(['10:00', '10:30', '11:00', '11:30', '12:00'])
   })

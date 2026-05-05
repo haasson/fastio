@@ -8,10 +8,24 @@ import type {
 } from '../types/appointment'
 import type { WorkingHoursSchedule } from '../types/tenant'
 import { getDaySchedule } from './workingHours'
-import { timeToMinutes, minutesToTimeStr, localDateTimeToUtcIso, getIsoDayForDate, todayInTz, nowTimeInTz } from './timezone'
+import {
+  timeToMinutes, minutesToTimeStr,
+  localDateTimeToUtcIso, localMinutesToUtcIso,
+  getIsoDayForDate, todayInTz, nowTimeInTz,
+} from './timezone'
 
 /** Дефолтная длина рабочего дня в минутах когда расписание тенанта/филиала не задано. */
 export const DEFAULT_WORKING_DAY_MINUTES = 8 * 60
+
+/**
+ * Слот для overnight-aware UI/submission. `time` — нормализованное "HH:MM"
+ * локального времени слота. `isNextDay=true` означает что слот в фазе D+1
+ * смены, начавшейся в D (например, смена 22:00→04:00 на дате D имеет слоты
+ * 22:00..23:30 с isNextDay=false и 00:00..03:00 с isNextDay=true).
+ *
+ * Для нон-overnight расписаний isNextDay всегда false.
+ */
+export type SlotEntry = { time: string; isNextDay: boolean }
 
 /**
  * Чистая разница в днях между двумя YYYY-MM-DD строками (отрицательная если b < a).
@@ -24,15 +38,78 @@ function daysBetween(a: string, b: string): number {
 }
 
 /**
- * Слоты shift-цикла для конкретной даты (или null если цикла нет).
+ * Результат `shiftHoursForDate`. Discriminated union вместо `null|undefined|object`
+ * — TS-проверка не даёт перепутать «цикла нет» и «цикл есть, день выходной».
+ *   no-cycle — у ресурса не привязан shift-цикл ⇒ фолбек на schedules/branch;
+ *   day-off  — цикл есть, но конкретный день цикла объявлен выходным (часы=null);
+ *   working  — конкретные часы работы на день цикла.
  */
-function shiftSlotsForDate(date: string, data: ResourceSlotData): string[] | null {
+type ShiftHoursResult =
+  | { kind: 'no-cycle' }
+  | { kind: 'day-off' }
+  | { kind: 'working'; openTime: string; closeTime: string }
+
+function shiftHoursForDate(date: string, data: ResourceSlotData): ShiftHoursResult {
   const cycle = data.shiftCycle
-  if (!cycle) return null
+  if (!cycle) return { kind: 'no-cycle' }
+
   const len = cycle.cycleLength
   const offset = daysBetween(cycle.cycleStartDate, date)
   const idx = ((offset % len) + len) % len
-  return cycle.slotsByDayIndex[idx] ?? []
+  const hours = cycle.hoursByDayIndex[idx]
+  if (!hours) return { kind: 'day-off' }
+  return { kind: 'working', openTime: hours.openTime, closeTime: hours.closeTime }
+}
+
+/**
+ * Пересекает два временных окна с поддержкой overnight (close <= open значит
+ * закрытие следующих суток). Возвращает результирующее окно в HH:MM
+ * (нормализованные мод 1440), или null если окна не пересекаются.
+ *
+ * Если пересечение целиком в D+1 (start >= 1440 минут) — возвращаем null,
+ * потому что бронирование на дату D в эту фазу не имеет смысла: запрос на
+ * D+1 явный (юзер выберет следующую дату).
+ */
+function intersectWindows(
+  a: { openTime: string; closeTime: string },
+  b: { openTime: string; closeTime: string },
+): { openTime: string; closeTime: string } | null {
+  const aOpen = timeToMinutes(a.openTime)
+  const aCloseRaw = timeToMinutes(a.closeTime)
+  const aClose = aCloseRaw <= aOpen ? aCloseRaw + 1440 : aCloseRaw
+
+  const bOpen = timeToMinutes(b.openTime)
+  const bCloseRaw = timeToMinutes(b.closeTime)
+  const bClose = bCloseRaw <= bOpen ? bCloseRaw + 1440 : bCloseRaw
+
+  const open = Math.max(aOpen, bOpen)
+  const close = Math.min(aClose, bClose)
+
+  if (open >= close) return null
+  if (open >= 1440) return null
+
+  return {
+    openTime: minutesToTimeStr(open),
+    closeTime: minutesToTimeStr(close),
+  }
+}
+
+/**
+ * Часы филиала на дату.
+ *   null    — филиал в этот день закрыт (день-off);
+ *  'allDay' — открыт круглосуточно, нет границ для пересечения;
+ *  объект   — конкретное окно работы.
+ */
+function branchHoursForDate(
+  date: string,
+  branchSchedule: ResourceSlotData['branchSchedule'],
+): { openTime: string; closeTime: string } | 'allDay' | null {
+  if (!branchSchedule) return null
+  const isoDay = Number(getIsoDayForDate(date))
+  const day = getDaySchedule(branchSchedule, isoDay)
+  if (day.dayOff) return null
+  if (day.allDay) return 'allDay'
+  return { openTime: day.open, closeTime: day.close }
 }
 
 /**
@@ -40,6 +117,13 @@ function shiftSlotsForDate(date: string, data: ResourceSlotData): string[] | nul
  * Возвращает { openTime, closeTime } или null если ресурс не работает.
  *
  * Приоритет: override на дату → shiftCycle → resource_schedules → график филиала.
+ *
+ * Если у ресурса есть свой график И задан график филиала, итоговое окно =
+ * пересечение собственных часов ресурса с часами филиала. Без этого можно
+ * было выставить мастеру 22:00→04:00, а филиал работает до 22:00 — слоты
+ * появлялись после закрытия заведения.
+ *
+ * close < open означает overnight (закрытие следующего календарного дня).
  */
 export function resolveResourceWorkingHours(
   date: string,  // "YYYY-MM-DD"
@@ -47,49 +131,63 @@ export function resolveResourceWorkingHours(
 ): { openTime: string; closeTime: string } | null {
   const dayOfWeek = new Date(date + 'T12:00:00').getDay()  // 0=Sun..6=Sat
 
+  // Собственные часы ресурса (без учёта филиала). Может быть null если ресурс
+  // не работает (день-off override / выходной по shift-циклу / weekly day-off).
+  let ownHours: { openTime: string; closeTime: string } | null = null
+  let hasOwnSchedule = false
+
   const override = data.dateOverrides.find(o => o.date === date)
   if (override) {
-    if (!override.isWorking || !override.openTime || !override.closeTime) {
-      return null
+    hasOwnSchedule = true
+    if (override.isWorking && override.openTime && override.closeTime) {
+      ownHours = { openTime: override.openTime, closeTime: override.closeTime }
     }
-    return { openTime: override.openTime, closeTime: override.closeTime }
+  } else {
+    const cycle = shiftHoursForDate(date, data)
+    if (cycle.kind !== 'no-cycle') {
+      // Цикл задан — даже если выходной, фолбек на schedules НЕ происходит.
+      // Цикл — самодостаточная декларация графика.
+      hasOwnSchedule = true
+      ownHours = cycle.kind === 'working'
+        ? { openTime: cycle.openTime, closeTime: cycle.closeTime }
+        : null
+    } else if (data.schedules.length > 0) {
+      hasOwnSchedule = true
+      const schedule = data.schedules.find(s => s.dayOfWeek === dayOfWeek)
+      if (schedule && schedule.isWorking && schedule.openTime && schedule.closeTime) {
+        ownHours = { openTime: schedule.openTime, closeTime: schedule.closeTime }
+      }
+    }
   }
 
-  // Shift-цикл: окно = [первый слот, последний слот + slotStep). slotStep
-  // знает только верхнеуровневый код, поэтому здесь возвращаем границы по
-  // первому и последнему slot-time. getResourceSlotsForDate всё равно
-  // фильтрует по active set из disabledSlots, так что даже широкое окно
-  // не даст лишних слотов.
-  const cycleSlots = shiftSlotsForDate(date, data)
-  if (cycleSlots !== null) {
-    if (cycleSlots.length === 0) return null
-    return { openTime: cycleSlots[0], closeTime: '23:59' }
+  // Если у ресурса нет собственного графика — наследуем филиал.
+  if (!hasOwnSchedule) {
+    const branch = branchHoursForDate(date, data.branchSchedule)
+    if (branch === null) return null
+    if (branch === 'allDay') return { openTime: '00:00', closeTime: '24:00' }
+    return branch
   }
 
-  if (data.schedules.length > 0) {
-    const schedule = data.schedules.find(s => s.dayOfWeek === dayOfWeek)
-    if (!schedule || !schedule.isWorking || !schedule.openTime || !schedule.closeTime) return null
-    return { openTime: schedule.openTime, closeTime: schedule.closeTime }
-  }
+  if (!ownHours) return null
 
-  // График у ресурса не задан → наследуем филиал.
-  if (data.branchSchedule) {
-    const isoDay = Number(getIsoDayForDate(date))
-    const day = getDaySchedule(data.branchSchedule, isoDay)
-    if (day.dayOff) return null
-    return { openTime: day.open, closeTime: day.close }
-  }
+  // Пересекаем с графиком филиала (если задан). Если филиал в этот день
+  // закрыт — ресурс тоже не работает. Если филиал 24/7 — границ нет,
+  // используем часы ресурса как есть.
+  const branchHours = branchHoursForDate(date, data.branchSchedule)
+  if (branchHours === null) return data.branchSchedule ? null : ownHours
+  if (branchHours === 'allDay') return ownHours
 
-  return null
+  return intersectWindows(ownHours, branchHours)
 }
 
 /**
  * Возвращает множество выключенных слотов (строки "HH:MM") для ресурса на дату.
  *
- * Для shift-цикла «выключенные» = все слоты в окне работы, КРОМЕ активных
- * на этот день цикла (active-list переворачивается в disabled-list).
+ * Для shift-цикла перерывов внутри смены нет — рабочие/выходные дни декларируются
+ * целиком через hoursByDayIndex (выходной = day=null). Точечные dateDisabledSlots
+ * всё ещё применяются (это пользовательская правка отдельного слота).
  */
-function resolveDisabledSlots(date: string, data: ResourceSlotData, slotStep: number): Set<string> {
+function resolveDisabledSlots(date: string, data: ResourceSlotData): Set<string> {
   const dayOfWeek = new Date(date + 'T12:00:00').getDay()
 
   const dateSpecific = data.dateDisabledSlots.filter(s => s.date === date)
@@ -97,20 +195,9 @@ function resolveDisabledSlots(date: string, data: ResourceSlotData, slotStep: nu
     return new Set(dateSpecific.map(s => s.slotTime))
   }
 
-  const cycleSlots = shiftSlotsForDate(date, data)
-  if (cycleSlots !== null) {
-    // Окно — от первого активного слота до последнего + slotStep.
-    if (cycleSlots.length === 0) return new Set()
-    const active = new Set(cycleSlots)
-    const firstMin = timeToMinutes(cycleSlots[0])
-    const lastMin = timeToMinutes(cycleSlots[cycleSlots.length - 1])
-    const disabled = new Set<string>()
-    for (let m = firstMin; m <= lastMin; m += slotStep) {
-      const t = minutesToTimeStr(m)
-      if (!active.has(t)) disabled.add(t)
-    }
-    return disabled
-  }
+  // Для shift-цикла weekly disabledSlots не применяются — у цикла своё определение
+  // рабочих/выходных через hoursByDayIndex.
+  if (data.shiftCycle) return new Set()
 
   const base = data.disabledSlots.filter(s => s.dayOfWeek === dayOfWeek)
   return new Set(base.map(s => s.slotTime))
@@ -140,7 +227,9 @@ export function countConflicts(
  * Доступные слоты для одного ресурса на конкретную дату.
  *
  * Capacity: слот считается занятым только если кол-во пересечений ≥ capacity.
- * Используется для object-ресурсов с несколькими экземплярами (10 бильярдных столов).
+ * Поддерживает overnight (close < open) — окно растягивается на следующие
+ * сутки. Слоты во второй половине окна (m >= 1440) возвращаются с
+ * isNextDay=true.
  */
 export function getResourceSlotsForDate(
   date: string,
@@ -150,36 +239,38 @@ export function getResourceSlotsForDate(
   slotStep: number,
   timezone: string,
   capacity: number = 1,
-): string[] {
+): SlotEntry[] {
   const hours = resolveResourceWorkingHours(date, data)
   if (!hours) return []
 
   const openMin = timeToMinutes(hours.openTime)
-  const closeMin = timeToMinutes(hours.closeTime)
-  if (closeMin <= openMin) return []
+  const closeMinRaw = timeToMinutes(hours.closeTime)
+  const overnight = closeMinRaw <= openMin
+  const closeMin = overnight ? closeMinRaw + 1440 : closeMinRaw
 
-  const disabledSet = resolveDisabledSlots(date, data, slotStep)
-  const result: string[] = []
+  const disabledSet = resolveDisabledSlots(date, data)
+  const result: SlotEntry[] = []
 
-  let startMin = Math.ceil(openMin / slotStep) * slotStep
+  const startMin = Math.ceil(openMin / slotStep) * slotStep
 
-  // Отсекаем прошедшие слоты, если дата = сегодня в таймзоне тенанта
-  if (date === todayInTz(timezone)) {
-    const nowMin = timeToMinutes(nowTimeInTz(timezone))
-    if (nowMin > startMin) startMin = Math.ceil(nowMin / slotStep) * slotStep
-  }
+  // today-cutoff через UTC сравнение (универсально для overnight и обычного).
+  const isToday = date === todayInTz(timezone)
+  const nowUtcMs = isToday ? Date.now() : 0
 
   for (let m = startMin; m < closeMin; m += slotStep) {
     if (m + duration > closeMin) break
 
-    const slotTime = minutesToTimeStr(m)
-    if (disabledSet.has(slotTime)) continue
+    const isNextDay = m >= 1440
+    const slotTimeNorm = minutesToTimeStr(m)
+    if (disabledSet.has(slotTimeNorm)) continue
 
-    const slotStartUtc = localDateTimeToUtcIso(date, slotTime, timezone)
-    const slotEndUtc = localDateTimeToUtcIso(date, minutesToTimeStr(m + duration), timezone)
+    const slotStartUtc = localMinutesToUtcIso(date, m, timezone)
+    const slotEndUtc = localMinutesToUtcIso(date, m + duration, timezone)
+
+    if (isToday && new Date(slotStartUtc).getTime() <= nowUtcMs) continue
     if (countConflicts(slotStartUtc, slotEndUtc, appointments) >= capacity) continue
 
-    result.push(slotTime)
+    result.push({ time: slotTimeNorm, isNextDay })
   }
 
   return result
@@ -187,6 +278,8 @@ export function getResourceSlotsForDate(
 
 /**
  * Объединяет слоты нескольких ресурсов для одной услуги (режим "любой исполнитель").
+ * Дедуп по time+isNextDay; сортировка: сначала слоты текущего дня по времени,
+ * потом overnight-фаза следующего дня.
  */
 export function mergeResourceSlots(
   date: string,
@@ -194,21 +287,28 @@ export function mergeResourceSlots(
   duration: number,
   slotStep: number,
   timezone: string,
-): string[] {
-  const all = new Set<string>()
+): SlotEntry[] {
+  const map = new Map<string, SlotEntry>()
   for (const resource of resources) {
     const slots = getResourceSlotsForDate(
       date, resource.data, resource.appointments,
       duration, slotStep, timezone, resource.capacity ?? 1,
     )
-    for (const slot of slots) all.add(slot)
+    for (const slot of slots) {
+      const key = `${slot.isNextDay ? '1' : '0'}|${slot.time}`
+      if (!map.has(key)) map.set(key, slot)
+    }
   }
-  return Array.from(all).sort()
+  return Array.from(map.values()).sort((a, b) => {
+    if (a.isNextDay !== b.isNextDay) return a.isNextDay ? 1 : -1
+    return a.time.localeCompare(b.time)
+  })
 }
 
 /**
  * Слоты для услуги БЕЗ исполнителя — на основе расписания филиала.
  * Capacity параллельных бронирований опциональна (для open_ended/ресурсов с количеством).
+ * Поддерживает overnight филиалы (close < open).
  */
 export function getBranchSlotsForDate(
   date: string,
@@ -218,7 +318,7 @@ export function getBranchSlotsForDate(
   slotStep: number,
   timezone: string,
   capacity: number = 1,
-): string[] {
+): SlotEntry[] {
   if (!branchSchedule) return []
 
   const isoDay = Number(getIsoDayForDate(date))
@@ -226,26 +326,28 @@ export function getBranchSlotsForDate(
   if (day.dayOff) return []
 
   const openMin = timeToMinutes(day.open)
-  const closeMin = timeToMinutes(day.close)
-  if (closeMin <= openMin) return []
+  const closeMinRaw = timeToMinutes(day.close)
+  const overnight = closeMinRaw <= openMin
+  const closeMin = overnight ? closeMinRaw + 1440 : closeMinRaw
 
-  const result: string[] = []
-  let startMin = Math.ceil(openMin / slotStep) * slotStep
+  const result: SlotEntry[] = []
+  const startMin = Math.ceil(openMin / slotStep) * slotStep
 
-  if (date === todayInTz(timezone)) {
-    const nowMin = timeToMinutes(nowTimeInTz(timezone))
-    if (nowMin > startMin) startMin = Math.ceil(nowMin / slotStep) * slotStep
-  }
+  const isToday = date === todayInTz(timezone)
+  const nowUtcMs = isToday ? Date.now() : 0
 
   for (let m = startMin; m < closeMin; m += slotStep) {
     if (m + duration > closeMin) break
 
-    const slotTime = minutesToTimeStr(m)
-    const slotStartUtc = localDateTimeToUtcIso(date, slotTime, timezone)
-    const slotEndUtc = localDateTimeToUtcIso(date, minutesToTimeStr(m + duration), timezone)
+    const isNextDay = m >= 1440
+    const slotTimeNorm = minutesToTimeStr(m)
+    const slotStartUtc = localMinutesToUtcIso(date, m, timezone)
+    const slotEndUtc = localMinutesToUtcIso(date, m + duration, timezone)
+
+    if (isToday && new Date(slotStartUtc).getTime() <= nowUtcMs) continue
     if (countConflicts(slotStartUtc, slotEndUtc, appointments) >= capacity) continue
 
-    result.push(slotTime)
+    result.push({ time: slotTimeNorm, isNextDay })
   }
 
   return result
@@ -346,20 +448,25 @@ export function findGroupSlots(
   if (!workingHours) return []
 
   const openMin = timeToMinutes(workingHours.openTime)
-  const closeMin = timeToMinutes(workingHours.closeTime)
-  if (closeMin <= openMin) return []
+  const closeMinRaw = timeToMinutes(workingHours.closeTime)
+  // Overnight: окно растягивается на следующие сутки. Слоты внутри
+  // [openMin, closeMinAdj) с возможным cursor >= 1440 (часть в D+1).
+  const overnight = closeMinRaw <= openMin
+  const closeMinAdj = overnight ? closeMinRaw + 1440 : closeMinRaw
 
   const { slotStep, timezone } = settings
-  let startMin = Math.ceil(openMin / slotStep) * slotStep
+  const startMin = Math.ceil(openMin / slotStep) * slotStep
 
-  if (date === todayInTz(timezone)) {
-    const nowMin = timeToMinutes(nowTimeInTz(timezone))
-    if (nowMin > startMin) startMin = Math.ceil(nowMin / slotStep) * slotStep
-  }
+  // today-cutoff через UTC сравнение (универсально для overnight и обычного).
+  const isToday = date === todayInTz(timezone)
+  const nowUtcMs = isToday ? Date.now() : 0
 
   const result: GroupSlotOption[] = []
 
-  for (let t = startMin; t + totalDuration <= closeMin; t += slotStep) {
+  for (let t = startMin; t + totalDuration <= closeMinAdj; t += slotStep) {
+    const slotStartUtcMs = new Date(localMinutesToUtcIso(date, t, timezone)).getTime()
+    if (isToday && slotStartUtcMs <= nowUtcMs) continue
+
     const schedule: GroupSlotOption['schedule'] = []
     let cursor = t
     let allFit = true
@@ -376,16 +483,21 @@ export function findGroupSlots(
           const hours = resolveResourceWorkingHours(date, data)
           if (!hours) continue
           const resOpenMin = timeToMinutes(hours.openTime)
-          const resCloseMin = timeToMinutes(hours.closeTime)
-          if (cursor < resOpenMin || cursor + item.duration > resCloseMin) continue
+          const resCloseMinRaw = timeToMinutes(hours.closeTime)
+          const resOvernight = resCloseMinRaw <= resOpenMin
+          const resCloseMinAdj = resOvernight ? resCloseMinRaw + 1440 : resCloseMinRaw
+          if (cursor < resOpenMin || cursor + item.duration > resCloseMinAdj) continue
 
-          const disabled = resolveDisabledSlots(date, data, slotStep)
+          const disabled = resolveDisabledSlots(date, data)
+          // disabledSet хранит ключи как "HH:MM" в нормализованном виде. Для
+          // overnight cursor >= 1440 нормализация (минуты mod 1440) даёт корректное
+          // 'HH:MM' клочкового времени.
           if (disabled.has(minutesToTimeStr(cursor))) continue
         }
 
         const appointments = existingAppointments.get(resourceId) ?? []
-        const startUtc = localDateTimeToUtcIso(date, minutesToTimeStr(cursor), timezone)
-        const endUtc = localDateTimeToUtcIso(date, minutesToTimeStr(cursor + item.duration), timezone)
+        const startUtc = localMinutesToUtcIso(date, cursor, timezone)
+        const endUtc = localMinutesToUtcIso(date, cursor + item.duration, timezone)
 
         if (countConflicts(startUtc, endUtc, appointments) === 0) {
           freeResourceIds.push(resourceId)
@@ -405,6 +517,7 @@ export function findGroupSlots(
       const foundResourceName = item.resourceNames.get(foundResourceId) ?? foundResourceId
 
       const wasReplaced = prefId !== null && prefId !== foundResourceId
+      const itemEnd = cursor + item.duration
       schedule.push({
         serviceId: item.serviceId,
         resourceId: foundResourceId,
@@ -414,15 +527,18 @@ export function findGroupSlots(
           ? (item.preferredResourceName ?? item.resourceNames.get(prefId!) ?? prefId!)
           : null,
         startTime: minutesToTimeStr(cursor),
-        endTime: minutesToTimeStr(cursor + item.duration),
+        startIsNextDay: cursor >= 1440,
+        endTime: minutesToTimeStr(itemEnd),
+        endIsNextDay: itemEnd >= 1440,
         availableResourceIds: freeResourceIds,
       })
-      cursor += item.duration
+      cursor = itemEnd
     }
 
     if (allFit) {
       result.push({
         startTime: minutesToTimeStr(t),
+        startIsNextDay: t >= 1440,
         schedule,
       })
     }
@@ -554,30 +670,42 @@ export function findGroupSlotsWithFallback(
 
     let preferredByStart: Map<string, GroupSlotOption> | null = null
 
+    // Ключ слота — `startTime + isNextDay`, чтобы не было коллизии между
+    // overnight-фазой D+1 (например, '00:00' с isNextDay=true) и теоретическим
+    // '00:00' D (не достижимо при overnight=22:00→04:00, но защищает от
+    // будущих edge-кейсов).
+    const slotKey = (opt: { startTime: string; startIsNextDay: boolean }): string =>
+      `${opt.startIsNextDay ? '1' : '0'}-${opt.startTime}`
+
     if (hasAnyPreferences) {
       const preferredOptions = findGroupSlots(
         preferredItems, date, resourceSlotData, existingAppointments, settings, branchSchedule,
       )
 
       preferredByStart = new Map<string, GroupSlotOption>()
-      for (const opt of preferredOptions) preferredByStart.set(opt.startTime, opt)
+      for (const opt of preferredOptions) preferredByStart.set(slotKey(opt), opt)
     }
 
     for (const opt of anyOptions) {
-      const pref = preferredByStart?.get(opt.startTime) ?? null
+      const key = slotKey(opt)
+      const pref = preferredByStart?.get(key) ?? null
       const match: GroupSlotMatch = !hasAnyPreferences || pref ? 'preferred' : 'any'
       const candidate: GroupSlotEntry = pref
         ? { ...pref, match }
         : { ...opt, match }
 
-      if (isBetterCandidate(bestByStart.get(opt.startTime), candidate)) {
-        bestByStart.set(opt.startTime, candidate)
+      if (isBetterCandidate(bestByStart.get(key), candidate)) {
+        bestByStart.set(key, candidate)
       }
     }
   }
 
-  const entries = Array.from(bestByStart.values())
-    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
+  // Сортировка хронологическая: сначала слоты текущего дня (D) по времени,
+  // потом фаза D+1 (overnight). Без учёта isNextDay '00:00' уехало бы в начало.
+  const entries = Array.from(bestByStart.values()).sort((a, b) => {
+    if (a.startIsNextDay !== b.startIsNextDay) return a.startIsNextDay ? 1 : -1
+    return timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+  })
 
   return { type: 'slots', entries }
 }

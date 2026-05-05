@@ -358,10 +358,9 @@ const validateTemplateApply = async (): Promise<boolean> => {
   const horizonStart = todayInTz(tenantStore.tenant.timezone)
   const horizonEnd = addDaysToDateStr(horizonStart, 365)
 
-  const [overrides, dateDisabled, settings] = await Promise.all([
+  const [overrides, dateDisabled] = await Promise.all([
     api.resources.getDateOverridesRange(props.resource.id, horizonStart, horizonEnd),
     api.resources.getDateDisabledSlotsRange(props.resource.id, horizonStart, horizonEnd),
-    api.appointmentSettings.get(tid),
   ])
 
   // branchSchedule с учётом, возможно, нового выбора филиала (effectiveBranchId
@@ -385,7 +384,6 @@ const validateTemplateApply = async (): Promise<boolean> => {
     : buildSlotDataFromWeeklyTemplate(
         tpl,
         branchSchedule,
-        settings?.slotStepMinutes ?? 30,
         overrides,
         dateDisabled,
       )

@@ -29,7 +29,7 @@
           v-model:value="form.referenceBranchId"
           label="Филиал"
           :options="branchSelectorOptions"
-          message="График филиала задаёт сетку слотов"
+          message="Часы филиала используются для подсказки дефолтов"
         />
       </UiForm>
 
@@ -39,13 +39,13 @@
           <div class="day-head">
             <UiText weight="medium">{{ day.label }}</UiText>
             <UiCheckbox
-              :model-value="dayOff.has(day.value)"
+              :model-value="!isDayWorking(day.value)"
               @update:model-value="(v) => toggleDayOff(day.value, v)"
             >
               Выходной
             </UiCheckbox>
             <UiButton
-              v-if="day.value === firstWorkingDow && hasFirstWorkingDaySlots"
+              v-if="day.value === firstWorkingDow"
               size="tiny"
               type="text"
               icon="copy"
@@ -54,24 +54,16 @@
               Скопировать в остальные
             </UiButton>
           </div>
-          <template v-if="!dayOff.has(day.value)">
-            <div v-if="branchSlotsForDow(day.value).length" class="slot-grid">
-              <UiTag
-                v-for="slot in branchSlotsForDow(day.value)"
-                :key="slot"
-                :type="isSlotActive(day.value, slot) ? 'success' : 'default'"
-                :empty="!isSlotActive(day.value, slot)"
-                hoverable
-                size="medium"
-                class="slot-tag"
-                :class="{ 'slot-tag--off': !isSlotActive(day.value, slot) }"
-                @click="toggleSlot(day.value, slot)"
-              >
-                {{ slot }}
-              </UiTag>
-            </div>
-            <UiText v-else size="tiny" class="hint">Филиал закрыт</UiText>
-          </template>
+          <div v-if="isDayWorking(day.value)" class="hours-row">
+            <UiTimepicker
+              v-model="form.dayHours[day.value]!.openTime"
+              label="Открытие"
+            />
+            <UiTimepicker
+              v-model="form.dayHours[day.value]!.closeTime"
+              label="Закрытие"
+            />
+          </div>
         </div>
       </div>
 
@@ -88,37 +80,38 @@
           />
         </div>
         <UiText size="tiny" class="hint">
-          {{ shiftWindowLabel }} · Дату старта цикла задаёте на сотруднике при применении шаблона.
+          Дату старта цикла задаёте на сотруднике при применении шаблона.
         </UiText>
         <div class="days">
           <div v-for="i in cycleIndices" :key="i" class="day-block">
             <div class="day-head">
               <UiText weight="medium">День {{ i + 1 }}</UiText>
               <UiCheckbox
-                :model-value="dayOff.has(i)"
+                :model-value="!isDayWorking(i)"
                 @update:model-value="(v) => toggleDayOff(i, v)"
               >
                 Выходной
               </UiCheckbox>
+              <UiButton
+                v-if="i === firstWorkingShiftDay"
+                size="tiny"
+                type="text"
+                icon="copy"
+                @click="copyFirstWorkingDayToOthers"
+              >
+                Скопировать в остальные
+              </UiButton>
             </div>
-            <template v-if="!dayOff.has(i)">
-              <div v-if="shiftBranchSlots.length" class="slot-grid">
-                <UiTag
-                  v-for="slot in shiftBranchSlots"
-                  :key="slot"
-                  :type="isSlotActive(i, slot) ? 'success' : 'default'"
-                  :empty="!isSlotActive(i, slot)"
-                  hoverable
-                  size="medium"
-                  class="slot-tag"
-                  :class="{ 'slot-tag--off': !isSlotActive(i, slot) }"
-                  @click="toggleSlot(i, slot)"
-                >
-                  {{ slot }}
-                </UiTag>
-              </div>
-              <UiText v-else size="tiny" class="hint">Филиал закрыт во все дни</UiText>
-            </template>
+            <div v-if="isDayWorking(i)" class="hours-row">
+              <UiTimepicker
+                v-model="form.dayHours[i]!.openTime"
+                label="Открытие"
+              />
+              <UiTimepicker
+                v-model="form.dayHours[i]!.closeTime"
+                label="Закрытие"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -129,17 +122,16 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import {
-  UiDrawer, UiForm, UiInput, UiSelect, UiInputNumber, UiButton, UiTag, UiText, UiCheckbox,
+  UiDrawer, UiForm, UiInput, UiSelect, UiInputNumber, UiButton, UiText, UiCheckbox,
+  UiTimepicker,
   useConfirm, useMessage,
 } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
 import type {
-  ScheduleTemplate, ScheduleTemplateSlot, ScheduleTemplateType,
+  ScheduleTemplate, ScheduleTemplateDay, ScheduleTemplateType,
   Branch, WorkingHoursSchedule, Resource,
 } from '@fastio/shared'
-import {
-  getAllSlotsInWindow, getBranchHoursForDow, getBranchWidestWindow, pluralize,
-} from '@fastio/shared'
+import { getBranchHoursForDow, pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -183,12 +175,15 @@ const typeOptions = [
   { label: 'Сменный цикл', value: 'shift' },
 ]
 
+type DayHours = { isWorking: boolean; openTime: string; closeTime: string }
+
 type Form = {
   name: string
   type: ScheduleTemplateType
   cycleLength: number | null
   referenceBranchId: string | null
-  slots: ScheduleTemplateSlot[]
+  /** dayIndex (0..6 для weekly, 0..cycleLength-1 для shift) → часы дня. */
+  dayHours: Record<number, DayHours>
 }
 
 const form = reactive<Form>({
@@ -196,19 +191,18 @@ const form = reactive<Form>({
   type: 'weekly',
   cycleLength: 4,
   referenceBranchId: null,
-  slots: [],
+  dayHours: {},
 })
 
-const slotStep = ref(30)
-const branches = ref<Branch[]>([])
-
 // Флаг блокирует watch на смене type/cycleLength во время загрузки сохранённого
-// шаблона: иначе watch сбросит form.slots на дефолт, и при сохранении в БД
-// уйдут пустые/дефолтные слоты вместо отредактированных пользователем.
+// шаблона: иначе watch сбросит form.dayHours на дефолт.
 const applyingTemplate = ref(false)
 
+// Используем загруженные стором филиалы — они уже инициализированы layout-ом
+// до открытия редактора шаблонов.
+const branches = computed<Branch[]>(() => branchStore.branches as Branch[])
+
 const branchSelectorOptions = computed(() => {
-  // Если все филиалы имеют одинаковый рабочий график — селектор не нужен.
   if (branches.value.length <= 1) return []
   const first = JSON.stringify(branches.value[0]?.workingHoursSchedule ?? null)
   const allSame = branches.value.every((b) => JSON.stringify(b.workingHoursSchedule ?? null) === first)
@@ -226,35 +220,13 @@ const referenceBranch = computed<Branch | null>(() => {
   return branches.value[0] ?? null
 })
 
-// Если у филиала график не задан — наследует график тенанта (общие настройки).
+// Приоритет: график филиала → график тенанта.
+// tenant.workingHoursSchedule с миграции 250 не бывает null (server-side
+// DEFAULT 10-22 в БД), так что цепочка всегда даёт schedule.
 const referenceSchedule = computed<WorkingHoursSchedule | null>(() => referenceBranch.value?.workingHoursSchedule
   ?? tenantStore.maybeTenant?.workingHoursSchedule
   ?? null,
 )
-
-const branchSlotsForDow = (dow: number): string[] => {
-  const hours = getBranchHoursForDow(referenceSchedule.value, dow)
-
-  if (!hours) return []
-
-  return getAllSlotsInWindow(hours.open, hours.close, slotStep.value)
-}
-
-const shiftBranchSlots = computed<string[]>(() => {
-  const win = getBranchWidestWindow(referenceSchedule.value)
-
-  if (!win) return []
-
-  return getAllSlotsInWindow(win.open, win.close, slotStep.value)
-})
-
-const shiftWindowLabel = computed(() => {
-  const win = getBranchWidestWindow(referenceSchedule.value)
-
-  if (!win) return 'У филиала не задан график работы'
-
-  return `Доступные слоты: ${win.open}—${win.close}`
-})
 
 const cycleIndices = computed(() => {
   const n = form.cycleLength ?? 0
@@ -262,79 +234,130 @@ const cycleIndices = computed(() => {
   return Array.from({ length: Math.max(0, Math.min(30, n)) }, (_, i) => i)
 })
 
-// ─── slots ─────────────────────────────────────────────
+// ─── helpers ─────────────────────────────────────────────
 
-// Выходные дни: dayIndex (0-6 для weekly, 0..cycleLength-1 для shift).
-// День без слотов в существующем шаблоне = выходной (на загрузке вычисляется).
-const dayOff = ref<Set<number>>(new Set())
+const FALLBACK_HOURS: DayHours = { isWorking: true, openTime: '09:00', closeTime: '18:00' }
 
-const isSlotActive = (dayIndex: number, slot: string): boolean => form.slots.some((s) => s.dayIndex === dayIndex && s.slotTime === slot)
+// Конвертирует час закрытия из формата `working_hours_schedule` (где '24:00'
+// означает «полночь следующих суток» для allDay) в формат UiTimepicker
+// (валидный диапазон 00:00–23:59).
+const branchCloseForTimepicker = (close: string): string => close === '24:00' ? '23:59' : close
 
-const slotsForDayIndex = (dayIndex: number): string[] => form.type === 'weekly'
-  ? branchSlotsForDow(dayIndex)
-  : shiftBranchSlots.value
+const defaultHoursForDow = (dow: number): DayHours => {
+  // Дефолт: часы филиала на этот день. Если филиал в этот день закрыт —
+  // день шаблона тоже выходной. Если филиал не задан вообще — fallback 9-18.
+  const hours = getBranchHoursForDow(referenceSchedule.value, dow)
 
-const toggleSlot = (dayIndex: number, slot: string) => {
-  if (isSlotActive(dayIndex, slot)) {
-    form.slots = form.slots.filter((s) => !(s.dayIndex === dayIndex && s.slotTime === slot))
-  } else {
-    form.slots.push({ templateId: '', dayIndex, slotTime: slot })
+  if (!hours) {
+    // null означает «выходной» только если у филиала в принципе задан график;
+    // если schedule вовсе нет — нужен fallback. Различаем через наличие schedule.
+    if (referenceSchedule.value) {
+      return { isWorking: false, openTime: '', closeTime: '' }
+    }
+
+    return { ...FALLBACK_HOURS }
   }
+
+  return { isWorking: true, openTime: hours.open, closeTime: branchCloseForTimepicker(hours.close) }
 }
+
+// Часы «типичного рабочего дня филиала» — для shift-цикла, где dayIndex не
+// привязан к дню недели. Берём первый рабочий день в порядке Пн..Вс.
+const branchTypicalWorkingHours = (): DayHours => {
+  for (const dow of [1, 2, 3, 4, 5, 6, 0]) {
+    const h = getBranchHoursForDow(referenceSchedule.value, dow)
+
+    if (h) {
+      return { isWorking: true, openTime: h.open, closeTime: branchCloseForTimepicker(h.close) }
+    }
+  }
+
+  return { ...FALLBACK_HOURS }
+}
+
+const isDayWorking = (dayIndex: number): boolean => form.dayHours[dayIndex]?.isWorking ?? false
 
 const toggleDayOff = (dayIndex: number, off: boolean) => {
   if (off) {
-    dayOff.value.add(dayIndex)
-    form.slots = form.slots.filter((s) => s.dayIndex !== dayIndex)
+    if (form.dayHours[dayIndex]) {
+      form.dayHours[dayIndex] = { ...form.dayHours[dayIndex], isWorking: false }
+    }
   } else {
-    dayOff.value.delete(dayIndex)
-    // По умолчанию все слоты дня — активны.
-    const all = slotsForDayIndex(dayIndex)
+    const existing = form.dayHours[dayIndex]
 
-    form.slots = form.slots.filter((s) => s.dayIndex !== dayIndex)
-    for (const slot of all) {
-      form.slots.push({ templateId: '', dayIndex, slotTime: slot })
+    // При возврате в рабочий — если есть сохранённые часы (просто isWorking=false),
+    // включаем их обратно. Иначе берём часы филиала: для weekly на этот день
+    // недели, для shift — типичный рабочий день филиала.
+    if (existing && existing.openTime && existing.closeTime) {
+      form.dayHours[dayIndex] = { ...existing, isWorking: true }
+    } else if (form.type === 'weekly') {
+      // Для weekly: если на этот dow филиал закрыт, всё равно включаем рабочий
+      // день с фолбэком — раз пользователь явно снял «Выходной», ему нужны какие-то часы.
+      const branch = getBranchHoursForDow(referenceSchedule.value, dayIndex)
+
+      form.dayHours[dayIndex] = branch
+        ? { isWorking: true, openTime: branch.open, closeTime: branchCloseForTimepicker(branch.close) }
+        : branchTypicalWorkingHours()
+    } else {
+      form.dayHours[dayIndex] = branchTypicalWorkingHours()
     }
   }
-  // Триггерим реактивность Set.
-  dayOff.value = new Set(dayOff.value)
 }
 
-// Первый рабочий день недели (в порядке Пн → Вс) — на нём показываем
-// кнопку «Скопировать в остальные».
+// Первый рабочий день недели (Пн → Вс) для weekly.
 const firstWorkingDow = computed<number | null>(() => {
   const order = [1, 2, 3, 4, 5, 6, 0]
 
-  return order.find((d) => !dayOff.value.has(d)) ?? null
+  return order.find((d) => isDayWorking(d)) ?? null
 })
 
-const hasFirstWorkingDaySlots = computed(() => firstWorkingDow.value !== null
-  && form.slots.some((s) => s.dayIndex === firstWorkingDow.value),
-)
+// Первый рабочий день shift-цикла.
+const firstWorkingShiftDay = computed<number | null>(() => {
+  for (const i of cycleIndices.value) if (isDayWorking(i)) return i
+
+  return null
+})
 
 const copyFirstWorkingDayToOthers = () => {
-  const source = firstWorkingDow.value
+  const source = form.type === 'weekly' ? firstWorkingDow.value : firstWorkingShiftDay.value
 
   if (source === null) return
+  const sourceHours = form.dayHours[source]
 
-  const sourceSlots = form.slots.filter((s) => s.dayIndex === source).map((s) => s.slotTime)
-  // Применяем только в рабочие (не-выходные) дни, где филиал открыт.
-  const targets = [1, 2, 3, 4, 5, 6, 0].filter((d) => d !== source && !dayOff.value.has(d))
+  if (!sourceHours) return
 
-  form.slots = form.slots.filter((s) => !targets.includes(s.dayIndex))
-  for (const dow of targets) {
-    const allowed = new Set(branchSlotsForDow(dow))
+  const targets = form.type === 'weekly'
+    ? [1, 2, 3, 4, 5, 6, 0].filter((d) => d !== source)
+    : cycleIndices.value.filter((i) => i !== source)
 
-    if (allowed.size === 0) continue
-    for (const slot of sourceSlots) {
-      if (allowed.has(slot)) {
-        form.slots.push({ templateId: '', dayIndex: dow, slotTime: slot })
-      }
+  for (const t of targets) {
+    if (isDayWorking(t)) {
+      form.dayHours[t] = { ...sourceHours }
     }
   }
 }
 
 // ─── load / save ───────────────────────────────────────
+
+const initWeeklyDefault = () => {
+  // Дефолт = график филиала 1:1: рабочие дни филиала → рабочие в шаблоне с теми
+  // же часами; выходные дни филиала → выходные в шаблоне.
+  form.dayHours = {}
+  for (let dow = 0; dow < 7; dow++) {
+    form.dayHours[dow] = defaultHoursForDow(dow)
+  }
+}
+
+const initShiftDefault = (length: number) => {
+  // Для shift dayIndex не привязан к дню недели — берём типичные часы филиала.
+  // Все дни цикла рабочие по умолчанию (юзер сам отметит выходные).
+  const typical = branchTypicalWorkingHours()
+
+  form.dayHours = {}
+  for (let i = 0; i < length; i++) {
+    form.dayHours[i] = { ...typical }
+  }
+}
 
 watch(() => props.modelValue, async (open) => {
   if (!open) return
@@ -348,14 +371,6 @@ watch(() => props.modelValue, async (open) => {
   applyingTemplate.value = true
 
   try {
-    const [settings, branchList] = await Promise.all([
-      api.appointmentSettings.get(tid),
-      api.branches.list(tid),
-    ])
-
-    slotStep.value = settings?.slotStepMinutes ?? 30
-    branches.value = branchList
-
     if (props.template) {
       const full = await api.scheduleTemplates.getFull(props.template.id)
 
@@ -364,15 +379,23 @@ watch(() => props.modelValue, async (open) => {
         form.type = full.type
         form.cycleLength = full.cycleLength ?? 4
         form.referenceBranchId = full.referenceBranchId
-        form.slots = full.slots
-        // День без слотов в сохранённом шаблоне трактуем как выходной.
-        const off = new Set<number>()
-        const indices = full.type === 'weekly' ? [0, 1, 2, 3, 4, 5, 6] : Array.from({ length: full.cycleLength ?? 0 }, (_, i) => i)
+
+        const indices = full.type === 'weekly'
+          ? [0, 1, 2, 3, 4, 5, 6]
+          : Array.from({ length: full.cycleLength ?? 0 }, (_, i) => i)
+
+        const hours: Record<number, DayHours> = {}
 
         for (const i of indices) {
-          if (!full.slots.some((s) => s.dayIndex === i)) off.add(i)
+          const day = full.days.find((d) => d.dayIndex === i)
+
+          if (day && day.isWorking && day.openTime && day.closeTime) {
+            hours[i] = { isWorking: true, openTime: day.openTime, closeTime: day.closeTime }
+          } else {
+            hours[i] = { isWorking: false, openTime: '', closeTime: '' }
+          }
         }
-        dayOff.value = off
+        form.dayHours = hours
       }
     } else {
       Object.assign(form, {
@@ -380,18 +403,8 @@ watch(() => props.modelValue, async (open) => {
         type: 'weekly',
         cycleLength: 4,
         referenceBranchId: null,
-        slots: [],
       })
-      // Новый шаблон: Пн-Пт рабочие со всеми слотами, Сб/Вс выходные.
-      dayOff.value = new Set([0, 6])
-      const fresh: ScheduleTemplateSlot[] = []
-
-      for (const dow of [1, 2, 3, 4, 5]) {
-        for (const slot of branchSlotsForDow(dow)) {
-          fresh.push({ templateId: '', dayIndex: dow, slotTime: slot })
-        }
-      }
-      form.slots = fresh
+      initWeeklyDefault()
     }
 
     await nextTick()
@@ -403,35 +416,18 @@ watch(() => props.modelValue, async (open) => {
   }
 })
 
-// При смене типа (weekly/shift) или длины цикла — переинициализируем слоты
-// и выходные дефолтами (все дни рабочие, все слоты выбраны).
+// При смене типа/длины цикла — переинициализируем часы дефолтами.
 watch([() => form.type, () => form.cycleLength], ([newType, newLen], [oldType]) => {
-  if (oldType === undefined) return // первая установка обрабатывается в watch(modelValue)
-  if (applyingTemplate.value) return // не сбрасываем слоты при загрузке существующего шаблона
+  if (oldType === undefined) return
+  if (applyingTemplate.value) return
   if (newType === 'shift') {
-    const len = newLen ?? 0
-
-    dayOff.value = new Set()
-    const fresh: ScheduleTemplateSlot[] = []
-
-    for (let i = 0; i < len; i++) {
-      for (const slot of shiftBranchSlots.value) {
-        fresh.push({ templateId: '', dayIndex: i, slotTime: slot })
-      }
-    }
-    form.slots = fresh
+    initShiftDefault(newLen ?? 0)
   } else if (newType === 'weekly' && oldType === 'shift') {
-    dayOff.value = new Set([0, 6])
-    const fresh: ScheduleTemplateSlot[] = []
-
-    for (const dow of [1, 2, 3, 4, 5]) {
-      for (const slot of branchSlotsForDow(dow)) {
-        fresh.push({ templateId: '', dayIndex: dow, slotTime: slot })
-      }
-    }
-    form.slots = fresh
+    initWeeklyDefault()
   }
 })
+
+// ─── preview slot data для validateAgainstAttachedResources ─────
 
 const buildPreviewSlotData = async (
   resource: Resource,
@@ -455,9 +451,8 @@ const buildPreviewSlotData = async (
     ?? tenantStore.maybeTenant?.workingHoursSchedule
     ?? null
 
-  // Для shift: cycleStartDate уже на ресурсе. Если шаблон сменился с weekly
-  // на shift — у ресурса нет cycleStartDate, в этом случае пропускаем
-  // (применение шаблона к ресурсу разово выставит дату).
+  const formDays = formToDays()
+
   if (form.type === 'shift') {
     if (!resource.cycleStartDate) return null
 
@@ -473,7 +468,7 @@ const buildPreviewSlotData = async (
           sortOrder: 0,
           createdAt: '',
           updatedAt: '',
-          slots: form.slots,
+          days: formDays,
         },
         resource.cycleStartDate,
         branchSchedule,
@@ -495,10 +490,9 @@ const buildPreviewSlotData = async (
         sortOrder: 0,
         createdAt: '',
         updatedAt: '',
-        slots: form.slots,
+        days: formDays,
       },
       branchSchedule,
-      slotStep.value,
       overrides,
       dateDisabled,
     ),
@@ -551,10 +545,55 @@ const validateAgainstAttachedResources = async (): Promise<boolean> => {
   return false
 }
 
+const formToDays = (): ScheduleTemplateDay[] => {
+  const indices = form.type === 'weekly'
+    ? [0, 1, 2, 3, 4, 5, 6]
+    : cycleIndices.value
+
+  return indices.map((i) => {
+    const h = form.dayHours[i]
+
+    if (!h || !h.isWorking) {
+      return { templateId: '', dayIndex: i, isWorking: false, openTime: null, closeTime: null }
+    }
+
+    return {
+      templateId: '', dayIndex: i,
+      isWorking: true,
+      openTime: h.openTime || null,
+      closeTime: h.closeTime || null,
+    }
+  })
+}
+
+const validateHours = (): string | null => {
+  for (const i of (form.type === 'weekly' ? [0, 1, 2, 3, 4, 5, 6] : cycleIndices.value)) {
+    const h = form.dayHours[i]
+
+    if (!h?.isWorking) continue
+    if (!h.openTime || !h.closeTime) {
+      return `Укажите часы работы для дня ${form.type === 'weekly' ? DAYS.find((d) => d.value === i)?.label : i + 1}`
+    }
+    if (h.openTime === h.closeTime) {
+      return 'Открытие и закрытие должны различаться'
+    }
+  }
+
+  return null
+}
+
 const onSave = async () => {
   const valid = await formRef.value?.validate()
 
   if (!valid) return false
+
+  const hoursError = validateHours()
+
+  if (hoursError) {
+    message.error(hoursError)
+
+    return false
+  }
 
   const tid = tenantStore.currentTenantId
 
@@ -567,14 +606,14 @@ const onSave = async () => {
     type: form.type,
     cycleLength: form.type === 'shift' ? form.cycleLength : null,
     referenceBranchId: form.referenceBranchId,
-    slots: form.slots,
+    days: formToDays(),
   }
 
   try {
     if (props.template) {
       await api.scheduleTemplates.update(props.template.id, tid, payload)
 
-      // Weekly-шаблон материализуется на ресурсе при apply. Чтобы edit реально
+      // Weekly: материализуется на ресурсе при apply. Чтобы edit реально
       // дотянулся до привязанных мастеров, переприменяем им шаблон.
       if (form.type === 'weekly') {
         const allResources = await api.resources.list(tid)
@@ -633,28 +672,14 @@ const drawerActions: DrawerAction[] = [
   gap: var(--space-12);
 }
 
-.day-head > .hint {
-  flex: 1;
+.hours-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
 }
 
 .hint {
   color: var(--color-text-secondary);
-}
-
-.slot-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-  gap: var(--space-8);
-}
-
-.slot-tag {
-  justify-content: center;
-  width: 100%;
-  user-select: none;
-}
-
-.slot-tag--off :deep(.n-tag__content) {
-  text-decoration: line-through;
 }
 
 .shift {

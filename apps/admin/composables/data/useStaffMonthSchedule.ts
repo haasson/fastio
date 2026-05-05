@@ -7,8 +7,6 @@ import {
   utcIsoToLocalDateTime,
   localDateTimeToUtcIso,
   addDaysToDateStr,
-  timeToMinutes,
-  minutesToTimeStr,
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
@@ -99,7 +97,6 @@ export function useStaffMonthSchedule(
       // appointment_settings — глобальные данные тенанта, грузятся в `useTenant.init()`.
       // Здесь читаем из стора (обычно уже прогрето), на случай миса — догружаем.
       if (!appointmentSettingsStore.settings) await appointmentSettingsStore.load()
-      const slotStep = appointmentSettingsStore.settings?.slotStepMinutes ?? 30
 
       const branchSchedule = (() => {
         const branchId = branchIds[0]
@@ -116,19 +113,19 @@ export function useStaffMonthSchedule(
       let shiftCycle: ResourceSlotData['shiftCycle'] = null
 
       if (r.appliedTemplateId && r.cycleStartDate && shiftTpl?.type === 'shift' && shiftTpl.cycleLength) {
-        const slotsByDayIndex: Record<number, string[]> = {}
+        const hoursByDayIndex: Record<number, { openTime: string; closeTime: string } | null> = {}
 
-        for (const s of shiftTpl.slots) {
-          const arr = slotsByDayIndex[s.dayIndex] ?? []
-
-          arr.push(s.slotTime)
-          slotsByDayIndex[s.dayIndex] = arr
+        for (const d of shiftTpl.days) {
+          if (!d.isWorking || !d.openTime || !d.closeTime) {
+            hoursByDayIndex[d.dayIndex] = null
+          } else {
+            hoursByDayIndex[d.dayIndex] = { openTime: d.openTime, closeTime: d.closeTime }
+          }
         }
-        for (const k of Object.keys(slotsByDayIndex)) slotsByDayIndex[Number(k)].sort()
         shiftCycle = {
           cycleStartDate: r.cycleStartDate,
           cycleLength: shiftTpl.cycleLength,
-          slotsByDayIndex,
+          hoursByDayIndex,
         }
       }
 
@@ -163,43 +160,9 @@ export function useStaffMonthSchedule(
 
       const result = new Map<string, StaffMonthDay>()
 
-      const shiftSlotsForDate = (date: string): string[] | null => {
-        if (!shiftCycle) return null
-        const a = Date.UTC(...dateParts(shiftCycle.cycleStartDate))
-        const b = Date.UTC(...dateParts(date))
-        const offset = Math.floor((b - a) / 86_400_000)
-        const len = shiftCycle.cycleLength
-        const idx = ((offset % len) + len) % len
-
-        return shiftCycle.slotsByDayIndex[idx] ?? []
-      }
-
-      // Для shift-цикла shared-функция возвращает closeTime='23:59' (slot-engine
-      // фильтрует по disabled-set), но для отображения нам нужны корректные часы:
-      // первый слот → последний слот + slotStep.
-      const resolveDisplayHours = (date: string): { openTime: string; closeTime: string } | null => {
-        const override = dateOverrides.find((o) => o.date === date)
-
-        if (override) {
-          if (!override.isWorking || !override.openTime || !override.closeTime) return null
-
-          return { openTime: override.openTime, closeTime: override.closeTime }
-        }
-        const cycleSlots = shiftSlotsForDate(date)
-
-        if (cycleSlots !== null) {
-          if (cycleSlots.length === 0) return null
-          const lastMin = timeToMinutes(cycleSlots[cycleSlots.length - 1]) + slotStep
-
-          return { openTime: cycleSlots[0], closeTime: minutesToTimeStr(lastMin) }
-        }
-
-        return resolveResourceWorkingHours(date, slotData)
-      }
-
       for (let d = 1; d <= lastDay; d++) {
         const date = `${year}-${pad(month + 1)}-${pad(d)}`
-        const hours = resolveDisplayHours(date)
+        const hours = resolveResourceWorkingHours(date, slotData)
         const override = dateOverrides.find((o) => o.date === date)
         const isAbsence = !!override && !override.isWorking
 
@@ -227,10 +190,4 @@ export function useStaffMonthSchedule(
   watch([resource, monthAnchor], load, { immediate: true, deep: true })
 
   return { loading, days, reload: load }
-}
-
-const dateParts = (s: string): [number, number, number] => {
-  const [y, m, d] = s.split('-').map(Number)
-
-  return [y, m - 1, d]
 }

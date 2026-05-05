@@ -11,7 +11,7 @@ import type {
   ResourceScheduleRow, ResourceDisabledSlotRow,
   ResourceDateOverrideRow, ResourceDateDisabledSlotRow,
   ServiceResourceRow, ResourceCategoryRow, ResourceBranchRow,
-  ScheduleTemplateRow, ScheduleTemplateSlotRow,
+  ScheduleTemplateRow, ScheduleTemplateDayRow,
   AppointmentRow,
 } from '~/utils/api/db-types'
 import { query } from '~/utils/query'
@@ -32,7 +32,7 @@ export type AvailabilityBundle = {
   appointments: Pick<AppointmentRow, 'id' | 'resource_id' | 'starts_at' | 'ends_at' | 'actual_ends_at'>[]
   branchLinks: ResourceBranchRow[]
   shiftTemplates: Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[]
-  shiftTemplateSlots: ScheduleTemplateSlotRow[]
+  shiftTemplateDays: ScheduleTemplateDayRow[]
 }
 
 export type PresenceBundle = {
@@ -40,7 +40,7 @@ export type PresenceBundle = {
   dateOverrides: ResourceDateOverrideRow[]
   branchLinks: ResourceBranchRow[]
   shiftTemplates: Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[]
-  shiftTemplateSlots: ScheduleTemplateSlotRow[]
+  shiftTemplateDays: ScheduleTemplateDayRow[]
 }
 
 const RESOURCE_FIELDS = 'id, tenant_id, name, type, member_id, capacity, is_active, sort_order, applied_template_id, cycle_start_date, created_at, updated_at'
@@ -427,7 +427,7 @@ export const resourcesApi = {
       return {
         serviceResources: [], resourceCategories: [], schedules: [],
         disabledSlots: [], dateOverrides: [], dateDisabledSlots: [],
-        appointments: [], branchLinks: [], shiftTemplates: [], shiftTemplateSlots: [],
+        appointments: [], branchLinks: [], shiftTemplates: [], shiftTemplateDays: [],
       }
     }
 
@@ -441,7 +441,7 @@ export const resourcesApi = {
       appointmentsRes,
       branchLinksRes,
       shiftTemplatesRes,
-      shiftTemplateSlotsRes,
+      shiftTemplateDaysRes,
     ] = await Promise.all([
       sb.from('service_resources').select('service_id, resource_id').in('resource_id', resourceIds),
       sb.from('resource_categories').select('category_id, resource_id').in('resource_id', resourceIds),
@@ -462,8 +462,8 @@ export const resourcesApi = {
         ? sb.from('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
         : Promise.resolve({ data: [] as Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[] }),
       shiftTemplateIds.length
-        ? sb.from('schedule_template_slots').select('template_id, day_index, slot_time').in('template_id', shiftTemplateIds)
-        : Promise.resolve({ data: [] as ScheduleTemplateSlotRow[] }),
+        ? sb.from('schedule_template_days').select('template_id, day_index, is_working, open_time, close_time').in('template_id', shiftTemplateIds)
+        : Promise.resolve({ data: [] as ScheduleTemplateDayRow[] }),
     ])
 
     return {
@@ -476,7 +476,7 @@ export const resourcesApi = {
       appointments: (appointmentsRes.data ?? []) as Pick<AppointmentRow, 'id' | 'resource_id' | 'starts_at' | 'ends_at' | 'actual_ends_at'>[],
       branchLinks: (branchLinksRes.data ?? []) as ResourceBranchRow[],
       shiftTemplates: (shiftTemplatesRes.data ?? []) as Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[],
-      shiftTemplateSlots: (shiftTemplateSlotsRes.data ?? []) as ScheduleTemplateSlotRow[],
+      shiftTemplateDays: (shiftTemplateDaysRes.data ?? []) as ScheduleTemplateDayRow[],
     }
   },
 
@@ -496,10 +496,10 @@ export const resourcesApi = {
     const { resourceIds, todayDate, shiftTemplateIds } = params
 
     if (resourceIds.length === 0) {
-      return { schedules: [], dateOverrides: [], branchLinks: [], shiftTemplates: [], shiftTemplateSlots: [] }
+      return { schedules: [], dateOverrides: [], branchLinks: [], shiftTemplates: [], shiftTemplateDays: [] }
     }
 
-    const [schedulesRes, overridesRes, branchLinksRes, shiftTemplatesRes, shiftSlotsRes] = await Promise.all([
+    const [schedulesRes, overridesRes, branchLinksRes, shiftTemplatesRes, shiftDaysRes] = await Promise.all([
       sb.from('resource_schedules').select('*').in('resource_id', resourceIds),
       sb.from('resource_date_overrides').select('*').in('resource_id', resourceIds)
         .gte('date', todayDate).order('date', { ascending: true }),
@@ -508,8 +508,8 @@ export const resourcesApi = {
         ? sb.from('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
         : Promise.resolve({ data: [] as Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[] }),
       shiftTemplateIds.length
-        ? sb.from('schedule_template_slots').select('template_id, day_index, slot_time').in('template_id', shiftTemplateIds)
-        : Promise.resolve({ data: [] as ScheduleTemplateSlotRow[] }),
+        ? sb.from('schedule_template_days').select('template_id, day_index, is_working, open_time, close_time').in('template_id', shiftTemplateIds)
+        : Promise.resolve({ data: [] as ScheduleTemplateDayRow[] }),
     ])
 
     return {
@@ -517,7 +517,7 @@ export const resourcesApi = {
       dateOverrides: (overridesRes.data ?? []) as ResourceDateOverrideRow[],
       branchLinks: (branchLinksRes.data ?? []) as ResourceBranchRow[],
       shiftTemplates: (shiftTemplatesRes.data ?? []) as Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[],
-      shiftTemplateSlots: (shiftSlotsRes.data ?? []) as ScheduleTemplateSlotRow[],
+      shiftTemplateDays: (shiftDaysRes.data ?? []) as ScheduleTemplateDayRow[],
     }
   },
 }

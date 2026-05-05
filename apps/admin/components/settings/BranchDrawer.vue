@@ -77,8 +77,8 @@ import {
 } from '@fastio/ui'
 import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
 
-import type { Branch, BranchFormData, WorkingHoursSchedule } from '@fastio/shared'
-import { BRANCH_COLOR_PRESETS } from '@fastio/shared'
+import type { Branch, BranchFormData } from '@fastio/shared'
+import { BRANCH_COLOR_PRESETS, DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { validationRules } from '@fastio/kit'
@@ -109,8 +109,6 @@ const drawerActions = computed(() => [
   { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value },
 ])
 
-const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
-
 const defaultForm = (): BranchFormData => defaultBranchFormData()
 
 const form = reactive<BranchFormData>(defaultForm())
@@ -118,7 +116,7 @@ const form = reactive<BranchFormData>(defaultForm())
 const useCustomHours = computed(() => form.workingHoursSchedule !== null)
 
 const toggleCustomHours = (val: boolean) => {
-  form.workingHoursSchedule = val ? { ...DEFAULT_SCHEDULE } : null
+  form.workingHoursSchedule = val ? { ...DEFAULT_WORKING_HOURS_SCHEDULE } : null
 }
 
 watch(() => props.modelValue, (val) => {

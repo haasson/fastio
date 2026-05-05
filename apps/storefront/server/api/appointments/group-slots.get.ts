@@ -189,28 +189,30 @@ export default defineEventHandler(async (event): Promise<GroupSlotsResult> => {
 
   // Загружаем shift-шаблоны
   const shiftTemplateIds = [...new Set(Array.from(shiftAnchor.values()).map((a) => a.templateId))]
-  const [shiftTemplatesRes, shiftSlotsRes] = await Promise.all([
+  const [shiftTemplatesRes, shiftDaysRes] = await Promise.all([
     shiftTemplateIds.length
       ? db.junction('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
       : Promise.resolve({ data: [] as Array<{ id: string; cycle_length: number }> }),
     shiftTemplateIds.length
-      ? db.junction('schedule_template_slots').select('template_id, day_index, slot_time').in('template_id', shiftTemplateIds)
-      : Promise.resolve({ data: [] as Array<{ template_id: string; day_index: number; slot_time: string }> }),
+      ? db.junction('schedule_template_days').select('template_id, day_index, is_working, open_time, close_time').in('template_id', shiftTemplateIds)
+      : Promise.resolve({ data: [] as Array<{ template_id: string; day_index: number; is_working: boolean; open_time: string | null; close_time: string | null }> }),
   ])
 
   const shiftCycleLengthById = new Map<string, number>(
     ((shiftTemplatesRes.data ?? []) as Array<{ id: string; cycle_length: number }>).map((t) => [t.id, t.cycle_length]),
   )
-  const shiftSlotsByTemplate = new Map<string, Record<number, string[]>>()
-  for (const row of (shiftSlotsRes.data ?? []) as Array<{ template_id: string; day_index: number; slot_time: string }>) {
-    const map = shiftSlotsByTemplate.get(row.template_id) ?? {}
-    const arr = map[row.day_index] ?? []
-    arr.push((row.slot_time as string).slice(0, 5))
-    map[row.day_index] = arr
-    shiftSlotsByTemplate.set(row.template_id, map)
-  }
-  for (const [, byDay] of shiftSlotsByTemplate) {
-    for (const k of Object.keys(byDay)) byDay[Number(k)].sort()
+  const shiftHoursByTemplate = new Map<string, Record<number, { openTime: string; closeTime: string } | null>>()
+  for (const row of (shiftDaysRes.data ?? []) as Array<{ template_id: string; day_index: number; is_working: boolean; open_time: string | null; close_time: string | null }>) {
+    const map = shiftHoursByTemplate.get(row.template_id) ?? {}
+    if (!row.is_working || !row.open_time || !row.close_time) {
+      map[row.day_index] = null
+    } else {
+      map[row.day_index] = {
+        openTime: (row.open_time as string).slice(0, 5),
+        closeTime: (row.close_time as string).slice(0, 5),
+      }
+    }
+    shiftHoursByTemplate.set(row.template_id, map)
   }
 
   // Загружаем графики и записи для активных ресурсов
@@ -308,9 +310,9 @@ export default defineEventHandler(async (event): Promise<GroupSlotsResult> => {
           const anchor = shiftAnchor.get(rid)
           if (!anchor) return null
           const cycleLength = shiftCycleLengthById.get(anchor.templateId)
-          const slotsByDayIndex = shiftSlotsByTemplate.get(anchor.templateId)
-          if (!cycleLength || !slotsByDayIndex) return null
-          return { cycleStartDate: anchor.cycleStartDate, cycleLength, slotsByDayIndex }
+          const hoursByDayIndex = shiftHoursByTemplate.get(anchor.templateId)
+          if (!cycleLength || !hoursByDayIndex) return null
+          return { cycleStartDate: anchor.cycleStartDate, cycleLength, hoursByDayIndex }
         })(),
       }
 

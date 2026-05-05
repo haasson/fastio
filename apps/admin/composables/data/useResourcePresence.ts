@@ -82,18 +82,20 @@ export function useResourcePresence(resources: Ref<Resource[]>) {
       const shiftCycleLengthById = new Map<string, number>(
         bundle.shiftTemplates.map((t) => [t.id, t.cycle_length as number]),
       )
-      const shiftSlotsByTemplate = new Map<string, Record<number, string[]>>()
+      const shiftHoursByTemplate = new Map<string, Record<number, { openTime: string; closeTime: string } | null>>()
 
-      for (const row of bundle.shiftTemplateSlots) {
-        const map = shiftSlotsByTemplate.get(row.template_id) ?? {}
-        const arr = map[row.day_index] ?? []
+      for (const row of bundle.shiftTemplateDays) {
+        const map = shiftHoursByTemplate.get(row.template_id) ?? {}
 
-        arr.push(row.slot_time.slice(0, 5))
-        map[row.day_index] = arr
-        shiftSlotsByTemplate.set(row.template_id, map)
-      }
-      for (const [, byDay] of shiftSlotsByTemplate) {
-        for (const k of Object.keys(byDay)) byDay[Number(k)].sort()
+        if (!row.is_working || !row.open_time || !row.close_time) {
+          map[row.day_index] = null
+        } else {
+          map[row.day_index] = {
+            openTime: row.open_time.slice(0, 5),
+            closeTime: row.close_time.slice(0, 5),
+          }
+        }
+        shiftHoursByTemplate.set(row.template_id, map)
       }
 
       const nowIsoUtc = new Date().toISOString()
@@ -148,18 +150,18 @@ export function useResourcePresence(resources: Ref<Resource[]>) {
           closeTime = sliceTime(todayOverride.close_time)
         } else if (r.appliedTemplateId && r.cycleStartDate) {
           const cycleLength = shiftCycleLengthById.get(r.appliedTemplateId)
-          const slotsByDay = shiftSlotsByTemplate.get(r.appliedTemplateId)
+          const hoursByDay = shiftHoursByTemplate.get(r.appliedTemplateId)
 
-          if (cycleLength && slotsByDay) {
+          if (cycleLength && hoursByDay) {
             const cycleStart = new Date(r.cycleStartDate + 'T00:00:00Z').getTime()
             const todayUtc = new Date(today + 'T00:00:00Z').getTime()
             const offset = Math.floor((todayUtc - cycleStart) / 86_400_000)
             const idx = ((offset % cycleLength) + cycleLength) % cycleLength
-            const slots = slotsByDay[idx] ?? []
+            const hours = hoursByDay[idx] ?? null
 
-            if (slots.length > 0) {
-              openTime = slots[0]
-              closeTime = '23:59'
+            if (hours) {
+              openTime = hours.openTime
+              closeTime = hours.closeTime
             }
           }
         } else {

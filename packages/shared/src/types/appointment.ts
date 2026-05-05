@@ -129,10 +129,16 @@ export type AppointmentFormData = {
 // Если schedules пустой и нет override на дату — используется branchSchedule
 // (фоллбек "график не задан → как у филиала").
 //
-// Если задан shiftCycle — для каждой даты слоты вычисляются лениво из
+// Если задан shiftCycle — для каждой даты часы работы вычисляются лениво из
 // шаблона по формуле: cycleIndex = ((daysSince(cycleStartDate)) % cycleLength).
 // Перекрывает branchSchedule, но dateOverrides и dateDisabledSlots всё ещё
 // имеют приоритет (пользовательские исключения остаются жёсткими).
+//
+// hoursByDayIndex хранит **часы работы** по каждому дню цикла, а не материализованные
+// слоты. Слоты вычисляются на runtime из (open, close, slotStep). Это даёт:
+// - независимость от изменения slotStep тенанта;
+// - корректные границы окна работы (нет ambiguity «когда смена кончается»);
+// - поддержку overnight через close < open.
 export type ResourceSlotData = {
   schedules: ResourceSchedule[]
   disabledSlots: ResourceDisabledSlot[]
@@ -142,8 +148,9 @@ export type ResourceSlotData = {
   shiftCycle?: {
     cycleStartDate: string  // YYYY-MM-DD, день 1
     cycleLength: number     // 1..30
-    // dayIndex (0..cycleLength-1) → отсортированный список slot-time "HH:MM"
-    slotsByDayIndex: Record<number, string[]>
+    // dayIndex (0..cycleLength-1) → часы работы, или null для выходного дня цикла.
+    // close < open ⇒ overnight (закрытие следующего календарного дня).
+    hoursByDayIndex: Record<number, { openTime: string; closeTime: string } | null>
   } | null
 }
 
@@ -172,9 +179,12 @@ export type AppointmentEvent = {
   createdAt: string
 }
 
-// Один найденный вариант расписания визита
+// Один найденный вариант расписания визита.
+// isNextDay поля помечают, что соответствующее время относится к D+1 (overnight
+// фаза смены, начавшейся в D). Для обычных не-overnight расписаний всегда false.
 export type GroupSlotOption = {
-  startTime: string // "HH:MM" — начало первой услуги
+  startTime: string // "HH:MM" — начало первой услуги (нормализованное мод 1440)
+  startIsNextDay: boolean
   schedule: Array<{
     serviceId: string
     resourceId: string
@@ -184,7 +194,9 @@ export type GroupSlotOption = {
     preferredResourceId: string | null
     preferredResourceName: string | null
     startTime: string // "HH:MM"
+    startIsNextDay: boolean
     endTime: string   // "HH:MM"
+    endIsNextDay: boolean
     // Все ресурсы (включая выбранного), которые свободны в этом окне для этой услуги.
     // Используется в UI «выбрать другого мастера» для жёлтых слотов — показываем
     // только реально свободных, без RPC-проверки. Всегда содержит resourceId.

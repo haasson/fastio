@@ -524,8 +524,10 @@ export type ScheduleTemplateRow = {
   updated_at: string
 }
 
-export type ScheduleTemplateSlotRow = {
+export type ScheduleTemplateDayRow = {
   template_id: string
   day_index: number
-  slot_time: string
+  is_working: boolean
+  open_time: string | null
+  close_time: string | null
 }

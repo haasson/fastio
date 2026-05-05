@@ -16,6 +16,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createError } from 'h3'
 
+import type { BulkPayload } from '../api/appointments/bulk.post'
+
 // ──────────────────────────────────────────────────────────────────────────
 // Mock infra
 //
@@ -162,7 +164,7 @@ function makeEvent() {
   } as any
 }
 
-const validBody = {
+const validBody: BulkPayload = {
   customerName: 'Тест',
   customerPhone: '+79991234567',
   date: FUTURE_DATE,
@@ -499,6 +501,110 @@ describe('POST /api/appointments/bulk — RPC error mapping', () => {
 })
 
 // ──────────────────────────────────────────────────────────────────────────
+// I. Overnight (план 1a): isNextDay=true сдвигает start/end-дату в RPC payload.
+// ──────────────────────────────────────────────────────────────────────────
+
+describe('POST /api/appointments/bulk — overnight isNextDay', () => {
+  const fixedDate = todayPlusDays(5)
+  const nextDate = todayPlusDays(6)
+
+  it('isNextDay=true → starts_at в RPC построен на date+1', async () => {
+    happyPath()
+    mockReadBody.mockResolvedValue({
+      ...validBody,
+      date: fixedDate,
+      items: [{ serviceId: 'svc-1', resourceId: 'res-1', startTime: '01:00', isNextDay: true }],
+    })
+
+    const mod = await import('../api/appointments/bulk.post')
+    const handler = mod.default as Function
+    await handler(makeEvent())
+
+    const rpcArgs = mockRpc.mock.calls[0][1]
+    const item = rpcArgs.p_items[0]
+    // svc-1 в happyPath: duration=60. starts_at = date+1 01:00 UTC. ends_at = date+1 02:00 UTC.
+    expect(item.starts_at).toBe(`${nextDate}T01:00:00.000Z`)
+    expect(item.ends_at).toBe(`${nextDate}T02:00:00.000Z`)
+  })
+
+  it('isNextDay=false (или не передан) → starts_at на date (бэккомпат)', async () => {
+    happyPath()
+    mockReadBody.mockResolvedValue({
+      ...validBody,
+      date: fixedDate,
+      items: [{ serviceId: 'svc-1', resourceId: 'res-1', startTime: '10:00' }], // нет isNextDay
+    })
+
+    const mod = await import('../api/appointments/bulk.post')
+    const handler = mod.default as Function
+    await handler(makeEvent())
+
+    const rpcArgs = mockRpc.mock.calls[0][1]
+    const item = rpcArgs.p_items[0]
+    expect(item.starts_at).toBe(`${fixedDate}T10:00:00.000Z`)
+    expect(item.ends_at).toBe(`${fixedDate}T11:00:00.000Z`)
+  })
+
+  it('start 23:30 + duration 60 → end переезжает на следующие сутки (start_time + duration >= 24:00)', async () => {
+    // svc-1 в happyPath duration=60. start 23:30 → end 00:30 D+1 (натянулось через полночь).
+    happyPath()
+    mockReadBody.mockResolvedValue({
+      ...validBody,
+      date: fixedDate,
+      items: [{ serviceId: 'svc-1', resourceId: 'res-1', startTime: '23:30' }],
+    })
+
+    const mod = await import('../api/appointments/bulk.post')
+    const handler = mod.default as Function
+    await handler(makeEvent())
+
+    const item = mockRpc.mock.calls[0][1].p_items[0]
+    expect(item.starts_at).toBe(`${fixedDate}T23:30:00.000Z`)
+    expect(item.ends_at).toBe(`${nextDate}T00:30:00.000Z`)
+  })
+
+  it('mixed payload: один item на D, второй isNextDay=true на D+1', async () => {
+    // Группа из 2-х услуг через полночь: svc-1 23:00→00:00 D→D+1, svc-2 00:00→01:00 D+1.
+    happyPath({
+      'from:services': {
+        data: [
+          { id: 'svc-1', duration: 60, is_bookable: true, name: 'A', price: 1000, category_id: null },
+          { id: 'svc-2', duration: 60, is_bookable: true, name: 'B', price: 1000, category_id: null },
+        ],
+        error: null,
+      },
+      'junction:service_resources': {
+        data: [
+          { service_id: 'svc-1', resource_id: 'res-1' },
+          { service_id: 'svc-2', resource_id: 'res-1' },
+        ],
+        error: null,
+      },
+    })
+    mockReadBody.mockResolvedValue({
+      ...validBody,
+      date: fixedDate,
+      items: [
+        { serviceId: 'svc-1', resourceId: 'res-1', startTime: '23:00' },
+        { serviceId: 'svc-2', resourceId: 'res-1', startTime: '00:00', isNextDay: true },
+      ],
+    })
+
+    const mod = await import('../api/appointments/bulk.post')
+    const handler = mod.default as Function
+    await handler(makeEvent())
+
+    const items = mockRpc.mock.calls[0][1].p_items
+    // svc-1: start 23:00 D, end 00:00 D+1 (через полночь по правилу end>=1440 → endDate+1).
+    expect(items[0].starts_at).toBe(`${fixedDate}T23:00:00.000Z`)
+    expect(items[0].ends_at).toBe(`${nextDate}T00:00:00.000Z`)
+    // svc-2: isNextDay=true → start 00:00 D+1, end 01:00 D+1.
+    expect(items[1].starts_at).toBe(`${nextDate}T00:00:00.000Z`)
+    expect(items[1].ends_at).toBe(`${nextDate}T01:00:00.000Z`)
+  })
+})
+
+// ──────────────────────────────────────────────────────────────────────────
 // H. Round-robin auto-pick (resourceId=null, бэк подбирает кандидата)
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -574,7 +680,7 @@ function autoPath(opts: {
   // последующие — busy-check для каждого item (по одному вызову на item).
   setResolver('from:appointments', [
     { data: opts.dayLoad ?? [], error: null },
-    ...busyByItemSlot.map((busyIds) => ({ data: busyIds.map((id) => ({ resource_id: id })), error: null })),
+    ...busyByItemSlot.map((busyIds) => ({ data: busyIds.map((id: string) => ({ resource_id: id })), error: null })),
   ])
 
   mockRpc.mockResolvedValue({

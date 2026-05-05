@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-04T09:04:39.762Z",
+  "generated_at": "2026-05-05T05:07:36.954Z",
   "stats": {
     "files": 38,
     "pages": 0,
-    "symbols": 157,
+    "symbols": 160,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -124,8 +124,8 @@
     },
     "src/utils/appointmentSlots.ts": {
       "kind": "ts",
-      "hash": "51224d441823",
-      "purpose": "Алгоритмы расчёта слотов для онлайн-записи: одиночные слоты ресурса, объединение по «любому исполнителю», группа услуг с перестановками и preferred-fallback, доступность дня для стрипа",
+      "hash": "a638611956ec",
+      "purpose": "Slot engine для appointments: вычисление слотов ресурса/филиала/группы на дату, поддержка overnight (close<open) и 24/7 (close==open), пересечение часов ресурса с филиалом",
       "symbols": [
         {
           "name": "resolveResourceWorkingHours",
@@ -142,20 +142,20 @@
         {
           "name": "getResourceSlotsForDate",
           "kind": "function",
-          "hash": "3a935d80",
-          "purpose": "Список доступных HH:MM слотов одного ресурса на дату с учётом capacity, disabled-слотов и прошедшего времени"
+          "hash": "160cb35b",
+          "purpose": "Доступные слоты конкретного ресурса на дату с учётом capacity, существующих записей, today-cutoff и overnight-фазы"
         },
         {
           "name": "mergeResourceSlots",
           "kind": "function",
-          "hash": "f95fe9a8",
-          "purpose": "Объединение слотов нескольких ресурсов для услуги в режиме «любой исполнитель»"
+          "hash": "4cf987e2",
+          "purpose": "Объединяет слоты нескольких ресурсов («любой исполнитель») с дедупом по time+isNextDay и хронологической сортировкой"
         },
         {
           "name": "getBranchSlotsForDate",
           "kind": "function",
-          "hash": "97ab9702",
-          "purpose": "Слоты для услуги БЕЗ исполнителя на основе расписания филиала (open_ended режим)"
+          "hash": "0778f191",
+          "purpose": "Слоты услуги без исполнителя по графику филиала, с capacity параллельных бронирований и поддержкой overnight"
         },
         {
           "name": "getAllSlotsInWindow",
@@ -192,6 +192,12 @@
           "kind": "const",
           "hash": "41686d84",
           "purpose": "Дефолтная длина рабочего дня (8 часов) когда расписание тенанта/филиала не задано — используется для определения «длиннее дня» в группах услуг"
+        },
+        {
+          "name": "SlotEntry",
+          "kind": "type",
+          "hash": "428ad9aa",
+          "purpose": "Слот в overnight-aware формате: { time: 'HH:MM', isNextDay: boolean } — isNextDay=true для фазы D+1 ночной смены"
         },
         {
           "name": "SlotChipTone",
@@ -753,9 +759,15 @@
     },
     "src/utils/scheduleTemplate.ts": {
       "kind": "ts",
-      "hash": "1c38f3d46425",
-      "purpose": "Мапперы шаблонов расписаний (shift-циклы) и хелперы по часам работы филиала на день недели/самое широкое окно",
+      "hash": "7863261da528",
+      "purpose": "Мапперы строк schedule_templates/schedule_template_days и хелперы для часов работы филиала по дню недели",
       "symbols": [
+        {
+          "name": "DEFAULT_WORKING_HOURS_SCHEDULE",
+          "kind": "const",
+          "hash": "866f174c",
+          "purpose": "Дефолтный график работы 10:00–22:00 без выходных — клиентский fallback пока тенант/филиал не сохранил свой"
+        },
         {
           "name": "mapScheduleTemplate",
           "kind": "function",
@@ -763,10 +775,10 @@
           "purpose": "Маппит шаблон расписания (shift-цикл) из БД в ScheduleTemplate"
         },
         {
-          "name": "mapScheduleTemplateSlot",
+          "name": "mapScheduleTemplateDay",
           "kind": "function",
-          "hash": "74a14716",
-          "purpose": "Маппит один слот шаблона (dayIndex + slotTime) с обрезкой до HH:MM"
+          "hash": "105f9500",
+          "purpose": "Маппит строку schedule_template_days в ScheduleTemplateDay (часы работы дня шаблона)"
         },
         {
           "name": "getBranchHoursForDow",
@@ -988,8 +1000,8 @@
     },
     "src/utils/timezone.ts": {
       "kind": "ts",
-      "hash": "b664c84472aa",
-      "purpose": "Утилиты работы с датами в таймзоне тенанта: сегодня, конвертация UTC↔локальное, диапазоны дат",
+      "hash": "7a4eaa49c4e2",
+      "purpose": "Утилиты для работы с таймзоной тенанта: конвертация локального времени в UTC ISO и обратно, today-cutoff, генерация слотов, поддержка overnight",
       "symbols": [
         {
           "name": "todayInTz",
@@ -1044,6 +1056,12 @@
           "kind": "function",
           "hash": "52f700be",
           "purpose": "Минуты (в т.ч. > 1440 для overnight) → нормализованное 'HH:MM'"
+        },
+        {
+          "name": "localMinutesToUtcIso",
+          "kind": "function",
+          "hash": "e51a57fe",
+          "purpose": "Минуты от начала локальной даты → UTC ISO с автоматическим сдвигом на dayOffset для overnight (minutes ≥ 1440 ⇒ дата+1)"
         },
         {
           "name": "generateTimeSlots",

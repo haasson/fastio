@@ -80,22 +80,35 @@ export function datesInRange(from: string, to: string): string[] {
  * dateStr: "YYYY-MM-DD", timeStr: "HH:mm", timezone: IANA.
  */
 export function localDateTimeToUtcIso(dateStr: string, timeStr: string, timezone: string): string {
+  // Для UTC short-circuit — без Intl-magic, чтобы не наступать на V8-баг с hour='24'
+  // в formatToParts (который ломает offset arithmetic для полуночи).
+  if (timezone === 'UTC') {
+    return new Date(`${dateStr}T${timeStr}:00Z`).toISOString()
+  }
+
   const [y, mo, d] = dateStr.split('-').map(Number)
   const [h, m] = timeStr.split(':').map(Number)
 
   // Шаг 1: "прощупываем" UTC-момент, взяв желаемую дату+время как UTC
   const probe = new Date(Date.UTC(y, mo - 1, d, h, m, 0))
 
-  // Шаг 2: смотрим, какое местное время в timezone соответствует этому UTC-моменту
+  // Шаг 2: смотрим, какое местное время в timezone соответствует этому UTC-моменту.
+  // hourCycle:'h23' — форсим 00..23 (без '24' для полуночи).
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
     hour12: false,
+    hourCycle: 'h23',
   })
   const parts = fmt.formatToParts(probe)
   const get = (type: string) => +parts.find(p => p.type === type)!.value
-  const localAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
+  // Дополнительная страховка от Intl-баги: hour=24 трактуем как hour=0 без сдвига
+  // дня (Intl имел в виду «полночь между текущим и следующим», а Date.UTC сдвинет
+  // на сутки вперёд при hour=24, что ломает арифметику).
+  const rawHour = get('hour')
+  const hour = rawHour === 24 ? 0 : rawHour
+  const localAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'), hour, get('minute'), get('second'))
 
   // Шаг 3: разница — это UTC-смещение таймзоны в этот момент
   const offset = probe.getTime() - localAsUtc
@@ -109,19 +122,34 @@ export function localDateTimeToUtcIso(dateStr: string, timeStr: string, timezone
  * Возвращает { dateStr: "YYYY-MM-DD", timeStr: "HH:mm" }.
  */
 export function utcIsoToLocalDateTime(isoStr: string, timezone: string): { dateStr: string; timeStr: string } {
+  // Для UTC short-circuit — без Intl-magic, чтобы не наступать на V8-баг,
+  // который для полуночи возвращает hour='24' вместо '00' даже с hourCycle:'h23'.
+  if (timezone === 'UTC') {
+    const d = new Date(isoStr)
+    return {
+      dateStr: d.toISOString().slice(0, 10),
+      timeStr: d.toISOString().slice(11, 16),
+    }
+  }
+
   const d = new Date(isoStr)
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit',
     hour12: false,
+    hourCycle: 'h23',
   })
   const parts = fmt.formatToParts(d)
   const get = (type: string) => parts.find(p => p.type === type)!.value
 
+  // Дополнительная страховка от Intl-баги: 'hour'='24' трактуем как '00'.
+  const rawHour = get('hour')
+  const hour = rawHour === '24' ? '00' : rawHour
+
   return {
     dateStr: `${get('year')}-${get('month')}-${get('day')}`,
-    timeStr: `${get('hour')}:${get('minute')}`,
+    timeStr: `${hour}:${get('minute')}`,
   }
 }
 
@@ -135,6 +163,18 @@ export function timeToMinutes(time: string): number {
 export function minutesToTimeStr(minutes: number): string {
   const m = ((minutes % 1440) + 1440) % 1440
   return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+}
+
+/**
+ * Локальные минуты (от 00:00 даты) → UTC ISO. Если minutes >= 1440,
+ * автоматически сдвигает на dayOffset вперёд (overnight: слот в D+1 фазе
+ * смены, начавшейся в D). Используется в overnight slot engine.
+ */
+export function localMinutesToUtcIso(dateStr: string, minutes: number, timezone: string): string {
+  const dayOffset = Math.floor(minutes / 1440)
+  const minOfDay = ((minutes % 1440) + 1440) % 1440
+  const targetDate = dayOffset === 0 ? dateStr : addDaysToDateStr(dateStr, dayOffset)
+  return localDateTimeToUtcIso(targetDate, minutesToTimeStr(minOfDay), timezone)
 }
 
 /**

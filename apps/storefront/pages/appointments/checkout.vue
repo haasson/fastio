@@ -339,6 +339,9 @@ const submitGroupBooking = async () => {
         serviceId: entry.serviceId,
         resourceId: preferredMap[entry.serviceId] ? entry.resourceId : null,
         startTime: entry.startTime,
+        // Overnight (план 1a): для услуги в фазе D+1 (когда смена 22:00→04:00
+        // и услуга стартует после полуночи) бэк строит UTC через date+1.
+        isNextDay: entry.startIsNextDay,
       })),
       date: groupDate.value,
       customerName: contactForm.value.customerName,

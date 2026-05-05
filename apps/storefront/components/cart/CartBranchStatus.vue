@@ -69,7 +69,7 @@ const visibleStatuses = computed(() => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/media-queries' as mq;
+@use '~/assets/styles/mixins' as *;
 
 .cart-branch-status-root {
   padding: 16px;
@@ -120,7 +120,7 @@ const visibleStatuses = computed(() => {
   font-size: 13px;
   width: 100%;
 
-  @include mq.mq-m {
+  @include md {
     width: auto;
     margin-left: auto;
   }

@@ -1,12 +1,24 @@
 import type {
   ScheduleTemplate,
-  ScheduleTemplateSlot,
+  ScheduleTemplateDay,
   ScheduleTemplateType,
 } from '../types/scheduleTemplate'
 import type { WorkingHours, WorkingHoursSchedule } from '../types/tenant'
 
 const sliceTime = (v: unknown): string | null =>
   typeof v === 'string' ? v.slice(0, 5) : null
+
+/**
+ * Дефолтный график работы заведения. Используется как клиентский fallback
+ * везде, где у тенанта/филиала ещё не сохранено `working_hours_schedule`
+ * (миграция создаёт тенант с null, юзер видит дефолт в форме до save).
+ *
+ * 10:00–22:00 без выходных дней — типичный график общепита/салона.
+ */
+export const DEFAULT_WORKING_HOURS_SCHEDULE: WorkingHoursSchedule = {
+  default: { open: '10:00', close: '22:00' },
+  days: {},
+}
 
 export const mapScheduleTemplate = (raw: Record<string, unknown>): ScheduleTemplate => ({
   id: raw.id as string,
@@ -20,10 +32,12 @@ export const mapScheduleTemplate = (raw: Record<string, unknown>): ScheduleTempl
   updatedAt: raw.updated_at as string,
 })
 
-export const mapScheduleTemplateSlot = (raw: Record<string, unknown>): ScheduleTemplateSlot => ({
+export const mapScheduleTemplateDay = (raw: Record<string, unknown>): ScheduleTemplateDay => ({
   templateId: raw.template_id as string,
   dayIndex: raw.day_index as number,
-  slotTime: (raw.slot_time as string).slice(0, 5),
+  isWorking: raw.is_working as boolean,
+  openTime: sliceTime(raw.open_time),
+  closeTime: sliceTime(raw.close_time),
 })
 
 /**

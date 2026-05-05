@@ -16,7 +16,16 @@ usePageTitle('Настройки')
 
 const gate = useGate()
 
-const hasIntake = computed(() => gate.orders.value.enabled || gate.reservations.value.enabled || gate.dineIn.value.enabled)
+// Уведомления и Юридические нужны при ЛЮБОМ канале приёма клиентских данных:
+// доставка, самовывоз, посадка, бронь столов, запись на услуги. Уведомления —
+// telegram/email тенанту и клиенту по новой записи/заказу. Юридические —
+// согласие на обработку ПД на витрине (без них submit блокируется).
+// gate.orders уже = delivery || pickup, поэтому отдельные флаги не нужны.
+const hasIntake = computed(() => gate.orders.value.enabled
+  || gate.reservations.value.enabled
+  || gate.dineIn.value.enabled
+  || gate.services.value.enabled,
+)
 
 const tabs = computed(() => [
   { value: 'contacts', label: 'Общее', icon: 'settings' as const },

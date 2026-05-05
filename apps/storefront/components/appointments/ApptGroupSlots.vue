@@ -27,16 +27,19 @@
         <div class="chips-grid">
           <button
             v-for="entry in result.entries"
-            :key="entry.startTime"
+            :key="`${entry.startIsNextDay ? '1' : '0'}-${entry.startTime}`"
             type="button"
             class="chip"
             :class="[
               `chip-${computeSlotTone(entry)}`,
-              { selected: selectedEntry?.startTime === entry.startTime },
+              {
+                selected: selectedEntry?.startTime === entry.startTime
+                  && selectedEntry?.startIsNextDay === entry.startIsNextDay,
+              },
             ]"
             @click="emit('update:selectedEntry', entry)"
           >
-            {{ entry.startTime }}
+            {{ entry.startTime }}<span v-if="entry.startIsNextDay" class="chip-next-day"> +1</span>
           </button>
         </div>
 
@@ -52,7 +55,9 @@
           >
             <div class="row-head">
               <span class="row-service">{{ serviceNames[entry.serviceId] ?? '—' }}</span>
-              <span class="row-time">{{ entry.startTime }}–{{ entry.endTime }}</span>
+              <span class="row-time">
+                <span v-if="entry.startIsNextDay" class="row-next-day-tag">+1</span>{{ entry.startTime }}–<span v-if="entry.endIsNextDay && !entry.startIsNextDay" class="row-next-day-tag">+1</span>{{ entry.endTime }}
+              </span>
             </div>
             <!-- Если клиент выбрал «любой исполнитель» — не раскрываем кому
                  система собирается отдать слот: окончательное распределение делает
@@ -203,6 +208,25 @@ watch(
     border-color: var(--primary);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
   }
+}
+
+.chip-next-day {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin-left: 2px;
+}
+
+.row-next-day-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  border-radius: 4px;
+  padding: 0 4px;
+  margin-right: 3px;
+  vertical-align: middle;
 }
 
 .schedule-preview {

@@ -27,7 +27,8 @@
 // не появится. Сейчас единственный потребитель — pages/branches.vue.
 import { computed } from 'vue'
 import { UiCard, UiForm, UiInput, UiText, UiSectionHeader } from '@fastio/ui'
-import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
+import type { Tenant } from '@fastio/shared'
+import { DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
 import { useEditableForm } from '~/composables/ui/useEditableForm'
@@ -43,13 +44,11 @@ withDefaults(defineProps<{
 const tenantStore = useTenantStore()
 const tenant = computed(() => tenantStore.tenant)
 
-const DEFAULT_SCHEDULE: WorkingHoursSchedule = { default: { open: '10:00', close: '22:00' }, days: {} }
-
 const page = useEditableForm({
   source: tenant,
   build: (t: Tenant) => ({
     phone: t.contacts?.phone ?? '',
-    workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_SCHEDULE,
+    workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_WORKING_HOURS_SCHEDULE,
   }),
   save: (data) => tenantStore.update({
     contacts: {

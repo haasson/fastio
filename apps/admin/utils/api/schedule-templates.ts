@@ -1,15 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   ScheduleTemplate,
-  ScheduleTemplateSlot,
+  ScheduleTemplateDay,
   ScheduleTemplateFull,
   ScheduleTemplateFormData,
 } from '@fastio/shared'
 import {
   mapScheduleTemplate,
-  mapScheduleTemplateSlot,
+  mapScheduleTemplateDay,
 } from '@fastio/shared'
-import type { ScheduleTemplateRow, ScheduleTemplateSlotRow } from '~/utils/api/db-types'
+import type { ScheduleTemplateRow, ScheduleTemplateDayRow } from '~/utils/api/db-types'
 import { query } from '~/utils/query'
 
 const TEMPLATE_FIELDS
@@ -31,28 +31,30 @@ const getFullImpl = async (sb: SupabaseClient, templateId: string): Promise<Sche
   if (!tplData) return null
   const tpl = mapScheduleTemplate(tplData as unknown as ScheduleTemplateRow)
 
-  const slotsData = await query(
-    sb.from('schedule_template_slots').select('*').eq('template_id', templateId).order('day_index').order('slot_time'),
+  const daysData = await query(
+    sb.from('schedule_template_days').select('*').eq('template_id', templateId).order('day_index'),
   )
 
-  const slots: ScheduleTemplateSlot[] = (slotsData ?? []).map((r) => mapScheduleTemplateSlot(r as unknown as ScheduleTemplateSlotRow),
+  const days: ScheduleTemplateDay[] = (daysData ?? []).map((r) => mapScheduleTemplateDay(r as unknown as ScheduleTemplateDayRow),
   )
 
-  return { ...tpl, slots }
+  return { ...tpl, days }
 }
 
-const writeSlots = async (
+const writeDays = async (
   sb: SupabaseClient,
   templateId: string,
-  slots: ScheduleTemplateSlot[],
+  days: ScheduleTemplateDay[],
 ): Promise<void> => {
-  if (slots.length === 0) return
+  if (days.length === 0) return
   await query(
-    sb.from('schedule_template_slots').insert(
-      slots.map((s) => ({
+    sb.from('schedule_template_days').insert(
+      days.map((d) => ({
         template_id: templateId,
-        day_index: s.dayIndex,
-        slot_time: s.slotTime,
+        day_index: d.dayIndex,
+        is_working: d.isWorking,
+        open_time: d.openTime,
+        close_time: d.closeTime,
       })),
     ),
   )
@@ -87,13 +89,13 @@ export const scheduleTemplatesApi = {
     )
     const tpl = mapScheduleTemplate(result as unknown as ScheduleTemplateRow)
 
-    await writeSlots(sb, tpl.id, form.slots)
+    await writeDays(sb, tpl.id, form.days)
 
     return tpl
   },
 
   async update(sb: SupabaseClient, id: string, _tenantId: string, form: ScheduleTemplateFormData): Promise<ScheduleTemplate> {
-    // Atomic: update template fields + replace slots in one transaction.
+    // Atomic: update template fields + replace days in one transaction.
     await query(
       sb.rpc('schedule_templates_update', {
         p_id: id,
@@ -101,7 +103,12 @@ export const scheduleTemplatesApi = {
         p_type: form.type,
         p_cycle_length: form.type === 'shift' ? form.cycleLength : null,
         p_reference_branch_id: form.referenceBranchId,
-        p_slots: form.slots.map((s) => ({ day_index: s.dayIndex, slot_time: s.slotTime })),
+        p_days: form.days.map((d) => ({
+          day_index: d.dayIndex,
+          is_working: d.isWorking,
+          open_time: d.openTime,
+          close_time: d.closeTime,
+        })),
       }),
     )
 
@@ -139,9 +146,8 @@ export const scheduleTemplatesApi = {
   },
 
   /**
-   * Применяет weekly-шаблон к ресурсу. Само вычисление расписания / disabled_slots
-   * делает RPC внутри БД — клиент НЕ передаёт строки расписания, чтобы нельзя
-   * было записать произвольные значения с пометкой `applied_template_id`.
+   * Применяет weekly-шаблон к ресурсу. RPC копирует часы шаблона 1:1 в
+   * resource_schedules (без обрезки по часам филиала и без disabled_slots).
    */
   async applyWeeklyToResource(sb: SupabaseClient, templateId: string, resourceId: string): Promise<void> {
     await query(
@@ -154,9 +160,7 @@ export const scheduleTemplatesApi = {
 
   /**
    * Привязывает shift-шаблон к ресурсу с анкером startDate (день 1 цикла).
-   * Расписание раскатывается лениво: slot engine считает на лету, без
-   * записи в resource_date_overrides. Поэтому чистим старые материализованные
-   * данные предыдущих применений.
+   * Расписание считается лениво из schedule_template_days по cycleStartDate.
    */
   async applyShiftToResource(
     sb: SupabaseClient,
@@ -170,9 +174,6 @@ export const scheduleTemplatesApi = {
       throw new Error('Template not found or invalid shift template')
     }
 
-    // Atomic via RPC: wipes overrides + base weekly schedule + sets
-    // applied_template_id + cycle_start_date in one transaction. Avoids the
-    // half-applied state we got from doing 5 separate requests.
     await query(
       sb.rpc('apply_shift_template_to_resource', {
         p_resource_id: resourceId,
@@ -182,4 +183,3 @@ export const scheduleTemplatesApi = {
     )
   },
 }
-

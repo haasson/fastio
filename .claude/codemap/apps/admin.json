@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-04T09:04:39.428Z",
+  "generated_at": "2026-05-05T05:07:36.666Z",
   "stats": {
     "files": 119,
     "pages": 0,
@@ -1073,14 +1073,14 @@
     },
     "utils/scheduleConflictCheck.ts": {
       "kind": "ts",
-      "hash": "6cf827b6456b",
-      "purpose": "Проверка существующих записей онлайн-записи на конфликт со сменой шаблона расписания (без мутаций БД)",
+      "hash": "54d5270cc3e0",
+      "purpose": "Проверка попадания существующих записей в новое расписание (без мутаций БД) — используется при редактировании/применении шаблона",
       "symbols": [
         {
           "name": "buildSlotDataFromWeeklyTemplate",
           "kind": "function",
-          "hash": "ec83a0de",
-          "purpose": "Собирает ResourceSlotData из weekly-шаблона так же, как applyWeeklyToResource в API"
+          "hash": "da2c9542",
+          "purpose": "Собирает ResourceSlotData из weekly-шаблона 1:1 (без обрезки по филиалу) для прогона валидации"
         },
         {
           "name": "buildSlotDataFromShiftTemplate",
@@ -1091,14 +1091,14 @@
         {
           "name": "checkAppointmentAgainstSchedule",
           "kind": "function",
-          "hash": "bcc4b02d",
-          "purpose": "Возвращает причину конфликта одной записи (day-off/out-of-hours/disabled-slot/overnight) или null"
+          "hash": "1250d2e0",
+          "purpose": "Проверяет одну запись на конфликт с расписанием: day-off / out-of-hours / overnight / disabled-slot. Поддерживает overnight и 24/7"
         },
         {
           "name": "checkAppointmentsAgainstSchedule",
           "kind": "function",
-          "hash": "2ce3454a",
-          "purpose": "Прогон списка записей -> массив ScheduleConflict"
+          "hash": "a2f6d45b",
+          "purpose": "Прогоняет checkAppointmentAgainstSchedule по списку записей и собирает массив конфликтов с локальными датами/временами"
         },
         {
           "name": "AppointmentLite",

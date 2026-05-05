@@ -1,6 +1,5 @@
 import type { ResourceSlotData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 import {
   checkAppointmentsAgainstSchedule, type ScheduleConflict,
@@ -23,7 +22,6 @@ type ResourceCheck = {
  */
 export function useScheduleConflictCheck() {
   const tenantStore = useTenantStore()
-  const appointmentSettingsStore = useAppointmentSettingsStore()
   const api = useDatabase()
 
   const findConflicts = async (resources: ResourceCheck[]): Promise<ScheduleConflict[]> => {
@@ -32,10 +30,6 @@ export function useScheduleConflictCheck() {
     if (!tid || resources.length === 0) return []
 
     const tz = tenantStore.tenant.timezone
-
-    // appointment_settings — глобальные данные тенанта, грузятся в `useTenant.init()`.
-    if (!appointmentSettingsStore.settings) await appointmentSettingsStore.load()
-    const slotStep = appointmentSettingsStore.settings?.slotStepMinutes ?? 30
 
     const now = new Date()
     const dateFrom = now.toISOString()
@@ -67,7 +61,6 @@ export function useScheduleConflictCheck() {
         r.name,
         r.slotData,
         tz,
-        slotStep,
       )
 
       all.push(...conflicts)

@@ -1,11 +1,11 @@
 import type {
-  ResourceSlotData, ResourceSchedule, ResourceDisabledSlot,
+  ResourceSlotData, ResourceSchedule,
   ResourceDateOverride, ResourceDateDisabledSlot,
   WorkingHoursSchedule, ScheduleTemplateFull, AppointmentStatus,
 } from '@fastio/shared'
 import {
-  resolveResourceWorkingHours, getAllSlotsInWindow, getBranchHoursForDow,
-  utcIsoToLocalDateTime, timeToMinutes, minutesToTimeStr,
+  resolveResourceWorkingHours,
+  utcIsoToLocalDateTime, timeToMinutes,
 } from '@fastio/shared'
 
 export type AppointmentLite = {
@@ -29,60 +29,36 @@ export type ScheduleConflict = {
 }
 
 /**
- * Из шаблона weekly + графика филиала собирает ResourceSlotData ровно так
- * же, как это делает applyWeeklyToResource в schedule-templates API —
- * чтобы валидировать «как будет» без мутаций БД.
+ * Из шаблона weekly собирает ResourceSlotData ровно так же, как RPC
+ * apply_weekly_template_to_resource — копирует часы шаблона 1:1, без
+ * обрезки по часам филиала и без disabled_slots.
  */
 export function buildSlotDataFromWeeklyTemplate(
   template: ScheduleTemplateFull,
   branchSchedule: WorkingHoursSchedule | null,
-  slotStep: number,
   existingDateOverrides: ResourceDateOverride[],
   existingDateDisabledSlots: ResourceDateDisabledSlot[],
 ): ResourceSlotData {
   const schedules: ResourceSchedule[] = []
-  const disabled: ResourceDisabledSlot[] = []
 
   for (let dow = 0; dow < 7; dow++) {
-    const tplSlots = template.slots
-      .filter((s) => s.dayIndex === dow)
-      .map((s) => s.slotTime)
-      .sort()
+    const day = template.days.find((d) => d.dayIndex === dow)
 
-    if (tplSlots.length === 0) {
+    if (!day || !day.isWorking || !day.openTime || !day.closeTime) {
       schedules.push({ id: '', resourceId: '', dayOfWeek: dow, isWorking: false, openTime: null, closeTime: null })
       continue
     }
-    const branchHours = getBranchHoursForDow(branchSchedule, dow)
-    const allowed = branchHours
-      ? new Set(getAllSlotsInWindow(branchHours.open, branchHours.close, slotStep))
-      : null
-    const effective = allowed ? tplSlots.filter((t) => allowed.has(t)) : tplSlots
-
-    if (effective.length === 0) {
-      schedules.push({ id: '', resourceId: '', dayOfWeek: dow, isWorking: false, openTime: null, closeTime: null })
-      continue
-    }
-
-    const open = effective[0]
-    const closeMin = timeToMinutes(effective[effective.length - 1]) + slotStep
-    const close = minutesToTimeStr(closeMin)
-
-    schedules.push({ id: '', resourceId: '', dayOfWeek: dow, isWorking: true, openTime: open, closeTime: close })
-
-    const window = new Set(getAllSlotsInWindow(open, close, slotStep))
-    const active = new Set(effective)
-
-    for (const slot of window) {
-      if (!active.has(slot)) {
-        disabled.push({ id: '', resourceId: '', dayOfWeek: dow, slotTime: slot })
-      }
-    }
+    schedules.push({
+      id: '', resourceId: '', dayOfWeek: dow,
+      isWorking: true,
+      openTime: day.openTime,
+      closeTime: day.closeTime,
+    })
   }
 
   return {
     schedules,
-    disabledSlots: disabled,
+    disabledSlots: [],
     dateOverrides: existingDateOverrides,
     dateDisabledSlots: existingDateDisabledSlots,
     branchSchedule,
@@ -101,15 +77,15 @@ export function buildSlotDataFromShiftTemplate(
   existingDateOverrides: ResourceDateOverride[],
   existingDateDisabledSlots: ResourceDateDisabledSlot[],
 ): ResourceSlotData {
-  const slotsByDayIndex: Record<number, string[]> = {}
+  const hoursByDayIndex: Record<number, { openTime: string; closeTime: string } | null> = {}
 
-  for (const s of template.slots) {
-    const arr = slotsByDayIndex[s.dayIndex] ?? []
-
-    arr.push(s.slotTime)
-    slotsByDayIndex[s.dayIndex] = arr
+  for (const d of template.days) {
+    if (!d.isWorking || !d.openTime || !d.closeTime) {
+      hoursByDayIndex[d.dayIndex] = null
+    } else {
+      hoursByDayIndex[d.dayIndex] = { openTime: d.openTime, closeTime: d.closeTime }
+    }
   }
-  for (const k of Object.keys(slotsByDayIndex)) slotsByDayIndex[Number(k)].sort()
 
   return {
     schedules: [],
@@ -120,7 +96,7 @@ export function buildSlotDataFromShiftTemplate(
     shiftCycle: {
       cycleStartDate,
       cycleLength: template.cycleLength ?? 0,
-      slotsByDayIndex,
+      hoursByDayIndex,
     },
   }
 }
@@ -135,52 +111,46 @@ export function checkAppointmentAgainstSchedule(
   appointment: AppointmentLite,
   slotData: ResourceSlotData,
   tz: string,
-  slotStep: number,
 ): ConflictReason | null {
   const start = utcIsoToLocalDateTime(appointment.startsAt, tz)
   const end = utcIsoToLocalDateTime(appointment.endsAt, tz)
-
-  if (start.dateStr !== end.dateStr) return 'overnight'
 
   const hours = resolveResourceWorkingHours(start.dateStr, slotData)
 
   if (!hours) return 'day-off'
 
   const openMin = timeToMinutes(hours.openTime)
-  const closeMin = timeToMinutes(hours.closeTime)
-  const startMin = timeToMinutes(start.timeStr)
-  const endMin = timeToMinutes(end.timeStr)
+  const closeMinRaw = timeToMinutes(hours.closeTime)
+  // Overnight-семантика согласована со slot engine (`appointmentSlots.ts`):
+  //   close <  open ⇒ overnight (окно [open, close+1440));
+  //   close == open ⇒ 24/7 (окно бесконечное, проверка часов не имеет смысла).
+  const allDay = closeMinRaw === openMin
+  const overnight = closeMinRaw < openMin
+  const closeMin = overnight ? closeMinRaw + 1440 : closeMinRaw
 
-  if (startMin < openMin || endMin > closeMin) return 'out-of-hours'
+  // Запись на разных календарных днях допустима только для overnight или 24/7.
+  if (start.dateStr !== end.dateStr && !overnight && !allDay) return 'overnight'
 
-  // Disabled-слот: запись стартует на отключённом слоте.
-  // Для weekly смотрим resource_disabled_slots по dow; для shift —
-  // непосредственно по slotsByDayIndex (то, чего нет в активных = disabled).
-  if (slotData.shiftCycle) {
-    const days = Math.floor(
-      (Date.UTC(...dateParts(start.dateStr)) - Date.UTC(...dateParts(slotData.shiftCycle.cycleStartDate))) / 86_400_000,
-    )
-    const len = slotData.shiftCycle.cycleLength
-    const idx = ((days % len) + len) % len
-    const active = new Set(slotData.shiftCycle.slotsByDayIndex[idx] ?? [])
+  // Для 24/7 проверка часов не нужна (любое время валидно). Дальше — только disabled.
+  if (!allDay) {
+    const startMin = timeToMinutes(start.timeStr)
+    const endMinRaw = timeToMinutes(end.timeStr)
+    // Если end в следующие сутки относительно start — endMin = endRaw + 1440.
+    const endMin = (start.dateStr !== end.dateStr) ? endMinRaw + 1440 : endMinRaw
 
-    if (!active.has(start.timeStr)) return 'disabled-slot'
-  } else {
+    if (startMin < openMin || endMin > closeMin) return 'out-of-hours'
+  }
+
+  // Disabled-слот применяется только для weekly (для shift перерывов внутри
+  // смены нет — выходные дни декларируются целиком через hoursByDayIndex=null).
+  if (!slotData.shiftCycle) {
     const dow = new Date(start.dateStr + 'T12:00:00').getDay()
     const isDisabled = slotData.disabledSlots.some((d) => d.dayOfWeek === dow && d.slotTime === start.timeStr)
 
     if (isDisabled) return 'disabled-slot'
   }
 
-  void slotStep
-
   return null
-}
-
-const dateParts = (s: string): [number, number, number] => {
-  const [y, m, d] = s.split('-').map(Number)
-
-  return [y, m - 1, d]
 }
 
 export function checkAppointmentsAgainstSchedule(
@@ -188,12 +158,11 @@ export function checkAppointmentsAgainstSchedule(
   resourceName: string,
   slotData: ResourceSlotData,
   tz: string,
-  slotStep: number,
 ): ScheduleConflict[] {
   const conflicts: ScheduleConflict[] = []
 
   for (const a of appointments) {
-    const reason = checkAppointmentAgainstSchedule(a, slotData, tz, slotStep)
+    const reason = checkAppointmentAgainstSchedule(a, slotData, tz)
 
     if (reason) {
       const start = utcIsoToLocalDateTime(a.startsAt, tz)
