@@ -64,10 +64,6 @@ defineEmits<{ submit: []; back: [] }>()
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
 
-.fs-form {
-  @include flex-col(16px);
-}
-
 .consent-note {
   @include consent-note;
 }

@@ -40,30 +40,37 @@
           </div>
           <div class="menu-grid">
             <template v-if="category.type === 'combo'">
-              <SfDishCard
+              <SfProductCard
                 v-for="combo in combosByCategory[category.id] ?? []"
                 :key="combo.id"
-                :dish="combo"
-                :combo-id="combo.id"
+                variant="dish"
+                :product="productById[combo.id]"
+                :cart-count="cartCountByItem[combo.id] ?? 0"
                 :hide-stepper="tableMode"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
-                @add="addComboToCart(combo)"
+                @add="addItemToCart(combo, 'combo')"
+                @increment="incrementByItem(combo.id)"
+                @decrement="decrementByItem(combo.id)"
                 @card-click="openComboModal(combo)"
               />
             </template>
             <template v-else>
-              <SfDishCard
+              <SfProductCard
                 v-for="dish in dishesByCategory[category.id] ?? []"
                 :key="dish.id"
-                :dish="dish"
+                variant="dish"
+                :product="productById[dish.id]"
+                :cart-count="cartCountByItem[dish.id] ?? 0"
                 :has-modifiers="hasModifiers(dish)"
                 :hide-stepper="tableMode"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
                 @add="handleAddButton(dish)"
+                @increment="incrementByItem(dish.id)"
+                @decrement="decrementByItem(dish.id)"
                 @card-click="openDishModal(dish)"
               />
             </template>
@@ -96,14 +103,15 @@ import type { Dish, Combo, Tenant, Category } from '@fastio/shared'
 import { useNuxtData, useRouter } from 'nuxt/app'
 import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
 import { useStorefrontTerms } from '~/composables/useStorefrontTerms'
-import { useCartStore, type CartItem } from '~/stores/cart'
+import { useCartStore, isDishItem, type CartItem } from '~/stores/cart'
 import { useMenuStore, type ClientAddon } from '~/stores/menu'
 import type { ModalItem } from '~/composables/useDishCustomization'
 import useLegalCompliance from '~/composables/useLegalCompliance'
 import { FsSection, FsCard, FsHeading, FsText } from '@fastio/public-ui'
-import SfDishCard from '~/components/sf/domain/SfDishCard.vue'
+import SfProductCard from '~/components/sf/domain/SfProductCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import DishModal from '~/components/sf/domain/DishModal.vue'
+import { buildProduct, type ProductData } from '~/utils/product'
 
 const props = defineProps<{
   defaultView: 'categories' | 'dishes'
@@ -163,6 +171,51 @@ function hasModifiers(dish: Dish): boolean {
   return (menuStore.dishModifiers[dish.id]?.length ?? 0) > 0
 }
 
+const productById = computed<Record<string, ProductData>>(() => {
+  const map: Record<string, ProductData> = {}
+  const tagDefs = menuStore.tagDefinitions
+  for (const cat of categories.value) {
+    for (const dish of dishesByCategory.value[cat.id] ?? []) map[dish.id] = buildProduct(dish, tagDefs)
+    for (const combo of combosByCategory.value[cat.id] ?? []) map[combo.id] = buildProduct(combo, tagDefs)
+  }
+  return map
+})
+
+// Без модификаторов квантити по dishId/comboId суммируется в один счётчик карточки.
+// Если модификаторы есть, dish открывается через openDishModal и каждая комбинация
+// модификаторов — отдельная позиция в корзине; стрелки на карточке двигают первую
+// найденную из них.
+const cartCountByItem = computed<Record<string, number>>(() => {
+  const map: Record<string, number> = {}
+  for (const i of cart.dishItems) {
+    const key = i.comboId ?? i.dishId
+    if (!key) continue
+    map[key] = (map[key] ?? 0) + i.quantity
+  }
+  return map
+})
+
+const firstIndexByItem = computed<Record<string, number>>(() => {
+  const map: Record<string, number> = {}
+  cart.items.forEach((i, idx) => {
+    if (!isDishItem(i)) return
+    const key = i.comboId ?? i.dishId
+    if (!key || key in map) return
+    map[key] = idx
+  })
+  return map
+})
+
+function incrementByItem(key: string) {
+  const idx = firstIndexByItem.value[key]
+  if (idx !== undefined) cart.increment(idx)
+}
+
+function decrementByItem(key: string) {
+  const idx = firstIndexByItem.value[key]
+  if (idx !== undefined) cart.decrement(idx)
+}
+
 function openModal(item: ModalItem) {
   modalItem.value = item
   modalOpen.value = true
@@ -210,7 +263,7 @@ function handleAddButton(dish: Dish) {
   if (hasModifiers(dish)) {
     openDishModal(dish)
   } else {
-    addToCart(dish)
+    addItemToCart(dish, 'dish')
   }
 }
 
@@ -240,58 +293,29 @@ const modalMaxAddons = computed(() => {
   return dish?.maxAddons ?? menuStore.maxAddonsDefault
 })
 
-function addToCart(dish: Dish) {
+function addItemToCart(input: Dish | Combo, kind: 'dish' | 'combo') {
+  const isCombo = kind === 'combo'
   const item: CartItem = {
     kind: 'dish',
     _key: '',
-    dishId: dish.id,
-    comboId: null,
-    dishName: dish.name,
-    categoryName: findCategoryName(dish.id),
-    price: dish.price,
+    dishId: isCombo ? null : input.id,
+    comboId: isCombo ? input.id : null,
+    dishName: input.name,
+    categoryName: findCategoryName(input.id),
+    price: input.price,
     quantity: 1,
     modifiers: [],
     removedIngredients: [],
     addons: [],
-    photo: dish.photos[0] ?? null,
+    photo: input.photos[0] ?? null,
     completedAt: null,
     comboItems: null,
     addedBy: null,
     confirmedBy: null,
     status: 'confirmed',
   }
-  if (props.tableMode) {
-    emit('tableOrder', item)
-  } else {
-    cart.add(item)
-  }
-}
-
-function addComboToCart(combo: Combo) {
-  const item: CartItem = {
-    kind: 'dish',
-    _key: '',
-    dishId: null,
-    comboId: combo.id,
-    dishName: combo.name,
-    categoryName: findCategoryName(combo.id),
-    price: combo.price,
-    quantity: 1,
-    modifiers: [],
-    removedIngredients: [],
-    addons: [],
-    photo: combo.photos[0] ?? null,
-    completedAt: null,
-    comboItems: null,
-    addedBy: null,
-    confirmedBy: null,
-    status: 'confirmed',
-  }
-  if (props.tableMode) {
-    emit('tableOrder', item)
-  } else {
-    cart.add(item)
-  }
+  if (props.tableMode) emit('tableOrder', item)
+  else cart.add(item)
 }
 </script>
 

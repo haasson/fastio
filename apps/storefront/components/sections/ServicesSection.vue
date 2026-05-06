@@ -43,7 +43,7 @@
               v-for="svc in servicesByCategory[category.id] ?? []"
               :key="svc.id"
               variant="service"
-              :product="buildProduct(svc)"
+              :product="productByService[svc.id]"
               :currency="currency"
               :duration="svc.duration"
               :can-book="bookingEnabled && svc.isBookable"
@@ -90,7 +90,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Tenant, Category } from '@fastio/shared'
-import { getTagColorPreset } from '@fastio/shared'
 import { useNuxtData, useRouter } from 'nuxt/app'
 import { FsSection, FsHeading, FsCard, FsText } from '@fastio/public-ui'
 import { useServicesStore, type ServiceCard } from '~/stores/services'
@@ -98,22 +97,15 @@ import { useCartStore } from '~/stores/cart'
 import { useCurrency } from '~/composables/useCurrency'
 import useLegalCompliance from '~/composables/useLegalCompliance'
 import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
-import { resolveTagIcon } from '~/utils/tag-icons'
 import SfProductCard from '~/components/sf/domain/SfProductCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import SfProductModal from '~/components/sf/domain/SfProductModal.vue'
 import ServiceModalBody from '~/components/appointments/ServiceModalBody.vue'
 import BranchAvailabilityHint from '~/components/branch/BranchAvailabilityHint.vue'
 import { useConfirm } from '~/composables/useConfirm'
+import { buildProduct } from '~/utils/product'
 
 defineOptions({ inheritAttrs: false })
-
-type ProductTag = {
-  id: string
-  name: string
-  preset: { color: string; background: string } | undefined
-  iconComponent: unknown
-}
 
 const props = withDefaults(defineProps<{
   defaultView?: 'categories' | 'dishes'
@@ -169,28 +161,16 @@ const openModal = (svc: ServiceCard) => {
   emit('service-click', svc)
 }
 
-function resolveTags(svc: ServiceCard): ProductTag[] {
-  return svc.tags
-    .map<ProductTag | null>((tagId) => {
-      const def = servicesStore.tagDefinitions.find((t) => t.id === tagId)
-      if (!def) return null
-      const preset = getTagColorPreset(def.color)
-      const iconComponent = resolveTagIcon(def.icon)
-      return { id: def.id, name: def.name, preset, iconComponent }
-    })
-    .filter((t): t is ProductTag => t !== null)
-}
-
-function buildProduct(svc: ServiceCard) {
-  return {
-    id: svc.id,
-    name: svc.name,
-    description: svc.description,
-    photos: svc.photos,
-    price: svc.price,
-    tags: resolveTags(svc),
+const productByService = computed(() => {
+  const map: Record<string, ReturnType<typeof buildProduct>> = {}
+  const tagDefs = servicesStore.tagDefinitions
+  for (const cat of categories.value) {
+    for (const svc of servicesByCategory.value[cat.id] ?? []) {
+      map[svc.id] = buildProduct(svc, tagDefs)
+    }
   }
-}
+  return map
+})
 
 function isInCart(serviceId: string): boolean {
   return cart.serviceItems.some((i) => i.serviceId === serviceId)

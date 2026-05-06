@@ -2,11 +2,11 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-06T08:32:39.880Z",
+  "generated_at": "2026-05-06T08:59:09.279Z",
   "stats": {
     "files": 67,
     "pages": 0,
-    "symbols": 97,
+    "symbols": 100,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -413,6 +413,43 @@
           "kind": "function",
           "hash": "4ebcfb6e",
           "purpose": "URL для подключения Google Fonts CSS с заданными весами и display=swap"
+        }
+      ]
+    },
+    "utils/product.ts": {
+      "kind": "ts",
+      "hash": "7bc02eed5b33",
+      "purpose": "Универсальный builder ProductData для карточки SfProductCard: переиспользуется MenuSection (блюдо/комбо) и ServicesSection (услуга), резолвит цвет и иконку тегов",
+      "symbols": [
+        {
+          "name": "resolveTags",
+          "kind": "function",
+          "hash": "06035855",
+          "purpose": "По tagIds + DishTagDefinition[] возвращает массив ProductTag с готовыми preset/iconComponent для рендера"
+        },
+        {
+          "name": "buildProduct",
+          "kind": "function",
+          "hash": "51de3b15",
+          "purpose": "Маппит Dish/Combo/Service в плоский ProductData для SfProductCard (id/name/description/photos/price + resolved теги)"
+        },
+        {
+          "name": "ProductTag",
+          "kind": "type",
+          "hash": "aadefafc",
+          "purpose": "Тег для рендера на карточке: id/name + готовые preset (цвета) и iconComponent"
+        },
+        {
+          "name": "ProductSource",
+          "kind": "type",
+          "hash": "45b447bd",
+          "purpose": "Минимальный контракт для buildProduct: id/name/description/photos/price/tags — подходит и блюдам, и услугам"
+        },
+        {
+          "name": "ProductData",
+          "kind": "type",
+          "hash": "93cf2da5",
+          "purpose": "Готовый product для пропа SfProductCard: то же что ProductSource, но с resolved ProductTag вместо tagIds"
         }
       ]
     },
@@ -851,25 +888,6 @@
         }
       ]
     },
-    "components/sf/domain/SfDishCard.vue": {
-      "kind": "vue",
-      "hash": "4f3cf27dbf2e",
-      "purpose": "Карточка блюда в каталоге: вертикальный layout на десктопе и компактный горизонтальный на мобильном, степпер количества и теги-бейджи",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "46d6fbfd",
-          "purpose": "dish, currency, mobileCompact, hideStepper, orderingEnabled, hasModifiers"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "61b0947d",
-          "purpose": "cardClick/add/increment/decrement"
-        }
-      ]
-    },
     "components/sf/domain/SfEmptyState.vue": {
       "kind": "vue",
       "hash": "a4a8e5b5ee4d",
@@ -956,8 +974,8 @@
     },
     "components/sf/domain/SfProductCard.vue": {
       "kind": "vue",
-      "hash": "20754124abd6",
-      "purpose": "Карточка товара/услуги с фото, ценой, степпером и кнопкой добавления (десктоп + мобильный компактный вид)",
+      "hash": "2db17416ef88",
+      "purpose": "Универсальная карточка товара/услуги для каталога витрины: вертикальный/overlay/mobile-compact лэйауты, цена, теги, степпер или CTA-кнопка (variant: 'dish' | 'service')",
       "symbols": [
         {
           "name": "props",

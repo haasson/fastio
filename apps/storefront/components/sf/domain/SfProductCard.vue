@@ -153,22 +153,7 @@ import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
 import { useCartStore } from '~/stores/cart'
 import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
 import SfStepper from '~/components/sf/domain/SfStepper.vue'
-
-type ProductTag = {
-  id: string
-  name: string
-  preset: { color: string; background: string } | undefined
-  iconComponent: unknown
-}
-
-type ProductData = {
-  id: string
-  name: string
-  description?: string | null
-  photos: string[]
-  price: number
-  tags: ProductTag[]
-}
+import type { ProductData } from '~/utils/product'
 
 type Props = {
   variant: 'dish' | 'service'

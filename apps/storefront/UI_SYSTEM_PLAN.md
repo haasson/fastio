@@ -106,8 +106,7 @@ apps/storefront/
 │       │   ├── SfTabs.vue         # Reka Tabs (+ SfTabsList, SfTabsTrigger, SfTabsContent)
 │       │   └── SfScrollNav.vue    # горизонтальный скролл-навигатор (категории)
 │       └── domain/
-│           ├── SfDishCard.vue     # карточка блюда (image+name+price+add button)
-│           ├── (удалён — compact-режим встроен в SfDishCard.vue)
+│           ├── SfProductCard.vue  # универсальная карточка блюда/услуги (variant: dish | service), compact-режим встроен
 │           ├── SfPriceTag.vue     # цена (основная + старая зачёркнутая)
 │           ├── SfStepper.vue      # инкремент/декремент counter (+-N)
 │           ├── SfCartFab.vue      # floating кнопка корзины с badge
@@ -225,18 +224,28 @@ apps/storefront/
 
 ---
 
-### SfDishCard
+### SfProductCard
 
 ```vue
-<SfDishCard :dish="dish" @add="onAdd" />
+<SfProductCard
+  variant="dish"
+  :product="buildProduct(dish, tagDefs)"
+  :cart-count="cartCount"
+  @add="onAdd"
+  @increment="onInc"
+  @decrement="onDec"
+  @card-click="openModal(dish)"
+/>
 ```
 
+- Универсальная карточка для блюд (`variant="dish"`) и услуг (`variant="service"`)
 - Image (aspect-ratio 4/3), lazy
-- Name (SfText label)
-- Description (SfText caption, truncate 2 lines)
+- Name (FsText), Description (truncate 2 lines)
 - SfPriceTag
 - SfButton или SfStepper (если уже в корзине)
 - `--radius-card` для скругления
+- `mobileCompact` — горизонтальный layout на mobile
+- `overlay` — описание поверх изображения (только dish)
 
 ---
 
@@ -297,7 +306,7 @@ apps/storefront/
 - `SfScrollNav.vue`
 
 ### Шаг 5 — Domain Components (1 агент)
-- `SfDishCard.vue`
+- `SfProductCard.vue`
 - `SfPriceTag.vue`
 - `SfStepper.vue`
 - `SfCartFab.vue`
