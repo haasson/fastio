@@ -1,29 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio/shared'
+import { mapCategory } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { CategoryRow } from './db-types'
 import { filterDefined } from '~/utils/filterDefined'
 import { optimizeImage } from '~/utils/imageOptimize'
 
 type CategoryAddPayload = Required<Pick<CategoryData, 'name' | 'order'>> & CategoryData & { type?: CategoryType; kind: CategoryKind }
-
-export const mapCategory = (raw: Record<string, unknown>): Category => {
-  const row = raw as CategoryRow
-
-  return {
-    id: row.id,
-    tenantId: row.tenant_id,
-    name: row.name,
-    slug: row.slug ?? null,
-    type: row.type ?? 'regular',
-    kind: row.kind ?? 'food',
-    tagId: row.tag_id ?? null,
-    order: row.sort_order,
-    active: row.active,
-    photoUrl: row.photo_url,
-    useFirstDishPhoto: row.use_first_dish_photo ?? false,
-  }
-}
 
 export const categoriesApi = {
   async list(sb: SupabaseClient, tenantId: string, kind: CategoryKind = 'food') {

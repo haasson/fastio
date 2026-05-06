@@ -3,13 +3,11 @@ import type {
   Resource, WorkingHoursSchedule,
 } from '@fastio/shared'
 import {
-  todayInTz, utcIsoToLocalDateTime, timeToMinutes, getScheduleForDate, getIsoDayForDate,
+  todayInTz, utcIsoToLocalDateTime, timeToMinutes, getScheduleForDate, getIsoDayForDate, sliceTime,
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
-
-const sliceTime = (v: unknown): string | null => typeof v === 'string' ? v.slice(0, 5) : null
 
 export type PresenceStatus = 'working' | 'off-hours' | 'absent' | 'hidden'
 

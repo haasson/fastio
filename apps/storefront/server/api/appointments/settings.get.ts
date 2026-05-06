@@ -1,6 +1,6 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import type { AppointmentSettings } from '@fastio/shared'
-import { mapAppointmentSettings } from '@fastio/shared'
+import { DEFAULT_APPOINTMENT_SETTINGS, mapAppointmentSettings } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
@@ -10,17 +10,7 @@ export default defineEventHandler(async (event) => {
     .select('*')
     .maybeSingle()
 
-  if (!data) {
-    return {
-      resourceLabel: 'Исполнитель',
-      staffNameFormat: 'full_name',
-      autoConfirm: false,
-      bookingHorizonDays: 30,
-      slotStepMinutes: 30,
-      allowClientCancellation: true,
-      cancellationDeadlineHours: 2,
-    } satisfies Partial<AppointmentSettings>
-  }
+  if (!data) return { ...DEFAULT_APPOINTMENT_SETTINGS } satisfies Partial<AppointmentSettings>
 
   return mapAppointmentSettings(data as Record<string, unknown>)
 })

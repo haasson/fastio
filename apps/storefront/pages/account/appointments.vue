@@ -70,6 +70,7 @@ import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useToast } from '~/composables/useToast'
 import { reportError } from '~/utils/reportError'
 import type { Appointment } from '@fastio/shared'
+import { formatDateTime } from '@fastio/shared'
 
 type ApptWithNames = Appointment & { dishName?: string | null; serviceName: string | null; resourceName: string | null }
 
@@ -79,10 +80,6 @@ const { error: showError } = useToast()
 const appointments = ref<ApptWithNames[]>([])
 const loading = ref(true)
 const cancellingId = ref<string | null>(null)
-
-const formatDateTime = (iso: string) => new Intl.DateTimeFormat('ru', {
-  day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
-}).format(new Date(iso))
 
 const canCancel = (appt: ApptWithNames) => {
   return appt.status === 'new' || appt.status === 'confirmed'

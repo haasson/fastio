@@ -13,7 +13,7 @@ import { useAppointmentViewScope } from '~/composables/data/useAppointmentViewSc
 import { reportError } from '~/utils/reportError'
 import type { EditorService, EditorState } from '~/components/appointments/types'
 import { isSlotChanged } from '~/components/appointments/types'
-import { localDateTimeToUtcIso } from '@fastio/shared'
+import { localDateTimeToUtcIso, DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { newKey, prefillFromVisit, prefillFromRequestVisit } from '~/composables/data/appointmentEditor/utils'
 import { useEditorSnapshot } from '~/composables/data/appointmentEditor/useEditorSnapshot'
 import { useEditorSave } from '~/composables/data/appointmentEditor/useEditorSave'
@@ -299,7 +299,7 @@ export function useAppointmentEditorState(props: Props) {
       return
     }
 
-    const slotStep = appointmentSettingsStore.settings?.slotStepMinutes ?? 30
+    const slotStep = appointmentSettingsStore.settings?.slotStepMinutes ?? DEFAULT_APPOINTMENT_SETTINGS.slotStepMinutes
     const next: Record<string, ValidityReason> = {}
 
     const checks = state.services.map(async (svc): Promise<readonly [string, ValidityReason]> => {

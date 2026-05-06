@@ -131,6 +131,7 @@ import { storeToRefs } from 'pinia'
 import { UiDrawer, UiForm, UiInputNumber, UiSwitch, UiCollapse, UiCollapseItem, UiSelect, UiText, UiAlert, UiTag, UiSkeleton, useMessage } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
 import type { Resource, ServiceWithBranchIds, Category, BookingMode } from '@fastio/shared'
+import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { NuxtLink } from '#components'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
@@ -181,9 +182,9 @@ const bookingModeOptions: { label: string; value: BookingMode }[] = [
   { label: 'Произвольная (клиент выбирает)', value: 'variable' },
 ]
 
-const resourceMode = computed(() => appointmentSettingsStore.settings?.resourceMode ?? 'staff')
-const slotStep = computed(() => appointmentSettingsStore.settings?.slotStepMinutes ?? 30)
-const defaultMaxDuration = computed(() => appointmentSettingsStore.settings?.defaultMaxDuration ?? 180)
+const resourceMode = computed(() => appointmentSettingsStore.settings?.resourceMode ?? DEFAULT_APPOINTMENT_SETTINGS.resourceMode)
+const slotStep = computed(() => appointmentSettingsStore.settings?.slotStepMinutes ?? DEFAULT_APPOINTMENT_SETTINGS.slotStepMinutes)
+const defaultMaxDuration = computed(() => appointmentSettingsStore.settings?.defaultMaxDuration ?? DEFAULT_APPOINTMENT_SETTINGS.defaultMaxDuration)
 
 const resourcesLabel = computed(() => resourceMode.value === 'objects' ? 'Объекты для этой услуги' : 'Мастера для этой услуги',
 )
@@ -263,10 +264,10 @@ watch(() => props.modelValue, (open) => {
       categoryId: props.initialCategoryId,
       name: '', description: '', longDescription: null, showLongDescription: false,
       price: 0, duration: 60, tags: [],
-      isBookable: settings?.defaultIsBookable ?? true,
-      bookingMode: settings?.defaultBookingMode ?? 'fixed',
+      isBookable: settings?.defaultIsBookable ?? DEFAULT_APPOINTMENT_SETTINGS.defaultIsBookable,
+      bookingMode: settings?.defaultBookingMode ?? DEFAULT_APPOINTMENT_SETTINGS.defaultBookingMode,
       maxDuration: null,
-      allowResourceChoice: settings?.defaultAllowResourceChoice ?? true,
+      allowResourceChoice: settings?.defaultAllowResourceChoice ?? DEFAULT_APPOINTMENT_SETTINGS.defaultAllowResourceChoice,
       branchIds: [], active: true,
     })
     currentPhotoUrl.value = null

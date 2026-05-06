@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-06T07:50:37.650Z",
+  "generated_at": "2026-05-06T08:32:39.946Z",
   "stats": {
-    "files": 38,
+    "files": 39,
     "pages": 0,
-    "symbols": 161,
+    "symbols": 166,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -14,8 +14,8 @@
   "files": {
     "src/utils/appointment.ts": {
       "kind": "ts",
-      "hash": "1df6b6f7e91a",
-      "purpose": "Маппинг сырых строк БД в доменные типы: Resource, ResourceSchedule, ResourceDateOverride, Appointment, AppointmentSettings и связанные",
+      "hash": "44d2f7c8e1ff",
+      "purpose": "Мапперы appointment-доменa из БД в TS (Resource/Appointment/Visit/Settings/Request) и DEFAULT_APPOINTMENT_SETTINGS — единая правда дефолтов; формат ФИО мастера",
       "symbols": [
         {
           "name": "mapResource",
@@ -48,6 +48,12 @@
           "purpose": "Маппит точечно отключённый слот ресурса на конкретную дату"
         },
         {
+          "name": "DEFAULT_APPOINTMENT_SETTINGS",
+          "kind": "const",
+          "hash": "3a26dc68",
+          "purpose": "Единые дефолты AppointmentSettings (resourceLabel/Mode, slotStep, bookingHorizon, autoConfirm и т.д.) — общая правда для admin/storefront/маппера"
+        },
+        {
           "name": "mapAppointmentSettings",
           "kind": "function",
           "hash": "b59e937e",
@@ -70,13 +76,19 @@
           "kind": "function",
           "hash": "2c0925be",
           "purpose": "Маппит одну услугу внутри заявки на запись (часть JSON-массива services)"
+        },
+        {
+          "name": "formatStaffName",
+          "kind": "function",
+          "hash": "f83fd93b",
+          "purpose": "Форматирует ФИО мастера по StaffNameFormat: 'Анна', 'Анна К.' или 'Анна Краснова'"
         }
       ]
     },
     "src/utils/appointmentEvents.ts": {
       "kind": "ts",
-      "hash": "4912ff870e5a",
-      "purpose": "Утилиты форматирования событий онлайн-записи: метки статусов, текст события, diff полей, fallback актора",
+      "hash": "f347773936e7",
+      "purpose": "Утилиты событий appointment_events: маппер из БД, метки статусов и полей, формат текста события и diff для UI таймлайна",
       "symbols": [
         {
           "name": "formatAppointmentEventText",
@@ -101,6 +113,12 @@
           "kind": "function",
           "hash": "425d57ab",
           "purpose": "Фолбэк-имя автора события когда actor не указан (Клиент/Система)"
+        },
+        {
+          "name": "mapAppointmentEvent",
+          "kind": "function",
+          "hash": "f1cbb176",
+          "purpose": "Маппит строку appointment_events в TS-объект (eventType/actor/meta) для admin event timeline"
         },
         {
           "name": "APPOINTMENT_STATUS_LABELS",
@@ -482,6 +500,19 @@
         }
       ]
     },
+    "src/utils/menu.ts": {
+      "kind": "ts",
+      "hash": "a5eb85428c6c",
+      "purpose": "Мапперы меню: единая правда вместо локальных копий в admin/storefront",
+      "symbols": [
+        {
+          "name": "mapCategory",
+          "kind": "function",
+          "hash": "706a6c77",
+          "purpose": "Маппит строку categories в TS-объект Category (общая правда для admin/storefront)"
+        }
+      ]
+    },
     "src/utils/orderItemKey.ts": {
       "kind": "ts",
       "hash": "ef29091a99ac",
@@ -759,8 +790,8 @@
     },
     "src/utils/scheduleTemplate.ts": {
       "kind": "ts",
-      "hash": "7863261da528",
-      "purpose": "Мапперы строк schedule_templates/schedule_template_days и хелперы для часов работы филиала по дню недели",
+      "hash": "29a585d9dc68",
+      "purpose": "Утилиты shift-cycle шаблонов расписания: дефолтный график 10:00-22:00, мапперы template/day, разворачивание hoursByDayIndex, валидация",
       "symbols": [
         {
           "name": "DEFAULT_WORKING_HOURS_SCHEDULE",
@@ -1000,8 +1031,8 @@
     },
     "src/utils/timezone.ts": {
       "kind": "ts",
-      "hash": "7a4eaa49c4e2",
-      "purpose": "Утилиты для работы с таймзоной тенанта: конвертация локального времени в UTC ISO и обратно, today-cutoff, генерация слотов, поддержка overnight",
+      "hash": "f4aeb9ab3464",
+      "purpose": "Работа с таймзоной тенанта (DEFAULT_TIMEZONE, today/now в TZ, конвертация local↔UTC, диапазоны дат) и мелкие утилиты вроде sliceTime",
       "symbols": [
         {
           "name": "todayInTz",
@@ -1080,6 +1111,12 @@
           "kind": "const",
           "hash": "28288466",
           "purpose": "Дефолтная таймзона 'Europe/Moscow' — fallback пока tenant не загружен"
+        },
+        {
+          "name": "sliceTime",
+          "kind": "function",
+          "hash": "fd25a301",
+          "purpose": "Из 'HH:MM:SS' (Postgres time) возвращает 'HH:MM' либо null если не строка"
         },
         {
           "name": "TIMEZONE_OPTIONS",

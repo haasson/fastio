@@ -67,7 +67,6 @@ vi.mock('../utils/supabase', () => ({
   mapOrder: (row: any) => row,
   mapCustomer: (row: any) => row,
   mapCustomerAddress: (row: any) => row,
-  mapCategory: (row: any) => row,
   mapCombo: (row: any) => row,
   mapDish: (row: any) => row,
   mapTenant: (row: any) => row,

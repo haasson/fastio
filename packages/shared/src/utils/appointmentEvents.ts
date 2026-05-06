@@ -1,4 +1,16 @@
-import type { AppointmentEvent, AppointmentStatus } from '../types/appointment'
+import type { AppointmentEvent, AppointmentEventType, AppointmentStatus } from '../types/appointment'
+
+export const mapAppointmentEvent = (raw: Record<string, unknown>): AppointmentEvent => ({
+  id: raw.id as string,
+  appointmentId: raw.appointment_id as string,
+  tenantId: raw.tenant_id as string,
+  actorId: (raw.actor_id as string | null) ?? null,
+  actorName: (raw.actor_name as string | null) ?? null,
+  actorRole: (raw.actor_role as string | null) ?? null,
+  eventType: raw.event_type as AppointmentEventType,
+  meta: (raw.meta as Record<string, unknown> | null) ?? {},
+  createdAt: raw.created_at as string,
+})
 
 export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
   new: 'Новая',

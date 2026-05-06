@@ -5,13 +5,11 @@ import type {
 import {
   findGroupSlotsWithFallback, getBranchHoursForDow, getEffectiveServiceIds,
   timeToMinutes, addDaysToDateStr, localDateTimeToUtcIso, DEFAULT_TIMEZONE,
-  DEFAULT_WORKING_DAY_MINUTES,
+  DEFAULT_WORKING_DAY_MINUTES, sliceTime,
 } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-
-const sliceTime = (v: unknown): string | null => typeof v === 'string' ? v.slice(0, 5) : null
 
 export type GroupSlotSearchInput = {
   date: string // "YYYY-MM-DD"

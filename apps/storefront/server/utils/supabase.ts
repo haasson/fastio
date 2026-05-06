@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Tenant, Category, CategoryType, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle, PaymentMethod } from '@fastio/shared'
+import type { Tenant, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle, PaymentMethod } from '@fastio/shared'
 import { mapDeliveryZoneRow, defaultSeo, resolveModules, parseSchedulingConfig } from '@fastio/shared'
 
 export function getServerSupabase() {
@@ -60,22 +60,6 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     paymentMethods: ((row.payment_methods as string[] | null) ?? ['cash', 'card']) as PaymentMethod[],
     branchSelectionMode: row.branch_selection_mode as Tenant['branchSelectionMode'],
     createdAt: row.created_at as string,
-  }
-}
-
-export function mapCategory(row: Record<string, unknown>): Category {
-  return {
-    id: row.id as string,
-    tenantId: row.tenant_id as string,
-    name: row.name as string,
-    slug: (row.slug as string | null) ?? null,
-    type: (row.type as CategoryType) ?? 'regular',
-    kind: (row.kind as 'food' | 'service') ?? 'food',
-    tagId: (row.tag_id as string) ?? null,
-    order: row.sort_order as number,
-    active: row.active as boolean,
-    photoUrl: row.photo_url as string | null,
-    useFirstDishPhoto: row.use_first_dish_photo as boolean,
   }
 }
 

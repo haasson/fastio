@@ -6,6 +6,14 @@
 export const DEFAULT_TIMEZONE = 'Europe/Moscow'
 
 /**
+ * Из значения колонки `time` в Postgres ('HH:MM:SS') берёт первые 5 символов
+ * 'HH:MM' — наш канонический формат на фронте/в API. Возвращает null, если
+ * значение не строка (NULL в БД, undefined в snapshot, etc.).
+ */
+export const sliceTime = (v: unknown): string | null =>
+  typeof v === 'string' ? v.slice(0, 5) : null
+
+/**
  * "Сейчас" в таймзоне тенанта как "YYYY-MM-DD".
  * Используем Intl.DateTimeFormat для корректного определения даты
  * без внешних библиотек.

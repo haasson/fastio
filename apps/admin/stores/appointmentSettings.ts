@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AppointmentSettings, AppointmentResourceMode } from '@fastio/shared'
+import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { useTenantStore } from './tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 
@@ -11,7 +12,7 @@ export const useAppointmentSettingsStore = defineStore('appointmentSettings', ()
   const settings = ref<AppointmentSettings | null>(null)
   const loading = ref(false)
 
-  const resourceMode = computed<AppointmentResourceMode>(() => settings.value?.resourceMode ?? 'staff')
+  const resourceMode = computed<AppointmentResourceMode>(() => settings.value?.resourceMode ?? DEFAULT_APPOINTMENT_SETTINGS.resourceMode)
 
   const load = async (force = false) => {
     const tid = tenantStore.currentTenantId

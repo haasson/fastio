@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Visit, Appointment, Resource, AppointmentEvent, AppointmentStatus } from '@fastio/shared'
-import { mapVisit, mapAppointment, mapResource, todayInTz, addDaysToDateStr } from '@fastio/shared'
-import { mapAppointmentEvent } from './appointment-events'
+import { mapVisit, mapAppointment, mapResource, mapAppointmentEvent, todayInTz, addDaysToDateStr } from '@fastio/shared'
 
 export type VisitFilter = 'new' | 'today' | 'week' | 'archive' | 'all'
 

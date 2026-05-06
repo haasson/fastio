@@ -1,5 +1,5 @@
 import { computed, type Ref } from 'vue'
-import { mapAppointmentEvent } from '~/utils/api/appointment-events'
+import { mapAppointmentEvent } from '@fastio/shared'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
 

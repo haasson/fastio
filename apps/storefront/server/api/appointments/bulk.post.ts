@@ -1,6 +1,6 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
-import { createRateLimiter, todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr } from '@fastio/shared'
+import { createRateLimiter, todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr, DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { reportError } from '~/utils/reportError'
 
 const rateLimiter = createRateLimiter(5, 60_000)
@@ -83,10 +83,10 @@ export default defineEventHandler(async (event) => {
     .select('auto_confirm, booking_horizon_days, allow_client_reschedule, allow_client_cancellation')
     .maybeSingle()
 
-  const autoConfirm = settingsData?.auto_confirm ?? false
-  const horizon = (settingsData?.booking_horizon_days as number) ?? 30
-  const allowReschedule = settingsData?.allow_client_reschedule ?? false
-  const allowCancel = settingsData?.allow_client_cancellation ?? true
+  const autoConfirm = settingsData?.auto_confirm ?? DEFAULT_APPOINTMENT_SETTINGS.autoConfirm
+  const horizon = (settingsData?.booking_horizon_days as number | null) ?? DEFAULT_APPOINTMENT_SETTINGS.bookingHorizonDays
+  const allowReschedule = settingsData?.allow_client_reschedule ?? DEFAULT_APPOINTMENT_SETTINGS.allowClientReschedule
+  const allowCancel = settingsData?.allow_client_cancellation ?? DEFAULT_APPOINTMENT_SETTINGS.allowClientCancellation
 
   const maxDate = addDaysToDateStr(todayStr, horizon)
   if (body.date > maxDate) {

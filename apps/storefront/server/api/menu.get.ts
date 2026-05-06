@@ -1,5 +1,6 @@
 import type { DishModifierGroup, DishModifierOption, DishTagDefinition, Tenant } from '@fastio/shared'
-import { mapCategory, mapCombo, mapDish } from '../utils/supabase'
+import { mapCategory } from '@fastio/shared'
+import { mapCombo, mapDish } from '../utils/supabase'
 import { getTenantDb } from '../utils/tenantDb'
 
 type GroupBindingRow = {

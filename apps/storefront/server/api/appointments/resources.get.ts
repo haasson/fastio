@@ -1,4 +1,6 @@
 import { getTenantDb } from '../../utils/tenantDb'
+import { formatStaffName, DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
+import type { StaffNameFormat } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
@@ -34,7 +36,7 @@ export default defineEventHandler(async (event) => {
   // чтобы не утекали данные ресурсов/категорий чужого тенанта.
   if (!serviceData) throw createError({ statusCode: 404, message: 'Услуга не найдена' })
 
-  const nameFormat = (settingsData?.staff_name_format as string) ?? 'full_name'
+  const nameFormat = (settingsData?.staff_name_format as StaffNameFormat | null) ?? DEFAULT_APPOINTMENT_SETTINGS.staffNameFormat
   const allowChoice = serviceData.allow_resource_choice ?? true
 
   if (!allowChoice) return []
@@ -82,22 +84,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const result = active.map((r) => ({ id: r.id, name: formatName(r.name, nameFormat), type: r.type }))
+  const result = active.map((r) => ({ id: r.id, name: formatStaffName(r.name, nameFormat), type: r.type }))
   if (result.length === 0) return []
   return result
 })
 
-function formatName(name: string, format: string): string {
-  if (format === 'first_name') return name.split(' ')[0] ?? name
-  if (format === 'first_name_last_initial') {
-    // split() с одним пробелом-разделителем: "Анна  К." → ['Анна', '', 'К.']
-    // → parts[1] === '' → parts[1][0] упадёт. Защищаемся optional chaining.
-    const parts = name.split(' ').filter(Boolean)
-    if (parts.length >= 2) {
-      const initial = parts[1]?.[0] ?? ''
-      return initial ? `${parts[0]} ${initial}.` : (parts[0] ?? name)
-    }
-    return name
-  }
-  return name
-}

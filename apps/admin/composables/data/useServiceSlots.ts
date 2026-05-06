@@ -5,6 +5,7 @@ import { useMessage } from '@fastio/ui'
 import type {
   Resource, ServiceWithBranchIds, GroupSlotsResult,
 } from '@fastio/shared'
+import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { useGroupSlotSearch } from '~/composables/data/useGroupSlotSearch'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { appointmentBus } from '~/composables/data/useAppointmentsChannel'
@@ -56,7 +57,7 @@ export function useServiceSlots(params: {
       return
     }
 
-    const slotStep = settingsStore.settings?.slotStepMinutes ?? 30
+    const slotStep = settingsStore.settings?.slotStepMinutes ?? DEFAULT_APPOINTMENT_SETTINGS.slotStepMinutes
 
     loading.value = true
     try {

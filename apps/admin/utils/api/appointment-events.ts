@@ -1,25 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AppointmentEvent } from '@fastio/shared'
-import type { AppointmentEventRow } from '~/utils/api/db-types'
+import { mapAppointmentEvent } from '@fastio/shared'
 import { query } from '~/utils/query'
 
 export type AddAppointmentEventParams = Omit<AppointmentEvent, 'id' | 'createdAt'>
-
-export const mapAppointmentEvent = (input: Record<string, unknown>): AppointmentEvent => {
-  const raw = input as unknown as AppointmentEventRow
-
-  return {
-    id: raw.id,
-    appointmentId: raw.appointment_id,
-    tenantId: raw.tenant_id,
-    actorId: raw.actor_id ?? null,
-    actorName: raw.actor_name ?? null,
-    actorRole: raw.actor_role ?? null,
-    eventType: raw.event_type,
-    meta: raw.meta ?? {},
-    createdAt: raw.created_at,
-  }
-}
 
 export const appointmentEventsApi = {
   async list(sb: SupabaseClient, appointmentId: string): Promise<AppointmentEvent[]> {

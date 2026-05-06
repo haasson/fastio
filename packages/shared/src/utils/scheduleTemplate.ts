@@ -4,9 +4,7 @@ import type {
   ScheduleTemplateType,
 } from '../types/scheduleTemplate'
 import type { WorkingHours, WorkingHoursSchedule } from '../types/tenant'
-
-const sliceTime = (v: unknown): string | null =>
-  typeof v === 'string' ? v.slice(0, 5) : null
+import { sliceTime } from './timezone'
 
 /**
  * Дефолтный график работы заведения. Используется как клиентский fallback

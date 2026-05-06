@@ -1,17 +1,15 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import {
-  createRateLimiter, todayInTz, DEFAULT_TIMEZONE,
+  createRateLimiter, todayInTz, DEFAULT_TIMEZONE, sliceTime,
   findGroupSlotsWithFallback,
   getBranchHoursForDow, timeToMinutes,
   localDateTimeToUtcIso, addDaysToDateStr,
   DEFAULT_WORKING_DAY_MINUTES,
+  DEFAULT_APPOINTMENT_SETTINGS,
 } from '@fastio/shared'
 import type { ResourceSlotData, AppointmentInterval, WorkingHoursSchedule, GroupSlotsResult } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(30, 60_000)
-
-const sliceTime = (v: unknown): string | null =>
-  typeof v === 'string' ? v.slice(0, 5) : null
 
 export default defineEventHandler(async (event): Promise<GroupSlotsResult> => {
   const db = getTenantDb(event)
@@ -71,8 +69,8 @@ export default defineEventHandler(async (event): Promise<GroupSlotsResult> => {
     .select('slot_step_minutes, booking_horizon_days')
     .maybeSingle()
 
-  const slotStep = (settingsData?.slot_step_minutes as number) ?? 30
-  const horizon = (settingsData?.booking_horizon_days as number) ?? 30
+  const slotStep = (settingsData?.slot_step_minutes as number | null) ?? DEFAULT_APPOINTMENT_SETTINGS.slotStepMinutes
+  const horizon = (settingsData?.booking_horizon_days as number | null) ?? DEFAULT_APPOINTMENT_SETTINGS.bookingHorizonDays
 
   const maxDate = addDaysToDateStr(todayStr, horizon)
   if (date > maxDate) {

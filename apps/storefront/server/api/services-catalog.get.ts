@@ -1,5 +1,5 @@
 import type { Tenant, DishTagDefinition, ServiceCard } from '@fastio/shared'
-import { mapCategory } from '../utils/supabase'
+import { mapCategory } from '@fastio/shared'
 import { getTenantDb } from '../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {

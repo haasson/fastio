@@ -1,5 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { Appointment, AppointmentSettings, Resource } from '@fastio/shared'
+import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import type { TimelineAvailability } from '~/utils/timelineAvailability'
 
 type MovePayload = {
@@ -118,7 +119,7 @@ export function useTimelineMoveBlocker(params: Params) {
 
     if (startMin < openMin || endMin > closeMin) return 'Вне рабочих часов'
 
-    const slotStep = settings.value?.slotStepMinutes ?? 30
+    const slotStep = settings.value?.slotStepMinutes ?? DEFAULT_APPOINTMENT_SETTINGS.slotStepMinutes
 
     for (const ds of av.disabledSlots) {
       const [h, m] = ds.split(':').map(Number)

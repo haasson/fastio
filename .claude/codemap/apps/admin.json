@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-06T07:50:37.430Z",
+  "generated_at": "2026-05-06T08:32:39.674Z",
   "stats": {
     "files": 123,
     "pages": 0,
@@ -1211,8 +1211,8 @@
     },
     "stores/appointmentSettings.ts": {
       "kind": "ts",
-      "hash": "69034b6a5387",
-      "purpose": "Pinia: настройки онлайн-записи тенанта (resourceMode: staff|object), lazy-загрузка по tenantId",
+      "hash": "03dd628daf8d",
+      "purpose": "Pinia: настройки онлайн-записи тенанта (resourceMode: staff|object), lazy-загрузка по tenantId; resourceMode дефолтит из DEFAULT_APPOINTMENT_SETTINGS",
       "symbols": [
         {
           "name": "useAppointmentSettingsStore",

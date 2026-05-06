@@ -1,9 +1,9 @@
 {
   "rule": "Это индекс карт проектов монорепо. Сами карты НЕ в контексте — Read только нужные. 1. Когда юзер ставит задачу — определи затронутый проект (apps/admin, packages/shared и т.д.) 2. Прочитай core-карту проекта (если есть) + субкарту нужного модуля 3. Если по ходу работы выяснилось, что нужно править другой проект — СНАЧАЛА прочитай его карты, потом меняй код 4. НЕ читай карты «на всякий случай» — это перегружает контекст 5. Карта говорит ЧТО есть и ДЛЯ ЧЕГО. Сигнатуры/реализацию смотри в самом файле, когда нужно 6. При работе со стилями (.scss / <style> в .vue) — Read нужную styles-карту из секции \"styles\" ниже. ВСЕГДА используй существующие токены/миксины вместо хардкода значений.",
-  "generated_at": "2026-05-06T07:50:37.699Z",
+  "generated_at": "2026-05-06T08:32:39.987Z",
   "totals": {
-    "files": 335,
-    "symbols": 768,
+    "files": 336,
+    "symbols": 773,
     "undescribed": 0
   },
   "projects": {
@@ -46,16 +46,16 @@
     "packages/shared": {
       "purpose": "Общие утилиты и composables проекта (pluralize, planLevel, scheduling, vocabulary, geo, useDadataSuggestions и т.д.). Доменные типы НЕ картируются — читаются напрямую через импорты.",
       "stats": {
-        "files": 38,
-        "symbols": 161,
+        "files": 39,
+        "symbols": 166,
         "undescribed": 0
       },
       "maps": {
         "main": {
           "file": ".claude/codemap/packages/shared.json",
           "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-          "files": 38,
-          "symbols": 161,
+          "files": 39,
+          "symbols": 166,
           "pages": 0,
           "undescribed": 0
         }

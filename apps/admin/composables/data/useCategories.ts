@@ -1,6 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio/shared'
-import { mapCategory } from '~/utils/api/categories'
+import { mapCategory } from '@fastio/shared'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reportError } from '~/utils/reportError'

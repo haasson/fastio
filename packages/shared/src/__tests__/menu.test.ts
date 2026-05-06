@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapCategory } from '../categories'
+import { mapCategory } from '../utils/menu'
 
 const makeCategoryRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'cat-1',

@@ -56,22 +56,47 @@ export const mapResourceDateDisabledSlot = (raw: Record<string, unknown>): Resou
   slotTime: (raw.slot_time as string).slice(0, 5),
 })
 
+// Единая правда дефолтов AppointmentSettings — admin/storefront/маппер должны
+// использовать ОДНИ И ТЕ ЖЕ значения, иначе:
+// - storefront показывает один набор слотов, admin создаёт записи по-другому;
+// - в `mapAppointmentSettings` падает поле NULL из БД (не было в DEFAULT) →
+//   рантайм-undefined в типе boolean/number;
+// - новые тенанты без строки в `appointment_settings` ловят `as string`-каст
+//   и крашат UI.
+//
+// Поля без дефолта (id/tenantId/createdAt/updatedAt) задаёт БД при создании.
+export const DEFAULT_APPOINTMENT_SETTINGS: Omit<AppointmentSettings, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'> = {
+  resourceLabel: 'Исполнитель',
+  resourceMode: 'staff',
+  staffNameFormat: 'full_name',
+  autoConfirm: false,
+  bookingHorizonDays: 30,
+  slotStepMinutes: 30,
+  allowClientCancellation: true,
+  allowClientReschedule: false,
+  cancellationDeadlineHours: 2,
+  defaultIsBookable: true,
+  defaultBookingMode: 'fixed',
+  defaultAllowResourceChoice: true,
+  defaultMaxDuration: 180,
+}
+
 export const mapAppointmentSettings = (raw: Record<string, unknown>): AppointmentSettings => ({
   id: raw.id as string,
   tenantId: raw.tenant_id as string,
-  resourceLabel: raw.resource_label as string,
-  resourceMode: (raw.resource_mode as AppointmentSettings['resourceMode']) ?? 'staff',
-  staffNameFormat: raw.staff_name_format as StaffNameFormat,
-  autoConfirm: raw.auto_confirm as boolean,
-  bookingHorizonDays: raw.booking_horizon_days as number,
-  slotStepMinutes: raw.slot_step_minutes as number,
-  allowClientCancellation: raw.allow_client_cancellation as boolean,
-  allowClientReschedule: (raw.allow_client_reschedule as boolean | undefined) ?? false,
-  cancellationDeadlineHours: raw.cancellation_deadline_hours as number,
-  defaultIsBookable: (raw.default_is_bookable as boolean | undefined) ?? true,
-  defaultBookingMode: (raw.default_booking_mode as AppointmentSettings['defaultBookingMode'] | undefined) ?? 'fixed',
-  defaultAllowResourceChoice: (raw.default_allow_resource_choice as boolean | undefined) ?? true,
-  defaultMaxDuration: (raw.default_max_duration as number | undefined) ?? 180,
+  resourceLabel: (raw.resource_label as string | null) ?? DEFAULT_APPOINTMENT_SETTINGS.resourceLabel,
+  resourceMode: (raw.resource_mode as AppointmentSettings['resourceMode'] | null) ?? DEFAULT_APPOINTMENT_SETTINGS.resourceMode,
+  staffNameFormat: (raw.staff_name_format as StaffNameFormat | null) ?? DEFAULT_APPOINTMENT_SETTINGS.staffNameFormat,
+  autoConfirm: (raw.auto_confirm as boolean | null) ?? DEFAULT_APPOINTMENT_SETTINGS.autoConfirm,
+  bookingHorizonDays: (raw.booking_horizon_days as number | null) ?? DEFAULT_APPOINTMENT_SETTINGS.bookingHorizonDays,
+  slotStepMinutes: (raw.slot_step_minutes as number | null) ?? DEFAULT_APPOINTMENT_SETTINGS.slotStepMinutes,
+  allowClientCancellation: (raw.allow_client_cancellation as boolean | null) ?? DEFAULT_APPOINTMENT_SETTINGS.allowClientCancellation,
+  allowClientReschedule: (raw.allow_client_reschedule as boolean | null) ?? DEFAULT_APPOINTMENT_SETTINGS.allowClientReschedule,
+  cancellationDeadlineHours: (raw.cancellation_deadline_hours as number | null) ?? DEFAULT_APPOINTMENT_SETTINGS.cancellationDeadlineHours,
+  defaultIsBookable: (raw.default_is_bookable as boolean | null) ?? DEFAULT_APPOINTMENT_SETTINGS.defaultIsBookable,
+  defaultBookingMode: (raw.default_booking_mode as AppointmentSettings['defaultBookingMode'] | null) ?? DEFAULT_APPOINTMENT_SETTINGS.defaultBookingMode,
+  defaultAllowResourceChoice: (raw.default_allow_resource_choice as boolean | null) ?? DEFAULT_APPOINTMENT_SETTINGS.defaultAllowResourceChoice,
+  defaultMaxDuration: (raw.default_max_duration as number | null) ?? DEFAULT_APPOINTMENT_SETTINGS.defaultMaxDuration,
   createdAt: raw.created_at as string,
   updatedAt: raw.updated_at as string,
 })
@@ -133,3 +158,28 @@ export const mapAppointmentRequestService = (raw: Record<string, unknown>): Appo
   durationMinutes: raw.duration_minutes as number,
   price: raw.price as number,
 })
+
+/**
+ * Форматирует имя сотрудника по выбранному формату приватности.
+ * Используется на витрине, чтобы клиент видел не полные ФИО, а краткую форму.
+ *
+ * - 'first_name' → "Анна Краснова" → "Анна"
+ * - 'first_name_last_initial' → "Анна Краснова" → "Анна К."
+ * - 'full_name' → как есть
+ *
+ * Особенности:
+ * - двойные пробелы в имени ("Анна  К.") схлопываются — иначе `parts[1] = ''`
+ *   и доступ к нулевому индексу падает.
+ */
+export const formatStaffName = (name: string, format: StaffNameFormat): string => {
+  if (format === 'first_name') return name.split(' ')[0] ?? name
+  if (format === 'first_name_last_initial') {
+    const parts = name.split(' ').filter(Boolean)
+    if (parts.length >= 2) {
+      const initial = parts[1]?.[0] ?? ''
+      return initial ? `${parts[0]} ${initial}.` : (parts[0] ?? name)
+    }
+    return name
+  }
+  return name
+}

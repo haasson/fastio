@@ -6,15 +6,9 @@
 import { computed } from 'vue'
 import { FsBadge } from '@fastio/public-ui'
 import type { AppointmentStatus } from '@fastio/shared'
+import { APPOINTMENT_STATUS_LABELS } from '@fastio/shared'
 
 const props = defineProps<{ status: AppointmentStatus }>()
-
-const LABELS: Record<AppointmentStatus, string> = {
-  new: 'Новая',
-  confirmed: 'Подтверждена',
-  done: 'Завершена',
-  cancelled: 'Отменена',
-}
 
 const VARIANTS: Record<AppointmentStatus, 'default' | 'success' | 'warning' | 'error'> = {
   new: 'warning',
@@ -23,6 +17,6 @@ const VARIANTS: Record<AppointmentStatus, 'default' | 'success' | 'warning' | 'e
   cancelled: 'error',
 }
 
-const label = computed(() => LABELS[props.status])
+const label = computed(() => APPOINTMENT_STATUS_LABELS[props.status])
 const variant = computed(() => VARIANTS[props.status])
 </script>
