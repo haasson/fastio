@@ -14,7 +14,7 @@ export type PresenceStatus = 'working' | 'off-hours' | 'absent' | 'hidden'
 /**
  * Считает текущий рабочий статус для списка ресурсов:
  * - hidden — ресурс is_active=false (выключен админом)
- * - absent — на сегодня есть override is_working=false (отпуск/болезнь)
+ * - absent — сегодня попадает в период unavailability (отпуск/больничный/обучение)
  * - off-hours — сейчас вне рабочего окна (или сегодня выходной по графику/циклу)
  * - working — сейчас в рабочем окне
  *
@@ -29,13 +29,6 @@ export function useResourcePresence(resources: Ref<Resource[]>) {
   const statusByResource = ref<Map<string, PresenceStatus>>(new Map())
   const absentUntilByResource = ref<Map<string, string>>(new Map())
   const loading = ref(false)
-
-  const nextDayStr = (date: string): string => {
-    const [y, m, d] = date.split('-').map(Number)
-    const next = new Date(y, m - 1, d + 1)
-
-    return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`
-  }
 
   const compute = async () => {
     if (!tenantStore.currentTenantId) return
@@ -103,14 +96,25 @@ export function useResourcePresence(resources: Ref<Resource[]>) {
       const result = new Map<string, PresenceStatus>()
       const absentUntil = new Map<string, string>()
 
-      // Группируем overrides по resource_id, отсортированные по дате.
-      const overridesByResource = new Map<string, Array<{ date: string; is_working: boolean; open_time: string | null; close_time: string | null }>>()
+      // bulkLoadPresence уже отфильтровал unavailability по сегодня (overlap).
+      // Группируем по resource_id; в случае нескольких пересекающихся периодов
+      // (редкость, но возможна) для absentUntil берём максимальный dateTo.
+      const unavailByResource = new Map<string, string>()
+
+      for (const u of bundle.unavailability) {
+        const prev = unavailByResource.get(u.resourceId)
+
+        if (!prev || u.dateTo > prev) unavailByResource.set(u.resourceId, u.dateTo)
+      }
+
+      // Override на сегодня может задавать нестандартные часы (is_working=true);
+      // is_working=false в overrides больше не пишется (см. resource_unavailability).
+      const overrideByResource = new Map<string, { open_time: string | null; close_time: string | null }>()
 
       for (const row of bundle.dateOverrides) {
-        const arr = overridesByResource.get(row.resource_id) ?? []
-
-        arr.push({ date: row.date, is_working: row.is_working, open_time: row.open_time, close_time: row.close_time })
-        overridesByResource.set(row.resource_id, arr)
+        if (row.date === today && row.is_working) {
+          overrideByResource.set(row.resource_id, { open_time: row.open_time, close_time: row.close_time })
+        }
       }
 
       for (const r of resources.value) {
@@ -119,23 +123,11 @@ export function useResourcePresence(resources: Ref<Resource[]>) {
           continue
         }
 
-        const myOverrides = overridesByResource.get(r.id) ?? []
-        const todayOverride = myOverrides.find((o) => o.date === today)
+        const absentUntilDate = unavailByResource.get(r.id)
 
-        if (todayOverride && !todayOverride.is_working) {
+        if (absentUntilDate) {
           result.set(r.id, 'absent')
-          // Ищем последний подряд идущий день отсутствия начиная с сегодня.
-          let last = today
-          let probe = nextDayStr(today)
-
-          for (let i = 1; i < myOverrides.length; i++) {
-            const o = myOverrides.find((x) => x.date === probe)
-
-            if (!o || o.is_working) break
-            last = probe
-            probe = nextDayStr(probe)
-          }
-          absentUntil.set(r.id, last)
+          absentUntil.set(r.id, absentUntilDate)
           continue
         }
 
@@ -143,7 +135,9 @@ export function useResourcePresence(resources: Ref<Resource[]>) {
         let openTime: string | null = null
         let closeTime: string | null = null
 
-        if (todayOverride?.is_working) {
+        const todayOverride = overrideByResource.get(r.id)
+
+        if (todayOverride) {
           openTime = sliceTime(todayOverride.open_time)
           closeTime = sliceTime(todayOverride.close_time)
         } else if (r.appliedTemplateId && r.cycleStartDate) {

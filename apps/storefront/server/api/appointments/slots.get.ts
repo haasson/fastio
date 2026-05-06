@@ -4,8 +4,9 @@ import {
   getResourceSlotsForDate, mergeResourceSlots, getBranchSlotsForDate,
   localDateTimeToUtcIso, addDaysToDateStr,
   DEFAULT_APPOINTMENT_SETTINGS,
+  mapResourceUnavailability,
 } from '@fastio/shared'
-import type { ResourceSlotData, AppointmentInterval, WorkingHoursSchedule } from '@fastio/shared'
+import type { ResourceSlotData, AppointmentInterval, WorkingHoursSchedule, ResourceUnavailability } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(30, 60_000)
 
@@ -154,11 +155,13 @@ export default defineEventHandler(async (event) => {
       const dayStart = localDateTimeToUtcIso(date, '00:00', tz)
       const dayEnd = localDateTimeToUtcIso(addDaysToDateStr(date, 1), '00:00', tz)
 
-      const [schedulesData, disabledData, overridesData, dateDisabledData, appointmentsData, resourceBranchData, shiftTemplatesData, shiftDaysData] = await Promise.all([
+      const [schedulesData, disabledData, overridesData, dateDisabledData, unavailabilityData, appointmentsData, resourceBranchData, shiftTemplatesData, shiftDaysData] = await Promise.all([
         db.junction('resource_schedules').select('*').in('resource_id', activeResourceIds),
         db.junction('resource_disabled_slots').select('*').in('resource_id', activeResourceIds),
         db.junction('resource_date_overrides').select('*').in('resource_id', activeResourceIds).eq('date', date),
         db.junction('resource_date_disabled_slots').select('*').in('resource_id', activeResourceIds).eq('date', date),
+        db.from('resource_unavailability').select('*').in('resource_id', activeResourceIds)
+          .lte('date_from', date).gte('date_to', date),
         db.from('appointments')
           .select('resource_id, starts_at, ends_at, actual_ends_at')
           .in('resource_id', activeResourceIds)
@@ -209,6 +212,16 @@ export default defineEventHandler(async (event) => {
         if (!branchByResource.has(row.resource_id)) branchByResource.set(row.resource_id, row.branch_id)
       }
 
+      // Pre-маппинг unavailability в Map<resourceId, ResourceUnavailability[]> —
+      // в loop по ресурсам ниже переиспользуем как есть, без повторных filter+map.
+      const unavailabilityByResource = new Map<string, ResourceUnavailability[]>()
+      for (const row of (unavailabilityData.data ?? []) as Record<string, unknown>[]) {
+        const u = mapResourceUnavailability(row)
+        const arr = unavailabilityByResource.get(u.resourceId) ?? []
+        arr.push(u)
+        unavailabilityByResource.set(u.resourceId, arr)
+      }
+
       const resourceDataMap = new Map<string, { data: ResourceSlotData; appointments: AppointmentInterval[]; capacity: number }>()
 
       for (const rid of activeResourceIds) {
@@ -249,6 +262,7 @@ export default defineEventHandler(async (event) => {
               date: s.date as string,
               slotTime: (s.slot_time as string).slice(0, 5),
             })),
+          unavailability: unavailabilityByResource.get(rid) ?? [],
           branchSchedule: (() => {
             const bid = branchByResource.get(rid)
             if (bid) return branchScheduleById.get(bid) ?? tenantSchedule

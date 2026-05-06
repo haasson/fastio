@@ -51,6 +51,7 @@ export const TENANT_TABLES = new Set<string>([
   'promotions',
   'reservation_settings',
   'reservations',
+  'resource_unavailability',
   'resources',
   'schedule_templates',
   'services',

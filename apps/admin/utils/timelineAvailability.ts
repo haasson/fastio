@@ -90,6 +90,9 @@ export function buildTimelineAvailability(params: {
         date: s.date,
         slotTime: s.slot_time.slice(0, 5),
       })),
+      // bundle.unavailability уже отфильтрован сервером по выбранной дате и
+      // смаппен в camelCase в getAvailabilityBundleForDate — здесь только сужаем по resource.
+      unavailability: bundle.unavailability.filter((u) => u.resourceId === r.id),
       branchSchedule: (() => {
         const bid = branchByResource.get(r.id)
 

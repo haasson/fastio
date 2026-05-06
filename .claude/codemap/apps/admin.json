@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-06T08:32:39.674Z",
+  "generated_at": "2026-05-06T12:34:51.605Z",
   "stats": {
     "files": 123,
     "pages": 0,
@@ -1186,8 +1186,8 @@
     },
     "utils/timelineAvailability.ts": {
       "kind": "ts",
-      "hash": "1ab462b57f90",
-      "purpose": "Из бандла bulkLoadAvailability собирает per-resource рабочие часы и disabled-слоты для рендера таймлайна на дату",
+      "hash": "fb373a5cbc4e",
+      "purpose": "Сборка per-resource расписания и disabled-слотов на дату из bulkLoadAvailability — для таймлайна админки",
       "symbols": [
         {
           "name": "buildTimelineAvailability",

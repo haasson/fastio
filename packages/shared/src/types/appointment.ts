@@ -64,6 +64,25 @@ export type ResourceDateDisabledSlot = {
   slotTime: string  // "HH:MM"
 }
 
+// Отсутствие мастера на период — отпуск/больничный/обучение.
+// От dateOverride отличается семантически: dateOverride = «нестандартный
+// график конкретного дня»; unavailability = «полностью отсутствует». В
+// resolveResourceWorkingHours unavailability имеет высший приоритет — даже
+// специально назначенный override на день не перебьёт отпуск.
+export type ResourceUnavailabilityReason = 'vacation' | 'sick_leave' | 'training' | 'other'
+
+export type ResourceUnavailability = {
+  id: string
+  tenantId: string
+  resourceId: string
+  dateFrom: string  // "YYYY-MM-DD"
+  dateTo: string    // "YYYY-MM-DD" inclusive
+  reason: ResourceUnavailabilityReason
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export type AppointmentResourceMode = 'staff' | 'objects' | 'both'
 
 export type AppointmentSettings = {
@@ -144,6 +163,10 @@ export type ResourceSlotData = {
   disabledSlots: ResourceDisabledSlot[]
   dateOverrides: ResourceDateOverride[]
   dateDisabledSlots: ResourceDateDisabledSlot[]
+  // Периоды отсутствия (отпуск/больничный). Пересечение с искомой датой = ресурс
+  // не работает, перебивает override/shiftCycle/weekly. Опционально — старые
+  // call-sites без учёта unavailability не ломаются.
+  unavailability?: ResourceUnavailability[]
   branchSchedule?: WorkingHoursSchedule | null
   shiftCycle?: {
     cycleStartDate: string  // YYYY-MM-DD, день 1

@@ -1,6 +1,7 @@
 import type {
   Resource, ResourceType,
   ResourceSchedule, ResourceDisabledSlot, ResourceDateOverride, ResourceDateDisabledSlot,
+  ResourceUnavailability, ResourceUnavailabilityReason,
   AppointmentSettings, StaffNameFormat,
   Appointment, AppointmentStatus, ResourceAssignedBy,
 } from '../types/appointment'
@@ -55,6 +56,35 @@ export const mapResourceDateDisabledSlot = (raw: Record<string, unknown>): Resou
   date: raw.date as string,
   slotTime: (raw.slot_time as string).slice(0, 5),
 })
+
+export const mapResourceUnavailability = (raw: Record<string, unknown>): ResourceUnavailability => ({
+  id: raw.id as string,
+  tenantId: raw.tenant_id as string,
+  resourceId: raw.resource_id as string,
+  dateFrom: raw.date_from as string,
+  dateTo: raw.date_to as string,
+  reason: raw.reason as ResourceUnavailabilityReason,
+  notes: (raw.notes as string | null) ?? null,
+  createdAt: raw.created_at as string,
+  updatedAt: raw.updated_at as string,
+})
+
+// Метки причин отсутствия — единая правда для UI (drawer мастера, календарь
+// расписания, статус-tooltip). Если появится новое значение в enum — менять
+// здесь и в CHECK constraint миграции 254 одновременно.
+export const RESOURCE_UNAVAILABILITY_REASON_LABELS: Record<ResourceUnavailabilityReason, string> = {
+  vacation: 'Отпуск',
+  sick_leave: 'Больничный',
+  training: 'Обучение',
+  other: 'Отсутствие',
+}
+
+export const RESOURCE_UNAVAILABILITY_REASON_OPTIONS: Array<{ label: string; value: ResourceUnavailabilityReason }> = [
+  { label: RESOURCE_UNAVAILABILITY_REASON_LABELS.vacation, value: 'vacation' },
+  { label: RESOURCE_UNAVAILABILITY_REASON_LABELS.sick_leave, value: 'sick_leave' },
+  { label: RESOURCE_UNAVAILABILITY_REASON_LABELS.training, value: 'training' },
+  { label: 'Другое', value: 'other' },
+]
 
 // Единая правда дефолтов AppointmentSettings — admin/storefront/маппер должны
 // использовать ОДНИ И ТЕ ЖЕ значения, иначе:

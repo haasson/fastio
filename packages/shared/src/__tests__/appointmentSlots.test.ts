@@ -920,6 +920,72 @@ describe('getResourceSlotsForDate', () => {
   })
 })
 
+describe('resource unavailability — план 10.7', () => {
+  // Каркас ResourceUnavailability — поля даты используются в matcher, остальное
+  // не влияет на resolveResourceWorkingHours.
+  const makeUnavail = (dateFrom: string, dateTo: string) => ({
+    id: 'u-1',
+    tenantId: 't-1',
+    resourceId: 'R',
+    dateFrom,
+    dateTo,
+    reason: 'vacation' as const,
+    notes: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+  })
+
+  it('дата внутри отпуска → нет слотов, даже при специальном dateOverride', () => {
+    // Override на этот же день с явным is_working=true. Unavailability должен перебить.
+    const data = makeResData({
+      dateOverrides: [{
+        id: 'o-1', resourceId: 'R', date: FUTURE_DATE,
+        isWorking: true, openTime: '08:00', closeTime: '20:00',
+      }],
+      unavailability: [makeUnavail(FUTURE_DATE, FUTURE_DATE)],
+    })
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, 30, TZ)
+    expect(slots).toEqual([])
+  })
+
+  it('дата ВНЕ периода отпуска → слоты есть как обычно', () => {
+    const data = makeResData({
+      unavailability: [makeUnavail('2030-06-10', '2030-06-14')], // Юзер выходит 15-го
+    })
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, 60, TZ)
+    expect(slots.length).toBeGreaterThan(0)
+  })
+
+  it('диапазон отпуска включает start и end (inclusive)', () => {
+    const data = makeResData({
+      unavailability: [makeUnavail('2030-06-10', '2030-06-15')],
+    })
+    // 10-го (start) — нет слотов
+    const slotsStart = getResourceSlotsForDate('2030-06-10', data, [], 60, 60, TZ)
+    // 15-го (end inclusive) — нет слотов
+    const slotsEnd = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, 60, TZ)
+    expect(slotsStart).toEqual([])
+    expect(slotsEnd).toEqual([])
+  })
+
+  it('пересечение нескольких периодов unavailability — любое попадание блокирует', () => {
+    const data = makeResData({
+      unavailability: [
+        makeUnavail('2030-06-01', '2030-06-05'),
+        makeUnavail('2030-06-14', '2030-06-16'),
+      ],
+    })
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, 60, TZ)
+    expect(slots).toEqual([])
+  })
+
+  it('пустой массив unavailability ведёт себя как отсутствие — слоты есть', () => {
+    const data = makeResData({ unavailability: [] })
+    const slots = getResourceSlotsForDate(FUTURE_DATE, data, [], 60, 60, TZ)
+    expect(slots.length).toBeGreaterThan(0)
+  })
+})
+
 describe('mergeResourceSlots', () => {
   it('два ресурса: объединение и сортировка слотов', () => {
     // res-A работает 10:00-12:00 (override), res-B 14:00-16:00 (override).

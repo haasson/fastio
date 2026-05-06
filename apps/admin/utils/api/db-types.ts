@@ -516,6 +516,18 @@ export type ResourceDateDisabledSlotRow = {
   slot_time: string
 }
 
+export type ResourceUnavailabilityRow = {
+  id: string
+  tenant_id: string
+  resource_id: string
+  date_from: string
+  date_to: string
+  reason: 'vacation' | 'sick_leave' | 'training' | 'other'
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type ScheduleTemplateRow = {
   id: string
   tenant_id: string

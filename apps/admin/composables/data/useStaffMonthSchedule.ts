@@ -28,7 +28,7 @@ export type StaffMonthDay = {
   isWorking: boolean
   openTime: string | null
   closeTime: string | null
-  /** Override is_working=false на эту дату — отпуск/отсутствие, а не просто выходной */
+  /** День попадает в период unavailability (отпуск/больничный/обучение) — отдельная пометка от обычного выходного weekly */
   isAbsence: boolean
   appointments: StaffMonthAppointment[]
 }
@@ -73,11 +73,12 @@ export function useStaffMonthSchedule(
       const dayStartUtc = localDateTimeToUtcIso(fromDate, '00:00', tz)
       const dayEndUtcExclusive = localDateTimeToUtcIso(addDaysToDateStr(toDate, 1), '00:00', tz)
 
-      const [schedules, disabled, dateOverrides, dateDisabled, shiftTpl, appointmentsRes, services, branchIds] = await Promise.all([
+      const [schedules, disabled, dateOverrides, dateDisabled, unavailability, shiftTpl, appointmentsRes, services, branchIds] = await Promise.all([
         api.resources.getSchedules(r.id),
         api.resources.getDisabledSlots(r.id),
         api.resources.getDateOverridesRange(r.id, fromDate, toDate),
         api.resources.getDateDisabledSlotsRange(r.id, fromDate, toDate),
+        api.resourceUnavailability.listForResource(r.id, { from: fromDate, to: toDate }),
         r.appliedTemplateId
           ? api.scheduleTemplates.getFull(r.appliedTemplateId)
           : Promise.resolve(null),
@@ -134,6 +135,7 @@ export function useStaffMonthSchedule(
         disabledSlots: disabled,
         dateOverrides,
         dateDisabledSlots: dateDisabled,
+        unavailability,
         branchSchedule,
         shiftCycle,
       }
@@ -163,8 +165,9 @@ export function useStaffMonthSchedule(
       for (let d = 1; d <= lastDay; d++) {
         const date = `${year}-${pad(month + 1)}-${pad(d)}`
         const hours = resolveResourceWorkingHours(date, slotData)
-        const override = dateOverrides.find((o) => o.date === date)
-        const isAbsence = !!override && !override.isWorking
+        // isAbsence — день попадает в unavailability-период. Отличается от
+        // выходного weekly: «не работает по причине», а не «никогда не работает».
+        const isAbsence = unavailability.some((u) => date >= u.dateFrom && date <= u.dateTo)
 
         result.set(date, {
           date,

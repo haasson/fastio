@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-06T08:32:39.946Z",
+  "generated_at": "2026-05-06T12:34:51.903Z",
   "stats": {
     "files": 39,
     "pages": 0,
-    "symbols": 166,
+    "symbols": 169,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -14,8 +14,8 @@
   "files": {
     "src/utils/appointment.ts": {
       "kind": "ts",
-      "hash": "44d2f7c8e1ff",
-      "purpose": "Мапперы appointment-доменa из БД в TS (Resource/Appointment/Visit/Settings/Request) и DEFAULT_APPOINTMENT_SETTINGS — единая правда дефолтов; формат ФИО мастера",
+      "hash": "0b1b98d230ea",
+      "purpose": "Мапперы и общие константы домена appointments (ресурсы, расписания, отсутствия, настройки записи, форматирование имени мастера)",
       "symbols": [
         {
           "name": "mapResource",
@@ -46,6 +46,24 @@
           "kind": "function",
           "hash": "d8a2b456",
           "purpose": "Маппит точечно отключённый слот ресурса на конкретную дату"
+        },
+        {
+          "name": "mapResourceUnavailability",
+          "kind": "function",
+          "hash": "b16fd412",
+          "purpose": "Маппит период отсутствия мастера (отпуск/больничный/обучение/другое) — диапазон дат + reason + notes"
+        },
+        {
+          "name": "RESOURCE_UNAVAILABILITY_REASON_LABELS",
+          "kind": "const",
+          "hash": "124469b2",
+          "purpose": "Русские лейблы reason'ов unavailability — единая правда для UI (drawer, календарь, статус-tooltip)"
+        },
+        {
+          "name": "RESOURCE_UNAVAILABILITY_REASON_OPTIONS",
+          "kind": "const",
+          "hash": "2a386984",
+          "purpose": "Готовый список { label, value } для UiSelect выбора причины отсутствия в форме"
         },
         {
           "name": "DEFAULT_APPOINTMENT_SETTINGS",
@@ -142,8 +160,8 @@
     },
     "src/utils/appointmentSlots.ts": {
       "kind": "ts",
-      "hash": "fff0f19aa7e2",
-      "purpose": "Генерация слотов для онлайн-записи: разрешение рабочих часов ресурса, подсчёт конфликтов, групповые и индивидуальные слоты, слоты филиала",
+      "hash": "644082dc5ed1",
+      "purpose": "Slot engine: расчёт рабочих часов и доступных слотов ресурса (overrides/cycle/weekly/branch + unavailability), capacity-aware merge, поиск групповых слотов с перестановками и preferred-fallback",
       "symbols": [
         {
           "name": "resolveResourceWorkingHours",

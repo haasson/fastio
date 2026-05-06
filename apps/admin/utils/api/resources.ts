@@ -1,11 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Resource, ResourceSchedule, ResourceDisabledSlot } from '@fastio/shared'
+import type {
+  Resource, ResourceSchedule, ResourceDisabledSlot,
+  ResourceUnavailability,
+  ResourceDateOverride, ResourceDateDisabledSlot,
+} from '@fastio/shared'
 import {
   mapResource, mapResourceSchedule, mapResourceDisabledSlot,
   mapResourceDateOverride, mapResourceDateDisabledSlot,
+  mapResourceUnavailability,
   addDaysToDateStr,
 } from '@fastio/shared'
-import type { ResourceDateOverride, ResourceDateDisabledSlot } from '@fastio/shared'
 import type {
   ResourceRow,
   ResourceScheduleRow, ResourceDisabledSlotRow,
@@ -29,6 +33,10 @@ export type AvailabilityBundle = {
   disabledSlots: ResourceDisabledSlotRow[]
   dateOverrides: ResourceDateOverrideRow[]
   dateDisabledSlots: ResourceDateDisabledSlotRow[]
+  // Периоды отсутствия мастеров (отпуск/больничный) пересекающие выбранную дату.
+  // Передаются в `resolveResourceWorkingHours` через ResourceSlotData.unavailability —
+  // тип уже camelCase, без повторного маппинга на call-site'ах.
+  unavailability: ResourceUnavailability[]
   appointments: Pick<AppointmentRow, 'id' | 'resource_id' | 'starts_at' | 'ends_at' | 'actual_ends_at'>[]
   branchLinks: ResourceBranchRow[]
   shiftTemplates: Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[]
@@ -38,6 +46,8 @@ export type AvailabilityBundle = {
 export type PresenceBundle = {
   schedules: ResourceScheduleRow[]
   dateOverrides: ResourceDateOverrideRow[]
+  // Периоды unavailability, пересекающие сегодня — для статуса `absent`.
+  unavailability: ResourceUnavailability[]
   branchLinks: ResourceBranchRow[]
   shiftTemplates: Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[]
   shiftTemplateDays: ScheduleTemplateDayRow[]
@@ -445,6 +455,7 @@ export const resourcesApi = {
       return {
         serviceResources: [], resourceCategories: [], schedules: [],
         disabledSlots: [], dateOverrides: [], dateDisabledSlots: [],
+        unavailability: [],
         appointments: [], branchLinks: [], shiftTemplates: [], shiftTemplateDays: [],
       }
     }
@@ -456,6 +467,7 @@ export const resourcesApi = {
       disabledRes,
       overridesRes,
       dateDisabledRes,
+      unavailabilityRes,
       appointmentsRes,
       branchLinksRes,
       shiftTemplatesRes,
@@ -467,6 +479,10 @@ export const resourcesApi = {
       sb.from('resource_disabled_slots').select('*').in('resource_id', resourceIds),
       sb.from('resource_date_overrides').select('*').in('resource_id', resourceIds).eq('date', date),
       sb.from('resource_date_disabled_slots').select('*').in('resource_id', resourceIds).eq('date', date),
+      // Unavailability: периоды пересекающие выбранную дату. Условие
+      // overlap = `date_from <= date AND date_to >= date`.
+      sb.from('resource_unavailability').select('*').in('resource_id', resourceIds)
+        .lte('date_from', date).gte('date_to', date),
       // Расширяем нижнюю границу на сутки назад: запись, начавшаяся вчера в 23:30
       // и заканчивающаяся сегодня в 01:30, должна попасть в выборку, иначе слот
       // 00:00–01:30 будет ошибочно показан как свободный.
@@ -492,6 +508,7 @@ export const resourcesApi = {
       disabledSlots: (disabledRes.data ?? []) as ResourceDisabledSlotRow[],
       dateOverrides: (overridesRes.data ?? []) as ResourceDateOverrideRow[],
       dateDisabledSlots: (dateDisabledRes.data ?? []) as ResourceDateDisabledSlotRow[],
+      unavailability: (unavailabilityRes.data ?? []).map((r) => mapResourceUnavailability(r as Record<string, unknown>)),
       appointments: (appointmentsRes.data ?? []) as Pick<AppointmentRow, 'id' | 'resource_id' | 'starts_at' | 'ends_at' | 'actual_ends_at'>[],
       branchLinks: (branchLinksRes.data ?? []) as ResourceBranchRow[],
       shiftTemplates: (shiftTemplatesRes.data ?? []) as Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[],
@@ -515,13 +532,16 @@ export const resourcesApi = {
     const { resourceIds, todayDate, shiftTemplateIds } = params
 
     if (resourceIds.length === 0) {
-      return { schedules: [], dateOverrides: [], branchLinks: [], shiftTemplates: [], shiftTemplateDays: [] }
+      return { schedules: [], dateOverrides: [], unavailability: [], branchLinks: [], shiftTemplates: [], shiftTemplateDays: [] }
     }
 
-    const [schedulesRes, overridesRes, branchLinksRes, shiftTemplatesRes, shiftDaysRes] = await Promise.all([
+    const [schedulesRes, overridesRes, unavailabilityRes, branchLinksRes, shiftTemplatesRes, shiftDaysRes] = await Promise.all([
       sb.from('resource_schedules').select('*').in('resource_id', resourceIds),
       sb.from('resource_date_overrides').select('*').in('resource_id', resourceIds)
         .gte('date', todayDate).order('date', { ascending: true }),
+      // Unavailability, пересекающая сегодня — для статуса `absent`.
+      sb.from('resource_unavailability').select('*').in('resource_id', resourceIds)
+        .lte('date_from', todayDate).gte('date_to', todayDate),
       sb.from('resource_branches').select('resource_id, branch_id').in('resource_id', resourceIds),
       shiftTemplateIds.length
         ? sb.from('schedule_templates').select('id, cycle_length').in('id', shiftTemplateIds)
@@ -534,6 +554,7 @@ export const resourcesApi = {
     return {
       schedules: (schedulesRes.data ?? []) as ResourceScheduleRow[],
       dateOverrides: (overridesRes.data ?? []) as ResourceDateOverrideRow[],
+      unavailability: (unavailabilityRes.data ?? []).map((r) => mapResourceUnavailability(r as Record<string, unknown>)),
       branchLinks: (branchLinksRes.data ?? []) as ResourceBranchRow[],
       shiftTemplates: (shiftTemplatesRes.data ?? []) as Pick<ScheduleTemplateRow, 'id' | 'cycle_length'>[],
       shiftTemplateDays: (shiftDaysRes.data ?? []) as ScheduleTemplateDayRow[],

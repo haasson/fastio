@@ -115,7 +115,8 @@ function branchHoursForDate(
  * Определяет рабочие часы ресурса на конкретную дату.
  * Возвращает { openTime, closeTime } или null если ресурс не работает.
  *
- * Приоритет: override на дату → shiftCycle → resource_schedules → график филиала.
+ * Приоритет: unavailability (отпуск/больничный) → override на дату → shiftCycle
+ * → resource_schedules → график филиала.
  *
  * Если у ресурса есть свой график И задан график филиала, итоговое окно =
  * пересечение собственных часов ресурса с часами филиала. Без этого можно
@@ -128,6 +129,12 @@ export function resolveResourceWorkingHours(
   date: string,  // "YYYY-MM-DD"
   data: ResourceSlotData,
 ): { openTime: string; closeTime: string } | null {
+  // Unavailability — высший приоритет, перебивает всё (даже override на этот
+  // же день). Семантика: «полностью отсутствует», не «нестандартный график».
+  if (data.unavailability?.some((u) => date >= u.dateFrom && date <= u.dateTo)) {
+    return null
+  }
+
   const dayOfWeek = new Date(date + 'T12:00:00').getDay()  // 0=Sun..6=Sat
 
   // Собственные часы ресурса (без учёта филиала). Может быть null если ресурс

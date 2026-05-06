@@ -4,13 +4,15 @@
 
     <UiAlert
       v-for="period in currentOffPeriods"
-      :key="`current-${period.from}`"
+      :key="`current-${period.id}`"
       type="warning"
       size="small"
-      class="off-current"
     >
       <div class="off-current-row">
-        <span><strong>Сейчас отсутствует:</strong> {{ formatPeriod(period) }} ({{ periodDaysLabel(period) }})</span>
+        <UiText size="small" span>
+          <strong>{{ RESOURCE_UNAVAILABILITY_REASON_LABELS[period.reason] }}:</strong>
+          {{ formatPeriod(period) }} ({{ periodDaysLabel(period) }})<span v-if="period.notes" class="hint"> — {{ period.notes }}</span>
+        </UiText>
         <div class="off-current-actions">
           <UiButton
             size="tiny"
@@ -34,12 +36,16 @@
       <UiText size="small" weight="medium" class="overrides-label">Запланировано</UiText>
       <div
         v-for="period in futureOffPeriods"
-        :key="period.from"
+        :key="period.id"
         class="override-row"
       >
         <div class="override-info">
-          <UiText size="small" weight="medium">{{ formatPeriod(period) }}</UiText>
-          <UiText size="tiny" class="hint">{{ periodDaysLabel(period) }}</UiText>
+          <UiText size="small" weight="medium">
+            {{ RESOURCE_UNAVAILABILITY_REASON_LABELS[period.reason] }} · {{ formatPeriod(period) }}
+          </UiText>
+          <UiText size="tiny" class="hint">
+            {{ periodDaysLabel(period) }}<span v-if="period.notes"> · {{ period.notes }}</span>
+          </UiText>
         </div>
         <div class="override-actions">
           <UiButton
@@ -76,6 +82,18 @@
         class="override-date"
         :is-date-disabled="isDateBeforeToday"
       />
+      <UiSelect
+        v-model:value="offForm.reason"
+        :options="RESOURCE_UNAVAILABILITY_REASON_OPTIONS"
+        size="small"
+        class="override-reason"
+      />
+      <UiInput
+        v-model="offForm.notes"
+        placeholder="Комментарий (необязательно)"
+        size="small"
+        class="override-notes"
+      />
       <UiButton
         size="small"
         type="primary"
@@ -98,9 +116,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiTitle, UiText, UiButton, UiAlert, UiDatepicker, useConfirm, useMessage } from '@fastio/ui'
-import type { Resource, ResourceDateOverride } from '@fastio/shared'
-import { pluralize, formatDate, datesInRange, addDaysToDateStr, todayInTz, utcIsoToLocalDateTime, localDateTimeToUtcIso, dateStrToTs } from '@fastio/shared'
+import { UiTitle, UiText, UiButton, UiAlert, UiDatepicker, UiSelect, UiInput, useConfirm, useMessage } from '@fastio/ui'
+import type { Resource, ResourceUnavailability, ResourceUnavailabilityReason } from '@fastio/shared'
+import {
+  pluralize, formatDate, addDaysToDateStr, todayInTz,
+  utcIsoToLocalDateTime, localDateTimeToUtcIso,
+  RESOURCE_UNAVAILABILITY_REASON_LABELS, RESOURCE_UNAVAILABILITY_REASON_OPTIONS,
+} from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reportError } from '~/utils/reportError'
@@ -114,26 +136,32 @@ const api = useDatabase()
 const { confirm } = useConfirm()
 const message = useMessage()
 
-const dateOverrides = ref<ResourceDateOverride[]>([])
-
-type OffPeriod = { from: string; to: string }
+const periods = ref<ResourceUnavailability[]>([])
 
 const offForm = reactive({
   from: null as number | null,
   to: null as number | null,
+  reason: 'vacation' as ResourceUnavailabilityReason,
+  notes: '',
 })
-const editingPeriod = ref<OffPeriod | null>(null)
+const editingPeriod = ref<ResourceUnavailability | null>(null)
 
-// Дата timestamp'а В ТАЙМЗОНЕ ТЕНАНТА. `.toISOString().slice(0,10)` сдвигает
-// на сутки около полуночи для тенантов с большим offset (Asia/Tokyo,
-// Pacific/Auckland) — поэтому идём через утилиту, опирающуюся на Intl.DateTimeFormat.
+// Все ts-операции идут через tenant tz: формируем ts как midnight tenant-tz и
+// читаем обратно через `utcIsoToLocalDateTime`. Без этого админ в чужой tz
+// получал расхождение в день между записанным и отображаемым значением.
+const dateStrToTs = (dateStr: string): number => new Date(
+  localDateTimeToUtcIso(dateStr, '00:00', tenantStore.tenant.timezone),
+).getTime()
+
 const tsToDateStr = (ts: number | null): string | null => {
   if (!ts) return null
 
   return utcIsoToLocalDateTime(new Date(ts).toISOString(), tenantStore.tenant.timezone).dateStr
 }
 
-const formatPeriod = (p: OffPeriod): string => p.from === p.to ? formatDate(p.from) : `${formatDate(p.from)} — ${formatDate(p.to)}`
+const formatPeriod = (p: ResourceUnavailability): string => p.dateFrom === p.dateTo
+  ? formatDate(p.dateFrom)
+  : `${formatDate(p.dateFrom)} — ${formatDate(p.dateTo)}`
 
 // Сравнение по локальному дню браузера: кросс-tz нюансы (тенант vs админ)
 // не критичны — выходные дни про календарные числа, а не про время.
@@ -143,58 +171,32 @@ const isDateBeforeToday = (ts: number): boolean => startOfLocalDay(new Date(ts))
 
 type PeriodState = 'past' | 'current' | 'future'
 
-const periodState = (p: OffPeriod): PeriodState => {
+const periodState = (p: ResourceUnavailability): PeriodState => {
   const t = todayInTz(tenantStore.tenant.timezone)
 
-  if (p.to < t) return 'past'
-  if (p.from > t) return 'future'
+  if (p.dateTo < t) return 'past'
+  if (p.dateFrom > t) return 'future'
 
   return 'current'
 }
 
-const periodDaysLabel = (p: OffPeriod): string => {
-  const from = new Date(p.from + 'T00:00:00').getTime()
-  const to = new Date(p.to + 'T00:00:00').getTime()
-  const days = Math.round((to - from) / 86_400_000) + 1
+const periodDaysLabel = (p: ResourceUnavailability): string => {
+  const days = Math.round((dateStrToTs(p.dateTo) - dateStrToTs(p.dateFrom)) / 86_400_000) + 1
 
   return `${days} дн.`
 }
 
-const offPeriods = computed<OffPeriod[]>(() => {
-  const offDates = dateOverrides.value
-    .filter((o) => !o.isWorking)
-    .map((o) => o.date)
-    .sort()
-
-  if (!offDates.length) return []
-
-  const periods: OffPeriod[] = []
-  let from = offDates[0]
-  let prev = offDates[0]
-
-  for (let i = 1; i < offDates.length; i++) {
-    const cur = offDates[i]
-
-    if (cur === addDaysToDateStr(prev, 1)) {
-      prev = cur
-    } else {
-      periods.push({ from, to: prev })
-      from = cur
-      prev = cur
-    }
-  }
-  periods.push({ from, to: prev })
-
+const sortedPeriods = computed<ResourceUnavailability[]>(() => {
   const order: Record<PeriodState, number> = { current: 0, future: 1, past: 2 }
 
-  return periods.sort((a, b) => {
+  return [...periods.value].sort((a, b) => {
     const sa = periodState(a)
     const sb = periodState(b)
 
     if (sa !== sb) return order[sa] - order[sb]
-    if (sa === 'past') return b.from.localeCompare(a.from)
+    if (sa === 'past') return b.dateFrom.localeCompare(a.dateFrom)
 
-    return a.from.localeCompare(b.from)
+    return a.dateFrom.localeCompare(b.dateFrom)
   })
 })
 
@@ -205,11 +207,11 @@ const canAddOff = computed(() => {
   return to >= offForm.from
 })
 
-const currentOffPeriods = computed(() => offPeriods.value.filter((p) => periodState(p) === 'current'))
-const futureOffPeriods = computed(() => offPeriods.value.filter((p) => periodState(p) === 'future'))
+const currentOffPeriods = computed(() => sortedPeriods.value.filter((p) => periodState(p) === 'current'))
+const futureOffPeriods = computed(() => sortedPeriods.value.filter((p) => periodState(p) === 'future'))
 
-const loadDateOverrides = async () => {
-  dateOverrides.value = await api.resources.getDateOverrides(props.resource.id)
+const loadPeriods = async () => {
+  periods.value = await api.resourceUnavailability.listForResource(props.resource.id)
 }
 
 const addOffPeriod = async () => {
@@ -254,28 +256,34 @@ const addOffPeriod = async () => {
   }
 
   try {
+    const notes = offForm.notes.trim() || null
+
     if (editingPeriod.value) {
-      await Promise.all(
-        datesInRange(editingPeriod.value.from, editingPeriod.value.to)
-          .map((date) => api.resources.removeDateOverride(props.resource.id, date)),
-      )
+      await api.resourceUnavailability.update(editingPeriod.value.id, {
+        dateFrom: fromStr,
+        dateTo: toStr,
+        reason: offForm.reason,
+        notes,
+      })
+    } else {
+      await api.resourceUnavailability.create(tenantStore.currentTenantId!, {
+        resourceId: props.resource.id,
+        dateFrom: fromStr,
+        dateTo: toStr,
+        reason: offForm.reason,
+        notes,
+      })
     }
-    await Promise.all(
-      datesInRange(fromStr, toStr)
-        .map((date) => api.resources.upsertDateOverride(props.resource.id, date, false, null, null)),
-    )
-    await loadDateOverrides()
-    editingPeriod.value = null
-    offForm.from = null
-    offForm.to = null
+    await loadPeriods()
+    cancelEdit()
   } catch (e) {
     reportError(e)
     message.error('Не удалось сохранить отсутствие')
-    await loadDateOverrides()
+    await loadPeriods()
   }
 }
 
-const removeOffPeriod = async (period: OffPeriod) => {
+const removeOffPeriod = async (period: ResourceUnavailability) => {
   const ok = await confirm({
     title: 'Отменить отсутствие?',
     message: `${formatPeriod(period)} — ${periodDaysLabel(period)}`,
@@ -285,28 +293,29 @@ const removeOffPeriod = async (period: OffPeriod) => {
 
   if (!ok) return
 
-  await Promise.all(
-    datesInRange(period.from, period.to)
-      .map((date) => api.resources.removeDateOverride(props.resource.id, date)),
-  )
-  await loadDateOverrides()
+  await api.resourceUnavailability.remove(period.id)
+  await loadPeriods()
 }
 
-const startEdit = (period: OffPeriod) => {
+const startEdit = (period: ResourceUnavailability) => {
   editingPeriod.value = period
-  offForm.from = dateStrToTs(period.from)
-  offForm.to = dateStrToTs(period.to)
+  offForm.from = dateStrToTs(period.dateFrom)
+  offForm.to = dateStrToTs(period.dateTo)
+  offForm.reason = period.reason
+  offForm.notes = period.notes ?? ''
 }
 
 const cancelEdit = () => {
   editingPeriod.value = null
   offForm.from = null
   offForm.to = null
+  offForm.reason = 'vacation'
+  offForm.notes = ''
 }
 
-watch(() => props.resource.id, loadDateOverrides, { immediate: true })
+watch(() => props.resource.id, loadPeriods, { immediate: true })
 
-defineExpose({ reload: loadDateOverrides })
+defineExpose({ reload: loadPeriods })
 </script>
 
 <style scoped lang="scss">
@@ -335,6 +344,15 @@ defineExpose({ reload: loadDateOverrides })
 
 .override-date {
   width: 140px;
+}
+
+.override-reason {
+  width: 140px;
+}
+
+.override-notes {
+  flex: 1 1 200px;
+  min-width: 200px;
 }
 
 .overrides-list {
@@ -368,10 +386,6 @@ defineExpose({ reload: loadDateOverrides })
 
 .overrides-label {
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-4);
-}
-
-.off-current {
   margin-bottom: var(--space-4);
 }
 

@@ -285,11 +285,15 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // Текущий уникальный список кандидатов из всех сервис-сетов. Вычисляем на лету —
+    // состав меняется после branch-фильтра и unavailability-фильтра.
+    const currentCandidateIds = (): string[] => [...new Set(
+      Array.from(candidatesByService.values()).flatMap((s) => Array.from(s)),
+    )]
+
     // Если задан филиал — отбрасываем кандидатов, не привязанных к нему.
     if (branchId) {
-      const allCandidateIds = [...new Set(
-        Array.from(candidatesByService.values()).flatMap((s) => Array.from(s)),
-      )]
+      const allCandidateIds = currentCandidateIds()
       if (allCandidateIds.length) {
         const { data: branchLinks } = await db
           .junction('resource_branches')
@@ -311,13 +315,36 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // Pre-фильтр для round-robin: исключаем мастеров в отпуске/больничном на дату
+    // брони, чтобы не тратить запросы на conflict-check для заведомо неподходящих.
+    // Финальный инвариант гарантирует RPC `create_appointments_bulk` через
+    // `check_resource_unavailability` (миграция 257) — если между pre-фильтром
+    // и RPC мастера успели поставить в отпуск, RPC откажет с P0001.
+    const allCandidateIdsForUnavail = currentCandidateIds()
+
+    if (allCandidateIdsForUnavail.length) {
+      const { data: unavailRows } = await db
+        .from('resource_unavailability')
+        .select('resource_id')
+        .in('resource_id', allCandidateIdsForUnavail)
+        .lte('date_from', body.date as string)
+        .gte('date_to', body.date as string)
+
+      const unavailableIds = new Set(((unavailRows ?? []) as Array<{ resource_id: string }>).map((r) => r.resource_id))
+      if (unavailableIds.size > 0) {
+        for (const set of candidatesByService.values()) {
+          for (const id of Array.from(set)) {
+            if (unavailableIds.has(id)) set.delete(id)
+          }
+        }
+      }
+    }
+
     // Дневная нагрузка: COUNT по resource_id за весь календарный день.
     const dayStartUtc = localDateTimeToUtcIso(body.date as string, '00:00', tz)
     const dayEndUtc = localDateTimeToUtcIso(addDaysToDateStr(body.date as string, 1), '00:00', tz)
 
-    const allCandIds = [...new Set(
-      Array.from(candidatesByService.values()).flatMap((s) => Array.from(s)),
-    )]
+    const allCandIds = currentCandidateIds()
 
     const loadByResource = new Map<string, number>()
     if (allCandIds.length) {

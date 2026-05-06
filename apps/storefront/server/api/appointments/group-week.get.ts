@@ -5,8 +5,10 @@ import {
   localDateTimeToUtcIso, addDaysToDateStr, utcIsoToLocalDateTime,
   DEFAULT_WORKING_DAY_MINUTES,
   DEFAULT_APPOINTMENT_SETTINGS,
+  mapResourceUnavailability,
 } from '@fastio/shared'
 import type {
+  ResourceUnavailability,
   ResourceSlotData,
   AppointmentInterval,
   WorkingHoursSchedule,
@@ -246,6 +248,7 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
     disabledData,
     overridesData,
     dateDisabledData,
+    unavailabilityData,
     appointmentsData,
     resourceBranchData,
   ] = await Promise.all([
@@ -253,6 +256,10 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
     db.junction('resource_disabled_slots').select('*').in('resource_id', activeResourceIds),
     db.junction('resource_date_overrides').select('*').in('resource_id', activeResourceIds).in('date', validDates),
     db.junction('resource_date_disabled_slots').select('*').in('resource_id', activeResourceIds).in('date', validDates),
+    // Все периоды unavailability ресурсов, пересекающие искомый диапазон дат.
+    // Фильтр overlap: dateFrom <= maxDate AND dateTo >= minDate.
+    db.from('resource_unavailability').select('*').in('resource_id', activeResourceIds)
+      .lte('date_from', maxDateInRange).gte('date_to', minDate),
     db.from('appointments')
       .select('resource_id, starts_at, ends_at, actual_ends_at')
       .in('resource_id', activeResourceIds)
@@ -261,6 +268,17 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
       .not('status', 'eq', 'cancelled'),
     db.junction('resource_branches').select('resource_id, branch_id').in('resource_id', activeResourceIds),
   ])
+
+  // Pre-маппинг: для каждого ресурса заранее готовим массив ResourceUnavailability.
+  // В per-date цикле он переиспользуется как есть — `resolveResourceWorkingHours`
+  // сам матчит конкретную дату в дипазон.
+  const unavailabilityByResource = new Map<string, ResourceUnavailability[]>()
+  for (const row of (unavailabilityData.data ?? []) as Record<string, unknown>[]) {
+    const u = mapResourceUnavailability(row)
+    const arr = unavailabilityByResource.get(u.resourceId) ?? []
+    arr.push(u)
+    unavailabilityByResource.set(u.resourceId, arr)
+  }
 
   const resourceBranchIds = [...new Set(((resourceBranchData.data ?? []) as { branch_id: string }[]).map((r) => r.branch_id))]
   const { data: branchSchedRows } = resourceBranchIds.length
@@ -377,6 +395,7 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
             date,
             slotTime: (s.slot_time as string).slice(0, 5),
           })),
+        unavailability: unavailabilityByResource.get(rid) ?? [],
         branchSchedule: (() => {
           const bid = branchByResource.get(rid)
           if (bid) return branchScheduleById.get(bid) ?? tenantSchedule
