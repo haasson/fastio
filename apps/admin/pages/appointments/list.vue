@@ -85,6 +85,9 @@ const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 
+// Доступ к сводному списку визитов гейтит middleware/gate.global.ts через
+// `viewAllAppointments` — мастер с `view_own` сюда не дойдёт по URL.
+
 const ALLOWED_FILTERS: readonly InboxFilter[] = ['new', 'today', 'week', 'archive', 'all']
 
 const filter = ref<InboxFilter>('new')

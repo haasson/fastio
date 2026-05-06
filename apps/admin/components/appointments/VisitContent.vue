@@ -80,7 +80,6 @@
           <AppointmentCustomerSection
             v-model:customer-name="editor.state.customerName"
             v-model:customer-phone="editor.state.customerPhone"
-            v-model:customer-email="editor.state.customerEmail"
             v-model:notes="editor.state.notes"
             :disabled="editor.isReadOnly.value || editor.saving.value"
           />

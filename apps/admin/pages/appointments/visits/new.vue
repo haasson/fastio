@@ -64,7 +64,7 @@ const preset = computed<EditorPreset | null>(() => {
 })
 
 const goBack = () => {
-  if (route.query.date && route.query.slotTime) router.push('/appointments/timeline')
+  if (route.query.from === 'timeline') router.push('/appointments/timeline')
   else router.push('/appointments/list')
 }
 </script>

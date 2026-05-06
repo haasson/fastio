@@ -27,91 +27,71 @@
       />
     </div>
 
-    <UiSkeleton v-if="loading" :repeat="3" />
+    <UiSkeleton v-if="initialLoading" :repeat="3" />
 
     <UiEmpty
-      v-else-if="!resources.length"
+      v-else-if="!visibleResources.length"
       icon="users"
       text="Нет исполнителей"
       description="Добавьте исполнителей в разделе «Исполнители»"
     />
 
-    <div v-else class="timeline-wrap">
-      <div class="timeline-table">
-        <!-- Header -->
-        <div class="timeline-header">
-          <div class="time-col-header" />
-          <div
-            v-for="resource in resources"
-            :key="resource.id"
-            class="resource-col-header"
-          >
-            <UiText weight="medium">{{ resource.name }}</UiText>
-            <UiText size="small" class="resource-type">{{ resource.type === 'person' ? (settings?.resourceLabel || 'Специалист') : 'Объект' }}</UiText>
-          </div>
-        </div>
+    <AppointmentTimelineGrid
+      v-else
+      ref="gridRef"
+      :resources="visibleResources"
+      :appointments="appointments"
+      :availability="availability"
+      :window-open="viewWindow.open"
+      :window-close="viewWindow.close"
+      :slot-step="settings?.slotStepMinutes ?? 30"
+      :tz="tz"
+      :resource-label="settings?.resourceLabel"
+      :editable="canManage"
+      :now="nowProp"
+      :date-is-today="showNow"
+      :hide-phones="ownResourcesOnly"
+      :get-move-blocker="getMoveBlocker"
+      @appt-click="onApptClick"
+      @cell-click="onCellClick"
+      @appt-move="onApptMove"
+    />
 
-        <!-- Time rows -->
-        <div class="timeline-body">
-          <div
-            v-for="slot in timeSlots"
-            :key="slot"
-            class="timeline-row"
-          >
-            <div class="time-col">
-              <UiText size="small" class="time-label">{{ slot }}</UiText>
-            </div>
-            <div
-              v-for="resource in resources"
-              :key="resource.id"
-              class="slot-cell"
-              :class="cellClasses(resource.id, slot)"
-              @click="handleCellClick(resource.id, slot)"
-            >
-              <template v-if="getAppointment(resource.id, slot) && isApptStart(getAppointment(resource.id, slot)!, slot)">
-                <div
-                  class="appt-block"
-                  :class="[
-                    `status-${getAppointment(resource.id, slot)!.status}`,
-                    ...apptBlockModifiers(getAppointment(resource.id, slot)!, slot),
-                  ]"
-                >
-                  <UiText size="tiny" weight="medium">{{ getAppointment(resource.id, slot)!.customerName }}</UiText>
-                  <UiText size="tiny" class="appt-dish">{{ getAppointment(resource.id, slot)!.serviceName }}</UiText>
-                </div>
-              </template>
-              <template v-else-if="getAppointment(resource.id, slot)">
-                <div
-                  class="appt-block"
-                  :class="[
-                    `status-${getAppointment(resource.id, slot)!.status}`,
-                    ...apptBlockModifiers(getAppointment(resource.id, slot)!, slot),
-                  ]"
-                />
-              </template>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <MoveAppointmentConfirmModal
+      v-model="moveModalOpen"
+      :pending="movePending"
+      :resources="resources"
+      :tz="tz"
+      :loading="moveSaving"
+      :on-confirm="confirmMovePending"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted, watch } from 'vue'
+import { ref, computed, onUnmounted, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from '#imports'
-import { UiButton, UiDatepicker, UiSelect, UiSkeleton, UiEmpty, UiText, useMessage } from '@fastio/ui'
+import { UiButton, UiDatepicker, UiSelect, UiSkeleton, UiEmpty, useMessage } from '@fastio/ui'
 import type { Appointment } from '@fastio/shared'
-import { todayInTz, getAllSlotsInWindow, timeToMinutes, getBranchWidestWindow, getBranchHoursForDow } from '@fastio/shared'
+import {
+  todayInTz, getBranchWidestWindow, getBranchHoursForDow,
+  addDaysToDateStr, localDateTimeToUtcIso,
+} from '@fastio/shared'
 import type { WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { useGate } from '~/composables/plan/useGate'
+import { useAppointmentViewScope } from '~/composables/data/useAppointmentViewScope'
 import { appointmentBus } from '~/composables/data/useAppointmentsChannel'
 import { reportError } from '~/utils/reportError'
+import { buildTimelineAvailability, type TimelineAvailability } from '~/utils/timelineAvailability'
+import { useTimelineMoveBlocker } from '~/composables/data/useTimelineMoveBlocker'
+import { useEditorCompetencies } from '~/composables/data/useEditorCompetencies'
+import AppointmentTimelineGrid from '~/components/appointments/AppointmentTimelineGrid.vue'
+import MoveAppointmentConfirmModal, { type MovePending } from '~/components/appointments/MoveAppointmentConfirmModal.vue'
 
 const router = useRouter()
 
@@ -120,12 +100,17 @@ const message = useMessage()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const appointmentSettingsStore = useAppointmentSettingsStore()
+const gate = useGate()
+const competenciesHelper = useEditorCompetencies()
+const { competencyByResource } = competenciesHelper
+const { ownResourcesOnly, isOwnResource } = useAppointmentViewScope()
 const { currentTenantId } = storeToRefs(tenantStore)
 const { settings } = storeToRefs(appointmentSettingsStore)
 const api = useDatabase()
 
 const tz = computed(() => tenantStore.tenant.timezone ?? 'Europe/Moscow')
 const todayStr = computed(() => todayInTz(tz.value))
+const canManage = computed(() => gate.manageAppointments.value.enabled)
 
 // ─── Date navigation ─────────────────────────────────────
 
@@ -164,48 +149,131 @@ const branchOptions = computed(() => [
   ...branchStore.branches.map((b) => ({ label: b.name, value: b.id })),
 ])
 
+// ─── Visible resources ────────────────────────────────────
+
+const visibleResources = computed(() => {
+  if (!ownResourcesOnly.value) return resources.value
+
+  return resources.value.filter(isOwnResource)
+})
+
 // ─── Data ──────────────────────────────────────────────────
 
 const resources = ref<import('@fastio/shared').Resource[]>([])
 const appointments = ref<Appointment[]>([])
+const availability = ref<TimelineAvailability>({})
 
 const loading = ref(false)
+// Скелетон показываем ТОЛЬКО до первого успешного fetch'а. Дальше realtime/смена
+// даты обновляют данные «в фоне», грид не размонтируется — иначе при каждом
+// drop scrollTop сбрасывается на 0.
+const initialLoading = ref(true)
 
-const fetch = async () => {
+// Generation-counter против гонок: при быстром переключении даты/филиала или
+// одновременных realtime-эвентах несколько fetch'ей могут лететь параллельно.
+// Применяем в state только результат последнего инициированного запроса.
+let fetchGen = 0
+
+// Каталог услуг — стабилен в рамках сессии, не меняется при смене даты/филиала.
+// Грузим один раз при первом fetch'е и переиспользуем для competencies.
+let servicesCache: Awaited<ReturnType<typeof api.services.list>> | null = null
+
+const reload = async (opts: { scrollOnLoad?: boolean } = {}) => {
   if (!currentTenantId.value) return
+  const gen = ++fetchGen
+
   loading.value = true
   try {
-    // appointment_settings — глобальные данные, грузятся в `useTenant.init()`
-    // и слушаются через store. На случай миса при первом рендере — догружаем.
     if (!appointmentSettingsStore.settings) await appointmentSettingsStore.load()
 
-    const [res, appts] = await Promise.all([
-      api.resources.list(currentTenantId.value),
+    // resources грузим первым: при view_own нужно знать собственные ресурсы,
+    // чтобы передать их в listForDay серверным фильтром (#1: ужесточаем
+    // клиентский view_own — не тащим телефоны чужих клиентов на фронт).
+    const res = await api.resources.list(currentTenantId.value)
+
+    if (gen !== fetchGen) return
+
+    const activeResources = res.filter((r) => r.isActive)
+    const ownResourceIds = ownResourcesOnly.value
+      ? activeResources.filter(isOwnResource).map((r) => r.id)
+      : undefined
+
+    const [appts, services] = await Promise.all([
       api.appointments.listForDay(currentTenantId.value, selectedDate.value, {
         branchId: selectedBranchId.value ?? undefined,
+        resourceIds: ownResourceIds,
         timezone: tz.value,
       }),
+      servicesCache ?? api.services.list(currentTenantId.value),
     ])
 
-    resources.value = res.filter((r) => r.isActive)
+    if (gen !== fetchGen) return
+
+    servicesCache = services
+    resources.value = activeResources
     appointments.value = appts
+
+    // Компетенции — для проверки при DnD «новый мастер умеет эту услугу».
+    await competenciesHelper.load(activeResources, services).catch(reportError)
+
+    if (gen !== fetchGen) return
+
+    if (activeResources.length === 0) {
+      availability.value = {}
+    } else {
+      const dayStartUtc = localDateTimeToUtcIso(selectedDate.value, '00:00', tz.value)
+      const dayEndUtc = localDateTimeToUtcIso(addDaysToDateStr(selectedDate.value, 1), '00:00', tz.value)
+      const shiftTemplateIds = Array.from(new Set(
+        activeResources
+          .filter((r) => r.appliedTemplateId && r.cycleStartDate)
+          .map((r) => r.appliedTemplateId as string),
+      ))
+
+      const bundle = await api.resources.bulkLoadAvailability({
+        tenantId: currentTenantId.value,
+        resourceIds: activeResources.map((r) => r.id),
+        date: selectedDate.value,
+        dayStartUtc,
+        dayEndUtc,
+        shiftTemplateIds,
+      })
+
+      if (gen !== fetchGen) return
+
+      availability.value = buildTimelineAvailability({
+        resources: activeResources,
+        date: selectedDate.value,
+        bundle,
+        branches: branchStore.branches,
+        tenantSchedule: tenantStore.maybeTenant?.workingHoursSchedule ?? null,
+      })
+    }
   } catch (e) {
+    if (gen !== fetchGen) return
     reportError(e)
     message.error('Не удалось загрузить расписание')
   } finally {
-    loading.value = false
+    if (gen === fetchGen) {
+      loading.value = false
+      initialLoading.value = false
+    }
+  }
+
+  // Скролл — только если этот fetch ещё актуален, и ПОСЛЕ снятия initialLoading,
+  // иначе грид ещё не смонтирован (v-if="initialLoading"), gridRef=null →
+  // scrollToNow никогда не сработает.
+  if (gen === fetchGen && opts.scrollOnLoad !== false) {
+    await nextTick()
+    gridRef.value?.scrollToNow()
   }
 }
 
-fetch()
+reload({ scrollOnLoad: true })
 
-// При смене выбранной даты или филиала — перезагружаем записи.
-watch([selectedDate, selectedBranchId], () => fetch())
+watch([selectedDate, selectedBranchId], () => reload({ scrollOnLoad: true }))
 
-// ─── Time slots ───────────────────────────────────────────
+// ─── Time window ──────────────────────────────────────────
 
-// Сетка времени берётся из графика филиала (если выбран один) или
-// самого широкого окна по всем филиалам тенанта; с фолбеком на график тенанта.
 const referenceSchedule = computed<WorkingHoursSchedule | null>(() => {
   if (selectedBranchId.value) {
     const b = branchStore.branches.find((x) => x.id === selectedBranchId.value)
@@ -216,131 +284,184 @@ const referenceSchedule = computed<WorkingHoursSchedule | null>(() => {
   return tenantStore.maybeTenant?.workingHoursSchedule ?? null
 })
 
-const timeSlots = computed(() => {
-  const step = settings.value?.slotStepMinutes ?? 30
+const viewWindow = computed(() => {
   const sched = referenceSchedule.value
 
-  // Если выбрана конкретная дата — берём окно её дня недели; иначе самое широкое.
   if (sched) {
-    const dow = new Date(selectedDate.value + 'T12:00:00').getDay()
+    const dow = new Date(`${selectedDate.value}T12:00:00`).getDay()
     const day = getBranchHoursForDow(sched, dow)
     const win = day ?? getBranchWidestWindow(sched)
 
-    if (win) return getAllSlotsInWindow(win.open, win.close, step)
+    if (win) return { open: win.open, close: win.close }
   }
 
-  return getAllSlotsInWindow('08:00', '22:00', step)
+  return { open: '08:00', close: '22:00' }
 })
 
-// ─── Cell lookup ──────────────────────────────────────────
+// ─── Now line + auto-scroll ───────────────────────────────
 
-// UTC ISO → минуты дня в tz тенанта.
-const toLocalMinutes = (iso: string): number => {
-  const t = new Intl.DateTimeFormat('en-GB', {
-    timeZone: tz.value,
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  }).format(new Date(iso))
-  const [h, m] = t.split(':').map(Number)
+const gridRef = ref<InstanceType<typeof AppointmentTimelineGrid> | null>(null)
+const now = ref(Date.now())
+const showNow = computed(() => selectedDate.value === todayStr.value)
+const nowProp = computed(() => showNow.value ? now.value : null)
 
-  return h * 60 + m
-}
-
-// Запись, чьё окно [start, end) накрывает слот. Учитываем actualEndsAt
-// при variable-режиме (по той же логике, что и в slot engine).
-const getAppointment = (resourceId: string, slotTime: string): Appointment | null => appointments.value.find((a) => {
-  if (a.resourceId !== resourceId) return false
-  const slotMin = timeToMinutes(slotTime)
-  const startMin = toLocalMinutes(a.startsAt)
-  const endIso = a.actualEndsAt ?? a.endsAt
-  const endMin = toLocalMinutes(endIso)
-
-  return slotMin >= startMin && slotMin < endMin
-}) ?? null
-
-const isApptStart = (a: Appointment, slotTime: string): boolean => toLocalMinutes(a.startsAt) === timeToMinutes(slotTime)
-
-// Позиция слота относительно записи: для CSS-склейки ячеек в один блок.
-type CellPosition = 'single' | 'start' | 'middle' | 'end'
-
-const apptCellPosition = (a: Appointment, slotTime: string): CellPosition => {
-  const step = settings.value?.slotStepMinutes ?? 30
-  const startMin = toLocalMinutes(a.startsAt)
-  const endMin = toLocalMinutes(a.actualEndsAt ?? a.endsAt)
-  const slotMin = timeToMinutes(slotTime)
-  const isStart = slotMin === startMin
-  const isLast = slotMin + step >= endMin
-
-  if (isStart && isLast) return 'single'
-  if (isStart) return 'start'
-  if (isLast) return 'end'
-
-  return 'middle'
-}
-
-// Маппинг логической позиции в реально определённые CSS-классы.
-// `single` — одиночный слот, без модификатора склейки.
-// `start` — первый слот multi-записи (контент), нижние углы прямые.
-// `middle` / `end` — продолжение, без верхнего отступа и со срезанными верхними углами.
-const cellClasses = (resourceId: string, slotTime: string): string[] => {
-  const appt = getAppointment(resourceId, slotTime)
-
-  if (!appt) return []
-
-  const pos = apptCellPosition(appt, slotTime)
-  const classes = ['slot-cell--occupied']
-
-  if (pos === 'middle' || pos === 'end') classes.push('slot-cell--continuation')
-
-  return classes
-}
-
-const apptBlockModifiers = (a: Appointment, slotTime: string): string[] => {
-  const pos = apptCellPosition(a, slotTime)
-
-  if (pos === 'single') return []
-  if (pos === 'start') return ['appt-block--multi']
-
-  return ['appt-block--continuation']
-}
+const nowTimer = setInterval(() => {
+  now.value = Date.now()
+}, 60_000)
 
 // ─── Navigation ───────────────────────────────────────────
-//
-// Клик по занятой ячейке → страница визита (group_id у appointment теперь NOT NULL).
-// Клик по пустой → /appointments/visits/new с префиллом даты/филиала/исполнителя.
-// Дровер выпилен — единая страница для создания и редактирования.
 
-const handleCellClick = (resourceId: string, slot: string) => {
-  const appt = getAppointment(resourceId, slot)
-
-  if (appt) {
-    router.push(`/appointments/visits/${appt.groupId}`)
+const onApptClick = (appt: Appointment) => {
+  // Мастер с view_own видит только свою услугу — открываем компактный
+  // appointment-view, без чужих услуг визита и без телефона клиента.
+  if (ownResourcesOnly.value) {
+    router.push({
+      path: `/appointments/appointment/${appt.id}`,
+      query: { from: 'timeline' },
+    })
 
     return
   }
 
+  // groupId с миграции 218 NOT NULL; на старых записях защитный фолбек на id.
+  router.push({
+    path: `/appointments/visits/${appt.groupId ?? appt.id}`,
+    query: { from: 'timeline' },
+  })
+}
+
+const onCellClick = ({ resourceId, time }: { resourceId: string; time: string }) => {
   const branchQuery = selectedBranchId.value ? { branchId: selectedBranchId.value } : {}
 
   router.push({
     path: '/appointments/visits/new',
     query: {
       date: selectedDate.value,
-      slotTime: slot,
+      slotTime: time,
       resourceId,
+      from: 'timeline',
       ...branchQuery,
     },
   })
 }
 
-// Realtime: подхватываем новые/обновлённые/удалённые записи.
-// Bulk-bookings (5 услуг = 5 INSERT-эвентов в течение ~100мс) запускали
-// 5 параллельных fetch'ей. Дебаунсим 200мс — все эвенты складываются в один
-// перезапрос.
+// ─── Drag & resize ────────────────────────────────────────
+//
+// Optimistic update: сразу двигаем в локальном списке. На ошибке (RPC fail или
+// конфликт capacity) — откатываем. Валидация drop'а — в useTimelineMoveBlocker.
+
+const { getMoveBlocker } = useTimelineMoveBlocker({
+  availability,
+  resources,
+  appointments,
+  settings,
+  selectedDate,
+  todayStr,
+  now,
+  tz,
+  competencyByResource,
+})
+
+// Pending-перенос: drop НЕ применяет изменения сразу, а готовит payload и
+// открывает модалку. Сохранение — только по «Подтвердить».
+const movePending = ref<MovePending | null>(null)
+const moveModalOpen = ref(false)
+const moveSaving = ref(false)
+
+const onApptMove = ({ appt, dyMin, newResourceId }: { appt: Appointment; dyMin: number; newResourceId: string }) => {
+  const blocker = getMoveBlocker({ appt, dyMin, newResourceId })
+
+  if (blocker) {
+    message.error(blocker)
+
+    return
+  }
+
+  const offsetMs = dyMin * 60 * 1000
+  const newStartIso = new Date(new Date(appt.startsAt).getTime() + offsetMs).toISOString()
+  const newEndIso = new Date(new Date(appt.endsAt).getTime() + offsetMs).toISOString()
+  const newActualEndIso = appt.actualEndsAt
+    ? new Date(new Date(appt.actualEndsAt).getTime() + offsetMs).toISOString()
+    : null
+
+  movePending.value = {
+    appt,
+    newResourceId,
+    newStartIso,
+    newEndIso,
+    newActualEndIso,
+  }
+  moveSaving.value = false
+  moveModalOpen.value = true
+}
+
+const confirmMovePending = async (): Promise<boolean | void> => {
+  const pending = movePending.value
+
+  if (!pending) return false
+
+  const apptId = pending.appt.id
+  const idx = appointments.value.findIndex((a) => a.id === apptId)
+
+  if (idx === -1) {
+    movePending.value = null
+
+    return true
+  }
+
+  const original = appointments.value[idx]
+
+  moveSaving.value = true
+
+  // Optimistic в локальном списке: откатим если RPC упадёт.
+  appointments.value[idx] = {
+    ...original,
+    resourceId: pending.newResourceId,
+    startsAt: pending.newStartIso,
+    endsAt: pending.newEndIso,
+    actualEndsAt: pending.newActualEndIso,
+  }
+
+  try {
+    // RPC `update_appointment` (capacity-чек + advisory_xact_lock + audit-events).
+    // Прямой UPDATE по таблице обходит эту защиту — между нашим клиентским
+    // hasConflict и UPDATE другой админ может INSERT'нуть в тот же слот.
+    await api.appointments.reschedule(apptId, {
+      resourceId: pending.newResourceId,
+      startsAt: pending.newStartIso,
+      endsAt: pending.newEndIso,
+    })
+    // RPC не трогает actual_ends_at (см. 220_appointment_diff_rpcs.sql:12).
+    // Для записей с extended-end (variable-mode mark_done или extend_appointment)
+    // двигаем actual_ends_at прямым UPDATE — это не влияет на capacity-чек
+    // главного слота (он уже прошёл выше) и не нуждается в advisory lock.
+    if (pending.newActualEndIso !== null && original.actualEndsAt !== null) {
+      await api.appointments.update(apptId, { actualEndsAt: pending.newActualEndIso })
+    }
+    movePending.value = null
+    moveSaving.value = false
+  } catch (e) {
+    // Между optimistic-апдейтом и await realtime-fetch (200мс debounce) мог
+    // перетряхнуть список — ищем запись по id, а не по сохранённому idx.
+    const rollbackIdx = appointments.value.findIndex((a) => a.id === apptId)
+
+    if (rollbackIdx !== -1) appointments.value[rollbackIdx] = original
+    reportError(e)
+    message.error('Не удалось переместить запись')
+    moveSaving.value = false
+
+    return false
+  }
+}
+
+// Realtime: дебаунсим bulk-bookings (5 INSERT-эвентов в одной группе) в один fetch.
+// scrollOnLoad=false — иначе после своего же optimistic-drop таймлайн уезжает к now.
 let fetchTimer: ReturnType<typeof setTimeout> | null = null
 const scheduleFetch = () => {
   if (fetchTimer) clearTimeout(fetchTimer)
   fetchTimer = setTimeout(() => {
     fetchTimer = null
-    fetch()
+    reload({ scrollOnLoad: false })
   }, 200)
 }
 
@@ -350,6 +471,7 @@ const offDelete = appointmentBus.onDelete(scheduleFetch)
 
 onUnmounted(() => {
   if (fetchTimer) clearTimeout(fetchTimer)
+  clearInterval(nowTimer)
   offInsert()
   offUpdate()
   offDelete()
@@ -357,12 +479,16 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/media-queries' as mq;
-
 .timeline-root {
   display: flex;
   flex-direction: column;
   gap: var(--space-16);
+  // 100dvh минус топбар и вертикальные паддинги контента — родитель layout'а.
+  // Toolbar внутри занимает auto-высоту (flex-shrink: 0), грид получает
+  // оставшееся через `flex: 1; min-height: 0` (см. .grid-root). Без фиксированной
+  // высоты grid-scroll не получит overflow=auto.
+  height: calc(100dvh - var(--topbar-height) - var(--content-padding) * 2);
+  min-height: 360px;
 }
 
 .toolbar {
@@ -370,6 +496,7 @@ onUnmounted(() => {
   align-items: center;
   gap: var(--space-8);
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .date-picker {
@@ -381,135 +508,4 @@ onUnmounted(() => {
   margin-left: auto;
 }
 
-.timeline-wrap {
-  overflow-x: auto;
-}
-
-.timeline-table {
-  min-width: 600px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-8);
-  overflow: hidden;
-}
-
-.timeline-header {
-  display: flex;
-  background: var(--color-bg-hover);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.time-col-header {
-  width: 64px;
-  flex-shrink: 0;
-}
-
-.resource-col-header {
-  flex: 1;
-  padding: var(--space-8) var(--space-12);
-  border-left: 1px solid var(--color-border);
-  min-width: 140px;
-}
-
-.resource-type {
-  color: var(--color-text-hint);
-}
-
-.timeline-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.timeline-row {
-  display: flex;
-  min-height: 48px;
-  border-bottom: 1px solid var(--color-border);
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.time-col {
-  width: 64px;
-  flex-shrink: 0;
-  padding: var(--space-4) var(--space-8);
-  display: flex;
-  align-items: flex-start;
-  border-right: 1px solid var(--color-border);
-  background: var(--color-bg-hover);
-}
-
-.time-label {
-  color: var(--color-text-secondary);
-  line-height: 1;
-  margin-top: var(--space-4);
-}
-
-.slot-cell {
-  flex: 1;
-  border-left: 1px solid var(--color-border);
-  padding: var(--space-4);
-  min-width: 140px;
-  cursor: pointer;
-  transition: background 0.1s;
-
-  &:hover {
-    background: var(--color-bg-hover);
-  }
-
-  &--occupied {
-    cursor: pointer;
-  }
-
-  // Продолжение записи — без верхнего отступа, чтобы блок "слипался" со стартовым.
-  &--continuation {
-    padding-top: 0;
-  }
-}
-
-.appt-block {
-  border-radius: var(--radius-8);
-  padding: var(--space-4) var(--space-8);
-  height: 100%;
-  min-height: 40px;
-
-  // У записи на >1 слот — нижний радиус сглаживается с continuation.
-  &--multi {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    margin-bottom: -1px;
-  }
-
-  &--continuation {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    margin-top: -1px; // съесть зазор между ячейками
-    padding: 0;
-  }
-
-  &.status-new {
-    background: var(--yellow-100);
-    border-left: 3px solid var(--yellow-500);
-  }
-
-  &.status-confirmed {
-    background: var(--green-100);
-    border-left: 3px solid var(--green-500);
-  }
-
-  &.status-done {
-    background: var(--grey-100);
-    border-left: 3px solid var(--grey-400);
-  }
-
-  &.status-cancelled {
-    background: var(--red-50);
-    border-left: 3px solid var(--red-300);
-    opacity: 0.6;
-  }
-}
-
-.appt-dish {
-  color: var(--color-text-secondary);
-}
 </style>

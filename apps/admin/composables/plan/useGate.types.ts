@@ -63,7 +63,7 @@ export type GateKey
     | 'viewKitchen' | 'viewKitchenQueue' | 'viewKitchenOverview'
     | 'viewTables' | 'manageTables'
     | 'viewReservations' | 'manageReservations'
-    | 'viewAppointments' | 'manageAppointments'
+    | 'viewAppointments' | 'manageAppointments' | 'viewAllAppointments'
     | 'viewPromotions' | 'managePromotions'
     | 'viewContent' | 'editContent'
     | 'viewTeam' | 'manageTeam' | 'manageRoles'

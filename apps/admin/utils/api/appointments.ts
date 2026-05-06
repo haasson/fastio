@@ -5,8 +5,8 @@ import type { AppointmentRow } from '~/utils/api/db-types'
 import { query } from '~/utils/query'
 
 const FIELDS = `
-  id, tenant_id, branch_id, service_id, service_name, service_price, resource_id, user_id,
-  customer_name, customer_phone,
+  id, tenant_id, branch_id, group_id, service_id, service_name, service_price, resource_id, user_id,
+  customer_id, customer_name, customer_phone,
   starts_at, ends_at, actual_ends_at, booking_mode, status, resource_assigned_by, notes,
   cancel_reason, cancelled_by, cancelled_at,
   confirmed_at, confirmed_by,
@@ -14,15 +14,34 @@ const FIELDS = `
 `.trim()
 
 export const appointmentsApi = {
+  async getById(sb: SupabaseClient, id: string): Promise<Appointment | null> {
+    const { data, error } = await sb
+      .from('appointments')
+      .select(FIELDS)
+      .eq('id', id)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    if (error) throw new Error(error.message)
+    if (!data) return null
+
+    return mapAppointment(data as unknown as AppointmentRow)
+  },
+
   async listForDay(
     sb: SupabaseClient,
     tenantId: string,
     date: string,
-    opts?: { branchId?: string; resourceId?: string; timezone?: string },
+    opts?: { branchId?: string; resourceId?: string; resourceIds?: string[]; timezone?: string },
   ): Promise<Appointment[]> {
     const tz = opts?.timezone ?? DEFAULT_TIMEZONE
     const dayStartUtc = localDateTimeToUtcIso(date, '00:00', tz)
     const dayEndUtc = localDateTimeToUtcIso(addDaysToDateStr(date, 1), '00:00', tz)
+
+    // resourceIds=[] → возвращаем пустой результат, не делая запрос. Это путь
+    // мастера-view_own без своих ресурсов: иначе .in('resource_id', [])
+    // в PostgREST превратится в `NOT IN (NULL)` и вернёт ВСЕХ.
+    if (opts?.resourceIds && opts.resourceIds.length === 0) return []
 
     let q = sb
       .from('appointments')
@@ -30,11 +49,13 @@ export const appointmentsApi = {
       .eq('tenant_id', tenantId)
       .gte('starts_at', dayStartUtc)
       .lt('starts_at', dayEndUtc)
+      .is('deleted_at', null)
       .not('status', 'eq', 'cancelled')
       .order('starts_at')
 
     if (opts?.branchId) q = q.eq('branch_id', opts.branchId)
     if (opts?.resourceId) q = q.eq('resource_id', opts.resourceId)
+    if (opts?.resourceIds) q = q.in('resource_id', opts.resourceIds)
 
     const data = await query(q)
 
@@ -61,6 +82,7 @@ export const appointmentsApi = {
       .from('appointments')
       .select(FIELDS, { count: 'exact' })
       .eq('tenant_id', tenantId)
+      .is('deleted_at', null)
       .order('starts_at', { ascending: opts.sortDir === 'asc' })
 
     if (opts.statuses?.length) q = q.in('status', opts.statuses)

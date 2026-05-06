@@ -5,17 +5,15 @@
       <UiInput
         v-model="customerName"
         label="Имя клиента"
+        :rules="[validationRules.name.required]"
         :disabled="disabled"
       />
       <UiInput
         v-model="customerPhone"
         label="Телефон"
+        placeholder="+7 999 000 00 00"
+        :rules="[validationRules.phone.required, validationRules.phone.format]"
         callable
-        :disabled="disabled"
-      />
-      <UiInput
-        v-model="customerEmail"
-        label="Email"
         :disabled="disabled"
       />
       <UiInput
@@ -31,12 +29,12 @@
 
 <script setup lang="ts">
 import { UiCard, UiTitle, UiInput } from '@fastio/ui'
+import { validationRules } from '@fastio/kit'
 
 defineProps<{ disabled: boolean }>()
 
 const customerName = defineModel<string>('customerName', { required: true })
 const customerPhone = defineModel<string>('customerPhone', { required: true })
-const customerEmail = defineModel<string>('customerEmail', { required: true })
 const notes = defineModel<string>('notes', { required: true })
 </script>
 

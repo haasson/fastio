@@ -1,5 +1,5 @@
 import type {
-  Appointment, Visit,
+  Appointment, AppointmentStatus, Visit, VisitStatus,
 } from '@fastio/shared'
 import { utcIsoToLocalDateTime } from '@fastio/shared'
 import type { EditorService, EditorState } from '~/components/appointments/types'
@@ -26,6 +26,21 @@ export const durationFromAppointment = (a: Appointment): number => Math.max(
 )
 
 /**
+ * Статус для новой услуги, добавляемой в существующий визит. Услуги внутри
+ * визита семантически разделяют его статус (отдельных статусов у appointment
+ * как сущности у нас нет — поле status просто дублирует статус визита).
+ *
+ * - active-визит уже подтверждён → новая услуга сразу confirmed, иначе
+ *   получился бы «полу-подтверждённый» микс old=confirmed + new=new и менеджеру
+ *   снова пришлось бы жать «Подтвердить визит»
+ * - request-визит ещё не подтверждён → новая услуга new
+ * - cancelled-визит сюда не доходит: форма редактирования read-only.
+ */
+export const inheritAppointmentStatus = (
+  visitStatus: VisitStatus,
+): Extract<AppointmentStatus, 'new' | 'confirmed'> => visitStatus === 'active' ? 'confirmed' : 'new'
+
+/**
  * Заполняет state из существующего визита (edit-mode). Берёт первую запись для
  * определения даты, отменённые записи отбрасывает. ServiceId для записей с
  * удалённой услугой → пустая строка (UI покажет «—»).
@@ -38,7 +53,6 @@ export const prefillFromVisit = (
 ): void => {
   state.customerName = visit.customerName
   state.customerPhone = visit.customerPhone
-  state.customerEmail = visit.customerEmail ?? ''
   state.notes = visit.notes ?? ''
   state.branchId = visit.branchId
 
@@ -87,7 +101,6 @@ export const prefillFromVisit = (
 export const prefillFromRequestVisit = (state: EditorState, visit: Visit): void => {
   state.customerName = visit.customerName
   state.customerPhone = visit.customerPhone
-  state.customerEmail = visit.customerEmail ?? ''
   state.notes = visit.notes ?? ''
   state.branchId = visit.branchId
 

@@ -42,7 +42,6 @@ export const isSlotChanged = (svc: EditorService): boolean => {
 export type EditorState = {
   customerName: string
   customerPhone: string
-  customerEmail: string
   notes: string
   branchId: string | null
   // Бизнес-день визита: НЕ редактируется на странице визита (для переноса —
@@ -55,7 +54,6 @@ export type EditorState = {
 export type EditorSnapshot = {
   customerName: string
   customerPhone: string
-  customerEmail: string
   notes: string
   branchId: string | null
   date: string | null

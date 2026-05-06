@@ -34,6 +34,12 @@ const ROUTE_GATES: Array<[string, GateKey]> = [
   ['/appointments/templates', 'manageAppointments'],
   ['/appointments/staff', 'manageAppointments'],
   ['/appointments/objects', 'manageAppointments'],
+  // Сводный список визитов виден только тем, кто видит чужие записи:
+  // мастер с `view_own` сюда не пускается (там чужие клиенты + телефоны).
+  ['/appointments/list', 'viewAllAppointments'],
+  // /appointments → редирект на /appointments/list или /appointments/timeline
+  // (см. routeRules в nuxt.config). Гейтим здесь по тому же ключу.
+  ['/appointments/visits', 'viewAllAppointments'],
 
   ['/services/categories', 'manageServiceMenu'],
   ['/services/items', 'viewServiceMenu'],
@@ -94,6 +100,11 @@ export const REDIRECT_FALLBACKS = [
   '/kitchen',
   '/tables',
   '/reservations',
+  // `/appointments/timeline` идёт ДО `/appointments` — у мастера с `view_own`
+  // сводный список (`/appointments/list`) закрыт `viewAllAppointments`-гейтом,
+  // а routeRule `/appointments → /appointments/list` приведёт обратно в гейт
+  // (бесконечный редирект). Таймлайн ему доступен и не имеет routeRule.
+  '/appointments/timeline',
   '/appointments',
   '/promotions',
   '/branches',

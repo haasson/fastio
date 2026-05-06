@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-05T13:09:51.214Z",
+  "generated_at": "2026-05-06T07:50:37.430Z",
   "stats": {
-    "files": 120,
+    "files": 123,
     "pages": 0,
-    "symbols": 209,
+    "symbols": 214,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -168,8 +168,8 @@
     },
     "composables/plan/useGate.routes.ts": {
       "kind": "ts",
-      "hash": "ce6e4fa3da4a",
-      "purpose": "Карта маршрутов admin -> ключ гейта для middleware и список fallback-роутов для редиректа",
+      "hash": "37e90b56c02c",
+      "purpose": "Карта роут→GateKey для middleware/gate.global + список REDIRECT_FALLBACKS на случай отказа",
       "symbols": [
         {
           "name": "isUngatedRoute",
@@ -193,8 +193,8 @@
     },
     "composables/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "ba0e0e8f4505",
-      "purpose": "Единая точка проверки доступа к фичам админки: GateResult с причиной блокировки (suspended/absent/flag/locked/disabled/unconfigured/forbidden)",
+      "hash": "ecf0ab9b486a",
+      "purpose": "Реестр гейтов фич админки: feature-only (модули/тариф) и permission-aware (роли); единая точка проверки доступа",
       "symbols": [
         {
           "name": "useGate",
@@ -206,8 +206,8 @@
     },
     "composables/plan/useGate.types.ts": {
       "kind": "ts",
-      "hash": "5b463fa15846",
-      "purpose": "Типы и контракт системы гейтов: GateReason, GateResult, GateRegistry, GateKey",
+      "hash": "fb4a59e6dba0",
+      "purpose": "Контракт useGate: GateReason/GateResult/GateRegistry и полный список GateKey",
       "symbols": [
         {
           "name": "GateReason",
@@ -290,6 +290,57 @@
           "kind": "function",
           "hash": "06daf9a4",
           "purpose": "Computed ResolvedFeatures по текущему плану и businessType"
+        }
+      ]
+    },
+    "composables/timeline/useScrollToNow.ts": {
+      "kind": "ts",
+      "hash": "3198566cca82",
+      "purpose": "Императивный auto-scroll таймлайна к now-линии через ResizeObserver; ждёт первого clientHeight>0 после маунта",
+      "symbols": [
+        {
+          "name": "useScrollToNow",
+          "kind": "function",
+          "hash": "b7df1dfb",
+          "purpose": "Возвращает scrollToNow(); скроллит контейнер так, чтобы now-линия оказалась по центру"
+        }
+      ]
+    },
+    "composables/timeline/useTimelineDrag.ts": {
+      "kind": "ts",
+      "hash": "216223b7ee8d",
+      "purpose": "Pointer-handlers и ghost-блок drag&drop карточки записи на таймлайне с rAF-дросселированием hit-test",
+      "symbols": [
+        {
+          "name": "useTimelineDrag",
+          "kind": "function",
+          "hash": "fcd0fb21",
+          "purpose": "Возвращает onCardPointer{Down,Move,Up,Cancel} и dragGhost для рендера preview переноса"
+        },
+        {
+          "name": "DragGhost",
+          "kind": "type",
+          "hash": "d822b224",
+          "purpose": "Шейп ghost-блока: targetResourceId, css-стиль, флаг invalid и причина блокировки"
+        }
+      ]
+    },
+    "composables/timeline/useTimelineLayout.ts": {
+      "kind": "ts",
+      "hash": "55217e7ccc2a",
+      "purpose": "Геометрия таймлайна: окно/тики, dim-полосы (off-hours/disabled/прошлое), позиции карточек, now-линия",
+      "symbols": [
+        {
+          "name": "useTimelineLayout",
+          "kind": "function",
+          "hash": "77770abe",
+          "purpose": "Считает один источник правды для всего, что зависит от windowOpen/Close + pxPerMin"
+        },
+        {
+          "name": "ColumnModel",
+          "kind": "type",
+          "hash": "240387c7",
+          "purpose": "Колонка таймлайна: ресурс + слоты-кнопки + dim-полосы + appointment-карточки"
         }
       ]
     },

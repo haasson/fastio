@@ -86,6 +86,8 @@ _Карта SCSS-токенов и миксинов проекта. Исполь
 - `--color-bg-subtle` — `var(--grey-50)`
 - `--overlay-bg` — `rgba(0, 0, 0, 0.2)` — Overlays
 - `--overlay-loading` — `rgba(255, 255, 255, 0.7)`
+- `--timeline-dim-bg` — `rgba(15, 23, 42, 0.04)` — Лёгкое притенение для off-hours/прошлого в таймлайне; полупрозрачно, чтобы линии сетки часов/слотов под ним всё равно читались.
+- `--timeline-dim-stripe` — `rgba(15, 23, 42, 0.06)`
 - `--color-error-light` — `var(--red-100)`
 - `--color-success-light` — `var(--green-50)`
 - `--color-warning-light` — `var(--yellow-50)`
@@ -114,6 +116,8 @@ _Карта SCSS-токенов и миксинов проекта. Исполь
 - `--bg-page` — `#111113` — Background Colors
 - `--overlay-bg` — `rgba(0, 0, 0, 0.5)` — Overlays
 - `--overlay-loading` — `rgba(0, 0, 0, 0.5)`
+- `--timeline-dim-bg` — `rgba(255, 255, 255, 0.05)`
+- `--timeline-dim-stripe` — `rgba(255, 255, 255, 0.07)`
 - `--box-shadow` — `0 12px 16px -4px rgba(0, 0, 0, 0.3), 0 4px 6px -2…` — Other
 
 ## `variables/fonts.scss`

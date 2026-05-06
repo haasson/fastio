@@ -5,17 +5,16 @@ import { buildServicesKey } from './utils'
 /**
  * Вычисляет dirty/snapshot для редактора. Snapshot — это мгновенный слепок
  * полей формы, который сравнивается с текущим state для определения «есть ли
- * несохранённые изменения». В create-mode snapshot всегда пуст и dirty=true,
- * как только юзер ввёл хоть что-то.
+ * несохранённые изменения». На старте snapshot=null, и пустые поля state
+ * (customerName='', services=[]) сравниваются с дефолтами через `?? ''`.
  */
-export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
+export function useEditorSnapshot(state: EditorState) {
   const snapshot = ref<EditorSnapshot | null>(null)
 
   const takeSnapshot = (): void => {
     snapshot.value = {
       customerName: state.customerName,
       customerPhone: state.customerPhone,
-      customerEmail: state.customerEmail,
       notes: state.notes,
       branchId: state.branchId,
       date: state.date,
@@ -36,7 +35,6 @@ export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
       ...snapshot.value,
       customerName: state.customerName,
       customerPhone: state.customerPhone,
-      customerEmail: state.customerEmail,
       notes: state.notes,
       branchId: state.branchId,
     }
@@ -51,19 +49,14 @@ export function useEditorSnapshot(state: EditorState, mode: 'create' | 'edit') {
   })
 
   const dirty = computed((): boolean => {
-    if (mode === 'create') {
-      return state.customerName !== ''
-        || state.customerPhone !== ''
-        || state.customerEmail !== ''
-        || state.notes !== ''
-        || state.date !== null
-        || state.services.length > 0
-    }
+    // Сравниваем с snapshot одинаково для create/edit — это позволяет в create-mode
+    // ПОСЛЕ saveCreate() обновить snapshot до уровня текущего state и тем самым
+    // сбросить dirty=false (иначе useUnsavedGuard блокирует router.push с модалкой).
+    const snap = snapshot.value
 
-    return state.customerName !== snapshot.value?.customerName
-      || state.customerPhone !== snapshot.value?.customerPhone
-      || state.customerEmail !== snapshot.value?.customerEmail
-      || state.notes !== snapshot.value?.notes
+    return state.customerName !== (snap?.customerName ?? '')
+      || state.customerPhone !== (snap?.customerPhone ?? '')
+      || state.notes !== (snap?.notes ?? '')
       || dateDirty.value
       || servicesDirty.value
   })

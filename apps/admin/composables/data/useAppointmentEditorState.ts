@@ -9,11 +9,15 @@ import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
 import { useGate } from '~/composables/plan/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useEditorCompetencies } from '~/composables/data/useEditorCompetencies'
+import { useAppointmentViewScope } from '~/composables/data/useAppointmentViewScope'
 import { reportError } from '~/utils/reportError'
 import type { EditorService, EditorState } from '~/components/appointments/types'
+import { isSlotChanged } from '~/components/appointments/types'
+import { localDateTimeToUtcIso } from '@fastio/shared'
 import { newKey, prefillFromVisit, prefillFromRequestVisit } from '~/composables/data/appointmentEditor/utils'
 import { useEditorSnapshot } from '~/composables/data/appointmentEditor/useEditorSnapshot'
 import { useEditorSave } from '~/composables/data/appointmentEditor/useEditorSave'
+import { useEditorSlotApply } from '~/composables/data/appointmentEditor/useEditorSlotApply'
 import { useServiceSlots } from '~/composables/data/useServiceSlots'
 import { useGroupSlotSearch } from '~/composables/data/useGroupSlotSearch'
 
@@ -44,15 +48,29 @@ export function useAppointmentEditorState(props: Props) {
   const appointmentSettingsStore = useAppointmentSettingsStore()
   const message = useMessage()
   const competenciesHelper = useEditorCompetencies()
+  const { ownResourcesOnly, isOwnResource } = useAppointmentViewScope()
 
   const tz = computed(() => tenantStore.tenant?.timezone ?? 'UTC')
   const canManage = computed(() => gate.manageAppointments.value.enabled)
-  const isReadOnly = computed(() => !canManage.value)
+
+  // Read-only форма если: нет прав, визит cancelled, или все услуги done.
+  // В терминальных статусах редактирование бессмысленно, кнопка Сохранить
+  // в [id]/index.vue скрывается через !isReadOnly.
+  const isReadOnly = computed(() => {
+    if (!canManage.value) return true
+    if (props.initialVisit?.status === 'cancelled') return true
+    const appts = props.initialAppointments ?? []
+
+    if (appts.length > 0 && appts.every((a) => a.status === 'done' || a.status === 'cancelled')) {
+      return true
+    }
+
+    return false
+  })
 
   const state = reactive<EditorState>({
     customerName: '',
     customerPhone: '',
-    customerEmail: '',
     notes: '',
     branchId: null,
     date: null,
@@ -67,9 +85,14 @@ export function useAppointmentEditorState(props: Props) {
 
   const resourceOptionsFor = (serviceId: string) => {
     const map = competenciesHelper.competencyByResource.value
+    // Мастер с view_own видит в селекте только свой ресурс. Менять услугу
+    // на чужого исполнителя из своего интерфейса он не должен.
+    const ownFilter = ownResourcesOnly.value
+      ? (r: { memberId: string | null }) => isOwnResource(r)
+      : () => true
 
     return allResources.value
-      .filter((r) => map.get(r.id)?.has(serviceId))
+      .filter((r) => map.get(r.id)?.has(serviceId) && ownFilter(r))
       .map((r) => ({ label: r.name, value: r.id }))
   }
 
@@ -103,7 +126,7 @@ export function useAppointmentEditorState(props: Props) {
   const existingServiceIds = computed(() => state.services.filter((s) => !s.pendingRemove).map((s) => s.serviceId))
   const activeServicesCount = computed(() => state.services.filter((s) => !s.pendingRemove).length)
 
-  const { snapshot, takeSnapshot, takeMetaSnapshot, dirty } = useEditorSnapshot(state, props.mode)
+  const { snapshot, takeSnapshot, takeMetaSnapshot, dirty } = useEditorSnapshot(state)
 
   // ─── Per-service slot picker ──────────────────────────────────────────────
   // Юзер кликает по карточке услуги в списке → выбранный _key уезжает сюда,
@@ -143,6 +166,17 @@ export function useAppointmentEditorState(props: Props) {
     svc.currentResourceId = slot.resourceId
   }
 
+  const { primeSlotTime } = useEditorSlotApply({
+    selectedService,
+    slotsResult,
+    applySlot: applySlotToSelected,
+    initialSlotTime: props.initialPreset?.slotTime ?? null,
+    // Когда initial-preset slot применится (асинхронно через slotsResult),
+    // пересчитываем snapshot — иначе он устарел и dirty станет true без
+    // действий юзера.
+    onInitialApply: () => takeSnapshot(),
+  })
+
   const setPreferredResource = (key: string, resourceId: string | null) => {
     const svc = state.services.find((s) => s._key === key)
 
@@ -168,6 +202,13 @@ export function useAppointmentEditorState(props: Props) {
   const preferredResourceHint = ref<string | null>(props.initialPreset?.preferredResourceId ?? null)
 
   const addService = (svc: ServiceWithBranchIds) => {
+    // Последняя услуга с подобранным слотом — чтобы новую нанизать сразу после
+    // её окончания тем же мастером (если он умеет новую услугу).
+    const tailService = [...state.services]
+      .filter((s) => !s.pendingRemove && s.currentEndTime && s.currentResourceId)
+      .sort((a, b) => (a.currentEndTime! < b.currentEndTime! ? -1 : 1))
+      .pop()
+
     let preferred: string | null = null
 
     if (preferredResourceHint.value) {
@@ -175,6 +216,10 @@ export function useAppointmentEditorState(props: Props) {
 
       if (compat?.has(svc.id)) preferred = preferredResourceHint.value
       preferredResourceHint.value = null
+    } else if (tailService?.currentResourceId) {
+      const compat = competenciesHelper.competencyByResource.value.get(tailService.currentResourceId)
+
+      if (compat?.has(svc.id)) preferred = tailService.currentResourceId
     }
 
     const newService: EditorService = {
@@ -197,6 +242,13 @@ export function useAppointmentEditorState(props: Props) {
     state.services.push(newService)
     // Открываем слот-пикер сразу для новой услуги — юзеру ВСЁ РАВНО надо подобрать слот.
     selectedServiceKey.value = newService._key
+
+    // Подсказка следующего слота — конец предыдущей услуги. useEditorSlotApply
+    // сам применит, как только чипсы подгрузятся, либо обнулит подсказку если
+    // такого слота нет (тогда юзер выберет руками).
+    if (tailService?.currentEndTime) {
+      primeSlotTime(tailService.currentEndTime)
+    }
   }
 
   const removeService = (key: string) => {
@@ -253,6 +305,26 @@ export function useAppointmentEditorState(props: Props) {
     const checks = state.services.map(async (svc): Promise<readonly [string, ValidityReason]> => {
       if (svc.pendingRemove || !svc.currentStartTime || !svc.currentEndTime || !svc.currentResourceId) {
         return [svc._key, 'ok'] as const
+      }
+
+      // Существующая запись со статусом done/cancelled — не валидируем (что
+      // менять у завершённой / отменённой). Пропускаем.
+      const existing = props.initialAppointments?.find((a) => a.id === svc.appointmentId) ?? null
+
+      if (existing && (existing.status === 'done' || existing.status === 'cancelled')) {
+        return [svc._key, 'ok'] as const
+      }
+
+      // Существующая запись, чей слот не менялся в форме, и её время уже
+      // наступило (или прошло) — не валидируем через slot-engine: today-cutoff
+      // в getResourceSlotsForDate отрезает прошлые слоты, и собственный слот
+      // записи отсутствует в entries → ложное «time-busy». Слот занят НАМИ.
+      if (svc.appointmentId && !isSlotChanged(svc) && state.date && svc.originalStartTime) {
+        const startUtc = localDateTimeToUtcIso(state.date, svc.originalStartTime, tz.value)
+
+        if (new Date(startUtc).getTime() <= Date.now()) {
+          return [svc._key, 'ok'] as const
+        }
       }
 
       const r = await groupSlotSearchForValidity.findSlots({
@@ -375,6 +447,10 @@ export function useAppointmentEditorState(props: Props) {
     }
     takeSnapshot()
     await loadResourceData()
+    // Важно: НЕ берём второй snapshot здесь. Если есть `?slotTime=` пресет,
+    // useEditorSlotApply применит слот асинхронно (после load slotsResult)
+    // и сам вызовет takeSnapshot через onInitialApply. Если пресета нет —
+    // ничего не меняется в state, первый snapshot остаётся актуальным.
   })
 
   return {

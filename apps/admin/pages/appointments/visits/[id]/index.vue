@@ -6,10 +6,19 @@
           type="default"
           size="small"
           icon="chevronLeft"
-          @click="router.push('/appointments/list')"
+          @click="goBack"
         >
           Назад
         </UiButton>
+
+        <UiTag
+          v-if="inProgress"
+          size="small"
+          type="success"
+          round
+        >
+          Идёт сейчас
+        </UiTag>
 
         <div v-if="visit" class="header-actions">
           <UiButton
@@ -91,14 +100,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted, watchEffect } from 'vue'
 import { useRoute, useRouter } from '#imports'
-import { UiButton, UiSkeleton, UiEmpty, UiCard, UiTitle, UiText, useMessage } from '@fastio/ui'
+import { UiButton, UiSkeleton, UiEmpty, UiCard, UiTitle, UiText, UiTag, useMessage } from '@fastio/ui'
 import type { Appointment, AppointmentEvent, Visit } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
+import { useAppointmentViewScope } from '~/composables/data/useAppointmentViewScope'
 import { useAuthStore } from '~/stores/auth'
-import { useTenantStore } from '~/stores/tenant'
 import { reportError } from '~/utils/reportError'
 import VisitContent from '~/components/appointments/VisitContent.vue'
 import CancelGroupModal from '~/components/appointments/CancelGroupModal.vue'
@@ -112,12 +121,17 @@ const api = useDatabase()
 const gate = useGate()
 const message = useMessage()
 const authStore = useAuthStore()
-const tenantStore = useTenantStore()
 
 const canManage = computed(() => gate.manageAppointments.value.enabled)
 const isReadOnly = computed(() => !canManage.value)
 
 const id = route.params.id as string
+
+// Возврат туда, откуда пришёл: ?from=timeline → таймлайн, иначе — список.
+const goBack = () => {
+  if (route.query.from === 'timeline') router.push('/appointments/timeline')
+  else router.push('/appointments/list')
+}
 const loading = ref(true)
 const visit = ref<Visit | null>(null)
 const appointments = ref<Appointment[]>([])
@@ -138,17 +152,76 @@ const {
   isRequestVisit, hasPending, hasActive, canCancel,
 } = useVisitAggregate(visit, appointments)
 
+// Бейдж «Идёт сейчас»: хотя бы одна услуга confirmed и текущий момент попадает
+// в её окно. Таймер запускаем только когда такая услуга есть — для cancelled/done
+// визита тикать раз в минуту нет смысла. watchEffect автоматически пересоздаёт
+// таймер, если статусы услуг меняются после загрузки.
+const now = ref(Date.now())
+let nowTimer: ReturnType<typeof setInterval> | null = null
+
+const hasConfirmedAppt = computed(() => appointments.value.some((a) => a.status === 'confirmed'))
+
+watchEffect(() => {
+  if (hasConfirmedAppt.value && !nowTimer) {
+    nowTimer = setInterval(() => {
+      now.value = Date.now()
+    }, 60_000)
+  } else if (!hasConfirmedAppt.value && nowTimer) {
+    clearInterval(nowTimer)
+    nowTimer = null
+  }
+})
+
+onUnmounted(() => {
+  if (nowTimer) clearInterval(nowTimer)
+})
+
+const inProgress = computed(() => appointments.value.some((a) => {
+  if (a.status !== 'confirmed') return false
+  const start = new Date(a.startsAt).getTime()
+  const end = new Date(a.actualEndsAt ?? a.endsAt).getTime()
+
+  return start <= now.value && now.value < end
+}))
+
+const { ownResourcesOnly, isOwnAppointment } = useAppointmentViewScope()
+
+// Ресурсы из последнего loadData — нужны для view_own-проверки. Кладём сюда,
+// чтобы не делать второй запрос: loadVisitViewData уже фетчит ресурсы по
+// списку appointment.resource_id.
+const visitResources = ref<import('@fastio/shared').Resource[]>([])
+
 const loadData = async () => {
   const result = await api.visits.loadVisitViewData(id)
 
   visit.value = result.visit
   appointments.value = result.appointments
   events.value = result.events
+  visitResources.value = result.resources
 }
 
 onMounted(async () => {
   try {
     await loadData()
+
+    // Мастер с view_own: визит виден только если есть хотя бы одна услуга на
+    // его ресурсе. Чужой визит → редирект на таймлайн. Чужие услуги внутри
+    // визита для компактного просмотра не предусмотрены — для них есть
+    // /appointments/appointment/[id].
+    if (ownResourcesOnly.value && appointments.value.length > 0) {
+      const own = appointments.value.find((a) => isOwnAppointment(a, visitResources.value))
+
+      if (!own) {
+        message.warning('У вас нет доступа к этому визиту')
+        router.replace('/appointments/timeline')
+
+        return
+      }
+      // Свой визит, но открыт через [id] — нет смысла видеть чужие услуги.
+      router.replace({ path: `/appointments/appointment/${own.id}`, query: route.query })
+
+      return
+    }
   } catch (e) {
     reportError(e)
     message.error('Не удалось загрузить визит')

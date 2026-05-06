@@ -61,7 +61,7 @@ export const visitsApi = {
   ): Promise<{ visit: Visit | null; appointments: Appointment[] }> {
     const [visitRes, apptRes] = await Promise.all([
       sb.from('appointment_groups').select('*').eq('id', id).maybeSingle(),
-      sb.from('appointments').select('*').eq('group_id', id).order('starts_at'),
+      sb.from('appointments').select('*').eq('group_id', id).is('deleted_at', null).order('starts_at'),
     ])
 
     if (visitRes.error) throw new Error(visitRes.error.message)
@@ -145,7 +145,7 @@ export const visitsApi = {
   }> {
     const [visitRes, apptRes] = await Promise.all([
       sb.from('appointment_groups').select('*').eq('id', id).maybeSingle(),
-      sb.from('appointments').select('*').eq('group_id', id).order('starts_at'),
+      sb.from('appointments').select('*').eq('group_id', id).is('deleted_at', null).order('starts_at'),
     ])
 
     if (visitRes.error) throw new Error(visitRes.error.message)

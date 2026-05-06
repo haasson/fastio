@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import { useRouter } from '#imports'
+import { useRouter, useRoute } from '#imports'
 import { useMessage } from '@fastio/ui'
 import type { Appointment, Visit } from '@fastio/shared'
 import { localDateTimeToUtcIso } from '@fastio/shared'
@@ -8,6 +8,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { reportError } from '~/utils/reportError'
+import { inheritAppointmentStatus } from '~/composables/data/appointmentEditor/utils'
 import type { EditorState } from '~/components/appointments/types'
 import { isSlotChanged } from '~/components/appointments/types'
 import { useAppointmentEventLogger } from '~/composables/data/useAppointmentEventLogger'
@@ -40,6 +41,7 @@ const handleSaveError = (e: unknown, message: ReturnType<typeof useMessage>): vo
 
 export function useEditorSave(deps: SaveDeps) {
   const router = useRouter()
+  const route = useRoute()
   const api = useDatabase()
   const tenantStore = useTenantStore()
   const authStore = useAuthStore()
@@ -91,7 +93,9 @@ export function useEditorSave(deps: SaveDeps) {
       customerId: null,
       customerName: deps.state.customerName.trim(),
       customerPhone: deps.state.customerPhone.trim(),
-      customerEmail: deps.state.customerEmail.trim() || null,
+      // Email из админки не редактируется — поле в БД заполнено только если визит
+      // пришёл со storefront и customer.email там был.
+      customerEmail: null,
       notes: deps.state.notes.trim() || null,
       items,
       autoConfirm: true,
@@ -102,7 +106,15 @@ export function useEditorSave(deps: SaveDeps) {
 
     message.success('Визит создан')
 
-    await router.push(`/appointments/visits/${result.visitId}`)
+    // Фиксируем snapshot ДО router.push — иначе useUnsavedGuard на текущей
+    // странице new.vue решит, что есть несохранённые изменения, и покажет модалку.
+    deps.takeSnapshot()
+
+    // Пробрасываем ?from=timeline дальше, чтобы кнопка «Назад» на странице
+    // нового визита вернула на таймлайн, а не в общий список.
+    const fromQuery = route.query.from === 'timeline' ? { from: 'timeline' } : {}
+
+    await router.push({ path: `/appointments/visits/${result.visitId}`, query: fromQuery })
   }
 
   // Конверсия request-визита в active: метаданные уже в БД, нужно лишь добавить
@@ -135,7 +147,6 @@ export function useEditorSave(deps: SaveDeps) {
     await api.visits.updateMeta(visit.id, {
       customerName: deps.state.customerName.trim(),
       customerPhone: deps.state.customerPhone.trim(),
-      customerEmail: deps.state.customerEmail.trim() || null,
       notes: deps.state.notes.trim() || null,
       branchId: deps.state.branchId,
     })
@@ -150,6 +161,7 @@ export function useEditorSave(deps: SaveDeps) {
     }
 
     message.success('Заявка оформлена')
+    deps.takeSnapshot()
   }
 
   // Edit-mode: применяем изменения по типам отдельными RPC. Порядок:
@@ -167,7 +179,6 @@ export function useEditorSave(deps: SaveDeps) {
     await api.visits.updateMeta(visitId, {
       customerName: deps.state.customerName.trim(),
       customerPhone: deps.state.customerPhone.trim(),
-      customerEmail: deps.state.customerEmail.trim() || null,
       notes: deps.state.notes.trim() || null,
       branchId: deps.state.branchId,
     })
@@ -194,6 +205,12 @@ export function useEditorSave(deps: SaveDeps) {
     // Новые услуги добавляем последовательно (advisory lock per resource —
     // параллельные INSERT'ы могли бы завершиться двойной записью одного слота
     // без error если pg_advisory_xact_lock запросов не пересекается; перестраховка).
+    //
+    // Статус новой услуги наследуем от визита (см. inheritAppointmentStatus).
+    const inheritedStatus = deps.initialVisit
+      ? inheritAppointmentStatus(deps.initialVisit.status)
+      : 'new'
+
     for (const svc of deps.state.services.filter((s) => !s.pendingRemove && !s.appointmentId && s.currentStartTime && s.currentEndTime)) {
       const created = await api.appointments.addToVisit({
         visitId,
@@ -202,6 +219,7 @@ export function useEditorSave(deps: SaveDeps) {
         startsAt: localDateTimeToUtcIso(date, svc.currentStartTime!, tzVal),
         endsAt: localDateTimeToUtcIso(date, svc.currentEndTime!, tzVal),
         serviceName: svc.serviceName,
+        status: inheritedStatus,
         servicePrice: svc.price,
         resourceAssignedBy: 'admin',
       })
@@ -301,7 +319,6 @@ export function useEditorSave(deps: SaveDeps) {
     await api.visits.updateMeta(oldId, {
       customerName: deps.state.customerName.trim(),
       customerPhone: deps.state.customerPhone.trim(),
-      customerEmail: deps.state.customerEmail.trim() || null,
       notes: deps.state.notes.trim() || null,
       branchId: deps.state.branchId,
     })
@@ -387,8 +404,12 @@ export function useEditorSave(deps: SaveDeps) {
         const newId = await saveMoveVisitDate()
 
         message.success('Визит перенесён')
-        // id визита мог измениться — переходим на новую страницу.
-        if (newId) await router.push(`/appointments/visits/${newId}`)
+        // id визита мог измениться — переходим на новую страницу с тем же from.
+        if (newId) {
+          const fromQuery = route.query.from === 'timeline' ? { from: 'timeline' } : {}
+
+          await router.push({ path: `/appointments/visits/${newId}`, query: fromQuery })
+        }
       } else {
         await saveEdit()
         message.success('Визит сохранён')

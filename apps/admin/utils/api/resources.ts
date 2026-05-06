@@ -64,6 +64,24 @@ export const resourcesApi = {
   },
 
   /**
+   * Лёгкий запрос только `member_id` ресурса — для view_own access-check без
+   * тягания всего списка ресурсов на одну страницу. Возвращает `null` если
+   * ресурс не найден или у него нет привязки к мемберу (объект, не сотрудник).
+   */
+  async getMemberId(sb: SupabaseClient, resourceId: string): Promise<string | null> {
+    const { data, error } = await sb
+      .from('resources')
+      .select('member_id')
+      .eq('id', resourceId)
+      .maybeSingle()
+
+    if (error) throw new Error(error.message)
+    if (!data) return null
+
+    return (data as { member_id: string | null }).member_id
+  },
+
+  /**
    * Ресурсы, привязанные к категории (через resource_categories) + к конкретной
    * услуге напрямую (через service_resources). Используется в дравере услуги.
    */
@@ -456,6 +474,7 @@ export const resourcesApi = {
         .eq('tenant_id', tenantId)
         .gte('starts_at', new Date(new Date(dayStartUtc).getTime() - 86_400_000).toISOString())
         .lt('starts_at', dayEndUtc)
+        .is('deleted_at', null)
         .not('status', 'eq', 'cancelled'),
       sb.from('resource_branches').select('resource_id, branch_id').in('resource_id', resourceIds),
       shiftTemplateIds.length

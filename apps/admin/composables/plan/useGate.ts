@@ -249,6 +249,25 @@ export const useGate = (): GateRegistry => {
   const viewAppointments = permissionGate(services, 'appointments.view')
   const manageAppointments = permissionGate(services, 'appointments.manage')
 
+  // Сводный список визитов (`/appointments/list`, `/appointments`) — там видны
+  // чужие клиенты (имя, телефон). Мастер с `view_own` (без `view_all`) сюда
+  // не пускается: ему доступен только таймлайн со своими ресурсами и
+  // компактная страница `/appointments/appointment/[id]` для своей услуги.
+  // Backwards-compat: ни одного из ключей view_all/view_own → разрешено
+  // (легаси-роли с одним `appointments.view`).
+  const viewAllAppointments = computed<GateResult>(() => {
+    if (isSuspended.value) return deny('suspended')
+    if (!viewAppointments.value.enabled) return viewAppointments.value
+    if (isOwner.value) return ok()
+    const perms = tenantStore.currentPermissions
+
+    if (perms?.['appointments.view_own'] === true && perms?.['appointments.view_all'] !== true) {
+      return deny('forbidden')
+    }
+
+    return ok()
+  })
+
   const viewPromotions = permissionGate(promotions, 'promos.view')
   const managePromotions = permissionGate(promotions, 'promos.manage')
 
@@ -304,7 +323,7 @@ export const useGate = (): GateRegistry => {
     viewKitchen, viewKitchenQueue, viewKitchenOverview,
     viewTables, manageTables,
     viewReservations, manageReservations,
-    viewAppointments, manageAppointments,
+    viewAppointments, manageAppointments, viewAllAppointments,
     viewPromotions, managePromotions,
     viewContent, editContent,
     viewTeam: teamSection, manageTeam: teamSection, manageRoles,

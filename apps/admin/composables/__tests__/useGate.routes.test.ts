@@ -215,16 +215,16 @@ describe('appointments routes (1.7 покрытие)', () => {
     expect(resolveRouteGate(path)).toBe(expected)
   })
 
-  it('/appointments/list (страница архива) наследует от корня → viewAppointments', () => {
-    expect(resolveRouteGate('/appointments/list')).toBe('viewAppointments')
+  it('/appointments/list (страница архива) → viewAllAppointments (мастер с view_own не пускается)', () => {
+    expect(resolveRouteGate('/appointments/list')).toBe('viewAllAppointments')
   })
 
   it('/appointments/timeline (главная страница записей) → viewAppointments', () => {
     expect(resolveRouteGate('/appointments/timeline')).toBe('viewAppointments')
   })
 
-  it('/appointments/visits/<uuid> (карточка визита) → viewAppointments', () => {
-    expect(resolveRouteGate('/appointments/visits/abc-123')).toBe('viewAppointments')
+  it('/appointments/visits/<uuid> (карточка визита) → viewAllAppointments', () => {
+    expect(resolveRouteGate('/appointments/visits/abc-123')).toBe('viewAllAppointments')
   })
 
   it('/appointments/history наследует от корня → viewAppointments (даже если страницы пока нет)', () => {

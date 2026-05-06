@@ -31,6 +31,15 @@
 
 ## Changelog
 
+### 2026-05-06 — Таймлайн v2 + view_own RLS
+- Таймлайн переписан на pixel-grid с drag&drop через RPC `update_appointment` (миграция 220), capacity-check + advisory lock + audit-events
+- Миграция **253**: RESTRICTIVE SELECT-policy `appointments_view_own_restrict` на `appointments`. Мастер с `appointments.view_own` (без `view_all`) видит только свои ресурсы (через `resources.member_id`). Серверное enforcement, не клиентский фильтр
+- Дефолтные роли: Администратор/Менеджер → `view_all=true`, Сотрудник → `view_own=true`. Триггер `create_default_roles` обновлён
+- Middleware/gate: новый GateKey `viewAllAppointments` для `/appointments/list` + `/appointments/visits`. View_own → редирект на `/appointments/timeline`
+- Новая страница `/appointments/appointment/[id]` — компактный просмотр для view_own (без чужих услуг и телефонов)
+- Кэш `bulkLoadCompetencies` (module-level) — realtime-fetch таймлайна не дёргает RPC каждые 200мс
+- KB: `13-appointments-managing.md` (drag&drop, view_own режим, убран email), `11-team-roles.md` (новые ключи прав, типичная роль «Мастер»)
+
 ### 2026-05-03 — Branch cart compatibility
 - Миграция **239**: `dish_branches` и `combo_branches` junction-таблицы (RLS, публичный read для витрины)
 - Миграция **240**: `tenants.branch_selection_mode` (`'unified'` | `'per_branch'`, default `'unified'`)

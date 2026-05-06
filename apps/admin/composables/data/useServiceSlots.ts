@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { useMessage } from '@fastio/ui'
@@ -7,6 +7,7 @@ import type {
 } from '@fastio/shared'
 import { useGroupSlotSearch } from '~/composables/data/useGroupSlotSearch'
 import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
+import { appointmentBus } from '~/composables/data/useAppointmentsChannel'
 import { reportError } from '~/utils/reportError'
 
 /**
@@ -96,6 +97,28 @@ export function useServiceSlots(params: {
     () => { recompute() },
     { debounce: 200, immediate: true },
   )
+
+  // Realtime: новый/обновлённый/удалённый appointment в этой же дате может
+  // освободить или занять слот — пересчитываем чипсы. Дебаунс на самом
+  // recompute не нужен (gen-counter отбросит устаревшие ответы).
+  let busTimer: ReturnType<typeof setTimeout> | null = null
+  const onApptChange = () => {
+    if (busTimer) clearTimeout(busTimer)
+    busTimer = setTimeout(() => {
+      busTimer = null
+      recompute()
+    }, 200)
+  }
+  const offInsert = appointmentBus.onInsert(onApptChange)
+  const offUpdate = appointmentBus.onUpdate(onApptChange)
+  const offDelete = appointmentBus.onDelete(onApptChange)
+
+  onUnmounted(() => {
+    if (busTimer) clearTimeout(busTimer)
+    offInsert()
+    offUpdate()
+    offDelete()
+  })
 
   return { result, loading }
 }

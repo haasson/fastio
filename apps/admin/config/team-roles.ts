@@ -51,6 +51,8 @@ export const permissionGroups: PermissionGroup[] = [
     permissions: [
       { key: 'appointments.view', label: 'Просмотр записей' },
       { key: 'appointments.manage', label: 'Управление записями' },
+      { key: 'appointments.view_all', label: 'Видеть таймлайн всех исполнителей' },
+      { key: 'appointments.view_own', label: 'Видеть таймлайн только своего ресурса' },
     ],
   },
   {

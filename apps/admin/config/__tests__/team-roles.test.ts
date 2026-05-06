@@ -11,6 +11,7 @@ const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'tables.view', 'tables.manage',
   'reservations.view', 'reservations.manage',
   'appointments.view', 'appointments.manage',
+  'appointments.view_all', 'appointments.view_own',
   'promos.view', 'promos.manage',
   'content.view', 'content.edit',
   'team.view', 'team.manage',

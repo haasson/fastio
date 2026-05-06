@@ -3,6 +3,31 @@ import type { Resource, Service } from '@fastio/shared'
 import { getEffectiveServiceIds } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 
+type CompetenciesBundle = {
+  serviceResources: Awaited<ReturnType<ReturnType<typeof useDatabase>['resources']['bulkLoadCompetencies']>>['serviceResources']
+  resourceCategories: Awaited<ReturnType<ReturnType<typeof useDatabase>['resources']['bulkLoadCompetencies']>>['resourceCategories']
+}
+
+// Module-level кэш ответов `bulkLoadCompetencies` на сессию по совокупности
+// resource_ids. Без него каждый realtime-эвент таймлайна (200мс debounce) и
+// каждое открытие редактора визита делали RPC, хотя competencies меняются
+// редко (через настройки услуг/категорий). Аналог `servicesCache` в timeline.vue.
+//
+// Key = отсортированный resource_ids.join(','). UUID гарантирует уникальность
+// кросс-тенантов, отдельный tenantId в ключе не нужен. Если состав ресурсов
+// меняется (новый сотрудник) — ключ другой → автоматически новый запрос.
+//
+// Trade-off: если админ изменил привязки услуг к ресурсу в той же сессии,
+// кэш отдаст устаревшие данные. Допустимо — редактор обычно открывается на
+// короткое время; для строгой свежести есть `competenciesCache.clear()`.
+const competenciesCache = new Map<string, Promise<CompetenciesBundle>>()
+
+const cacheKey = (resourceIds: string[]): string => [...resourceIds].sort().join(',')
+
+export const clearCompetenciesCache = (): void => {
+  competenciesCache.clear()
+}
+
 /**
  * Загружает компетенции (явные через `service_resources` + категории через
  * `resource_categories`) и собирает Map<resourceId, Set<serviceId>>.
@@ -25,7 +50,18 @@ export function useEditorCompetencies() {
     loading.value = true
     try {
       const resourceIds = resources.map((r) => r.id)
-      const { serviceResources, resourceCategories } = await api.resources.bulkLoadCompetencies(resourceIds)
+      const key = cacheKey(resourceIds)
+      let promise = competenciesCache.get(key)
+
+      if (!promise) {
+        promise = api.resources.bulkLoadCompetencies(resourceIds).catch((e) => {
+          competenciesCache.delete(key)
+          throw e
+        })
+        competenciesCache.set(key, promise)
+      }
+
+      const { serviceResources, resourceCategories } = await promise
 
       const explicitByResource = new Map<string, string[]>()
 

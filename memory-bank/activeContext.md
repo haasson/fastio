@@ -6,6 +6,14 @@
 Параллельный трек — переход с «групп записей» на «визиты» (2026-05-01): визит = посещение клиентом заведения в один бизнес-день, может содержать 1+ услуг с независимыми статусами. Главный принцип: визит живёт независимо от статусов услуг внутри.
 
 ## Recent Changes
+- **Таймлайн v2 + view_own RLS** (2026-05-06, миграция 253):
+  - Таймлайн полностью переписан: статическая HTML-таблица → pixel-grid с абсолютным позиционированием карточек, drag&drop переноса записей через RPC `update_appointment` (capacity-check + advisory_xact_lock + audit-events), confirm-модалка перед сохранением. Компоненты вынесены в композаблы `useTimelineLayout` / `useTimelineDrag` / `useScrollToNow` + утилка `buildTimelineAvailability`. Now-линия с авто-скроллом, дим прошлых/off-hours/disabled слотов.
+  - Новая роль «Мастер»: ключи `appointments.view_all` / `appointments.view_own` в `tenant_roles.permissions`. View_own видит только свои ресурсы (через `resources.member_id`). Серверное enforcement — RESTRICTIVE SELECT-policy `appointments_view_own_restrict` на `appointments`.
+  - Дефолтные роли в миграции 253: Администратор/Менеджер → `view_all=true`, Сотрудник → `view_own=true`. Кастомные не трогаем. Триггер `create_default_roles` обновлён для новых тенантов.
+  - View_own редирект через middleware/gate.global: новый GateKey `viewAllAppointments` мапит `/appointments/list` и `/appointments/visits` — мастеру с `view_own` сюда нельзя. `/appointments/timeline` добавлен в REDIRECT_FALLBACKS перед `/appointments` (иначе зацикливание через routeRule).
+  - Отдельная страница `/appointments/appointment/[id]` — компактный просмотр ОДНОЙ услуги для view_own (без чужих услуг визита и телефона). Mounted-проверка через лёгкий `api.resources.getMemberId(resourceId)` вместо `list(tid)`.
+  - `customerEmail` убран из админ-редактора визита: поле в БД заполняется только когда визит пришёл со storefront. Поле остаётся в БД, в админке не показывается и не редактируется.
+  - Кэш `bulkLoadCompetencies` на сессию (module-level Map по sorted-resource-ids). Realtime-fetch таймлайна не дёргает RPC каждые 200мс.
 - **Cross-tenant isolation hardening** (2026-05-04):
   - Миграция **245** — убраны клиентские RLS-policies `customers FOR UPDATE` и `customer_addresses FOR ALL` (все мутации идут через server endpoints с service_role; auth.uid()-only без tenant-фильтра позволял PATCH чужой строки в другом тенанте, если у юзера есть customer-строки в нескольких тенантах).
   - Миграция **246** — в RPC `services_set_branch_ids`, `resources_set_branch_ids`, `resources_set_service_ids`, `resources_set_category_ids`, `apply_shift_template_to_resource`, `dishes_set_branch_ids`, `combos_set_branch_ids` добавлен EXISTS-чек что все вторичные uuid принадлежат тому же тенанту что и parent (раньше member тенанта A мог пробросить branch_id тенанта B и записать кросс-тенантную связь). `apply_weekly_template_to_resource` уже валидировал в 216.
