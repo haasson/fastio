@@ -190,7 +190,10 @@ const loadFromUrl = async () => {
     if (!response.ok) {
       const status = response.status
 
-      throw new Error(status === 422 ? 'Ссылка не ведёт на изображение' : 'Не удалось загрузить')
+      if (status === 422) throw new Error('Ссылка не ведёт на изображение')
+      if (status === 403) throw new Error('Загрузка с этого домена недоступна')
+      if (status === 413) throw new Error('Изображение слишком большое (макс. 10 МБ)')
+      throw new Error('Не удалось загрузить')
     }
 
     const contentType = response.headers.get('content-type') ?? 'image/jpeg'
