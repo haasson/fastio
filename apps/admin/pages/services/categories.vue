@@ -40,7 +40,7 @@ import { useTags } from '~/composables/data/useTags'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import AppCategoryList from '~/components/ui/AppCategoryList.vue'
-import CategoryFormModal from '~/components/menu/CategoryFormModal.vue'
+import CategoryFormModal from '~/components/catalog/CategoryFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 const api = useDatabase()

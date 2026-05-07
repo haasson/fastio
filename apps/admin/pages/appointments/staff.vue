@@ -75,7 +75,7 @@ import StaffScheduleModal from '~/components/appointments/StaffScheduleModal.vue
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import { useResourcePresence, type PresenceStatus } from '~/composables/data/useResourcePresence'
+import { useResourcePresence, type PresenceStatus } from '~/composables/services/useResourcePresence'
 import { reportError } from '~/utils/reportError'
 
 const formatDateRu = (date: string): string => {

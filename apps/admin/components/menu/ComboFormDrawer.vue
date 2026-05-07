@@ -63,9 +63,9 @@ import type { ComboFormData } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
-import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
+import BasicInfoSection from '~/components/catalog/form/BasicInfoSection.vue'
 import ComboCompositionSection from '~/components/menu/form/ComboCompositionSection.vue'
-import TagsSection from '~/components/menu/form/TagsSection.vue'
+import TagsSection from '~/components/catalog/form/TagsSection.vue'
 import SettingsSection from '~/components/menu/form/SettingsSection.vue'
 
 const props = defineProps<{

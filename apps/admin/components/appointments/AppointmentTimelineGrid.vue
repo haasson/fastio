@@ -121,10 +121,10 @@
 import { computed, ref, toRef } from 'vue'
 import { UiText } from '@fastio/ui'
 import type { Appointment, Resource } from '@fastio/shared'
-import type { TimelineAvailability } from '~/utils/timelineAvailability'
-import { useTimelineLayout } from '~/composables/timeline/useTimelineLayout'
-import { useTimelineDrag } from '~/composables/timeline/useTimelineDrag'
-import { useScrollToNow } from '~/composables/timeline/useScrollToNow'
+import type { TimelineAvailability } from '~/utils/services/timelineAvailability'
+import { useTimelineLayout } from '~/composables/services/timeline/useTimelineLayout'
+import { useTimelineDrag } from '~/composables/services/timeline/useTimelineDrag'
+import { useScrollToNow } from '~/composables/services/timeline/useScrollToNow'
 
 type Props = {
   resources: Resource[]

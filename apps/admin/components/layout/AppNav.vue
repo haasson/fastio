@@ -33,10 +33,10 @@ import { useGate } from '~/composables/plan/useGate'
 import { toEnabled } from '~/composables/plan/useGate.helpers'
 import { useTenantStore } from '~/stores/tenant'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
-import { useNewOrderCounter } from '~/composables/data/useNewOrderCounter'
-import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
+import { useNewOrderCounter } from '~/composables/retail/useNewOrderCounter'
+import { useNewReservationCounter } from '~/composables/retail/useNewReservationCounter'
 import { useUnreadSupportCounter } from '~/composables/data/useUnreadSupportCounter'
-import { useAppointmentInboxCounter } from '~/composables/data/useAppointmentInboxCounter'
+import { useAppointmentInboxCounter } from '~/composables/services/useAppointmentInboxCounter'
 
 defineProps<{ collapsed?: boolean }>()
 

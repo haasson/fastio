@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { useNewReservationCounter } from '~/composables/data/useNewReservationCounter'
+import { useNewReservationCounter } from '~/composables/retail/useNewReservationCounter'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 

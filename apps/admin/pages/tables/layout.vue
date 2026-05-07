@@ -51,9 +51,9 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import type { Table, Reservation } from '@fastio/shared'
-import { useTablesContext, TodayReservationsKey } from '~/composables/ui/useTablesContext'
-import { useReservationsStore } from '~/stores/reservations'
-import useAddDishToTable from '~/composables/data/useAddDishToTable'
+import { useTablesContext, TodayReservationsKey } from '~/composables/retail/useTablesContext'
+import { useReservationsStore } from '~/stores/retail/reservations'
+import useAddDishToTable from '~/composables/retail/useAddDishToTable'
 import { useGate } from '~/composables/plan/useGate'
 import TablesCanvas from '~/components/tables/TablesCanvas.vue'
 import TableDetailDrawer from '~/components/tables/TableDetailDrawer.vue'

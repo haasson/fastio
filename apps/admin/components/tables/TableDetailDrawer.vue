@@ -51,7 +51,7 @@ import { useNow } from '@vueuse/core'
 import { UiDrawer, UiButton, UiIcon, UiTag } from '@fastio/ui'
 import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { formatRelativeTime } from '@fastio/shared'
-import type { TableSession, TableSessionItem } from '~/utils/api/tables'
+import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
 import TableSessionItems from '~/components/tables/TableSessionItems.vue'
 
 type Props = {

@@ -30,9 +30,9 @@ import type { DataTableColumns } from '@fastio/ui'
 import { type KitchenQueueItem, getKitchenUrgencyLevel, formatKitchenElapsed } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
-import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
-import { DELIVERY_TYPE_LABELS } from '~/config/order-options'
-import { mergeRealtimeItem } from '~/utils/api/kitchen-queue'
+import { kitchenQueueEvents } from '~/composables/retail/useKitchenQueueChannel'
+import { DELIVERY_TYPE_LABELS } from '~/config/retail/order-options'
+import { mergeRealtimeItem } from '~/utils/api/retail/kitchen-queue'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()

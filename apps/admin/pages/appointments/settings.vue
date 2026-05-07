@@ -84,7 +84,7 @@ import { UiForm, UiInput, UiInputNumber, UiSelect, UiSectionHeader, UiSkeleton, 
 import { navigateTo } from '#imports'
 import type { AppointmentResourceMode, StaffNameFormat } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
+import { useAppointmentSettingsStore } from '~/stores/services/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
 import { useRegisterPageForm } from '~/composables/ui/usePageForm'

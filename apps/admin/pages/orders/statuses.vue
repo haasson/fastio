@@ -33,7 +33,7 @@
 import { UiButton } from '@fastio/ui'
 import { storeToRefs } from 'pinia'
 import type { OrderStatus, OrderStatusGroup } from '@fastio/shared'
-import { useOrderStatusesStore } from '~/stores/order-statuses'
+import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
 import { useTenantStore } from '~/stores/tenant'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import OrdersStatusList from '~/components/orders/StatusList.vue'

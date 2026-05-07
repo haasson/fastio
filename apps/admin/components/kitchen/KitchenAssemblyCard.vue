@@ -106,7 +106,7 @@ import { computed } from 'vue'
 import type { KitchenQueueItem, KitchenQueueStatus } from '@fastio/shared'
 import { UiCard, UiTag, UiButton, UiCheckbox } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
-import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/order-options'
+import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/retail/order-options'
 
 const props = defineProps<{
   orderId: string

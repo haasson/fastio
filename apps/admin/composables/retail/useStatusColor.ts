@@ -1,0 +1,16 @@
+import { storeToRefs } from 'pinia'
+import { COLORS } from '@fastio/kit'
+import { STATUS_GROUP_COLORS } from '~/config/retail/order-status-groups'
+import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
+
+export const useStatusColor = () => {
+  const { statuses } = storeToRefs(useOrderStatusesStore())
+
+  const getStatusColor = (statusId: unknown): string => {
+    const status = statuses.value.find((s) => s.id === statusId)
+
+    return status ? STATUS_GROUP_COLORS[status.groupType] ?? COLORS.GREY_400 : COLORS.GREY_400
+  }
+
+  return { getStatusColor }
+}

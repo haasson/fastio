@@ -43,7 +43,7 @@ import { UiButton, UiDataTable, UiEmpty, UiSkeleton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useModifierGroups } from '~/composables/data/useModifierGroups'
+import { useModifierGroups } from '~/composables/retail/useModifierGroups'
 import { buildModifierColumns } from '~/columns/modifiers'
 import ModifierGroupFormModal from '~/components/menu/ModifierGroupFormModal.vue'
 

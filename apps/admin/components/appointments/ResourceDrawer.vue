@@ -121,10 +121,10 @@ import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTeam } from '~/composables/data/useTeam'
-import { useScheduleConflictCheck } from '~/composables/data/useScheduleConflictCheck'
+import { useScheduleConflictCheck } from '~/composables/services/useScheduleConflictCheck'
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,
-} from '~/utils/scheduleConflictCheck'
+} from '~/utils/services/scheduleConflictCheck'
 import { reportError } from '~/utils/reportError'
 import OffPeriodsSection from '~/components/appointments/OffPeriodsSection.vue'
 

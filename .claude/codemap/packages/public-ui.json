@@ -2,7 +2,7 @@
   "project": "packages/public-ui",
   "submap": "main",
   "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
-  "generated_at": "2026-05-04T04:35:55.263Z",
+  "generated_at": "2026-05-07T01:28:32.340Z",
   "stats": {
     "files": 35,
     "pages": 0,

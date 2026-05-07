@@ -1,19 +1,15 @@
 import { computed, type ComputedRef } from 'vue'
-import type { PermissionKey } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
-import { useResolvedFeatures } from './useResolvedFeatures'
-import { useModules, useModuleConfigs } from './useModules'
 import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
-import type { ModuleKey } from '~/config/modules'
-import type { GateRegistry, GateResult, GateKey, GateReason } from './useGate.types'
-
-const ok = (): GateResult => ({ enabled: true, reason: null })
-
-const deny = (reason: Exclude<GateReason, null>, extra: Partial<GateResult> = {}): GateResult => ({ enabled: false, reason, ...extra })
+import { ok, deny, useGateInfra } from './useGate.shared'
+import type { GateRegistry, GateResult, GateKey } from './useGate.types'
 
 /**
- * Единая точка проверки доступа к фичам админки.
+ * Единая точка проверки доступа к фичам админки (ALL gates).
+ *
+ * Файл — агрегатор обеих вертикалей. Находится в allow-list ESLint барьера
+ * (`docs/vertical-isolation.md`). Per-vertical-консьюмерам предпочтителен
+ * `useGateRetail()` / `useGateServices()` — они дают строгую типизацию и
+ * физически не пускают к гейтам чужой вертикали.
  *
  * Каждый гейт возвращает `{ enabled, reason }` — почему фича недоступна,
  * а не только true/false. Это позволяет UI показывать корректные баннеры
@@ -24,101 +20,8 @@ const deny = (reason: Exclude<GateReason, null>, extra: Partial<GateResult> = {}
  * См. `useGate.types.ts` для контракта и списка ключей.
  */
 export const useGate = (): GateRegistry => {
-  const tenantStore = useTenantStore()
-  const branchStore = useBranchStore()
-  const { resolved } = useResolvedFeatures()
-  const modules = useModules()
-  const { configs: moduleConfigs } = useModuleConfigs()
-
-  // ───── Глобальные предикаты ─────
-
-  /** Подписка приостановлена — кроме /account/* всё закрыто. */
-  const isSuspended = computed(() => tenantStore.maybeTenant?.subscription?.status === 'suspended')
-
-  /** Owner проходит любые role-checks. */
-  const isOwner = computed(() => tenantStore.isOwner)
-
-  const hasPermission = (key: PermissionKey): boolean => {
-    if (isOwner.value) return true
-    const perms = tenantStore.currentPermissions
-
-    return perms?.[key] === true
-  }
-
-  /** Найти required-plan модуля для отображения в lock-баннере. */
-  const requiredPlanFor = (moduleKey: ModuleKey): string | undefined => moduleConfigs.value.find((c) => c.key === moduleKey)?.requiredPlan
-
-  // ───── Билдеры ─────
-
-  /**
-   * Гейт "фича существует на уровне тенанта" (без role-check).
-   * Учитывает: suspended → absent → locked → disabled.
-   */
-  const moduleGate = (key: ModuleKey): ComputedRef<GateResult> => computed(() => {
-    if (isSuspended.value) return deny('suspended')
-
-    const state = modules[key].value
-
-    if (state.absent) return deny('absent')
-    if (state.locked) return deny('locked', { requiredPlan: requiredPlanFor(key) })
-    if (!state.active) return deny('disabled')
-
-    return ok()
-  })
-
-  /**
-   * Гейт plan-only фичи (нет в TenantModules, не переключается вручную).
-   * Учитывает: suspended → locked. Без absent/disabled.
-   */
-  const planFeatureGate = (
-    has: () => boolean,
-    requiredPlan?: string,
-  ): ComputedRef<GateResult> => computed(() => {
-    if (isSuspended.value) return deny('suspended')
-    if (!has()) return deny('locked', requiredPlan ? { requiredPlan } : {})
-
-    return ok()
-  })
-
-  /**
-   * Гейт компиляционного флага. Без suspended (это не доступ — это сборка).
-   */
-  const flagGate = (enabled: boolean): ComputedRef<GateResult> => computed(() => enabled ? ok() : deny('flag'),
-  )
-
-  /**
-   * Permission-aware гейт: feature-gate + role-check.
-   * Если фича недоступна на уровне тенанта — возвращаем причину тенанта.
-   * Если доступна, но нет права роли — forbidden.
-   */
-  const permissionGate = (
-    feature: ComputedRef<GateResult>,
-    permKey: PermissionKey,
-  ): ComputedRef<GateResult> => computed(() => {
-    if (isSuspended.value) return deny('suspended')
-    if (!feature.value.enabled) return feature.value
-    if (!hasPermission(permKey)) return deny('forbidden')
-
-    return ok()
-  })
-
-  /**
-   * Гейт config-driven фичи: фича включается настройкой тенанта.
-   * Учитывает: suspended → absent (через зависимый module) → locked → disabled →
-   * unconfigured (если зависимый module enabled, но настройка не включена).
-   */
-  const configGate = (
-    dependsOn: ComputedRef<GateResult>,
-    isConfigured: () => boolean,
-    configPath: string,
-    hint: string,
-  ): ComputedRef<GateResult> => computed(() => {
-    if (isSuspended.value) return deny('suspended')
-    if (!dependsOn.value.enabled) return dependsOn.value
-    if (!isConfigured()) return deny('unconfigured', { configPath, hint })
-
-    return ok()
-  })
+  const infra = useGateInfra()
+  const { tenantStore, branchStore, resolved, isSuspended, isOwner, hasPermission, moduleGate, planFeatureGate, flagGate, permissionGate, configGate } = infra
 
   // ───── Module-based feature gates ─────
 

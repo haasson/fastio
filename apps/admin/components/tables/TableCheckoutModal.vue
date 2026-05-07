@@ -80,7 +80,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiButton } from '@fastio/ui'
 import type { Table, KitchenQueueItem } from '@fastio/shared'
-import type { TableSession, TableSessionItem } from '~/utils/api/tables'
+import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
 import TableSessionItems from '~/components/tables/TableSessionItems.vue'
 
 type Props = {

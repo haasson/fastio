@@ -72,7 +72,7 @@ import { UiButton, UiCard, UiEmpty, UiSkeleton, UiTag, UiText, useMessage } from
 import type { Appointment } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
-import { useAppointmentViewScope } from '~/composables/data/useAppointmentViewScope'
+import { useAppointmentViewScope } from '~/composables/services/useAppointmentViewScope'
 import { useTenantStore } from '~/stores/tenant'
 import { reportError } from '~/utils/reportError'
 import { storeToRefs } from 'pinia'

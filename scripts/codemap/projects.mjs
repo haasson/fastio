@@ -20,7 +20,8 @@ function basenameNoExt(rel) {
 // apps/admin
 // Картируем ТОЛЬКО общую инфру: stores, корневые/ui/plan/delivery composables,
 // utils корня (НЕ utils/api), config, columns, components/{ui,layout},
-// middleware, plugins, layouts. Всё остальное (composables/data, utils/api,
+// middleware, plugins, layouts. Всё остальное (composables/data,
+// composables/{retail,services} — data/CRUD-слой вертикалей, utils/api,
 // server endpoints, pages, фичевые components) — НЕ картируем.
 // ============================================================
 
@@ -34,13 +35,18 @@ const ADMIN_INCLUDED_DIRS = [
 ];
 
 function adminAssign(rel) {
-  // composables: только корневые и {ui,plan,delivery,kitchen,menu} — НЕ data
+  // composables: общие (root, ui, plan, delivery, kitchen, menu, и т.д.)
+  // composables/data, composables/retail, composables/services — это data/CRUD
+  // вертикалей, имена самообъясняющие (useX → CRUD), не картируем.
   if (rel.startsWith('composables/')) {
-    if (rel.startsWith('composables/data/')) return null; // skip
+    if (rel.startsWith('composables/data/')) return null;
+    if (rel.startsWith('composables/retail/')) return null;
+    if (rel.startsWith('composables/services/')) return null;
     if (rel.includes('/__tests__/')) return null;
     return 'main';
   }
-  // utils: корень — да, /api — нет, /__tests__ — нет
+  // utils: корень — да, /api — нет, /__tests__ — нет.
+  // utils/{retail,services} мапятся (это утилиты домена, не CRUD).
   if (rel.startsWith('utils/')) {
     if (rel.startsWith('utils/api/')) return null;
     if (rel.startsWith('utils/__tests__/')) return null;

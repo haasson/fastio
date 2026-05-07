@@ -240,7 +240,7 @@ import { findDeliveryZone, useSchedulingSlots } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useGate } from '~/composables/plan/useGate'
 import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
-import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/order-options'
+import { DELIVERY_OPTIONS, PAYMENT_OPTIONS } from '~/config/retail/order-options'
 import OrderItemsSection from './OrderItemsSection.vue'
 
 const LEAD_MARKS: Record<number, string> = { 15: '15м', 30: '30м', 45: '45м', 60: '1ч', 90: '1.5ч', 120: '2ч', 180: '3ч' }

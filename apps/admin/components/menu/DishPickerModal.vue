@@ -192,7 +192,7 @@ import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput, UiStepper } from
 import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import type { Addon } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
-import { useOrderDishPicker } from '~/composables/data/useOrderDishPicker'
+import { useOrderDishPicker } from '~/composables/retail/useOrderDishPicker'
 import { useGate } from '~/composables/plan/useGate'
 import { useTerms } from '~/composables/useTerms'
 

@@ -4,7 +4,7 @@ import type { DeliveryZone } from '@fastio/shared'
 import { findDeliveryZone } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useDeliveryZoneStore } from '~/stores/deliveryZone'
+import { useDeliveryZoneStore } from '~/stores/retail/deliveryZone'
 
 export type DeliveryInfo = {
   outsideZones: boolean

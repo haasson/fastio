@@ -59,7 +59,7 @@ import { ref, computed, watch, reactive, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from '#imports'
 import { UiButton, UiDataTable, UiText, UiSkeleton, UiEmpty, useMessage } from '@fastio/ui'
-import { visitsBus } from '~/composables/data/useVisitsChannel'
+import { visitsBus } from '~/composables/services/useVisitsChannel'
 import type {
   Branch,
   InboxRow,
@@ -70,9 +70,9 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
-import { useVisitsList } from '~/composables/data/useVisitsList'
-import { useAppointmentInboxCounter } from '~/composables/data/useAppointmentInboxCounter'
-import { useInboxTableColumns, type RowActionKind } from '~/composables/data/useInboxTableColumns'
+import { useVisitsList } from '~/composables/services/useVisitsList'
+import { useAppointmentInboxCounter } from '~/composables/services/useAppointmentInboxCounter'
+import { useInboxTableColumns, type RowActionKind } from '~/composables/services/useInboxTableColumns'
 import { reportError } from '~/utils/reportError'
 import CancelGroupModal from '~/components/appointments/CancelGroupModal.vue'
 

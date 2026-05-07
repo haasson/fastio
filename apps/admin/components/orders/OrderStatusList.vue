@@ -14,8 +14,8 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiTabs } from '@fastio/ui'
-import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
+import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'
 
 const props = defineProps<{
   modelValue: string | null

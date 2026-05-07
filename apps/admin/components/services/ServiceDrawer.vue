@@ -135,13 +135,13 @@ import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { NuxtLink } from '#components'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useAppointmentSettingsStore } from '~/stores/appointmentSettings'
+import { useAppointmentSettingsStore } from '~/stores/services/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTags } from '~/composables/data/useTags'
 import { useBranchToggle } from '~/composables/useBranchToggle'
 import { reportError } from '~/utils/reportError'
-import BasicInfoSection from '~/components/menu/form/BasicInfoSection.vue'
-import TagsSection from '~/components/menu/form/TagsSection.vue'
+import BasicInfoSection from '~/components/catalog/form/BasicInfoSection.vue'
+import TagsSection from '~/components/catalog/form/TagsSection.vue'
 
 const props = defineProps<{
   modelValue: boolean

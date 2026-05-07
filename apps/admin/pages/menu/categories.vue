@@ -39,10 +39,10 @@ import type { Category } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useCategories } from '~/composables/data/useCategories'
 import { useTags } from '~/composables/data/useTags'
-import useDishCounts from '~/composables/data/useDishCounts'
+import useDishCounts from '~/composables/retail/useDishCounts'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import MenuCategoryList from '~/components/menu/CategoryList.vue'
-import MenuCategoryFormModal from '~/components/menu/CategoryFormModal.vue'
+import MenuCategoryFormModal from '~/components/catalog/CategoryFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 

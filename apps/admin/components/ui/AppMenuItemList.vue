@@ -119,7 +119,7 @@ import type { IconName } from '@fastio/icons'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import MenuItemCard from '~/components/menu/ItemCard.vue'
+import MenuItemCard from '~/components/catalog/ItemCard.vue'
 import { useTagDisplay } from '~/composables/ui/useTagDisplay'
 import { useItemVariant } from '~/composables/useItemVariant'
 

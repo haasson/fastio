@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-06T12:34:51.605Z",
+  "generated_at": "2026-05-07T01:29:07.094Z",
   "stats": {
-    "files": 123,
+    "files": 113,
     "pages": 0,
-    "symbols": 214,
+    "symbols": 198,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -14,7 +14,7 @@
   "files": {
     "composables/delivery/useAllDeliveryZones.ts": {
       "kind": "ts",
-      "hash": "16025676aba9",
+      "hash": "0861d6e51a70",
       "purpose": "Realtime-список всех зон доставки тенанта (по всем филиалам) c CRUD и Supabase-подпиской",
       "symbols": [
         {
@@ -46,7 +46,7 @@
     },
     "composables/delivery/useOrderDelivery.ts": {
       "kind": "ts",
-      "hash": "4c210b99be71",
+      "hash": "17a6b43f1672",
       "purpose": "Расчёт стоимости доставки заказа: попадание в зону, фикс/зональный режим, авто-смена филиала, минзаказ и порог free delivery",
       "symbols": [
         {
@@ -168,7 +168,7 @@
     },
     "composables/plan/useGate.routes.ts": {
       "kind": "ts",
-      "hash": "37e90b56c02c",
+      "hash": "a9ae2c870337",
       "purpose": "Карта роут→GateKey для middleware/gate.global + список REDIRECT_FALLBACKS на случай отказа",
       "symbols": [
         {
@@ -191,9 +191,34 @@
         }
       ]
     },
+    "composables/plan/useGate.shared.ts": {
+      "kind": "ts",
+      "hash": "dc18e636d097",
+      "purpose": "Общая инфра гейтов для агрегатора useGate() и per-vertical useGateRetail()/useGateServices(): builders (moduleGate/planFeatureGate/permissionGate/configGate/flagGate) + state-хуки (suspended/owner/perms)",
+      "symbols": [
+        {
+          "name": "ok",
+          "kind": "function",
+          "hash": "bc807f89",
+          "purpose": "Хелпер: успешный GateResult { enabled: true, reason: null }"
+        },
+        {
+          "name": "deny",
+          "kind": "function",
+          "hash": "155e2a3c",
+          "purpose": "Хелпер: GateResult с причиной отказа и опциональными extra-полями (requiredPlan/configPath/hint)"
+        },
+        {
+          "name": "useGateInfra",
+          "kind": "function",
+          "hash": "87864e39",
+          "purpose": "Возвращает store-привязанные builders и state для построения per-vertical и общего реестров гейтов"
+        }
+      ]
+    },
     "composables/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "ecf0ab9b486a",
+      "hash": "dd1822b83e38",
       "purpose": "Реестр гейтов фич админки: feature-only (модули/тариф) и permission-aware (роли); единая точка проверки доступа",
       "symbols": [
         {
@@ -293,57 +318,6 @@
         }
       ]
     },
-    "composables/timeline/useScrollToNow.ts": {
-      "kind": "ts",
-      "hash": "3198566cca82",
-      "purpose": "Императивный auto-scroll таймлайна к now-линии через ResizeObserver; ждёт первого clientHeight>0 после маунта",
-      "symbols": [
-        {
-          "name": "useScrollToNow",
-          "kind": "function",
-          "hash": "b7df1dfb",
-          "purpose": "Возвращает scrollToNow(); скроллит контейнер так, чтобы now-линия оказалась по центру"
-        }
-      ]
-    },
-    "composables/timeline/useTimelineDrag.ts": {
-      "kind": "ts",
-      "hash": "216223b7ee8d",
-      "purpose": "Pointer-handlers и ghost-блок drag&drop карточки записи на таймлайне с rAF-дросселированием hit-test",
-      "symbols": [
-        {
-          "name": "useTimelineDrag",
-          "kind": "function",
-          "hash": "fcd0fb21",
-          "purpose": "Возвращает onCardPointer{Down,Move,Up,Cancel} и dragGhost для рендера preview переноса"
-        },
-        {
-          "name": "DragGhost",
-          "kind": "type",
-          "hash": "d822b224",
-          "purpose": "Шейп ghost-блока: targetResourceId, css-стиль, флаг invalid и причина блокировки"
-        }
-      ]
-    },
-    "composables/timeline/useTimelineLayout.ts": {
-      "kind": "ts",
-      "hash": "55217e7ccc2a",
-      "purpose": "Геометрия таймлайна: окно/тики, dim-полосы (off-hours/disabled/прошлое), позиции карточек, now-линия",
-      "symbols": [
-        {
-          "name": "useTimelineLayout",
-          "kind": "function",
-          "hash": "77770abe",
-          "purpose": "Считает один источник правды для всего, что зависит от windowOpen/Close + pxPerMin"
-        },
-        {
-          "name": "ColumnModel",
-          "kind": "type",
-          "hash": "240387c7",
-          "purpose": "Колонка таймлайна: ресурс + слоты-кнопки + dim-полосы + appointment-карточки"
-        }
-      ]
-    },
     "composables/ui/useDelayedLoading.ts": {
       "kind": "ts",
       "hash": "37b7ee10efd1",
@@ -354,19 +328,6 @@
           "kind": "function",
           "hash": "e9fc61f9",
           "purpose": "Возвращает showSkeleton: Ref<boolean> с дебаунсом старта загрузки"
-        }
-      ]
-    },
-    "composables/ui/useDishTable.ts": {
-      "kind": "ts",
-      "hash": "5491278f9f90",
-      "purpose": "Колонки и фильтры таблицы блюд: фото-плейсхолдер, теги с цветовым стилем, поиск, switch активности и actions",
-      "symbols": [
-        {
-          "name": "useDishTable",
-          "kind": "function",
-          "hash": "9ff0275b",
-          "purpose": "Возвращает searchQuery/filteredDishes/tableColumns для DishList"
         }
       ]
     },
@@ -440,70 +401,6 @@
         }
       ]
     },
-    "composables/ui/useKitchenProgress.ts": {
-      "kind": "ts",
-      "hash": "e32d440d4cb6",
-      "purpose": "Группирует позиции очереди кухни по dishName+кастомизации+статусу с ценой из сессии стола",
-      "symbols": [
-        {
-          "name": "default",
-          "kind": "function",
-          "hash": "52a1fbc6",
-          "purpose": "Возвращает kitchenProgress: список KitchenProgressRow со счётчиками и сумарной ценой"
-        },
-        {
-          "name": "KitchenProgressRow",
-          "kind": "type",
-          "hash": "ca79e5f9",
-          "purpose": "Строка прогресса: ключ, ids, dishName, count, dotClass, цены, статус"
-        }
-      ]
-    },
-    "composables/ui/useOrderCard.ts": {
-      "kind": "ts",
-      "hash": "63c7fa1c01fb",
-      "purpose": "Карточка заказа: текущий статус, quickActions для быстрого перехода и относительное время с shared-now",
-      "symbols": [
-        {
-          "name": "useOrderCard",
-          "kind": "function",
-          "hash": "e93a1159",
-          "purpose": "Возвращает currentStatus/quickActionStatuses/relativeTime для OrderCard"
-        }
-      ]
-    },
-    "composables/ui/useOrderStatus.ts": {
-      "kind": "ts",
-      "hash": "e6135730d4bc",
-      "purpose": "Меню смены статуса заказа: фильтрация allowed-переходов, блокировка кухни, scheduled-pending, confirm возврата в пройденный",
-      "symbols": [
-        {
-          "name": "useOrderStatus",
-          "kind": "function",
-          "hash": "da23e08b",
-          "purpose": "Возвращает currentStatus/statusMenuItems/can/onStatusSelect для OrderEditModal"
-        }
-      ]
-    },
-    "composables/ui/useOrderTable.ts": {
-      "kind": "ts",
-      "hash": "996f9669b25b",
-      "purpose": "Конструктор колонок таблицы заказов: видимые колонки, фильтры по типу/оплате/филиалу, сортировка",
-      "symbols": [
-        {
-          "name": "useOrderTable",
-          "kind": "function",
-          "hash": "1b1355dd",
-          "purpose": "Возвращает columns: ComputedRef<DataTableColumns<Order>> с учётом visibleColumns"
-        },
-        {
-          "name": "COLUMN_OPTIONS",
-          "kind": "const",
-          "hash": "eda24fb5",
-          "purpose": "Опции выбора видимых колонок (имя/телефон/состав/...) для column-picker"
-        }
-      ]
-    },
     "composables/ui/usePageForm.ts": {
       "kind": "ts",
       "hash": "3c2f4b6e4b88",
@@ -523,38 +420,6 @@
         }
       ]
     },
-    "composables/ui/useReservationTable.ts": {
-      "kind": "ts",
-      "hash": "3757360dc158",
-      "purpose": "Состояние таблицы бронирований: фильтры (дата/гости/статус), модалка создания/редактирования, видимые колонки",
-      "symbols": [
-        {
-          "name": "RESERVATION_COLUMN_OPTIONS",
-          "kind": "const",
-          "hash": "48a5c784",
-          "purpose": "Опции выбора видимых колонок таблицы бронирований"
-        },
-        {
-          "name": "useReservationTable",
-          "kind": "function",
-          "hash": "c775f088",
-          "purpose": "Возвращает search/filterDateTs/guestMin-Max/visibleColumnDefs/clearFilters/openCreate/openEdit"
-        }
-      ]
-    },
-    "composables/ui/useStatusColor.ts": {
-      "kind": "ts",
-      "hash": "bc1310f7cd5d",
-      "purpose": "Цвет статуса заказа по его groupType (primary/warning/success/error)",
-      "symbols": [
-        {
-          "name": "useStatusColor",
-          "kind": "function",
-          "hash": "b4b34528",
-          "purpose": "Возвращает getStatusColor(statusId): hex-цвет для тегов и индикаторов"
-        }
-      ]
-    },
     "composables/ui/useStorefrontVisibility.ts": {
       "kind": "ts",
       "hash": "e87e7cec59e7",
@@ -571,37 +436,6 @@
           "kind": "function",
           "hash": "e4a89b7c",
           "purpose": "Возвращает isPageEnabled/isSectionEnabled/isInNav/issues для конкретной SiteFeatureKey"
-        }
-      ]
-    },
-    "composables/ui/useTablesContext.ts": {
-      "kind": "ts",
-      "hash": "96e5aba68cdc",
-      "purpose": "InjectionKey-контекст страницы /tables с провайдом столов, сессий, вызовов, кухни и actions",
-      "symbols": [
-        {
-          "name": "TablesContext",
-          "kind": "type",
-          "hash": "e7fdf139",
-          "purpose": "Контракт provide/inject для страницы столов: state + computed + actions"
-        },
-        {
-          "name": "TablesContextKey",
-          "kind": "const",
-          "hash": "18dde389",
-          "purpose": "InjectionKey<TablesContext>"
-        },
-        {
-          "name": "TodayReservationsKey",
-          "kind": "const",
-          "hash": "bb2896c0",
-          "purpose": "InjectionKey<ComputedRef<Reservation[]>> — сегодняшние брони на странице столов"
-        },
-        {
-          "name": "useTablesContext",
-          "kind": "function",
-          "hash": "5ab9c9bf",
-          "purpose": "inject(TablesContextKey) с reactive-обёрткой"
         }
       ]
     },
@@ -723,7 +557,7 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "691118350c1b",
+      "hash": "a8a57724bb2e",
       "purpose": "Агрегатор Supabase Realtime каналов админки: orders, kitchen, tables, visits, alerts — стартует один раз в default-layout",
       "symbols": [
         {
@@ -913,25 +747,6 @@
         }
       ]
     },
-    "utils/format-order.ts": {
-      "kind": "ts",
-      "hash": "5158970a081a",
-      "purpose": "Форматирование событий заказа и значений полей для журнала истории заказа",
-      "symbols": [
-        {
-          "name": "formatEventText",
-          "kind": "function",
-          "hash": "408065be",
-          "purpose": "Текст события (создание/смена статуса/действия кухни) по eventType+meta"
-        },
-        {
-          "name": "formatFieldValue",
-          "kind": "function",
-          "hash": "0704aca6",
-          "purpose": "Форматирует значение поля заказа (тип оплаты/доставки/fee) для отображения в логе"
-        }
-      ]
-    },
     "utils/formatRelativeDate.ts": {
       "kind": "ts",
       "hash": "ab12eae09559",
@@ -942,19 +757,6 @@
           "kind": "function",
           "hash": "cc5df0fc",
           "purpose": "ISO-строка -> относительная дата на русском"
-        }
-      ]
-    },
-    "utils/generateTableQrPdf.ts": {
-      "kind": "ts",
-      "hash": "13ffcdfb76ab",
-      "purpose": "Генерация PDF с QR-кодами столов через jsPDF: 3 колонки A4, шрифт Roboto, имя стола и название заведения",
-      "symbols": [
-        {
-          "name": "generateTableQrPdf",
-          "kind": "function",
-          "hash": "147405f8",
-          "purpose": "Скачивает qr-{restaurantName}.pdf со столами (с учётом copies на стол)"
         }
       ]
     },
@@ -973,7 +775,7 @@
     },
     "utils/moduleToggleChecks.ts": {
       "kind": "ts",
-      "hash": "b2ad7cbc681b",
+      "hash": "51cb570744d6",
       "purpose": "Проверки блокеров/warnings перед отключением модуля тенанта (активные заказы, бронирования, открытые столы, очередь кухни, кастомные роли, активные записи, баннеры акций, секции/страницы витрины)",
       "symbols": [
         {
@@ -1012,25 +814,6 @@
           "kind": "function",
           "hash": "f647b323",
           "purpose": "Текст confirm-диалога смены тарифа: триал vs обычное списание"
-        }
-      ]
-    },
-    "utils/promoStatus.ts": {
-      "kind": "ts",
-      "hash": "1d3ea186146f",
-      "purpose": "Эффективный статус акции/промокода (active/inactive/scheduled/expired) и опции фильтра",
-      "symbols": [
-        {
-          "name": "effectivePromoStatus",
-          "kind": "function",
-          "hash": "a14a2d04",
-          "purpose": "Возвращает {key, type, label} по active/activeFrom/activeTo"
-        },
-        {
-          "name": "PROMO_STATUS_FILTER_OPTIONS",
-          "kind": "const",
-          "hash": "d7ece065",
-          "purpose": "Опции фильтра по статусу для таблиц промо/промокодов"
         }
       ]
     },
@@ -1073,7 +856,58 @@
         }
       ]
     },
-    "utils/reservation-constants.ts": {
+    "utils/retail/format-order.ts": {
+      "kind": "ts",
+      "hash": "0c9ed0e74994",
+      "purpose": "Форматирование событий заказа и значений полей для журнала истории заказа",
+      "symbols": [
+        {
+          "name": "formatEventText",
+          "kind": "function",
+          "hash": "408065be",
+          "purpose": "Текст события (создание/смена статуса/действия кухни) по eventType+meta"
+        },
+        {
+          "name": "formatFieldValue",
+          "kind": "function",
+          "hash": "0704aca6",
+          "purpose": "Форматирует значение поля заказа (тип оплаты/доставки/fee) для отображения в логе"
+        }
+      ]
+    },
+    "utils/retail/generateTableQrPdf.ts": {
+      "kind": "ts",
+      "hash": "b26cfdc0479d",
+      "purpose": "Генерация PDF с QR-кодами столов через jsPDF: 3 колонки A4, шрифт Roboto, имя стола и название заведения",
+      "symbols": [
+        {
+          "name": "generateTableQrPdf",
+          "kind": "function",
+          "hash": "147405f8",
+          "purpose": "Скачивает qr-{restaurantName}.pdf со столами (с учётом copies на стол)"
+        }
+      ]
+    },
+    "utils/retail/promoStatus.ts": {
+      "kind": "ts",
+      "hash": "1d3ea186146f",
+      "purpose": "Эффективный статус акции/промокода (active/inactive/scheduled/expired) и опции фильтра",
+      "symbols": [
+        {
+          "name": "effectivePromoStatus",
+          "kind": "function",
+          "hash": "a14a2d04",
+          "purpose": "Возвращает {key, type, label} по active/activeFrom/activeTo"
+        },
+        {
+          "name": "PROMO_STATUS_FILTER_OPTIONS",
+          "kind": "const",
+          "hash": "d7ece065",
+          "purpose": "Опции фильтра по статусу для таблиц промо/промокодов"
+        }
+      ]
+    },
+    "utils/retail/reservation-constants.ts": {
       "kind": "ts",
       "hash": "34b9526088d3",
       "purpose": "Константы статусов бронирований: лейблы, типы тегов, опции фильтра, активные/архивные группы",
@@ -1122,7 +956,7 @@
         }
       ]
     },
-    "utils/scheduleConflictCheck.ts": {
+    "utils/services/scheduleConflictCheck.ts": {
       "kind": "ts",
       "hash": "54d5270cc3e0",
       "purpose": "Проверка попадания существующих записей в новое расписание (без мутаций БД) — используется при редактировании/применении шаблона",
@@ -1171,22 +1005,9 @@
         }
       ]
     },
-    "utils/supportStatus.ts": {
+    "utils/services/timelineAvailability.ts": {
       "kind": "ts",
-      "hash": "321b9b02630a",
-      "purpose": "Маппинг статусов тикетов поддержки на тип/лейбл UiTag",
-      "symbols": [
-        {
-          "name": "supportStatusMap",
-          "kind": "const",
-          "hash": "ae845004",
-          "purpose": "Словарь SupportTicketStatus -> { type, label }"
-        }
-      ]
-    },
-    "utils/timelineAvailability.ts": {
-      "kind": "ts",
-      "hash": "fb373a5cbc4e",
+      "hash": "aaa3b4e41fa0",
       "purpose": "Сборка per-resource расписания и disabled-слотов на дату из bulkLoadAvailability — для таймлайна админки",
       "symbols": [
         {
@@ -1209,16 +1030,16 @@
         }
       ]
     },
-    "stores/appointmentSettings.ts": {
+    "utils/supportStatus.ts": {
       "kind": "ts",
-      "hash": "03dd628daf8d",
-      "purpose": "Pinia: настройки онлайн-записи тенанта (resourceMode: staff|object), lazy-загрузка по tenantId; resourceMode дефолтит из DEFAULT_APPOINTMENT_SETTINGS",
+      "hash": "321b9b02630a",
+      "purpose": "Маппинг статусов тикетов поддержки на тип/лейбл UiTag",
       "symbols": [
         {
-          "name": "useAppointmentSettingsStore",
+          "name": "supportStatusMap",
           "kind": "const",
-          "hash": "c88ac7de",
-          "purpose": "Стор с settings/loading/resourceMode + load(force)/refresh()"
+          "hash": "ae845004",
+          "purpose": "Словарь SupportTicketStatus -> { type, label }"
         }
       ]
     },
@@ -1248,7 +1069,7 @@
         }
       ]
     },
-    "stores/deliveryZone.ts": {
+    "stores/retail/deliveryZone.ts": {
       "kind": "ts",
       "hash": "1ebf360929ca",
       "purpose": "Pinia: глобальный кэш всех зон доставки тенанта (для заказов, страницы зон и филиалов)",
@@ -1261,9 +1082,9 @@
         }
       ]
     },
-    "stores/order-statuses.ts": {
+    "stores/retail/order-statuses.ts": {
       "kind": "ts",
-      "hash": "4bdb0486ebc0",
+      "hash": "df1ede67c79a",
       "purpose": "Pinia: статусы заказов тенанта с realtime-подпиской (общий ресурс для OrderCard/OrderRow/OrderEditModal)",
       "symbols": [
         {
@@ -1274,9 +1095,9 @@
         }
       ]
     },
-    "stores/reservations.ts": {
+    "stores/retail/reservations.ts": {
       "kind": "ts",
-      "hash": "3483913ae6b7",
+      "hash": "55d37979377a",
       "purpose": "Pinia: бронирования с realtime по tenantId+branchId (общий ресурс для тоста/счётчиков/страниц)",
       "symbols": [
         {
@@ -1284,6 +1105,19 @@
           "kind": "const",
           "hash": "5d347b93",
           "purpose": "Стор-обёртка над useReservations, привязан к tenant/branch"
+        }
+      ]
+    },
+    "stores/services/appointmentSettings.ts": {
+      "kind": "ts",
+      "hash": "8371c10cddd4",
+      "purpose": "Pinia: настройки онлайн-записи тенанта (resourceMode: staff|object), lazy-загрузка по tenantId; resourceMode дефолтит из DEFAULT_APPOINTMENT_SETTINGS",
+      "symbols": [
+        {
+          "name": "useAppointmentSettingsStore",
+          "kind": "const",
+          "hash": "c88ac7de",
+          "purpose": "Стор с settings/loading/resourceMode + load(force)/refresh()"
         }
       ]
     },
@@ -1405,7 +1239,7 @@
         }
       ]
     },
-    "config/order-events.ts": {
+    "config/retail/order-events.ts": {
       "kind": "ts",
       "hash": "b635ddeb7815",
       "purpose": "Лейблы полей заказа для журнала истории (customer_name, address, payment_type и т.п.)",
@@ -1418,7 +1252,7 @@
         }
       ]
     },
-    "config/order-options.ts": {
+    "config/retail/order-options.ts": {
       "kind": "ts",
       "hash": "65fce2b4f653",
       "purpose": "Лейблы и опции типов оплаты/доставки заказа + иконки",
@@ -1461,7 +1295,7 @@
         }
       ]
     },
-    "config/order-status-groups.ts": {
+    "config/retail/order-status-groups.ts": {
       "kind": "ts",
       "hash": "85fa67161dec",
       "purpose": "Цвета/типы UiTag и лейблы для групп статусов заказа (new/in_progress/completed/cancelled)",
@@ -1526,7 +1360,7 @@
     },
     "columns/_promo-shared.ts": {
       "kind": "ts",
-      "hash": "cd653728b97b",
+      "hash": "a95d2f15487f",
       "purpose": "Общие колонки таблиц промо/промокодов: статус с фильтром, активный период, actions (toggle/edit/delete)",
       "symbols": [
         {
@@ -1609,7 +1443,7 @@
     },
     "columns/reservations.ts": {
       "kind": "ts",
-      "hash": "e9eea32f2b42",
+      "hash": "21737cc1ee05",
       "purpose": "Колонки таблицы бронирований: дата/время с днём недели, гость, телефон, кол-во гостей с фильтром-диапазоном, стол, статус",
       "symbols": [
         {
@@ -1732,7 +1566,7 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "4c6a84020dbe",
+      "hash": "b51296b81608",
       "purpose": "Боковая навигация админки: список разделов с иконками и счётчиками (заказы, бронирования, инбокс записей, поддержка), фильтрация по plan-гейтам и модулям тенанта",
       "symbols": [
         {
@@ -1955,7 +1789,7 @@
     },
     "components/ui/AppMenuItemList.vue": {
       "kind": "vue",
-      "hash": "7f8de74e9fb1",
+      "hash": "3b665992bf24",
       "purpose": "Универсальный layout правой панели меню (DishList/Services): SegmentedControl (карточки/таблица), поиск, header с кнопкой добавления, empty-state",
       "symbols": [
         {

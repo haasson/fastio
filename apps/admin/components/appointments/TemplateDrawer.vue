@@ -135,10 +135,10 @@ import { getBranchHoursForDow, pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useScheduleConflictCheck } from '~/composables/data/useScheduleConflictCheck'
+import { useScheduleConflictCheck } from '~/composables/services/useScheduleConflictCheck'
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,
-} from '~/utils/scheduleConflictCheck'
+} from '~/utils/services/scheduleConflictCheck'
 import { reportError } from '~/utils/reportError'
 
 const props = defineProps<{

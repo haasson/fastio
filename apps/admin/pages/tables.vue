@@ -31,15 +31,15 @@ import type { Table, TableCallType, TableCall, KitchenQueueItem } from '@fastio/
 import { todayInTz } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useReservationsStore } from '~/stores/reservations'
+import { useReservationsStore } from '~/stores/retail/reservations'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
-import { useOrderStatusesStore } from '~/stores/order-statuses'
-import { orderEvents } from '~/composables/data/useOrdersChannel'
-import { tableCallEvents } from '~/composables/data/useTableCallsChannel'
-import { kitchenQueueEvents } from '~/composables/data/useKitchenQueueChannel'
-import { TablesContextKey, TodayReservationsKey } from '~/composables/ui/useTablesContext'
-import type { TableSession, TableSessionItem } from '~/utils/api/tables'
+import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
+import { orderEvents } from '~/composables/retail/useOrdersChannel'
+import { tableCallEvents } from '~/composables/retail/useTableCallsChannel'
+import { kitchenQueueEvents } from '~/composables/retail/useKitchenQueueChannel'
+import { TablesContextKey, TodayReservationsKey } from '~/composables/retail/useTablesContext'
+import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
 
 usePageTitle('Столы')
 

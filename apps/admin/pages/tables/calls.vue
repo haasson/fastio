@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTablesContext } from '~/composables/ui/useTablesContext'
+import { useTablesContext } from '~/composables/retail/useTablesContext'
 import TableCallSettings from '~/components/tables/TableCallSettings.vue'
 
 const ctx = useTablesContext()

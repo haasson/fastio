@@ -1,2 +1,3 @@
 pnpm --filter admin exec lint-staged
 pnpm --filter admin typecheck
+pnpm vitest run apps/admin/__tests__/eslint-barrier.test.ts

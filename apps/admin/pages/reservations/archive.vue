@@ -63,11 +63,11 @@ import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/composables/ui/useReservationTable'
+import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/composables/retail/useReservationTable'
 import {
   RESERVATION_ARCHIVE_STATUSES,
   RESERVATION_ARCHIVE_STATUS_OPTIONS,
-} from '~/utils/reservation-constants'
+} from '~/utils/retail/reservation-constants'
 
 const PAGE_SIZE = 20
 

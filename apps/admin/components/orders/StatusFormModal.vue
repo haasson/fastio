@@ -61,7 +61,7 @@ import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiSelect } from '@fastio/ui'
 import type { OrderStatus, OrderStatusGroup } from '@fastio/shared'
 import { getAllowedStatuses } from '@fastio/shared'
-import { STATUS_GROUP_LABELS } from '~/config/order-status-groups'
+import { STATUS_GROUP_LABELS } from '~/config/retail/order-status-groups'
 
 const props = defineProps<{
   modelValue: boolean

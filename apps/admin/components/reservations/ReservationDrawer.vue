@@ -139,7 +139,7 @@ import { UiButton, UiDatepicker, UiDivider, UiDrawer, UiForm, UiInput, UiInputNu
 import type { DrawerAction } from '@fastio/ui'
 import type { Reservation, Table } from '@fastio/shared'
 import { validationRules, useConfirm } from '@fastio/kit'
-import { useReservationsStore } from '~/stores/reservations'
+import { useReservationsStore } from '~/stores/retail/reservations'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
@@ -148,7 +148,7 @@ import { formatDateStr, todayInTz, nowTimeInTz } from '@fastio/shared'
 import {
   RESERVATION_STATUS_LABELS as STATUS_LABELS,
   RESERVATION_STATUS_TYPES as STATUS_TYPES,
-} from '~/utils/reservation-constants'
+} from '~/utils/retail/reservation-constants'
 import ReservationTablePicker from './ReservationTablePicker.vue'
 
 const props = defineProps<{

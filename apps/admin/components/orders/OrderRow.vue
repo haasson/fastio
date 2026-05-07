@@ -51,10 +51,10 @@ import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { formatPhone } from '@fastio/shared'
-import { STATUS_GROUP_TAG_TYPES } from '~/config/order-status-groups'
+import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'
 import type { IconName } from '@fastio/icons'
-import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/order-options'
-import { useOrderCard } from '~/composables/ui/useOrderCard'
+import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/retail/order-options'
+import { useOrderCard } from '~/composables/retail/useOrderCard'
 
 const props = defineProps<{
   order: Order

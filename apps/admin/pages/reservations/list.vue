@@ -54,8 +54,8 @@ import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiSkeleton } from '@fasti
 import type { Reservation } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
-import { useReservationsStore } from '~/stores/reservations'
-import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/composables/ui/useReservationTable'
+import { useReservationsStore } from '~/stores/retail/reservations'
+import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/composables/retail/useReservationTable'
 
 // Активные брони живут в глобальном сторе — обновляются через realtime без перезапросов.
 // ReservationsArchive держит локальный state — там пагинация server-side.

@@ -82,10 +82,10 @@ import { UiTimeline, UiTimelineItem } from '@fastio/ui'
 import { COLORS } from '@fastio/kit'
 import type { OrderEvent, OrderItem } from '@fastio/shared'
 import { formatRelativeTime } from '@fastio/shared'
-import { FIELD_LABELS } from '~/config/order-events'
-import { formatFieldValue, formatEventText } from '~/utils/format-order'
-import { useStatusColor } from '~/composables/ui/useStatusColor'
-import { useOrderEvents } from '~/composables/data/useOrderEvents'
+import { FIELD_LABELS } from '~/config/retail/order-events'
+import { formatFieldValue, formatEventText } from '~/utils/retail/format-order'
+import { useStatusColor } from '~/composables/retail/useStatusColor'
+import { useOrderEvents } from '~/composables/retail/useOrderEvents'
 
 const props = defineProps<{
   orderId: string

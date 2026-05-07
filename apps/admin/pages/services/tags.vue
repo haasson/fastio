@@ -3,5 +3,5 @@
 </template>
 
 <script setup lang="ts">
-import TagsManager from '~/components/menu/TagsManager.vue'
+import TagsManager from '~/components/catalog/TagsManager.vue'
 </script>

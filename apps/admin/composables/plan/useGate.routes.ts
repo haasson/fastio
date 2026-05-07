@@ -1,3 +1,5 @@
+import { RETAIL_ROUTE_SUBS, RETAIL_ROUTE_ROOTS } from '~/composables/retail/useGate.routes'
+import { SERVICES_ROUTE_SUBS, SERVICES_ROUTE_ROOTS } from '~/composables/services/useGate.routes'
 import type { GateKey } from './useGate.types'
 
 /**
@@ -6,54 +8,30 @@ import type { GateKey } from './useGate.types'
  * Логика выбора гейта — та же, что и видимости в `AppNav.vue` (см. nav-items),
  * чтобы юзер не мог открыть по прямой ссылке то, что не видит в навигации.
  *
- * Порядок важен: более специфичные суб-роуты должны идти ПЕРЕД корневыми
- * секциями, иначе `startsWith` корня перехватит их раньше.
+ * Структура: сначала ВСЕ под-роуты (retail + services + shared), потом ВСЕ
+ * корни. `startsWith`-сматчинг иначе перехватил бы под-роут корнем секции.
+ *
+ * Per-vertical карты лежат в `composables/{retail,services}/useGate.routes.ts`,
+ * чтобы их типы (RetailGateKey/ServicesGateKey) физически не давали
+ * перепутать вертикали при добавлении новых роутов.
  */
 const ROUTE_GATES: Array<[string, GateKey]> = [
-  // ───── Суб-роуты со своими (более строгими) гейтами ─────
-  ['/menu/categories', 'manageMenu'],
-  ['/menu/modifiers', 'modifiers'],
-  ['/menu/addons', 'addons'],
-  ['/menu/tags', 'manageMenu'],
+  // ───── Под-роуты вертикалей ─────
+  ...RETAIL_ROUTE_SUBS,
+  ...SERVICES_ROUTE_SUBS,
 
+  // ───── Shared под-роуты (settings/* мапятся на shared editSettings) ─────
   ['/orders/settings', 'editSettings'],
   ['/orders/statuses', 'editSettings'],
   ['/orders/order-number', 'editSettings'],
-  ['/orders/delivery', 'delivery'],
-
-  ['/kitchen/queue', 'viewKitchenQueue'],
-  ['/kitchen/assembly', 'viewKitchenQueue'],
-  ['/kitchen/overview', 'viewKitchenOverview'],
   ['/kitchen/settings', 'editSettings'],
-
+  ['/reservations/settings', 'editSettings'],
+  ['/appointments/settings', 'editSettings'],
   ['/team/roles', 'manageRoles'],
 
-  ['/reservations/settings', 'editSettings'],
-
-  ['/appointments/settings', 'editSettings'],
-  ['/appointments/templates', 'manageAppointments'],
-  ['/appointments/staff', 'manageAppointments'],
-  ['/appointments/objects', 'manageAppointments'],
-  // Сводный список визитов виден только тем, кто видит чужие записи:
-  // мастер с `view_own` сюда не пускается (там чужие клиенты + телефоны).
-  ['/appointments/list', 'viewAllAppointments'],
-  // /appointments → редирект на /appointments/list или /appointments/timeline
-  // (см. routeRules в nuxt.config). Гейтим здесь по тому же ключу.
-  ['/appointments/visits', 'viewAllAppointments'],
-
-  ['/services/categories', 'manageServiceMenu'],
-  ['/services/items', 'viewServiceMenu'],
-  ['/services/tags', 'manageServiceMenu'],
-
   // ───── Корни секций (соответствуют AppNav) ─────
-  ['/menu', 'viewMenu'],
-  ['/orders', 'viewOrders'],
-  ['/kitchen', 'viewKitchen'],
-  ['/tables', 'viewTables'],
-  ['/reservations', 'viewReservations'],
-  ['/appointments', 'viewAppointments'],
-  ['/services', 'viewServiceMenu'],
-  ['/promotions', 'managePromotions'],
+  ...RETAIL_ROUTE_ROOTS,
+  ...SERVICES_ROUTE_ROOTS,
   ['/team', 'manageTeam'],
   ['/branches', 'viewBranches'],
   ['/content', 'viewContent'],
