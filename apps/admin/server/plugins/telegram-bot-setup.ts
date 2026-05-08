@@ -11,7 +11,7 @@ export default defineNitroPlugin(async () => {
   const webhookUrl = `${adminUrl}/api/telegram/auth-webhook`
   const body: Record<string, unknown> = {
     url: webhookUrl,
-    allowed_updates: ['message'],
+    allowed_updates: ['message', 'callback_query'],
   }
 
   if (config.telegramWebhookSecret) {

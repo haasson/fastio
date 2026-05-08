@@ -48,12 +48,17 @@
             @back="step = 'slots'"
           />
 
-          <ApptGroupSuccess
-            v-else-if="step === 'success' && groupResult"
-            :appointments="groupResult.appointments"
-            :service-names="successServiceNames"
-            :timezone="timezone"
-          />
+          <template v-else-if="step === 'success' && groupResult">
+            <ApptGroupSuccess
+              :appointments="groupResult.appointments"
+              :service-names="successServiceNames"
+              :timezone="timezone"
+            />
+            <ApptReminderOffer
+              v-if="groupResult.appointments.length > 0"
+              :appointment-id="groupResult.appointments[0].id"
+            />
+          </template>
 
           <FsAlert v-if="error" type="error" class="error-alert">{{ error }}</FsAlert>
 
@@ -96,6 +101,7 @@ import ApptGroupSlots from '~/components/appointments/ApptGroupSlots.vue'
 import ApptGroupRequest from '~/components/appointments/ApptGroupRequest.vue'
 import ApptStepContact from '~/components/appointments/ApptStepContact.vue'
 import ApptGroupSuccess from '~/components/appointments/ApptGroupSuccess.vue'
+import ApptReminderOffer from '~/components/appointments/ApptReminderOffer.vue'
 import { useCartStore } from '~/stores/cart'
 import { useSelectedBranchStore } from '~/stores/selectedBranch'
 import { useToast } from '~/composables/useToast'

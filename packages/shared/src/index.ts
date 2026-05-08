@@ -64,3 +64,4 @@ export * from './utils/planResolve'
 export * from './utils/slugify'
 
 export * from './utils/vocabulary'
+export * from './utils/telegramReminderOptions'

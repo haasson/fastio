@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-08T04:01:30.910Z",
+  "generated_at": "2026-05-08T06:40:08.300Z",
   "stats": {
-    "files": 39,
+    "files": 40,
     "pages": 0,
-    "symbols": 169,
+    "symbols": 180,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1007,6 +1007,79 @@
           "kind": "function",
           "hash": "3949b8e0",
           "purpose": "Подсказка имени тега в зависимости от типа: services→'Онлайн', catalog→'Новинка', food→'Острое'"
+        }
+      ]
+    },
+    "src/utils/telegramReminderOptions.ts": {
+      "kind": "ts",
+      "hash": "709a163e8a0f",
+      "purpose": "Опции, регулярки, форматтеры и keyboard-builder для Telegram-напоминаний клиенту о записи (общие между admin webhook и storefront API)",
+      "symbols": [
+        {
+          "name": "isValidReminderMinutes",
+          "kind": "function",
+          "hash": "ac70ec53",
+          "purpose": "Проверка, что переданное число минут — одна из допустимых опций REMINDER_OPTIONS"
+        },
+        {
+          "name": "buildReminderKeyboard",
+          "kind": "function",
+          "hash": "a2228174",
+          "purpose": "Собирает 2×2 inline-keyboard для Telegram с callback_data вида remind_<token>_<minutes>"
+        },
+        {
+          "name": "escapeHtml",
+          "kind": "function",
+          "hash": "5eca323a",
+          "purpose": "Экранирует &/</> для безопасной вставки в Telegram-сообщения с parse_mode=HTML"
+        },
+        {
+          "name": "formatAppointmentDateTime",
+          "kind": "function",
+          "hash": "fa9ba5c1",
+          "purpose": "Локализованное представление даты и времени записи (ru-RU) для сообщений в Telegram"
+        },
+        {
+          "name": "buildReminderOfferText",
+          "kind": "function",
+          "hash": "839faa3a",
+          "purpose": "Текст «выбери, за сколько напомнить» — общий для admin webhook и storefront /remind-offer"
+        },
+        {
+          "name": "ReminderOption",
+          "kind": "type",
+          "hash": "b3cb3eb0",
+          "purpose": "Описание варианта напоминания: label + minutes"
+        },
+        {
+          "name": "REMINDER_OPTIONS",
+          "kind": "const",
+          "hash": "69c9beb6",
+          "purpose": "Список доступных вариантов: за 30 мин / 2ч / 1д / 2д"
+        },
+        {
+          "name": "MAX_REMINDER_MINUTES",
+          "kind": "const",
+          "hash": "075dd6ac",
+          "purpose": "Максимальное время напоминания (минуты) — задаёт горизонт выборки cron'а"
+        },
+        {
+          "name": "REMINDER_TOKEN_TTL_MS",
+          "kind": "const",
+          "hash": "55de2448",
+          "purpose": "Время жизни одноразового deep-link токена напоминания (7 дней)"
+        },
+        {
+          "name": "REMINDER_UUID_RE",
+          "kind": "const",
+          "hash": "33e8e330",
+          "purpose": "Регулярка валидации appointmentId (UUID v4) в storefront-эндпоинтах"
+        },
+        {
+          "name": "REMINDER_TOKEN_RE",
+          "kind": "const",
+          "hash": "d93d069d",
+          "purpose": "Регулярка валидации 22-символьного base64url токена напоминания"
         }
       ]
     },

@@ -24,8 +24,8 @@ export default defineEventHandler(async (event) => {
   const nonce = randomUUID().replace(/-/g, '')
   const expiresAt = new Date(Date.now() + NONCE_TTL_MS).toISOString()
 
-  // INSERT: tenant_id is in the payload, use raw client to avoid WHERE-clause conflict
-  const { error } = await db.raw
+  // INSERT: tenant_id is in the payload, crossTenant bypasses the insert-block proxy
+  const { error } = await db.crossTenant
     .from('pending_telegram_auths')
     .insert({ nonce, tenant_id: db.tenantId, expires_at: expiresAt })
 

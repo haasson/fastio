@@ -6,7 +6,6 @@ import { reportError } from '~/utils/reportError'
 const rateLimiter = createRateLimiter(5, 60_000)
 
 const NOTES_MAX_LENGTH = 1000
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type BulkItem = {
   serviceId: string

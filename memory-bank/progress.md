@@ -1,6 +1,7 @@
 # Progress: Fastio
 
 ## What Works
+- **Telegram-напоминания клиентам о записях** (2026-05-08, миграции 259+260) — после успешной записи на витрине клиент получает блок «Напоминание в Telegram»: hasTelegram → бот шлёт inline-keyboard «за 30 мин / 2ч / 1д / 2д»; иначе deep-link `t.me/<bot>?start=remind_<token>` (single-use 22-символьный токен через `appointment_reminder_tokens`). Cron pg_cron каждую минуту разбирает unsent reminders с claim-and-send (откат claim'а на transient-ошибках). Архитектурно безопасно: UUID appointment'а никогда не утекает наружу, enum невозможен.
 - **Cross-tenant isolation hardening** (2026-05-04, миграции 245+246) — закрыты `customers`/`customer_addresses` клиентские RLS-policies на write, добавлена валидация tenant вторичных uuid в RPC (`*_set_*_ids`, `apply_shift_template_to_resource`), все `branches.eq('id', ...)` в storefront-серверах теперь с tenant-фильтром, combos в `order-items.ts` валидируются по tenant. Осталось: `enforceTenantContext(event)` helper и integration-тесты с двумя тенантами.
 - **Admin панель** — полностью рабочая: меню, заказы, кухня, столы, бронирования, акции, контент, внешний вид, настройки, команда, аккаунт
 - **Визиты (онлайн-запись)** — визит = посещение клиентом в один бизнес-день, 1+ услуг с независимыми статусами. Инвариант «один бизнес-день» проверяется в БД через `compute_business_date` (учитывает overnight-смены филиала). Per-service экшены, split (через серию move_appointment), единая страница для создания и редактирования (дровер выпилен)
