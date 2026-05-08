@@ -54,8 +54,13 @@ export function useCartReconciler(menuRef: Ref<MenuData | null>) {
         ? dishResult.items.map((item) => ({ ...item, kind: 'dish' as const }))
         : cartStore.dishItems
 
+      // ReconcileServiceItem ⊂ ServiceCartItem: reconciler spreads item (что включает
+      // branchId), но тип ReconcileServiceItem его не декларирует — кастуем явно.
       const reconciledServices: ServiceCartItem[] = serviceResult
-        ? serviceResult.items.map((item) => ({ ...item, kind: 'service' as const }))
+        ? serviceResult.items.map((item) => ({
+            ...(item as ServiceCartItem),
+            kind: 'service' as const,
+          }))
         : cartStore.serviceItems
 
       // patchByKey вместо replaceAll: сохраняет индексы существующих позиций

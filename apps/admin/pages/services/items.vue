@@ -30,6 +30,7 @@
     :service="editingService"
     :initial-category-id="selectedCategoryId"
     :categories="categories"
+    :do-update="update"
     @saved="onSaved"
   />
 </template>
@@ -55,7 +56,7 @@ const selectedCategoryId = ref<string | null>(null)
 
 const { categories, loading: categoriesLoading } = useCategories(tenantId, 'service')
 const { tags } = useTags(tenantId)
-const { services, loading: servicesLoading, remove, toggleActive: rawToggleActive, reorder: rawReorder }
+const { services, loading: servicesLoading, remove, update, toggleActive: rawToggleActive, reorder: rawReorder }
   = useServices(tenantId, selectedCategoryId)
 
 const counts = ref<Record<string, number>>({})

@@ -6,10 +6,15 @@
       type="button"
       @click="emit('click')"
     >
-      <slot name="icon" />
-      <span class="fab-count">{{ count }}</span>
-      <span class="fab-label">{{ label }}</span>
-      <span class="fab-price">{{ price }}</span>
+      <span class="fab-main">
+        <slot name="icon" />
+        <span class="fab-count">{{ count }}</span>
+        <span class="fab-label">{{ label }}</span>
+        <span class="fab-price">{{ price }}</span>
+      </span>
+      <span v-if="$slots.caption" class="fab-caption">
+        <slot name="caption" />
+      </span>
     </button>
   </Transition>
 </template>
@@ -37,15 +42,16 @@ const emit = defineEmits<{
   right: var(--scrollbar-width, 0px);
   margin-inline: auto;
   width: fit-content;
+  max-width: calc(100% - 32px);
   z-index: var(--z-sticky);
-  @include flex-row(10px);
-  padding: 14px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px 22px;
   background: var(--primary);
   color: var(--on-primary);
-  border-radius: 999px;
+  border-radius: 24px;
   box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 40%, transparent);
-  @include text-body-sm(600);
-  white-space: nowrap;
   cursor: pointer;
   border: none;
 
@@ -56,6 +62,14 @@ const emit = defineEmits<{
   @include lg {
     bottom: max(32px, env(safe-area-inset-bottom));
   }
+}
+
+.fab-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  @include text-body-sm(600);
+  white-space: nowrap;
 }
 
 .fab-count {
@@ -69,6 +83,21 @@ const emit = defineEmits<{
   color: var(--primary);
   border-radius: 999px;
   @include text-xs(700);
+  flex-shrink: 0;
+}
+
+.fab-caption {
+  display: block;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--on-primary) 22%, transparent);
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fab-enter-active,

@@ -25,6 +25,7 @@ export const visitsApi = {
       pageSize: number
       filter: VisitFilter
       tz: string
+      branchId?: string | null
     },
   ): Promise<{ data: Visit[]; total: number }> {
     let q = sb
@@ -32,6 +33,10 @@ export const visitsApi = {
       .select(VISIT_FIELDS, { count: 'exact' })
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
+
+    if (opts.branchId) {
+      q = q.eq('branch_id', opts.branchId)
+    }
 
     if (opts.filter === 'today' || opts.filter === 'week') {
       const todayStr = todayInTz(opts.tz)
@@ -300,20 +305,30 @@ export const visitsApi = {
    * Счётчик «требует обработки» в инбокс-бейдже:
    *   - request-визиты (заявки от клиента, ждут оформления);
    *   - active-визиты с хотя бы одной услугой в статусе 'new'.
+   * Если передан branchId — считаем только для этого филиала.
    */
-  async countNew(sb: SupabaseClient, tenantId: string): Promise<number> {
+  async countNew(sb: SupabaseClient, tenantId: string, branchId?: string): Promise<number> {
+    let requestQ = sb
+      .from('appointment_groups')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('status', 'request')
+
+    let apptQ = sb
+      .from('appointments')
+      .select('group_id, appointment_groups!inner(tenant_id, status, branch_id)')
+      .eq('appointment_groups.tenant_id', tenantId)
+      .eq('appointment_groups.status', 'active')
+      .eq('status', 'new')
+
+    if (branchId) {
+      requestQ = requestQ.eq('branch_id', branchId)
+      apptQ = apptQ.eq('appointment_groups.branch_id', branchId)
+    }
+
     const [{ count: requestCount, error: reqErr }, { data: pendingRows, error: apptErr }] = await Promise.all([
-      sb
-        .from('appointment_groups')
-        .select('id', { count: 'exact', head: true })
-        .eq('tenant_id', tenantId)
-        .eq('status', 'request'),
-      sb
-        .from('appointments')
-        .select('group_id, appointment_groups!inner(tenant_id, status)')
-        .eq('appointment_groups.tenant_id', tenantId)
-        .eq('appointment_groups.status', 'active')
-        .eq('status', 'new'),
+      requestQ,
+      apptQ,
     ])
 
     if (reqErr) throw new Error(reqErr.message)

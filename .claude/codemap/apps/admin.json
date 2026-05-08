@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-07T01:29:07.094Z",
+  "generated_at": "2026-05-08T02:50:55.167Z",
   "stats": {
     "files": 113,
     "pages": 0,
@@ -1898,8 +1898,8 @@
     },
     "components/ui/ImageUploadModal.vue": {
       "kind": "vue",
-      "hash": "b1ed0736fac3",
-      "purpose": "Модалка загрузки картинки: drag&drop/file picker/URL, шаги pick->crop, кадрирование с ImageAspectRatio",
+      "hash": "6661f27fc3be",
+      "purpose": "Модалка загрузки картинки: drag&drop файла или галерея, кадрирование под aspectRatio, эмит uploaded(blob) для родителя",
       "symbols": [
         {
           "name": "props",

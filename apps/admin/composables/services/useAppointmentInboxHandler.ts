@@ -1,8 +1,10 @@
 import { watch, onUnmounted, type Ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
+import type { Visit } from '@fastio/shared'
 import { visitsBus } from '~/composables/services/useVisitsChannel'
 import { useAppointmentInboxCounter } from '~/composables/services/useAppointmentInboxCounter'
 import { useDatabase } from '~/composables/data/useDatabase'
+import { useBranchStore } from '~/stores/branch'
 import { reportError } from '~/utils/reportError'
 
 // Счётчик «Новых» в инбоксе. После 230 заявка — это визит со status='request',
@@ -11,10 +13,11 @@ import { reportError } from '~/utils/reportError'
 export function useAppointmentInboxHandler(tenantId: Ref<string | null>) {
   const counter = useAppointmentInboxCounter()
   const api = useDatabase()
+  const branchStore = useBranchStore()
 
   const recount = async (tid: string): Promise<void> => {
     try {
-      const n = await api.visits.countNew(tid)
+      const n = await api.visits.countNew(tid, branchStore.currentBranchId ?? undefined)
 
       counter.set(n)
     } catch (e) {
@@ -32,16 +35,21 @@ export function useAppointmentInboxHandler(tenantId: Ref<string | null>) {
     return recount(tid)
   }, 300)
 
-  // Первый recount при mount/смене тенанта — без дебаунса, чтобы бейдж не висел
-  // пустым 300ms на старте.
-  watch(tenantId, (tid) => {
+  // Первый recount при mount/смене тенанта или филиала — без дебаунса,
+  // чтобы бейдж не висел пустым 300ms на старте.
+  watch([tenantId, () => branchStore.currentBranchId], ([tid]) => {
     if (tid) recount(tid)
   }, { immediate: true })
 
+  const isCurrentBranch = (v: Visit) => !branchStore.currentBranchId || !v.branchId || v.branchId === branchStore.currentBranchId
+
   const subs = [
-    visitsBus.onInsert(scheduleRecount),
-    visitsBus.onUpdate(scheduleRecount),
-    visitsBus.onDelete(scheduleRecount),
+    // Фильтр по филиалу — до дебаунса: иначе последний evt в окне 300ms может быть
+    // из чужого филиала и дебаунсер пропустит recount нужного нам.
+    visitsBus.onInsert((v) => { if (isCurrentBranch(v)) scheduleRecount() }),
+    visitsBus.onUpdate((v) => { if (isCurrentBranch(v)) scheduleRecount() }),
+    // onDelete получает только { id } без branchId — всегда пересчитываем.
+    visitsBus.onDelete(() => scheduleRecount()),
   ]
 
   onUnmounted(() => {

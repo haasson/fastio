@@ -31,7 +31,10 @@
           @click="branchPickerRef?.open()"
         >
           <Store :size="14" :stroke-width="1.7" />
-          <span class="pill-label">{{ currentBranchName }}</span>
+          <span class="pill-text">
+            <span class="pill-label">{{ currentBranchName }}</span>
+            <span v-if="currentBranchAddress" class="pill-address">{{ currentBranchAddress }}</span>
+          </span>
           <ChevronDown :size="12" :stroke-width="1.7" />
         </button>
 
@@ -68,6 +71,20 @@
     </nav>
 
     <div class="mm-footer">
+      <button
+        v-if="showBranchPill"
+        type="button"
+        class="mm-branch"
+        @click="onMobileBranchClick"
+      >
+        <Store :size="16" :stroke-width="1.7" class="mm-branch-icon" />
+        <span class="mm-branch-text">
+          <span class="mm-branch-label">{{ currentBranchName }}</span>
+          <span v-if="currentBranchAddress" class="mm-branch-address">{{ currentBranchAddress }}</span>
+        </span>
+        <span class="mm-branch-action">Сменить</span>
+      </button>
+
       <div v-if="header.showPhone || header.showWorkingHours" class="mm-venue">
         <a v-if="header.showPhone" class="mm-venue-phone" :href="`tel:${tenant?.contacts?.phone}`">
           {{ tenant?.contacts?.phone }}
@@ -85,7 +102,7 @@ import { ref, computed } from 'vue'
 import { useRoute, navigateTo, useNuxtData } from 'nuxt/app'
 import { Store, ChevronDown } from 'lucide-vue-next'
 import type { BranchPublic, Tenant, SiteLayout } from '@fastio/shared'
-import { featureLabel, isFeatureAvailable, formatWorkingHours } from '@fastio/shared'
+import { featureLabel, isFeatureAvailable, formatWorkingHours, formatBranchAddressShort } from '@fastio/shared'
 import { FsSection, FsBurger, FsMobileMenu } from '@fastio/public-ui'
 import HeaderUserMenu from '~/components/HeaderUserMenu.vue'
 import MobileUserCard from '~/components/MobileUserCard.vue'
@@ -107,8 +124,14 @@ const showBranchPill = computed(
   () => props.tenant?.branchSelectionMode === 'per_branch' && branchStore.id !== null,
 )
 
-const currentBranchName = computed(
-  () => branchesData.value?.find((b) => b.id === branchStore.id)?.name ?? 'Филиал',
+const currentBranch = computed(
+  () => branchesData.value?.find((b) => b.id === branchStore.id) ?? null,
+)
+
+const currentBranchName = computed(() => currentBranch.value?.name ?? 'Филиал')
+
+const currentBranchAddress = computed(() =>
+  currentBranch.value ? formatBranchAddressShort(currentBranch.value) : '',
 )
 
 const formattedHours = computed(() => formatWorkingHours(props.tenant?.workingHoursSchedule))
@@ -132,6 +155,11 @@ const isLinkActive = (link: { isScroll: boolean; to: { path: string } }) => {
 }
 
 const menuOpen = ref(false)
+
+const onMobileBranchClick = () => {
+  menuOpen.value = false
+  branchPickerRef.value?.open()
+}
 
 type NavLink = { key: string; label: string; to: { path: string; hash?: string; query?: object } }
 
@@ -260,36 +288,68 @@ const handleNavClick = async (link: NavLink) => {
   text-decoration: none;
 }
 
+// На мобилке pill в шапке прячем — длинное название может ломать layout.
+// Контекст филиала есть на FAB корзины и в бургере. На десктопе места хватает.
 .branch-pill {
-  display: inline-flex;
+  display: none;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
+  gap: 6px;
+  padding: 5px 10px 5px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  @include text-caption(500);
   cursor: pointer;
   flex-shrink: 0;
-  max-width: 200px;
+  max-width: 240px;
   transition: background 0.15s, border-color 0.15s;
+  text-align: left;
 
   &:hover {
     background: var(--primary-subtle);
     border-color: var(--primary);
   }
+
+  @include lg {
+    display: inline-flex;
+  }
+}
+
+.pill-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
 }
 
 .pill-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 140px;
+  max-width: 160px;
 
   @include lg {
-    max-width: 180px;
+    max-width: 200px;
+  }
+}
+
+// На мобилке адрес прячем — компактный pill только с названием.
+// Полная инфа (название + адрес + кнопка «Сменить») есть в бургере.
+.pill-address {
+  display: none;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+
+  @include lg {
+    display: inline;
   }
 }
 
@@ -322,6 +382,61 @@ const handleNavClick = async (link: NavLink) => {
   gap: 12px;
   padding-top: 24px;
   border-top: 1px solid var(--color-border);
+}
+
+.mm-branch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover { border-color: var(--primary); background: var(--primary-subtle); }
+}
+
+.mm-branch-icon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.mm-branch-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.mm-branch-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mm-branch-address {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mm-branch-action {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .mm-venue {

@@ -7,6 +7,7 @@ import { localDateTimeToUtcIso } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
+import { useBranchStore } from '~/stores/branch'
 import { reportError } from '~/utils/reportError'
 import { inheritAppointmentStatus } from '~/composables/services/appointmentEditor/utils'
 import type { EditorState } from '~/components/appointments/types'
@@ -45,6 +46,7 @@ export function useEditorSave(deps: SaveDeps) {
   const api = useDatabase()
   const tenantStore = useTenantStore()
   const authStore = useAuthStore()
+  const branchStore = useBranchStore()
   const message = useMessage()
   const logger = useAppointmentEventLogger()
 
@@ -56,6 +58,10 @@ export function useEditorSave(deps: SaveDeps) {
     if (deps.isReadOnly.value) return false
     if (!deps.state.customerName.trim() || !deps.state.customerPhone.trim()) return false
     if (!deps.state.date) return false
+
+    // В мульти-филиальном тенанте branchId обязателен — иначе визит выпадает
+    // из admin sidebar-фильтра (становится «безфилиальным сиротой»).
+    if (branchStore.branches.length > 1 && !deps.state.branchId) return false
 
     const active = deps.state.services.filter((s) => !s.pendingRemove)
 

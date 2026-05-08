@@ -7,11 +7,14 @@
     size="sm"
     @update:model-value="onModelUpdate"
   >
-    <FsText size="small" class="hint">
-      У сети несколько филиалов с разным ассортиментом. Выберите тот, в который пойдёте —
-      и мы покажем именно его меню. Сменить можно потом в шапке.
+    <FsText v-if="branches.length > 1" variant="caption" color="secondary" class="hint">
+      Выберите филиал, в который пойдёте — и мы покажем именно его меню.
+      Сменить можно в любой момент через меню или шапку.
     </FsText>
-    <ul class="branches">
+    <FsText v-else-if="branches.length === 0" variant="caption" color="secondary" class="hint">
+      Сейчас нет доступных филиалов.
+    </FsText>
+    <ul v-if="branches.length > 0" class="branches">
       <li v-for="b in branches" :key="b.id">
         <button
           class="branch"
@@ -20,7 +23,7 @@
           @click="pick(b.id)"
         >
           <span class="name">{{ b.name }}</span>
-          <span class="addr">{{ formatBranchAddressShort(b) }}</span>
+          <span v-if="formatBranchAddressShort(b)" class="addr">{{ formatBranchAddressShort(b) }}</span>
         </button>
       </li>
     </ul>

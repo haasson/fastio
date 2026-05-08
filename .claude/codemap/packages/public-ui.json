@@ -2,7 +2,7 @@
   "project": "packages/public-ui",
   "submap": "main",
   "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
-  "generated_at": "2026-05-07T01:28:32.340Z",
+  "generated_at": "2026-05-08T02:50:55.476Z",
   "stats": {
     "files": 35,
     "pages": 0,
@@ -405,14 +405,14 @@
     },
     "src/components/overlay/FsDialog.vue": {
       "kind": "vue",
-      "hash": "c74a63098e1f",
-      "purpose": "Модалка адаптивная: на мобиле (<=767px) превращается в FsDrawer-bottom-sheet, на десктопе reka-ui Dialog по центру; интегрируется с back-навигацией через useModalHistory",
+      "hash": "77d41cba1f5f",
+      "purpose": "Modal-диалог на Reka UI Dialog: title, size (sm/md/lg), closable/closeOnOverlay/silentHistory + back-жест через useModalHistory; поддержка level для стекинга",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "21f7527f",
-          "purpose": "modelValue, title, description, size (sm/md/lg), drawerSize, closable, closeOnOverlay, forceDialog"
+          "hash": "624c2e38",
+          "purpose": "modelValue, title, size, closable, closeOnOverlay, silentHistory (без записи в history), level (стек), forceDialog"
         },
         {
           "name": "emits",
@@ -527,14 +527,14 @@
     },
     "src/composables/useModalHistory.ts": {
       "kind": "ts",
-      "hash": "1d9cdf91479b",
-      "purpose": "Singleton-менеджер интеграции модалок с history.back: пушит запись при открытии и закрывает верхнюю модалку по popstate (нативный back-жест на мобиле)",
+      "hash": "b1035c5d2abe",
+      "purpose": "Регистрирует pushState при открытии модалки, ловит popstate и закрывает её — Android back-кнопка/жест закрывает модалку, не уходя со страницы",
       "symbols": [
         {
           "name": "useModalHistory",
           "kind": "function",
-          "hash": "af79f4c3",
-          "purpose": "Подключает модалку к стеку back-history; принимает (isOpen, close) и сам вызывает history.pushState/back"
+          "hash": "020a5528",
+          "purpose": "Принимает Ref<boolean> open + опции (silent для пропуска записи в history) и связывает back-навигацию с закрытием модалки"
         }
       ]
     },

@@ -69,6 +69,7 @@ import { UiButton, UiText, UiTag, UiSkeleton, UiEmpty, useConfirm, useMessage } 
 import type { Resource } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
+import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import ResourceDrawer from '~/components/appointments/ResourceDrawer.vue'
 import StaffScheduleModal from '~/components/appointments/StaffScheduleModal.vue'
@@ -87,6 +88,8 @@ const formatDateRu = (date: string): string => {
 
 const tenantStore = useTenantStore()
 const { currentTenantId } = storeToRefs(tenantStore)
+const branchStore = useBranchStore()
+const { currentBranchId } = storeToRefs(branchStore)
 const api = useDatabase()
 const { confirm } = useConfirm()
 const message = useMessage()
@@ -123,8 +126,19 @@ const fetch = async () => {
   loading.value = true
   try {
     const all = await api.resources.list(currentTenantId.value)
+    const persons = all.filter((r) => r.type === 'person')
 
-    resources.value = all.filter((r) => r.type === 'person')
+    if (currentBranchId.value) {
+      const branchIds = await api.resources.listBranchIds(persons.map((r) => r.id))
+
+      resources.value = persons.filter((r) => {
+        const ids = branchIds.get(r.id) ?? []
+
+        return ids.length === 0 || ids.includes(currentBranchId.value!)
+      })
+    } else {
+      resources.value = persons
+    }
   } catch (e) {
     reportError(e)
     message.error('Не удалось загрузить список сотрудников')
@@ -134,6 +148,7 @@ const fetch = async () => {
 }
 
 fetch()
+watch(currentBranchId, fetch)
 
 const drawerOpen = ref(false)
 const selected = ref<Resource | null>(null)

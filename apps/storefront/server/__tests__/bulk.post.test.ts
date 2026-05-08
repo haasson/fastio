@@ -812,12 +812,16 @@ describe('POST /api/appointments/bulk — round-robin auto-pick', () => {
     expect(mockRpc.mock.calls[0][1].p_items[0].resource_id).toBe('res-B')
   })
 
-  it('localBookings: единственный кандидат, 2 item-а одной услуги → второй получает 409', async () => {
+  it('localBookings: единственный кандидат, 2 НЕпересекающихся слота → один мастер делает оба', async () => {
+    // Реальный кейс: group-slots даёт цепочку «X с 10:00 час, потом 11:00 час»,
+    // на сабмите оба item-а с resourceId=null. Раньше логика «у X уже есть
+    // local-booking → исключить» отказывала на второй услуге даже если по таймингу
+    // конфликта нет. Теперь local-booking трекается интервалами и проверяется overlap.
     autoPath({
       candidates: ['res-A'],
       serviceResourceLinks: ['res-A'],
       itemsCount: 2,
-      busyByItemSlot: [[], []], // оба слота физически свободны в БД
+      busyByItemSlot: [[], []],
     })
     mockReadBody.mockResolvedValue(autoBody({
       items: [
@@ -826,8 +830,29 @@ describe('POST /api/appointments/bulk — round-robin auto-pick', () => {
       ],
     }))
 
-    // Первый item занимает res-A локально, второй для той же услуги без других
-    // кандидатов → free пусто → 409.
+    await runHandler()
+
+    const items = mockRpc.mock.calls[0][1].p_items
+    expect(items[0].resource_id).toBe('res-A')
+    expect(items[1].resource_id).toBe('res-A')
+  })
+
+  it('localBookings: единственный кандидат, 2 ПЕРЕСЕКАЮЩИХСЯ слота → 409', async () => {
+    // svc-1 duration=60, items 10:00-11:00 и 10:30-11:30 → overlap 10:30-11:00.
+    // Локальный конфликт: один мастер не может сразу две — 409.
+    autoPath({
+      candidates: ['res-A'],
+      serviceResourceLinks: ['res-A'],
+      itemsCount: 2,
+      busyByItemSlot: [[], []],
+    })
+    mockReadBody.mockResolvedValue(autoBody({
+      items: [
+        { serviceId: 'svc-1', resourceId: null, startTime: '10:00' },
+        { serviceId: 'svc-1', resourceId: null, startTime: '10:30' },
+      ],
+    }))
+
     await expect(runHandler())
       .rejects.toMatchObject({ statusCode: 409 })
   })

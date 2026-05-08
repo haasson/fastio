@@ -29,7 +29,7 @@
         <span class="day-num">{{ day.dayNum }}</span>
         <span
           class="day-dot"
-          :class="dotClass(day.match)"
+          :class="dotClass(matchFor(day))"
         />
       </button>
     </div>
@@ -75,7 +75,18 @@ const maxDate = computed(() => addDaysToDateStr(today.value, props.horizonDays))
 const DAYS_SHORT = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 
-const visibleDays = computed(() => {
+// visibleDays НЕ включает match — иначе watch на эту коллекцию срабатывает при
+// каждом обновлении weekMatches и fetch-week уходит в цикл.
+// Match читаем в шаблоне через matchFor(day) — реактивно, без зависимости от формы данных.
+type VisibleDay = {
+  date: string
+  dayName: string
+  dayNum: number
+  isToday: boolean
+  isDisabled: boolean
+}
+
+const visibleDays = computed<VisibleDay[]>(() => {
   const startDate = addDaysToDateStr(today.value, weekOffset.value * 7)
   return Array.from({ length: 7 }, (_, i) => {
     const dateStr = addDaysToDateStr(startDate, i)
@@ -89,10 +100,12 @@ const visibleDays = computed(() => {
       dayNum: d.getDate(),
       isToday: dateStr === today.value,
       isDisabled,
-      match: isDisabled ? null : (props.weekMatches[dateStr] ?? null),
     }
   })
 })
+
+const matchFor = (day: VisibleDay): GroupSlotMatch | null =>
+  day.isDisabled ? null : (props.weekMatches[day.date] ?? null)
 
 const weekLabel = computed(() => {
   const first = visibleDays.value[0]
@@ -213,9 +226,11 @@ watch(visibleDays, (days) => {
 .day-dot {
   position: absolute;
   bottom: 4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 16px);
+  height: 3px;
+  border-radius: var(--radius-pill);
 
   &.dot-green { background: var(--color-success); }
   &.dot-yellow { background: var(--color-warning); }
@@ -234,9 +249,10 @@ watch(visibleDays, (days) => {
 }
 
 .legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 16px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
 
   &.dot-green { background: var(--color-success); }
   &.dot-yellow { background: var(--color-warning); }

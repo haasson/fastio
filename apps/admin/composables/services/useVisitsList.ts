@@ -45,8 +45,9 @@ export const useVisitsList = (params: {
   timezone: Ref<string>
   filter: Ref<InboxFilter>
   page: Ref<number>
+  branchId?: Ref<string | null>
 }) => {
-  const { tenantId, timezone, filter, page } = params
+  const { tenantId, timezone, filter, page, branchId } = params
   const api = useDatabase()
   const message = useMessage()
 
@@ -113,6 +114,7 @@ export const useVisitsList = (params: {
       const visitFilter: VisitFilter = f === 'today' ? 'today' : f === 'week' ? 'week' : f === 'archive' ? 'archive' : f === 'all' ? 'all' : 'new'
       const visitsRes = await api.visits.list(tid, {
         page: 1, pageSize: MIXED_PAGE_LIMIT, filter: visitFilter, tz,
+        branchId: branchId?.value ?? null,
       })
 
       const enriched = await enrichVisits(visitsRes.data)
@@ -146,10 +148,14 @@ export const useVisitsList = (params: {
     }
   }
 
-  watch([tenantId, filter], ([tid]) => {
-    if (!tid) return
-    fetch()
-  }, { immediate: true })
+  watch(
+    branchId ? [tenantId, filter, branchId] : [tenantId, filter],
+    ([tid]) => {
+      if (!tid) return
+      fetch()
+    },
+    { immediate: true },
+  )
 
   return {
     loading,

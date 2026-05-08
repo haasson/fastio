@@ -5,6 +5,7 @@ import type {
   Resource, ServiceWithBranchIds,
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
+import { useBranchStore } from '~/stores/branch'
 import { useAppointmentSettingsStore } from '~/stores/services/appointmentSettings'
 import { useGateServices } from '~/composables/services/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'
@@ -45,6 +46,7 @@ export function useAppointmentEditorState(props: Props) {
   const api = useDatabase()
   const gate = useGateServices()
   const tenantStore = useTenantStore()
+  const branchStore = useBranchStore()
   const appointmentSettingsStore = useAppointmentSettingsStore()
   const message = useMessage()
   const competenciesHelper = useEditorCompetencies()
@@ -80,8 +82,31 @@ export function useAppointmentEditorState(props: Props) {
   const loadingResources = ref(true)
   const allResources = ref<Resource[]>([])
   const allServices = ref<ServiceWithBranchIds[]>([])
+  // Map<resourceId, branchIds[]> — пустой массив означает «доступен везде».
+  const resourceBranchIds = ref<Map<string, string[]>>(new Map())
 
   const resourcesById = computed(() => Object.fromEntries(allResources.value.map((r) => [r.id, r])))
+
+  // Ресурсы, доступные в текущем филиале state.branchId (в мульти-филиальном тенанте).
+  // Мастер с пустым resource_branches доступен везде, иначе — только в своих филиалах.
+  const branchFilteredResources = computed<Resource[]>(() => {
+    if (!state.branchId || branchStore.branches.length <= 1) return allResources.value
+
+    return allResources.value.filter((r) => {
+      const ids = resourceBranchIds.value.get(r.id) ?? []
+
+      return ids.length === 0 || ids.includes(state.branchId!)
+    })
+  })
+
+  // Услуги, доступные в текущем филиале state.branchId.
+  const branchFilteredServices = computed<ServiceWithBranchIds[]>(() => {
+    if (!state.branchId || branchStore.branches.length <= 1) return allServices.value
+
+    return allServices.value.filter(
+      (s) => s.branchIds.length === 0 || s.branchIds.includes(state.branchId!),
+    )
+  })
 
   const resourceOptionsFor = (serviceId: string) => {
     const map = competenciesHelper.competencyByResource.value
@@ -91,7 +116,7 @@ export function useAppointmentEditorState(props: Props) {
       ? (r: { memberId: string | null }) => isOwnResource(r)
       : () => true
 
-    return allResources.value
+    return branchFilteredResources.value
       .filter((r) => map.get(r.id)?.has(serviceId) && ownFilter(r))
       .map((r) => ({ label: r.name, value: r.id }))
   }
@@ -150,8 +175,8 @@ export function useAppointmentEditorState(props: Props) {
 
   const { result: slotsResult, loading: loadingSlots } = useServiceSlots({
     input: slotInput,
-    candidateResources: allResources,
-    allServices,
+    candidateResources: branchFilteredResources,
+    allServices: branchFilteredServices,
   })
 
   // Применить выбранный слот к выбранной услуге.
@@ -336,8 +361,8 @@ export function useAppointmentEditorState(props: Props) {
           duration: svc.durationMinutes,
           preferredResourceId: svc.currentResourceId,
         }],
-        candidateResources: allResources.value,
-        allServices: allServices.value,
+        candidateResources: branchFilteredResources.value,
+        allServices: branchFilteredServices.value,
         excludeAppointmentId: svc.appointmentId,
       })
 
@@ -415,8 +440,20 @@ export function useAppointmentEditorState(props: Props) {
         api.services.list(tenantId),
       ])
 
-      allResources.value = resources.filter((r) => r.isActive)
+      const active = resources.filter((r) => r.isActive)
+
+      allResources.value = active
       allServices.value = services
+
+      // Загружаем branch-привязки ресурсов для фильтрации по текущему филиалу.
+      if (branchStore.branches.length > 1 && active.length > 0) {
+        try {
+          resourceBranchIds.value = await api.resources.listBranchIds(active.map((r) => r.id))
+        } catch (e) {
+          reportError(e)
+        }
+      }
+
       try {
         await competenciesHelper.load(allResources.value, allServices.value)
       } catch (e) {
@@ -429,6 +466,57 @@ export function useAppointmentEditorState(props: Props) {
       loadingResources.value = false
     }
   }
+
+  // Watch на смену branchId в форме: помечаем услуги недоступные в новом филиале,
+  // сбрасываем мастеров не работающих в новом филиале. В edit-mode редактирование
+  // branch_id запрещено (поле disabled), поэтому фильтрация не выполняется —
+  // данные визита остаются в исходном виде для аудита.
+  watch(
+    [() => state.branchId, () => loadingResources.value],
+    ([newBranchId, loading], [oldBranchId]) => {
+      if (loading) return
+      if (!newBranchId || branchStore.branches.length <= 1) return
+      if (props.mode === 'edit' && props.initialVisit?.status !== 'request') return
+
+      let removedCount = 0
+      let masterResetCount = 0
+
+      for (const svc of state.services) {
+        if (svc.pendingRemove) continue
+
+        // Проверяем доступность услуги в новом филиале.
+        const service = allServices.value.find((s) => s.id === svc.serviceId)
+
+        if (service && service.branchIds.length > 0 && !service.branchIds.includes(newBranchId)) {
+          svc.pendingRemove = true
+          removedCount++
+          continue
+        }
+
+        // Проверяем доступность preferredResourceId в новом филиале.
+        if (svc.preferredResourceId) {
+          const branchIds = resourceBranchIds.value.get(svc.preferredResourceId) ?? []
+
+          if (branchIds.length > 0 && !branchIds.includes(newBranchId)) {
+            svc.preferredResourceId = null
+            svc.currentResourceId = null
+            svc.currentStartTime = null
+            svc.currentEndTime = null
+            masterResetCount++
+          }
+        }
+      }
+
+      // Сообщаем юзеру если что-то изменилось — иначе изменения происходят
+      // молча и юзер не понимает почему «исчезли» услуги/мастер.
+      if (removedCount > 0 && oldBranchId !== undefined) {
+        message.warning(`Удалено услуг недоступных в новом филиале: ${removedCount}`)
+      }
+      if (masterResetCount > 0 && oldBranchId !== undefined) {
+        message.warning(`Сброшено мастеров не работающих в новом филиале: ${masterResetCount}`)
+      }
+    },
+  )
 
   onMounted(async () => {
     if (props.mode === 'edit' && props.initialVisit) {
@@ -443,7 +531,11 @@ export function useAppointmentEditorState(props: Props) {
       }
     } else if (props.initialPreset) {
       if (props.initialPreset.date) state.date = props.initialPreset.date
-      if (props.initialPreset.branchId) state.branchId = props.initialPreset.branchId
+      // Дефолт branchId из preset или глобального текущего филиала.
+      state.branchId = props.initialPreset.branchId ?? branchStore.currentBranchId ?? null
+    } else if (props.mode === 'create') {
+      // Создание без preset: берём текущий глобальный филиал.
+      state.branchId = branchStore.currentBranchId ?? null
     }
     takeSnapshot()
     await loadResourceData()

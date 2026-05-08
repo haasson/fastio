@@ -22,19 +22,23 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'nuxt/app'
 import { FsButton, FsSkeleton } from '@fastio/public-ui'
 import DishChips from '~/components/sf/domain/DishChips.vue'
 import { useCartStore } from '~/stores/cart'
+import { useSelectedBranchStore } from '~/stores/selectedBranch'
 import { reportError } from '~/utils/reportError'
 import { useResourceLabel } from '~/composables/useResourceLabel'
 import { useToast } from '~/composables/useToast'
 
 const { capitalized: resourceLabelCapitalized, anyLabel: resourceAnyLabel } = useResourceLabel()
 const toast = useToast()
-const route = useRoute()
+const branchStore = useSelectedBranchStore()
 
-const branchId = computed(() => (route.query.branchId as string | undefined) ?? null)
+type ResourceItem = {
+  id: string
+  name: string
+  type: string
+}
 
 type ServiceInfo = {
   id: string
@@ -59,7 +63,7 @@ const emit = defineEmits<{
 const cart = useCartStore()
 
 const ANY_VALUE = '__any__'
-const resources = ref<Array<{ id: string; name: string }> | null>(null)
+const resources = ref<ResourceItem[] | null>(null)
 const selectedResourceId = ref<string>(ANY_VALUE)
 
 const resourceChips = computed(() => {
@@ -83,10 +87,8 @@ async function loadResources(serviceId: string) {
   resources.value = null
   try {
     const params = new URLSearchParams({ serviceId })
-    if (branchId.value) params.set('branchId', branchId.value)
-    const data = await $fetch<Array<{ id: string; name: string }>>(
-      `/api/appointments/resources?${params}`,
-    )
+    if (branchStore.id) params.set('branchId', branchStore.id)
+    const data = await $fetch<ResourceItem[]>(`/api/appointments/resources?${params}`)
     if (gen === loadGen) resources.value = data
   } catch (err) {
     reportError(err instanceof Error ? err : new Error('[ServiceModalBody] failed to load resources'))
@@ -102,6 +104,8 @@ async function loadResources(serviceId: string) {
 
 onMounted(() => loadResources(props.service.id))
 watch(() => props.service.id, (id) => loadResources(id))
+// Если юзер сменил филиал в шапке прямо при открытой модалке — ресурсы старого филиала.
+watch(() => branchStore.id, () => loadResources(props.service.id))
 
 const onConfirm = () => {
   const resourceId = selectedResourceId.value === ANY_VALUE ? null : selectedResourceId.value
@@ -122,6 +126,7 @@ const onConfirm = () => {
       photo: props.service.photos[0] ?? null,
       preferredResourceId: resourceId,
       allowResourceChoice: props.service.allowResourceChoice ?? true,
+      branchId: branchStore.id ?? null,
       _key: crypto.randomUUID(),
     })
   }

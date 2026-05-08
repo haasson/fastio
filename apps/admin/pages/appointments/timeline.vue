@@ -15,16 +15,6 @@
         @click="nextDay"
       />
       <UiButton type="text" size="small" @click="goToday">Сегодня</UiButton>
-
-      <UiSelect
-        v-if="branchStore.branches.length > 1"
-        v-model:value="selectedBranchId"
-        :options="branchOptions"
-        size="small"
-        placeholder="Все филиалы"
-        clearable
-        class="branch-select"
-      />
     </div>
 
     <UiSkeleton v-if="initialLoading" :repeat="3" />
@@ -72,7 +62,7 @@
 import { ref, computed, onUnmounted, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from '#imports'
-import { UiButton, UiDatepicker, UiSelect, UiSkeleton, UiEmpty, useMessage } from '@fastio/ui'
+import { UiButton, UiDatepicker, UiSkeleton, UiEmpty, useMessage } from '@fastio/ui'
 import type { Appointment } from '@fastio/shared'
 import {
   todayInTz, getBranchWidestWindow, getBranchHoursForDow,
@@ -140,15 +130,6 @@ const goToday = () => {
   selectedTs.value = Date.now()
 }
 
-// ─── Branch filter ────────────────────────────────────────
-
-const selectedBranchId = ref<string | null>(null)
-
-const branchOptions = computed(() => [
-  { label: 'Все филиалы', value: null },
-  ...branchStore.branches.map((b) => ({ label: b.name, value: b.id })),
-])
-
 // ─── Visible resources ────────────────────────────────────
 
 const visibleResources = computed(() => {
@@ -193,14 +174,24 @@ const reload = async (opts: { scrollOnLoad?: boolean } = {}) => {
 
     if (gen !== fetchGen) return
 
-    const activeResources = res.filter((r) => r.isActive)
+    let activeResources = res.filter((r) => r.isActive)
+
+    if (branchStore.currentBranchId) {
+      const branchIds = await api.resources.listBranchIds(activeResources.map((r) => r.id))
+
+      activeResources = activeResources.filter((r) => {
+        const ids = branchIds.get(r.id) ?? []
+
+        return ids.length === 0 || ids.includes(branchStore.currentBranchId!)
+      })
+    }
     const ownResourceIds = ownResourcesOnly.value
       ? activeResources.filter(isOwnResource).map((r) => r.id)
       : undefined
 
     const [appts, services] = await Promise.all([
       api.appointments.listForDay(currentTenantId.value, selectedDate.value, {
-        branchId: selectedBranchId.value ?? undefined,
+        branchId: branchStore.currentBranchId ?? undefined,
         resourceIds: ownResourceIds,
         timezone: tz.value,
       }),
@@ -270,13 +261,13 @@ const reload = async (opts: { scrollOnLoad?: boolean } = {}) => {
 
 reload({ scrollOnLoad: true })
 
-watch([selectedDate, selectedBranchId], () => reload({ scrollOnLoad: true }))
+watch([selectedDate, () => branchStore.currentBranchId], () => reload({ scrollOnLoad: true }))
 
 // ─── Time window ──────────────────────────────────────────
 
 const referenceSchedule = computed<WorkingHoursSchedule | null>(() => {
-  if (selectedBranchId.value) {
-    const b = branchStore.branches.find((x) => x.id === selectedBranchId.value)
+  if (branchStore.currentBranchId) {
+    const b = branchStore.branches.find((x) => x.id === branchStore.currentBranchId)
 
     if (b?.workingHoursSchedule) return b.workingHoursSchedule
   }
@@ -331,7 +322,7 @@ const onApptClick = (appt: Appointment) => {
 }
 
 const onCellClick = ({ resourceId, time }: { resourceId: string; time: string }) => {
-  const branchQuery = selectedBranchId.value ? { branchId: selectedBranchId.value } : {}
+  const branchQuery = branchStore.currentBranchId ? { branchId: branchStore.currentBranchId } : {}
 
   router.push({
     path: '/appointments/visits/new',
@@ -465,9 +456,29 @@ const scheduleFetch = () => {
   }, 200)
 }
 
-const offInsert = appointmentBus.onInsert(scheduleFetch)
-const offUpdate = appointmentBus.onUpdate(scheduleFetch)
-const offDelete = appointmentBus.onDelete(scheduleFetch)
+// Realtime: фильтр по текущему филиалу — иначе INSERT/UPDATE из соседнего
+// филиала дёргают timeline на пустой апдейт каждые 200мс. Если глобальный
+// фильтр сайдбара = null («все филиалы»), пропускаем все события.
+const isPayloadInCurrentBranch = (a: { branchId?: string | null }): boolean => {
+  const cur = branchStore.currentBranchId
+
+  if (!cur) return true
+
+  // Записи без branch_id (legacy) показываются в любом филиале — иначе sidebar
+  // на «Брянск» их потеряет вообще, и orphan-сирота навсегда исчезнет из UI.
+  return !a.branchId || a.branchId === cur
+}
+
+const offInsert = appointmentBus.onInsert((a) => {
+  if (isPayloadInCurrentBranch(a)) scheduleFetch()
+})
+const offUpdate = appointmentBus.onUpdate((a) => {
+  if (isPayloadInCurrentBranch(a)) scheduleFetch()
+})
+// DELETE-payload содержит только { id } (postgres-realtime обычно не отдаёт OLD-record), —
+// фильтр по branch_id невозможен. Всегда рефетчим, даже если запись была в чужом
+// филиале: лишний один query за 200мс — ничего страшного, корректность важнее.
+const offDelete = appointmentBus.onDelete(() => scheduleFetch())
 
 onUnmounted(() => {
   if (fetchTimer) clearTimeout(fetchTimer)
@@ -501,11 +512,6 @@ onUnmounted(() => {
 
 .date-picker {
   width: 160px;
-}
-
-.branch-select {
-  width: 180px;
-  margin-left: auto;
 }
 
 </style>

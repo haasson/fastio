@@ -116,7 +116,7 @@ export default defineEventHandler(async (event) => {
     for (const r of (resourceRows ?? [])) validPreferredIds.add(r.id as string)
   }
 
-  // Валидация филиала
+  // Валидация филиала + enforcement per_branch режима.
   if (branchId) {
     const { data: branchRow } = await db
       .from('branches')
@@ -125,6 +125,64 @@ export default defineEventHandler(async (event) => {
       .maybeSingle()
     if (!branchRow) {
       throw createError({ statusCode: 400, message: 'Указанный филиал не найден в этом тенанте' })
+    }
+  } else {
+    const { data: tenantRow } = await db
+      .from('tenants')
+      .select('branch_selection_mode')
+      .maybeSingle()
+    if (tenantRow?.branch_selection_mode === 'per_branch') {
+      const { count } = await db.from('branches').select('id', { count: 'exact', head: true })
+      if ((count ?? 0) > 1) {
+        throw createError({ statusCode: 400, message: 'Выберите филиал для записи' })
+      }
+    }
+  }
+
+  // Совместимость услуга↔филиал.
+  if (branchId && serviceIds.length) {
+    const { data: svcBranchRows } = await db
+      .junction('service_branches')
+      .select('service_id, branch_id')
+      .in('service_id', serviceIds)
+
+    const allowedByService = new Map<string, Set<string>>()
+    for (const row of (svcBranchRows ?? []) as Array<{ service_id: string; branch_id: string }>) {
+      const set = allowedByService.get(row.service_id) ?? new Set<string>()
+      set.add(row.branch_id)
+      allowedByService.set(row.service_id, set)
+    }
+    for (const sid of serviceIds) {
+      const allowed = allowedByService.get(sid)
+      if (allowed && allowed.size > 0 && !allowed.has(branchId)) {
+        const svc = serviceById.get(sid)!
+        throw createError({
+          statusCode: 400,
+          message: `Услуга "${svc.name}" недоступна в выбранном филиале`,
+        })
+      }
+    }
+  }
+
+  // Совместимость preferred-мастер↔филиал.
+  if (branchId && validPreferredIds.size > 0) {
+    const ids = Array.from(validPreferredIds)
+    const { data: rb } = await db
+      .junction('resource_branches')
+      .select('resource_id, branch_id')
+      .in('resource_id', ids)
+    const branchesByResource = new Map<string, Set<string>>()
+    for (const row of (rb ?? []) as Array<{ resource_id: string; branch_id: string }>) {
+      const set = branchesByResource.get(row.resource_id) ?? new Set<string>()
+      set.add(row.branch_id)
+      branchesByResource.set(row.resource_id, set)
+    }
+    for (const rid of ids) {
+      const allowed = branchesByResource.get(rid)
+      if (allowed && allowed.size > 0 && !allowed.has(branchId)) {
+        // Не валим всю заявку — просто сбрасываем preferred (это soft-предпочтение).
+        validPreferredIds.delete(rid)
+      }
     }
   }
 

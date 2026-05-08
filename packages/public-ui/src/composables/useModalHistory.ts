@@ -37,10 +37,22 @@ function ensureInitialized() {
   })
 }
 
-export function useModalHistory(isOpen: () => boolean, close: () => void) {
+/**
+ * @param options.silent — не пушим запись в history и не делаем history.back при закрытии.
+ *   Только регистрируемся в LIFO-стеке закрывашек: на back попадёт верхний модал.
+ *   Нужно для блокирующих imperative-диалогов (ConfirmDialog), которые открываются
+ *   поверх обычного модала и не должны добавлять собственную запись в навигацию.
+ */
+export function useModalHistory(
+  isOpen: () => boolean,
+  close: () => void,
+  options: { silent?: boolean } = {},
+) {
   if (typeof window === 'undefined') return
 
   ensureInitialized()
+
+  const { silent = false } = options
 
   // pushed — мы добавили свою запись в history и должны её убрать при закрытии.
   // closingViaBack — закрытие инициировано popstate-хендлером, а не пропсом,
@@ -55,7 +67,7 @@ export function useModalHistory(isOpen: () => boolean, close: () => void) {
 
   const pushEntry = () => {
     if (pushed) return
-    history.pushState({ fsModal: true }, '')
+    if (!silent) history.pushState({ fsModal: true }, '')
     closeHandlers.push(handler)
     pushed = true
   }
@@ -69,6 +81,7 @@ export function useModalHistory(isOpen: () => boolean, close: () => void) {
       closingViaBack = false
       return
     }
+    if (silent) return
     pendingProgrammaticBack++
     history.back()
   }

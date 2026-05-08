@@ -1,15 +1,35 @@
 import { getTenantDb } from '../../utils/tenantDb'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
+  const query = getQuery(event)
+  const branchIdRaw = (query.branchId as string | undefined)?.trim() || null
+  if (branchIdRaw && !UUID_REGEX.test(branchIdRaw)) {
+    throw createError({ statusCode: 400, message: 'Некорректный идентификатор филиала' })
+  }
+
   const { data: tenantData } = await db
     .from('tenants')
-    .select('modules')
+    .select('modules, branch_selection_mode')
     .single()
 
   if (!tenantData?.modules?.services) {
     throw createError({ statusCode: 400, message: 'Онлайн-запись недоступна' })
+  }
+
+  // Подтверждаем что branchId реально принадлежит этому тенанту (защита
+  // от подделки query-параметра + защита от устаревших id из localStorage).
+  let branchId: string | null = null
+  if (branchIdRaw) {
+    const { data: branchRow } = await db
+      .from('branches')
+      .select('id')
+      .eq('id', branchIdRaw)
+      .maybeSingle()
+    if (branchRow) branchId = branchIdRaw
   }
 
   const { data: servicesData } = await db
@@ -18,6 +38,7 @@ export default defineEventHandler(async (event) => {
     .eq('active', true)
     .eq('is_bookable', true)
     .order('sort_order')
+    .order('name')
 
   const serviceIds = (servicesData ?? []).map((s) => s.id as string)
   const { data: branchLinksData } = serviceIds.length
@@ -31,7 +52,7 @@ export default defineEventHandler(async (event) => {
     branchIdsByService.set(row.service_id, arr)
   }
 
-  return (servicesData ?? []).map((row) => ({
+  const allServices = (servicesData ?? []).map((row) => ({
     id: row.id as string,
     name: row.name as string,
     description: (row.description as string) ?? null,
@@ -45,4 +66,15 @@ export default defineEventHandler(async (event) => {
     allowResourceChoice: (row.allow_resource_choice as boolean) ?? true,
     branchIds: branchIdsByService.get(row.id as string) ?? [],
   }))
+
+  // Фильтр применяем только в per_branch-режиме (синхронизация с /api/services-catalog).
+  // В unified-режиме клиенту отдаём весь список, чтобы он мог показать бейджи
+  // «доступно не во всех филиалах» через branchIds[].
+  if (branchId && tenantData.branch_selection_mode === 'per_branch') {
+    return allServices.filter(
+      (s) => s.branchIds.length === 0 || s.branchIds.includes(branchId),
+    )
+  }
+
+  return allServices
 })

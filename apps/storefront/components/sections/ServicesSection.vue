@@ -74,7 +74,6 @@
         <span class="meta-item">{{ modalService.duration }} мин</span>
         <span v-if="modalService.price" class="meta-item meta-price">{{ modalService.price }} {{ currency }}</span>
       </div>
-      <BranchAvailabilityHint :branch-ids="modalService.branchIds" />
     </template>
     <ServiceModalBody
       v-if="bookingEnabled"
@@ -94,6 +93,7 @@ import { useNuxtData, useRouter } from 'nuxt/app'
 import { FsSection, FsHeading, FsCard, FsText } from '@fastio/public-ui'
 import { useServicesStore, type ServiceCard } from '~/stores/services'
 import { useCartStore } from '~/stores/cart'
+import { useSelectedBranchStore } from '~/stores/selectedBranch'
 import { useCurrency } from '~/composables/useCurrency'
 import useLegalCompliance from '~/composables/useLegalCompliance'
 import { useItemPlaceholder } from '~/composables/useItemPlaceholder'
@@ -101,7 +101,6 @@ import SfProductCard from '~/components/sf/domain/SfProductCard.vue'
 import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
 import SfProductModal from '~/components/sf/domain/SfProductModal.vue'
 import ServiceModalBody from '~/components/appointments/ServiceModalBody.vue'
-import BranchAvailabilityHint from '~/components/branch/BranchAvailabilityHint.vue'
 import { useConfirm } from '~/composables/useConfirm'
 import { buildProduct } from '~/utils/product'
 
@@ -116,6 +115,7 @@ const props = withDefaults(defineProps<{
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const servicesStore = useServicesStore()
 const cart = useCartStore()
+const branchStore = useSelectedBranchStore()
 const currency = useCurrency()
 const router = useRouter()
 const { legalInfoComplete } = useLegalCompliance()
@@ -178,6 +178,7 @@ function isInCart(serviceId: string): boolean {
 
 function addServiceToCart(svc: ServiceCard) {
   if (isInCart(svc.id)) return
+
   cart.add({
     kind: 'service',
     serviceId: svc.id,
@@ -187,6 +188,7 @@ function addServiceToCart(svc: ServiceCard) {
     photo: svc.photos[0] ?? null,
     preferredResourceId: null,
     allowResourceChoice: svc.allowResourceChoice,
+    branchId: branchStore.id ?? null,
     _key: crypto.randomUUID(),
   })
 }

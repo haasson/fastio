@@ -6,6 +6,7 @@ import { reportError } from '~/utils/reportError'
 const rateLimiter = createRateLimiter(5, 60_000)
 
 const NOTES_MAX_LENGTH = 1000
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type BulkItem = {
   serviceId: string
@@ -53,17 +54,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: `Комментарий слишком длинный (макс. ${NOTES_MAX_LENGTH} символов)` })
   }
   for (const item of body.items as BulkItem[]) {
-    if (!item.serviceId) throw createError({ statusCode: 400, message: 'Каждый элемент должен содержать serviceId' })
+    if (!item.serviceId || typeof item.serviceId !== 'string') {
+      throw createError({ statusCode: 400, message: 'Каждый элемент должен содержать serviceId' })
+    }
     // resourceId может быть null — это «любой исполнитель», бэк подберёт сам.
     if (!item.startTime || !/^\d{2}:\d{2}$/.test(item.startTime)) {
       throw createError({ statusCode: 400, message: 'Каждый элемент должен содержать startTime (HH:MM)' })
     }
   }
 
-  // Проверяем модуль и получаем настройки тенанта
+  if (body.branchId !== null && body.branchId !== undefined && typeof body.branchId !== 'string') {
+    throw createError({ statusCode: 400, message: 'Некорректный идентификатор филиала' })
+  }
+
+  // Проверяем модуль и получаем настройки тенанта (включая режим выбора филиала)
   const { data: tenantData } = await db
     .from('tenants')
-    .select('modules, timezone')
+    .select('modules, timezone, branch_selection_mode')
     .single()
 
   if (!tenantData?.modules?.services) {
@@ -103,6 +110,15 @@ export default defineEventHandler(async (event) => {
       .maybeSingle()
     if (!branchRow) {
       throw createError({ statusCode: 400, message: 'Указанный филиал не найден в этом тенанте' })
+    }
+  } else if (tenantData.branch_selection_mode === 'per_branch') {
+    // В per_branch-режиме записи без филиала не допускаются — это означает
+    // что клиент пробрасывает старый branchId=null (legacy) или модалка
+    // выбора филиала почему-то не сработала. Создавать «безфилиальную» запись
+    // нельзя: она невидима для админского sidebar-фильтра.
+    const { count } = await db.from('branches').select('id', { count: 'exact', head: true })
+    if ((count ?? 0) > 1) {
+      throw createError({ statusCode: 400, message: 'Выберите филиал для записи' })
     }
   }
 
@@ -146,6 +162,32 @@ export default defineEventHandler(async (event) => {
     // такой длины — продуктовая ошибка, отказываем.
     if (svc.duration >= 1440) {
       throw createError({ statusCode: 400, message: `Услуга "${svc.name}" имеет недопустимую длительность (≥ 24 ч)` })
+    }
+  }
+
+  // Совместимость услуга↔филиал: пустой список service_branches = «во всех филиалах»;
+  // непустой и не содержащий branchId = услуга в этом филиале не оказывается.
+  if (branchId && serviceIds.length) {
+    const { data: svcBranchRows } = await db
+      .junction('service_branches')
+      .select('service_id, branch_id')
+      .in('service_id', serviceIds)
+
+    const allowedByService = new Map<string, Set<string>>()
+    for (const row of (svcBranchRows ?? []) as Array<{ service_id: string; branch_id: string }>) {
+      const set = allowedByService.get(row.service_id) ?? new Set<string>()
+      set.add(row.branch_id)
+      allowedByService.set(row.service_id, set)
+    }
+    for (const sid of serviceIds) {
+      const allowed = allowedByService.get(sid)
+      if (allowed && allowed.size > 0 && !allowed.has(branchId)) {
+        const svc = serviceById.get(sid)!
+        throw createError({
+          statusCode: 400,
+          message: `Услуга "${svc.name}" недоступна в выбранном филиале`,
+        })
+      }
     }
   }
 
@@ -193,6 +235,31 @@ export default defineEventHandler(async (event) => {
         statusCode: 400,
         message: `Исполнитель не оказывает услугу "${svc.name}"`,
       })
+    }
+  }
+
+  // Совместимость мастер↔филиал для явно выбранных мастеров.
+  // resource_branches пустой = мастер работает во всех филиалах.
+  if (branchId && resourceIds.length) {
+    const { data: explicitResourceBranchRows } = await db
+      .junction('resource_branches')
+      .select('resource_id, branch_id')
+      .in('resource_id', resourceIds)
+
+    const branchesByResource = new Map<string, Set<string>>()
+    for (const row of (explicitResourceBranchRows ?? []) as Array<{ resource_id: string; branch_id: string }>) {
+      const set = branchesByResource.get(row.resource_id) ?? new Set<string>()
+      set.add(row.branch_id)
+      branchesByResource.set(row.resource_id, set)
+    }
+    for (const rid of resourceIds) {
+      const allowed = branchesByResource.get(rid)
+      if (allowed && allowed.size > 0 && !allowed.has(branchId)) {
+        throw createError({
+          statusCode: 400,
+          message: 'Выбранный мастер не работает в этом филиале',
+        })
+      }
     }
   }
 
@@ -361,10 +428,25 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Локальные «уже забронированные внутри текущего bulk» — учитываем чтобы
-    // round-robin не выбрал одного и того же мастера два раза подряд.
-    const localBookings = new Map<string, number>()
-    const reserveLocal = (rid: string) => localBookings.set(rid, (localBookings.get(rid) ?? 0) + 1)
+    // Локальные «уже забронированные внутри текущего bulk» — храним как
+    // интервалы (а не голый счётчик), чтобы исключать мастера из кандидатов
+    // только если у него реально конфликт по времени с текущим item-ом.
+    // До этого фикса логика была «если у мастера ЕСТЬ хоть какой local-booking
+    // — исключать»: при цепочке 18:30-19:30 + 19:30-20:30 единственный мастер
+    // умеющий обе услуги отсеивался на втором item-е → 409, хотя по таймингу
+    // конфликта нет.
+    const localBookings = new Map<string, Array<{ startsAt: string; endsAt: string }>>()
+    const localCount = (rid: string): number => localBookings.get(rid)?.length ?? 0
+    const reserveLocal = (rid: string, startsAt: string, endsAt: string) => {
+      const arr = localBookings.get(rid) ?? []
+      arr.push({ startsAt, endsAt })
+      localBookings.set(rid, arr)
+    }
+    const hasLocalOverlap = (rid: string, startsAt: string, endsAt: string): boolean => {
+      const arr = localBookings.get(rid)
+      if (!arr) return false
+      return arr.some((iv) => iv.startsAt < endsAt && iv.endsAt > startsAt)
+    }
 
     for (const it of resolvedItems) {
       if (it.resourceId) continue
@@ -385,7 +467,7 @@ export default defineEventHandler(async (event) => {
         .gt('ends_at', it.startsAt)
 
       const busy = new Set((busyRows ?? []).map((r) => r.resource_id as string))
-      const free = candidates.filter((id) => !busy.has(id) && (localBookings.get(id) ?? 0) === 0)
+      const free = candidates.filter((id) => !busy.has(id) && !hasLocalOverlap(id, it.startsAt, it.endsAt))
 
       if (free.length === 0) {
         throw createError({
@@ -396,15 +478,15 @@ export default defineEventHandler(async (event) => {
 
       // Round-robin: min нагрузки + стабильный порядок при равенстве.
       free.sort((a, b) => {
-        const la = (loadByResource.get(a) ?? 0) + (localBookings.get(a) ?? 0)
-        const lb = (loadByResource.get(b) ?? 0) + (localBookings.get(b) ?? 0)
+        const la = (loadByResource.get(a) ?? 0) + localCount(a)
+        const lb = (loadByResource.get(b) ?? 0) + localCount(b)
         if (la !== lb) return la - lb
 
         return a < b ? -1 : 1
       })
 
       it.resourceId = free[0]
-      reserveLocal(free[0])
+      reserveLocal(free[0], it.startsAt, it.endsAt)
     }
   }
 

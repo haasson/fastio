@@ -130,7 +130,7 @@ import { ref, reactive, computed, toRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiDrawer, UiForm, UiInputNumber, UiSwitch, UiCollapse, UiCollapseItem, UiSelect, UiText, UiAlert, UiTag, UiSkeleton, useMessage } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
-import type { Resource, ServiceWithBranchIds, Category, BookingMode } from '@fastio/shared'
+import type { Resource, ServiceWithBranchIds, ServiceFormData, Category, BookingMode } from '@fastio/shared'
 import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { NuxtLink } from '#components'
 import { useTenantStore } from '~/stores/tenant'
@@ -148,6 +148,7 @@ const props = defineProps<{
   service: ServiceWithBranchIds | null
   initialCategoryId: string | null
   categories: Category[]
+  doUpdate?: (id: string, data: Partial<ServiceFormData>) => Promise<void>
 }>()
 
 const emit = defineEmits<{
@@ -306,7 +307,11 @@ const onSave = async () => {
     }
 
     if (props.service) {
-      await api.services.update(props.service.id, data)
+      if (props.doUpdate) {
+        await props.doUpdate(props.service.id, data)
+      } else {
+        await api.services.update(props.service.id, data)
+      }
     } else {
       await api.services.create(tid, data)
     }

@@ -2,6 +2,7 @@ import { ref, reactive } from 'vue'
 import { useRequestFetch } from 'nuxt/app'
 import type { ReservationStatus } from '@fastio/shared'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { useSelectedBranchStore } from '~/stores/selectedBranch'
 
 type Slot = { time: string; available: boolean }
 
@@ -17,11 +18,15 @@ type BookingForm = {
 }
 
 export default function useBooking() {
+  // Заведения с выбранным филиалом (per_branch / unified с одним выбранным —
+  // оба валидны) пробрасывают filter→submit, чтобы бронь падала в правильный
+  // филиал, а не в `branch_id=null` (старое поведение «бэк подберёт сам»).
+  const selectedBranch = useSelectedBranchStore()
   const step = ref<1 | 2 | 3>(1)
   const form = reactive<BookingForm>({
     date: '',
     guestCount: 2,
-    branchId: null,
+    branchId: selectedBranch.id ?? null,
     time: '',
     guestName: '',
     guestPhone: '',
@@ -81,7 +86,7 @@ export default function useBooking() {
           reservedDate: form.date,
           reservedTime: form.time,
           comment: form.comment || null,
-          branchId: form.branchId || null,
+          branchId: form.branchId || selectedBranch.id || null,
         },
       })
     } catch (e: unknown) {

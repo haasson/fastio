@@ -68,6 +68,7 @@ import type {
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
+import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
 import { useVisitsList } from '~/composables/services/useVisitsList'
@@ -79,6 +80,7 @@ import CancelGroupModal from '~/components/appointments/CancelGroupModal.vue'
 const tenantStore = useTenantStore()
 const { currentTenantId, timezone } = storeToRefs(tenantStore)
 const authStore = useAuthStore()
+const branchStore = useBranchStore()
 const api = useDatabase()
 const gate = useGate()
 const route = useRoute()
@@ -109,9 +111,21 @@ const pushToUrl = () => {
   router.replace({ query: { ...route.query, filter: filter.value, page: String(page.value) } })
 }
 
+const currentBranchId = computed(() => branchStore.currentBranchId)
+
+// Сменили филиал — текущая страница может выйти за пределы пагинации в новом
+// филиале (на 5-й странице "Иваново" → 2 страницы "Брянск" → пустота). Сброс на 1.
+watch(currentBranchId, (next, prev) => {
+  if (next === prev) return
+  if (page.value !== 1) {
+    page.value = 1
+    pushToUrl()
+  }
+})
+
 const {
   loading, rows, total, totalPages, pageSize, refresh,
-} = useVisitsList({ tenantId: currentTenantId, timezone, filter, page })
+} = useVisitsList({ tenantId: currentTenantId, timezone, filter, page, branchId: currentBranchId })
 
 const { count: newCount } = useAppointmentInboxCounter()
 

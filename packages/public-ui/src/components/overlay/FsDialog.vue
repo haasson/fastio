@@ -16,11 +16,11 @@
 
   <DialogRoot v-else :open="modelValue" @update:open="onOpenChange">
     <DialogPortal>
-      <DialogOverlay class="dialog-overlay" />
+      <DialogOverlay class="dialog-overlay" :style="{ zIndex: zIndexOverlay }" />
       <DialogContent
         class="dialog-content"
         :class="`dialog-${size}`"
-        :style="{ maxWidth }"
+        :style="{ maxWidth, zIndex: zIndexContent }"
         @pointer-down-outside="closeOnOverlay ? undefined : (e: Event) => e.preventDefault()"
         @interact-outside="closeOnOverlay ? undefined : (e: Event) => e.preventDefault()"
       >
@@ -73,6 +73,17 @@ type Props = {
   closable?: boolean
   closeOnOverlay?: boolean
   forceDialog?: boolean
+  /**
+   * Уровень в стеке диалогов. Нужен когда один диалог открыт поверх другого
+   * (confirm поверх picker и т.п.) — ставит z-index выше базового.
+   */
+  level?: number
+  /**
+   * Не добавлять собственную запись в browser history. Для блокирующих imperative-диалогов
+   * (ConfirmDialog), открытых поверх обычного модала — иначе два pushState/back пересекаются
+   * и юзера уносит на предыдущий URL. На back закроется верхний модал из LIFO-стека.
+   */
+  silentHistory?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -81,7 +92,17 @@ const props = withDefaults(defineProps<Props>(), {
   closable: true,
   closeOnOverlay: true,
   forceDialog: false,
+  level: 0,
+  silentHistory: false,
 })
+
+// ИНВАРИАНТ: STACK_STEP > (z-modal - z-overlay), иначе overlay следующего уровня
+// не покроет content предыдущего и верхний content окажется «дырой» в нижнем overlay.
+// База: z-overlay=300, z-modal=400, разница=100. Шаг 200 = с запасом.
+const STACK_STEP = 200
+const stackOffset = computed(() => props.level * STACK_STEP)
+const zIndexOverlay = computed(() => `calc(var(--z-overlay, 300) + ${stackOffset.value})`)
+const zIndexContent = computed(() => `calc(var(--z-modal, 400) + ${stackOffset.value})`)
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
@@ -104,6 +125,7 @@ function onOpenChange(value: boolean) {
 useModalHistory(
   () => mounted.value && (!_isMobile.value || props.forceDialog) && props.modelValue,
   () => emit('update:modelValue', false),
+  { silent: props.silentHistory },
 )
 </script>
 
@@ -139,7 +161,7 @@ useModalHistory(
   background: var(--color-surface);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card-md, var(--shadow-card));
-  padding: 24px;
+  padding: 16px;
   z-index: var(--z-modal, 400);
   width: calc(100% - 32px);
   outline: none;
@@ -147,6 +169,7 @@ useModalHistory(
 
   @include md {
     width: 100%;
+    padding: 24px;
   }
 
   &[data-state='open'] { animation: dialog-in 0.2s ease; }

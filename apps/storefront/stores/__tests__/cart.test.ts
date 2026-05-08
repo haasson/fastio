@@ -45,6 +45,7 @@ const makeService = (overrides: Partial<ServiceCartItem> = {}): ServiceCartItem 
   photo: null,
   preferredResourceId: null,
   allowResourceChoice: true,
+  branchId: null,
   ...overrides,
 })
 
@@ -552,7 +553,7 @@ describe('useCartStore', () => {
         makeServiceCatalog('svc-1', { price: 1500 }),
       )
       const reconciledServices: ServiceCartItem[] = svcResult.items.map((i) => ({
-        ...i,
+        ...(i as ServiceCartItem),
         kind: 'service' as const,
       }))
 
@@ -600,7 +601,7 @@ describe('useCartStore', () => {
       expect(svcResult.removed[0].reason).toBe('service_not_bookable')
 
       const reconciledServices: ServiceCartItem[] = svcResult.items.map((i) => ({
-        ...i,
+        ...(i as ServiceCartItem),
         kind: 'service' as const,
       }))
       store.patchByKey([...store.dishItems, ...reconciledServices])
@@ -648,7 +649,7 @@ describe('useCartStore', () => {
 
       // Подаём в обратном порядке: services сначала, dishes после
       store.patchByKey([
-        ...svcResult.items.map((i) => ({ ...i, kind: 'service' as const })),
+        ...svcResult.items.map((i) => ({ ...(i as ServiceCartItem), kind: 'service' as const })),
         ...dishResult.items.map((i) => ({ ...i, kind: 'dish' as const })),
       ])
 

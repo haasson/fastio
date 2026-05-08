@@ -19,11 +19,26 @@
 
     <template v-else>
       <UiCard class="date-picker-card">
-        <UiTitle size="h4" class="card-title">Дата визита</UiTitle>
-        <UiDatepicker v-model="dateTs" placeholder="Выберите дату" />
-        <UiText v-if="dateChanged" size="tiny" class="date-changed-hint">
-          При сохранении все услуги визита переедут на новую дату.
-        </UiText>
+        <div class="date-branch-row">
+          <div class="date-col">
+            <UiTitle size="h4" class="card-title">Дата визита</UiTitle>
+            <UiDatepicker v-model="dateTs" placeholder="Выберите дату" />
+            <UiText v-if="dateChanged" size="tiny" class="date-changed-hint">
+              При сохранении все услуги визита переедут на новую дату.
+            </UiText>
+          </div>
+          <div v-if="branchStore.branches.length > 1" class="branch-col">
+            <UiTitle size="h4" class="card-title">Филиал</UiTitle>
+            <UiSelect
+              v-if="!branchSelectDisabled"
+              :value="editor.state.branchId"
+              :options="branchOptions"
+              placeholder="Выберите филиал"
+              @update:value="onBranchSelect"
+            />
+            <UiText v-else>{{ editorBranchName }}</UiText>
+          </div>
+        </div>
       </UiCard>
 
       <div class="content-grid">
@@ -33,6 +48,7 @@
             :existing-service-ids="editor.existingServiceIds.value"
             :is-read-only="editor.isReadOnly.value"
             :saving="editor.saving.value"
+            :branch-id="editor.state.branchId"
             :appointments="props.initialAppointments"
             :selected-key="editor.selectedServiceKey.value"
             :resource-display-name="editor.resourceDisplayName"
@@ -96,7 +112,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiCard, UiTitle, UiText, UiSkeleton, UiTag, UiDatepicker } from '@fastio/ui'
+import { UiCard, UiTitle, UiText, UiSkeleton, UiTag, UiDatepicker, UiSelect } from '@fastio/ui'
 import type {
   Appointment, Visit,
   AppointmentEvent,
@@ -156,6 +172,25 @@ const editor = useAppointmentEditorState({
 const dateChanged = computed(() => props.initialVisit?.status === 'active'
   && !!props.initialVisit.businessDate
   && editor.state.date !== props.initialVisit.businessDate)
+
+const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
+
+// В edit-mode филиал зафиксирован при создании визита (см. LATER.md → перенос
+// визита в другой филиал — отдельная фича через RPC). Селект → readonly.
+const branchSelectDisabled = computed(() => props.mode === 'edit'
+  || editor.isReadOnly.value
+  || editor.saving.value)
+
+const onBranchSelect = (v: string | number | (string | number)[] | null) => {
+  editor.state.branchId = typeof v === 'string' ? v : null
+}
+
+// Имя филиала из state (для readonly-отображения в edit-mode внутри карточки даты).
+const editorBranchName = computed(() => {
+  if (!editor.state.branchId) return 'Не указан'
+
+  return branchStore.branches.find((b) => b.id === editor.state.branchId)?.name ?? 'Неизвестный филиал'
+})
 
 const dateTs = computed<number | null>({
   get: () => {
@@ -274,6 +309,21 @@ defineExpose({
 
 .date-picker-card {
   margin-bottom: var(--space-8);
+}
+
+.date-branch-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-16);
+
+  @include mq.mq-m {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.date-col,
+.branch-col {
+  @include flex-col(var(--space-4));
 }
 
 .date-changed-hint {

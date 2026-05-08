@@ -103,6 +103,30 @@ export default defineEventHandler(async (event): Promise<GroupSlotsResult> => {
     }
   }
 
+  // Совместимость услуга↔филиал. Если у услуги непустой service_branches и среди
+  // них нет выбранного филиала — слотов не будет, отвечаем явной ошибкой а не пустым результатом.
+  if (branchId && serviceIds.length) {
+    const { data: svcBranchRows } = await db
+      .junction('service_branches')
+      .select('service_id, branch_id')
+      .in('service_id', serviceIds)
+    const allowedByService = new Map<string, Set<string>>()
+    for (const row of (svcBranchRows ?? []) as Array<{ service_id: string; branch_id: string }>) {
+      const set = allowedByService.get(row.service_id) ?? new Set<string>()
+      set.add(row.branch_id)
+      allowedByService.set(row.service_id, set)
+    }
+    for (const sid of serviceIds) {
+      const allowed = allowedByService.get(sid)
+      if (allowed && allowed.size > 0 && !allowed.has(branchId)) {
+        throw createError({
+          statusCode: 400,
+          message: 'Одна из услуг недоступна в выбранном филиале',
+        })
+      }
+    }
+  }
+
   // Получаем ресурсы для каждой услуги (явные + через категорию)
   const categoryIds = [...new Set(
     Array.from(serviceById.values()).map((s) => s.categoryId).filter((id): id is string => id !== null),

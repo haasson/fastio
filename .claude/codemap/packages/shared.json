@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-07T01:28:32.208Z",
+  "generated_at": "2026-05-08T02:50:55.525Z",
   "stats": {
     "files": 39,
     "pages": 0,
@@ -672,8 +672,8 @@
     },
     "src/utils/reconcile-cart.ts": {
       "kind": "ts",
-      "hash": "408fb44f7d3c",
-      "purpose": "Реконсиляция корзины блюд и услуг: удаление/обновление позиций при расхождении со снапшотом каталога",
+      "hash": "0e5df18bab82",
+      "purpose": "Чистые reconcileCart/reconcileServices: убирают отсутствующие позиции, валидируют модификаторы/допы, обновляют name/price/duration в корзине",
       "symbols": [
         {
           "name": "reconcileServices",
@@ -714,8 +714,8 @@
         {
           "name": "ReconcileServiceItem",
           "kind": "type",
-          "hash": "7a746957",
-          "purpose": "Позиция корзины услуг: serviceId, name, price, duration, photo, preferredResourceId, allowResourceChoice, _key"
+          "hash": "dc35e19f",
+          "purpose": "Позиция-услуга для reconcileServices: id/serviceId/serviceName/duration/price/photo/preferredResourceId/branchId/_key — зеркалит ServiceCartItem без kind"
         },
         {
           "name": "ReconcileService",

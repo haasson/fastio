@@ -62,6 +62,8 @@ import { reportError } from '~/utils/reportError'
 type Props = {
   open: boolean
   existingIds: string[]
+  // null = тенант моно-филиальный или фильтр не применяется (preset без branchId).
+  branchId?: string | null
 }
 
 const props = defineProps<Props>()
@@ -105,7 +107,14 @@ watch(() => props.open, (open) => {
 const filtered = computed<ServiceWithBranchIds[]>(() => {
   const q = search.value.trim().toLowerCase()
   // Только bookable — иначе пользователь сможет добавить розничный товар как услугу.
-  const list = services.value.filter((s) => s.isBookable)
+  const bid = props.branchId ?? null
+  const list = services.value.filter((s) => {
+    if (!s.isBookable) return false
+    // Фильтр по филиалу: пустой service_branches = «во всех филиалах».
+    if (bid && s.branchIds.length > 0 && !s.branchIds.includes(bid)) return false
+
+    return true
+  })
 
   if (!q) return list
 

@@ -20,6 +20,8 @@ export type ServiceCartItem = {
   photo: string | null
   preferredResourceId: string | null
   allowResourceChoice: boolean
+  /** Филиал, в котором добавлена услуга. null = не привязана к филиалу (global / unified без выбора). */
+  branchId: string | null
 }
 
 export type CartItem = DishCartItem | ServiceCartItem
@@ -265,7 +267,12 @@ export const useCartStore = defineStore('cart', () => {
                 _key: dishItem._key || crypto.randomUUID(),
               }]
             }
-            return [{ ...(item as ServiceCartItem), _key: item._key || crypto.randomUUID() }]
+            const svcItem = item as Partial<ServiceCartItem>
+            return [{
+              ...(svcItem as ServiceCartItem),
+              branchId: svcItem.branchId ?? null,
+              _key: svcItem._key || crypto.randomUUID(),
+            }]
           })
         }
       } catch (e) {

@@ -49,6 +49,7 @@
     <AddServiceModal
       v-model:open="addOpen"
       :existing-ids="existingServiceIds"
+      :branch-id="branchId ?? null"
       @select="onAddService"
     />
   </UiCard>
@@ -68,6 +69,8 @@ const props = defineProps<{
   existingServiceIds: string[]
   isReadOnly: boolean
   saving: boolean
+  // Текущий выбранный филиал визита — для фильтрации списка добавляемых услуг.
+  branchId?: string | null
   appointments?: Appointment[] | null
   selectedKey: string | null
   resourceDisplayName: (svc: EditorService) => string

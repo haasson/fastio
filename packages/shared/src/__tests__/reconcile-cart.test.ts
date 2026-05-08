@@ -540,6 +540,7 @@ function makeServiceItem(overrides: Partial<ReconcileServiceItem> = {}): Reconci
     photo: 'p.jpg',
     preferredResourceId: null,
     allowResourceChoice: true,
+    branchId: null,
     ...overrides,
   }
 }

@@ -207,6 +207,30 @@ export const resourcesApi = {
     return (data ?? []).map((r) => r.branch_id as string)
   },
 
+  /**
+   * Bulk-загрузка resource_branches для списка ресурсов.
+   * Возвращает Map<resourceId, string[]> — пустой массив = доступен во всех филиалах.
+   */
+  async listBranchIds(sb: SupabaseClient, resourceIds: string[]): Promise<Map<string, string[]>> {
+    if (resourceIds.length === 0) return new Map()
+    const { data, error } = await sb
+      .from('resource_branches')
+      .select('resource_id, branch_id')
+      .in('resource_id', resourceIds)
+
+    if (error) throw new Error(error.message)
+    const result = new Map<string, string[]>()
+
+    for (const row of (data ?? []) as Array<{ resource_id: string; branch_id: string }>) {
+      const existing = result.get(row.resource_id) ?? []
+
+      existing.push(row.branch_id)
+      result.set(row.resource_id, existing)
+    }
+
+    return result
+  },
+
   async setBranchIds(sb: SupabaseClient, resourceId: string, branchIds: string[]): Promise<void> {
     await query(
       sb.rpc('resources_set_branch_ids', {

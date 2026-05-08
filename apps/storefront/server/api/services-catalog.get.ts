@@ -14,6 +14,10 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
   const requestedBranchId = typeof query.branchId === 'string' ? query.branchId : null
+  // ?all=1 — useBranchSwitcher запрашивает unfiltered каталог для compat-чека
+  // при смене филиала (нужен полный набор услуг чтобы понять что выживет, что
+  // вылетит). В обычной витринной выдаче не используется.
+  const skipBranchFilter = query.all === '1' || query.all === 'true'
 
   const [{ data: categoriesData }, { data: servicesData }, { data: tagRowsData }] = await Promise.all([
     db
@@ -65,9 +69,10 @@ export default defineEventHandler(async (event) => {
   }))
 
   // В режиме per_branch отдаём только услуги, привязанные к выбранному филиалу
-  // (или с пустым branchIds = «во всех филиалах»).
+  // (или с пустым branchIds = «во всех филиалах»). При ?all=1 фильтр пропускаем —
+  // нужен для compat-чека на смене филиала в useBranchSwitcher.
   const services
-    = tenant.branchSelectionMode === 'per_branch' && requestedBranchId
+    = tenant.branchSelectionMode === 'per_branch' && requestedBranchId && !skipBranchFilter
       ? allServices.filter(
         (s) => s.branchIds.length === 0 || s.branchIds.includes(requestedBranchId),
       )

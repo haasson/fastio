@@ -51,7 +51,7 @@
           <ApptGroupSuccess
             v-else-if="step === 'success' && groupResult"
             :appointments="groupResult.appointments"
-            :service-names="serviceNames"
+            :service-names="successServiceNames"
             :timezone="timezone"
           />
 
@@ -97,6 +97,7 @@ import ApptGroupRequest from '~/components/appointments/ApptGroupRequest.vue'
 import ApptStepContact from '~/components/appointments/ApptStepContact.vue'
 import ApptGroupSuccess from '~/components/appointments/ApptGroupSuccess.vue'
 import { useCartStore } from '~/stores/cart'
+import { useSelectedBranchStore } from '~/stores/selectedBranch'
 import { useToast } from '~/composables/useToast'
 import { reportError } from '~/utils/reportError'
 import { useResourceLabel } from '~/composables/useResourceLabel'
@@ -110,6 +111,7 @@ type GroupResult = {
 const rfetch = useRequestFetch()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const cart = useCartStore()
+const branchStore = useSelectedBranchStore()
 const { success: showSuccess, error: showError } = useToast()
 
 const timezone = computed(() => tenant.value?.timezone ?? DEFAULT_TIMEZONE)
@@ -139,6 +141,12 @@ const serviceNames = computed<Record<string, string>>(() => {
   }
   return map
 })
+
+// Снапшот имён услуг для success-экрана: cart очищается ПОСЛЕ перехода на
+// step='success', и ApptGroupSuccess успевает отреагировать на пустой cart →
+// показывает UUID вместо названий. Снимаем снапшот в submitGroupBooking перед
+// commitClearServices().
+const successServiceNames = ref<Record<string, string>>({})
 
 const resourceNamesMap = ref<Map<string, string>>(new Map())
 const { anyLabel: anyResourceLabel } = useResourceLabel()
@@ -177,7 +185,6 @@ const itemsForApi = () => cart.serviceItems.map((item) => ({
 }))
 
 const route = useRoute()
-
 let resourceNamesLoaded = false
 
 const loadResourceNames = async () => {
@@ -210,6 +217,18 @@ watch(step, (s) => {
   if (s === 'request') loadResourceNames()
 })
 
+// Если корзина услуг опустела (например, юзер сменил филиал → удалились все услуги),
+// возвращаем на /cart. Исключаем step=success: там корзина зачищена намеренно после
+// успешной записи, и юзер должен видеть экран успеха.
+watch(
+  () => cart.serviceCount,
+  (count) => {
+    if (count === 0 && step.value !== 'success' && cart.restored) {
+      navigateTo('/cart', { replace: true })
+    }
+  },
+)
+
 onMounted(async () => {
   if (cart.serviceCount === 0) {
     await navigateTo('/cart', { replace: true })
@@ -230,17 +249,16 @@ onMounted(async () => {
 })
 
 const fetchWeek = async (dates: string[]) => {
-  // Уже загруженные или в процессе — не запрашиваем повторно
   const toFetch = dates.filter(d => !(d in weekMatches.value) && !inflightDates.has(d))
   if (toFetch.length === 0) return
 
   for (const d of toFetch) inflightDates.add(d)
-
   try {
     const params = new URLSearchParams({
       dates: toFetch.join(','),
       items: JSON.stringify(itemsForApi()),
     })
+    if (branchStore.id) params.set('branchId', branchStore.id)
     const res = await rfetch<Array<{ date: string; match: GroupSlotMatch | null }>>(
       `/api/appointments/group-week?${params}`,
     )
@@ -269,6 +287,7 @@ const onSelectDate = async (date: string) => {
       date,
       items: JSON.stringify(itemsForApi()),
     })
+    if (branchStore.id) params.set('branchId', branchStore.id)
     const result = await rfetch<GroupSlotsResult>(`/api/appointments/group-slots?${params}`)
     if (gen === slotsLoadGen) groupSlotsResult.value = result
   } catch (e) {
@@ -278,6 +297,29 @@ const onSelectDate = async (date: string) => {
     if (gen === slotsLoadGen) loading.value = false
   }
 }
+
+// Смена филиала из шапки/бургера — кэш точек и текущие слоты были посчитаны
+// для старого филиала, в новом картина другая. Сбрасываем и перезагружаем
+// то, что юзер уже видит (видимая неделя + выбранная дата). Также возвращаем
+// юзера на step='date' если он успел уйти на 'contact'/'request' — слот сброшен,
+// форма контактов без времени бесполезна.
+watch(() => branchStore.id, () => {
+  const previousDates = Object.keys(weekMatches.value)
+  weekMatches.value = {}
+  selectedEntry.value = null
+  if (previousDates.length > 0) fetchWeek(previousDates)
+
+  if (groupDate.value && step.value === 'slots') {
+    onSelectDate(groupDate.value)
+  } else {
+    groupSlotsResult.value = null
+  }
+
+  // Если юзер был на 'contact' / 'request' — слот теперь невалиден, возвращаем на выбор даты.
+  if (step.value === 'contact' || step.value === 'request') {
+    step.value = 'date'
+  }
+})
 
 const onRequestSubmit = async (form: { customerName: string; customerPhone: string; notes: string }) => {
   submitting.value = true
@@ -289,7 +331,7 @@ const onRequestSubmit = async (form: { customerName: string; customerPhone: stri
     await $fetch('/api/appointments/request', {
       method: 'POST',
       body: {
-        branchId: null,
+        branchId: branchStore.id ?? null,
         customerName: form.customerName,
         customerPhone: form.customerPhone,
         notes: form.notes || null,
@@ -335,6 +377,7 @@ const submitGroupBooking = async () => {
     // schedule в другом порядке относительно cart.serviceItems (см. план 10.1).
     const preferredMap = preferredResourceByService.value
     const body = {
+      branchId: branchStore.id ?? null,
       items: selectedEntry.value.schedule.map((entry) => ({
         serviceId: entry.serviceId,
         resourceId: preferredMap[entry.serviceId] ? entry.resourceId : null,
@@ -357,6 +400,7 @@ const submitGroupBooking = async () => {
 
     const res = await $fetch<GroupResult>('/api/appointments/bulk', { method: 'POST', body, headers })
     groupResult.value = res
+    successServiceNames.value = { ...serviceNames.value }
     step.value = 'success'
     commitClearServices()
   } catch (e: unknown) {

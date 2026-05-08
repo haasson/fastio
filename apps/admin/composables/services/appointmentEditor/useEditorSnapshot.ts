@@ -42,6 +42,8 @@ export function useEditorSnapshot(state: EditorState) {
 
   const dateDirty = computed(() => state.date !== snapshot.value?.date)
 
+  const branchIdDirty = computed(() => state.branchId !== (snapshot.value?.branchId ?? null))
+
   const servicesDirty = computed(() => {
     const hasPendingCancels = state.services.some((s) => s.pendingRemove && s.appointmentId)
 
@@ -58,6 +60,7 @@ export function useEditorSnapshot(state: EditorState) {
       || state.customerPhone !== (snap?.customerPhone ?? '')
       || state.notes !== (snap?.notes ?? '')
       || dateDirty.value
+      || branchIdDirty.value
       || servicesDirty.value
   })
 

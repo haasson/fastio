@@ -6,7 +6,7 @@
       subtitle="Используются по умолчанию во всех филиалах. В каждом филиале можно переопределить."
     />
 
-    <UiCard v-if="branches.length > 1" size="large" class="branch-mode-card">
+    <UiCard v-if="branches.length > 1 && !tenantStore.isServices" size="large" class="branch-mode-card">
       <UiSectionHeader title="Как клиент попадает в филиал" />
       <p class="mode-hint">{{ modeTexts.hint }}</p>
       <div class="mode-options">
@@ -143,7 +143,8 @@ const branchModeHandle: FormHandle = {
 
 const contactsBlockRef = shallowRef<{ handle: FormHandle } | null>(null)
 const handles = computed<FormHandle[]>(() => {
-  const list: FormHandle[] = [branchModeHandle]
+  // services-тенанты всегда per_branch (DB constraint), форма скрыта — handle не нужен
+  const list: FormHandle[] = tenantStore.isServices ? [] : [branchModeHandle]
 
   if (contactsBlockRef.value?.handle) list.push(contactsBlockRef.value.handle)
 

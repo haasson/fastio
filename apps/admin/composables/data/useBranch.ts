@@ -23,7 +23,11 @@ export const useBranch = (
   // Сбрасывается при смене тенанта, чтобы init сработал заново.
   const initializedForTenantId = ref<string | null>(null)
 
-  watch(tenantId, () => {
+  // Сбрасываем выбранный филиал ТОЛЬКО при реальной смене тенанта (oldVal был не-null).
+  // Первое срабатывание (null → реальный tid) — это не смена, а инициализация:
+  // сразу после неё `watch(branches)` восстановит filial из localStorage.
+  watch(tenantId, (newVal, oldVal) => {
+    if (!oldVal) return
     currentBranchId.value = null
     localStorage.removeItem(STORAGE_KEY)
     initializedForTenantId.value = null
@@ -35,9 +39,9 @@ export const useBranch = (
 
     if (!tid || initializedForTenantId.value === tid) return
 
-    initializedForTenantId.value = tid
-
     if (newBranches.length === 0) return
+
+    initializedForTenantId.value = tid
 
     const available = hasAllBranchAccess.value || memberBranchIds.value.length === 0
       ? newBranches

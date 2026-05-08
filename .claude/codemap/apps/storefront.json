@@ -2,11 +2,11 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-07T01:28:32.117Z",
+  "generated_at": "2026-05-08T02:50:55.397Z",
   "stats": {
-    "files": 67,
+    "files": 68,
     "pages": 0,
-    "symbols": 100,
+    "symbols": 105,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -27,8 +27,8 @@
     },
     "composables/useBooking.ts": {
       "kind": "ts",
-      "hash": "f05cb9c2819b",
-      "purpose": "Стейт мастера бронирования столика: шаги, форма, доступные слоты, отправка на /api/reservations",
+      "hash": "aa5841238ccf",
+      "purpose": "Composable формы брони столика (резервация): step/form/slots/error + fetchSlots/submit; seed branchId из useSelectedBranchStore",
       "symbols": [
         {
           "name": "default",
@@ -40,8 +40,8 @@
     },
     "composables/useBranchSwitcher.ts": {
       "kind": "ts",
-      "hash": "5f6262edfa90",
-      "purpose": "Единая точка смены филиала в режиме per_branch: confirm + чистка несовместимых dish-позиций + запись в selectedBranch",
+      "hash": "a46cda1a6739",
+      "purpose": "Единая точка смены филиала: считает потери в dishes+services корзины, показывает confirm с диффом, применяет изменения и вызывает branchStore.set",
       "symbols": [
         {
           "name": "useBranchSwitcher",
@@ -66,8 +66,8 @@
     },
     "composables/useCartReconciler.ts": {
       "kind": "ts",
-      "hash": "a6d1238037b7",
-      "purpose": "Реконсиляция корзины при загрузке меню/услуг: удаляет несуществующие позиции, обновляет цены и сбрасывает предпочтения при изменении настроек",
+      "hash": "31fe27b72a67",
+      "purpose": "Согласует корзину с актуальным меню и каталогом услуг через reconcileCart+reconcileServices, удаляет несовместимые с тостом",
       "symbols": [
         {
           "name": "useCartReconciler",
@@ -92,14 +92,20 @@
     },
     "composables/useConfirm.ts": {
       "kind": "ts",
-      "hash": "db97d60faad9",
-      "purpose": "Глобальная очередь confirm-диалогов: confirm(message, opts) → Promise<boolean> и состояние для рендера модалки",
+      "hash": "5d578b2df871",
+      "purpose": "Глобальный confirm-модуль: очередь промисов и state с поддержкой sections для structured-диффа (например смена филиала)",
       "symbols": [
         {
           "name": "useConfirm",
           "kind": "function",
           "hash": "15febb00",
           "purpose": "Отдаёт confirm(message, options) и state/onConfirm/onCancel для глобального компонента подтверждения"
+        },
+        {
+          "name": "ConfirmSection",
+          "kind": "type",
+          "hash": "5b9dca44",
+          "purpose": "Секция с заголовком и items[] — рендерится в ConfirmDialog как разбивка потерь по типам (удалится/сбросится мастер)"
         }
       ]
     },
@@ -316,6 +322,37 @@
         }
       ]
     },
+    "utils/appointmentBranchCompat.ts": {
+      "kind": "ts",
+      "hash": "8f4051db7632",
+      "purpose": "Чистая функция совместимости service-корзины со сменой филиала: считает survivors/dropped/resourcesReset для useBranchSwitcher",
+      "symbols": [
+        {
+          "name": "calcAppointmentBranchReset",
+          "kind": "function",
+          "hash": "724d2b56",
+          "purpose": "Возвращает {survivors,dropped,resourcesReset} при смене branchId; флаг forceResetAllMasters для safe-fallback когда resource-branches API упал"
+        },
+        {
+          "name": "ServiceCompat",
+          "kind": "type",
+          "hash": "0a994153",
+          "purpose": "Урезанный тип услуги {id, branchIds[]} для compat-проверки (пустой = всюду)"
+        },
+        {
+          "name": "ResourceCompat",
+          "kind": "type",
+          "hash": "6ef9ccad",
+          "purpose": "Урезанный тип ресурса/мастера {id, branchIds[]} для compat-проверки"
+        },
+        {
+          "name": "AppointmentBranchResetResult",
+          "kind": "type",
+          "hash": "8aa1553a",
+          "purpose": "Результат calcAppointmentBranchReset: survivors[], dropped[], resourcesReset[] (serviceId'ы у которых сбросится мастер)"
+        }
+      ]
+    },
     "utils/branchCompat.ts": {
       "kind": "ts",
       "hash": "6f1934852fca",
@@ -507,8 +544,8 @@
     },
     "stores/cart.ts": {
       "kind": "ts",
-      "hash": "da3cc9a15637",
-      "purpose": "Pinia-стор корзины витрины: discriminated union dish|service, persist/restore с legacy-миграцией, patchByKey по _key (для useCartReconciler), snapshot-pattern в clearDishes/clearServices",
+      "hash": "fa8b205d347b",
+      "purpose": "Pinia-стор корзины: смешанные dish+service items со стабильным _key, persist в localStorage, защита restored-флагом от гонок add/restore",
       "symbols": [
         {
           "name": "DishCartItem",
@@ -519,8 +556,8 @@
         {
           "name": "ServiceCartItem",
           "kind": "type",
-          "hash": "e8200906",
-          "purpose": "Позиция-услуга в корзине: serviceId + kind:'service' + имя/цена/длительность + стабильный _key"
+          "hash": "e9954398",
+          "purpose": "Позиция-услуга в корзине: kind:'service' + serviceId/Name/duration/price/preferredResourceId/branchId + стабильный _key"
         },
         {
           "name": "CartItem",
@@ -588,8 +625,8 @@
     },
     "stores/selectedBranch.ts": {
       "kind": "ts",
-      "hash": "20d5f94a92ed",
-      "purpose": "Pinia: id выбранного клиентом филиала (режим per_branch) с persist в localStorage и флагом restored для SSR",
+      "hash": "af3b2afd0c5b",
+      "purpose": "Pinia-стор выбранного филиала per_branch-режима: SSR-cookie + localStorage с приоритетом cookie для синхронной выдачи каталога без FOUC",
       "symbols": [
         {
           "name": "useSelectedBranchStore",
@@ -877,8 +914,8 @@
     },
     "components/sf/domain/SfCartFab.vue": {
       "kind": "vue",
-      "hash": "8469dc73dbee",
-      "purpose": "Плавающая кнопка корзины внизу экрана с количеством позиций и итоговой суммой (обёртка над SfFab)",
+      "hash": "0efad001a7d5",
+      "purpose": "Floating Action Button корзины: счётчик позиций, цена, опциональный label с адресом доставки/самовывоза для мобайла",
       "symbols": [
         {
           "name": "emits",
@@ -903,8 +940,8 @@
     },
     "components/sf/domain/SfFab.vue": {
       "kind": "vue",
-      "hash": "cee97d3e2ee2",
-      "purpose": "Базовая плавающая кнопка fixed-снизу (safe-area aware) с иконкой/счётчиком/лейблом/ценой и анимацией enter/leave",
+      "hash": "46c65a4e2d30",
+      "purpose": "Базовый FAB для корзины и других плавающих кнопок: бейдж-счётчик, цена, label, slot для иконки",
       "symbols": [
         {
           "name": "props",
