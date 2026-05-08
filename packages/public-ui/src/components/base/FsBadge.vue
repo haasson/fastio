@@ -63,13 +63,13 @@ withDefaults(defineProps<Props>(), {
 }
 
 .badge-success {
-  background: color-mix(in srgb, #10b981 12%, transparent);
-  color: #10b981;
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
 }
 
 .badge-warning {
-  background: color-mix(in srgb, #f59e0b 12%, transparent);
-  color: #f59e0b;
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
 }
 
 .badge-error {

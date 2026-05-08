@@ -18,6 +18,9 @@ export type ThemePalette = {
   textSecondary: string
   textMuted: string
   border: string
+  success?: string
+  warning?: string
+  error?: string
 }
 
 export type CustomTheme = {

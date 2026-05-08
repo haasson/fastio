@@ -47,6 +47,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#8db89a',
       textMuted: '#5a7d65',
       border: '#243d2b',
+      success: '#38bdf8',
     },
   },
   {
@@ -60,6 +61,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#7a3a57',
       textMuted: '#b07090',
       border: '#f5d0e3',
+      error: '#fb923c',
     },
   },
   {
@@ -115,6 +117,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#c4909a',
       textMuted: '#8a5060',
       border: '#4a1a50',
+      warning: '#a78bfa',
     },
   },
   {
@@ -142,6 +145,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#6b5800',
       textMuted: '#a07800',
       border: '#f5d960',
+      warning: '#a78bfa',
     },
   },
   {
@@ -156,6 +160,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#C9A882',
       textMuted: '#7A6152',
       border: '#3D2E24',
+      warning: '#a78bfa',
     },
   },
   {
@@ -169,6 +174,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#4A5E44',
       textMuted: '#9AAB8E',
       border: '#DDE5D8',
+      success: '#38bdf8',
     },
   },
   {
@@ -183,6 +189,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#9E9DAD',
       textMuted: '#52505E',
       border: '#24242F',
+      warning: '#a78bfa',
     },
   },
   {
@@ -196,6 +203,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#6B3A4E',
       textMuted: '#B8879A',
       border: '#F0DCE3',
+      error: '#fb923c',
     },
   },
   {
@@ -209,6 +217,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#5C5248',
       textMuted: '#A89E94',
       border: '#EAE4DC',
+      error: '#fb923c',
     },
   },
 
@@ -251,6 +260,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#2d5838',
       textMuted: '#7aaa84',
       border: '#c4e2ca',
+      success: '#38bdf8',
     },
   },
   {
@@ -335,6 +345,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#b87090',
       textMuted: '#6a3050',
       border: '#3a1028',
+      error: '#fb923c',
     },
   },
   {
@@ -349,6 +360,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#40a058',
       textMuted: '#256034',
       border: '#0c2818',
+      success: '#38bdf8',
     },
   },
   {
@@ -363,6 +375,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#b080d0',
       textMuted: '#6040a0',
       border: '#2a1848',
+      warning: '#a78bfa',
     },
   },
   {
@@ -393,6 +406,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#880040',
       textMuted: '#cc60a0',
       border: '#ffc8e8',
+      error: '#fb923c',
     },
   },
   {
@@ -406,6 +420,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#8a5200',
       textMuted: '#c09040',
       border: '#ffe08a',
+      warning: '#a78bfa',
     },
   },
   {
@@ -419,6 +434,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#1a5080',
       textMuted: '#6090c0',
       border: '#b0d4f0',
+      error: '#fb923c',
     },
   },
   {
@@ -432,6 +448,8 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#006040',
       textMuted: '#30a080',
       border: '#80e8cc',
+      warning: '#a78bfa',
+      error: '#fb923c',
     },
   },
   {
@@ -487,6 +505,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#3e5840',
       textMuted: '#809a82',
       border: '#ccd8c8',
+      success: '#38bdf8',
     },
   },
   {
@@ -591,6 +610,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#246040',
       textMuted: '#6aaa80',
       border: '#c0dcc8',
+      success: '#38bdf8',
     },
   },
 
@@ -664,6 +684,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#909090',
       textMuted: '#505050',
       border: '#282828',
+      error: '#fb923c',
     },
   },
   {
@@ -706,6 +727,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#a09888',
       textMuted: '#5c5850',
       border: '#302c28',
+      warning: '#a78bfa',
     },
   },
   {
@@ -720,6 +742,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#508870',
       textMuted: '#285840',
       border: '#102418',
+      success: '#38bdf8',
     },
   },
   {
@@ -750,6 +773,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#006040',
       textMuted: '#30a060',
       border: '#80f0c0',
+      success: '#38bdf8',
     },
   },
   {
@@ -763,6 +787,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#800030',
       textMuted: '#c06080',
       border: '#ffc0d8',
+      error: '#fb923c',
     },
   },
   {
@@ -867,6 +892,7 @@ export const THEME_PRESETS: ThemePresetDef[] = [
       textSecondary: '#803020',
       textMuted: '#c08070',
       border: '#f8c8b0',
+      error: '#fb923c',
     },
   },
 ]
@@ -885,4 +911,7 @@ export const paletteToCssVars = (p: ThemePalette): Record<string, string> => ({
   '--color-text-secondary': p.textSecondary,
   '--color-text-muted': p.textMuted,
   '--color-border': p.border,
+  ...(p.success && { '--color-success': p.success }),
+  ...(p.warning && { '--color-warning': p.warning }),
+  ...(p.error && { '--color-error': p.error }),
 })

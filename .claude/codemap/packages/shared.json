@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-08T02:50:55.525Z",
+  "generated_at": "2026-05-08T04:01:30.910Z",
   "stats": {
     "files": 39,
     "pages": 0,
@@ -1012,8 +1012,8 @@
     },
     "src/utils/themePresets.ts": {
       "kind": "ts",
-      "hash": "5fc05732e098",
-      "purpose": "Готовые пресеты темы для тенантов (палитры light/dark): источник для tenant.theme_preset и UI-выбора в настройках",
+      "hash": "cba3947aa76e",
+      "purpose": "Пресеты тем витрины: палитры цветов + paletteToCssVars для применения темы",
       "symbols": [
         {
           "name": "ThemePresetDef",

@@ -2,7 +2,7 @@
   "project": "packages/public-ui",
   "submap": "main",
   "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
-  "generated_at": "2026-05-08T02:50:55.476Z",
+  "generated_at": "2026-05-08T04:01:30.863Z",
   "stats": {
     "files": 35,
     "pages": 0,
@@ -27,8 +27,8 @@
     },
     "src/components/base/FsBadge.vue": {
       "kind": "vue",
-      "hash": "824cbfaed826",
-      "purpose": "Маленький бейдж-метка с вариантами цвета и режимом dot (точка-индикатор без текста)",
+      "hash": "33f4d6706235",
+      "purpose": "Бейдж-метка (default/primary/success/warning/error/info) с поддержкой dot-режима",
       "symbols": [
         {
           "name": "props",

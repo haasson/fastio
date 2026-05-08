@@ -2,7 +2,7 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-08T02:50:55.397Z",
+  "generated_at": "2026-05-08T04:01:30.723Z",
   "stats": {
     "files": 68,
     "pages": 0,
@@ -505,8 +505,8 @@
     },
     "utils/tag-icons.ts": {
       "kind": "ts",
-      "hash": "8df3446c0631",
-      "purpose": "Маппинг имён тегов блюд на lucide-иконки с дефолтом Tag",
+      "hash": "214f18f1408d",
+      "purpose": "Маппинг иконок для тегов услуг/блюд по slug",
       "symbols": [
         {
           "name": "resolveTagIcon",
@@ -972,8 +972,8 @@
     },
     "components/sf/domain/SfOrderStatus.vue": {
       "kind": "vue",
-      "hash": "8fe94f5591e3",
-      "purpose": "Цветной chip-статус заказа (Новый/В работе/Выполнен/Отменён) с цветовой точкой и поддержкой кастомного label",
+      "hash": "3cdc27222cec",
+      "purpose": "Бейдж статуса заказа (new/in_progress/completed/cancelled) с цветным индикатором",
       "symbols": [
         {
           "name": "props",

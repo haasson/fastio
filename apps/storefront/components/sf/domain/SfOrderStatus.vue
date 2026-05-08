@@ -71,20 +71,20 @@ const displayLabel = computed(() => props.label ?? defaultLabels[props.group])
 }
 
 .status-in_progress {
-  background: color-mix(in srgb, #f59e0b 12%, transparent);
-  color: #f59e0b;
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
 
   .status-dot {
-    background: #f59e0b;
+    background: var(--color-warning);
   }
 }
 
 .status-completed {
-  background: color-mix(in srgb, #10b981 12%, transparent);
-  color: #10b981;
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
 
   .status-dot {
-    background: #10b981;
+    background: var(--color-success);
   }
 }
 
