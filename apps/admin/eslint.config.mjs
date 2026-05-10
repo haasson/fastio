@@ -59,6 +59,7 @@ const AGGREGATOR_FILES = [
   'composables/data/useDatabase.ts',
   'composables/plan/useGate.ts',
   'composables/plan/useGate.routes.ts',
+  'composables/useRealtimeChannels.ts',
   'components/layout/AppNav.vue',
   'utils/moduleToggleChecks.ts',
   'config/modules.ts',
@@ -172,6 +173,7 @@ export default [
   // и пр. это retail/services layout-файлы (Nuxt nested routing), они в вертикалях.
   {
     files: [
+      'composables/*.ts',
       'composables/data/**',
       'composables/plan/**',
       'composables/__tests__/**',

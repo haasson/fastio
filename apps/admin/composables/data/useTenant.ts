@@ -109,7 +109,10 @@ export const useTenant = (userId: Ref<string | null>) => {
     if (!maybeTenant.value?.modules?.services) return
 
     try {
-      const { useAppointmentSettingsStore } = await import('~/features/appointments')
+      // Deep path намеренно: barrel '~/features/appointments' тащит весь модуль
+      // (17 composables + api + utils + components/types) eager'ом при init().
+      // Здесь нужен только store — берём напрямую.
+      const { useAppointmentSettingsStore } = await import('~/features/appointments/stores/appointmentSettings')
 
       await useAppointmentSettingsStore().load()
     } catch (e) {
