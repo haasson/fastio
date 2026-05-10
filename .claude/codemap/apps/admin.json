@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T13:43:11.683Z",
+  "generated_at": "2026-05-10T13:49:40.052Z",
   "stats": {
     "files": 84,
     "pages": 0,
@@ -12,337 +12,6 @@
     "undescribed_symbols": 0
   },
   "files": {
-    "composables/plan/useBillingConfig.ts": {
-      "kind": "ts",
-      "hash": "b0e16ad27b1e",
-      "purpose": "Глобальный одноразовый кэш billing_config (длительность триала) с failed-флагом для UI",
-      "symbols": [
-        {
-          "name": "useBillingConfig",
-          "kind": "function",
-          "hash": "031fba56",
-          "purpose": "Возвращает trialDays/loaded/failed/load(): кеширует ответ API на сессию"
-        }
-      ]
-    },
-    "composables/plan/useBranchLimit.ts": {
-      "kind": "ts",
-      "hash": "cb4c7dab5300",
-      "purpose": "Лимит филиалов: 0=безлимит при модуле branches, иначе 1 (только главный)",
-      "symbols": [
-        {
-          "name": "useBranchLimit",
-          "kind": "function",
-          "hash": "39bff72c",
-          "purpose": "Возвращает maxBranches/canAddBranch/branchLimitReached/branchLimitLabel"
-        }
-      ]
-    },
-    "composables/plan/useGate.helpers.ts": {
-      "kind": "ts",
-      "hash": "daab65dd509c",
-      "purpose": "Хелперы поверх useGate: преобразование GateResult в boolean и проверка конкретной причины блокировки",
-      "symbols": [
-        {
-          "name": "toEnabled",
-          "kind": "function",
-          "hash": "1948dc8c",
-          "purpose": "ComputedRef<GateResult> -> ComputedRef<boolean> для пропсов visible"
-        },
-        {
-          "name": "isLockedBy",
-          "kind": "function",
-          "hash": "691332e8",
-          "purpose": "Проверяет, заблокирован ли гейт по конкретной GateReason"
-        }
-      ]
-    },
-    "composables/plan/useGate.routes.ts": {
-      "kind": "ts",
-      "hash": "a9ae2c870337",
-      "purpose": "Карта роут→GateKey для middleware/gate.global + список REDIRECT_FALLBACKS на случай отказа",
-      "symbols": [
-        {
-          "name": "isUngatedRoute",
-          "kind": "function",
-          "hash": "0f57ba4f",
-          "purpose": "Проверяет принадлежность пути к ungated-разделам (login/legal/account/help и т.д.)"
-        },
-        {
-          "name": "resolveRouteGate",
-          "kind": "function",
-          "hash": "2ceff2e1",
-          "purpose": "Находит GateKey для произвольного пути; null для 404/ungated"
-        },
-        {
-          "name": "REDIRECT_FALLBACKS",
-          "kind": "const",
-          "hash": "80c33efc",
-          "purpose": "Упорядоченный список путей-кандидатов для редиректа при недоступности исходного"
-        }
-      ]
-    },
-    "composables/plan/useGate.shared.ts": {
-      "kind": "ts",
-      "hash": "58b556a9120d",
-      "purpose": "Общая инфраструктура гейтов: builders moduleGate/planFeatureGate/permissionGate/configGate/flagGate + state suspended/owner/perms",
-      "symbols": [
-        {
-          "name": "ok",
-          "kind": "function",
-          "hash": "bc807f89",
-          "purpose": "Хелпер: успешный GateResult { enabled: true, reason: null }"
-        },
-        {
-          "name": "deny",
-          "kind": "function",
-          "hash": "155e2a3c",
-          "purpose": "Хелпер: GateResult с причиной отказа и опциональными extra-полями (requiredPlan/configPath/hint)"
-        },
-        {
-          "name": "useGateInfra",
-          "kind": "function",
-          "hash": "87864e39",
-          "purpose": "Возвращает store-привязанные builders и state для построения per-vertical и общего реестров гейтов"
-        }
-      ]
-    },
-    "composables/plan/useGate.ts": {
-      "kind": "ts",
-      "hash": "0033fd3d94f8",
-      "purpose": "Реестр гейтов фич админки: feature-only (модули/тариф) и permission-aware (роли); единая точка проверки доступа",
-      "symbols": [
-        {
-          "name": "useGate",
-          "kind": "function",
-          "hash": "97743b46",
-          "purpose": "Возвращает GateRegistry — объект с computed-гейтами для каждого ключа фичи/раздела"
-        }
-      ]
-    },
-    "composables/plan/useGate.types.ts": {
-      "kind": "ts",
-      "hash": "fb4a59e6dba0",
-      "purpose": "Контракт useGate: GateReason/GateResult/GateRegistry и полный список GateKey",
-      "symbols": [
-        {
-          "name": "GateReason",
-          "kind": "type",
-          "hash": "3c77654f",
-          "purpose": "Причина недоступности фичи с приоритетом suspended->absent->flag->locked->opted-out->disabled->unconfigured->forbidden"
-        },
-        {
-          "name": "GateResult",
-          "kind": "type",
-          "hash": "c64c884b",
-          "purpose": "Результат гейта: enabled + reason (+ requiredPlan/configPath/hint)"
-        },
-        {
-          "name": "GateRegistry",
-          "kind": "type",
-          "hash": "ba3b6a16",
-          "purpose": "Реестр всех известных гейтов: GateKey -> ComputedRef<GateResult>"
-        },
-        {
-          "name": "GateKey",
-          "kind": "type",
-          "hash": "4fb3e0e0",
-          "purpose": "Все ключи useGate: feature-only, plan-features, флаги, config-driven и permission-aware (viewX/manageX)"
-        }
-      ]
-    },
-    "composables/plan/useModules.ts": {
-      "kind": "ts",
-      "hash": "f3cb5aad33b4",
-      "purpose": "Состояние модулей тенанта: active/locked/absent/enabled с учётом businessType, menuStyle, плана и тарифа (Proxy + лениво созданные computed)",
-      "symbols": [
-        {
-          "name": "useModuleConfigs",
-          "kind": "function",
-          "hash": "16487cf2",
-          "purpose": "Глобальный one-shot кэш конфигов модулей (имя/иконка/requiredPlan/businessTypes)"
-        },
-        {
-          "name": "useModules",
-          "kind": "function",
-          "hash": "fbafd511",
-          "purpose": "Прокси Record<ModuleKey, ComputedRef<ModuleState>> с ленивыми computed по запросу"
-        }
-      ]
-    },
-    "composables/plan/usePlanFeatures.ts": {
-      "kind": "ts",
-      "hash": "23ca245b1777",
-      "purpose": "Текущий план тенанта (subscription.plan, fallback 'showcase')",
-      "symbols": [
-        {
-          "name": "usePlanFeatures",
-          "kind": "function",
-          "hash": "3c4bd590",
-          "purpose": "Возвращает plan = subscription.plan ?? 'showcase'"
-        }
-      ]
-    },
-    "composables/plan/usePlans.ts": {
-      "kind": "ts",
-      "hash": "d560a2bfb219",
-      "purpose": "Глобальный реестр доступных тарифов с lazy-загрузкой и хелперами сортировки/имён",
-      "symbols": [
-        {
-          "name": "usePlans",
-          "kind": "function",
-          "hash": "e964cf3f",
-          "purpose": "Возвращает plans/load/invalidate/getPlanSortOrder/getPlanLabel"
-        }
-      ]
-    },
-    "composables/plan/useResolvedFeatures.ts": {
-      "kind": "ts",
-      "hash": "396038ac3844",
-      "purpose": "Совокупный набор фич доступных тенанту (модули/menu/resources/site), агрегированный по всем планам ≤ текущему для businessType",
-      "symbols": [
-        {
-          "name": "useResolvedFeatures",
-          "kind": "function",
-          "hash": "06daf9a4",
-          "purpose": "Computed ResolvedFeatures по текущему плану и businessType"
-        }
-      ]
-    },
-    "composables/ui/useDelayedLoading.ts": {
-      "kind": "ts",
-      "hash": "37b7ee10efd1",
-      "purpose": "Отложенный показ скелетона: появляется только если loading длится дольше delay (по умолчанию 1с)",
-      "symbols": [
-        {
-          "name": "default",
-          "kind": "function",
-          "hash": "e9fc61f9",
-          "purpose": "Возвращает showSkeleton: Ref<boolean> с дебаунсом старта загрузки"
-        }
-      ]
-    },
-    "composables/ui/useDrawer.ts": {
-      "kind": "ts",
-      "hash": "fc478b505814",
-      "purpose": "Универсальный стейт drawer/modal: isOpen + data, методы open(item)/close()",
-      "symbols": [
-        {
-          "name": "default",
-          "kind": "function",
-          "hash": "9ee62c36",
-          "purpose": "Возвращает isOpen/data/open/close для модалок редактирования"
-        }
-      ]
-    },
-    "composables/ui/useEditableForm.ts": {
-      "kind": "ts",
-      "hash": "be575054b7c3",
-      "purpose": "Универсальная фабрика settings-формы поверх reactive source: build/reset/submit с дефолтным success/error-тостом и reportError",
-      "symbols": [
-        {
-          "name": "FormHandle",
-          "kind": "type",
-          "hash": "ad7f782f",
-          "purpose": "Контракт активной формы страницы (isDirty/saving/submit/reset) — то, что регистрируется в pageForm и читается action-bar"
-        },
-        {
-          "name": "EditableForm",
-          "kind": "type",
-          "hash": "bc3f6458",
-          "purpose": "FormHandle + reactive form-объект — возвращаемый тип useEditableForm"
-        },
-        {
-          "name": "cancelSubmit",
-          "kind": "function",
-          "hash": "5737616f",
-          "purpose": "Создаёт sentinel-ошибку для отмены submit без error-тоста и без сброса dirty (когда юзер закрыл confirm)"
-        },
-        {
-          "name": "useEditableForm",
-          "kind": "function",
-          "hash": "666a6155",
-          "purpose": "Создаёт reactive-форму из source через build, watch на source, submit с success/error-обвязкой и dirty-снапшотом"
-        }
-      ]
-    },
-    "composables/ui/useFormDirty.ts": {
-      "kind": "ts",
-      "hash": "122a31afac0a",
-      "purpose": "Снимок формы + структурный deepEqual для isDirty: поддерживает Date/Map/Set/массивы/RegExp/циклы поверх reactive-прокси",
-      "symbols": [
-        {
-          "name": "useFormDirty",
-          "kind": "function",
-          "hash": "28e941bc",
-          "purpose": "Возвращает isDirty/reset(): сравнивает текущее состояние со снапшотом"
-        }
-      ]
-    },
-    "composables/ui/useItemManager.ts": {
-      "kind": "ts",
-      "hash": "f2026508acdd",
-      "purpose": "Стандартизирует CRUD-страницу: drawer открытия + delayed-skeleton + confirm-удаление с beforeDelete-проверкой",
-      "symbols": [
-        {
-          "name": "useItemManager",
-          "kind": "function",
-          "hash": "4f5618c4",
-          "purpose": "Возвращает showSkeleton/modalOpen/editingItem/openModal/closeModal/confirmDelete"
-        }
-      ]
-    },
-    "composables/ui/usePageForm.ts": {
-      "kind": "ts",
-      "hash": "3c2f4b6e4b88",
-      "purpose": "Глобальный shallowRef на активную FormHandle страницы — связывает форму с плавающим AppPageActionBar",
-      "symbols": [
-        {
-          "name": "useRegisterPageForm",
-          "kind": "function",
-          "hash": "12e9a3c6",
-          "purpose": "Регистрирует FormHandle как активную форму страницы; авто-clean через onScopeDispose, warn при коллизии"
-        },
-        {
-          "name": "usePageForm",
-          "kind": "function",
-          "hash": "e955ff42",
-          "purpose": "Возвращает shallowRef на текущую активную форму — читается из layout/action-bar"
-        }
-      ]
-    },
-    "composables/ui/useStorefrontVisibility.ts": {
-      "kind": "ts",
-      "hash": "76901dfedd1c",
-      "purpose": "Проверяет видимость SiteFeature на витрине (страница/секция/nav) и собирает список issues со ссылками на нужный экран настроек",
-      "symbols": [
-        {
-          "name": "StorefrontIssue",
-          "kind": "type",
-          "hash": "907860ff",
-          "purpose": "Проблема витрины: page_disabled/section_disabled/nav_missing с message и link"
-        },
-        {
-          "name": "useStorefrontVisibility",
-          "kind": "function",
-          "hash": "e4a89b7c",
-          "purpose": "Возвращает isPageEnabled/isSectionEnabled/isInNav/issues для конкретной SiteFeatureKey"
-        }
-      ]
-    },
-    "composables/ui/useUnsavedGuard.ts": {
-      "kind": "ts",
-      "hash": "06f5e5bbc315",
-      "purpose": "Confirm-модалка при уходе с грязной страницы: onBeforeRouteLeave + window.beforeunload, принимает Ref|ComputedRef|getter",
-      "symbols": [
-        {
-          "name": "useUnsavedGuard",
-          "kind": "function",
-          "hash": "b6a9dd9c",
-          "purpose": "Вешает route-leave guard и beforeunload listener; пропускает уход только при не-dirty или подтверждении пользователя"
-        }
-      ]
-    },
     "config/google-fonts.ts": {
       "kind": "ts",
       "hash": "1a4074a66563",
@@ -608,7 +277,7 @@
     },
     "middleware/gate.global.ts": {
       "kind": "ts",
-      "hash": "897a7c2a869f",
+      "hash": "7e37f0dc84d1",
       "purpose": "Глобальная middleware: закрывает прямой URL-доступ к недоступным секциям через resolveRouteGate + useGate, редиректит на первый доступный fallback",
       "symbols": [
         {
@@ -673,7 +342,7 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "c58d08b22d92",
+      "hash": "4afb56e9c722",
       "purpose": "Дефолтный layout админки: collapsible sidebar с лого/AppNav/TenantSwitcher/BranchSelector + main slot для страницы",
       "symbols": [
         {
@@ -718,7 +387,7 @@
     },
     "shared/components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "5425aae37d5c",
+      "hash": "e06fe91ed1fd",
       "purpose": "Главная навигация админки: рендер списка nav-items по гейтам (useGate) с counter/blink для уведомлений",
       "symbols": [
         {
@@ -880,6 +549,203 @@
           "kind": "function",
           "hash": "16e76eb7",
           "purpose": "Возвращает baseUrl и getTableUrl(tableId)"
+        }
+      ]
+    },
+    "shared/plan/useBillingConfig.ts": {
+      "kind": "ts",
+      "hash": "b0e16ad27b1e",
+      "purpose": "Глобальный одноразовый кэш billing_config (длительность триала) с failed-флагом для UI",
+      "symbols": [
+        {
+          "name": "useBillingConfig",
+          "kind": "function",
+          "hash": "031fba56",
+          "purpose": "Возвращает trialDays/loaded/failed/load(): кеширует ответ API на сессию"
+        }
+      ]
+    },
+    "shared/plan/useBranchLimit.ts": {
+      "kind": "ts",
+      "hash": "cb4c7dab5300",
+      "purpose": "Лимит филиалов: 0=безлимит при модуле branches, иначе 1 (только главный)",
+      "symbols": [
+        {
+          "name": "useBranchLimit",
+          "kind": "function",
+          "hash": "39bff72c",
+          "purpose": "Возвращает maxBranches/canAddBranch/branchLimitReached/branchLimitLabel"
+        }
+      ]
+    },
+    "shared/plan/useGate.helpers.ts": {
+      "kind": "ts",
+      "hash": "daab65dd509c",
+      "purpose": "Хелперы поверх useGate: преобразование GateResult в boolean и проверка конкретной причины блокировки",
+      "symbols": [
+        {
+          "name": "toEnabled",
+          "kind": "function",
+          "hash": "1948dc8c",
+          "purpose": "ComputedRef<GateResult> -> ComputedRef<boolean> для пропсов visible"
+        },
+        {
+          "name": "isLockedBy",
+          "kind": "function",
+          "hash": "691332e8",
+          "purpose": "Проверяет, заблокирован ли гейт по конкретной GateReason"
+        }
+      ]
+    },
+    "shared/plan/useGate.routes.ts": {
+      "kind": "ts",
+      "hash": "a9ae2c870337",
+      "purpose": "Карта роут→GateKey для middleware/gate.global + список REDIRECT_FALLBACKS на случай отказа",
+      "symbols": [
+        {
+          "name": "isUngatedRoute",
+          "kind": "function",
+          "hash": "0f57ba4f",
+          "purpose": "Проверяет принадлежность пути к ungated-разделам (login/legal/account/help и т.д.)"
+        },
+        {
+          "name": "resolveRouteGate",
+          "kind": "function",
+          "hash": "2ceff2e1",
+          "purpose": "Находит GateKey для произвольного пути; null для 404/ungated"
+        },
+        {
+          "name": "REDIRECT_FALLBACKS",
+          "kind": "const",
+          "hash": "80c33efc",
+          "purpose": "Упорядоченный список путей-кандидатов для редиректа при недоступности исходного"
+        }
+      ]
+    },
+    "shared/plan/useGate.shared.ts": {
+      "kind": "ts",
+      "hash": "58b556a9120d",
+      "purpose": "Общая инфраструктура гейтов: builders moduleGate/planFeatureGate/permissionGate/configGate/flagGate + state suspended/owner/perms",
+      "symbols": [
+        {
+          "name": "ok",
+          "kind": "function",
+          "hash": "bc807f89",
+          "purpose": "Хелпер: успешный GateResult { enabled: true, reason: null }"
+        },
+        {
+          "name": "deny",
+          "kind": "function",
+          "hash": "155e2a3c",
+          "purpose": "Хелпер: GateResult с причиной отказа и опциональными extra-полями (requiredPlan/configPath/hint)"
+        },
+        {
+          "name": "useGateInfra",
+          "kind": "function",
+          "hash": "87864e39",
+          "purpose": "Возвращает store-привязанные builders и state для построения per-vertical и общего реестров гейтов"
+        }
+      ]
+    },
+    "shared/plan/useGate.ts": {
+      "kind": "ts",
+      "hash": "0033fd3d94f8",
+      "purpose": "Реестр гейтов фич админки: feature-only (модули/тариф) и permission-aware (роли); единая точка проверки доступа",
+      "symbols": [
+        {
+          "name": "useGate",
+          "kind": "function",
+          "hash": "97743b46",
+          "purpose": "Возвращает GateRegistry — объект с computed-гейтами для каждого ключа фичи/раздела"
+        }
+      ]
+    },
+    "shared/plan/useGate.types.ts": {
+      "kind": "ts",
+      "hash": "fb4a59e6dba0",
+      "purpose": "Контракт useGate: GateReason/GateResult/GateRegistry и полный список GateKey",
+      "symbols": [
+        {
+          "name": "GateReason",
+          "kind": "type",
+          "hash": "3c77654f",
+          "purpose": "Причина недоступности фичи с приоритетом suspended->absent->flag->locked->opted-out->disabled->unconfigured->forbidden"
+        },
+        {
+          "name": "GateResult",
+          "kind": "type",
+          "hash": "c64c884b",
+          "purpose": "Результат гейта: enabled + reason (+ requiredPlan/configPath/hint)"
+        },
+        {
+          "name": "GateRegistry",
+          "kind": "type",
+          "hash": "ba3b6a16",
+          "purpose": "Реестр всех известных гейтов: GateKey -> ComputedRef<GateResult>"
+        },
+        {
+          "name": "GateKey",
+          "kind": "type",
+          "hash": "4fb3e0e0",
+          "purpose": "Все ключи useGate: feature-only, plan-features, флаги, config-driven и permission-aware (viewX/manageX)"
+        }
+      ]
+    },
+    "shared/plan/useModules.ts": {
+      "kind": "ts",
+      "hash": "f3cb5aad33b4",
+      "purpose": "Состояние модулей тенанта: active/locked/absent/enabled с учётом businessType, menuStyle, плана и тарифа (Proxy + лениво созданные computed)",
+      "symbols": [
+        {
+          "name": "useModuleConfigs",
+          "kind": "function",
+          "hash": "16487cf2",
+          "purpose": "Глобальный one-shot кэш конфигов модулей (имя/иконка/requiredPlan/businessTypes)"
+        },
+        {
+          "name": "useModules",
+          "kind": "function",
+          "hash": "fbafd511",
+          "purpose": "Прокси Record<ModuleKey, ComputedRef<ModuleState>> с ленивыми computed по запросу"
+        }
+      ]
+    },
+    "shared/plan/usePlanFeatures.ts": {
+      "kind": "ts",
+      "hash": "23ca245b1777",
+      "purpose": "Текущий план тенанта (subscription.plan, fallback 'showcase')",
+      "symbols": [
+        {
+          "name": "usePlanFeatures",
+          "kind": "function",
+          "hash": "3c4bd590",
+          "purpose": "Возвращает plan = subscription.plan ?? 'showcase'"
+        }
+      ]
+    },
+    "shared/plan/usePlans.ts": {
+      "kind": "ts",
+      "hash": "d560a2bfb219",
+      "purpose": "Глобальный реестр доступных тарифов с lazy-загрузкой и хелперами сортировки/имён",
+      "symbols": [
+        {
+          "name": "usePlans",
+          "kind": "function",
+          "hash": "e964cf3f",
+          "purpose": "Возвращает plans/load/invalidate/getPlanSortOrder/getPlanLabel"
+        }
+      ]
+    },
+    "shared/plan/useResolvedFeatures.ts": {
+      "kind": "ts",
+      "hash": "396038ac3844",
+      "purpose": "Совокупный набор фич доступных тенанту (модули/menu/resources/site), агрегированный по всем планам ≤ текущему для businessType",
+      "symbols": [
+        {
+          "name": "useResolvedFeatures",
+          "kind": "function",
+          "hash": "06daf9a4",
+          "purpose": "Computed ResolvedFeatures по текущему плану и businessType"
         }
       ]
     },
@@ -1071,7 +937,7 @@
     },
     "shared/ui/components/AppPageActionBar.vue": {
       "kind": "vue",
-      "hash": "c2e6dc482846",
+      "hash": "8e7ac30f197b",
       "purpose": "Плавающий action-bar внизу страницы: появляется при dirty-форме, кнопки Отменить/Сохранить + Cmd/Ctrl+S, читает форму из usePageForm",
       "symbols": [
         {
@@ -1084,7 +950,7 @@
     },
     "shared/ui/components/AppStorefrontAlert.vue": {
       "kind": "vue",
-      "hash": "749c90f20c23",
+      "hash": "e493b8d1fdb9",
       "purpose": "Список UiAlert о проблемах видимости фичи на витрине (страница/секция/nav выключены) со ссылкой 'настроить'",
       "symbols": [
         {
@@ -1251,6 +1117,140 @@
           "kind": "component-props",
           "hash": "06395625",
           "purpose": "{ tabs: Tab[], basePath, card?, fullHeight?, hideSingle? }"
+        }
+      ]
+    },
+    "shared/ui/composables/useDelayedLoading.ts": {
+      "kind": "ts",
+      "hash": "37b7ee10efd1",
+      "purpose": "Отложенный показ скелетона: появляется только если loading длится дольше delay (по умолчанию 1с)",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "e9fc61f9",
+          "purpose": "Возвращает showSkeleton: Ref<boolean> с дебаунсом старта загрузки"
+        }
+      ]
+    },
+    "shared/ui/composables/useDrawer.ts": {
+      "kind": "ts",
+      "hash": "fc478b505814",
+      "purpose": "Универсальный стейт drawer/modal: isOpen + data, методы open(item)/close()",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "function",
+          "hash": "9ee62c36",
+          "purpose": "Возвращает isOpen/data/open/close для модалок редактирования"
+        }
+      ]
+    },
+    "shared/ui/composables/useEditableForm.ts": {
+      "kind": "ts",
+      "hash": "be575054b7c3",
+      "purpose": "Универсальная фабрика settings-формы поверх reactive source: build/reset/submit с дефолтным success/error-тостом и reportError",
+      "symbols": [
+        {
+          "name": "FormHandle",
+          "kind": "type",
+          "hash": "ad7f782f",
+          "purpose": "Контракт активной формы страницы (isDirty/saving/submit/reset) — то, что регистрируется в pageForm и читается action-bar"
+        },
+        {
+          "name": "EditableForm",
+          "kind": "type",
+          "hash": "bc3f6458",
+          "purpose": "FormHandle + reactive form-объект — возвращаемый тип useEditableForm"
+        },
+        {
+          "name": "cancelSubmit",
+          "kind": "function",
+          "hash": "5737616f",
+          "purpose": "Создаёт sentinel-ошибку для отмены submit без error-тоста и без сброса dirty (когда юзер закрыл confirm)"
+        },
+        {
+          "name": "useEditableForm",
+          "kind": "function",
+          "hash": "666a6155",
+          "purpose": "Создаёт reactive-форму из source через build, watch на source, submit с success/error-обвязкой и dirty-снапшотом"
+        }
+      ]
+    },
+    "shared/ui/composables/useFormDirty.ts": {
+      "kind": "ts",
+      "hash": "122a31afac0a",
+      "purpose": "Снимок формы + структурный deepEqual для isDirty: поддерживает Date/Map/Set/массивы/RegExp/циклы поверх reactive-прокси",
+      "symbols": [
+        {
+          "name": "useFormDirty",
+          "kind": "function",
+          "hash": "28e941bc",
+          "purpose": "Возвращает isDirty/reset(): сравнивает текущее состояние со снапшотом"
+        }
+      ]
+    },
+    "shared/ui/composables/useItemManager.ts": {
+      "kind": "ts",
+      "hash": "4b304e5e0ee7",
+      "purpose": "Стандартизирует CRUD-страницу: drawer открытия + delayed-skeleton + confirm-удаление с beforeDelete-проверкой",
+      "symbols": [
+        {
+          "name": "useItemManager",
+          "kind": "function",
+          "hash": "4f5618c4",
+          "purpose": "Возвращает showSkeleton/modalOpen/editingItem/openModal/closeModal/confirmDelete"
+        }
+      ]
+    },
+    "shared/ui/composables/usePageForm.ts": {
+      "kind": "ts",
+      "hash": "3c2f4b6e4b88",
+      "purpose": "Глобальный shallowRef на активную FormHandle страницы — связывает форму с плавающим AppPageActionBar",
+      "symbols": [
+        {
+          "name": "useRegisterPageForm",
+          "kind": "function",
+          "hash": "12e9a3c6",
+          "purpose": "Регистрирует FormHandle как активную форму страницы; авто-clean через onScopeDispose, warn при коллизии"
+        },
+        {
+          "name": "usePageForm",
+          "kind": "function",
+          "hash": "e955ff42",
+          "purpose": "Возвращает shallowRef на текущую активную форму — читается из layout/action-bar"
+        }
+      ]
+    },
+    "shared/ui/composables/useStorefrontVisibility.ts": {
+      "kind": "ts",
+      "hash": "76901dfedd1c",
+      "purpose": "Проверяет видимость SiteFeature на витрине (страница/секция/nav) и собирает список issues со ссылками на нужный экран настроек",
+      "symbols": [
+        {
+          "name": "StorefrontIssue",
+          "kind": "type",
+          "hash": "907860ff",
+          "purpose": "Проблема витрины: page_disabled/section_disabled/nav_missing с message и link"
+        },
+        {
+          "name": "useStorefrontVisibility",
+          "kind": "function",
+          "hash": "e4a89b7c",
+          "purpose": "Возвращает isPageEnabled/isSectionEnabled/isInNav/issues для конкретной SiteFeatureKey"
+        }
+      ]
+    },
+    "shared/ui/composables/useUnsavedGuard.ts": {
+      "kind": "ts",
+      "hash": "06f5e5bbc315",
+      "purpose": "Confirm-модалка при уходе с грязной страницы: onBeforeRouteLeave + window.beforeunload, принимает Ref|ComputedRef|getter",
+      "symbols": [
+        {
+          "name": "useUnsavedGuard",
+          "kind": "function",
+          "hash": "b6a9dd9c",
+          "purpose": "Вешает route-leave guard и beforeunload listener; пропускает уход только при не-dirty или подтверждении пользователя"
         }
       ]
     },
