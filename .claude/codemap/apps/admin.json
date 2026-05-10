@@ -2,99 +2,16 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T13:37:03.690Z",
+  "generated_at": "2026-05-10T13:43:11.683Z",
   "stats": {
-    "files": 86,
+    "files": 84,
     "pages": 0,
-    "symbols": 144,
+    "symbols": 141,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
   },
   "files": {
-    "composables/delivery/useAllDeliveryZones.ts": {
-      "kind": "ts",
-      "hash": "0330b734990b",
-      "purpose": "Realtime-список ВСЕХ зон доставки тенанта (по всем филиалам) с CRUD: zones/loading + add/update/remove",
-      "symbols": [
-        {
-          "name": "useAllDeliveryZones",
-          "kind": "function",
-          "hash": "4629ad98",
-          "purpose": "Возвращает zones/loading + add/update/remove с realtime-синком таблицы delivery_zones"
-        }
-      ]
-    },
-    "composables/delivery/useDadataSuggestions.ts": {
-      "kind": "ts",
-      "hash": "37347cac1b25",
-      "purpose": "Обёртка над shared-DaData с tenantId-привязкой через серверный прокси админки",
-      "symbols": [
-        {
-          "name": "useDadataSuggestions",
-          "kind": "function",
-          "hash": "fdf31941",
-          "purpose": "Подсказки адресов DaData с привязкой к tenantId через серверный прокси"
-        },
-        {
-          "name": "DadataSuggestion",
-          "kind": "re-export",
-          "hash": "c44bae0c",
-          "purpose": "Реэкспорт типа DadataSuggestion из @fastio/shared"
-        }
-      ]
-    },
-    "composables/delivery/useOrderDelivery.ts": {
-      "kind": "ts",
-      "hash": "455ecce7efaa",
-      "purpose": "Расчёт доставки для формы заказа: подбор зоны по координатам, fee/min/free, mismatch филиала",
-      "symbols": [
-        {
-          "name": "DeliveryInfo",
-          "kind": "type",
-          "hash": "fa8b8f53",
-          "purpose": "Сводка по доставке: fee, минзаказ, порог бесплатной, mismatch филиала"
-        },
-        {
-          "name": "useOrderDelivery",
-          "kind": "function",
-          "hash": "f25abd36",
-          "purpose": "Возвращает activeZones/deliveryInfo/effectiveDeliveryFee + onZoneDetected/initFromOrder для формы заказа"
-        }
-      ]
-    },
-    "composables/delivery/usePolygonDraw.ts": {
-      "kind": "ts",
-      "hash": "82a4624d973c",
-      "purpose": "Рисование полигона зоны доставки на Yandex-карте: точки, snap к первой, rubber-band и стили линий/заливки",
-      "symbols": [
-        {
-          "name": "usePolygonDraw",
-          "kind": "function",
-          "hash": "f95687be",
-          "purpose": "Состояние и хелперы рисования полигона: addPoint/finishDraw/cancelDraw + getDraw*Settings"
-        }
-      ]
-    },
-    "composables/delivery/useZoneEditor.ts": {
-      "kind": "ts",
-      "hash": "3d148776d653",
-      "purpose": "UI-стейт редактора зон доставки: выбор зоны, форма, режим рисования, привязка к филиалу",
-      "symbols": [
-        {
-          "name": "ZoneForm",
-          "kind": "type",
-          "hash": "3eb5d958",
-          "purpose": "Форма зоны: branchId, имя, цвет, fee, minOrder, freeFrom, координаты"
-        },
-        {
-          "name": "useZoneEditor",
-          "kind": "function",
-          "hash": "53eb7845",
-          "purpose": "Управление выбором/созданием зоны: selectZone/onZoneClick/startDraw/onPolygonDrawn/closePanel"
-        }
-      ]
-    },
     "composables/plan/useBillingConfig.ts": {
       "kind": "ts",
       "hash": "b0e16ad27b1e",
@@ -423,71 +340,6 @@
           "kind": "function",
           "hash": "b6a9dd9c",
           "purpose": "Вешает route-leave guard и beforeunload listener; пропускает уход только при не-dirty или подтверждении пользователя"
-        }
-      ]
-    },
-    "composables/useItemVariant.ts": {
-      "kind": "ts",
-      "hash": "604e67f2a10c",
-      "purpose": "Тип витрины (food/catalog/services) для текущего тенанта — для иконок-плейсхолдеров",
-      "symbols": [
-        {
-          "name": "useItemVariant",
-          "kind": "function",
-          "hash": "f17221e8",
-          "purpose": "Возвращает variant: ComputedRef<ItemVariant> по businessType/menuStyle"
-        }
-      ]
-    },
-    "composables/usePageTitle.ts": {
-      "kind": "ts",
-      "hash": "07102fb7db4e",
-      "purpose": "Глобальное состояние заголовка страницы (через useState): set из страницы, get в layout",
-      "symbols": [
-        {
-          "name": "usePageTitle",
-          "kind": "function",
-          "hash": "88e439d9",
-          "purpose": "useState<string>('page-title'); опционально устанавливает заголовок (string или ref)"
-        }
-      ]
-    },
-    "composables/useRealtimeChannels.ts": {
-      "kind": "ts",
-      "hash": "abcbc8fda96b",
-      "purpose": "Aggregator-агент: подключает все realtime-каналы (orders, kitchen, tables, reservations, appointments, visits, support) и регистрирует alert/inbox handlers; вызывается из default-layout",
-      "symbols": [
-        {
-          "name": "useRealtimeChannels",
-          "kind": "function",
-          "hash": "0918a256",
-          "purpose": "Подключает каналы и alert-handlers; вызывается из default-layout"
-        }
-      ]
-    },
-    "composables/useStorefrontUrl.ts": {
-      "kind": "ts",
-      "hash": "0a3d8ce22e28",
-      "purpose": "Базовый URL витрины тенанта: customDomain или {slug}.fastio.ru",
-      "symbols": [
-        {
-          "name": "useStorefrontUrl",
-          "kind": "function",
-          "hash": "34069e92",
-          "purpose": "Возвращает baseUrl: ComputedRef<string>"
-        }
-      ]
-    },
-    "composables/useTableUrl.ts": {
-      "kind": "ts",
-      "hash": "9a3a725908c2",
-      "purpose": "URL для QR-кодов столов: baseUrl + /table/{tableId}",
-      "symbols": [
-        {
-          "name": "useTableUrl",
-          "kind": "function",
-          "hash": "16e76eb7",
-          "purpose": "Возвращает baseUrl и getTableUrl(tableId)"
         }
       ]
     },
@@ -821,7 +673,7 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "2a5e5c002805",
+      "hash": "c58d08b22d92",
       "purpose": "Дефолтный layout админки: collapsible sidebar с лого/AppNav/TenantSwitcher/BranchSelector + main slot для страницы",
       "symbols": [
         {
@@ -915,6 +767,122 @@
         }
       ]
     },
+    "shared/composables/delivery/useDadataSuggestions.ts": {
+      "kind": "ts",
+      "hash": "37347cac1b25",
+      "purpose": "Обёртка над shared-DaData с tenantId-привязкой через серверный прокси админки",
+      "symbols": [
+        {
+          "name": "useDadataSuggestions",
+          "kind": "function",
+          "hash": "fdf31941",
+          "purpose": "Подсказки адресов DaData с привязкой к tenantId через серверный прокси"
+        },
+        {
+          "name": "DadataSuggestion",
+          "kind": "re-export",
+          "hash": "c44bae0c",
+          "purpose": "Реэкспорт типа DadataSuggestion из @fastio/shared"
+        }
+      ]
+    },
+    "shared/composables/delivery/usePolygonDraw.ts": {
+      "kind": "ts",
+      "hash": "82a4624d973c",
+      "purpose": "Рисование полигона зоны доставки на Yandex-карте: точки, snap к первой, rubber-band и стили линий/заливки",
+      "symbols": [
+        {
+          "name": "usePolygonDraw",
+          "kind": "function",
+          "hash": "f95687be",
+          "purpose": "Состояние и хелперы рисования полигона: addPoint/finishDraw/cancelDraw + getDraw*Settings"
+        }
+      ]
+    },
+    "shared/composables/delivery/useZoneEditor.ts": {
+      "kind": "ts",
+      "hash": "3d148776d653",
+      "purpose": "UI-стейт редактора зон доставки: выбор зоны, форма, режим рисования, привязка к филиалу",
+      "symbols": [
+        {
+          "name": "ZoneForm",
+          "kind": "type",
+          "hash": "3eb5d958",
+          "purpose": "Форма зоны: branchId, имя, цвет, fee, minOrder, freeFrom, координаты"
+        },
+        {
+          "name": "useZoneEditor",
+          "kind": "function",
+          "hash": "53eb7845",
+          "purpose": "Управление выбором/созданием зоны: selectZone/onZoneClick/startDraw/onPolygonDrawn/closePanel"
+        }
+      ]
+    },
+    "shared/composables/useItemVariant.ts": {
+      "kind": "ts",
+      "hash": "604e67f2a10c",
+      "purpose": "Тип витрины (food/catalog/services) для текущего тенанта — для иконок-плейсхолдеров",
+      "symbols": [
+        {
+          "name": "useItemVariant",
+          "kind": "function",
+          "hash": "f17221e8",
+          "purpose": "Возвращает variant: ComputedRef<ItemVariant> по businessType/menuStyle"
+        }
+      ]
+    },
+    "shared/composables/usePageTitle.ts": {
+      "kind": "ts",
+      "hash": "07102fb7db4e",
+      "purpose": "Глобальное состояние заголовка страницы (через useState): set из страницы, get в layout",
+      "symbols": [
+        {
+          "name": "usePageTitle",
+          "kind": "function",
+          "hash": "88e439d9",
+          "purpose": "useState<string>('page-title'); опционально устанавливает заголовок (string или ref)"
+        }
+      ]
+    },
+    "shared/composables/useRealtimeChannels.ts": {
+      "kind": "ts",
+      "hash": "abcbc8fda96b",
+      "purpose": "Aggregator-агент: подключает все realtime-каналы (orders, kitchen, tables, reservations, appointments, visits, support) и регистрирует alert/inbox handlers; вызывается из default-layout",
+      "symbols": [
+        {
+          "name": "useRealtimeChannels",
+          "kind": "function",
+          "hash": "0918a256",
+          "purpose": "Подключает каналы и alert-handlers; вызывается из default-layout"
+        }
+      ]
+    },
+    "shared/composables/useStorefrontUrl.ts": {
+      "kind": "ts",
+      "hash": "0a3d8ce22e28",
+      "purpose": "Базовый URL витрины тенанта: customDomain или {slug}.fastio.ru",
+      "symbols": [
+        {
+          "name": "useStorefrontUrl",
+          "kind": "function",
+          "hash": "34069e92",
+          "purpose": "Возвращает baseUrl: ComputedRef<string>"
+        }
+      ]
+    },
+    "shared/composables/useTableUrl.ts": {
+      "kind": "ts",
+      "hash": "541c3421c8f9",
+      "purpose": "URL для QR-кодов столов: baseUrl + /table/{tableId}",
+      "symbols": [
+        {
+          "name": "useTableUrl",
+          "kind": "function",
+          "hash": "16e76eb7",
+          "purpose": "Возвращает baseUrl и getTableUrl(tableId)"
+        }
+      ]
+    },
     "shared/stores/auth.ts": {
       "kind": "ts",
       "hash": "01d1ea5cd361",
@@ -956,7 +924,7 @@
     },
     "shared/ui/components/AddressSuggestInput.vue": {
       "kind": "vue",
-      "hash": "48d3cc61ba81",
+      "hash": "66f71c041b86",
       "purpose": "Поле ввода адреса с подсказками DaData; emit('select') возвращает выбранную suggestion с координатами; опционально валидирует что выбрана именно подсказка (requirePicked)",
       "symbols": [
         {
@@ -975,7 +943,7 @@
     },
     "shared/ui/components/AddressWithMap.vue": {
       "kind": "vue",
-      "hash": "634fecf5bb3f",
+      "hash": "fc2f13e77fd9",
       "purpose": "AddressSuggestInput + Яндекс.Карта с маркером и координатами; v-model:address/addressData/latitude/longitude",
       "symbols": [
         {
