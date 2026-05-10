@@ -4,16 +4,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # FastFood SaaS — Инструкции для AI
 
-## Memory Bank
-
-В директории `memory-bank/` хранится персистентный контекст проекта. Правила работы с ним описаны в `memory-bank/memory_bank_instructions.md`.
-
-**ОБЯЗАТЕЛЬНО в начале каждой сессии:** прочитать все файлы из `memory-bank/` перед тем как что-либо делать.
-
-**ОБЯЗАТЕЛЬНО после значимых изменений:** обновить `memory-bank/activeContext.md` и `memory-bank/progress.md`.
-
----
-
 ## TECHDEBT.md и LATER.md
 
 Два специальных файла в директории автопамяти (рядом с `MEMORY.md`):
