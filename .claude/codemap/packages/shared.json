@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-08T06:40:08.300Z",
+  "generated_at": "2026-05-10T04:47:38.426Z",
   "stats": {
-    "files": 40,
+    "files": 41,
     "pages": 0,
-    "symbols": 180,
+    "symbols": 186,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -268,6 +268,49 @@
         }
       ]
     },
+    "src/utils/categoryColors.ts": {
+      "kind": "ts",
+      "hash": "6f419e2ddcf4",
+      "purpose": "Палитра цветов категорий услуг (24 пресета) + утилиты резолва ключ↔hex и подбора следующего свободного цвета",
+      "symbols": [
+        {
+          "name": "CategoryColorPreset",
+          "kind": "type",
+          "hash": "42addd03",
+          "purpose": "Один пресет палитры: семантический ключ (red/orange/blue…) и его hex"
+        },
+        {
+          "name": "DEFAULT_CATEGORY_COLOR_KEY",
+          "kind": "const",
+          "hash": "53e03886",
+          "purpose": "Ключ дефолтного цвета (indigo) — используется когда у категории не выбран color"
+        },
+        {
+          "name": "CATEGORY_COLOR_PALETTE",
+          "kind": "const",
+          "hash": "512759cc",
+          "purpose": "Массив CategoryColorPreset из 24 цветов — единая палитра для UI выбора"
+        },
+        {
+          "name": "getCategoryColorHex",
+          "kind": "function",
+          "hash": "2549582b",
+          "purpose": "Резолв key→hex или pass-through hex (для совместимости старых записей в БД)"
+        },
+        {
+          "name": "DEFAULT_CATEGORY_COLOR_HEX",
+          "kind": "const",
+          "hash": "2631ff3f",
+          "purpose": "Hex дефолтного цвета — для рендера карточек без назначенного color"
+        },
+        {
+          "name": "getNextCategoryColor",
+          "kind": "function",
+          "hash": "caa6773f",
+          "purpose": "Возвращает hex первого свободного цвета палитры по списку уже занятых соседей"
+        }
+      ]
+    },
     "src/utils/date.ts": {
       "kind": "ts",
       "hash": "60a5ec6d2d1e",
@@ -520,8 +563,8 @@
     },
     "src/utils/menu.ts": {
       "kind": "ts",
-      "hash": "a5eb85428c6c",
-      "purpose": "Мапперы меню: единая правда вместо локальных копий в admin/storefront",
+      "hash": "05ef13d94893",
+      "purpose": "Маппинг сырого row из categories в Category — единая правда для admin/storefront/backoffice",
       "symbols": [
         {
           "name": "mapCategory",

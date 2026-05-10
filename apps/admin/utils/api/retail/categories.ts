@@ -22,7 +22,7 @@ export const categoriesApi = {
       kind: payload.kind,
       sort_order: payload.order,
       active: true,
-      ...filterDefined({ photo_url: payload.photoUrl, use_first_dish_photo: payload.useFirstDishPhoto, tag_id: payload.tagId, slug: payload.slug }),
+      ...filterDefined({ photo_url: payload.photoUrl, use_first_dish_photo: payload.useFirstDishPhoto, tag_id: payload.tagId, slug: payload.slug, color: payload.color }),
     }).select().single())
 
     return data ? mapCategory(data) : null
@@ -38,6 +38,7 @@ export const categoriesApi = {
         use_first_dish_photo: data.useFirstDishPhoto,
         tag_id: data.tagId,
         slug: data.slug,
+        color: data.color,
       }),
     ).eq('id', id).select().single())
 

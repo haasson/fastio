@@ -4,7 +4,7 @@ import { timeToMinutes, minutesToTimeStr } from '@fastio/shared'
 import type { TimelineAvailability } from '~/utils/services/timelineAvailability'
 
 type SlotEntry = { minutes: number; top: number; time: string }
-type DimRange = { top: number; height: number; kind: 'off-hours' | 'disabled' }
+type DimRange = { top: number; height: number; kind: 'off-hours' | 'disabled' | 'absence'; label?: string; notes?: string | null }
 
 export type ColumnModel = {
   resource: Resource
@@ -169,7 +169,15 @@ export function useTimelineLayout(params: Params) {
     }
 
     if (!win) {
-      dimRanges.push({ top: 0, height: totalPx.value, kind: 'off-hours' })
+      const absence = availability.value[resource.id]?.absenceInfo
+
+      dimRanges.push({
+        top: 0,
+        height: totalPx.value,
+        kind: 'absence',
+        label: absence?.label ?? 'Не работает',
+        notes: absence?.notes ?? null,
+      })
     } else {
       const { startMin, endMin } = win
 

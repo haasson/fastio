@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
     ? body.idempotencyKey.trim()
     : null
 
-  const { data, error } = await supabase
+  const { data, error } = await db.crossTenant
     .from('orders')
     .insert({
       tenant_id: tenantId,
@@ -138,14 +138,14 @@ export default defineEventHandler(async (event) => {
       added_by: authUserId,
     }))
 
-    const { error: itemsError } = await supabase.from('order_items').insert(itemRows)
+    const { error: itemsError } = await db.crossTenant.from('order_items').insert(itemRows)
     if (itemsError) {
       console.error('[order_items insert]', itemsError)
     }
 
     // Бесплатное блюдо (акция типа free_item)
     if (freeItemPromo) {
-      const { error: freeItemError } = await supabase.from('order_items').insert({
+      const { error: freeItemError } = await db.crossTenant.from('order_items').insert({
         order_id: data.id,
         dish_id: freeItemPromo.free_dish_id,
         dish_name: freeItemPromo.dish_name,

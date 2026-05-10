@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-08T06:40:08.032Z",
+  "generated_at": "2026-05-10T04:47:38.135Z",
   "stats": {
     "files": 113,
     "pages": 0,
-    "symbols": 198,
+    "symbols": 199,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1007,8 +1007,8 @@
     },
     "utils/services/timelineAvailability.ts": {
       "kind": "ts",
-      "hash": "aaa3b4e41fa0",
-      "purpose": "Сборка per-resource расписания и disabled-слотов на дату из bulkLoadAvailability — для таймлайна админки",
+      "hash": "f07a8a79c0aa",
+      "purpose": "Сборщик timeline-availability: per-resource рабочие часы, disabled-слоты и инфо об отсутствии (отпуск/больничный) на выбранную дату",
       "symbols": [
         {
           "name": "buildTimelineAvailability",
@@ -1017,10 +1017,16 @@
           "purpose": "Считает рабочие часы и disabled-слоты для всех ресурсов: override на дату → shift-cycle → недельное расписание ресурса → филиал → тенант"
         },
         {
+          "name": "AbsenceInfo",
+          "kind": "type",
+          "hash": "a2a25135",
+          "purpose": "Лейбл (тип отсутствия) и заметки для блока absence на колонке таймлайна"
+        },
+        {
           "name": "ResourceAvailability",
           "kind": "type",
-          "hash": "0cac4935",
-          "purpose": "Доступность одного ресурса: workingHours {openTime,closeTime}|null + disabledSlots ['HH:MM']"
+          "hash": "cb64cf61",
+          "purpose": "Доступность одного ресурса на дату: рабочие часы, нерабочие слоты и опциональный absenceInfo"
         },
         {
           "name": "TimelineAvailability",
@@ -1834,14 +1840,14 @@
     },
     "components/ui/ColorPicker.vue": {
       "kind": "vue",
-      "hash": "374729c2db94",
-      "purpose": "Контрол выбора цвета: пресеты-сваотчи + нативный input[type=color] для custom-значения",
+      "hash": "a62df249bbd8",
+      "purpose": "Свотч-палитра цветов: пресеты + custom <input type=color>; занятые цвета приглушаются, но остаются кликабельными",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "e80e3ce0",
-          "purpose": "{ modelValue, label?, presets? }"
+          "hash": "9c837d39",
+          "purpose": "modelValue (hex), label, presets (массив hex), usedColors (приглушаемые занятые)"
         },
         {
           "name": "emits",

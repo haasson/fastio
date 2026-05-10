@@ -70,6 +70,16 @@
         />
       </div>
 
+      <div v-if="props.kind === 'service'" class="field">
+        <ColorPicker
+          :model-value="form.color ?? CATEGORY_COLOR_PALETTE[0].hex"
+          label="Цвет категории"
+          :presets="colorPresets"
+          :used-colors="otherUsedHexColors"
+          @update:model-value="form.color = $event"
+        />
+      </div>
+
       <UiSwitch
         :model-value="form.active"
         label="Активна"
@@ -83,11 +93,12 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiText, UiSelect, UiSwitch, UiAlert, useMessage } from '@fastio/ui'
 import type { Category, CategoryKind, CategoryType, DishTagDefinition } from '@fastio/shared'
-import { slugify } from '@fastio/shared'
+import { slugify, CATEGORY_COLOR_PALETTE, getCategoryColorHex, getNextCategoryColor } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
 import { reportError } from '~/utils/reportError'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
+import ColorPicker from '~/components/ui/ColorPicker.vue'
 
 type FormMode = 'regular' | 'virtual' | 'combo'
 
@@ -97,8 +108,12 @@ const props = withDefaults(defineProps<{
   category: Category | null
   tags?: DishTagDefinition[]
   kind?: CategoryKind
+  // Цвета уже занятые другими категориями (ключи или hex).
+  // Занятые свотчи приглушаются, но остаются кликабельными.
+  usedColors?: (string | null)[]
 }>(), {
   kind: 'food',
+  usedColors: () => [],
 })
 
 const emit = defineEmits<{
@@ -123,6 +138,7 @@ const form = ref({
   tagId: null as string | null,
   active: true,
   photoUrl: null as string | null,
+  color: null as string | null,
 })
 
 const isSpecial = computed(() => !!props.category && props.category.type !== 'regular')
@@ -133,6 +149,18 @@ const categoryToMode = (cat: Category): FormMode => {
 
   return 'regular'
 }
+
+const colorPresets = CATEGORY_COLOR_PALETTE.map((p) => p.hex)
+
+// Hex-значения цветов других категорий (без цвета текущей редактируемой),
+// чтобы её собственный цвет не подсвечивался как «занятый».
+const otherUsedHexColors = computed(() => {
+  const ownHex = getCategoryColorHex(props.category?.color ?? null)
+
+  return (props.usedColors ?? [])
+    .map((c) => getCategoryColorHex(c) ?? c)
+    .filter((c): c is string => !!c && c !== ownHex)
+})
 
 watch(
   () => props.modelValue,
@@ -147,11 +175,22 @@ watch(
           tagId: props.category.tagId,
           active: props.category.active,
           photoUrl: props.category.photoUrl,
+          // Резолвим key→hex на случай старых записей в БД.
+          color: getCategoryColorHex(props.category.color) ?? props.category.color,
         }
         formMode.value = categoryToMode(props.category)
         slugEdited.value = !!props.category.slug
       } else {
-        form.value = { name: '', slug: '', type: 'regular', tagId: null, active: true, photoUrl: null }
+        form.value = {
+          name: '',
+          slug: '',
+          type: 'regular',
+          tagId: null,
+          active: true,
+          photoUrl: null,
+          // Color используется только для services-категорий — у food колонка остаётся null.
+          color: props.kind === 'service' ? getNextCategoryColor(props.usedColors ?? []) : null,
+        }
         formMode.value = 'regular'
         slugEdited.value = false
       }
@@ -208,7 +247,14 @@ const handleSave = async () => {
   saving.value = true
   try {
     if (props.category) {
-      const data: Record<string, unknown> = { name: form.value.name, active: form.value.active, tagId: form.value.tagId, slug }
+      const data: Record<string, unknown> = {
+        name: form.value.name,
+        active: form.value.active,
+        tagId: form.value.tagId,
+        slug,
+        // Color пишем только в service-категории — у food колонка не используется.
+        ...(props.kind === 'service' && { color: form.value.color }),
+      }
 
       if (pendingPhotoFile.value) {
         if (props.category.photoUrl) await api.categories.deletePhoto(props.category.photoUrl)
@@ -227,6 +273,8 @@ const handleSave = async () => {
         kind: props.kind,
         tagId: formMode.value === 'virtual' ? form.value.tagId : null,
         slug,
+        // Color только для service — у food остаётся null.
+        ...(props.kind === 'service' && { color: form.value.color }),
       })
 
       if (cat && pendingPhotoFile.value) {
@@ -256,4 +304,8 @@ const handleSave = async () => {
   @include modal-form;
 }
 
+.label {
+  margin-bottom: var(--space-8);
+  display: block;
+}
 </style>

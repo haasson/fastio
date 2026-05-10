@@ -41,11 +41,12 @@ export type Category = {
   active: boolean
   photoUrl: string | null
   useFirstDishPhoto: boolean
+  color: string | null
 }
 
 export const isAutoCategory = (cat: Category): boolean => cat.tagId !== null
 
-export type CategoryData = Partial<Pick<Category, 'name' | 'active' | 'order' | 'photoUrl' | 'useFirstDishPhoto' | 'tagId' | 'slug'>>
+export type CategoryData = Partial<Pick<Category, 'name' | 'active' | 'order' | 'photoUrl' | 'useFirstDishPhoto' | 'tagId' | 'slug' | 'color'>>
 
 export type Dish = {
   id: string

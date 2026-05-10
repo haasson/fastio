@@ -47,47 +47,59 @@
             }"
             :data-resource-id="col.resource.id"
           >
-            <div
-              v-for="(range, i) in col.dimRanges"
-              :key="`dim-${i}`"
-              class="dim"
-              :class="{ 'dim--disabled': range.kind === 'disabled' }"
-              :style="{ top: `${range.top}px`, height: `${range.height}px` }"
-            />
+            <template v-for="(range, i) in col.dimRanges" :key="`dim-${i}`">
+              <div
+                v-if="range.kind !== 'absence'"
+                class="dim"
+                :class="{ 'dim--disabled': range.kind === 'disabled' }"
+                :style="{ top: `${range.top}px`, height: `${range.height}px` }"
+              />
+              <div
+                v-else
+                class="absence-block"
+                :style="{ top: `${range.top}px`, height: `${range.height}px` }"
+              >
+                <div class="absence-strip">
+                  <span class="absence-label">{{ range.label }}</span>
+                  <span v-if="range.notes" class="absence-notes">{{ range.notes }}</span>
+                </div>
+                <div class="absence-body" />
+              </div>
+            </template>
 
-            <button
+            <div
               v-for="slot in col.slots"
               :key="slot.minutes"
-              type="button"
               class="slot"
               :style="{ top: `${slot.top}px`, height: `${slotHeightPx}px` }"
               @click="onSlotClick(col.resource.id, slot.time)"
             />
 
-            <button
+            <div
               v-for="appt in col.appointments"
               :key="appt.id"
-              type="button"
               class="appt-card"
-              :class="[`status-${appt.status}`, {
+              :class="{
                 'appt-card--editable': editable && appt.status !== 'cancelled',
                 'appt-card--dragging': dragState && dragState.appt.id === appt.id,
-              }]"
-              :style="cardStyle(appt)"
+                'appt-card--cancelled': appt.status === 'cancelled',
+              }"
+              :style="apptCardStyle(appt)"
               @pointerdown="onCardPointerDown($event, appt, col.resource.id)"
               @pointermove="onCardPointerMove"
               @pointerup="onCardPointerUp"
               @pointercancel="onCardPointerCancel"
             >
-              <UiText size="tiny" weight="medium" class="appt-customer">
-                {{ appt.customerName }}
-              </UiText>
-              <UiText v-if="appt.customerPhone && !hidePhones" size="tiny" class="appt-phone">
-                {{ appt.customerPhone }}
-              </UiText>
-              <UiText size="tiny" class="appt-service">{{ appt.serviceName }}</UiText>
-              <UiText v-if="appt.notes" size="tiny" class="appt-notes">{{ appt.notes }}</UiText>
-            </button>
+              <div class="appt-strip">
+                <span class="appt-customer">{{ appt.customerName }}</span>
+                <span class="status-dot" :class="`status-dot--${appt.status}`" />
+              </div>
+              <div class="appt-body">
+                <span class="appt-service">{{ appt.serviceName }}</span>
+                <span v-if="appt.customerPhone && !hidePhones" class="appt-phone">{{ appt.customerPhone }}</span>
+                <span v-if="appt.notes" class="appt-notes">{{ appt.notes }}</span>
+              </div>
+            </div>
 
             <div
               v-if="dragGhost && dragGhost.targetResourceId === col.resource.id"
@@ -121,6 +133,7 @@
 import { computed, ref, toRef } from 'vue'
 import { UiText } from '@fastio/ui'
 import type { Appointment, Resource } from '@fastio/shared'
+import { DEFAULT_CATEGORY_COLOR_HEX } from '@fastio/shared'
 import type { TimelineAvailability } from '~/utils/services/timelineAvailability'
 import { useTimelineLayout } from '~/composables/services/timeline/useTimelineLayout'
 import { useTimelineDrag } from '~/composables/services/timeline/useTimelineDrag'
@@ -146,6 +159,8 @@ type Props = {
   // Валидатор drop'а из родителя — возвращает текстовую причину блокировки
   // или null если drop валиден. Причина показывается внутри ghost-блока.
   getMoveBlocker?: (payload: { appt: Appointment; dyMin: number; newResourceId: string }) => string | null
+  // serviceId → hex цвет категории; если не задан — используется DEFAULT_CATEGORY_COLOR_HEX.
+  categoryColorMap?: Map<string, string>
 }
 
 // pxPerMin=1.6 → 30-минутный слот занимает 48px. Под высоту строки таблицы
@@ -157,6 +172,7 @@ const props = withDefaults(defineProps<Props>(), {
   now: null,
   dateIsToday: false,
   hidePhones: false,
+  categoryColorMap: () => new Map(),
 })
 
 const emit = defineEmits<{
@@ -194,6 +210,13 @@ const rootCssVars = computed(() => ({
   '--tl-total-px': `${totalPx.value}px`,
 }))
 
+const apptCardStyle = (appt: Appointment) => {
+  const pos = cardStyle(appt)
+  const color = (appt.serviceId ? props.categoryColorMap?.get(appt.serviceId) : null) ?? DEFAULT_CATEGORY_COLOR_HEX
+
+  return { ...pos, '--appt-color': color }
+}
+
 const onSlotClick = (resourceId: string, time: string) => {
   emit('cellClick', { resourceId, time })
 }
@@ -227,6 +250,7 @@ defineExpose({ scrollToNow })
   border-radius: var(--radius-8);
   overflow: hidden;
   background: var(--color-bg-card);
+  --timeline-dim-bg: var(--color-bg-hover);
 }
 
 .grid-scroll {
@@ -382,9 +406,9 @@ defineExpose({ scrollToNow })
   background-image: repeating-linear-gradient(
     -45deg,
     transparent 0,
-    transparent 6px,
-    var(--timeline-dim-stripe) 6px,
-    var(--timeline-dim-stripe) 12px
+    transparent 8px,
+    var(--color-border) 8px,
+    var(--color-border) 9px
   );
 }
 
@@ -392,10 +416,6 @@ defineExpose({ scrollToNow })
   position: absolute;
   left: 0;
   right: 0;
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: transparent;
   cursor: pointer;
   z-index: 1;
   transition: background var(--transition-fast);
@@ -407,23 +427,18 @@ defineExpose({ scrollToNow })
 
 .appt-card {
   position: absolute;
-  left: 2px;
-  right: 2px;
-  border: none;
-  border-left-width: 3px;
-  border-left-style: solid;
+  left: 3px;
+  right: 3px;
   border-radius: var(--radius-8);
-  padding: var(--space-4) var(--space-8);
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  align-items: flex-start;
-  text-align: left;
   cursor: pointer;
-  overflow: hidden;
-  font-family: inherit;
+  // overflow: hidden убран — нужен для sticky .appt-strip.
+  // Контент клипится на уровне .appt-body и текстовых span'ов.
   z-index: 2;
   touch-action: none;
+  background: color-mix(in srgb, var(--appt-color) 14%, var(--color-bg-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--appt-color) 30%, transparent);
 
   &--editable {
     cursor: grab;
@@ -431,33 +446,149 @@ defineExpose({ scrollToNow })
 
   &--dragging {
     cursor: grabbing;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 
-  &:hover {
-    filter: brightness(0.97);
+  &--cancelled {
+    opacity: 0.45;
   }
 
-  &.status-new {
-    background: var(--yellow-100);
-    border-left-color: var(--yellow-500);
+  &:hover:not(&--dragging) {
+    filter: brightness(0.95);
   }
+}
 
-  &.status-confirmed {
-    background: var(--green-100);
-    border-left-color: var(--green-500);
-  }
+.appt-strip {
+  background: var(--appt-color);
+  padding: 4px var(--space-8);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+  overflow: hidden;
+  min-height: 22px;
+}
 
-  &.status-done {
-    background: var(--grey-100);
-    border-left-color: var(--grey-400);
-  }
+.appt-customer {
+  flex: 1;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  &.status-cancelled {
-    background: var(--red-100);
-    border-left-color: var(--red-500);
-    opacity: 0.6;
-  }
+// Точка лежит на цветной шапке (--appt-color), где обычные семантические
+// токены (--color-warning/success/error) могут терять контраст. Подмешиваем
+// белый через color-mix чтобы вытянуть яркость, белая обводка добавляет
+// дополнительный контраст по краю.
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+
+  &--new       { background: color-mix(in srgb, var(--color-warning) 75%, white); }
+  &--confirmed { background: color-mix(in srgb, var(--color-success) 75%, white); }
+  &--cancelled { background: color-mix(in srgb, var(--color-error) 75%, white); }
+  &--done      { background: rgba(255, 255, 255, 0.55); border-color: rgba(255, 255, 255, 0.4); }
+}
+
+// Тело карточки — услуга, телефон, примечания.
+// flex: 1 чтобы занять оставшееся место; overflow: hidden чрезмерный контент режет.
+.appt-body {
+  padding: 3px var(--space-8);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.appt-service {
+  font-size: 11px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  opacity: 0.75;
+}
+
+.appt-phone {
+  font-size: 11px;
+  color: var(--color-text-hint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.appt-notes {
+  font-size: 11px;
+  color: var(--color-text-hint);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.absence-block {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-8);
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+  border: 1px solid var(--color-border);
+}
+
+.absence-strip {
+  background: var(--color-bg-hover);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.absence-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.absence-notes {
+  font-size: 10px;
+  color: var(--color-text-hint);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.absence-body {
+  flex: 1;
+  background-color: var(--color-bg-hover);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 8px,
+    var(--color-border) 8px,
+    var(--color-border) 9px
+  );
 }
 
 .drag-ghost {
@@ -488,35 +619,4 @@ defineExpose({ scrollToNow })
   text-overflow: ellipsis;
 }
 
-.appt-customer {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.appt-phone {
-  color: var(--color-text-hint);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.appt-service {
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.appt-notes {
-  color: var(--color-text-hint);
-  font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
 </style>

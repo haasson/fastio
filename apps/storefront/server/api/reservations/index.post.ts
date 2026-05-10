@@ -106,7 +106,7 @@ export default defineEventHandler(async (event) => {
 
   const status = autoConfirm ? 'confirmed' : 'pending'
 
-  const { data, error } = await db.raw
+  const { data, error } = await db.crossTenant
     .from('reservations')
     .insert({
       tenant_id: tenantId,

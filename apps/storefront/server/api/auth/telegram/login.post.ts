@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
   const { telegramId, firstName, lastName, photoUrl } = verification
 
-  const customerId = await findOrCreateCustomer(db.raw, {
+  const customerId = await findOrCreateCustomer(db.crossTenant, {
     tenantId,
     telegramId,
     name: [firstName, lastName].filter(Boolean).join(' ') || null,
@@ -50,8 +50,7 @@ export default defineEventHandler(async (event) => {
   const { token, hash } = issueSessionToken()
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString()
 
-  // INSERT: tenant_id is in the payload, use raw client to avoid WHERE-clause conflict
-  const { error: sessionError } = await db.raw
+  const { error: sessionError } = await db.crossTenant
     .from('customer_sessions')
     .insert({
       token_hash: hash,

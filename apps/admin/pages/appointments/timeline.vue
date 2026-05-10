@@ -1,5 +1,5 @@
 <template>
-  <div class="timeline-root">
+  <div ref="rootRef" class="timeline-root" :style="{ height: timelineHeight }">
     <div class="toolbar">
       <UiButton
         type="text"
@@ -41,6 +41,7 @@
       :now="nowProp"
       :date-is-today="showNow"
       :hide-phones="ownResourcesOnly"
+      :category-color-map="categoryColorMap"
       :get-move-blocker="getMoveBlocker"
       @appt-click="onApptClick"
       @cell-click="onCellClick"
@@ -59,14 +60,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, shallowRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from '#imports'
 import { UiButton, UiDatepicker, UiSkeleton, UiEmpty, useMessage } from '@fastio/ui'
 import type { Appointment } from '@fastio/shared'
 import {
   todayInTz, getBranchWidestWindow, getBranchHoursForDow,
-  addDaysToDateStr, localDateTimeToUtcIso,
+  addDaysToDateStr, localDateTimeToUtcIso, getCategoryColorHex,
 } from '@fastio/shared'
 import type { WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
@@ -143,6 +144,8 @@ const visibleResources = computed(() => {
 const resources = ref<import('@fastio/shared').Resource[]>([])
 const appointments = ref<Appointment[]>([])
 const availability = ref<TimelineAvailability>({})
+// serviceId → hex цвета категории
+const categoryColorMap = ref<Map<string, string>>(new Map())
 
 const loading = ref(false)
 // Скелетон показываем ТОЛЬКО до первого успешного fetch'а. Дальше realtime/смена
@@ -155,9 +158,9 @@ const initialLoading = ref(true)
 // Применяем в state только результат последнего инициированного запроса.
 let fetchGen = 0
 
-// Каталог услуг — стабилен в рамках сессии, не меняется при смене даты/филиала.
-// Грузим один раз при первом fetch'е и переиспользуем для competencies.
+// Каталог услуг и категорий стабилен в рамках сессии — грузим один раз.
 let servicesCache: Awaited<ReturnType<typeof api.services.list>> | null = null
+let categoriesCache: Awaited<ReturnType<typeof api.categories.list>> | null = null
 
 const reload = async (opts: { scrollOnLoad?: boolean } = {}) => {
   if (!currentTenantId.value) return
@@ -189,18 +192,32 @@ const reload = async (opts: { scrollOnLoad?: boolean } = {}) => {
       ? activeResources.filter(isOwnResource).map((r) => r.id)
       : undefined
 
-    const [appts, services] = await Promise.all([
+    const [appts, services, categories] = await Promise.all([
       api.appointments.listForDay(currentTenantId.value, selectedDate.value, {
         branchId: branchStore.currentBranchId ?? undefined,
         resourceIds: ownResourceIds,
         timezone: tz.value,
       }),
       servicesCache ?? api.services.list(currentTenantId.value),
+      categoriesCache ?? api.categories.list(currentTenantId.value, 'service'),
     ])
 
     if (gen !== fetchGen) return
 
     servicesCache = services
+    categoriesCache = categories
+
+    const newColorMap = new Map<string, string>()
+    const categoryById = new Map(categories.map((c) => [c.id, c]))
+
+    for (const svc of services) {
+      const hex = svc.categoryId
+        ? getCategoryColorHex(categoryById.get(svc.categoryId)?.color ?? null)
+        : null
+
+      if (hex) newColorMap.set(svc.id, hex)
+    }
+    categoryColorMap.value = newColorMap
     resources.value = activeResources
     appointments.value = appts
 
@@ -291,8 +308,32 @@ const viewWindow = computed(() => {
 
 // ─── Now line + auto-scroll ───────────────────────────────
 
+const rootRef = ref<HTMLElement | null>(null)
 const gridRef = ref<InstanceType<typeof AppointmentTimelineGrid> | null>(null)
 const now = ref(Date.now())
+
+const timelineHeight = shallowRef<string>('360px')
+
+const updateHeight = () => {
+  const el = rootRef.value
+
+  if (!el) return
+
+  const top = el.getBoundingClientRect().top
+  const paddingBottom = parseInt(getComputedStyle(el).getPropertyValue('--content-padding'), 10) || 0
+  const h = Math.max(360, window.innerHeight - top - paddingBottom)
+
+  timelineHeight.value = `${h}px`
+}
+
+onMounted(() => {
+  nextTick(updateHeight)
+  window.addEventListener('resize', updateHeight)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateHeight)
+})
 const showNow = computed(() => selectedDate.value === todayStr.value)
 const nowProp = computed(() => showNow.value ? now.value : null)
 
@@ -494,11 +535,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space-16);
-  // 100dvh минус топбар и вертикальные паддинги контента — родитель layout'а.
-  // Toolbar внутри занимает auto-высоту (flex-shrink: 0), грид получает
-  // оставшееся через `flex: 1; min-height: 0` (см. .grid-root). Без фиксированной
-  // высоты grid-scroll не получит overflow=auto.
-  height: calc(100dvh - var(--topbar-height) - var(--content-padding) * 2);
+  // height задаётся через :style — window.innerHeight минус реальный top элемента
   min-height: 360px;
 }
 

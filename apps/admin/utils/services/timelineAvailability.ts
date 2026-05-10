@@ -1,11 +1,18 @@
 import type { Resource, ResourceSlotData, WorkingHoursSchedule } from '@fastio/shared'
-import { resolveResourceWorkingHours } from '@fastio/shared'
+import { resolveResourceWorkingHours, RESOURCE_UNAVAILABILITY_REASON_LABELS } from '@fastio/shared'
 import type { AvailabilityBundle } from '~/utils/api/services/resources'
+
+export type AbsenceInfo = {
+  label: string
+  notes: string | null
+}
 
 export type ResourceAvailability = {
   workingHours: { openTime: string; closeTime: string } | null
   // 'HH:MM' — нерабочие слоты ресурса на выбранную дату (объединение dow + date)
   disabledSlots: string[]
+  // Заполняется если у ресурса есть resource_unavailability, покрывающий дату
+  absenceInfo: AbsenceInfo | null
 }
 
 export type TimelineAvailability = Record<string, ResourceAvailability>
@@ -117,7 +124,13 @@ export function buildTimelineAvailability(params: {
     const disabledByDate = data.dateDisabledSlots.filter((s) => s.date === date).map((s) => s.slotTime)
     const disabled = Array.from(new Set([...disabledByDow, ...disabledByDate]))
 
-    result[r.id] = { workingHours: wh, disabledSlots: disabled }
+    // dateFrom/dateTo — формат YYYY-MM-DD (см. ResourceUnavailability), лексикографическое сравнение == хронологическое
+    const activeUnavailability = (data.unavailability ?? []).find((u) => date >= u.dateFrom && date <= u.dateTo)
+    const absenceInfo: AbsenceInfo | null = activeUnavailability
+      ? { label: RESOURCE_UNAVAILABILITY_REASON_LABELS[activeUnavailability.reason] ?? 'Отсутствие', notes: activeUnavailability.notes }
+      : null
+
+    result[r.id] = { workingHours: wh, disabledSlots: disabled, absenceInfo }
   }
 
   return result

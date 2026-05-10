@@ -68,8 +68,8 @@ const buildBlocker = (overrides: Partial<{
 
   return useTimelineMoveBlocker({
     availability: ref(overrides.availability ?? {
-      'res-1': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: [] },
-      'res-2': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: [] },
+      'res-1': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: [], absenceInfo: null },
+      'res-2': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: [], absenceInfo: null },
     }),
     resources: ref(overrides.resources ?? [
       baseResource,
@@ -121,8 +121,8 @@ describe('useTimelineMoveBlocker', () => {
   it('мастер не имеет рабочих часов в этот день — "Мастер не работает"', () => {
     const { getMoveBlocker } = buildBlocker({
       availability: {
-        'res-1': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: [] },
-        'res-2': { workingHours: null, disabledSlots: [] },
+        'res-1': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: [], absenceInfo: null },
+        'res-2': { workingHours: null, disabledSlots: [], absenceInfo: null },
       },
     })
 
@@ -139,7 +139,7 @@ describe('useTimelineMoveBlocker', () => {
   it('новое время попадает на disabled-слот — "Нерабочий слот"', () => {
     const { getMoveBlocker } = buildBlocker({
       availability: {
-        'res-1': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: ['11:00'] },
+        'res-1': { workingHours: { openTime: '09:00', closeTime: '18:00' }, disabledSlots: ['11:00'], absenceInfo: null },
       },
     })
 
@@ -213,7 +213,7 @@ describe('useTimelineMoveBlocker', () => {
     const { getMoveBlocker } = buildBlocker({
       todayStr: DATE,
       now: new Date(`${DATE}T20:00:00+03:00`).getTime(),
-      availability: { 'res-1': { workingHours: null, disabledSlots: [] } },
+      availability: { 'res-1': { workingHours: null, disabledSlots: [], absenceInfo: null } },
     })
 
     // Окно 09:00, время прошло (20:00 уже now). Должно быть "В прошлое нельзя",

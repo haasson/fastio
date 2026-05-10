@@ -18,4 +18,5 @@ export const mapCategory = (raw: Record<string, unknown>): Category => ({
   active: raw.active as boolean,
   photoUrl: (raw.photo_url as string | null) ?? null,
   useFirstDishPhoto: (raw.use_first_dish_photo as boolean | null) ?? false,
+  color: (raw.color as string | null) ?? null,
 })

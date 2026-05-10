@@ -101,10 +101,10 @@ export function useInboxTableColumns(params: Params) {
       width: 110,
       render: (row) => {
         if (row.aggregateStatus === 'request') {
-          return h(UiTag, { type: 'primary', size: 'small', empty: true }, () => '✉️ Заявка')
+          return h(UiTag, { type: 'primary', size: 'small', empty: true }, () => 'Заявка')
         }
 
-        return h(UiTag, { type: 'default', size: 'small', empty: true }, () => '📅 Визит')
+        return h(UiTag, { type: 'default', size: 'small', empty: true }, () => 'Визит')
       },
     },
     {

@@ -37,13 +37,12 @@ export default defineEventHandler(async (event) => {
   const name = [data.first_name, data.last_name].filter(Boolean).join(' ') || null
   const phone = (pending.phone as string | null) ?? null
 
-  const customerId = await findOrCreateCustomer(db.raw, { tenantId, telegramId, name, phone })
+  const customerId = await findOrCreateCustomer(db.crossTenant, { tenantId, telegramId, name, phone })
 
   const { token, hash } = issueSessionToken()
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString()
 
-  // INSERT: tenant_id is in the payload, use raw client to avoid WHERE-clause conflict
-  const { error: sessionError } = await db.raw
+  const { error: sessionError } = await db.crossTenant
     .from('customer_sessions')
     .insert({
       token_hash: hash,
@@ -58,7 +57,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Ошибка создания сессии' })
   }
 
-  // Delete nonce — single use
+  // Delete nonce — single use. db.raw намеренно: Proxy авто-инжектит .eq('tenant_id', tenantId) в delete (см. tenantDb.ts).
   await db.raw.from('pending_telegram_auths').delete().eq('nonce', nonce)
 
   setCookie(event, TG_SESSION_COOKIE_NAME, token, {

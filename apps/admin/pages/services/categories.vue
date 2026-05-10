@@ -23,6 +23,7 @@
       :tenant-id="tenantId"
       :category="editingItem"
       :tags="tags"
+      :used-colors="usedColors"
       kind="service"
       @saved="refresh"
     />
@@ -30,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
@@ -76,6 +77,10 @@ const { showSkeleton, modalOpen, editingItem, openModal, confirmDelete } = useIt
     }
   },
 })
+
+const usedColors = computed(() => categories.value
+  .filter((c) => c.id !== editingItem.value?.id)
+  .map((c) => c.color))
 
 const toggleActive = (id: string, active: boolean) => update(id, { active })
 
