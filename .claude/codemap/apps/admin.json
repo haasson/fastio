@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T13:26:59.783Z",
+  "generated_at": "2026-05-10T13:32:55.936Z",
   "stats": {
-    "files": 86,
+    "files": 88,
     "pages": 0,
-    "symbols": 146,
+    "symbols": 149,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -821,7 +821,7 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "b3958a245382",
+      "hash": "f87d87a9ec39",
       "purpose": "Дефолтный layout админки: collapsible sidebar с лого/AppNav/TenantSwitcher/BranchSelector + main slot для страницы",
       "symbols": [
         {
@@ -829,57 +829,6 @@
           "kind": "component",
           "hash": "cbcf45d7",
           "purpose": "Default layout с collapsible sidebar и slot для страницы"
-        }
-      ]
-    },
-    "components/layout/AppNav.vue": {
-      "kind": "vue",
-      "hash": "5425aae37d5c",
-      "purpose": "Главная навигация админки: рендер списка nav-items по гейтам (useGate) с counter/blink для уведомлений",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "1941fee3",
-          "purpose": "{ collapsed?: boolean }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "246eb91c",
-          "purpose": "navigate — закрытие mobile sidebar при переходе"
-        },
-        {
-          "name": "expose",
-          "kind": "component-expose",
-          "hash": "d759f99f",
-          "purpose": "Внутренние навигационные айтемы (для тестов/туров)"
-        }
-      ]
-    },
-    "components/layout/BranchSelector.vue": {
-      "kind": "vue",
-      "hash": "07f24077f6dc",
-      "purpose": "Селект текущего филиала в шапке: фильтрует список по правам member-а (canSeeAll) и меняет branchStore.currentBranchId",
-      "symbols": [
-        {
-          "name": "component",
-          "kind": "component",
-          "hash": "cbcf45d7",
-          "purpose": "Скрывается, если филиал один; меняет branchStore.currentBranchId"
-        }
-      ]
-    },
-    "components/layout/PastDueBanner.vue": {
-      "kind": "vue",
-      "hash": "7f6a0c2f462d",
-      "purpose": "Баннер предупреждения о просрочке оплаты подписки: считает оставшиеся дни до приостановки и кнопка 'Оплатить' → /account/billing",
-      "symbols": [
-        {
-          "name": "component",
-          "kind": "component",
-          "hash": "cbcf45d7",
-          "purpose": "Считает оставшиеся дни графика по pastDueAt+gracePeriodDays"
         }
       ]
     },
@@ -1256,6 +1205,89 @@
           "kind": "component-props",
           "hash": "06395625",
           "purpose": "{ tabs: Tab[], basePath, card?, fullHeight?, hideSingle? }"
+        }
+      ]
+    },
+    "shared/components/AppTableToolbar.vue": {
+      "kind": "vue",
+      "hash": "5489aed1010b",
+      "purpose": "Универсальный тулбар для таблиц: поиск, слот фильтров, меню видимости столбцов, сброс фильтров, слот actions",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c61cbb1a",
+          "purpose": "{ search, searchPlaceholder, filterCount, columnOptions, visible }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "164dc167",
+          "purpose": "update:search, update:visible, reset"
+        }
+      ]
+    },
+    "shared/components/TenantSwitcher.vue": {
+      "kind": "vue",
+      "hash": "1ed74a2789b8",
+      "purpose": "Селект текущего тенанта в шапке: hard-reload при переключении (затрагивается слишком много стейта для in-memory swap)",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Виден только если у пользователя несколько membership-ов; меняет tenantStore.currentTenantId через reload"
+        }
+      ]
+    },
+    "shared/components/layout/AppNav.vue": {
+      "kind": "vue",
+      "hash": "5425aae37d5c",
+      "purpose": "Главная навигация админки: рендер списка nav-items по гейтам (useGate) с counter/blink для уведомлений",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1941fee3",
+          "purpose": "{ collapsed?: boolean }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "246eb91c",
+          "purpose": "navigate — закрытие mobile sidebar при переходе"
+        },
+        {
+          "name": "expose",
+          "kind": "component-expose",
+          "hash": "d759f99f",
+          "purpose": "Внутренние навигационные айтемы (для тестов/туров)"
+        }
+      ]
+    },
+    "shared/components/layout/BranchSelector.vue": {
+      "kind": "vue",
+      "hash": "07f24077f6dc",
+      "purpose": "Селект текущего филиала в шапке: фильтрует список по правам member-а (canSeeAll) и меняет branchStore.currentBranchId",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Скрывается, если филиал один; меняет branchStore.currentBranchId"
+        }
+      ]
+    },
+    "shared/components/layout/PastDueBanner.vue": {
+      "kind": "vue",
+      "hash": "7f6a0c2f462d",
+      "purpose": "Баннер предупреждения о просрочке оплаты подписки: считает оставшиеся дни до приостановки и кнопка 'Оплатить' → /account/billing",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Считает оставшиеся дни графика по pastDueAt+gracePeriodDays"
         }
       ]
     },
