@@ -109,7 +109,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     if (!maybeTenant.value?.modules?.services) return
 
     try {
-      const { useAppointmentSettingsStore } = await import('~/features/appointments/stores/appointmentSettings')
+      const { useAppointmentSettingsStore } = await import('~/features/appointments')
 
       await useAppointmentSettingsStore().load()
     } catch (e) {

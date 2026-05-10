@@ -3,7 +3,7 @@ import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 import {
   checkAppointmentsAgainstSchedule, type ScheduleConflict,
-} from '~/features/appointments/utils/scheduleConflictCheck'
+} from '../utils/scheduleConflictCheck'
 
 const HORIZON_DAYS = 180
 

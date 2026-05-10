@@ -121,12 +121,12 @@ import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTeam } from '~/composables/data/useTeam'
-import { useScheduleConflictCheck } from '~/features/appointments/composables/useScheduleConflictCheck'
+import { useScheduleConflictCheck } from '../composables/useScheduleConflictCheck'
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,
-} from '~/features/appointments/utils/scheduleConflictCheck'
+} from '../utils/scheduleConflictCheck'
 import { reportError } from '~/utils/reportError'
-import OffPeriodsSection from '~/features/appointments/components/OffPeriodsSection.vue'
+import OffPeriodsSection from './OffPeriodsSection.vue'
 
 const props = defineProps<{
   modelValue: boolean

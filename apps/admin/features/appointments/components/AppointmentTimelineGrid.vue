@@ -134,10 +134,10 @@ import { computed, ref, toRef } from 'vue'
 import { UiText } from '@fastio/ui'
 import type { Appointment, Resource } from '@fastio/shared'
 import { DEFAULT_CATEGORY_COLOR_HEX } from '@fastio/shared'
-import type { TimelineAvailability } from '~/features/appointments/utils/timelineAvailability'
-import { useTimelineLayout } from '~/features/appointments/composables/timeline/useTimelineLayout'
-import { useTimelineDrag } from '~/features/appointments/composables/timeline/useTimelineDrag'
-import { useScrollToNow } from '~/features/appointments/composables/timeline/useScrollToNow'
+import type { TimelineAvailability } from '../utils/timelineAvailability'
+import { useTimelineLayout } from '../composables/timeline/useTimelineLayout'
+import { useTimelineDrag } from '../composables/timeline/useTimelineDrag'
+import { useScrollToNow } from '../composables/timeline/useScrollToNow'
 
 type Props = {
   resources: Resource[]

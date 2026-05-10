@@ -1,7 +1,7 @@
 import { computed, type Ref } from 'vue'
 import type { Appointment, Resource } from '@fastio/shared'
 import { timeToMinutes, minutesToTimeStr } from '@fastio/shared'
-import type { TimelineAvailability } from '~/features/appointments/utils/timelineAvailability'
+import type { TimelineAvailability } from '../../utils/timelineAvailability'
 
 type SlotEntry = { minutes: number; top: number; time: string }
 type DimRange = { top: number; height: number; kind: 'off-hours' | 'disabled' | 'absence'; label?: string; notes?: string | null }

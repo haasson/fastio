@@ -2,7 +2,7 @@ import type {
   Appointment, AppointmentStatus, Visit, VisitStatus,
 } from '@fastio/shared'
 import { utcIsoToLocalDateTime } from '@fastio/shared'
-import type { EditorService, EditorState } from '~/features/appointments/components/types'
+import type { EditorService, EditorState } from '../../components/types'
 
 /** Уникальный ключ для reactive list (трекинг строк услуг при ре-сортировке/удалении). */
 export const newKey = (): string => `svc-${crypto.randomUUID()}`

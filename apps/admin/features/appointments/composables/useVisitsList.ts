@@ -11,7 +11,7 @@ import type {
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useMessage } from '@fastio/ui'
 import { reportError } from '~/utils/reportError'
-import type { VisitFilter } from '~/features/appointments/api/visits'
+import type { VisitFilter } from '../api/visits'
 
 export type { VisitListRow, InboxRow, InboxFilter, VisitAggregateStatus }
 

@@ -59,7 +59,7 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reportError } from '~/utils/reportError'
-import ServiceCard from '~/features/appointments/components/ServiceCard.vue'
+import ServiceCard from './ServiceCard.vue'
 
 const props = defineProps<{
   visit: Visit

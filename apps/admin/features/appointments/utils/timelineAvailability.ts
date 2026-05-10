@@ -1,6 +1,6 @@
 import type { Resource, ResourceSlotData, WorkingHoursSchedule } from '@fastio/shared'
 import { resolveResourceWorkingHours, RESOURCE_UNAVAILABILITY_REASON_LABELS } from '@fastio/shared'
-import type { AvailabilityBundle } from '~/features/appointments/api/resources'
+import type { AvailabilityBundle } from '../api/resources'
 
 export type AbsenceInfo = {
   label: string

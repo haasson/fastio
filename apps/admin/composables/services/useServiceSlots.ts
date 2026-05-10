@@ -6,9 +6,7 @@ import type {
   Resource, ServiceWithBranchIds, GroupSlotsResult,
 } from '@fastio/shared'
 import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
-import { useGroupSlotSearch } from '~/features/appointments/composables/useGroupSlotSearch'
-import { useAppointmentSettingsStore } from '~/features/appointments/stores/appointmentSettings'
-import { appointmentBus } from '~/features/appointments/composables/useAppointmentsChannel'
+import { useGroupSlotSearch, useAppointmentSettingsStore, appointmentBus } from '~/features/appointments'
 import { reportError } from '~/utils/reportError'
 
 /**

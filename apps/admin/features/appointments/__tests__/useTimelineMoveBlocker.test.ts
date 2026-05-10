@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ref } from 'vue'
 import type { Appointment, AppointmentSettings, Resource } from '@fastio/shared'
-import type { TimelineAvailability } from '~/features/appointments/utils/timelineAvailability'
+import type { TimelineAvailability } from '../utils/timelineAvailability'
 import { useTimelineMoveBlocker } from '../composables/useTimelineMoveBlocker'
 
 const TZ = 'Europe/Moscow'

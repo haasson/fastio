@@ -106,13 +106,12 @@ import { UiButton, UiSkeleton, UiEmpty, UiCard, UiTitle, UiText, UiTag, useMessa
 import type { Appointment, AppointmentEvent, Visit } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
-import { useAppointmentViewScope } from '~/features/appointments/composables/useAppointmentViewScope'
+import { useAppointmentViewScope, useVisitAggregate } from '~/features/appointments'
 import { useAuthStore } from '~/stores/auth'
 import { reportError } from '~/utils/reportError'
 import VisitContent from '~/features/appointments/components/VisitContent.vue'
 import CancelGroupModal from '~/features/appointments/components/CancelGroupModal.vue'
 import SplitVisitModal from '~/features/appointments/components/SplitVisitModal.vue'
-import { useVisitAggregate } from '~/features/appointments/composables/useVisitAggregate'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const route = useRoute()

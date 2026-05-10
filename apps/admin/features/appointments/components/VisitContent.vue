@@ -123,11 +123,11 @@ import {
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useAppointmentEditorState } from '~/features/appointments/composables/useAppointmentEditorState'
-import VisitServicesSection from '~/features/appointments/components/VisitServicesSection.vue'
-import AppointmentServiceSlotsSection from '~/features/appointments/components/AppointmentServiceSlotsSection.vue'
-import AppointmentCustomerSection from '~/features/appointments/components/AppointmentCustomerSection.vue'
-import AppointmentEventTimeline from '~/features/appointments/components/AppointmentEventTimeline.vue'
+import { useAppointmentEditorState } from '../composables/useAppointmentEditorState'
+import VisitServicesSection from './VisitServicesSection.vue'
+import AppointmentServiceSlotsSection from './AppointmentServiceSlotsSection.vue'
+import AppointmentCustomerSection from './AppointmentCustomerSection.vue'
+import AppointmentEventTimeline from './AppointmentEventTimeline.vue'
 
 export type EditorPreset = {
   date: string | null

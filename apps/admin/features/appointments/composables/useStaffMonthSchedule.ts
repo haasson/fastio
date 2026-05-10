@@ -10,7 +10,7 @@ import {
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useAppointmentSettingsStore } from '~/features/appointments/stores/appointmentSettings'
+import { useAppointmentSettingsStore } from '../stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 export type StaffMonthAppointment = {

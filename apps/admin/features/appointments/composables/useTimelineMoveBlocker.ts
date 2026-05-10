@@ -1,7 +1,7 @@
 import { computed, type Ref } from 'vue'
 import type { Appointment, AppointmentSettings, Resource } from '@fastio/shared'
 import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
-import type { TimelineAvailability } from '~/features/appointments/utils/timelineAvailability'
+import type { TimelineAvailability } from '../utils/timelineAvailability'
 
 type MovePayload = {
   appt: Appointment

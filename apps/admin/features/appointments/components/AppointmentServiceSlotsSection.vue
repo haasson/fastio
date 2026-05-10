@@ -52,9 +52,9 @@
 import { computed, ref } from 'vue'
 import { UiCard, UiTitle, UiText, UiSelect, UiAlert } from '@fastio/ui'
 import type { GroupSlotEntry, GroupSlotsResult } from '@fastio/shared'
-import type { EditorService } from '~/features/appointments/components/types'
-import SlotSwapResourceModal from '~/features/appointments/components/SlotSwapResourceModal.vue'
-import SlotChipGrid from '~/features/appointments/components/SlotChipGrid.vue'
+import type { EditorService } from './types'
+import SlotSwapResourceModal from './SlotSwapResourceModal.vue'
+import SlotChipGrid from './SlotChipGrid.vue'
 
 const ANY_RESOURCE = ''
 
