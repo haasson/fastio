@@ -6,47 +6,36 @@ import eslintConfig from '@fastio/shared/configs/eslint'
 // ──────────────────────────────────────────────────────────────────────────────
 
 const SERVICES_GLOBS = [
-  // Legacy paths (постепенно опустеют по мере миграции; некоторые ещё содержат
-  // services-catalog файлы или layout-страницы Nuxt).
-  'composables/services/**',
-  'utils/api/services/**',
-  'components/services/**',
-  'pages/services/**',
-  'pages/appointments/**',
-  // Top-level layout-страницы (Nuxt nested routing) — относятся к вертикали
+  // Pages (Nuxt nested routing — top-level и nested относятся к вертикали)
   'pages/services.vue',
   'pages/appointments.vue',
+  'pages/services/**',
+  'pages/appointments/**',
   // Modular paths
   'features/appointments/**',
   'features/services-catalog/**',
 ]
 
 const RETAIL_GLOBS = [
+  // Vertical-shared (только composables/retail/useDashboardStats.ts)
   'composables/retail/**',
-  'utils/api/retail/**',
-  'utils/retail/**',
+  // Vertical config
   'config/retail/**',
-  'stores/retail/**',
-  'components/menu/**',
-  'components/orders/**',
-  'components/kitchen/**',
-  'components/tables/**',
-  'components/reservations/**',
-  'components/promotions/**',
+  // Vertical-specific dashboard components
   'components/retail/**',
-  'pages/menu/**',
-  'pages/orders/**',
-  'pages/kitchen/**',
-  'pages/tables/**',
-  'pages/reservations/**',
-  'pages/promotions/**',
-  // Top-level layout-страницы (Nuxt nested routing) — относятся к вертикали
+  // Pages (Nuxt nested routing)
   'pages/menu.vue',
   'pages/orders.vue',
   'pages/kitchen.vue',
   'pages/tables.vue',
   'pages/reservations.vue',
   'pages/promotions.vue',
+  'pages/menu/**',
+  'pages/orders/**',
+  'pages/kitchen/**',
+  'pages/tables/**',
+  'pages/reservations/**',
+  'pages/promotions/**',
   // Modular paths
   'features/kitchen/**',
   'features/reservations/**',
@@ -78,19 +67,12 @@ const AGGREGATOR_FILES = [
 ]
 
 // Алиасные паттерны для импортов через `~/`.
+// Barrel-форма (`~/features/X`) нужна, чтобы no-restricted-imports
+// срабатывал и на cross-vertical импорт через canonical barrel.
 const ALIAS_VERTICAL_PATTERNS = {
   retail: [
     '~/composables/retail/**',
-    '~/utils/api/retail/**',
-    '~/utils/retail/**',
     '~/config/retail/**',
-    '~/stores/retail/**',
-    '~/components/menu/**',
-    '~/components/orders/**',
-    '~/components/kitchen/**',
-    '~/components/tables/**',
-    '~/components/reservations/**',
-    '~/components/promotions/**',
     '~/components/retail/**',
     '~/pages/menu/**',
     '~/pages/orders/**',
@@ -98,9 +80,6 @@ const ALIAS_VERTICAL_PATTERNS = {
     '~/pages/tables/**',
     '~/pages/reservations/**',
     '~/pages/promotions/**',
-    // Modular alias paths — и barrel (~/features/X), и deep (~/features/X/...).
-    // Barrel-форма нужна, чтобы no-restricted-imports срабатывал и на cross-vertical
-    // импорт через canonical barrel.
     '~/features/kitchen',
     '~/features/kitchen/**',
     '~/features/reservations',
@@ -115,13 +94,8 @@ const ALIAS_VERTICAL_PATTERNS = {
     '~/features/menu/**',
   ],
   services: [
-    // Legacy alias paths
-    '~/composables/services/**',
-    '~/utils/api/services/**',
-    '~/components/services/**',
     '~/pages/services/**',
     '~/pages/appointments/**',
-    // Modular alias paths
     '~/features/appointments',
     '~/features/appointments/**',
     '~/features/services-catalog',
@@ -203,7 +177,6 @@ export default [
       'shared/plan/**',
       'shared/ui/composables/**',
       'utils/api/*.ts',
-      'utils/api/__tests__/**',
       'shared/utils/*.ts',
       'shared/utils/__tests__/**',
       'shared/stores/*.ts',
@@ -213,16 +186,6 @@ export default [
       'shared/components/layout/**',
       'shared/ui/components/**',
       'config/*.ts',
-      'components/ai/**',
-      'components/appearance/**',
-      'components/billing/**',
-      'components/catalog/**',
-      'components/dashboard/**',
-      'components/gallery/**',
-      'components/legal/**',
-      'components/onboarding/**',
-      'components/settings/**',
-      'components/support/**',
       // shared layout-страницы (top-level)
       'pages/account.vue',
       'pages/appearance.vue',

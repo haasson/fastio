@@ -1,5 +1,5 @@
-import { RETAIL_ROUTE_SUBS, RETAIL_ROUTE_ROOTS } from '~/composables/retail/useGate.routes'
-import { SERVICES_ROUTE_SUBS, SERVICES_ROUTE_ROOTS } from '~/composables/services/useGate.routes'
+import { RETAIL_ROUTE_SUBS, RETAIL_ROUTE_ROOTS } from '~/shared/plan/useGate.retail.routes'
+import { SERVICES_ROUTE_SUBS, SERVICES_ROUTE_ROOTS } from '~/shared/plan/useGate.services.routes'
 import type { GateKey } from './useGate.types'
 
 /**

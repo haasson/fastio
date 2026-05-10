@@ -1,4 +1,4 @@
-import type { ServicesGateKey } from './useGate'
+import type { ServicesGateKey } from './useGate.services'
 
 /**
  * Карта роут → services-гейт. Используется как часть общего реестра

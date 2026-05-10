@@ -21,7 +21,7 @@ const eslint = new ESLint({
 const cases = [
   {
     name: 'services не может импортировать retail',
-    file: 'composables/services/__synthetic__.ts',
+    file: 'features/appointments/__synthetic__.ts',
     code: 'import { x } from \'~/features/menu\'\nexport const y = x\n',
     expectMessage: /Services не может импортировать retail/,
   },
@@ -75,7 +75,7 @@ describe('vertical isolation eslint barrier', () => {
 
   it('agregator (useDatabase) может импортировать обе вертикали', async () => {
     const code = 'import { x } from \'~/features/services-catalog\'\nimport { y } from \'~/features/menu\'\nexport const z = [x, y]\n'
-    const [result] = await eslint.lintText(code, { filePath: path.join(ADMIN_ROOT, 'composables/data/useDatabase.ts') })
+    const [result] = await eslint.lintText(code, { filePath: path.join(ADMIN_ROOT, 'shared/data/useDatabase.ts') })
     const restricted = result.messages.filter((m) => m.ruleId === 'no-restricted-imports')
 
     expect(restricted).toEqual([])

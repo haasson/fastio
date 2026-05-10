@@ -1,4 +1,4 @@
-import type { RetailGateKey } from './useGate'
+import type { RetailGateKey } from './useGate.retail'
 
 /**
  * Карта роут → retail-гейт. Используется как часть общего реестра

@@ -7,7 +7,7 @@ import type {
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useAppointmentSettingsStore } from '../stores/appointmentSettings'
-import { useGateServices } from '~/composables/services/useGate'
+import { useGateServices } from '~/shared/plan/useGate.services'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useEditorCompetencies } from './useEditorCompetencies'
 import { useAppointmentViewScope } from './useAppointmentViewScope'

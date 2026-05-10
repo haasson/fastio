@@ -82,7 +82,7 @@ import { storeToRefs } from 'pinia'
 import { UiSegmentedControl, UiSelect } from '@fastio/ui'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
-import { useGateRetail } from '~/composables/retail/useGate'
+import { useGateRetail } from '~/shared/plan/useGate.retail'
 import { useDashboardStats, type DashboardPeriod } from '~/composables/retail/useDashboardStats'
 
 import DashboardSubscriptionBanner from '~/components/retail/dashboard/DashboardSubscriptionBanner.vue'

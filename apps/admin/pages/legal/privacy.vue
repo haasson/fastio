@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { definePageMeta, useHead } from '#imports'
-import LegalDocPage from '~/components/legal/LegalDocPage.vue'
+import { LegalDocPage } from '~/features/legal'
 import { FASTIO_LEGAL } from '~/features/legal'
 
 definePageMeta({ layout: false })

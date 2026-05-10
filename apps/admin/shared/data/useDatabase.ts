@@ -33,14 +33,16 @@ import { tagsApi } from '~/features/catalog'
 import { rolesApi } from '~/features/team'
 import { supportApi } from '~/features/support'
 import { auditLogsApi } from '~/features/audit-log'
-import { appointmentsApi } from '~/features/appointments/api/appointments'
-import { visitsApi } from '~/features/appointments/api/visits'
-import { appointmentSettingsApi } from '~/features/appointments/api/appointment-settings'
-import { appointmentEventsApi } from '~/features/appointments/api/appointment-events'
+import {
+  appointmentsApi,
+  visitsApi,
+  appointmentSettingsApi,
+  appointmentEventsApi,
+  resourcesApi,
+  resourceUnavailabilityApi,
+  scheduleTemplatesApi,
+} from '~/features/appointments'
 import { servicesApi } from '~/features/services-catalog'
-import { resourcesApi } from '~/features/appointments/api/resources'
-import { resourceUnavailabilityApi } from '~/features/appointments/api/resource-unavailability'
-import { scheduleTemplatesApi } from '~/features/appointments/api/schedule-templates'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiModule = Record<string, (sb: SupabaseClient, ...args: any[]) => any>
