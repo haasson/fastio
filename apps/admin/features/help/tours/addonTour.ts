@@ -1,6 +1,6 @@
-import type { TourStep } from '~/composables/useTour'
-import { waitForElement } from '~/composables/useTour'
-import { intro, highlight, formField, saveButton, navigateToMenuStep, clickMenuTabStep } from '~/tours/helpers'
+import type { TourStep } from '../composables/useTour'
+import { waitForElement } from '../composables/useTour'
+import { intro, highlight, formField, saveButton, navigateToMenuStep, clickMenuTabStep } from './helpers'
 
 export const getAddonTourSteps = (): TourStep[] => [
   intro({

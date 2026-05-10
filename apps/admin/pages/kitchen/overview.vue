@@ -29,7 +29,7 @@ import type { StatCardItem } from '~/features/kitchen/components/KitchenStatCard
 import type { DataTableColumns } from '@fastio/ui'
 import { type KitchenQueueItem, getKitchenUrgencyLevel, formatKitchenElapsed } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import { DELIVERY_TYPE_LABELS } from '~/config/retail/order-options'
 import { mergeRealtimeItem } from '~/features/kitchen'

@@ -123,7 +123,7 @@ import {
   utcIsoToLocalDateTime, localDateTimeToUtcIso,
   RESOURCE_UNAVAILABILITY_REASON_LABELS, RESOURCE_UNAVAILABILITY_REASON_OPTIONS,
 } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { reportError } from '~/utils/reportError'
 

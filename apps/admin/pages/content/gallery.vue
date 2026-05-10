@@ -91,14 +91,14 @@ import { storeToRefs } from 'pinia'
 import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiTag, UiText } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Gallery, GalleryFormData } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useGalleries } from '~/composables/data/useGalleries'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useGalleries } from '~/features/content'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
-import GalleryFormModal from '~/components/gallery/GalleryFormModal.vue'
-import GalleryPhotosModal from '~/components/gallery/GalleryPhotosModal.vue'
+import GalleryFormModal from '~/features/content/components/gallery/GalleryFormModal.vue'
+import GalleryPhotosModal from '~/features/content/components/gallery/GalleryPhotosModal.vue'
 
 const tenantStore = useTenantStore()
 const { tenantId } = storeToRefs(tenantStore)

@@ -68,8 +68,8 @@ const moduleConfigs = ref<ModuleConfig[]>([
   { key: 'customRoles', name: 'Кастомные роли', description: '', icon: 'users', requiredPlan: 'pro', sortOrder: 15, businessTypes: ['retail', 'services'], menuStyles: null },
 ])
 
-vi.mock('~/stores/tenant', () => ({ useTenantStore: () => tenantStore }))
-vi.mock('~/stores/branch', () => ({ useBranchStore: () => branchStore }))
+vi.mock('~/shared/stores/tenant', () => ({ useTenantStore: () => tenantStore }))
+vi.mock('~/shared/stores/branch', () => ({ useBranchStore: () => branchStore }))
 vi.mock('../plan/useResolvedFeatures', () => ({ useResolvedFeatures: () => ({ resolved }) }))
 vi.mock('../plan/useModules', () => ({
   useModules: () => new Proxy({}, {

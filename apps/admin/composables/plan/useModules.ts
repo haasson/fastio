@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, type Ref } from 'vue'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useResolvedFeatures } from './useResolvedFeatures'
 import { useDatabase } from '~/composables/data/useDatabase'
 import type { ModuleKey, ModuleConfig } from '~/config/modules'

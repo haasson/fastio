@@ -52,7 +52,7 @@ import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import { useTagDisplay } from '~/composables/ui/useTagDisplay'
+import { useTagDisplay } from '~/features/catalog'
 
 export type CategoryListItem = {
   id: string

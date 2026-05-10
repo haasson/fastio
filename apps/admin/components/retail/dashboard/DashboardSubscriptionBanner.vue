@@ -18,7 +18,7 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { pluralize } from '@fastio/shared'
 import { UiButton, UiIcon } from '@fastio/ui'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const { tenant } = storeToRefs(useTenantStore())
 

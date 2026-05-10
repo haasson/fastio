@@ -11,7 +11,7 @@ const currentTenantId = ref<string | null>(null)
 const currentPermissions = ref<RolePermissions | null>(null)
 const isOwner = ref(false)
 
-vi.mock('~/stores/tenant', () => ({
+vi.mock('~/shared/stores/tenant', () => ({
   useTenantStore: () => ({
     memberships,
     currentTenantId,

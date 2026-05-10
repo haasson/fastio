@@ -78,7 +78,7 @@ import type { OrderItem } from '@fastio/shared'
 import DishPickerModal, { type DishPickerResult } from '~/features/menu/components/DishPickerModal.vue'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 import useDrawer from '~/composables/ui/useDrawer'
-import { useTerms } from '~/composables/useTerms'
+import { useTerms } from '~/features/legal'
 
 const props = defineProps<{
   items: OrderItem[]

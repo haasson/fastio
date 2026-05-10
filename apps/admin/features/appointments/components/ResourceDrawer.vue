@@ -117,10 +117,10 @@ import type { UiTreeNode } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
 import type { Resource, Service, Category, ScheduleTemplate, ResourceType } from '@fastio/shared'
 import { pluralize, utcIsoToLocalDateTime, addDaysToDateStr, todayInTz } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTeam } from '~/composables/data/useTeam'
+import { useTeam } from '~/features/team'
 import { useScheduleConflictCheck } from '../composables/useScheduleConflictCheck'
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,

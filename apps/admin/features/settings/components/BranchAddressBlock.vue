@@ -23,7 +23,7 @@ import { ref, toRef } from 'vue'
 import { UiCard, UiForm, UiSectionHeader } from '@fastio/ui'
 import type { Branch, BranchAddressData } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
-import { useBranchStore } from '~/stores/branch'
+import { useBranchStore } from '~/shared/stores/branch'
 import AddressWithMap from '~/components/ui/AddressWithMap.vue'
 import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
 

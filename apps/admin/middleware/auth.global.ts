@@ -1,7 +1,7 @@
 import { defineNuxtRouteMiddleware, navigateTo } from '#imports'
 import { watch } from 'vue'
-import { useAuthStore } from '~/stores/auth'
-import { useTenantStore } from '~/stores/tenant'
+import { useAuthStore } from '~/shared/stores/auth'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { INVITE_PENDING_KEY } from '~/utils/constants'
 
 export default defineNuxtRouteMiddleware(async (to) => {

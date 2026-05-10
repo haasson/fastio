@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { definePageMeta, useHead } from '#imports'
 import LegalDocPage from '~/components/legal/LegalDocPage.vue'
-import { FASTIO_LEGAL } from '~/utils/fastio-legal'
+import { FASTIO_LEGAL } from '~/features/legal'
 
 definePageMeta({ layout: false })
 useHead({ title: 'Политика конфиденциальности — FastIO' })

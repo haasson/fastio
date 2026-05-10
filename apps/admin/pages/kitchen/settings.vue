@@ -71,7 +71,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiCard, UiForm, UiSelect, UiInputNumber } from '@fastio/ui'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useOrderStatusesStore } from '~/features/orders'
 import { useGate } from '~/composables/plan/useGate'
 import { useEditableForm } from '~/composables/ui/useEditableForm'

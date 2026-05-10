@@ -1,5 +1,5 @@
 import { useDadataSuggestions as useSharedDadataSuggestions } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 export type { DadataSuggestion } from '@fastio/shared'
 

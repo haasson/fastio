@@ -1,6 +1,6 @@
-import type { TourStep } from '~/composables/useTour'
-import { intro, highlight, formField, saveButton, clickAndWait, navigateToMenuStep, clickMenuTabStep } from '~/tours/helpers'
-import { useTerms } from '~/composables/useTerms'
+import type { TourStep } from '../composables/useTour'
+import { intro, highlight, formField, saveButton, clickAndWait, navigateToMenuStep, clickMenuTabStep } from './helpers'
+import { useTerms } from '~/features/legal'
 
 export const getCategoryTourSteps = (): TourStep[] => {
   const { item, menu, categoryExamples } = useTerms()

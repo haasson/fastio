@@ -25,8 +25,8 @@ import { storeToRefs } from 'pinia'
 import { navigateTo } from '#imports'
 import { UiText, UiButton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
-import { useAuthStore } from '~/stores/auth'
-import { useTenantStore } from '~/stores/tenant'
+import { useAuthStore } from '~/shared/stores/auth'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 const authStore = useAuthStore()

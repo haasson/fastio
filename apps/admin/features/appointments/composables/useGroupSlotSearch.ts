@@ -8,8 +8,8 @@ import {
   DEFAULT_WORKING_DAY_MINUTES, sliceTime,
 } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 
 export type GroupSlotSearchInput = {
   date: string // "YYYY-MM-DD"

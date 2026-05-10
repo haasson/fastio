@@ -71,7 +71,7 @@ import { UiTitle, UiText, UiIcon, UiButton, UiCard, UiSectionHeader, UiBadge, Ui
 import { useConfirm } from '@fastio/kit'
 import { usePlans } from '~/composables/plan/usePlans'
 import { getPlanFeatureLabels, getPrevPlanName, getChangePlanConfirmText } from '~/utils/planFeatureLabels'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 type PlanCard = {
   key: string

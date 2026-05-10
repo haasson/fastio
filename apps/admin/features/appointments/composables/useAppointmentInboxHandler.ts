@@ -4,7 +4,7 @@ import type { Visit } from '@fastio/shared'
 import { visitsBus } from './useVisitsChannel'
 import { useAppointmentInboxCounter } from './useAppointmentInboxCounter'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useBranchStore } from '~/stores/branch'
+import { useBranchStore } from '~/shared/stores/branch'
 import { reportError } from '~/utils/reportError'
 
 // Счётчик «Новых» в инбоксе. После 230 заявка — это визит со status='request',

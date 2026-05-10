@@ -1,8 +1,8 @@
 import { ref, type Ref } from 'vue'
 import type { OrderNote } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useAuthStore } from '~/stores/auth'
-import { useTenantStore } from '~/stores/tenant'
+import { useAuthStore } from '~/shared/stores/auth'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 export const useOrderNotes = (orderId: Ref<string>, tenantId: Ref<string>) => {
   const api = useDatabase()

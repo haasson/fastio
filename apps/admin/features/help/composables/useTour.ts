@@ -29,7 +29,7 @@ export const waitForElement = (selector: string, timeout = 5000): Promise<HTMLEl
 const isActive = ref(false)
 let driverObj: { drive: () => void; destroy: () => void; moveNext: () => void } | null = null
 
-const useTour = () => {
+export const useTour = () => {
   const start = async (steps: TourStep[], config: Partial<Config> = {}) => {
     const { driver } = await import('driver.js')
 
@@ -70,5 +70,3 @@ const useTour = () => {
 
   return { start, stop, isActive }
 }
-
-export default useTour

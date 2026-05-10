@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 export const usePlanFeatures = () => {
   const tenantStore = useTenantStore()

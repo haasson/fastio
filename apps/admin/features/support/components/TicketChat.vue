@@ -44,11 +44,11 @@ import { UiButton, UiText, UiTag, useMessage } from '@fastio/ui'
 import type { SupportTicket, SupportMessage } from '@fastio/shared'
 import { supportStatusMap as statusMap } from '~/utils/supportStatus'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
-import { supportEvents } from '~/composables/data/useSupportChannel'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { supportEvents } from '../composables/useSupportChannel'
 import { reportError } from '~/utils/reportError'
-import MessageBubble from '~/components/support/MessageBubble.vue'
-import ChatInput from '~/components/support/ChatInput.vue'
+import MessageBubble from './MessageBubble.vue'
+import ChatInput from './ChatInput.vue'
 
 const props = defineProps<{
   ticketId: string

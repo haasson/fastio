@@ -29,7 +29,7 @@ import type { BillingTransaction, BillingTransactionType } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import { UiTag, UiSectionHeader } from '@fastio/ui'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()

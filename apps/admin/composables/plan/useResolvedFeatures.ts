@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { usePlanFeatures } from './usePlanFeatures'
 import { usePlans } from './usePlans'
 import type { ResolvedFeatures } from '@fastio/shared'

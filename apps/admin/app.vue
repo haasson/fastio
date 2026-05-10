@@ -13,7 +13,7 @@ import { useDark } from '@vueuse/core'
 import { navigateTo, useHead } from '#imports'
 import { UiConfigProvider, UiConfirmModal } from '@fastio/ui'
 import { INVITE_PENDING_KEY } from '~/utils/constants'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const tenantStore = useTenantStore()
 

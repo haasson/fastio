@@ -6,8 +6,8 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { useGate } from '~/composables/plan/useGate'
-import { useTenantStore } from '~/stores/tenant'
-import { useTerms } from '~/composables/useTerms'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useTerms } from '~/features/legal'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 

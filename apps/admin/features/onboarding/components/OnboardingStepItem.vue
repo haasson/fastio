@@ -54,7 +54,7 @@ import { computed } from 'vue'
 import { UiCard, UiIcon, UiText } from '@fastio/ui'
 import OnboardingStepStatusIcon from './OnboardingStepStatusIcon.vue'
 import OnboardingStepActions from './OnboardingStepActions.vue'
-import type { OnboardingStepView } from '~/composables/useOnboarding'
+import type { OnboardingStepView } from '../composables/useOnboarding'
 
 const props = defineProps<{ step: OnboardingStepView }>()
 const emit = defineEmits<{

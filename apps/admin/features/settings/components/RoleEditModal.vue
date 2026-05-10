@@ -50,7 +50,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import { UiModal, UiInput, UiCheckbox, UiText, useMessage } from '@fastio/ui'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { permissionGroups, type PermissionGroup } from '~/config/team-roles'
 
 const props = defineProps<{

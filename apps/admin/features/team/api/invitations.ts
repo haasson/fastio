@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TenantInvitation } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { TenantInvitationListRow } from './db-types'
+import type { TenantInvitationListRow } from '~/utils/api/db-types'
 
 const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
   const row = raw as TenantInvitationListRow

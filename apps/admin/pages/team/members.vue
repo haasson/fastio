@@ -94,12 +94,12 @@ import {
   UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, UiCheckbox, useConfirm, useMessage, UiSectionHeader,
 } from '@fastio/ui'
 import type { TenantMember, TenantInvitation } from '@fastio/shared'
-import TeamMemberEditModal from '~/components/settings/TeamMemberEditModal.vue'
-import { useTeam } from '~/composables/data/useTeam'
+import TeamMemberEditModal from '~/features/settings/components/TeamMemberEditModal.vue'
+import { useTeam } from '~/features/team'
 import { useGate } from '~/composables/plan/useGate'
 import { toEnabled } from '~/composables/plan/useGate.helpers'
-import { useBranchStore } from '~/stores/branch'
-import { useTenantStore } from '~/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { buildMemberColumns, buildInviteColumns } from '~/columns/team'
 
 const { members, invitations, loading: teamLoading, load, invite, removeMember, blockMember, unblockMember, cancelInvite, resendInvite } = useTeam()

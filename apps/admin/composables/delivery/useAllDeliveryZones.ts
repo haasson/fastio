@@ -4,7 +4,7 @@ import type { DeliveryZone, DeliveryZoneFormData } from '@fastio/shared'
 import { mapDeliveryZone } from '~/features/orders'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 export const useAllDeliveryZones = () => {
   const api = useDatabase()

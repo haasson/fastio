@@ -42,7 +42,7 @@ import { useRoute, useRouter } from '#imports'
 import { UiButton, UiSkeleton, UiEmpty } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import OrderContent from '~/features/orders/components/OrderContent.vue'
 
 const route = useRoute()

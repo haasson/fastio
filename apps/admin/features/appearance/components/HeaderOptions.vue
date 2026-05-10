@@ -73,7 +73,7 @@ import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import { featureLabel, SITE_FEATURES, STRUCTURAL_SECTIONS } from '@fastio/shared'
 import type { SiteFeatureKey } from '@fastio/shared'
 import type { NavItem, SectionKey, NavPageKey } from '@fastio/shared'
-import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
+import { AppearanceFormKey } from '../composables/useAppearanceForm'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm

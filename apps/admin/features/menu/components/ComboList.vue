@@ -95,11 +95,11 @@ import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
-import MenuItemCard from '~/components/catalog/ItemCard.vue'
+import MenuItemCard from '~/features/catalog/components/ItemCard.vue'
 import MenuComboFormDrawer from './ComboFormDrawer.vue'
 import { useCombos } from '../composables/useCombos'
 import { useItemManager } from '~/composables/ui/useItemManager'
-import { useTagDisplay } from '~/composables/ui/useTagDisplay'
+import { useTagDisplay } from '~/features/catalog'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 const props = defineProps<{

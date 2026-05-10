@@ -2,7 +2,7 @@ import { watch, type Ref } from 'vue'
 import type { SupportTicket } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
-import { useUnreadSupportCounter } from '~/composables/data/useUnreadSupportCounter'
+import { useUnreadSupportCounter } from './useUnreadSupportCounter'
 
 type Handler<T> = (payload: T) => void
 

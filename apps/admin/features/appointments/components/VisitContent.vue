@@ -121,8 +121,8 @@ import {
   formatPrice, formatMinutes,
   APPOINTMENT_SOURCE_LABELS,
 } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useAppointmentEditorState } from '../composables/useAppointmentEditorState'
 import VisitServicesSection from './VisitServicesSection.vue'
 import AppointmentServiceSlotsSection from './AppointmentServiceSlotsSection.vue'

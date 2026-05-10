@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T12:52:42.684Z",
+  "generated_at": "2026-05-10T13:13:59.761Z",
   "stats": {
     "files": 86,
     "pages": 0,
@@ -14,8 +14,8 @@
   "files": {
     "composables/delivery/useAllDeliveryZones.ts": {
       "kind": "ts",
-      "hash": "57e65f986a2a",
-      "purpose": "Realtime-список всех зон доставки тенанта (по всем филиалам) c CRUD и Supabase-подпиской",
+      "hash": "0330b734990b",
+      "purpose": "Realtime-список ВСЕХ зон доставки тенанта (по всем филиалам) с CRUD: zones/loading + add/update/remove",
       "symbols": [
         {
           "name": "useAllDeliveryZones",
@@ -27,8 +27,8 @@
     },
     "composables/delivery/useDadataSuggestions.ts": {
       "kind": "ts",
-      "hash": "5043d06dea75",
-      "purpose": "Обёртка над shared-композаблом подсказок DaData с проксированием через /api/dadata/suggest",
+      "hash": "37347cac1b25",
+      "purpose": "Обёртка над shared-DaData с tenantId-привязкой через серверный прокси админки",
       "symbols": [
         {
           "name": "useDadataSuggestions",
@@ -46,8 +46,8 @@
     },
     "composables/delivery/useOrderDelivery.ts": {
       "kind": "ts",
-      "hash": "38fc6f149be2",
-      "purpose": "Расчёт стоимости доставки заказа: попадание в зону, фикс/зональный режим, авто-смена филиала, минзаказ и порог free delivery",
+      "hash": "455ecce7efaa",
+      "purpose": "Расчёт доставки для формы заказа: подбор зоны по координатам, fee/min/free, mismatch филиала",
       "symbols": [
         {
           "name": "DeliveryInfo",
@@ -167,8 +167,8 @@
     },
     "composables/plan/useGate.shared.ts": {
       "kind": "ts",
-      "hash": "dc18e636d097",
-      "purpose": "Общая инфра гейтов для агрегатора useGate() и per-vertical useGateRetail()/useGateServices(): builders (moduleGate/planFeatureGate/permissionGate/configGate/flagGate) + state-хуки (suspended/owner/perms)",
+      "hash": "58b556a9120d",
+      "purpose": "Общая инфраструктура гейтов: builders moduleGate/planFeatureGate/permissionGate/configGate/flagGate + state suspended/owner/perms",
       "symbols": [
         {
           "name": "ok",
@@ -236,8 +236,8 @@
     },
     "composables/plan/useModules.ts": {
       "kind": "ts",
-      "hash": "821460757787",
-      "purpose": "Состояние модулей тенанта: active/locked/absent/enabled с учётом businessType, menuStyle и тарифа",
+      "hash": "f3cb5aad33b4",
+      "purpose": "Состояние модулей тенанта: active/locked/absent/enabled с учётом businessType, menuStyle, плана и тарифа (Proxy + лениво созданные computed)",
       "symbols": [
         {
           "name": "useModuleConfigs",
@@ -255,8 +255,8 @@
     },
     "composables/plan/usePlanFeatures.ts": {
       "kind": "ts",
-      "hash": "858214587947",
-      "purpose": "Текущий ключ тарифа тенанта (по умолчанию showcase)",
+      "hash": "23ca245b1777",
+      "purpose": "Текущий план тенанта (subscription.plan, fallback 'showcase')",
       "symbols": [
         {
           "name": "usePlanFeatures",
@@ -281,8 +281,8 @@
     },
     "composables/plan/useResolvedFeatures.ts": {
       "kind": "ts",
-      "hash": "f72850174793",
-      "purpose": "Сводка фич, доступных текущему тарифу: модули, меню, ресурсы, site-фичи (накопительно по eligible-планам)",
+      "hash": "396038ac3844",
+      "purpose": "Совокупный набор фич доступных тенанту (модули/menu/resources/site), агрегированный по всем планам ≤ текущему для businessType",
       "symbols": [
         {
           "name": "useResolvedFeatures",
@@ -396,8 +396,8 @@
     },
     "composables/ui/useStorefrontVisibility.ts": {
       "kind": "ts",
-      "hash": "e87e7cec59e7",
-      "purpose": "Проверка видимости фичи на витрине: включена ли страница, секция на главной, пункт навигации в шапке",
+      "hash": "76901dfedd1c",
+      "purpose": "Проверяет видимость SiteFeature на витрине (страница/секция/nav) и собирает список issues со ссылками на нужный экран настроек",
       "symbols": [
         {
           "name": "StorefrontIssue",
@@ -428,8 +428,8 @@
     },
     "composables/useItemVariant.ts": {
       "kind": "ts",
-      "hash": "7cdd736fe749",
-      "purpose": "Тип витрины (food/catalog/services) текущего тенанта для иконок-плейсхолдеров",
+      "hash": "604e67f2a10c",
+      "purpose": "Тип витрины (food/catalog/services) для текущего тенанта — для иконок-плейсхолдеров",
       "symbols": [
         {
           "name": "useItemVariant",
@@ -467,7 +467,7 @@
     },
     "composables/useStorefrontUrl.ts": {
       "kind": "ts",
-      "hash": "fe4f923e1b87",
+      "hash": "0a3d8ce22e28",
       "purpose": "Базовый URL витрины тенанта: customDomain или {slug}.fastio.ru",
       "symbols": [
         {
@@ -680,45 +680,6 @@
           "kind": "const",
           "hash": "ae845004",
           "purpose": "Словарь SupportTicketStatus -> { type, label }"
-        }
-      ]
-    },
-    "stores/auth.ts": {
-      "kind": "ts",
-      "hash": "01d1ea5cd361",
-      "purpose": "Pinia: текущий Supabase User + флаг loading на инициализацию (управляется supabase-плагином)",
-      "symbols": [
-        {
-          "name": "useAuthStore",
-          "kind": "const",
-          "hash": "5256a5be",
-          "purpose": "Стор с user/loading/isAuthenticated + setUser()"
-        }
-      ]
-    },
-    "stores/branch.ts": {
-      "kind": "ts",
-      "hash": "61cdef9514c5",
-      "purpose": "Глобальный стор текущего филиала: currentBranchId, branches, switchBranch; обёртка над useBranch composable для consumer-кода",
-      "symbols": [
-        {
-          "name": "useBranchStore",
-          "kind": "const",
-          "hash": "cb46f6e2",
-          "purpose": "Стор с branches/archivedBranches/currentBranchId/currentBranch + add/update/archive/restore/setBranch"
-        }
-      ]
-    },
-    "stores/tenant.ts": {
-      "kind": "ts",
-      "hash": "71c9006ae1bb",
-      "purpose": "Pinia: текущий тенант, memberships, права роли, переключение тенантов; инициализируется через init()",
-      "symbols": [
-        {
-          "name": "useTenantStore",
-          "kind": "const",
-          "hash": "3a1ef8e5",
-          "purpose": "Стор с tenant/maybeTenant/memberships/permissions/isOwner/roles + init/update/changePlan/switchTenant"
         }
       ]
     },
@@ -974,8 +935,8 @@
     },
     "middleware/auth.global.ts": {
       "kind": "ts",
-      "hash": "c4aa5a6326da",
-      "purpose": "Глобальный auth-guard навигации: ждёт инициализации auth/tenant, редиректит на /login, /set-password, /no-access, /suspended",
+      "hash": "dd4dea250f55",
+      "purpose": "Глобальная middleware: ждёт инициализацию auth, обрабатывает invite/recovery, грузит tenant, рулит /login и /suspended",
       "symbols": [
         {
           "name": "default",
@@ -987,8 +948,8 @@
     },
     "middleware/gate.global.ts": {
       "kind": "ts",
-      "hash": "e30e0eedcb9c",
-      "purpose": "Глобальный gate-guard: закрывает прямой URL-доступ к недоступным разделам, редиректит на ближайший доступный fallback",
+      "hash": "897a7c2a869f",
+      "purpose": "Глобальная middleware: закрывает прямой URL-доступ к недоступным секциям через resolveRouteGate + useGate, редиректит на первый доступный fallback",
       "symbols": [
         {
           "name": "default",
@@ -1013,8 +974,8 @@
     },
     "plugins/supabase.client.ts": {
       "kind": "ts",
-      "hash": "5f97931a0fc6",
-      "purpose": "Инициализирует Supabase-клиент: ловит invite/recovery hash, читает getSession, провайдит $supabase и слушает onAuthStateChange",
+      "hash": "34987a2eee97",
+      "purpose": "Инициализирует Supabase-клиент, восстанавливает сессию в authStore и редиректит на /login при SIGNED_OUT (provide $supabase)",
       "symbols": [
         {
           "name": "default",
@@ -1026,8 +987,8 @@
     },
     "plugins/vocab.client.ts": {
       "kind": "ts",
-      "hash": "96ab8753a984",
-      "purpose": "Nuxt client plugin: инициализирует useTerms vocabulary (бизнес-тип/menu-style) для текущего тенанта",
+      "hash": "684da600f6d2",
+      "purpose": "Связывает текущий tenant со словарём терминов (setVocab) на каждое изменение businessType/menuStyle",
       "symbols": [
         {
           "name": "default",
@@ -1052,8 +1013,8 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "83cdc6451054",
-      "purpose": "Главный layout админки: header + sidebar (AppNav) + slot, инициализирует realtime-каналы и tour-инфру",
+      "hash": "ba859e7db63b",
+      "purpose": "Дефолтный layout админки: collapsible sidebar с лого/AppNav/TenantSwitcher/BranchSelector + main slot для страницы",
       "symbols": [
         {
           "name": "component",
@@ -1065,8 +1026,8 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "853cc4f99ed6",
-      "purpose": "Главная навигация админки: рендерит список разделов с иконками и счётчиками новизны (заказы, бронирования, записи, поддержка); поддерживает collapsed-режим",
+      "hash": "5425aae37d5c",
+      "purpose": "Главная навигация админки: рендер списка nav-items по гейтам (useGate) с counter/blink для уведомлений",
       "symbols": [
         {
           "name": "props",
@@ -1090,8 +1051,8 @@
     },
     "components/layout/BranchSelector.vue": {
       "kind": "vue",
-      "hash": "3a5502c4e542",
-      "purpose": "Селектор филиала в sidebar: список доступных филиалов + опция 'Все филиалы' (для owner и members с пустым branchIds)",
+      "hash": "07f24077f6dc",
+      "purpose": "Селект текущего филиала в шапке: фильтрует список по правам member-а (canSeeAll) и меняет branchStore.currentBranchId",
       "symbols": [
         {
           "name": "component",
@@ -1103,8 +1064,8 @@
     },
     "components/layout/PastDueBanner.vue": {
       "kind": "vue",
-      "hash": "bb57bd8f447b",
-      "purpose": "Жёлтый баннер сверху layout при subscription.status='past_due': дни до приостановки + кнопка 'Оплатить'",
+      "hash": "7f6a0c2f462d",
+      "purpose": "Баннер предупреждения о просрочке оплаты подписки: считает оставшиеся дни до приостановки и кнопка 'Оплатить' → /account/billing",
       "symbols": [
         {
           "name": "component",
@@ -1441,8 +1402,8 @@
     },
     "components/ui/RichTextEditor.vue": {
       "kind": "vue",
-      "hash": "e537d46650ee",
-      "purpose": "Редактор форматированного текста на TipTap: bold/italic/list, дропдаун стилей блоков (heading/paragraph), hero-режим",
+      "hash": "86a4a1c6ac6c",
+      "purpose": "Tiptap-редактор форматированного текста с тулбаром (bold/italic/heading/list/link) и v-model:modelValue",
       "symbols": [
         {
           "name": "props",
@@ -1487,6 +1448,45 @@
           "kind": "component-props",
           "hash": "06395625",
           "purpose": "{ tabs: Tab[], basePath, card?, fullHeight?, hideSingle? }"
+        }
+      ]
+    },
+    "shared/stores/auth.ts": {
+      "kind": "ts",
+      "hash": "01d1ea5cd361",
+      "purpose": "Глобальный Pinia-стор авторизации: текущий Supabase User + флаг загрузки",
+      "symbols": [
+        {
+          "name": "useAuthStore",
+          "kind": "const",
+          "hash": "5256a5be",
+          "purpose": "Стор авторизации: user (Supabase User), loading, isAuthenticated, setUser"
+        }
+      ]
+    },
+    "shared/stores/branch.ts": {
+      "kind": "ts",
+      "hash": "805f6027c82f",
+      "purpose": "Глобальный Pinia-стор филиалов: связывает useBranches/useBranch с текущим тенантом и правами member-а",
+      "symbols": [
+        {
+          "name": "useBranchStore",
+          "kind": "const",
+          "hash": "cb46f6e2",
+          "purpose": "Стор филиалов: branches, archivedBranches, currentBranchId/Branch, hasBranches, add/update/archive/restore/setBranch/dispose"
+        }
+      ]
+    },
+    "shared/stores/tenant.ts": {
+      "kind": "ts",
+      "hash": "71c9006ae1bb",
+      "purpose": "Глобальный Pinia-стор тенанта: оборачивает useTenant и хранит текущий tenant, memberships, permissions, businessType",
+      "symbols": [
+        {
+          "name": "useTenantStore",
+          "kind": "const",
+          "hash": "3a1ef8e5",
+          "purpose": "Стор тенанта: tenant/maybeTenant, memberships, currentRoleName, currentPermissions, businessType, init/switchTenant/update/changePlan"
         }
       ]
     }

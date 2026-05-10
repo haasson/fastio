@@ -87,8 +87,8 @@ import DOMPurify from 'dompurify'
 import type { UIMessage } from 'ai'
 import { useRouter, useRuntimeConfig } from '#imports'
 import { UiIcon, UiText } from '@fastio/ui'
-import { useAiChat } from '~/composables/useAiChat'
-import useTour from '~/composables/useTour'
+import { useAiChat } from '../composables/useAiChat'
+import { useTour } from '~/features/help'
 
 const isOpen = ref(false)
 const { isActive: isTourActive } = useTour()

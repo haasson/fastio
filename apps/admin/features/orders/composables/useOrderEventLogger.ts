@@ -1,8 +1,8 @@
 import type { Order, OrderStatus } from '@fastio/shared'
 import { normalizePhone } from '@fastio/shared'
-import { useAuthStore } from '~/stores/auth'
+import { useAuthStore } from '~/shared/stores/auth'
 import { reportError } from '~/utils/reportError'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 type OrderForm = {

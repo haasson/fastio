@@ -1,6 +1,6 @@
-import type { TourStep } from '~/composables/useTour'
-import { useTerms } from '~/composables/useTerms'
-import { useTenantStore } from '~/stores/tenant'
+import type { TourStep } from '../composables/useTour'
+import { useTerms } from '~/features/legal'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 type NavStep = {
   selector: string

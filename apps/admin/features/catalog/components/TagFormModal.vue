@@ -69,7 +69,7 @@ import type { DishTagDefinition } from '@fastio/shared'
 import { TAG_COLOR_PRESETS, getTagColorPreset, getTagIconPresets, getTagNamePlaceholder } from '@fastio/shared'
 import * as icons from 'lucide-vue-next'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{
   modelValue: boolean

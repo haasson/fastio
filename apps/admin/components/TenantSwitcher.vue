@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiSelect } from '@fastio/ui'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 const tenantStore = useTenantStore()
 
 const getRoleName = (membership: { roleId: string | null; roleName: string | null }) => {

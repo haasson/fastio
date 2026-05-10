@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AppointmentSettings, AppointmentResourceMode } from '@fastio/shared'
 import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 export const useAppointmentSettingsStore = defineStore('appointmentSettings', () => {

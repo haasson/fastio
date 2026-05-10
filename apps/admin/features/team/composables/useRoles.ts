@@ -1,7 +1,7 @@
 import { ref, type Ref } from 'vue'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useAuditLog } from '~/composables/data/useAuditLog'
+import { useAuditLog } from '~/features/audit-log'
 
 export const useRoles = (tenantId: Ref<string | null>) => {
   const api = useDatabase()

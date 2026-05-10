@@ -2,9 +2,9 @@ import { computed, type Ref } from 'vue'
 import type { PromotionFormData } from '@fastio/shared'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useAuditLog } from '~/composables/data/useAuditLog'
+import { useAuditLog } from '~/features/audit-log'
 import { mapPromotion } from '../api/promotions'
-import { pickFields } from '~/utils/audit'
+import { pickFields } from '~/features/audit-log'
 
 export function usePromotions(tenantId: Ref<string>) {
   const api = useDatabase()

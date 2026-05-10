@@ -8,8 +8,8 @@ import {
   localDateTimeToUtcIso,
   addDaysToDateStr,
 } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useAppointmentSettingsStore } from '../stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 

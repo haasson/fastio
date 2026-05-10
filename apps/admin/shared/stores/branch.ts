@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
-import { useBranches } from '~/composables/data/useBranches'
-import { useBranch } from '~/composables/data/useBranch'
+import { useBranches, useBranch } from '~/features/branches'
 import { useTenantStore } from './tenant'
 
 // Список и текущий филиал нужны во многих компонентах (layout, orders, menu и др.),

@@ -131,7 +131,7 @@ import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/retail/ord
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/retail/order-options'
 import { useOrderCard } from '../composables/useOrderCard'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/composables/plan/useGate'
 
 const props = defineProps<{

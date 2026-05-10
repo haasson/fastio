@@ -87,7 +87,7 @@ import HeroOptions from './HeroOptions.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, SectionKey } from '@fastio/shared'
 import { dishDescriptionOptions, mobileDishCardOptions } from '@fastio/shared'
-import { useTerms } from '~/composables/useTerms'
+import { useTerms } from '~/features/legal'
 
 defineProps<{
   sectionKey: SectionKey

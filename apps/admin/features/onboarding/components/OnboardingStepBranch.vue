@@ -65,11 +65,11 @@ import { ref, watch } from 'vue'
 import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon, UiForm, UiCheckbox, UiAlert, useMessage } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
 import type { BranchAddressData } from '@fastio/shared'
-import { useBranchStore } from '~/stores/branch'
+import { useBranchStore } from '~/shared/stores/branch'
 import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
 import { reportError } from '~/utils/reportError'
-import { defaultBranchFormData } from '~/utils/branch'
+import { defaultBranchFormData } from '~/features/branches'
 
 const branchStore = useBranchStore()
 const { error } = useMessage()

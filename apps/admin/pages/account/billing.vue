@@ -7,9 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import BillingSummary from '~/components/billing/BillingSummary.vue'
-import PlanCards from '~/components/billing/PlanCards.vue'
-import TransactionHistory from '~/components/billing/TransactionHistory.vue'
+import BillingSummary from '~/features/billing/components/BillingSummary.vue'
+import PlanCards from '~/features/billing/components/PlanCards.vue'
+import TransactionHistory from '~/features/billing/components/TransactionHistory.vue'
 </script>
 
 <style scoped lang="scss">

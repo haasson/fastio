@@ -1,5 +1,5 @@
-import type { TourStep } from '~/composables/useTour'
-import { intro, highlight, navigateToOrdersStep, clickOrdersTabStep } from '~/tours/helpers'
+import type { TourStep } from '../composables/useTour'
+import { intro, highlight, navigateToOrdersStep, clickOrdersTabStep } from './helpers'
 
 export const getOrderSettingsTourSteps = (): TourStep[] => [
   intro({

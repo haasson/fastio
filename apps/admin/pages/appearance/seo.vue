@@ -123,7 +123,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import { UiInput, UiSwitch, UiSectionHeader } from '@fastio/ui'
-import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
+import { AppearanceFormKey } from '~/features/appearance'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import SettingToggle from '~/components/ui/SettingToggle.vue'
 

@@ -60,7 +60,7 @@ import { UiDrawer, UiInput, UiText, useMessage } from '@fastio/ui'
 import { UiIcon } from '@fastio/icons'
 import type { DrawerAction } from '@fastio/ui'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { reportError } from '~/utils/reportError'
 
 defineProps<{

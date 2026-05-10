@@ -118,7 +118,7 @@ import { Color } from '@tiptap/extension-color'
 import { Extension, Node, mergeAttributes } from '@tiptap/core'
 import { THEME_PRESETS } from '@fastio/shared'
 import type { ThemePalette } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 // Типизированный параграф с attribute `variant` — рендерится как <p> или <p class="rt-body-sm"|"rt-caption">
 const TypedParagraph = Node.create({

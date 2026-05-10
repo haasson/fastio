@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setVocab, useTerms } from '../useTerms'
+import { setVocab, useTerms } from '../composables/useTerms'
 import type { BusinessType, MenuStyle } from '@fastio/shared'
 
 const set = (businessType: BusinessType | null, menuStyle: MenuStyle = 'food') => setVocab(businessType, menuStyle)

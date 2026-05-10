@@ -1,7 +1,7 @@
-import type { TourStep } from '~/composables/useTour'
-import { waitForElement } from '~/composables/useTour'
-import { intro, formField, saveButton, clickAndWait, highlight, navigateToMenuStep, clickMenuTabStep } from '~/tours/helpers'
-import { useTerms } from '~/composables/useTerms'
+import type { TourStep } from '../composables/useTour'
+import { waitForElement } from '../composables/useTour'
+import { intro, formField, saveButton, clickAndWait, highlight, navigateToMenuStep, clickMenuTabStep } from './helpers'
+import { useTerms } from '~/features/legal'
 
 export const getModifierTourSteps = (): TourStep[] => {
   const { item } = useTerms()

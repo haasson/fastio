@@ -1,7 +1,7 @@
 import { watch } from 'vue'
 import { defineNuxtPlugin } from '#imports'
-import { useTenantStore } from '~/stores/tenant'
-import { setVocab } from '~/composables/useTerms'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { setVocab } from '~/features/legal'
 
 /**
  * Связывает текущий тенант со словарём терминов.

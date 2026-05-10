@@ -45,14 +45,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { UiSectionHeader, UiDivider, useMessage } from '@fastio/ui'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useModules, useModuleConfigs } from '~/composables/plan/useModules'
 import { usePlans } from '~/composables/plan/usePlans'
 import type { ModuleKey } from '~/config/modules'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { checkModuleDisable, type ToggleIssue } from '~/utils/moduleToggleChecks'
-import ModuleCard from '~/components/settings/ModuleCard.vue'
-import ModuleToggleIssuesModal from '~/components/settings/ModuleToggleIssuesModal.vue'
+import ModuleCard from '~/features/settings/components/ModuleCard.vue'
+import ModuleToggleIssuesModal from '~/features/settings/components/ModuleToggleIssuesModal.vue'
 
 const tenantStore = useTenantStore()
 const api = useDatabase()

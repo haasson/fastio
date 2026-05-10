@@ -28,7 +28,7 @@ import { computed, toRefs } from 'vue'
 import { UiEmpty, UiSkeleton, UiTabs } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
-import { useTerms } from '~/composables/useTerms'
+import { useTerms } from '~/features/legal'
 
 const props = withDefaults(defineProps<{
   modelValue: string | null

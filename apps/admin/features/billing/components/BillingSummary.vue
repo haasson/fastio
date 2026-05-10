@@ -30,7 +30,7 @@ import { storeToRefs } from 'pinia'
 import { formatPrice } from '@fastio/shared'
 import { UiTitle, UiText } from '@fastio/ui'
 import { usePlans } from '~/composables/plan/usePlans'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const { tenant } = storeToRefs(useTenantStore())
 const { plans } = usePlans()

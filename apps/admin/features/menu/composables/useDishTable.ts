@@ -4,7 +4,7 @@ import type { DataTableColumns } from '@fastio/ui'
 import type { Dish, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import { useTagDisplay } from '~/composables/ui/useTagDisplay'
+import { useTagDisplay } from '~/features/catalog'
 import { useItemVariant } from '~/composables/useItemVariant'
 
 type Actions = {

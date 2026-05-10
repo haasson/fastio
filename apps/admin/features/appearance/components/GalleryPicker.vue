@@ -44,7 +44,7 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { UiSelect, UiIcon } from '@fastio/ui'
 import type { Gallery } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{
   galleryIds: string[]

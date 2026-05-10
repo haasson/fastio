@@ -80,8 +80,8 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiSegmentedControl, UiSelect } from '@fastio/ui'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useGateRetail } from '~/composables/retail/useGate'
 import { useDashboardStats, type DashboardPeriod } from '~/composables/retail/useDashboardStats'
 

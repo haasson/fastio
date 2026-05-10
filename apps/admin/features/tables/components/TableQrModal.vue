@@ -89,7 +89,7 @@ import { pluralize } from '@fastio/shared'
 import { useTableUrl } from '~/composables/useTableUrl'
 import { generateTableQrPdf } from '../utils/generateTableQrPdf'
 import { storeToRefs } from 'pinia'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{
   modelValue: boolean

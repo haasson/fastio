@@ -1,9 +1,9 @@
 import { computed } from 'vue'
 import type { TenantMember, TenantInvitation } from '@fastio/shared'
 import { useQuery } from '@fastio/kit'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useAuditLog } from '~/composables/data/useAuditLog'
+import { useAuditLog } from '~/features/audit-log'
 
 export const useTeam = () => {
   const api = useDatabase()

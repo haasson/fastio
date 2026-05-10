@@ -47,8 +47,8 @@ import OnboardingSidebarEntry from './OnboardingSidebarEntry.vue'
 import OnboardingPanel from './OnboardingPanel.vue'
 import OnboardingDismissModal from './OnboardingDismissModal.vue'
 import OnboardingResetModal from './OnboardingResetModal.vue'
-import { useOnboarding, type OnboardingStepView } from '~/composables/useOnboarding'
-import { useOnboardingActions } from '~/composables/useOnboardingActions'
+import { useOnboarding, type OnboardingStepView } from '../composables/useOnboarding'
+import { useOnboardingActions } from '../composables/useOnboardingActions'
 
 const {
   isVisible,

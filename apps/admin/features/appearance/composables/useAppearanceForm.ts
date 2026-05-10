@@ -3,7 +3,7 @@ import type { InjectionKey, Ref } from 'vue'
 import type { Tenant, SiteLayout, SiteContent, TenantSeo, ConfigIssue } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, getPresetPalette, validateTenantConfig } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useMessage } from '@fastio/ui'
 
 const initSiteLayout = (t: Tenant | null): SiteLayout => deepMerge(defaultSiteLayout(), (t?.siteLayout ?? {}) as Partial<SiteLayout>)

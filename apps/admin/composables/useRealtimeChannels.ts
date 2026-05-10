@@ -6,7 +6,7 @@ import { useTableCallAlertHandler } from '~/features/tables'
 import { useKitchenQueueChannel } from '~/features/kitchen'
 import { useReservationsChannel } from '~/features/reservations'
 import { useReservationAlertHandler } from '~/features/reservations'
-import { useSupportChannel } from '~/composables/data/useSupportChannel'
+import { useSupportChannel } from '~/features/support'
 import { useAppointmentsChannel, useVisitsChannel, useAppointmentInboxHandler } from '~/features/appointments'
 export function useRealtimeChannels(tenantId: Ref<string | null>) {
   useOrdersChannel(tenantId)

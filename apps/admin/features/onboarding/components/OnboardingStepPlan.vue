@@ -49,7 +49,7 @@ import { pluralize } from '@fastio/shared'
 import { usePlans } from '~/composables/plan/usePlans'
 import { useBillingConfig } from '~/composables/plan/useBillingConfig'
 import { getPlanFeatureLabels, getPrevPlanName } from '~/utils/planFeatureLabels'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{
   modelValue: string | null

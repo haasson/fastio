@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { storeToRefs } from 'pinia'
 import { useOrderStatuses } from '../composables/useOrderStatuses'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 // Статусы заказов нужны во многих компонентах (OrderCard, OrderRow, OrderEditModal и др.),
 // поэтому держим их в сторе, чтобы не пробрасывать пропами.

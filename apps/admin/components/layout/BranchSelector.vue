@@ -11,8 +11,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiSelect } from '@fastio/ui'
-import { useBranchStore } from '~/stores/branch'
-import { useTenantStore } from '~/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const branchStore = useBranchStore()
 const tenantStore = useTenantStore()

@@ -31,7 +31,7 @@ import { formatDateTime } from '@fastio/shared'
 import { UiSectionHeader, UiEmpty, UiSelect, UiDataTable, UiTag, UiText, UiSpace } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import { navigateTo } from '#imports'
-import { useAuditLog } from '~/composables/data/useAuditLog'
+import { useAuditLog } from '~/features/audit-log'
 import { useGate } from '~/composables/plan/useGate'
 import { usePageTitle } from '~/composables/usePageTitle'
 

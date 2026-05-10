@@ -70,8 +70,8 @@ import {
   addDaysToDateStr, localDateTimeToUtcIso, getCategoryColorHex,
 } from '@fastio/shared'
 import type { WorkingHoursSchedule } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useAppointmentSettingsStore, useAppointmentViewScope, appointmentBus, buildTimelineAvailability, type TimelineAvailability, useTimelineMoveBlocker, useEditorCompetencies } from '~/features/appointments'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'

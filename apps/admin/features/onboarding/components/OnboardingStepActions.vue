@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { UiButton } from '@fastio/ui'
-import type { OnboardingStepView } from '~/composables/useOnboarding'
+import type { OnboardingStepView } from '../composables/useOnboarding'
 
 defineProps<{ step: OnboardingStepView }>()
 const emit = defineEmits<{

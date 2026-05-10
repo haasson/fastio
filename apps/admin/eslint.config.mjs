@@ -204,7 +204,6 @@ export default [
       'composables/plan/**',
       'composables/__tests__/**',
       'composables/ui/**',
-      'stores/*.ts',
       'utils/api/*.ts',
       'utils/api/__tests__/**',
       'utils/*.ts',
@@ -276,6 +275,14 @@ export default [
         ],
       }],
     },
+  },
+
+  // Исключение для глобального branch-store: он по дизайну оборачивает
+  // useBranches/useBranch из features/branches и используется ВЕЗДЕ.
+  // Аналог composables/data/useDatabase.ts в AGGREGATOR_FILES.
+  {
+    files: ['shared/stores/branch.ts'],
+    rules: { 'no-restricted-imports': 'off' },
   },
 
   // 5. Серверный мир (AI-context и т.п.) — отдельная вселенная

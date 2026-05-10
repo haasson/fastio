@@ -1,5 +1,5 @@
-import type { TourStep } from '~/composables/useTour'
-import { intro, highlight, withEmptyHint, navigateToKitchenStep, clickKitchenTabStep } from '~/tours/helpers'
+import type { TourStep } from '../composables/useTour'
+import { intro, highlight, withEmptyHint, navigateToKitchenStep, clickKitchenTabStep } from './helpers'
 
 export const getKitchenQueueTourSteps = (): TourStep[] => [
   intro({

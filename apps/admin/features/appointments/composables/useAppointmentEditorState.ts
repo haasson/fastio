@@ -4,8 +4,8 @@ import type {
   Appointment, Visit,
   Resource, ServiceWithBranchIds,
 } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useAppointmentSettingsStore } from '../stores/appointmentSettings'
 import { useGateServices } from '~/composables/services/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'

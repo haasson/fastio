@@ -1,7 +1,7 @@
-import type { TourStep } from '~/composables/useTour'
-import { intro, highlight, formField, saveButton, clickAndWait, navigateToMenuStep, clickMenuTabStep } from '~/tours/helpers'
-import { useTerms } from '~/composables/useTerms'
-import { useTenantStore } from '~/stores/tenant'
+import type { TourStep } from '../composables/useTour'
+import { intro, highlight, formField, saveButton, clickAndWait, navigateToMenuStep, clickMenuTabStep } from './helpers'
+import { useTerms } from '~/features/legal'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 export const getDishTourSteps = (): TourStep[] => {
   const { item, menu: menuVocab, menuStyle } = useTerms()

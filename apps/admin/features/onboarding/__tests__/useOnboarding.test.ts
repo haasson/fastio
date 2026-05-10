@@ -120,7 +120,7 @@ vi.mock('pinia', () => ({
   }),
 }))
 
-vi.mock('~/stores/tenant', () => ({
+vi.mock('~/shared/stores/tenant', () => ({
   useTenantStore: () => ({
     maybeTenant: tenantRef,
     isOwner: isOwnerRef,
@@ -130,7 +130,7 @@ vi.mock('~/stores/tenant', () => ({
 }))
 
 // Import after mocks
-import { useOnboarding } from '../useOnboarding'
+import { useOnboarding } from '../composables/useOnboarding'
 
 describe('useOnboarding', () => {
   beforeEach(() => {

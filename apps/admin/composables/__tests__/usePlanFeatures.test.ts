@@ -3,7 +3,7 @@ import { usePlanFeatures } from '../plan/usePlanFeatures'
 
 const mockStore: { tenant: Record<string, unknown> | null } = { tenant: null }
 
-vi.mock('~/stores/tenant', () => ({
+vi.mock('~/shared/stores/tenant', () => ({
   useTenantStore: () => mockStore,
 }))
 

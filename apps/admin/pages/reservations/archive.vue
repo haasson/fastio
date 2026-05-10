@@ -61,8 +61,8 @@ import type { Reservation, ReservationStatus } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
 import ReservationDrawer from '~/features/reservations/components/ReservationDrawer.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/features/reservations'
 import {
   RESERVATION_ARCHIVE_STATUSES,

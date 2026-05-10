@@ -66,9 +66,9 @@ import type {
   VisitListRow,
   InboxFilter,
 } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useAuthStore } from '~/stores/auth'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useAuthStore } from '~/shared/stores/auth'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
 import { reportError } from '~/utils/reportError'

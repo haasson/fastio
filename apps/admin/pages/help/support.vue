@@ -37,12 +37,12 @@ import { storeToRefs } from 'pinia'
 import { UiEmpty } from '@fastio/ui'
 import type { SupportTicket } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
-import { supportEvents } from '~/composables/data/useSupportChannel'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { supportEvents } from '~/features/support'
 import { reportError } from '~/utils/reportError'
-import TicketList from '~/components/support/TicketList.vue'
-import TicketChat from '~/components/support/TicketChat.vue'
-import CreateTicketDrawer from '~/components/support/CreateTicketDrawer.vue'
+import TicketList from '~/features/support/components/TicketList.vue'
+import TicketChat from '~/features/support/components/TicketChat.vue'
+import CreateTicketDrawer from '~/features/support/components/CreateTicketDrawer.vue'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()

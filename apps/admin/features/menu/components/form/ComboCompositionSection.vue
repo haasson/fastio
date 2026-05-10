@@ -84,7 +84,7 @@ import DishItemRow from '~/components/ui/DishItemRow.vue'
 import type { Addon, Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '../DishPickerModal.vue'
-import { useTerms } from '~/composables/useTerms'
+import { useTerms } from '~/features/legal'
 
 type DishInfo = { id: string; name: string; categoryId: string; price: number; active: boolean; deleted?: boolean }
 

@@ -1,7 +1,7 @@
 import type { Side, Alignment } from 'driver.js'
-import type { TourStep } from '~/composables/useTour'
-import { waitForElement } from '~/composables/useTour'
-import { useTerms } from '~/composables/useTerms'
+import type { TourStep } from '../composables/useTour'
+import { waitForElement } from '../composables/useTour'
+import { useTerms } from '~/features/legal'
 
 // Принимает либо голое имя (`kitchen-tab-queue`) — превращает в `[data-tour="..."]`,
 // либо готовый CSS-селектор (`.queue-panel`) — возвращает как есть

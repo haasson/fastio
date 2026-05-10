@@ -2,8 +2,8 @@ import { ref, computed, watch, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import type { DeliveryZone } from '@fastio/shared'
 import { findDeliveryZone } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useDeliveryZoneStore } from '~/features/orders'
 
 export type DeliveryInfo = {

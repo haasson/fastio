@@ -78,7 +78,7 @@
 import { UiButton, UiDrawer, UiIcon, UiText, UiTitle } from '@fastio/ui'
 import OnboardingStepItem from './OnboardingStepItem.vue'
 import OnboardingProgressBar from './OnboardingProgressBar.vue'
-import type { OnboardingStepView } from '~/composables/useOnboarding'
+import type { OnboardingStepView } from '../composables/useOnboarding'
 
 defineProps<{
   show: boolean

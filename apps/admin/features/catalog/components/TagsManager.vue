@@ -34,12 +34,12 @@
 import { storeToRefs } from 'pinia'
 import { UiButton } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTags } from '~/composables/data/useTags'
+import { useTags } from '../composables/useTags'
 import { useItemManager } from '~/composables/ui/useItemManager'
-import MenuTagList from '~/components/catalog/TagList.vue'
-import MenuTagFormModal from '~/components/catalog/TagFormModal.vue'
+import MenuTagList from './TagList.vue'
+import MenuTagFormModal from './TagFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 

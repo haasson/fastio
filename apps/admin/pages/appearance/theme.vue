@@ -107,7 +107,7 @@ import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiIcon, UiSe
 import type { SelectOption } from 'naive-ui'
 import { themePresets, fontOptions } from '~/config/theme-presets'
 import { GOOGLE_FONTS, isGoogleFontValue, fontFamilyCSS, googleFontsBatchUrl } from '~/config/google-fonts'
-import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
+import { AppearanceFormKey } from '~/features/appearance'
 import { getPresetPalette } from '@fastio/shared'
 import type { TenantThemePreset } from '@fastio/shared'
 

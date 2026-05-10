@@ -20,7 +20,7 @@ import { definePageMeta, navigateTo } from '#imports'
 import { UiButton, UiTitle } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 definePageMeta({ layout: false })
 

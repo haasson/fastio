@@ -72,7 +72,7 @@ import GradientPicker from './GradientPicker.vue'
 import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
 import RichTextEditor from '~/components/ui/RichTextEditor.vue'
 import type { SiteLayout, SiteContent } from '@fastio/shared'
-import { AppearanceFormKey } from '~/composables/data/useAppearanceForm'
+import { AppearanceFormKey } from '../composables/useAppearanceForm'
 
 type HeroConfig = SiteLayout['sections']['hero']
 

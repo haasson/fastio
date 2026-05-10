@@ -75,16 +75,16 @@ import {
   UiDrawer,
   UiForm, UiInput, UiSwitch, UiText, UiSectionHeader,
 } from '@fastio/ui'
-import WorkingHoursEditor from '~/components/settings/WorkingHoursEditor.vue'
+import WorkingHoursEditor from './WorkingHoursEditor.vue'
 
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { BRANCH_COLOR_PRESETS, DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { validationRules } from '@fastio/kit'
 import UiColorPicker from '~/components/ui/ColorPicker.vue'
 import AddressWithMap from '~/components/ui/AddressWithMap.vue'
-import { defaultBranchFormData } from '~/utils/branch'
+import { defaultBranchFormData } from '~/features/branches'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()

@@ -113,7 +113,7 @@ import { useConfirm } from '@fastio/kit'
 import { useDatabase } from '~/composables/data/useDatabase'
 import AddonPickerModal from './AddonPickerModal.vue'
 import HintPopover from '~/components/ui/HintPopover.vue'
-import { useTerms } from '~/composables/useTerms'
+import { useTerms } from '~/features/legal'
 
 const props = defineProps<{
   tenantId: string

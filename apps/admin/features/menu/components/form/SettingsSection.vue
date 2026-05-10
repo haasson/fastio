@@ -34,7 +34,7 @@
 import { computed, toRef } from 'vue'
 import { UiCollapseItem, UiSwitch } from '@fastio/ui'
 import { useGate } from '~/composables/plan/useGate'
-import { useBranchToggle } from '~/composables/useBranchToggle'
+import { useBranchToggle } from '~/features/branches'
 
 const props = defineProps<{
   active: boolean

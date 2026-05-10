@@ -38,7 +38,7 @@
 import { ref, reactive, watch } from 'vue'
 import { UiForm, UiButton, UiInputNumber, useMessage, UiSectionHeader } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{ tenant: Tenant }>()
 

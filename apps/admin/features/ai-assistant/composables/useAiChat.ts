@@ -2,8 +2,8 @@ import { computed, ref } from 'vue'
 import { useRoute } from '#imports'
 import { Chat } from '@ai-sdk/vue'
 import { DefaultChatTransport } from 'ai'
-import { useTenantStore } from '~/stores/tenant'
-import { useAuthStore } from '~/stores/auth'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useAuthStore } from '~/shared/stores/auth'
 
 export function useAiChat() {
   const route = useRoute()

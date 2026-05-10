@@ -5,8 +5,8 @@ import type {
 import {
   todayInTz, utcIsoToLocalDateTime, timeToMinutes, getScheduleForDate, getIsoDayForDate, sliceTime,
 } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useBranchStore } from '~/stores/branch'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 
 export type PresenceStatus = 'working' | 'off-hours' | 'absent' | 'hidden'

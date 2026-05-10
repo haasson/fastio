@@ -88,7 +88,7 @@ import { UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiCheckbox, useMessag
 import type { OrderSchedulingConfig, PaymentMethod } from '@fastio/shared'
 import { buildMinuteOptions } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useOrderStatusesStore } from '~/features/orders'
 import { useGate } from '~/composables/plan/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'

@@ -1,6 +1,6 @@
-import type { TourStep } from '~/composables/useTour'
-import { waitForElement } from '~/composables/useTour'
-import { intro, highlight, clickOrdersTabStep } from '~/tours/helpers'
+import type { TourStep } from '../composables/useTour'
+import { waitForElement } from '../composables/useTour'
+import { intro, highlight, clickOrdersTabStep } from './helpers'
 
 export const getOrderNumberTourSteps = (): TourStep[] => [
   intro({

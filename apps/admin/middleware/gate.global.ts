@@ -1,6 +1,6 @@
 import { defineNuxtRouteMiddleware, navigateTo } from '#imports'
-import { useAuthStore } from '~/stores/auth'
-import { useTenantStore } from '~/stores/tenant'
+import { useAuthStore } from '~/shared/stores/auth'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/composables/plan/useGate'
 import { resolveRouteGate, isUngatedRoute, REDIRECT_FALLBACKS } from '~/composables/plan/useGate.routes'
 

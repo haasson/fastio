@@ -35,13 +35,13 @@ import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiButton } from '@fastio/ui'
 import type { Category } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useCategories } from '~/composables/data/useCategories'
-import { useTags } from '~/composables/data/useTags'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useCategories } from '~/features/catalog'
+import { useTags } from '~/features/catalog'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import AppCategoryList from '~/components/ui/AppCategoryList.vue'
-import CategoryFormModal from '~/components/catalog/CategoryFormModal.vue'
+import CategoryFormModal from '~/features/catalog/components/CategoryFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 const api = useDatabase()

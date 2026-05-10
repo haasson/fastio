@@ -1,15 +1,15 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { emptyOnboardingState, type OnboardingState } from '@fastio/shared'
-import { useTenantStore } from '~/stores/tenant'
-import { useTerms } from '~/composables/useTerms'
+import { useTenantStore } from '~/shared/stores/tenant'
+import { useTerms } from '~/features/legal'
 import { useGate } from '~/composables/plan/useGate'
 import { reportError } from '~/utils/reportError'
 import {
   buildOnboardingFlow,
   type OnboardingStep,
   type OnboardingLabels,
-} from '~/config/onboarding'
+} from '../config/onboarding'
 
 export type StepStatus = 'done' | 'active' | 'locked'
 

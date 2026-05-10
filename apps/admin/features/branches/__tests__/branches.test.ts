@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapBranch } from '../branches'
+import { mapBranch } from '../api/branches'
 
 const makeBranchRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'branch-1',
