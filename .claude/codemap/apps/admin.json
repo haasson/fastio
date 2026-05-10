@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T07:25:33.854Z",
+  "generated_at": "2026-05-10T10:53:50.378Z",
   "stats": {
-    "files": 113,
+    "files": 109,
     "pages": 0,
-    "symbols": 199,
+    "symbols": 186,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -92,19 +92,6 @@
           "kind": "function",
           "hash": "53eb7845",
           "purpose": "Управление выбором/созданием зоны: selectZone/onZoneClick/startDraw/onPolygonDrawn/closePanel"
-        }
-      ]
-    },
-    "composables/kitchen/useKitchenStatusBlock.ts": {
-      "kind": "ts",
-      "hash": "7c1248c5fcca",
-      "purpose": "Запрещает ручную смену статуса заказа, пока он находится на кухне (показывает confirm-объяснение)",
-      "symbols": [
-        {
-          "name": "useKitchenStatusBlock",
-          "kind": "function",
-          "hash": "4304e50b",
-          "purpose": "Возвращает checkKitchenBlock(order, targetGroupType): blocked=true если заказ в работе кухни"
         }
       ]
     },
@@ -557,8 +544,8 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "a8a57724bb2e",
-      "purpose": "Агрегатор Supabase Realtime каналов админки: orders, kitchen, tables, visits, alerts — стартует один раз в default-layout",
+      "hash": "113103cb8f9d",
+      "purpose": "Aggregator-агент: подключает все realtime-каналы (orders, kitchen, tables, reservations, appointments, visits, support) и регистрирует alert/inbox handlers; вызывается из default-layout",
       "symbols": [
         {
           "name": "useRealtimeChannels",
@@ -956,86 +943,6 @@
         }
       ]
     },
-    "utils/services/scheduleConflictCheck.ts": {
-      "kind": "ts",
-      "hash": "54d5270cc3e0",
-      "purpose": "Проверка попадания существующих записей в новое расписание (без мутаций БД) — используется при редактировании/применении шаблона",
-      "symbols": [
-        {
-          "name": "buildSlotDataFromWeeklyTemplate",
-          "kind": "function",
-          "hash": "da2c9542",
-          "purpose": "Собирает ResourceSlotData из weekly-шаблона 1:1 (без обрезки по филиалу) для прогона валидации"
-        },
-        {
-          "name": "buildSlotDataFromShiftTemplate",
-          "kind": "function",
-          "hash": "0e0e964f",
-          "purpose": "Собирает ResourceSlotData из shift-шаблона + cycleStartDate"
-        },
-        {
-          "name": "checkAppointmentAgainstSchedule",
-          "kind": "function",
-          "hash": "1250d2e0",
-          "purpose": "Проверяет одну запись на конфликт с расписанием: day-off / out-of-hours / overnight / disabled-slot. Поддерживает overnight и 24/7"
-        },
-        {
-          "name": "checkAppointmentsAgainstSchedule",
-          "kind": "function",
-          "hash": "a2f6d45b",
-          "purpose": "Прогоняет checkAppointmentAgainstSchedule по списку записей и собирает массив конфликтов с локальными датами/временами"
-        },
-        {
-          "name": "AppointmentLite",
-          "kind": "type",
-          "hash": "9f18c041",
-          "purpose": "Минимальные поля записи для проверки конфликтов"
-        },
-        {
-          "name": "ConflictReason",
-          "kind": "type",
-          "hash": "42a74458",
-          "purpose": "'day-off' | 'out-of-hours' | 'disabled-slot' | 'overnight'"
-        },
-        {
-          "name": "ScheduleConflict",
-          "kind": "type",
-          "hash": "b0127758",
-          "purpose": "Конфликт с локальным временем и причиной для UI-предупреждения"
-        }
-      ]
-    },
-    "utils/services/timelineAvailability.ts": {
-      "kind": "ts",
-      "hash": "f07a8a79c0aa",
-      "purpose": "Сборщик timeline-availability: per-resource рабочие часы, disabled-слоты и инфо об отсутствии (отпуск/больничный) на выбранную дату",
-      "symbols": [
-        {
-          "name": "buildTimelineAvailability",
-          "kind": "function",
-          "hash": "a95ad321",
-          "purpose": "Считает рабочие часы и disabled-слоты для всех ресурсов: override на дату → shift-cycle → недельное расписание ресурса → филиал → тенант"
-        },
-        {
-          "name": "AbsenceInfo",
-          "kind": "type",
-          "hash": "a2a25135",
-          "purpose": "Лейбл (тип отсутствия) и заметки для блока absence на колонке таймлайна"
-        },
-        {
-          "name": "ResourceAvailability",
-          "kind": "type",
-          "hash": "cb64cf61",
-          "purpose": "Доступность одного ресурса на дату: рабочие часы, нерабочие слоты и опциональный absenceInfo"
-        },
-        {
-          "name": "TimelineAvailability",
-          "kind": "type",
-          "hash": "4340b609",
-          "purpose": "Map по resource.id → ResourceAvailability — итог сборки на выбранную дату"
-        }
-      ]
-    },
     "utils/supportStatus.ts": {
       "kind": "ts",
       "hash": "321b9b02630a",
@@ -1111,19 +1018,6 @@
           "kind": "const",
           "hash": "5d347b93",
           "purpose": "Стор-обёртка над useReservations, привязан к tenant/branch"
-        }
-      ]
-    },
-    "stores/services/appointmentSettings.ts": {
-      "kind": "ts",
-      "hash": "8371c10cddd4",
-      "purpose": "Pinia: настройки онлайн-записи тенанта (resourceMode: staff|object), lazy-загрузка по tenantId; resourceMode дефолтит из DEFAULT_APPOINTMENT_SETTINGS",
-      "symbols": [
-        {
-          "name": "useAppointmentSettingsStore",
-          "kind": "const",
-          "hash": "c88ac7de",
-          "purpose": "Стор с settings/loading/resourceMode + load(force)/refresh()"
         }
       ]
     },
@@ -1572,8 +1466,8 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "b51296b81608",
-      "purpose": "Боковая навигация админки: список разделов с иконками и счётчиками (заказы, бронирования, инбокс записей, поддержка), фильтрация по plan-гейтам и модулям тенанта",
+      "hash": "caacc7769f7e",
+      "purpose": "Главная навигация админки: рендерит список разделов с иконками и счётчиками новизны (заказы, бронирования, записи, поддержка); поддерживает collapsed-режим",
       "symbols": [
         {
           "name": "props",

@@ -37,7 +37,7 @@ import { useAuthStore } from '~/stores/auth'
 import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
 import { orderEvents } from '~/composables/retail/useOrdersChannel'
 import { tableCallEvents } from '~/composables/retail/useTableCallsChannel'
-import { kitchenQueueEvents } from '~/composables/retail/useKitchenQueueChannel'
+import { kitchenQueueEvents } from '~/features/kitchen'
 import { TablesContextKey, TodayReservationsKey } from '~/composables/retail/useTablesContext'
 import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
 

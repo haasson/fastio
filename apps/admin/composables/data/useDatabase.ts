@@ -24,7 +24,7 @@ import { tableCallTypesApi, tableCallsApi } from '~/utils/api/retail/table-calls
 import { plansApi } from '~/utils/api/plans'
 import { billingApi } from '~/utils/api/billing'
 import { moduleConfigsApi } from '~/utils/api/module-configs'
-import { kitchenQueueApi } from '~/utils/api/retail/kitchen-queue'
+import { kitchenQueueApi } from '~/features/kitchen'
 import { reservationsApi } from '~/utils/api/retail/reservations'
 import { reservationSettingsApi } from '~/utils/api/retail/reservation-settings'
 import { bannersApi } from '~/utils/api/banners'

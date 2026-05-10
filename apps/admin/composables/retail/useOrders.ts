@@ -8,7 +8,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
 import { reportError } from '~/utils/reportError'
-import { useKitchenStatusBlock } from '~/composables/kitchen/useKitchenStatusBlock'
+import { useKitchenStatusBlock } from '~/features/kitchen'
 
 export type UseOrdersOptions = {
   branchId?: Ref<string | null>

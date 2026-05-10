@@ -5,7 +5,7 @@ import { getAllowedStatuses, getKitchenAutoStatuses } from '@fastio/shared'
 import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
 import { useTenantStore } from '~/stores/tenant'
 import { useStatusColor } from '~/composables/retail/useStatusColor'
-import { useKitchenStatusBlock } from '~/composables/kitchen/useKitchenStatusBlock'
+import { useKitchenStatusBlock } from '~/features/kitchen'
 import { useConfirm } from '@fastio/kit'
 
 type StatusForm = { status: string }

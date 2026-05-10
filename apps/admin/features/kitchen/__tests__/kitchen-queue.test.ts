@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapKitchenQueueItem } from '../kitchen-queue'
+import { mapKitchenQueueItem } from '../api/kitchen-queue'
 
 const makeRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'kq-1',

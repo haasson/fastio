@@ -24,15 +24,15 @@
 import { h, ref, computed, watch, onUnmounted } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiDataTable, UiEmpty, UiSkeleton, UiTag, UiText } from '@fastio/ui'
-import KitchenStatCards from '~/components/kitchen/KitchenStatCards.vue'
-import type { StatCardItem } from '~/components/kitchen/KitchenStatCards.vue'
+import KitchenStatCards from '~/features/kitchen/components/KitchenStatCards.vue'
+import type { StatCardItem } from '~/features/kitchen/components/KitchenStatCards.vue'
 import type { DataTableColumns } from '@fastio/ui'
 import { type KitchenQueueItem, getKitchenUrgencyLevel, formatKitchenElapsed } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
-import { kitchenQueueEvents } from '~/composables/retail/useKitchenQueueChannel'
+import { kitchenQueueEvents } from '~/features/kitchen'
 import { DELIVERY_TYPE_LABELS } from '~/config/retail/order-options'
-import { mergeRealtimeItem } from '~/utils/api/retail/kitchen-queue'
+import { mergeRealtimeItem } from '~/features/kitchen'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()

@@ -107,11 +107,11 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useGate } from '~/composables/plan/useGate'
-import { kitchenQueueEvents } from '~/composables/retail/useKitchenQueueChannel'
-import KitchenQueueItem from '~/components/kitchen/KitchenQueueItem.vue'
-import KitchenWorkCard from '~/components/kitchen/KitchenWorkCard.vue'
+import { kitchenQueueEvents } from '~/features/kitchen'
+import KitchenQueueItem from '~/features/kitchen/components/KitchenQueueItem.vue'
+import KitchenWorkCard from '~/features/kitchen/components/KitchenWorkCard.vue'
 import { reportError } from '~/utils/reportError'
-import { mergeRealtimeItem } from '~/utils/api/retail/kitchen-queue'
+import { mergeRealtimeItem } from '~/features/kitchen'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()

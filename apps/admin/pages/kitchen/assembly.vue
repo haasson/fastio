@@ -113,10 +113,10 @@ import { type KitchenQueueItem, getOrderPhase } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
-import { kitchenQueueEvents } from '~/composables/retail/useKitchenQueueChannel'
-import KitchenAssemblyCard from '~/components/kitchen/KitchenAssemblyCard.vue'
+import { kitchenQueueEvents } from '~/features/kitchen'
+import KitchenAssemblyCard from '~/features/kitchen/components/KitchenAssemblyCard.vue'
 import { reportError } from '~/utils/reportError'
-import { mergeRealtimeItem } from '~/utils/api/retail/kitchen-queue'
+import { mergeRealtimeItem } from '~/features/kitchen'
 
 const api = useDatabase()
 const tenantStore = useTenantStore()

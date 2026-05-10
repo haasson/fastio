@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { computed } from 'vue'
 import type { Order } from '@fastio/shared'
-import { useKitchenStatusBlock } from '../kitchen/useKitchenStatusBlock'
+import { useKitchenStatusBlock } from '../composables/useKitchenStatusBlock'
 
 const mockConfirm = vi.fn<() => Promise<boolean | null>>()
 

@@ -14,7 +14,7 @@ export type KitchenProgressRow = {
   status: 'queued' | 'in_progress' | 'done'
 }
 
-export default function useKitchenProgress(
+export function useKitchenProgress(
   getKitchenDishes: () => KitchenQueueItem[] | undefined,
   getSession: () => TableSession | undefined,
   options?: { includeDone?: boolean },

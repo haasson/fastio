@@ -123,7 +123,7 @@ import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
 import { orderItemKey, pluralize } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
-import useKitchenProgress, { type KitchenProgressRow } from '~/composables/retail/useKitchenProgress'
+import { useKitchenProgress, type KitchenProgressRow } from '~/features/kitchen'
 
 type Props = {
   session?: TableSession
