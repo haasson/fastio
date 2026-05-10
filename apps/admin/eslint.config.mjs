@@ -217,37 +217,37 @@ export default [
 
   // ──────────────────────────────────────────────────────────────────────────
   // 4.5. Модульная изоляция: cross-module импорты только через barrel.
-  // Правило применяется только к файлам внутри modules/.
+  // Правило применяется только к файлам внутри features/.
   // Пока папка пуста — правило no-op. Активируется по мере переезда модулей.
   //
   // Подробности: docs/plans/2026-05-10-modular-architecture-migration.md
   // ──────────────────────────────────────────────────────────────────────────
   {
-    files: ['modules/**'],
+    files: ['features/**'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [
           {
-            group: ['~/modules/*/!(index)', '~/modules/*/!(index)/**'],
-            message: 'Cross-module импорт только через ~/modules/<feature> (barrel index.ts), не deep path.',
+            group: ['~/features/*/!(index)', '~/features/*/!(index)/**'],
+            message: 'Cross-module импорт только через ~/features/<feature> (barrel index.ts), не deep path.',
           },
           {
             group: ['../*/composables/**', '../*/components/**', '../*/api/**', '../*/utils/**', '../*/stores/**'],
-            message: 'Cross-module импорт только через barrel. Используй ~/modules/<feature>.',
+            message: 'Cross-module импорт только через barrel. Используй ~/features/<feature>.',
           },
         ],
       }],
     },
   },
 
-  // shared/* НЕ ДОЛЖЕН импортить из modules/*
+  // shared/* НЕ ДОЛЖЕН импортить из features/*
   {
     files: ['shared/**'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [
           {
-            group: ['~/modules/**', '../modules/**'],
+            group: ['~/features/**', '../features/**'],
             message: 'shared НЕ ДОЛЖЕН импортить из modules. Зависимость идёт только ОТ модуля К shared.',
           },
         ],

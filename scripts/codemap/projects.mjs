@@ -36,8 +36,8 @@ const ADMIN_INCLUDED_DIRS = [
 
 function adminAssign(rel) {
   // Модульная архитектура — фичевые модули не картируем
-  // (агент находит их по ~/modules/<feature>/index.ts barrel + по структуре).
-  if (rel.startsWith('modules/')) return null;
+  // (агент находит их по ~/features/<feature>/index.ts barrel + по структуре).
+  if (rel.startsWith('features/')) return null;
   // shared/* — картируем как общую инфру (utils, data, plan, stores, ui, layout)
   if (rel.startsWith('shared/')) {
     if (rel.includes('/__tests__/')) return null;
