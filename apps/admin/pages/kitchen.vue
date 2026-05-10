@@ -19,7 +19,7 @@ import { useGate } from '~/composables/plan/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { kitchenQueueEvents } from '~/features/kitchen'
-import { realtimeConnected } from '~/composables/retail/useOrdersChannel'
+import { realtimeConnected } from '~/features/orders'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 

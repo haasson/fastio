@@ -87,7 +87,7 @@ import { useBranchStore } from '~/stores/branch'
 import { useBranchLimit } from '~/composables/plan/useBranchLimit'
 import { useGate } from '~/composables/plan/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useDeliveryZoneStore } from '~/stores/retail/deliveryZone'
+import { useDeliveryZoneStore } from '~/features/orders'
 import BranchDrawer from '~/components/settings/BranchDrawer.vue'
 import useDrawer from '~/composables/ui/useDrawer'
 

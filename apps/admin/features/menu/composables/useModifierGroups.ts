@@ -1,6 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { ModifierGroupFormData } from '@fastio/shared'
-import { mapModifierGroup } from '~/utils/api/retail/modifiers'
+import { mapModifierGroup } from '../api/modifiers'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
 

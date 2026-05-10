@@ -31,9 +31,9 @@
 import { computed, ref, watch, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiCard, UiText, UiTitle, UiButton, UiSkeleton } from '@fastio/ui'
-import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
-import { useOrderCounts } from '~/composables/retail/useOrderCounts'
-import { orderEvents } from '~/composables/retail/useOrdersChannel'
+import { useOrderStatusesStore } from '~/features/orders'
+import { useOrderCounts } from '~/features/orders'
+import { orderEvents } from '~/features/orders'
 
 type Props = {
   tenantId: string

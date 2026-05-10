@@ -1,6 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { OrderStatus, OrderStatusData } from '@fastio/shared'
-import { mapOrderStatus } from '~/utils/api/retail/order-statuses'
+import { mapOrderStatus } from '../api/order-statuses'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
 

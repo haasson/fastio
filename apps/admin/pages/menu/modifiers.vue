@@ -43,9 +43,9 @@ import { UiButton, UiDataTable, UiEmpty, UiSkeleton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useModifierGroups } from '~/composables/retail/useModifierGroups'
+import { useModifierGroups } from '~/features/menu'
 import { buildModifierColumns } from '~/columns/modifiers'
-import ModifierGroupFormModal from '~/components/menu/ModifierGroupFormModal.vue'
+import ModifierGroupFormModal from '~/features/menu/components/ModifierGroupFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 const { groups, loading, add, update, remove, toggleActive } = useModifierGroups(tenantId)

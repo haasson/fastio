@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapOrder } from '../orders'
+import { mapOrder } from '../api/orders'
 
 const makeOrderRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'order-1',

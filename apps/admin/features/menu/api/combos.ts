@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Combo, ComboFormData, ComboItemInput } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { ComboRow } from '../db-types'
+import type { ComboRow } from '~/utils/api/db-types'
 import { optimizeImage } from '~/utils/imageOptimize'
 
 export const mapCombo = (raw: Record<string, unknown>, branchIds: string[] = []): Combo => {

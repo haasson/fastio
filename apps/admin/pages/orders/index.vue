@@ -18,13 +18,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useNewOrderCounter } from '~/composables/retail/useNewOrderCounter'
-import OrderStatusList from '~/components/orders/OrderStatusList.vue'
-import OrderList from '~/components/orders/OrderList.vue'
+import { useNewOrderCounter } from '~/features/orders'
+import OrderStatusList from '~/features/orders/components/OrderStatusList.vue'
+import OrderList from '~/features/orders/components/OrderList.vue'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
-import { useOrderCounts } from '~/composables/retail/useOrderCounts'
+import { useOrderStatusesStore } from '~/features/orders'
+import { useOrderCounts } from '~/features/orders'
 
 const { count: newOrderCount, reset: resetOrderCount } = useNewOrderCounter()
 

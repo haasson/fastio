@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapDish } from '../dishes'
+import { mapDish } from '../api/dishes'
 
 const makeDishRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'dish-1',

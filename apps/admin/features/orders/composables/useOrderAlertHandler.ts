@@ -1,6 +1,6 @@
 import { onUnmounted } from 'vue'
-import { orderEvents } from '~/composables/retail/useOrdersChannel'
-import { useNewOrderCounter } from '~/composables/retail/useNewOrderCounter'
+import { orderEvents } from './useOrdersChannel'
+import { useNewOrderCounter } from './useNewOrderCounter'
 import { alertNewOrder } from '~/utils/alerts'
 
 /**

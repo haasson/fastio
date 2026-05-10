@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { OrderNote } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { OrderNoteRow } from '../db-types'
+import type { OrderNoteRow } from '~/utils/api/db-types'
 
 export const mapOrderNote = (raw: Record<string, unknown>): OrderNote => {
   const row = raw as OrderNoteRow

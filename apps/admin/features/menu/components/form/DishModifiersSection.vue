@@ -137,7 +137,7 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
 import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, UiAlert, useMessage } from '@fastio/ui'
-import { useDishModifiersEditor } from '~/composables/menu/useDishModifiersEditor'
+import { useDishModifiersEditor } from '../../composables/useDishModifiersEditor'
 import HintPopover from '~/components/ui/HintPopover.vue'
 import { useTerms } from '~/composables/useTerms'
 

@@ -2,7 +2,7 @@ import { computed, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useNow, createSharedComposable } from '@vueuse/core'
 import type { Order, OrderStatus } from '@fastio/shared'
-import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
+import { useOrderStatusesStore } from '../stores/order-statuses'
 import { useTenantStore } from '~/stores/tenant'
 import { formatRelativeTime, getAllowedStatuses } from '@fastio/shared'
 

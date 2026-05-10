@@ -1,6 +1,6 @@
 import { type Ref } from 'vue'
-import { useOrdersChannel } from '~/composables/retail/useOrdersChannel'
-import { useOrderAlertHandler } from '~/composables/retail/useOrderAlertHandler'
+import { useOrdersChannel } from '~/features/orders'
+import { useOrderAlertHandler } from '~/features/orders'
 import { useTableCallsChannel } from '~/features/tables'
 import { useTableCallAlertHandler } from '~/features/tables'
 import { useKitchenQueueChannel } from '~/features/kitchen'

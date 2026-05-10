@@ -4,8 +4,8 @@ import { useMessage } from '@fastio/ui'
 import type { Table, OrderItem } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
-import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
-import type { DishPickerResult } from '~/components/menu/DishPickerModal.vue'
+import { useOrderStatusesStore } from '~/features/orders'
+import type { DishPickerResult } from '~/features/menu/components/DishPickerModal.vue'
 import type { TableSessionItem } from '../api/tables'
 
 export function useAddDishToTable(getTenantId: () => string | null) {

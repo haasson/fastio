@@ -51,6 +51,8 @@ const RETAIL_GLOBS = [
   'features/reservations/**',
   'features/tables/**',
   'features/promotions/**',
+  'features/orders/**',
+  'features/menu/**',
 ]
 
 // Файлы, которым по дизайну разрешено знать обе вертикали.
@@ -95,11 +97,21 @@ const ALIAS_VERTICAL_PATTERNS = {
     '~/pages/tables/**',
     '~/pages/reservations/**',
     '~/pages/promotions/**',
-    // Modular alias paths
+    // Modular alias paths — и barrel (~/features/X), и deep (~/features/X/...).
+    // Barrel-форма нужна, чтобы no-restricted-imports срабатывал и на cross-vertical
+    // импорт через canonical barrel.
+    '~/features/kitchen',
     '~/features/kitchen/**',
+    '~/features/reservations',
     '~/features/reservations/**',
+    '~/features/tables',
     '~/features/tables/**',
+    '~/features/promotions',
     '~/features/promotions/**',
+    '~/features/orders',
+    '~/features/orders/**',
+    '~/features/menu',
+    '~/features/menu/**',
   ],
   services: [
     // Legacy alias paths
@@ -109,6 +121,7 @@ const ALIAS_VERTICAL_PATTERNS = {
     '~/pages/services/**',
     '~/pages/appointments/**',
     // Modular alias paths
+    '~/features/appointments',
     '~/features/appointments/**',
   ],
 }

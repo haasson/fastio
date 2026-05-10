@@ -1,6 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { Combo, ComboFormData } from '@fastio/shared'
-import { mapCombo } from '~/utils/api/retail/combos'
+import { mapCombo } from '../api/combos'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
 

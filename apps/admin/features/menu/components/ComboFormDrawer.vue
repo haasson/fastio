@@ -64,9 +64,9 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/stores/branch'
 import { useTenantStore } from '~/stores/tenant'
 import BasicInfoSection from '~/components/catalog/form/BasicInfoSection.vue'
-import ComboCompositionSection from '~/components/menu/form/ComboCompositionSection.vue'
+import ComboCompositionSection from './form/ComboCompositionSection.vue'
 import TagsSection from '~/components/catalog/form/TagsSection.vue'
-import SettingsSection from '~/components/menu/form/SettingsSection.vue'
+import SettingsSection from './form/SettingsSection.vue'
 
 const props = defineProps<{
   modelValue: boolean

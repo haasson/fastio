@@ -112,8 +112,8 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAddons } from '~/composables/data/useAddons'
 import { useTerms } from '~/composables/useTerms'
 import { buildAddonColumns, buildAddonPresetColumns } from '~/columns/addons'
-import AddonFormModal from '~/components/menu/AddonFormModal.vue'
-import AddonPresetFormModal from '~/components/menu/AddonPresetFormModal.vue'
+import AddonFormModal from '~/features/menu/components/AddonFormModal.vue'
+import AddonPresetFormModal from '~/features/menu/components/AddonPresetFormModal.vue'
 
 const db = useDatabase()
 const tenantStore = useTenantStore()

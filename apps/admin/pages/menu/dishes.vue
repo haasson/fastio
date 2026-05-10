@@ -46,12 +46,12 @@ import { storeToRefs } from 'pinia'
 import { isAutoCategory } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useCategories } from '~/composables/data/useCategories'
-import useDishCounts from '~/composables/retail/useDishCounts'
+import { useDishCounts } from '~/features/menu'
 import { useTags } from '~/composables/data/useTags'
 import MenuCategoryList from '~/components/catalog/CategoryTabs.vue'
-import MenuDishList from '~/components/menu/DishList.vue'
-import MenuComboList from '~/components/menu/ComboList.vue'
-import MenuVirtualDishList from '~/components/menu/VirtualDishList.vue'
+import MenuDishList from '~/features/menu/components/DishList.vue'
+import MenuComboList from '~/features/menu/components/ComboList.vue'
+import MenuVirtualDishList from '~/features/menu/components/VirtualDishList.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 

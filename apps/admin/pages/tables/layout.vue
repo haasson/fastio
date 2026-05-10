@@ -57,7 +57,7 @@ import { useGate } from '~/composables/plan/useGate'
 import TablesCanvas from '~/features/tables/components/TablesCanvas.vue'
 import TableDetailDrawer from '~/features/tables/components/TableDetailDrawer.vue'
 import ReservationDrawer from '~/features/reservations/components/ReservationDrawer.vue'
-import DishPickerModal from '~/components/menu/DishPickerModal.vue'
+import DishPickerModal from '~/features/menu/components/DishPickerModal.vue'
 
 const ctx = useTablesContext()
 const todayReservations = inject(TodayReservationsKey, computed(() => []))

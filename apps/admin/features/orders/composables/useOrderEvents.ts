@@ -1,5 +1,5 @@
 import { computed, type Ref } from 'vue'
-import { mapOrderEvent } from '~/utils/api/retail/order-events'
+import { mapOrderEvent } from '../api/order-events'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
 

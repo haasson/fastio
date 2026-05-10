@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapModifierGroup, mapModifierOption } from '../modifiers'
+import { mapModifierGroup, mapModifierOption } from '../api/modifiers'
 
 const makeOptionRow = (overrides: Record<string, unknown> = {}) => ({
   id: 'opt-1',

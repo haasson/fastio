@@ -143,7 +143,7 @@ import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiSele
 import type { Promotion, PromotionFormData, PromotionConditions } from '@fastio/shared'
 import type { ValidationRule } from '@fastio/kit'
 import { isoToTs, tsToIso, tsToIsoEndOfDay } from '@fastio/shared'
-import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
+import DishPickerModal, { type DishPickerResult } from '~/features/menu/components/DishPickerModal.vue'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 
 const props = defineProps<{

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatEventText, formatFieldValue } from '../format-order'
+import { formatEventText, formatFieldValue } from '../utils/format-order'
 
 describe('formatEventText', () => {
   describe('order_created', () => {

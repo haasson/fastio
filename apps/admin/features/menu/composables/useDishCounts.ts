@@ -2,7 +2,7 @@ import { ref, watch, type Ref } from 'vue'
 import type { Category } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
 
-const useDishCounts = (tenantId: Ref<string>, categories?: Ref<Category[]>) => {
+export const useDishCounts = (tenantId: Ref<string>, categories?: Ref<Category[]>) => {
   const api = useDatabase()
   const counts = ref<Record<string, number>>({})
 
@@ -32,5 +32,3 @@ const useDishCounts = (tenantId: Ref<string>, categories?: Ref<Category[]>) => {
 
   return { counts, refresh }
 }
-
-export default useDishCounts

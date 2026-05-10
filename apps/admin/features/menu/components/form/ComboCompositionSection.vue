@@ -83,7 +83,7 @@ import { UiCollapseItem, UiButton, UiSkeleton } from '@fastio/ui'
 import DishItemRow from '~/components/ui/DishItemRow.vue'
 import type { Addon, Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import DishPickerModal, { type DishPickerResult } from '~/components/menu/DishPickerModal.vue'
+import DishPickerModal, { type DishPickerResult } from '../DishPickerModal.vue'
 import { useTerms } from '~/composables/useTerms'
 
 type DishInfo = { id: string; name: string; categoryId: string; price: number; active: boolean; deleted?: boolean }

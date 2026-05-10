@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T12:21:35.925Z",
+  "generated_at": "2026-05-10T12:28:32.494Z",
   "stats": {
-    "files": 98,
+    "files": 97,
     "pages": 0,
-    "symbols": 165,
+    "symbols": 164,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -92,19 +92,6 @@
           "kind": "function",
           "hash": "53eb7845",
           "purpose": "Управление выбором/созданием зоны: selectZone/onZoneClick/startDraw/onPolygonDrawn/closePanel"
-        }
-      ]
-    },
-    "composables/menu/useDishModifiersEditor.ts": {
-      "kind": "ts",
-      "hash": "70486d1d9da6",
-      "purpose": "Редактор модификаторов блюда: подгрузка групп, копирование с другого блюда, toggle опций, default-выбор",
-      "symbols": [
-        {
-          "name": "useDishModifiersEditor",
-          "kind": "function",
-          "hash": "b92d4702",
-          "purpose": "Состояние присоединённых групп + addGroup/removeGroup/copyFromDish/toggleOption/setDefault/getModifiers"
         }
       ]
     },

@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Order, OrderItem, OrderDeliveryType, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import { normalizePhone, orderItemKey } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { OrderRow, OrderItemRow } from '../db-types'
+import type { OrderRow, OrderItemRow } from '~/utils/api/db-types'
 import { filterDefined } from '~/utils/filterDefined'
 
 const ORDER_SELECT = '*, order_items(*)' as const

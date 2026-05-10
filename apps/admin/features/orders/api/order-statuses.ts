@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { OrderStatus, OrderStatusData } from '@fastio/shared'
 import { query } from '~/utils/query'
 import { filterDefined } from '~/utils/filterDefined'
-import type { OrderStatusRow } from '../db-types'
+import type { OrderStatusRow } from '~/utils/api/db-types'
 
 export const mapOrderStatus = (raw: Record<string, unknown>): OrderStatus => {
   const row = raw as OrderStatusRow

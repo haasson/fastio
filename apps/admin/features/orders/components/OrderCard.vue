@@ -130,7 +130,7 @@ import { getItemUnitPrice, formatPhone, utcIsoToLocalDateTime, todayInTz, addDay
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/retail/order-status-groups'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/retail/order-options'
-import { useOrderCard } from '~/composables/retail/useOrderCard'
+import { useOrderCard } from '../composables/useOrderCard'
 import { useTenantStore } from '~/stores/tenant'
 import { useGate } from '~/composables/plan/useGate'
 

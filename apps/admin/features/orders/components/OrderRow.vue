@@ -54,7 +54,7 @@ import { formatPhone } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/retail/order-options'
-import { useOrderCard } from '~/composables/retail/useOrderCard'
+import { useOrderCard } from '../composables/useOrderCard'
 
 const props = defineProps<{
   order: Order

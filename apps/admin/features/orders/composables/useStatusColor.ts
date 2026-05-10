@@ -1,7 +1,7 @@
 import { storeToRefs } from 'pinia'
 import { COLORS } from '@fastio/kit'
 import { STATUS_GROUP_COLORS } from '~/config/retail/order-status-groups'
-import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
+import { useOrderStatusesStore } from '../stores/order-statuses'
 
 export const useStatusColor = () => {
   const { statuses } = storeToRefs(useOrderStatusesStore())
