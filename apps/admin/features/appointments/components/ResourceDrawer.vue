@@ -126,7 +126,7 @@ import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,
 } from '~/features/appointments/utils/scheduleConflictCheck'
 import { reportError } from '~/utils/reportError'
-import OffPeriodsSection from '~/components/appointments/OffPeriodsSection.vue'
+import OffPeriodsSection from '~/features/appointments/components/OffPeriodsSection.vue'
 
 const props = defineProps<{
   modelValue: boolean

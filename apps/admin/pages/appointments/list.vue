@@ -75,7 +75,7 @@ import { useVisitsList } from '~/features/appointments/composables/useVisitsList
 import { useAppointmentInboxCounter } from '~/features/appointments/composables/useAppointmentInboxCounter'
 import { useInboxTableColumns, type RowActionKind } from '~/features/appointments/composables/useInboxTableColumns'
 import { reportError } from '~/utils/reportError'
-import CancelGroupModal from '~/components/appointments/CancelGroupModal.vue'
+import CancelGroupModal from '~/features/appointments/components/CancelGroupModal.vue'
 
 const tenantStore = useTenantStore()
 const { currentTenantId, timezone } = storeToRefs(tenantStore)

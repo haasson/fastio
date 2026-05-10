@@ -57,7 +57,7 @@ import { UiButton, UiText, UiBadge, UiSkeleton, UiEmpty, useConfirm, useMessage 
 import type { ScheduleTemplate } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useDatabase } from '~/composables/data/useDatabase'
-import TemplateDrawer from '~/components/appointments/TemplateDrawer.vue'
+import TemplateDrawer from '~/features/appointments/components/TemplateDrawer.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'

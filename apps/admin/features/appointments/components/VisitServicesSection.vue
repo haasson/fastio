@@ -59,10 +59,10 @@
 import { ref } from 'vue'
 import { UiButton, UiCard, UiTitle, UiEmpty } from '@fastio/ui'
 import type { Appointment, ServiceWithBranchIds } from '@fastio/shared'
-import type { EditorService } from '~/components/appointments/types'
-import { isSlotChanged } from '~/components/appointments/types'
-import AddServiceModal from '~/components/appointments/AddServiceModal.vue'
-import ServiceCard from '~/components/appointments/ServiceCard.vue'
+import type { EditorService } from '~/features/appointments/components/types'
+import { isSlotChanged } from '~/features/appointments/components/types'
+import AddServiceModal from '~/features/appointments/components/AddServiceModal.vue'
+import ServiceCard from '~/features/appointments/components/ServiceCard.vue'
 
 const props = defineProps<{
   services: EditorService[]

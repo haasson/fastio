@@ -6,7 +6,7 @@
 import { computed, watch } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
 import { useAppointmentEvents } from '~/features/appointments/composables/useAppointmentEvents'
-import AppointmentEventTimeline from '~/components/appointments/AppointmentEventTimeline.vue'
+import AppointmentEventTimeline from '~/features/appointments/components/AppointmentEventTimeline.vue'
 
 const props = defineProps<{
   appointmentId: string

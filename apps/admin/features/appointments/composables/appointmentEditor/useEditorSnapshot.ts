@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import type { EditorState, EditorSnapshot } from '~/components/appointments/types'
+import type { EditorState, EditorSnapshot } from '~/features/appointments/components/types'
 import { buildServicesKey } from './utils'
 
 /**

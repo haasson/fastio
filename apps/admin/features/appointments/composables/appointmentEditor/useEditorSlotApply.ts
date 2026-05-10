@@ -1,5 +1,5 @@
 import { ref, watch, type Ref } from 'vue'
-import type { EditorService } from '~/components/appointments/types'
+import type { EditorService } from '~/features/appointments/components/types'
 import type { useServiceSlots } from '~/composables/services/useServiceSlots'
 
 type SlotsResultRef = ReturnType<typeof useServiceSlots>['result']

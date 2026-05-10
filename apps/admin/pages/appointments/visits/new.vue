@@ -33,7 +33,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { UiButton } from '@fastio/ui'
-import VisitContent, { type EditorPreset } from '~/components/appointments/VisitContent.vue'
+import VisitContent, { type EditorPreset } from '~/features/appointments/components/VisitContent.vue'
 import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
 
 const route = useRoute()

@@ -81,8 +81,8 @@ import { reportError } from '~/utils/reportError'
 import { buildTimelineAvailability, type TimelineAvailability } from '~/features/appointments/utils/timelineAvailability'
 import { useTimelineMoveBlocker } from '~/features/appointments/composables/useTimelineMoveBlocker'
 import { useEditorCompetencies } from '~/features/appointments/composables/useEditorCompetencies'
-import AppointmentTimelineGrid from '~/components/appointments/AppointmentTimelineGrid.vue'
-import MoveAppointmentConfirmModal, { type MovePending } from '~/components/appointments/MoveAppointmentConfirmModal.vue'
+import AppointmentTimelineGrid from '~/features/appointments/components/AppointmentTimelineGrid.vue'
+import MoveAppointmentConfirmModal, { type MovePending } from '~/features/appointments/components/MoveAppointmentConfirmModal.vue'
 
 const router = useRouter()
 

@@ -124,10 +124,10 @@ import {
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
 import { useAppointmentEditorState } from '~/features/appointments/composables/useAppointmentEditorState'
-import VisitServicesSection from '~/components/appointments/VisitServicesSection.vue'
-import AppointmentServiceSlotsSection from '~/components/appointments/AppointmentServiceSlotsSection.vue'
-import AppointmentCustomerSection from '~/components/appointments/AppointmentCustomerSection.vue'
-import AppointmentEventTimeline from '~/components/appointments/AppointmentEventTimeline.vue'
+import VisitServicesSection from '~/features/appointments/components/VisitServicesSection.vue'
+import AppointmentServiceSlotsSection from '~/features/appointments/components/AppointmentServiceSlotsSection.vue'
+import AppointmentCustomerSection from '~/features/appointments/components/AppointmentCustomerSection.vue'
+import AppointmentEventTimeline from '~/features/appointments/components/AppointmentEventTimeline.vue'
 
 export type EditorPreset = {
   date: string | null

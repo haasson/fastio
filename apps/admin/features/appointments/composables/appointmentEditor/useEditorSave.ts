@@ -10,8 +10,8 @@ import { useAuthStore } from '~/stores/auth'
 import { useBranchStore } from '~/stores/branch'
 import { reportError } from '~/utils/reportError'
 import { inheritAppointmentStatus } from '~/features/appointments/composables/appointmentEditor/utils'
-import type { EditorState } from '~/components/appointments/types'
-import { isSlotChanged } from '~/components/appointments/types'
+import type { EditorState } from '~/features/appointments/components/types'
+import { isSlotChanged } from '~/features/appointments/components/types'
 import { useAppointmentEventLogger } from '~/features/appointments/composables/useAppointmentEventLogger'
 
 type SaveDeps = {
