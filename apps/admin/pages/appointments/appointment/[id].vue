@@ -74,7 +74,7 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
 import { useAppointmentViewScope } from '~/features/appointments'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import { storeToRefs } from 'pinia'
 
 const route = useRoute()

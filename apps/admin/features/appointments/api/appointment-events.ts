@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AppointmentEvent } from '@fastio/shared'
 import { mapAppointmentEvent } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 export type AddAppointmentEventParams = Omit<AppointmentEvent, 'id' | 'createdAt'>
 

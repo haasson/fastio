@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BillingTransaction } from '@fastio/shared'
 import { DEFAULT_TRIAL_DAYS } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const mapTransaction = (row: Record<string, unknown>): BillingTransaction => ({
   id: row.id as string,

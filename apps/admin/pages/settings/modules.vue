@@ -50,7 +50,7 @@ import { useModules, useModuleConfigs } from '~/composables/plan/useModules'
 import { usePlans } from '~/composables/plan/usePlans'
 import type { ModuleKey } from '~/config/modules'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { checkModuleDisable, type ToggleIssue } from '~/utils/moduleToggleChecks'
+import { checkModuleDisable, type ToggleIssue } from '~/shared/utils/moduleToggleChecks'
 import ModuleCard from '~/features/settings/components/ModuleCard.vue'
 import ModuleToggleIssuesModal from '~/features/settings/components/ModuleToggleIssuesModal.vue'
 

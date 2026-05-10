@@ -3,7 +3,7 @@ import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio
 import { mapCategory } from '@fastio/shared'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 export const useCategories = (tenantId: Ref<string>, kind: CategoryKind = 'food') => {
   const api = useDatabase()

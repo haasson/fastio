@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { SupportTicket, SupportMessage, SupportSenderType } from '@fastio/shared'
-import { query } from '~/utils/query'
-import { optimizeImage } from '~/utils/imageOptimize'
+import { query } from '~/shared/utils/query'
+import { optimizeImage } from '~/shared/utils/imageOptimize'
 
 // ── Row types (snake_case from DB) ──────────────────────────
 

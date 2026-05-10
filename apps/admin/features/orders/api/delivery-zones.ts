@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DeliveryZone, DeliveryZoneFormData, DeliveryZoneRow } from '@fastio/shared'
 import { mapDeliveryZoneRow } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 export const mapDeliveryZone = (raw: Record<string, unknown>): DeliveryZone => mapDeliveryZoneRow(raw as DeliveryZoneRow)
 

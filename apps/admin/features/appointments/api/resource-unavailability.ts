@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ResourceUnavailability, ResourceUnavailabilityReason } from '@fastio/shared'
 import { mapResourceUnavailability } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 import type { ResourceUnavailabilityRow } from '~/utils/api/db-types'
 
 export type ResourceUnavailabilityFormData = {

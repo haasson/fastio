@@ -139,7 +139,7 @@ import { useAppointmentSettingsStore } from '~/features/appointments'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTags } from '~/features/catalog'
 import { useBranchToggle } from '~/features/branches'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import BasicInfoSection from '~/features/catalog/components/form/BasicInfoSection.vue'
 import TagsSection from '~/features/catalog/components/form/TagsSection.vue'
 

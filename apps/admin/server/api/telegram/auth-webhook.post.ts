@@ -9,7 +9,7 @@ import {
   REMINDER_OPTIONS,
 } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 const SKIP_PHONE_TEXT = 'Войти без номера'
 

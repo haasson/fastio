@@ -10,7 +10,7 @@ import {
   mapScheduleTemplateDay,
 } from '@fastio/shared'
 import type { ScheduleTemplateRow, ScheduleTemplateDayRow } from '~/utils/api/db-types'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const TEMPLATE_FIELDS
   = 'id, tenant_id, name, type, cycle_length, reference_branch_id, sort_order, created_at, updated_at'

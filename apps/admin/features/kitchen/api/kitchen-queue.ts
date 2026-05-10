@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { KitchenQueueItem } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 import type { KitchenQueueRow } from '~/utils/api/db-types'
 
 /** Realtime events don't include joined data, so orderNumber arrives as null.

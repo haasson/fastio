@@ -48,7 +48,7 @@ import type { BusinessType } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { usePlans } from '~/composables/plan/usePlans'
 import { useBillingConfig } from '~/composables/plan/useBillingConfig'
-import { getPlanFeatureLabels, getPrevPlanName } from '~/utils/planFeatureLabels'
+import { getPlanFeatureLabels, getPrevPlanName } from '~/shared/utils/planFeatureLabels'
 import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{

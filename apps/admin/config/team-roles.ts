@@ -1,5 +1,5 @@
 import type { PermissionKey } from '@fastio/shared'
-import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
+import { AUDIT_LOG_ENABLED } from '~/shared/utils/featureFlags'
 
 export type PermissionGroup = {
   label: string

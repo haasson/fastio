@@ -115,7 +115,7 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import KitchenAssemblyCard from '~/features/kitchen/components/KitchenAssemblyCard.vue'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import { mergeRealtimeItem } from '~/features/kitchen'
 
 const api = useDatabase()

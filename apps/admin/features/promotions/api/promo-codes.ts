@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { PromoCode, PromoCodeFormData } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 export const mapPromoCode = (raw: Record<string, unknown>): PromoCode => ({
   id: raw.id as string,

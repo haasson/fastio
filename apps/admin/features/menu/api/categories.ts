@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio/shared'
 import { mapCategory } from '@fastio/shared'
-import { query } from '~/utils/query'
-import { filterDefined } from '~/utils/filterDefined'
-import { optimizeImage } from '~/utils/imageOptimize'
+import { query } from '~/shared/utils/query'
+import { filterDefined } from '~/shared/utils/filterDefined'
+import { optimizeImage } from '~/shared/utils/imageOptimize'
 
 type CategoryAddPayload = Required<Pick<CategoryData, 'name' | 'order'>> & CategoryData & { type?: CategoryType; kind: CategoryKind }
 

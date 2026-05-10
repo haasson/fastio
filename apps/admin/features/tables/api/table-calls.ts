@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TableCallType, TableCall } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 import type { TableCallTypeRow, TableCallRow } from '~/utils/api/db-types'
 
 const mapCallType = (raw: Record<string, unknown>): TableCallType => {

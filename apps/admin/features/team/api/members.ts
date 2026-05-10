@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TenantMember } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 import type { TenantMemberRow } from '~/utils/api/db-types'
 
 const mapMember = (raw: Record<string, unknown>): TenantMember => {

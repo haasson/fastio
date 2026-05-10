@@ -12,7 +12,7 @@ import { provide, onMounted, computed } from 'vue'
 import { useDark } from '@vueuse/core'
 import { navigateTo, useHead } from '#imports'
 import { UiConfigProvider, UiConfirmModal } from '@fastio/ui'
-import { INVITE_PENDING_KEY } from '~/utils/constants'
+import { INVITE_PENDING_KEY } from '~/shared/utils/constants'
 import { useTenantStore } from '~/shared/stores/tenant'
 
 const tenantStore = useTenantStore()

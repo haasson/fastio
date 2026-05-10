@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ReservationSettings, ReservationSettingsFormData } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const mapSettings = (raw: Record<string, unknown>): ReservationSettings => ({
   id: raw.id as string,

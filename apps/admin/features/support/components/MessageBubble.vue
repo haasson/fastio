@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { UiText } from '@fastio/ui'
 import type { SupportMessage } from '@fastio/shared'
-import { formatRelativeDate } from '~/utils/formatRelativeDate'
+import { formatRelativeDate } from '~/shared/utils/formatRelativeDate'
 
 defineProps<{
   message: SupportMessage

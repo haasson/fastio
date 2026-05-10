@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BusinessType, Plan, PlanFeatures } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const mapPlan = (row: Record<string, unknown>): Plan => ({
   id: row.id as string,

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BusinessType, MenuStyle } from '@fastio/shared'
 import type { ModuleConfig } from '~/config/modules'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const mapModuleConfig = (row: Record<string, unknown>): ModuleConfig => ({
   key: row.key as ModuleConfig['key'],

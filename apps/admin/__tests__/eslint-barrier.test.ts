@@ -45,8 +45,8 @@ const cases = [
   },
   {
     name: 'shared не может импортировать вертикали через относительный путь (retail)',
-    file: 'utils/__tests__/__synthetic__.test.ts',
-    code: 'import { x } from \'../retail/promoStatus\'\nexport const y = x\n',
+    file: 'shared/utils/__tests__/__synthetic__.test.ts',
+    code: 'import { x } from \'../../../utils/retail/promoStatus\'\nexport const y = x\n',
     expectMessage: /Shared-код НЕ ДОЛЖЕН знать о вертикалях/,
   },
   {

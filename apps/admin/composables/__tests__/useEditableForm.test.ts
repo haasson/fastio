@@ -10,7 +10,7 @@ vi.mock('@fastio/ui', () => ({
   useMessage: () => ({ success: successMock, error: errorMock }),
 }))
 
-vi.mock('~/utils/reportError', () => ({
+vi.mock('~/shared/utils/reportError', () => ({
   reportError: reportErrorMock,
 }))
 

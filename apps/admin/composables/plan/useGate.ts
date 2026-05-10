@@ -1,5 +1,5 @@
 import { computed, type ComputedRef } from 'vue'
-import { AUDIT_LOG_ENABLED } from '~/utils/featureFlags'
+import { AUDIT_LOG_ENABLED } from '~/shared/utils/featureFlags'
 import { ok, deny, useGateInfra } from './useGate.shared'
 import type { GateRegistry, GateResult, GateKey } from './useGate.types'
 

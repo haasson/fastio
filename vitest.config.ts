@@ -11,6 +11,10 @@ export default defineConfig({
       'pinia': resolve(__dirname, 'apps/admin/node_modules/pinia'),
       'vue-router': resolve(__dirname, 'apps/admin/test-utils/vue-router-stub.ts'),
       '#imports': resolve(__dirname, 'apps/admin/test-utils/nuxt-imports-stub.ts'),
+      // Транзитный алиас для перенесённых admin-utils (Phase 5.2): storefront-тесты
+      // и server-код мокают/импортят '~/utils/reportError', т.к. vitest alias `~`
+      // указывает на apps/admin. Удалить после storefront-миграции.
+      '~/utils/reportError': resolve(__dirname, 'apps/admin/shared/utils/reportError.ts'),
       '~': resolve(__dirname, 'apps/admin'),
       '@fastio/shared': resolve(__dirname, 'packages/shared/src'),
       '@fastio/ui': resolve(__dirname, 'packages/ui/src'),

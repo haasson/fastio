@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiModal, UiAlert } from '@fastio/ui'
-import type { ToggleIssue } from '~/utils/moduleToggleChecks'
+import type { ToggleIssue } from '~/shared/utils/moduleToggleChecks'
 
 const props = defineProps<{
   issues: ToggleIssue[]

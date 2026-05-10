@@ -6,7 +6,7 @@ import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
 import { usePlans } from '~/composables/plan/usePlans'
 import { useModuleConfigs } from '~/composables/plan/useModules'
 import { useRoles } from '~/features/team'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 type MembershipWithTenant = {
   id: string

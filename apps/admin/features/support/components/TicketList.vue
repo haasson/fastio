@@ -51,8 +51,8 @@
 <script setup lang="ts">
 import { UiButton, UiText, UiTag, UiCounter, UiEmpty, UiCard } from '@fastio/ui'
 import type { SupportTicket } from '@fastio/shared'
-import { supportStatusMap as statusMap } from '~/utils/supportStatus'
-import { formatRelativeDate } from '~/utils/formatRelativeDate'
+import { supportStatusMap as statusMap } from '~/shared/utils/supportStatus'
+import { formatRelativeDate } from '~/shared/utils/formatRelativeDate'
 
 defineProps<{
   tickets: SupportTicket[]

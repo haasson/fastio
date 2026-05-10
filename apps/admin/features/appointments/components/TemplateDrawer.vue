@@ -139,7 +139,7 @@ import { useScheduleConflictCheck } from '../composables/useScheduleConflictChec
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,
 } from '../utils/scheduleConflictCheck'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 const props = defineProps<{
   modelValue: boolean

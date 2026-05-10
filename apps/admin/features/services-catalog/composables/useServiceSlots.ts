@@ -7,7 +7,7 @@ import type {
 } from '@fastio/shared'
 import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { useGroupSlotSearch, useAppointmentSettingsStore, appointmentBus } from '~/features/appointments'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 /**
  * Поиск слотов для ОДНОЙ услуги в фиксированный день. Под капотом — тот же

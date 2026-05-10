@@ -7,7 +7,7 @@ import { orderEvents } from './useOrdersChannel'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import { useKitchenStatusBlock } from '~/features/kitchen'
 
 export type UseOrdersOptions = {

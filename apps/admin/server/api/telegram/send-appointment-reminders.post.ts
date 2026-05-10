@@ -2,7 +2,7 @@ import { defineEventHandler, getHeader } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { MAX_REMINDER_MINUTES, REMINDER_OPTIONS, formatAppointmentDateTime } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 type ReminderRow = {
   id: string

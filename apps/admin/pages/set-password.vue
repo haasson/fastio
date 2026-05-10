@@ -74,7 +74,7 @@ import { definePageMeta, useRoute, navigateTo } from '#imports'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert, UiCheckbox } from '@fastio/ui'
 import AppBrand from '~/components/ui/AppBrand.vue'
-import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/utils/constants'
+import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/shared/utils/constants'
 
 definePageMeta({ layout: false })
 

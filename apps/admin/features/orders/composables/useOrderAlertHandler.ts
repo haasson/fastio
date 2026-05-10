@@ -1,7 +1,7 @@
 import { onUnmounted } from 'vue'
 import { orderEvents } from './useOrdersChannel'
 import { useNewOrderCounter } from './useNewOrderCounter'
-import { alertNewOrder } from '~/utils/alerts'
+import { alertNewOrder } from '~/shared/utils/alerts'
 
 /**
  * Reacts to new orders from the shared channel: counter + alert.

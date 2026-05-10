@@ -1,10 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, parseSchedulingConfig } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 import type { TenantRow } from './db-types'
-import { filterDefined } from '~/utils/filterDefined'
-import { optimizeImage } from '~/utils/imageOptimize'
+import { filterDefined } from '~/shared/utils/filterDefined'
+import { optimizeImage } from '~/shared/utils/imageOptimize'
 
 const DEFAULT_KITCHEN_CONFIG: KitchenConfig = {
   sourceStatusId: null,

@@ -5,7 +5,7 @@ import { visitsBus } from './useVisitsChannel'
 import { useAppointmentInboxCounter } from './useAppointmentInboxCounter'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useBranchStore } from '~/shared/stores/branch'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 // Счётчик «Новых» в инбоксе. После 230 заявка — это визит со status='request',
 // отдельной таблицы appointment_requests больше нет. countNew учитывает оба

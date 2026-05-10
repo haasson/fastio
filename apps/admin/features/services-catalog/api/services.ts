@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BookingMode, Service, ServiceFormData, ServiceWithBranchIds } from '@fastio/shared'
 import { mapService } from '@fastio/shared'
 import type { ServiceRow } from '~/utils/api/db-types'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const SERVICE_FIELDS = `
   id, tenant_id, category_id, name, description, long_description, price, duration,
@@ -187,7 +187,7 @@ export const servicesApi = {
   },
 
   async uploadPhoto(sb: SupabaseClient, tenantId: string, file: File): Promise<string> {
-    const { optimizeImage } = await import('~/utils/imageOptimize')
+    const { optimizeImage } = await import('~/shared/utils/imageOptimize')
     const blob = await optimizeImage(file)
     const path = `services/${tenantId}/${crypto.randomUUID()}.webp`
 

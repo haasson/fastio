@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T13:13:59.761Z",
+  "generated_at": "2026-05-10T13:26:59.783Z",
   "stats": {
     "files": 86,
     "pages": 0,
@@ -97,7 +97,7 @@
     },
     "composables/plan/useBillingConfig.ts": {
       "kind": "ts",
-      "hash": "af25a11d6aae",
+      "hash": "b0e16ad27b1e",
       "purpose": "Глобальный одноразовый кэш billing_config (длительность триала) с failed-флагом для UI",
       "symbols": [
         {
@@ -192,7 +192,7 @@
     },
     "composables/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "dd1822b83e38",
+      "hash": "0033fd3d94f8",
       "purpose": "Реестр гейтов фич админки: feature-only (модули/тариф) и permission-aware (роли); единая точка проверки доступа",
       "symbols": [
         {
@@ -268,7 +268,7 @@
     },
     "composables/plan/usePlans.ts": {
       "kind": "ts",
-      "hash": "901622969d3a",
+      "hash": "d560a2bfb219",
       "purpose": "Глобальный реестр доступных тарифов с lazy-загрузкой и хелперами сортировки/имён",
       "symbols": [
         {
@@ -320,7 +320,7 @@
     },
     "composables/ui/useEditableForm.ts": {
       "kind": "ts",
-      "hash": "398c960cb932",
+      "hash": "be575054b7c3",
       "purpose": "Универсальная фабрика settings-формы поверх reactive source: build/reset/submit с дефолтным success/error-тостом и reportError",
       "symbols": [
         {
@@ -491,198 +491,6 @@
         }
       ]
     },
-    "utils/alerts.ts": {
-      "kind": "ts",
-      "hash": "8f7c34f9e141",
-      "purpose": "Звуковые и OS-уведомления админки: бип через Web Audio при активной вкладке, Notification при скрытой",
-      "symbols": [
-        {
-          "name": "requestNotificationPermission",
-          "kind": "function",
-          "hash": "d75618f6",
-          "purpose": "Запрос Notification.permission при первом взаимодействии (вызывается из layout)"
-        },
-        {
-          "name": "alertNewOrder",
-          "kind": "function",
-          "hash": "39f99200",
-          "purpose": "Алерт нового заказа: бип 880Hz или OS-нотификация"
-        },
-        {
-          "name": "alertTableCall",
-          "kind": "function",
-          "hash": "22283625",
-          "purpose": "Алерт вызова официанта: двойной бип или OS-нотификация с типом вызова"
-        }
-      ]
-    },
-    "utils/constants.ts": {
-      "kind": "ts",
-      "hash": "7cb0325478d5",
-      "purpose": "Ключи sessionStorage для invite/recovery flow Supabase",
-      "symbols": [
-        {
-          "name": "INVITE_PENDING_KEY",
-          "kind": "const",
-          "hash": "3f5e98ca",
-          "purpose": "Ключ sessionStorage: индикатор pending-инвайта (до set-password)"
-        },
-        {
-          "name": "RECOVERY_PENDING_KEY",
-          "kind": "const",
-          "hash": "f513cc8d",
-          "purpose": "Ключ sessionStorage: индикатор pending-recovery"
-        }
-      ]
-    },
-    "utils/featureFlags.ts": {
-      "kind": "ts",
-      "hash": "db1eadab8200",
-      "purpose": "Compile-time feature flags админки",
-      "symbols": [
-        {
-          "name": "AUDIT_LOG_ENABLED",
-          "kind": "const",
-          "hash": "1a724498",
-          "purpose": "Флаг показа раздела аудит-лога (сейчас false)"
-        }
-      ]
-    },
-    "utils/filterDefined.ts": {
-      "kind": "ts",
-      "hash": "289c9d7f378c",
-      "purpose": "Удаляет ключи со значением undefined из объекта (для построения patch'ей)",
-      "symbols": [
-        {
-          "name": "filterDefined",
-          "kind": "function",
-          "hash": "fe62374d",
-          "purpose": "Возвращает Partial<T> без undefined-полей"
-        }
-      ]
-    },
-    "utils/formatRelativeDate.ts": {
-      "kind": "ts",
-      "hash": "ab12eae09559",
-      "purpose": "Относительное форматирование даты на ru-RU: HH:MM, 'Вчера, HH:MM', '5 апр, HH:MM', с годом для прошлых лет",
-      "symbols": [
-        {
-          "name": "formatRelativeDate",
-          "kind": "function",
-          "hash": "cc5df0fc",
-          "purpose": "ISO-строка -> относительная дата на русском"
-        }
-      ]
-    },
-    "utils/imageOptimize.ts": {
-      "kind": "ts",
-      "hash": "2ee9c2040598",
-      "purpose": "Уменьшает изображение до max 1200px и конвертирует в WebP с качеством 0.85 через canvas",
-      "symbols": [
-        {
-          "name": "optimizeImage",
-          "kind": "function",
-          "hash": "6bfbc898",
-          "purpose": "File -> Promise<Blob> (image/webp, ужатый под лимит сторон)"
-        }
-      ]
-    },
-    "utils/moduleToggleChecks.ts": {
-      "kind": "ts",
-      "hash": "529090e3497d",
-      "purpose": "Проверяет наличие активных зависимостей модуля (заказы, бронирования, открытые столы и т.п.) перед выключением; знает обе вертикали — by design в allow-list",
-      "symbols": [
-        {
-          "name": "ToggleIssue",
-          "kind": "type",
-          "hash": "9f640dba",
-          "purpose": "{ severity: 'blocker' | 'warning'; message: string }"
-        },
-        {
-          "name": "checkModuleDisable",
-          "kind": "function",
-          "hash": "8546f837",
-          "purpose": "Async проверка блокеров и warnings отключения модуля по бизнес-данным"
-        }
-      ]
-    },
-    "utils/planFeatureLabels.ts": {
-      "kind": "ts",
-      "hash": "c823d46acca1",
-      "purpose": "Текстовые описания фич плана для тариф-карточек и confirm-диалога смены тарифа",
-      "symbols": [
-        {
-          "name": "getPlanFeatureLabels",
-          "kind": "function",
-          "hash": "694044dd",
-          "purpose": "Список лейблов фич тарифа (для showcase — базовый список по menuStyle)"
-        },
-        {
-          "name": "getPrevPlanName",
-          "kind": "function",
-          "hash": "9b2e3bc1",
-          "purpose": "Имя соседнего тарифа на ступень ниже (для строки 'Всё из тарифа X')"
-        },
-        {
-          "name": "getChangePlanConfirmText",
-          "kind": "function",
-          "hash": "f647b323",
-          "purpose": "Текст confirm-диалога смены тарифа: триал vs обычное списание"
-        }
-      ]
-    },
-    "utils/query.ts": {
-      "kind": "ts",
-      "hash": "e7be3a0c652b",
-      "purpose": "Враппер Supabase-запроса: бросает исключение и показывает naive-message при error",
-      "symbols": [
-        {
-          "name": "query",
-          "kind": "function",
-          "hash": "ee78e78a",
-          "purpose": "await query(supabasePromise) -> data; throw + toast при error"
-        }
-      ]
-    },
-    "utils/renderQr.ts": {
-      "kind": "ts",
-      "hash": "c47e28074afe",
-      "purpose": "Рендер QR-кода в data-URL через qrcode-библиотеку",
-      "symbols": [
-        {
-          "name": "renderQrToDataUrl",
-          "kind": "function",
-          "hash": "a9214437",
-          "purpose": "(url, size) -> data:image/png base64 для вставки в PDF/img"
-        }
-      ]
-    },
-    "utils/reportError.ts": {
-      "kind": "ts",
-      "hash": "a054a510d5ce",
-      "purpose": "Единая отправка ошибок в Sentry через @sentry/nuxt captureException",
-      "symbols": [
-        {
-          "name": "reportError",
-          "kind": "function",
-          "hash": "2919befe",
-          "purpose": "Отправляет ошибку в Sentry"
-        }
-      ]
-    },
-    "utils/supportStatus.ts": {
-      "kind": "ts",
-      "hash": "321b9b02630a",
-      "purpose": "Маппинг статусов тикетов поддержки на тип/лейбл UiTag",
-      "symbols": [
-        {
-          "name": "supportStatusMap",
-          "kind": "const",
-          "hash": "ae845004",
-          "purpose": "Словарь SupportTicketStatus -> { type, label }"
-        }
-      ]
-    },
     "config/google-fonts.ts": {
       "kind": "ts",
       "hash": "1a4074a66563",
@@ -846,7 +654,7 @@
     },
     "config/team-roles.ts": {
       "kind": "ts",
-      "hash": "edf00c2cc9c7",
+      "hash": "83fbe1026428",
       "purpose": "Конфиг permissionGroups для UI редактора ролей: ярлыки и группировка PermissionKey по разделам (Меню, Заказы, Кухня и т.д.)",
       "symbols": [
         {
@@ -935,7 +743,7 @@
     },
     "middleware/auth.global.ts": {
       "kind": "ts",
-      "hash": "dd4dea250f55",
+      "hash": "fa02da777fe2",
       "purpose": "Глобальная middleware: ждёт инициализацию auth, обрабатывает invite/recovery, грузит tenant, рулит /login и /suspended",
       "symbols": [
         {
@@ -974,7 +782,7 @@
     },
     "plugins/supabase.client.ts": {
       "kind": "ts",
-      "hash": "34987a2eee97",
+      "hash": "730db08e3621",
       "purpose": "Инициализирует Supabase-клиент, восстанавливает сессию в authStore и редиректит на /login при SIGNED_OUT (provide $supabase)",
       "symbols": [
         {
@@ -1013,7 +821,7 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "ba859e7db63b",
+      "hash": "b3958a245382",
       "purpose": "Дефолтный layout админки: collapsible sidebar с лого/AppNav/TenantSwitcher/BranchSelector + main slot для страницы",
       "symbols": [
         {
@@ -1487,6 +1295,198 @@
           "kind": "const",
           "hash": "3a1ef8e5",
           "purpose": "Стор тенанта: tenant/maybeTenant, memberships, currentRoleName, currentPermissions, businessType, init/switchTenant/update/changePlan"
+        }
+      ]
+    },
+    "shared/utils/alerts.ts": {
+      "kind": "ts",
+      "hash": "8f7c34f9e141",
+      "purpose": "Звуковые и OS-уведомления админки: бип через Web Audio при активной вкладке, Notification при скрытой",
+      "symbols": [
+        {
+          "name": "requestNotificationPermission",
+          "kind": "function",
+          "hash": "d75618f6",
+          "purpose": "Запрос Notification.permission при первом взаимодействии (вызывается из layout)"
+        },
+        {
+          "name": "alertNewOrder",
+          "kind": "function",
+          "hash": "39f99200",
+          "purpose": "Алерт нового заказа: бип 880Hz или OS-нотификация"
+        },
+        {
+          "name": "alertTableCall",
+          "kind": "function",
+          "hash": "22283625",
+          "purpose": "Алерт вызова официанта: двойной бип или OS-нотификация с типом вызова"
+        }
+      ]
+    },
+    "shared/utils/constants.ts": {
+      "kind": "ts",
+      "hash": "7cb0325478d5",
+      "purpose": "Ключи sessionStorage для invite/recovery flow Supabase",
+      "symbols": [
+        {
+          "name": "INVITE_PENDING_KEY",
+          "kind": "const",
+          "hash": "3f5e98ca",
+          "purpose": "Ключ sessionStorage: индикатор pending-инвайта (до set-password)"
+        },
+        {
+          "name": "RECOVERY_PENDING_KEY",
+          "kind": "const",
+          "hash": "f513cc8d",
+          "purpose": "Ключ sessionStorage: индикатор pending-recovery"
+        }
+      ]
+    },
+    "shared/utils/featureFlags.ts": {
+      "kind": "ts",
+      "hash": "db1eadab8200",
+      "purpose": "Compile-time feature flags админки",
+      "symbols": [
+        {
+          "name": "AUDIT_LOG_ENABLED",
+          "kind": "const",
+          "hash": "1a724498",
+          "purpose": "Флаг показа раздела аудит-лога (сейчас false)"
+        }
+      ]
+    },
+    "shared/utils/filterDefined.ts": {
+      "kind": "ts",
+      "hash": "289c9d7f378c",
+      "purpose": "Удаляет ключи со значением undefined из объекта (для построения patch'ей)",
+      "symbols": [
+        {
+          "name": "filterDefined",
+          "kind": "function",
+          "hash": "fe62374d",
+          "purpose": "Возвращает Partial<T> без undefined-полей"
+        }
+      ]
+    },
+    "shared/utils/formatRelativeDate.ts": {
+      "kind": "ts",
+      "hash": "ab12eae09559",
+      "purpose": "Относительное форматирование даты на ru-RU: HH:MM, 'Вчера, HH:MM', '5 апр, HH:MM', с годом для прошлых лет",
+      "symbols": [
+        {
+          "name": "formatRelativeDate",
+          "kind": "function",
+          "hash": "cc5df0fc",
+          "purpose": "ISO-строка -> относительная дата на русском"
+        }
+      ]
+    },
+    "shared/utils/imageOptimize.ts": {
+      "kind": "ts",
+      "hash": "2ee9c2040598",
+      "purpose": "Уменьшает изображение до max 1200px и конвертирует в WebP с качеством 0.85 через canvas",
+      "symbols": [
+        {
+          "name": "optimizeImage",
+          "kind": "function",
+          "hash": "6bfbc898",
+          "purpose": "File -> Promise<Blob> (image/webp, ужатый под лимит сторон)"
+        }
+      ]
+    },
+    "shared/utils/moduleToggleChecks.ts": {
+      "kind": "ts",
+      "hash": "529090e3497d",
+      "purpose": "Проверяет наличие активных зависимостей модуля (заказы, бронирования, открытые столы и т.п.) перед выключением; знает обе вертикали — by design в allow-list",
+      "symbols": [
+        {
+          "name": "ToggleIssue",
+          "kind": "type",
+          "hash": "9f640dba",
+          "purpose": "{ severity: 'blocker' | 'warning'; message: string }"
+        },
+        {
+          "name": "checkModuleDisable",
+          "kind": "function",
+          "hash": "8546f837",
+          "purpose": "Async проверка блокеров и warnings отключения модуля по бизнес-данным"
+        }
+      ]
+    },
+    "shared/utils/planFeatureLabels.ts": {
+      "kind": "ts",
+      "hash": "c823d46acca1",
+      "purpose": "Текстовые описания фич плана для тариф-карточек и confirm-диалога смены тарифа",
+      "symbols": [
+        {
+          "name": "getPlanFeatureLabels",
+          "kind": "function",
+          "hash": "694044dd",
+          "purpose": "Список лейблов фич тарифа (для showcase — базовый список по menuStyle)"
+        },
+        {
+          "name": "getPrevPlanName",
+          "kind": "function",
+          "hash": "9b2e3bc1",
+          "purpose": "Имя соседнего тарифа на ступень ниже (для строки 'Всё из тарифа X')"
+        },
+        {
+          "name": "getChangePlanConfirmText",
+          "kind": "function",
+          "hash": "f647b323",
+          "purpose": "Текст confirm-диалога смены тарифа: триал vs обычное списание"
+        }
+      ]
+    },
+    "shared/utils/query.ts": {
+      "kind": "ts",
+      "hash": "e7be3a0c652b",
+      "purpose": "Враппер Supabase-запроса: бросает исключение и показывает naive-message при error",
+      "symbols": [
+        {
+          "name": "query",
+          "kind": "function",
+          "hash": "ee78e78a",
+          "purpose": "await query(supabasePromise) -> data; throw + toast при error"
+        }
+      ]
+    },
+    "shared/utils/renderQr.ts": {
+      "kind": "ts",
+      "hash": "c47e28074afe",
+      "purpose": "Рендер QR-кода в data-URL через qrcode-библиотеку",
+      "symbols": [
+        {
+          "name": "renderQrToDataUrl",
+          "kind": "function",
+          "hash": "a9214437",
+          "purpose": "(url, size) -> data:image/png base64 для вставки в PDF/img"
+        }
+      ]
+    },
+    "shared/utils/reportError.ts": {
+      "kind": "ts",
+      "hash": "a054a510d5ce",
+      "purpose": "Единая отправка ошибок в Sentry через @sentry/nuxt captureException",
+      "symbols": [
+        {
+          "name": "reportError",
+          "kind": "function",
+          "hash": "2919befe",
+          "purpose": "Отправляет ошибку в Sentry"
+        }
+      ]
+    },
+    "shared/utils/supportStatus.ts": {
+      "kind": "ts",
+      "hash": "321b9b02630a",
+      "purpose": "Маппинг статусов тикетов поддержки на тип/лейбл UiTag",
+      "symbols": [
+        {
+          "name": "supportStatusMap",
+          "kind": "const",
+          "hash": "ae845004",
+          "purpose": "Словарь SupportTicketStatus -> { type, label }"
         }
       ]
     }

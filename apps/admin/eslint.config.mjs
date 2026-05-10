@@ -69,7 +69,7 @@ const AGGREGATOR_FILES = [
   'composables/plan/useGate.routes.ts',
   'composables/useRealtimeChannels.ts',
   'components/layout/AppNav.vue',
-  'utils/moduleToggleChecks.ts',
+  'shared/utils/moduleToggleChecks.ts',
   'config/modules.ts',
   'config/team-roles.ts',
   'pages/index.vue',
@@ -206,8 +206,9 @@ export default [
       'composables/ui/**',
       'utils/api/*.ts',
       'utils/api/__tests__/**',
-      'utils/*.ts',
-      'utils/__tests__/**',
+      'shared/utils/*.ts',
+      'shared/utils/__tests__/**',
+      'shared/stores/*.ts',
       'config/*.ts',
       'components/*.vue',
       'components/ai/**',
@@ -262,12 +263,23 @@ export default [
   // не сливаются, последний матчующий блок перезаписывает rule целиком).
   // ──────────────────────────────────────────────────────────────────────────
 
-  // shared/* НЕ ДОЛЖЕН импортить из features/*
+  // shared/* НЕ ДОЛЖЕН импортить из features/* + НЕ должен знать о вертикалях.
+  // Объединено с banFromShared, потому что rule no-restricted-imports не сливается
+  // между блоками — последний матчующий блок переопределяет правило целиком.
   {
     files: ['shared/**'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [
+          {
+            group: [
+              ...ALIAS_VERTICAL_PATTERNS.retail,
+              ...ALIAS_VERTICAL_PATTERNS.services,
+              ...RELATIVE_VERTICAL_PATTERNS.retail,
+              ...RELATIVE_VERTICAL_PATTERNS.services,
+            ],
+            message: 'Shared-код НЕ ДОЛЖЕН знать о вертикалях. Зависимость идёт только ОТ вертикали К shared (docs/vertical-isolation.md).',
+          },
           {
             group: ['~/features/**', '../features/**'],
             message: 'shared НЕ ДОЛЖЕН импортить из modules. Зависимость идёт только ОТ модуля К shared.',
@@ -277,11 +289,13 @@ export default [
     },
   },
 
-  // Исключение для глобального branch-store: он по дизайну оборачивает
-  // useBranches/useBranch из features/branches и используется ВЕЗДЕ.
+  // Исключения для shared-агрегаторов, которые по дизайну знают о features/*.
   // Аналог composables/data/useDatabase.ts в AGGREGATOR_FILES.
+  // - shared/stores/branch.ts оборачивает useBranches/useBranch из features/branches
+  // - shared/utils/moduleToggleChecks.ts проверяет блокеры отключения модулей
+  //   и должен видеть feature-state (например, активные брони)
   {
-    files: ['shared/stores/branch.ts'],
+    files: ['shared/stores/branch.ts', 'shared/utils/moduleToggleChecks.ts'],
     rules: { 'no-restricted-imports': 'off' },
   },
 

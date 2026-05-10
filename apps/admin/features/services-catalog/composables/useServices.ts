@@ -3,7 +3,7 @@ import type { ServiceFormData, ServiceWithBranchIds } from '@fastio/shared'
 import { mapService } from '@fastio/shared'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 export function useServices(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()

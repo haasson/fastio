@@ -110,7 +110,7 @@ import { useGate } from '~/composables/plan/useGate'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import KitchenQueueItem from '~/features/kitchen/components/KitchenQueueItem.vue'
 import KitchenWorkCard from '~/features/kitchen/components/KitchenWorkCard.vue'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import { mergeRealtimeItem } from '~/features/kitchen'
 
 const api = useDatabase()

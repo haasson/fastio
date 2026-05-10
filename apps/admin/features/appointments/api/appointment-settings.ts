@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AppointmentSettings, AppointmentResourceMode, BookingMode, StaffNameFormat } from '@fastio/shared'
 import { mapAppointmentSettings } from '@fastio/shared'
 import type { AppointmentSettingsRow } from '~/utils/api/db-types'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 export type AppointmentSettingsFormData = {
   resourceLabel?: string

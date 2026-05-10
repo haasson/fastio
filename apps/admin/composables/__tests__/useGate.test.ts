@@ -79,7 +79,7 @@ vi.mock('../plan/useModules', () => ({
   useModuleConfigs: () => ({ configs: moduleConfigs, loaded: ref(true), load: async () => {} }),
 }))
 
-vi.mock('~/utils/featureFlags', () => ({ AUDIT_LOG_ENABLED: false }))
+vi.mock('~/shared/utils/featureFlags', () => ({ AUDIT_LOG_ENABLED: false }))
 
 // Импорт после моков!
 const importGate = async () => (await import('../plan/useGate')).useGate

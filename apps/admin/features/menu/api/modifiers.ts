@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ModifierGroup, ModifierGroupFormData, ModifierOption } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 type ModifierGroupRow = {
   id: string

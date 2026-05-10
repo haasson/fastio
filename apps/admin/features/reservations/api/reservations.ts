@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Reservation, ReservationFormData, ReservationStatus } from '@fastio/shared'
 import { mapReservation } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const SELECT_FIELDS = `
   id, tenant_id, branch_id, customer_id,

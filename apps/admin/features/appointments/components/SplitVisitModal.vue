@@ -58,7 +58,7 @@ import { utcIsoToLocalDateTime } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import ServiceCard from './ServiceCard.vue'
 
 const props = defineProps<{

@@ -71,7 +71,7 @@ import { useAuthStore } from '~/shared/stores/auth'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useGate } from '~/composables/plan/useGate'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import CancelGroupModal from '~/features/appointments/components/CancelGroupModal.vue'
 
 const tenantStore = useTenantStore()

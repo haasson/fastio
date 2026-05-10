@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AuditLog, AddAuditLogParams } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 import type { AuditLogRow } from '~/utils/api/db-types'
 
 export type AuditLogsListParams = {

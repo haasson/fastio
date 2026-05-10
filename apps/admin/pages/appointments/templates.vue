@@ -61,7 +61,7 @@ import TemplateDrawer from '~/features/appointments/components/TemplateDrawer.vu
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 const tenantStore = useTenantStore()
 const { currentTenantId } = storeToRefs(tenantStore)

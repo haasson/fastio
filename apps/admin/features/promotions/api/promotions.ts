@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Promotion, PromotionFormData, PromotionConditions, OrderItemModifier } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 
 const mapConditions = (raw: Record<string, unknown>): PromotionConditions => ({
   ...(raw.min_order_amount != null && { minOrderAmount: Number(raw.min_order_amount) }),

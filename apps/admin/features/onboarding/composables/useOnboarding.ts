@@ -4,7 +4,7 @@ import { emptyOnboardingState, type OnboardingState } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useTerms } from '~/features/legal'
 import { useGate } from '~/composables/plan/useGate'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import {
   buildOnboardingFlow,
   type OnboardingStep,

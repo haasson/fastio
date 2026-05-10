@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Gallery, GalleryFormData, GalleryPhoto } from '@fastio/shared'
-import { query } from '~/utils/query'
-import { optimizeImage } from '~/utils/imageOptimize'
+import { query } from '~/shared/utils/query'
+import { optimizeImage } from '~/shared/utils/imageOptimize'
 
 const mapPhoto = (raw: Record<string, unknown>): GalleryPhoto => ({
   id: raw.id as string,

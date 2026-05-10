@@ -1,6 +1,6 @@
 import { onUnmounted } from 'vue'
 import { tableCallEvents } from './useTableCallsChannel'
-import { alertTableCall } from '~/utils/alerts'
+import { alertTableCall } from '~/shared/utils/alerts'
 
 /**
  * Reacts to new table calls from the shared channel: sound + OS notification.

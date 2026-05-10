@@ -1,6 +1,6 @@
 import { reactive, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { useMessage } from '@fastio/ui'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import { useFormDirty } from './useFormDirty'
 
 export type FormHandle = {

@@ -68,7 +68,7 @@ import type { BranchAddressData } from '@fastio/shared'
 import { useBranchStore } from '~/shared/stores/branch'
 import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 import { defaultBranchFormData } from '~/features/branches'
 
 const branchStore = useBranchStore()

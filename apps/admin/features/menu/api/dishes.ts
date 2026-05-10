@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Dish, DishModifierGroup, DishModifierOption } from '@fastio/shared'
-import { query } from '~/utils/query'
+import { query } from '~/shared/utils/query'
 import type { DishRow } from '~/utils/api/db-types'
-import { filterDefined } from '~/utils/filterDefined'
-import { optimizeImage } from '~/utils/imageOptimize'
+import { filterDefined } from '~/shared/utils/filterDefined'
+import { optimizeImage } from '~/shared/utils/imageOptimize'
 
 export type DishFormData = Omit<Dish, 'id' | 'tenantId'>
 
