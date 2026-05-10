@@ -24,7 +24,7 @@ vi.mock('pinia', () => ({
   storeToRefs: <T extends object>(store: T) => store as Record<keyof T, unknown>,
 }))
 
-import { useAppointmentViewScope } from '../useAppointmentViewScope'
+import { useAppointmentViewScope } from '../composables/useAppointmentViewScope'
 
 describe('useAppointmentViewScope', () => {
   beforeEach(() => {

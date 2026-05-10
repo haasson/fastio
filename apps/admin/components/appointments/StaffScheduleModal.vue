@@ -143,7 +143,7 @@ import { UiIcon } from '@fastio/icons'
 import type { Resource } from '@fastio/shared'
 import { todayInTz } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useStaffMonthSchedule, type StaffMonthDay } from '~/composables/services/useStaffMonthSchedule'
+import { useStaffMonthSchedule, type StaffMonthDay } from '~/features/appointments/composables/useStaffMonthSchedule'
 
 const tenantStore = useTenantStore()
 const tz = computed(() => tenantStore.tenant.timezone)

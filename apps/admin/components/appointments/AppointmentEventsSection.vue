@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
-import { useAppointmentEvents } from '~/composables/services/useAppointmentEvents'
+import { useAppointmentEvents } from '~/features/appointments/composables/useAppointmentEvents'
 import AppointmentEventTimeline from '~/components/appointments/AppointmentEventTimeline.vue'
 
 const props = defineProps<{

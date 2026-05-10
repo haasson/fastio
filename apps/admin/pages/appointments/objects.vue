@@ -64,7 +64,7 @@ import ResourceDrawer from '~/components/appointments/ResourceDrawer.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
-import { useResourcePresence, type PresenceStatus } from '~/composables/services/useResourcePresence'
+import { useResourcePresence, type PresenceStatus } from '~/features/appointments/composables/useResourcePresence'
 import { reportError } from '~/utils/reportError'
 
 const formatDateRu = (date: string): string => {

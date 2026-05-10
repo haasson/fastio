@@ -36,7 +36,7 @@ import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/retail/useNewOrderCounter'
 import { useNewReservationCounter } from '~/composables/retail/useNewReservationCounter'
 import { useUnreadSupportCounter } from '~/composables/data/useUnreadSupportCounter'
-import { useAppointmentInboxCounter } from '~/composables/services/useAppointmentInboxCounter'
+import { useAppointmentInboxCounter } from '~/features/appointments/composables/useAppointmentInboxCounter'
 
 defineProps<{ collapsed?: boolean }>()
 

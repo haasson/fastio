@@ -7,9 +7,9 @@ import { useKitchenQueueChannel } from '~/composables/retail/useKitchenQueueChan
 import { useReservationsChannel } from '~/composables/retail/useReservationsChannel'
 import { useReservationAlertHandler } from '~/composables/retail/useReservationAlertHandler'
 import { useSupportChannel } from '~/composables/data/useSupportChannel'
-import { useAppointmentsChannel } from '~/composables/services/useAppointmentsChannel'
-import { useVisitsChannel } from '~/composables/services/useVisitsChannel'
-import { useAppointmentInboxHandler } from '~/composables/services/useAppointmentInboxHandler'
+import { useAppointmentsChannel } from '~/features/appointments/composables/useAppointmentsChannel'
+import { useVisitsChannel } from '~/features/appointments/composables/useVisitsChannel'
+import { useAppointmentInboxHandler } from '~/features/appointments/composables/useAppointmentInboxHandler'
 
 export function useRealtimeChannels(tenantId: Ref<string | null>) {
   useOrdersChannel(tenantId)

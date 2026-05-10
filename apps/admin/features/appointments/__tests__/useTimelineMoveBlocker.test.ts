@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { ref } from 'vue'
 import type { Appointment, AppointmentSettings, Resource } from '@fastio/shared'
 import type { TimelineAvailability } from '~/utils/services/timelineAvailability'
-import { useTimelineMoveBlocker } from '../useTimelineMoveBlocker'
+import { useTimelineMoveBlocker } from '../composables/useTimelineMoveBlocker'
 
 const TZ = 'Europe/Moscow'
 const DATE = '2026-05-06'

@@ -123,7 +123,7 @@ import {
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useAppointmentEditorState } from '~/composables/services/useAppointmentEditorState'
+import { useAppointmentEditorState } from '~/features/appointments/composables/useAppointmentEditorState'
 import VisitServicesSection from '~/components/appointments/VisitServicesSection.vue'
 import AppointmentServiceSlotsSection from '~/components/appointments/AppointmentServiceSlotsSection.vue'
 import AppointmentCustomerSection from '~/components/appointments/AppointmentCustomerSection.vue'

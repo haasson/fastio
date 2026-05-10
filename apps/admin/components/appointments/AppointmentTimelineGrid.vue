@@ -135,9 +135,9 @@ import { UiText } from '@fastio/ui'
 import type { Appointment, Resource } from '@fastio/shared'
 import { DEFAULT_CATEGORY_COLOR_HEX } from '@fastio/shared'
 import type { TimelineAvailability } from '~/utils/services/timelineAvailability'
-import { useTimelineLayout } from '~/composables/services/timeline/useTimelineLayout'
-import { useTimelineDrag } from '~/composables/services/timeline/useTimelineDrag'
-import { useScrollToNow } from '~/composables/services/timeline/useScrollToNow'
+import { useTimelineLayout } from '~/features/appointments/composables/timeline/useTimelineLayout'
+import { useTimelineDrag } from '~/features/appointments/composables/timeline/useTimelineDrag'
+import { useScrollToNow } from '~/features/appointments/composables/timeline/useScrollToNow'
 
 type Props = {
   resources: Resource[]

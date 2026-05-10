@@ -9,10 +9,10 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useBranchStore } from '~/stores/branch'
 import { reportError } from '~/utils/reportError'
-import { inheritAppointmentStatus } from '~/composables/services/appointmentEditor/utils'
+import { inheritAppointmentStatus } from '~/features/appointments/composables/appointmentEditor/utils'
 import type { EditorState } from '~/components/appointments/types'
 import { isSlotChanged } from '~/components/appointments/types'
-import { useAppointmentEventLogger } from '~/composables/services/useAppointmentEventLogger'
+import { useAppointmentEventLogger } from '~/features/appointments/composables/useAppointmentEventLogger'
 
 type SaveDeps = {
   mode: 'create' | 'edit'
