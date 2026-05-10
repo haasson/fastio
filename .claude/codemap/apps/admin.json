@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T12:39:27.864Z",
+  "generated_at": "2026-05-10T12:45:37.717Z",
   "stats": {
-    "files": 95,
+    "files": 94,
     "pages": 0,
-    "symbols": 162,
+    "symbols": 161,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -410,19 +410,6 @@
           "kind": "function",
           "hash": "e4a89b7c",
           "purpose": "Возвращает isPageEnabled/isSectionEnabled/isInNav/issues для конкретной SiteFeatureKey"
-        }
-      ]
-    },
-    "composables/ui/useTagDisplay.ts": {
-      "kind": "ts",
-      "hash": "9c760df26b83",
-      "purpose": "Отображение цветовых тегов блюд: имя по id и стили (color/background/border) из пресетов",
-      "symbols": [
-        {
-          "name": "useTagDisplay",
-          "kind": "function",
-          "hash": "fb944607",
-          "purpose": "Возвращает tagName/tagStyle/tagStyleString для рендера UiTag"
         }
       ]
     },
@@ -1224,7 +1211,7 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "59f37ff93f28",
+      "hash": "39319b2a7d12",
       "purpose": "Главная навигация админки: рендерит список разделов с иконками и счётчиками новизны (заказы, бронирования, записи, поддержка); поддерживает collapsed-режим",
       "symbols": [
         {
@@ -1358,8 +1345,8 @@
     },
     "components/ui/AppCategoryList.vue": {
       "kind": "vue",
-      "hash": "b73a5a635cde",
-      "purpose": "Сортируемый список категорий (drag) с иконкой, тегом типа (виртуальная/комбо), счётчиком блюд, switch и actions",
+      "hash": "7eff4ab7dc3d",
+      "purpose": "Универсальный список категорий с drag-n-drop и редактированием — обёртка над features/catalog для menu и services",
       "symbols": [
         {
           "name": "props",
@@ -1447,8 +1434,8 @@
     },
     "components/ui/AppMenuItemList.vue": {
       "kind": "vue",
-      "hash": "3b665992bf24",
-      "purpose": "Универсальный layout правой панели меню (DishList/Services): SegmentedControl (карточки/таблица), поиск, header с кнопкой добавления, empty-state",
+      "hash": "40a4437d8e34",
+      "purpose": "Универсальный список элементов меню/каталога с поиском, фильтрами и пагинацией — переиспользуется блюдами/услугами",
       "symbols": [
         {
           "name": "props",
