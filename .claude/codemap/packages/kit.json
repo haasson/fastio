@@ -2,7 +2,7 @@
   "project": "packages/kit",
   "submap": "main",
   "purpose": "Общий рантайм-кит для storefront/public-ui: composables (брейкпоинты, модалки, confirm, query/mutation), валидаторы форм, layer/throttle утилиты и базовые константы",
-  "generated_at": "2026-05-07T01:28:32.385Z",
+  "generated_at": "2026-05-10T07:25:34.284Z",
   "stats": {
     "files": 16,
     "pages": 0,

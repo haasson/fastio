@@ -215,6 +215,46 @@ export default [
     rules: { 'no-restricted-imports': 'off' },
   },
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // 4.5. Модульная изоляция: cross-module импорты только через barrel.
+  // Правило применяется только к файлам внутри modules/.
+  // Пока папка пуста — правило no-op. Активируется по мере переезда модулей.
+  //
+  // Подробности: docs/plans/2026-05-10-modular-architecture-migration.md
+  // ──────────────────────────────────────────────────────────────────────────
+  {
+    files: ['modules/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['~/modules/*/!(index)', '~/modules/*/!(index)/**'],
+            message: 'Cross-module импорт только через ~/modules/<feature> (barrel index.ts), не deep path.',
+          },
+          {
+            group: ['../*/composables/**', '../*/components/**', '../*/api/**', '../*/utils/**', '../*/stores/**'],
+            message: 'Cross-module импорт только через barrel. Используй ~/modules/<feature>.',
+          },
+        ],
+      }],
+    },
+  },
+
+  // shared/* НЕ ДОЛЖЕН импортить из modules/*
+  {
+    files: ['shared/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['~/modules/**', '../modules/**'],
+            message: 'shared НЕ ДОЛЖЕН импортить из modules. Зависимость идёт только ОТ модуля К shared.',
+          },
+        ],
+      }],
+    },
+  },
+
   // 5. Серверный мир (AI-context и т.п.) — отдельная вселенная
   {
     files: ['server/**'],

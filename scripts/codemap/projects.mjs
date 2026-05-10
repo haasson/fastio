@@ -35,6 +35,14 @@ const ADMIN_INCLUDED_DIRS = [
 ];
 
 function adminAssign(rel) {
+  // Модульная архитектура — фичевые модули не картируем
+  // (агент находит их по ~/modules/<feature>/index.ts barrel + по структуре).
+  if (rel.startsWith('modules/')) return null;
+  // shared/* — картируем как общую инфру (utils, data, plan, stores, ui, layout)
+  if (rel.startsWith('shared/')) {
+    if (rel.includes('/__tests__/')) return null;
+    return 'main';
+  }
   // composables: общие (root, ui, plan, delivery, kitchen, menu, и т.д.)
   // composables/data, composables/retail, composables/services — это data/CRUD
   // вертикалей, имена самообъясняющие (useX → CRUD), не картируем.
@@ -117,6 +125,7 @@ export const PROJECTS = {
       { dir: 'plugins' },
       { dir: 'layouts' },
       { dir: 'components' },
+      { dir: 'shared', exclude: ['__tests__'] },
     ],
     assign: adminAssign,
     maps: ['main'],
