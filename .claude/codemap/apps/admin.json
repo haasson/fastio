@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T12:33:50.991Z",
+  "generated_at": "2026-05-10T12:39:27.864Z",
   "stats": {
-    "files": 97,
+    "files": 95,
     "pages": 0,
-    "symbols": 164,
+    "symbols": 162,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -452,19 +452,6 @@
         }
       ]
     },
-    "composables/useBranchToggle.ts": {
-      "kind": "ts",
-      "hash": "33dde19ea7d4",
-      "purpose": "Тогглеры филиалов с инвариантом «хотя бы один включён» и схлопыванием полного набора в пустой массив (= «во всех филиалах»)",
-      "symbols": [
-        {
-          "name": "useBranchToggle",
-          "kind": "function",
-          "hash": "59fe8ca8",
-          "purpose": "Возвращает isOn/isLastOn/toggle для select-листа филиалов с общей семантикой dish/combo/service-branches"
-        }
-      ]
-    },
     "composables/useItemVariant.ts": {
       "kind": "ts",
       "hash": "7cdd736fe749",
@@ -647,19 +634,6 @@
           "kind": "function",
           "hash": "3eb19ee0",
           "purpose": "Возвращает подобъект только с указанными ключами"
-        }
-      ]
-    },
-    "utils/branch.ts": {
-      "kind": "ts",
-      "hash": "9abc27d14f1e",
-      "purpose": "Дефолтные значения формы филиала — единый источник для BranchDrawer и OnboardingStepBranch (включая заглушку addressData={value:''} до выбора подсказки DaData)",
-      "symbols": [
-        {
-          "name": "defaultBranchFormData",
-          "kind": "function",
-          "hash": "a6d0c9c8",
-          "purpose": "Возвращает свежий BranchFormData с DEFAULT_BRANCH_COLOR, пустым addressData и nullable-полями по умолчанию"
         }
       ]
     },
@@ -858,8 +832,8 @@
     },
     "stores/branch.ts": {
       "kind": "ts",
-      "hash": "9a1307705be8",
-      "purpose": "Pinia: список филиалов и текущий выбранный филиал тенанта; агрегирует useBranches+useBranch с учётом memberBranchIds",
+      "hash": "61cdef9514c5",
+      "purpose": "Глобальный стор текущего филиала: currentBranchId, branches, switchBranch; обёртка над useBranch composable для consumer-кода",
       "symbols": [
         {
           "name": "useBranchStore",
