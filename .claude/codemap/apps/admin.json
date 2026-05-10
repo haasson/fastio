@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T13:58:16.709Z",
+  "generated_at": "2026-05-10T14:04:41.032Z",
   "stats": {
-    "files": 84,
+    "files": 88,
     "pages": 0,
-    "symbols": 141,
+    "symbols": 151,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -597,9 +597,53 @@
         }
       ]
     },
+    "shared/plan/useGate.retail.routes.ts": {
+      "kind": "ts",
+      "hash": "2a0a27c1ac62",
+      "purpose": "Карта роут→RetailGateKey: SUBS (под-роуты) и ROOTS (корни), используется агрегатором useGate.routes для retail-вертикали",
+      "symbols": [
+        {
+          "name": "RETAIL_ROUTE_SUBS",
+          "kind": "const",
+          "hash": "46fdddc9",
+          "purpose": "Под-роуты retail (/menu/categories, /orders/delivery, /kitchen/queue …) → ключ гейта"
+        },
+        {
+          "name": "RETAIL_ROUTE_ROOTS",
+          "kind": "const",
+          "hash": "59708780",
+          "purpose": "Корневые роуты retail (/menu, /orders, /kitchen, /tables, /reservations, /promotions) → ключ гейта"
+        }
+      ]
+    },
+    "shared/plan/useGate.retail.ts": {
+      "kind": "ts",
+      "hash": "67062b2529b4",
+      "purpose": "Реестр гейтов retail-вертикали: viewMenu/manageMenu/viewOrders/viewKitchen/… через permissionGate/moduleGate из useGate.shared",
+      "symbols": [
+        {
+          "name": "RetailGateKey",
+          "kind": "type",
+          "hash": "5101f94f",
+          "purpose": "Ключ retail-гейта: 'viewMenu' | 'manageMenu' | 'viewOrders' | 'viewKitchen' | … (объединение литералов)"
+        },
+        {
+          "name": "RetailGateRegistry",
+          "kind": "type",
+          "hash": "9a9b0a21",
+          "purpose": "Record<RetailGateKey, ComputedRef<GateResult>>"
+        },
+        {
+          "name": "useGateRetail",
+          "kind": "function",
+          "hash": "0b2af729",
+          "purpose": "Возвращает RetailGateRegistry со всеми retail-гейтами; используется глобальным useGate"
+        }
+      ]
+    },
     "shared/plan/useGate.routes.ts": {
       "kind": "ts",
-      "hash": "a9ae2c870337",
+      "hash": "b5dc192feeb9",
       "purpose": "Карта роут→GateKey для middleware/gate.global + список REDIRECT_FALLBACKS на случай отказа",
       "symbols": [
         {
@@ -619,6 +663,50 @@
           "kind": "const",
           "hash": "80c33efc",
           "purpose": "Упорядоченный список путей-кандидатов для редиректа при недоступности исходного"
+        }
+      ]
+    },
+    "shared/plan/useGate.services.routes.ts": {
+      "kind": "ts",
+      "hash": "3a91bcb3ef5d",
+      "purpose": "Карта роут→ServicesGateKey: SUBS (под-роуты) и ROOTS (корни), используется агрегатором useGate.routes для services-вертикали",
+      "symbols": [
+        {
+          "name": "SERVICES_ROUTE_SUBS",
+          "kind": "const",
+          "hash": "a0c1bd92",
+          "purpose": "Под-роуты services (/services/categories, /appointments/list/staff/templates …) → ключ гейта"
+        },
+        {
+          "name": "SERVICES_ROUTE_ROOTS",
+          "kind": "const",
+          "hash": "b2ea83c8",
+          "purpose": "Корневые роуты services (/services, /appointments) → ключ гейта"
+        }
+      ]
+    },
+    "shared/plan/useGate.services.ts": {
+      "kind": "ts",
+      "hash": "a7ac5a9f65dd",
+      "purpose": "Реестр гейтов services-вертикали: viewServices/manageServices/viewAppointments/… через permissionGate/moduleGate из useGate.shared",
+      "symbols": [
+        {
+          "name": "ServicesGateKey",
+          "kind": "type",
+          "hash": "041c7d2c",
+          "purpose": "Ключ services-гейта: 'viewServices' | 'manageServices' | 'viewAppointments' | … (объединение литералов)"
+        },
+        {
+          "name": "ServicesGateRegistry",
+          "kind": "type",
+          "hash": "ea96cf3d",
+          "purpose": "Record<ServicesGateKey, ComputedRef<GateResult>>"
+        },
+        {
+          "name": "useGateServices",
+          "kind": "function",
+          "hash": "44cf96f8",
+          "purpose": "Возвращает ServicesGateRegistry со всеми services-гейтами; используется глобальным useGate"
         }
       ]
     },
