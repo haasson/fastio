@@ -1,16 +1,12 @@
 import { defineEventHandler, createError, readBody, getRequestIP } from 'h3'
-import { useRuntimeConfig } from '#imports'
 import { createRateLimiter } from '@fastio/shared'
 import { getAdminClient } from '../utils/adminClient'
-import { verifyCaptcha } from '../utils/captcha'
 
 type RegisterBody = {
   name?: string
   slug?: string
   email?: string
-  captchaToken?: string
-  // honeypot — бот скорее всего заполнит
-  website?: string
+  website?: string // honeypot — бот скорее всего заполнит
 }
 
 const SLUG_MAX_LENGTH = 63
@@ -50,16 +46,8 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<RegisterBody>(event)
 
-  // Honeypot: поле website невидимо в UI, его заполняют только боты.
   if (body.website) {
     throw createError({ statusCode: 400, message: 'Invalid request' })
-  }
-
-  const config = useRuntimeConfig()
-
-  const captchaOk = await verifyCaptcha(body.captchaToken, config.yandexCaptchaServerKey, ip)
-  if (!captchaOk) {
-    throw createError({ statusCode: 400, message: 'Проверка на бота не пройдена' })
   }
 
   let name: string, slug: string, email: string

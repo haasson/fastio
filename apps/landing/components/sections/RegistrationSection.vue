@@ -90,8 +90,6 @@
               </template>
             </FsField>
 
-            <div v-if="captchaClientKey" ref="captchaEl" class="captcha" />
-
             <p v-if="submitError" class="submit-error">{{ submitError }}</p>
 
             <FsButton type="submit" size="large" :loading="submitting" class="submit-btn">
@@ -116,15 +114,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeUnmount, onMounted } from 'vue'
+import { ref, reactive, onBeforeUnmount } from 'vue'
 import { $fetch } from 'ofetch'
 import { CheckCircle, XCircle } from 'lucide-vue-next'
 import { FsForm, FsField, FsInput, FsButton, FsSpinner } from '@fastio/public-ui'
 import type { ValidationRule } from '@fastio/kit'
-import { useRuntimeConfig } from '#imports'
-
-const runtimeConfig = useRuntimeConfig()
-const captchaClientKey = runtimeConfig.public.yandexCaptchaClientKey as string
 
 const form = reactive({ name: '', slug: '', email: '' })
 const honeypot = ref('')
@@ -190,106 +184,27 @@ const emailRules: ValidationRule[] = [
   { type: 'email', message: 'Некорректный email' },
 ]
 
-// ─── Yandex SmartCaptcha ───────────────────────────────────────────────────────
-
-type SmartCaptchaApi = {
-  render: (el: HTMLElement, opts: {
-    sitekey: string
-    callback?: (token: string) => void
-    'error-callback'?: () => void
-    invisible?: boolean
-    hl?: 'ru' | 'en' | 'be' | 'kk' | 'tt' | 'uk' | 'uz' | 'tr'
-  }) => number
-  destroy: (id: number) => void
-  reset: (id: number) => void
-  execute: (id: number) => void
-  getResponse: (id: number) => string
-  subscribe: (id: number, event: 'challenge-hidden' | 'challenge-visible' | 'network-error' | 'success' | 'token-expired', cb: (token?: string) => void) => void
-}
-
-declare global {
-  interface Window { smartCaptcha?: SmartCaptchaApi }
-}
-
-const captchaEl = ref<HTMLElement | null>(null)
-const captchaToken = ref<string | null>(null)
-let captchaWidgetId: number | null = null
-
-function mountCaptcha() {
-  if (!captchaClientKey || !captchaEl.value || !window.smartCaptcha) return
-  captchaWidgetId = window.smartCaptcha.render(captchaEl.value, {
-    sitekey: captchaClientKey,
-    hl: 'ru',
-    callback: (token: string) => { captchaToken.value = token },
-    'error-callback': () => { captchaToken.value = null },
-  })
-}
-
-onMounted(() => {
-  if (!captchaClientKey) return
-
-  if (window.smartCaptcha) {
-    mountCaptcha()
-    return
-  }
-
-  const existing = document.querySelector<HTMLScriptElement>('script[data-smart-captcha]')
-  if (existing) {
-    existing.addEventListener('load', mountCaptcha, { once: true })
-    return
-  }
-
-  const script = document.createElement('script')
-  script.src = 'https://smartcaptcha.yandexcloud.net/captcha.js'
-  script.async = true
-  script.defer = true
-  script.dataset.smartCaptcha = '1'
-  script.addEventListener('load', mountCaptcha, { once: true })
-  document.head.appendChild(script)
-})
-
-onBeforeUnmount(() => {
-  if (captchaWidgetId !== null && window.smartCaptcha) {
-    window.smartCaptcha.destroy(captchaWidgetId)
-  }
-})
-
-function resetCaptcha() {
-  if (captchaWidgetId !== null && window.smartCaptcha) {
-    window.smartCaptcha.reset(captchaWidgetId)
-    captchaToken.value = null
-  }
-}
-
 // ─── Submit ────────────────────────────────────────────────────────────────────
 
 async function onSubmit() {
   if (slugTaken.value || slugChecking.value) return
-  if (captchaClientKey && !captchaToken.value) {
-    submitError.value = 'Подтвердите, что вы не робот'
-    return
-  }
 
   submitting.value = true
   submitError.value = null
 
   try {
-    // Если public-ключ капчи не задан (dev), поле captchaToken не отправляем.
-    // Сервер увидит undefined и (при пустом serverKey вне production) пропустит проверку.
-    const body: Record<string, unknown> = {
-      name: form.name,
-      slug: form.slug.toLowerCase(),
-      email: form.email,
-      website: honeypot.value,
-    }
-
-    if (captchaToken.value) body.captchaToken = captchaToken.value
-
-    await $fetch('/api/register', { method: 'POST', body })
+    await $fetch('/api/register', {
+      method: 'POST',
+      body: {
+        name: form.name,
+        slug: form.slug.toLowerCase(),
+        email: form.email,
+        website: honeypot.value,
+      },
+    })
     submitted.value = true
   } catch (err: unknown) {
     submitError.value = (err as { data?: { message?: string } })?.data?.message ?? 'Что-то пошло не так'
-    resetCaptcha()
   } finally {
     submitting.value = false
   }
@@ -420,11 +335,6 @@ async function onSubmit() {
   width: 1px;
   height: 1px;
   overflow: hidden;
-}
-
-.captcha {
-  display: flex;
-  justify-content: center;
 }
 
 // ─── Submit ────────────────────────────────────────────────────────────────────

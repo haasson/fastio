@@ -13,12 +13,10 @@ export default defineNuxtConfig({
     supabaseServiceRoleKey: '', // NUXT_SUPABASE_SERVICE_ROLE_KEY
     supabaseJwtPrivateKey: '', // NUXT_SUPABASE_JWT_PRIVATE_KEY
     adminUrl: 'https://admin.fastio.ru', // NUXT_ADMIN_URL
-    yandexCaptchaServerKey: '', // NUXT_YANDEX_CAPTCHA_SERVER_KEY — оставь пустым чтобы отключить проверку
     public: {
       siteUrl: SITE_URL, // NUXT_PUBLIC_SITE_URL
       supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL
       supabaseAnonKey: '', // NUXT_PUBLIC_SUPABASE_ANON_KEY
-      yandexCaptchaClientKey: '', // NUXT_PUBLIC_YANDEX_CAPTCHA_CLIENT_KEY
       yandexMetrikaId: '', // NUXT_PUBLIC_YANDEX_METRIKA_ID
     },
   },
