@@ -41,13 +41,13 @@ import { storeToRefs } from 'pinia'
 import type { ServiceWithBranchIds } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useCategories } from '~/composables/data/useCategories'
-import { useServices } from '~/composables/services/useServices'
+import { useServices } from '~/features/services-catalog'
 import { useTags } from '~/composables/data/useTags'
 import { useItemManager } from '~/composables/ui/useItemManager'
 import { useDatabase } from '~/composables/data/useDatabase'
 import CategoryTabs from '~/components/catalog/CategoryTabs.vue'
 import AppMenuItemList from '~/components/ui/AppMenuItemList.vue'
-import ServiceDrawer from '~/components/services/ServiceDrawer.vue'
+import ServiceDrawer from '~/features/services-catalog/components/ServiceDrawer.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 const api = useDatabase()

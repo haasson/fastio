@@ -19,7 +19,7 @@ import { newKey, prefillFromVisit, prefillFromRequestVisit } from './appointment
 import { useEditorSnapshot } from './appointmentEditor/useEditorSnapshot'
 import { useEditorSave } from './appointmentEditor/useEditorSave'
 import { useEditorSlotApply } from './appointmentEditor/useEditorSlotApply'
-import { useServiceSlots } from '~/composables/services/useServiceSlots'
+import { useServiceSlots } from '~/features/services-catalog'
 import { useGroupSlotSearch } from './useGroupSlotSearch'
 
 type Preset = {

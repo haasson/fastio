@@ -18,6 +18,7 @@ const SERVICES_GLOBS = [
   'pages/appointments.vue',
   // Modular paths
   'features/appointments/**',
+  'features/services-catalog/**',
 ]
 
 const RETAIL_GLOBS = [
@@ -123,6 +124,8 @@ const ALIAS_VERTICAL_PATTERNS = {
     // Modular alias paths
     '~/features/appointments',
     '~/features/appointments/**',
+    '~/features/services-catalog',
+    '~/features/services-catalog/**',
   ],
 }
 

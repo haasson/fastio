@@ -28,13 +28,13 @@ const cases = [
   {
     name: 'retail не может импортировать services',
     file: 'composables/retail/__synthetic__.ts',
-    code: 'import { x } from \'~/composables/services/useServices\'\nexport const y = x\n',
+    code: 'import { x } from \'~/features/services-catalog\'\nexport const y = x\n',
     expectMessage: /Retail не может импортировать services/,
   },
   {
     name: 'shared не может импортировать вертикали (services)',
     file: 'composables/data/__synthetic__.ts',
-    code: 'import { x } from \'~/composables/services/useServices\'\nexport const y = x\n',
+    code: 'import { x } from \'~/features/services-catalog\'\nexport const y = x\n',
     expectMessage: /Shared-код НЕ ДОЛЖЕН знать о вертикалях/,
   },
   {
@@ -74,7 +74,7 @@ describe('vertical isolation eslint barrier', () => {
   }
 
   it('agregator (useDatabase) может импортировать обе вертикали', async () => {
-    const code = 'import { x } from \'~/composables/services/useServices\'\nimport { y } from \'~/features/menu\'\nexport const z = [x, y]\n'
+    const code = 'import { x } from \'~/features/services-catalog\'\nimport { y } from \'~/features/menu\'\nexport const z = [x, y]\n'
     const [result] = await eslint.lintText(code, { filePath: path.join(ADMIN_ROOT, 'composables/data/useDatabase.ts') })
     const restricted = result.messages.filter((m) => m.ruleId === 'no-restricted-imports')
 
