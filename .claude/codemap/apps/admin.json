@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T12:14:11.649Z",
+  "generated_at": "2026-05-10T12:21:35.925Z",
   "stats": {
-    "files": 101,
+    "files": 98,
     "pages": 0,
-    "symbols": 169,
+    "symbols": 165,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -14,7 +14,7 @@
   "files": {
     "composables/delivery/useAllDeliveryZones.ts": {
       "kind": "ts",
-      "hash": "0861d6e51a70",
+      "hash": "57e65f986a2a",
       "purpose": "Realtime-список всех зон доставки тенанта (по всем филиалам) c CRUD и Supabase-подпиской",
       "symbols": [
         {
@@ -46,7 +46,7 @@
     },
     "composables/delivery/useOrderDelivery.ts": {
       "kind": "ts",
-      "hash": "17a6b43f1672",
+      "hash": "38fc6f149be2",
       "purpose": "Расчёт стоимости доставки заказа: попадание в зону, фикс/зональный режим, авто-смена филиала, минзаказ и порог free delivery",
       "symbols": [
         {
@@ -544,7 +544,7 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "c834c794b704",
+      "hash": "c17fe6a27f06",
       "purpose": "Aggregator-агент: подключает все realtime-каналы (orders, kitchen, tables, reservations, appointments, visits, support) и регистрирует alert/inbox handlers; вызывается из default-layout",
       "symbols": [
         {
@@ -843,25 +843,6 @@
         }
       ]
     },
-    "utils/retail/format-order.ts": {
-      "kind": "ts",
-      "hash": "0c9ed0e74994",
-      "purpose": "Форматирование событий заказа и значений полей для журнала истории заказа",
-      "symbols": [
-        {
-          "name": "formatEventText",
-          "kind": "function",
-          "hash": "408065be",
-          "purpose": "Текст события (создание/смена статуса/действия кухни) по eventType+meta"
-        },
-        {
-          "name": "formatFieldValue",
-          "kind": "function",
-          "hash": "0704aca6",
-          "purpose": "Форматирует значение поля заказа (тип оплаты/доставки/fee) для отображения в логе"
-        }
-      ]
-    },
     "utils/supportStatus.ts": {
       "kind": "ts",
       "hash": "321b9b02630a",
@@ -898,32 +879,6 @@
           "kind": "const",
           "hash": "cb46f6e2",
           "purpose": "Стор с branches/archivedBranches/currentBranchId/currentBranch + add/update/archive/restore/setBranch"
-        }
-      ]
-    },
-    "stores/retail/deliveryZone.ts": {
-      "kind": "ts",
-      "hash": "1ebf360929ca",
-      "purpose": "Pinia: глобальный кэш всех зон доставки тенанта (для заказов, страницы зон и филиалов)",
-      "symbols": [
-        {
-          "name": "useDeliveryZoneStore",
-          "kind": "const",
-          "hash": "91034ec8",
-          "purpose": "Стор с zones/loading + add/update/remove (обёртка над useAllDeliveryZones)"
-        }
-      ]
-    },
-    "stores/retail/order-statuses.ts": {
-      "kind": "ts",
-      "hash": "df1ede67c79a",
-      "purpose": "Pinia: статусы заказов тенанта с realtime-подпиской (общий ресурс для OrderCard/OrderRow/OrderEditModal)",
-      "symbols": [
-        {
-          "name": "useOrderStatusesStore",
-          "kind": "const",
-          "hash": "2a82cb02",
-          "purpose": "Стор с statuses + CRUD (обёртка над useOrderStatuses, привязан к tenantId)"
         }
       ]
     },
@@ -1308,7 +1263,7 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "1bf3c78603a6",
+      "hash": "59f37ff93f28",
       "purpose": "Главная навигация админки: рендерит список разделов с иконками и счётчиками новизны (заказы, бронирования, записи, поддержка); поддерживает collapsed-режим",
       "symbols": [
         {
