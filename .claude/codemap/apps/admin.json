@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T11:43:21.722Z",
+  "generated_at": "2026-05-10T12:09:21.298Z",
   "stats": {
-    "files": 106,
+    "files": 105,
     "pages": 0,
-    "symbols": 177,
+    "symbols": 176,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -544,7 +544,7 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "59a01de0386f",
+      "hash": "c834c794b704",
       "purpose": "Aggregator-агент: подключает все realtime-каналы (orders, kitchen, tables, reservations, appointments, visits, support) и регистрирует alert/inbox handlers; вызывается из default-layout",
       "symbols": [
         {
@@ -859,19 +859,6 @@
           "kind": "function",
           "hash": "0704aca6",
           "purpose": "Форматирует значение поля заказа (тип оплаты/доставки/fee) для отображения в логе"
-        }
-      ]
-    },
-    "utils/retail/generateTableQrPdf.ts": {
-      "kind": "ts",
-      "hash": "b26cfdc0479d",
-      "purpose": "Генерация PDF с QR-кодами столов через jsPDF: 3 колонки A4, шрифт Roboto, имя стола и название заведения",
-      "symbols": [
-        {
-          "name": "generateTableQrPdf",
-          "kind": "function",
-          "hash": "147405f8",
-          "purpose": "Скачивает qr-{restaurantName}.pdf со столами (с учётом copies на стол)"
         }
       ]
     },
