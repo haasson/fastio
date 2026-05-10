@@ -228,12 +228,19 @@ export default [
       'no-restricted-imports': ['error', {
         patterns: [
           {
+            // Алиасное правило: deep cross-module импорт через ~/features/<X>/<deep>
+            // запрещён — нужно импортить через ~/features/<X> (barrel).
+            //
+            // ⚠️ ПРАВИЛО НЕТОЧНОЕ: extglob !(index) поддерживается minimatch'ом
+            // только частично. На практике ловит большинство явно-плохих случаев,
+            // но НЕ может отличить same-feature deep import от cross-feature
+            // (оба матчатся одним и тем же паттерном `~/features/*/...`).
+            // Реальное enforcement через import-x plugin — TECHDEBT.
+            //
+            // Внутри своего модуля sibling-импорты пиши относительными путями
+            // (./, ../X) — это идиоматично и не цепляется ни одним паттерном.
             group: ['~/features/*/!(index)', '~/features/*/!(index)/**'],
-            message: 'Cross-module импорт только через ~/features/<feature> (barrel index.ts), не deep path.',
-          },
-          {
-            group: ['../*/composables/**', '../*/components/**', '../*/api/**', '../*/utils/**', '../*/stores/**'],
-            message: 'Cross-module импорт только через barrel. Используй ~/features/<feature>.',
+            message: 'Cross-module импорт только через ~/features/<feature> (barrel index.ts), не deep path. Внутри своего модуля используй относительные пути.',
           },
         ],
       }],

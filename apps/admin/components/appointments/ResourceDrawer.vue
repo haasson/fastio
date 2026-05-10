@@ -124,7 +124,7 @@ import { useTeam } from '~/composables/data/useTeam'
 import { useScheduleConflictCheck } from '~/features/appointments/composables/useScheduleConflictCheck'
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,
-} from '~/utils/services/scheduleConflictCheck'
+} from '~/features/appointments/utils/scheduleConflictCheck'
 import { reportError } from '~/utils/reportError'
 import OffPeriodsSection from '~/components/appointments/OffPeriodsSection.vue'
 

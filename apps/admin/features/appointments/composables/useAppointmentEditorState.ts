@@ -6,7 +6,7 @@ import type {
 } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useAppointmentSettingsStore } from '~/stores/services/appointmentSettings'
+import { useAppointmentSettingsStore } from '~/features/appointments/stores/appointmentSettings'
 import { useGateServices } from '~/composables/services/useGate'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useEditorCompetencies } from '~/features/appointments/composables/useEditorCompetencies'

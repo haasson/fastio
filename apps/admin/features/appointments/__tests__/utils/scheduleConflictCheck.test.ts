@@ -14,7 +14,7 @@ import {
   buildSlotDataFromWeeklyTemplate,
   buildSlotDataFromShiftTemplate,
   type AppointmentLite,
-} from '../scheduleConflictCheck'
+} from '../../utils/scheduleConflictCheck'
 
 const TZ = 'UTC'
 const FUTURE_DATE = '2030-06-15' // суббота

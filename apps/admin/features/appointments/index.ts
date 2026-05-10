@@ -28,5 +28,12 @@ export * from './composables/useVisitAggregate'
 export * from './composables/useVisitsChannel'
 export * from './composables/useVisitsList'
 
+// Utils
+export * from './utils/scheduleConflictCheck'
+export * from './utils/timelineAvailability'
+
+// Stores
+export { useAppointmentSettingsStore } from './stores/appointmentSettings'
+
 // timeline/ и appointmentEditor/ — внутренние подпапки, НЕ ре-экспортятся через barrel.
 // Если что-то из них нужно снаружи — поднять конкретный экспорт сюда.

@@ -10,7 +10,7 @@ import { storeToRefs } from 'pinia'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 import { useTenantStore } from '~/stores/tenant'
-import { useAppointmentSettingsStore } from '~/stores/services/appointmentSettings'
+import { useAppointmentSettingsStore } from '~/features/appointments/stores/appointmentSettings'
 
 usePageTitle('Запись')
 

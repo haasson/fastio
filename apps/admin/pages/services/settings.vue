@@ -45,7 +45,7 @@ import { UiAlert, UiForm, UiInputNumber, UiSelect, UiSkeleton, UiSwitch, useConf
 import type { BookingMode } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { useAppointmentSettingsStore } from '~/stores/services/appointmentSettings'
+import { useAppointmentSettingsStore } from '~/features/appointments/stores/appointmentSettings'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
 import { useRegisterPageForm } from '~/composables/ui/usePageForm'

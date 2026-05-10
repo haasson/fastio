@@ -7,7 +7,7 @@ import type {
 } from '@fastio/shared'
 import { DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { useGroupSlotSearch } from '~/features/appointments/composables/useGroupSlotSearch'
-import { useAppointmentSettingsStore } from '~/stores/services/appointmentSettings'
+import { useAppointmentSettingsStore } from '~/features/appointments/stores/appointmentSettings'
 import { appointmentBus } from '~/features/appointments/composables/useAppointmentsChannel'
 import { reportError } from '~/utils/reportError'
 
