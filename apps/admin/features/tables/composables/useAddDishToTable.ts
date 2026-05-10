@@ -6,9 +6,9 @@ import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuthStore } from '~/stores/auth'
 import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
 import type { DishPickerResult } from '~/components/menu/DishPickerModal.vue'
-import type { TableSessionItem } from '~/utils/api/retail/tables'
+import type { TableSessionItem } from '../api/tables'
 
-export default function useAddDishToTable(getTenantId: () => string | null) {
+export function useAddDishToTable(getTenantId: () => string | null) {
   const api = useDatabase()
   const authStore = useAuthStore()
   const orderStatusesStore = useOrderStatusesStore()

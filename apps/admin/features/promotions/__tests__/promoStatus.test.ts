@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { effectivePromoStatus } from '../promoStatus'
+import { effectivePromoStatus } from '../utils/promoStatus'
 
 const NOW = new Date('2026-03-15T12:00:00Z')
 

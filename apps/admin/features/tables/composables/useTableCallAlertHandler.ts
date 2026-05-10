@@ -1,5 +1,5 @@
 import { onUnmounted } from 'vue'
-import { tableCallEvents } from '~/composables/retail/useTableCallsChannel'
+import { tableCallEvents } from './useTableCallsChannel'
 import { alertTableCall } from '~/utils/alerts'
 
 /**

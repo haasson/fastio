@@ -87,7 +87,7 @@ import { UiModal, UiButton, UiText, UiInputNumber } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useTableUrl } from '~/composables/useTableUrl'
-import { generateTableQrPdf } from '~/utils/retail/generateTableQrPdf'
+import { generateTableQrPdf } from '../utils/generateTableQrPdf'
 import { storeToRefs } from 'pinia'
 import { useTenantStore } from '~/stores/tenant'
 

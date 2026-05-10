@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import type { KitchenQueueItem } from '@fastio/shared'
 import { orderItemKey } from '@fastio/shared'
-import type { TableSession } from '~/utils/api/retail/tables'
+import type { TableSession } from '~/features/tables'
 
 export type KitchenProgressRow = {
   key: string

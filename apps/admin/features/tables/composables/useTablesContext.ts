@@ -1,7 +1,7 @@
 import { inject, reactive } from 'vue'
 import type { InjectionKey, Ref, ComputedRef } from 'vue'
 import type { Table, TableCallType, TableCall, KitchenQueueItem, Reservation } from '@fastio/shared'
-import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
+import type { TableSession, TableSessionItem } from '../api/tables'
 
 export type TablesContext = {
   // State

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mapPromotion } from '../promotions'
+import { mapPromotion } from '../api/promotions'
 
 const makePromotionRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'promo-1',

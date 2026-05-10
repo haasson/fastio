@@ -25,7 +25,7 @@
 import { ref, computed, watch, onUnmounted, provide } from 'vue'
 import { useMessage } from '@fastio/ui'
 import TabsLayout from '~/components/ui/TabsLayout.vue'
-import TableCheckoutModal from '~/components/tables/TableCheckoutModal.vue'
+import TableCheckoutModal from '~/features/tables/components/TableCheckoutModal.vue'
 import { usePageTitle } from '~/composables/usePageTitle'
 import type { Table, TableCallType, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { todayInTz } from '@fastio/shared'
@@ -36,10 +36,10 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useOrderStatusesStore } from '~/stores/retail/order-statuses'
 import { orderEvents } from '~/composables/retail/useOrdersChannel'
-import { tableCallEvents } from '~/composables/retail/useTableCallsChannel'
+import { tableCallEvents } from '~/features/tables'
 import { kitchenQueueEvents } from '~/features/kitchen'
-import { TablesContextKey, TodayReservationsKey } from '~/composables/retail/useTablesContext'
-import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
+import { TablesContextKey, TodayReservationsKey } from '~/features/tables'
+import type { TableSession, TableSessionItem } from '~/features/tables'
 
 usePageTitle('Столы')
 

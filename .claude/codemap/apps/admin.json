@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T12:09:21.298Z",
+  "generated_at": "2026-05-10T12:14:11.649Z",
   "stats": {
-    "files": 105,
+    "files": 101,
     "pages": 0,
-    "symbols": 176,
+    "symbols": 169,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -862,25 +862,6 @@
         }
       ]
     },
-    "utils/retail/promoStatus.ts": {
-      "kind": "ts",
-      "hash": "1d3ea186146f",
-      "purpose": "Эффективный статус акции/промокода (active/inactive/scheduled/expired) и опции фильтра",
-      "symbols": [
-        {
-          "name": "effectivePromoStatus",
-          "kind": "function",
-          "hash": "a14a2d04",
-          "purpose": "Возвращает {key, type, label} по active/activeFrom/activeTo"
-        },
-        {
-          "name": "PROMO_STATUS_FILTER_OPTIONS",
-          "kind": "const",
-          "hash": "d7ece065",
-          "purpose": "Опции фильтра по статусу для таблиц промо/промокодов"
-        }
-      ]
-    },
     "utils/supportStatus.ts": {
       "kind": "ts",
       "hash": "321b9b02630a",
@@ -1183,31 +1164,6 @@
         }
       ]
     },
-    "columns/_promo-shared.ts": {
-      "kind": "ts",
-      "hash": "a95d2f15487f",
-      "purpose": "Общие колонки таблиц промо/промокодов: статус с фильтром, активный период, actions (toggle/edit/delete)",
-      "symbols": [
-        {
-          "name": "buildPromoStatusColumn",
-          "kind": "function",
-          "hash": "ca856b26",
-          "purpose": "Колонка статус с фильтром по PROMO_STATUS_FILTER_OPTIONS и UiTag"
-        },
-        {
-          "name": "buildPromoActivePeriodColumn",
-          "kind": "function",
-          "hash": "32df7e38",
-          "purpose": "Колонка периода 'с DD-MM-YYYY по DD-MM-YYYY' с сортировкой по activeFrom"
-        },
-        {
-          "name": "buildPromoActionsColumn",
-          "kind": "function",
-          "hash": "9f8446a4",
-          "purpose": "Колонка actions: switch активности + AppActionsBlock (edit/delete)"
-        }
-      ]
-    },
     "columns/addons.ts": {
       "kind": "ts",
       "hash": "4167af946e68",
@@ -1237,32 +1193,6 @@
           "kind": "function",
           "hash": "d08e3b7c",
           "purpose": "Колонки для таблицы ModifierGroup с edit/remove/toggle"
-        }
-      ]
-    },
-    "columns/promo-codes.ts": {
-      "kind": "ts",
-      "hash": "42ffeef51620",
-      "purpose": "Колонки таблицы промокодов: код, статус, скидка, период, лимиты, actions",
-      "symbols": [
-        {
-          "name": "buildPromoCodeColumns",
-          "kind": "function",
-          "hash": "66e9a9cb",
-          "purpose": "Колонки для таблицы PromoCode (использует _promo-shared)"
-        }
-      ]
-    },
-    "columns/promotions.ts": {
-      "kind": "ts",
-      "hash": "78239e95cdac",
-      "purpose": "Колонки таблицы акций: название с типом (min_order/happy_hour/weekday/first_order/free_item), статус, период, actions",
-      "symbols": [
-        {
-          "name": "buildPromotionColumns",
-          "kind": "function",
-          "hash": "979c3467",
-          "purpose": "Колонки для таблицы Promotion (использует _promo-shared)"
         }
       ]
     },

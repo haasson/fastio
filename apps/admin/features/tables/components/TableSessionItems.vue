@@ -122,7 +122,7 @@ import { UiButton, UiTag, UiStepper, UiMenuDropdown } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
 import { orderItemKey, pluralize } from '@fastio/shared'
-import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
+import type { TableSession, TableSessionItem } from '../api/tables'
 import { useKitchenProgress, type KitchenProgressRow } from '~/features/kitchen'
 
 type Props = {

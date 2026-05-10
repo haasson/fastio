@@ -2,7 +2,7 @@ import { h } from 'vue'
 import { UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { PromoCode } from '@fastio/shared'
-import { buildPromoStatusColumn, buildPromoActivePeriodColumn, buildPromoActionsColumn } from '~/columns/_promo-shared'
+import { buildPromoStatusColumn, buildPromoActivePeriodColumn, buildPromoActionsColumn } from './_shared'
 
 type Deps = {
   onToggle: (id: string, active: boolean) => void

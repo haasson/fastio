@@ -76,8 +76,8 @@ import { UiCard, UiButton, UiIcon, UiText, UiTag, UiMenuDropdown } from '@fastio
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { formatRelativeTime } from '@fastio/shared'
-import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
-import TableSessionItems from '~/components/tables/TableSessionItems.vue'
+import type { TableSession, TableSessionItem } from '../api/tables'
+import TableSessionItems from './TableSessionItems.vue'
 import { useGate } from '~/composables/plan/useGate'
 
 const props = defineProps<{

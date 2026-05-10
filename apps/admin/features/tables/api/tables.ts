@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Table, TableFormData, TableShape, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import { orderItemKey } from '@fastio/shared'
 import { query } from '~/utils/query'
-import type { TableRow } from '../db-types'
+import type { TableRow } from '~/utils/api/db-types'
 
 export type TableSessionItem = {
   id: string | null

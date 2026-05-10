@@ -3,7 +3,7 @@ import type { PromotionFormData } from '@fastio/shared'
 import { useRealtimeList } from '~/composables/data/useRealtimeList'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useAuditLog } from '~/composables/data/useAuditLog'
-import { mapPromotion } from '~/utils/api/retail/promotions'
+import { mapPromotion } from '../api/promotions'
 import { pickFields } from '~/utils/audit'
 
 export function usePromotions(tenantId: Ref<string>) {

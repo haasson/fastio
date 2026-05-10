@@ -49,6 +49,8 @@ const RETAIL_GLOBS = [
   // Modular paths
   'features/kitchen/**',
   'features/reservations/**',
+  'features/tables/**',
+  'features/promotions/**',
 ]
 
 // Файлы, которым по дизайну разрешено знать обе вертикали.
@@ -96,6 +98,8 @@ const ALIAS_VERTICAL_PATTERNS = {
     // Modular alias paths
     '~/features/kitchen/**',
     '~/features/reservations/**',
+    '~/features/tables/**',
+    '~/features/promotions/**',
   ],
   services: [
     // Legacy alias paths

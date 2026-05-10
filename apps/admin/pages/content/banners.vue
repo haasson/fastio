@@ -75,13 +75,13 @@ import type { Banner, BannerFormData } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
 import { useBanners } from '~/composables/data/useBanners'
-import { usePromotions } from '~/composables/retail/usePromotions'
-import { usePromoCodes } from '~/composables/retail/usePromoCodes'
+import { usePromotions } from '~/features/promotions'
+import { usePromoCodes } from '~/features/promotions'
 import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
 import AppListRow from '~/components/ui/AppListRow.vue'
 import AppDraggableList from '~/components/ui/AppDraggableList.vue'
 import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
-import BannerFormModal from '~/components/promotions/BannerFormModal.vue'
+import BannerFormModal from '~/features/promotions/components/BannerFormModal.vue'
 
 const tenantStore = useTenantStore()
 const { tenantId } = storeToRefs(tenantStore)

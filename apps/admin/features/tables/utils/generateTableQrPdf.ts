@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf'
-import { renderQrToDataUrl } from '../renderQr'
+import { renderQrToDataUrl } from '~/utils/renderQr'
 
 type TableQrItem = {
   name: string

@@ -2,7 +2,7 @@ import { h } from 'vue'
 import { UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Promotion } from '@fastio/shared'
-import { buildPromoStatusColumn, buildPromoActivePeriodColumn, buildPromoActionsColumn } from '~/columns/_promo-shared'
+import { buildPromoStatusColumn, buildPromoActivePeriodColumn, buildPromoActionsColumn } from './_shared'
 
 const PROMOTION_TYPE_LABELS: Record<string, string> = {
   min_order: 'от суммы заказа',

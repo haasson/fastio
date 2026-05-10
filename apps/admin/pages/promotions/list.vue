@@ -52,10 +52,10 @@ import { UiButton, UiDataTable, UiEmpty, UiInput, UiSkeleton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Promotion, PromotionFormData } from '@fastio/shared'
 import { useTenantStore } from '~/stores/tenant'
-import { usePromotions } from '~/composables/retail/usePromotions'
+import { usePromotions } from '~/features/promotions'
 import { useBanners } from '~/composables/data/useBanners'
-import { buildPromotionColumns } from '~/columns/promotions'
-import PromotionFormModal from '~/components/promotions/PromotionFormModal.vue'
+import { buildPromotionColumns } from '~/features/promotions'
+import PromotionFormModal from '~/features/promotions/components/PromotionFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
 

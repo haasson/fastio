@@ -80,8 +80,8 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiButton } from '@fastio/ui'
 import type { Table, KitchenQueueItem } from '@fastio/shared'
-import type { TableSession, TableSessionItem } from '~/utils/api/retail/tables'
-import TableSessionItems from '~/components/tables/TableSessionItems.vue'
+import type { TableSession, TableSessionItem } from '../api/tables'
+import TableSessionItems from './TableSessionItems.vue'
 
 type Props = {
   modelValue: boolean

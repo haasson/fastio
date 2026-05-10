@@ -93,13 +93,12 @@ import { ref, computed } from 'vue'
 import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useTablesContext } from '~/composables/retail/useTablesContext'
-import useAddDishToTable from '~/composables/retail/useAddDishToTable'
+import { useTablesContext, useAddDishToTable } from '~/features/tables'
 import { useGate } from '~/composables/plan/useGate'
 import DishPickerModal from '~/components/menu/DishPickerModal.vue'
-import TableCard from '~/components/tables/TableCard.vue'
-import TableEditModal from '~/components/tables/TableEditModal.vue'
-import TableQrModal from '~/components/tables/TableQrModal.vue'
+import TableCard from '~/features/tables/components/TableCard.vue'
+import TableEditModal from '~/features/tables/components/TableEditModal.vue'
+import TableQrModal from '~/features/tables/components/TableQrModal.vue'
 
 const ctx = useTablesContext()
 
