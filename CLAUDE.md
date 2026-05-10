@@ -227,29 +227,56 @@ supabase/
 
 ## Архитектура admin-приложения
 
-**Паттерн работы с данными:** `pages` → `composables/data/*` → `utils/api/*` → Supabase
+**Структура (после Phase 5 модульной миграции):**
 
-- `utils/api/*.ts` — низкоуровневые CRUD-функции (прямые запросы к Supabase)
-- `composables/data/useDatabase.ts` — агрегирует все API-модули в один объект; используй `useDatabase()` вместо прямых импортов
-- `composables/data/useRealtimeList.ts` — универсальный composable для списка с realtime-подпиской (fetch + Supabase channel)
-- `composables/data/useRealtimeWatch.ts` — то же самое, но для одного объекта
+```
+apps/admin/
+  features/<X>/         # Модули — каждая фича изолирована (api, composables, components, stores, utils, types, index.ts barrel)
+    auth, team, branches, settings, appearance, content, catalog,
+    billing, onboarding, support, audit-log, legal, help, ai-assistant,
+    menu, orders, kitchen, tables, reservations, promotions,           # retail
+    appointments, services-catalog                                      # services
+  shared/               # Общая инфра (зависимость идёт ОТ модуля К shared, не наоборот)
+    data/               # useDatabase (агрегатор), useTenant, useRealtimeList/Watch, createRealtimeBus, useAddons
+    plan/               # useGate (глобальный), useGate.{retail,services}, useGate.shared, useModules, usePlans, useResolvedFeatures
+    stores/             # auth, tenant, branch (глобальные Pinia)
+    utils/              # query, reportError, alerts, constants, filterDefined, formatRelativeDate, imageOptimize, planFeatureLabels, supportStatus, moduleToggleChecks, featureFlags, renderQr
+    composables/        # useItemVariant, usePageTitle, useRealtimeChannels, useStorefrontUrl, useTableUrl + delivery/
+    components/         # AppTableToolbar, TenantSwitcher + layout/{AppNav,BranchSelector,PastDueBanner}
+    ui/components/      # Admin-специфичные UI (App*, ColorPicker, RichTextEditor, ImageUploadModal и т.д.)
+    ui/composables/     # useEditableForm, useDrawer, useDelayedLoading, useFormDirty, useUnsavedGuard, ...
+  pages/                # Nuxt-роутинг (часть в shared layout, часть в вертикалях retail/services)
+  config/               # modules.ts (реестр), team-roles.ts, retail/* (order configs), theme-presets, google-fonts
+  utils/api/            # Оставшиеся API: addons, billing, db-types, functions, plans, realtime, tenants
+  composables/retail/   # Vertical-only: useDashboardStats
+  components/retail/    # Vertical-only: dashboard/*
+  middleware/, plugins/, layouts/, columns/
+```
+
+**Паттерн работы с данными:** `pages` / `features/<X>` → `~/shared/data/useDatabase()` → `features/<X>/api/*` или `utils/api/*` → Supabase.
+
+- `features/<X>/api/*.ts` (или `utils/api/*.ts` для не-feature-апи) — низкоуровневые CRUD-функции
+- `shared/data/useDatabase.ts` — агрегирует все API-модули; используй `useDatabase()` вместо прямых импортов
+- `shared/data/useRealtimeList.ts` — composable для списка с realtime-подпиской
+- `shared/data/useRealtimeWatch.ts` — то же для одного объекта
 
 **Stores (Pinia, setup API):**
-- `auth.ts` — текущий Supabase User
-- `tenant.ts` — текущий тенант + переключение между тенантами; инициализируется через `tenantApi.init()`
-- `branch.ts` — текущий филиал; управляется из `tenantStore`
-- `appointmentSettings.ts` — настройки модуля «Онлайн-запись»; грузится в `useTenant.init()` если включён модуль `services`
+- `shared/stores/auth.ts` — текущий Supabase User
+- `shared/stores/tenant.ts` — текущий тенант + переключение между тенантами; инициализируется через `tenantApi.init()`
+- `shared/stores/branch.ts` — текущий филиал; управляется из `tenantStore`
+- `features/appointments/stores/appointmentSettings.ts` — настройки модуля «Онлайн-запись»
+- `features/orders/stores/{deliveryZone,order-statuses}.ts`, `features/reservations/stores/reservations.ts` — feature-specific сторы
 
-**Страницы и модули (все в `pages/`):**
-- `/` — дашборд (статистика)
-- `/menu` — категории, блюда, модификаторы, теги, комбо (для food-tenants)
-- `/services` — категории услуг, услуги, теги (для services-tenants)
-- `/orders` — заказы, настройка статусов, номер заказа, доставка
-- `/kitchen` — очередь кухни, оверлей сборки, настройки
-- `/reservations` — бронирования, настройки
-- `/appointments` — таймлайн, история, исполнители (`staff`), объекты (`objects`), шаблоны расписаний (`templates`), настройки
-- `/tables` — столы, вызовы
-- `/promotions` — акции, промокоды
+**Страницы (`pages/`):**
+- `/` — дашборд (router-v-if по `businessType`: RetailDashboard / ServicesDashboard)
+- `/menu` — категории, блюда, модификаторы, теги, комбо (retail)
+- `/services` — категории услуг, услуги, теги (services)
+- `/orders` — заказы, настройка статусов, номер заказа, доставка (retail)
+- `/kitchen` — очередь кухни, оверлей сборки, настройки (retail)
+- `/reservations` — бронирования, настройки (retail)
+- `/appointments` — таймлайн, история, исполнители (staff), объекты, шаблоны расписаний, настройки (services)
+- `/tables` — столы, вызовы (retail)
+- `/promotions` — акции, промокоды (retail)
 - `/appearance` — секции, страницы, тема, SEO
 - `/content` — баннеры, галерея, вакансии, отзывы
 - `/settings` — контакты, уведомления, категории доставки, модули, юридические, аддоны
@@ -257,11 +284,13 @@ supabase/
 - `/account` — профиль, биллинг
 - `/help` — туры, поддержка
 
-**Модули** (`apps/admin/config/modules.ts`): функциональность включается/выключается через `TenantModules`. Перед отключением модуля `moduleToggleChecks.ts` проверяет наличие активных зависимостей (заказов, бронирований, открытых столов и т.д.).
+**Модули** (`apps/admin/config/modules.ts`): функциональность включается/выключается через `TenantModules`. Перед отключением модуля `shared/utils/moduleToggleChecks.ts` проверяет наличие активных зависимостей (заказов, бронирований, открытых столов и т.д.).
 
 **Permissions:** `useTenantStore().currentPermissions` — объект с булевыми флагами; `usePermissions()` — composable-обёртка для компонентов.
 
-**Realtime:** все списки в реальном времени через Supabase Realtime channels. Каналы создаются в composables `composables/data/*Channel.ts`, агрегируются в `useRealtimeChannels.ts`.
+**Realtime:** все списки в реальном времени через Supabase Realtime channels. Каналы создаются в composables `features/<X>/composables/use*Channel.ts`, агрегируются в `shared/composables/useRealtimeChannels.ts`.
+
+**Cross-module импорты:** только через barrel (`~/features/<X>` → `index.ts`). Deep-paths (`~/features/<X>/api/Y`) внутри **своего** модуля — относительные пути. Полная конвенция — `docs/vertical-isolation.md`.
 
 ---
 
