@@ -2,7 +2,7 @@ import type { ServicesGateKey } from './useGate.services'
 
 /**
  * Карта роут → services-гейт. Используется как часть общего реестра
- * в `composables/plan/useGate.routes.ts` (агрегатор в allow-list).
+ * в `shared/plan/useGate.routes.ts` (агрегатор в allow-list).
  *
  * Разбито на под-роуты и корни, чтобы агрегатор мог сначала склеить ВСЕ
  * под-роуты обеих вертикалей + shared, и только потом — корни. Иначе

@@ -15,6 +15,6 @@ export * from './composables/useDishes'
 export * from './composables/useModifierGroups'
 export * from './composables/useDishModifiersEditor'
 
-// components/ — компоненты модуля. Cross-module потребители (orders, promotions, tables)
-// импортят DishPickerModal через ~/features/menu/components/DishPickerModal.vue;
-// внутри модуля — relative paths.
+// Components (public cross-module API). Внутри модуля — relative paths.
+export { default as DishPickerModal } from './components/DishPickerModal.vue'
+export type { DishPickerResult } from './components/DishPickerModal.vue'

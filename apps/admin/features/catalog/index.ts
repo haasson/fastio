@@ -9,5 +9,8 @@ export * from './composables/useCategories'
 export * from './composables/useTags'
 export * from './composables/useTagDisplay'
 
-// components/ — формы категорий/тэгов и универсальные form/-секции;
-// импортятся через ~/features/catalog/components/<X>.vue.
+// Components (public cross-module API). Универсальные form/-секции и
+// карточка предмета каталога — используются и menu, и services-catalog.
+export { default as ItemCard } from './components/ItemCard.vue'
+export { default as BasicInfoSection } from './components/form/BasicInfoSection.vue'
+export { default as TagsSection } from './components/form/TagsSection.vue'

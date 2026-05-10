@@ -140,8 +140,8 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useTags } from '~/features/catalog'
 import { useBranchToggle } from '~/features/branches'
 import { reportError } from '~/shared/utils/reportError'
-import BasicInfoSection from '~/features/catalog/components/form/BasicInfoSection.vue'
-import TagsSection from '~/features/catalog/components/form/TagsSection.vue'
+import { BasicInfoSection } from '~/features/catalog'
+import { TagsSection } from '~/features/catalog'
 
 const props = defineProps<{
   modelValue: boolean

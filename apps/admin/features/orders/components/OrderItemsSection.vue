@@ -75,7 +75,7 @@ import { useGate } from '~/shared/plan/useGate'
 import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import type { OrderItem } from '@fastio/shared'
 
-import DishPickerModal, { type DishPickerResult } from '~/features/menu/components/DishPickerModal.vue'
+import { DishPickerModal, type DishPickerResult } from '~/features/menu'
 import DishItemRow from '~/shared/ui/components/DishItemRow.vue'
 import useDrawer from '~/shared/ui/composables/useDrawer'
 import { useTerms } from '~/features/legal'

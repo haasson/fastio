@@ -52,10 +52,15 @@ const RETAIL_GLOBS = [
 // (`pages/branches/index.vue` показывает плашку про delivery-зоны для retail;
 // `pages/content/banners.vue` даёт селект promotions/promoCodes для retail).
 // Это by-design: страница shared, её содержимое адаптируется по `businessType`/гейтам.
+// Файлы, которым по дизайну разрешено знать обе вертикали
+// и/или импортить features/*. ESLint-правило `no-restricted-imports`
+// для них выключено.
+//
+// Файлы внутри `shared/**` дополнительно покрываются shared-aggregator
+// exception ниже (строки 270+), потому что rule shared/** ban-features
+// переопределяет AGGREGATOR_FILES exception.
 const AGGREGATOR_FILES = [
   'shared/data/useDatabase.ts',
-  'shared/plan/useGate.ts',
-  'shared/plan/useGate.routes.ts',
   'shared/composables/useRealtimeChannels.ts',
   'shared/components/layout/AppNav.vue',
   'shared/utils/moduleToggleChecks.ts',
@@ -110,12 +115,28 @@ const RELATIVE_VERTICAL_PATTERNS = {
   services: ['**/services/**'],
 }
 
-// Модульная изоляция: cross-module импорт через ~/features/<X>/<deep> запрещён —
-// нужно через ~/features/<X> (barrel). См. TECHDEBT (block module-isolation
-// в no-restricted-imports — best-effort из-за ограничений minimatch extglob).
+// Модульная изоляция: cross-module импорт TS-модулей через ~/features/<X>/<deep>
+// запрещён — нужно через ~/features/<X> (barrel). Внутри своего модуля
+// используй относительные пути.
+//
+// Vue-компоненты намеренно НЕ в списке (см. docs/vertical-isolation.md):
+// они импортятся deep-path по `~/features/<X>/components/<Y>.vue` чтобы не
+// раздувать barrel и явно показывать кросс-модульное использование.
+//
+// Использовать enumeration вместо extglob `!(index)` — `no-restricted-imports`
+// не поддерживает minimatch extglob `!(...)` (см. TECHDEBT).
 const MODULE_ISOLATION_PATTERN = {
-  group: ['~/features/*/!(index)', '~/features/*/!(index)/**'],
-  message: 'Cross-module импорт только через ~/features/<feature> (barrel index.ts), не deep path. Внутри своего модуля используй относительные пути.',
+  group: [
+    '~/features/*/api/**',
+    '~/features/*/composables/**',
+    '~/features/*/utils/**',
+    '~/features/*/stores/**',
+    '~/features/*/columns/**',
+    '~/features/*/config/**',
+    '~/features/*/types',
+    '~/features/*/types/**',
+  ],
+  message: 'Cross-module импорт TS-модулей только через ~/features/<feature> (barrel index.ts), не deep path. Внутри своего модуля используй относительные пути. Vue-компоненты — deep-path разрешён (~/features/<X>/components/<Y>.vue).',
 }
 
 const banFromServices = {
@@ -265,8 +286,6 @@ export default [
       'shared/utils/moduleToggleChecks.ts',
       'shared/components/layout/AppNav.vue',
       'shared/composables/useRealtimeChannels.ts',
-      'shared/plan/useGate.ts',
-      'shared/plan/useGate.routes.ts',
       'shared/data/useDatabase.ts',
       'shared/data/useTenant.ts',
     ],

@@ -61,6 +61,24 @@ const cases = [
     code: 'import { x } from \'../services/useServices\'\nexport const y = x\n',
     expectMessage: /Retail не может импортировать services/,
   },
+  {
+    name: 'cross-module deep import TS — orders → menu/composables (same vertical)',
+    file: 'features/orders/components/__synthetic__.ts',
+    code: 'import { x } from \'~/features/menu/composables/useDishes\'\nexport const y = x\n',
+    expectMessage: /Cross-module импорт TS-модулей только через/,
+  },
+  {
+    name: 'cross-module deep import TS — appointments → services-catalog/api',
+    file: 'features/appointments/composables/__synthetic__.ts',
+    code: 'import { x } from \'~/features/services-catalog/api/services\'\nexport const y = x\n',
+    expectMessage: /Cross-module импорт TS-модулей только через/,
+  },
+  {
+    name: 'cross-module Vue-компонент — deep-path разрешён (orders → menu/components)',
+    file: 'features/orders/components/__synthetic__.ts',
+    code: 'import X from \'~/features/menu/components/DishPickerModal.vue\'\nexport const y = X\n',
+    expectNoMessage: /Cross-module/,
+  },
 ] as const
 
 describe('vertical isolation eslint barrier', () => {
@@ -69,7 +87,8 @@ describe('vertical isolation eslint barrier', () => {
       const [result] = await eslint.lintText(c.code, { filePath: path.join(ADMIN_ROOT, c.file) })
       const messages = result.messages.map((m) => m.message).join('\n')
 
-      expect(messages).toMatch(c.expectMessage)
+      if ('expectMessage' in c) expect(messages).toMatch(c.expectMessage)
+      if ('expectNoMessage' in c) expect(messages).not.toMatch(c.expectNoMessage)
     })
   }
 

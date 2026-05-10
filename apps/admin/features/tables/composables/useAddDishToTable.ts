@@ -5,7 +5,7 @@ import type { Table, OrderItem } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useOrderStatusesStore } from '~/features/orders'
-import type { DishPickerResult } from '~/features/menu/components/DishPickerModal.vue'
+import type { DishPickerResult } from '~/features/menu'
 import type { TableSessionItem } from '../api/tables'
 
 export function useAddDishToTable(getTenantId: () => string | null) {
