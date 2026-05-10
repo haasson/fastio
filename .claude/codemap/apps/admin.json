@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T12:45:37.717Z",
+  "generated_at": "2026-05-10T12:52:42.684Z",
   "stats": {
-    "files": 94,
+    "files": 86,
     "pages": 0,
-    "symbols": 161,
+    "symbols": 146,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -426,19 +426,6 @@
         }
       ]
     },
-    "composables/useAiChat.ts": {
-      "kind": "ts",
-      "hash": "a61438317d71",
-      "purpose": "AI-чат админки на @ai-sdk/vue: транспорт через /api/ai/chat с tenantId/userId/currentRoute, управление input/messages/status",
-      "symbols": [
-        {
-          "name": "useAiChat",
-          "kind": "function",
-          "hash": "77031817",
-          "purpose": "Возвращает messages/input/handleSubmit/isLoading/status/error/reload/stop/clearMessages"
-        }
-      ]
-    },
     "composables/useItemVariant.ts": {
       "kind": "ts",
       "hash": "7cdd736fe749",
@@ -449,44 +436,6 @@
           "kind": "function",
           "hash": "f17221e8",
           "purpose": "Возвращает variant: ComputedRef<ItemVariant> по businessType/menuStyle"
-        }
-      ]
-    },
-    "composables/useOnboarding.ts": {
-      "kind": "ts",
-      "hash": "f6355a250674",
-      "purpose": "Состояние онбординга: построение flow-шагов, статусы (done/active/locked), прогресс, completeStep/dismiss/finish/reset",
-      "symbols": [
-        {
-          "name": "StepStatus",
-          "kind": "type",
-          "hash": "1a83f303",
-          "purpose": "'done' | 'active' | 'locked'"
-        },
-        {
-          "name": "OnboardingStepView",
-          "kind": "type",
-          "hash": "c42b2148",
-          "purpose": "OnboardingStep с index и status для рендера чек-листа"
-        },
-        {
-          "name": "useOnboarding",
-          "kind": "function",
-          "hash": "a374e032",
-          "purpose": "Возвращает isVisible/steps/progress/allCompleted/activeStepId + completeStep/dismiss/finish/reset"
-        }
-      ]
-    },
-    "composables/useOnboardingActions.ts": {
-      "kind": "ts",
-      "hash": "ee0933047a37",
-      "purpose": "Семантические интенты онбординга: переход на роут или внешний URL, запуск driver.js-тура, открытие KB, шаг дальше",
-      "symbols": [
-        {
-          "name": "useOnboardingActions",
-          "kind": "function",
-          "hash": "05cb5e40",
-          "purpose": "Возвращает goToStep/startStepTour/openKb/nextStep"
         }
       ]
     },
@@ -505,7 +454,7 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "c17fe6a27f06",
+      "hash": "abcbc8fda96b",
       "purpose": "Aggregator-агент: подключает все realtime-каналы (orders, kitchen, tables, reservations, appointments, visits, support) и регистрирует alert/inbox handlers; вызывается из default-layout",
       "symbols": [
         {
@@ -542,50 +491,6 @@
         }
       ]
     },
-    "composables/useTerms.ts": {
-      "kind": "ts",
-      "hash": "36883cb2659b",
-      "purpose": "Глобальный реактивный словарь терминов UI (блюдо/товар/услуга, меню/каталог/услуги) по businessType+menuStyle",
-      "symbols": [
-        {
-          "name": "setVocab",
-          "kind": "function",
-          "hash": "66b39d19",
-          "purpose": "Пересчитать терминологию по businessType+menuStyle (вызывается из vocab-плагина)"
-        },
-        {
-          "name": "useTerms",
-          "kind": "function",
-          "hash": "e2763862",
-          "purpose": "Возвращает reactive item/menu/firstItemAcc/reservationsLabel/categoryExamples/menuStyle"
-        }
-      ]
-    },
-    "composables/useTour.ts": {
-      "kind": "ts",
-      "hash": "29597dbcd736",
-      "purpose": "Обёртка над driver.js: запускает интерактивный тур по шагам (с onNext-хуками) и waitForElement",
-      "symbols": [
-        {
-          "name": "TourStep",
-          "kind": "type",
-          "hash": "db30c4f4",
-          "purpose": "DriveStep + опциональный async onNext для валидации/перехода"
-        },
-        {
-          "name": "waitForElement",
-          "kind": "function",
-          "hash": "b665d339",
-          "purpose": "Promise<HTMLElement>: ждёт появления селектора через MutationObserver с таймаутом"
-        },
-        {
-          "name": "default",
-          "kind": "function",
-          "hash": "68b54b56",
-          "purpose": "Возвращает start(steps)/stop()/isActive — глобальный singleton driver.js"
-        }
-      ]
-    },
     "utils/alerts.ts": {
       "kind": "ts",
       "hash": "8f7c34f9e141",
@@ -611,19 +516,6 @@
         }
       ]
     },
-    "utils/audit.ts": {
-      "kind": "ts",
-      "hash": "1d342acbc100",
-      "purpose": "Хелпер audit-лога: выбор подмножества полей объекта по списку ключей",
-      "symbols": [
-        {
-          "name": "pickFields",
-          "kind": "function",
-          "hash": "3eb19ee0",
-          "purpose": "Возвращает подобъект только с указанными ключами"
-        }
-      ]
-    },
     "utils/constants.ts": {
       "kind": "ts",
       "hash": "7cb0325478d5",
@@ -640,19 +532,6 @@
           "kind": "const",
           "hash": "f513cc8d",
           "purpose": "Ключ sessionStorage: индикатор pending-recovery"
-        }
-      ]
-    },
-    "utils/fastio-legal.ts": {
-      "kind": "ts",
-      "hash": "dbd922d5d798",
-      "purpose": "Реквизиты FastIO для оферты и политики (placeholder-данные с FILL_ME до публикации)",
-      "symbols": [
-        {
-          "name": "FASTIO_LEGAL",
-          "kind": "const",
-          "hash": "b2f5122d",
-          "purpose": "Объект с реквизитами: entityName/inn/ogrn/address/phone/emails/site/acquirer/lastUpdated"
         }
       ]
     },
@@ -923,31 +802,6 @@
         }
       ]
     },
-    "config/onboarding.ts": {
-      "kind": "ts",
-      "hash": "ae9570e7eabe",
-      "purpose": "Конфиг шагов онбординга: набор OnboardingStep'ов (доставка, самовывоз, dine-in, бронирования, сайт и т.д.) и сборка финального флоу под текущий тенант",
-      "symbols": [
-        {
-          "name": "OnboardingLabels",
-          "kind": "type",
-          "hash": "dccecc1c",
-          "purpose": "Лейблы термов (меню/каталог/блюдо/товар) для подстановки в шаги"
-        },
-        {
-          "name": "OnboardingStep",
-          "kind": "type",
-          "hash": "5237329d",
-          "purpose": "Шаг онбординга: id/title/description/details/cta/route/externalTarget/tourId/kbRoute"
-        },
-        {
-          "name": "buildOnboardingFlow",
-          "kind": "function",
-          "hash": "49f2df41",
-          "purpose": "Собирает массив шагов для текущего тенанта (по модулям и businessType)"
-        }
-      ]
-    },
     "config/retail/order-events.ts": {
       "kind": "ts",
       "hash": "b635ddeb7815",
@@ -1172,8 +1026,8 @@
     },
     "plugins/vocab.client.ts": {
       "kind": "ts",
-      "hash": "d316276a2377",
-      "purpose": "Связывает текущий тенант со словарём терминов (useTerms) при логине, switchTenant, изменении businessType/menuStyle",
+      "hash": "96ab8753a984",
+      "purpose": "Nuxt client plugin: инициализирует useTerms vocabulary (бизнес-тип/menu-style) для текущего тенанта",
       "symbols": [
         {
           "name": "default",
@@ -1198,8 +1052,8 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "c46b4f9b142b",
-      "purpose": "Главный layout админки: collapsible sidebar, topbar с переключателем темы, плавающий AppPageActionBar, онбординг-виджеты и AI-чат",
+      "hash": "83cdc6451054",
+      "purpose": "Главный layout админки: header + sidebar (AppNav) + slot, инициализирует realtime-каналы и tour-инфру",
       "symbols": [
         {
           "name": "component",
@@ -1211,7 +1065,7 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "39319b2a7d12",
+      "hash": "853cc4f99ed6",
       "purpose": "Главная навигация админки: рендерит список разделов с иконками и счётчиками новизны (заказы, бронирования, записи, поддержка); поддерживает collapsed-режим",
       "symbols": [
         {
