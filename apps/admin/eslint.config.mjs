@@ -6,17 +6,18 @@ import eslintConfig from '@fastio/shared/configs/eslint'
 // ──────────────────────────────────────────────────────────────────────────────
 
 const SERVICES_GLOBS = [
+  // Legacy paths (постепенно опустеют по мере миграции; некоторые ещё содержат
+  // services-catalog файлы или layout-страницы Nuxt).
   'composables/services/**',
   'utils/api/services/**',
-  'utils/services/**',
-  'stores/services/**',
   'components/services/**',
-  'components/appointments/**',
   'pages/services/**',
   'pages/appointments/**',
   // Top-level layout-страницы (Nuxt nested routing) — относятся к вертикали
   'pages/services.vue',
   'pages/appointments.vue',
+  // Modular paths
+  'features/appointments/**',
 ]
 
 const RETAIL_GLOBS = [
@@ -90,14 +91,14 @@ const ALIAS_VERTICAL_PATTERNS = {
     '~/pages/promotions/**',
   ],
   services: [
+    // Legacy alias paths
     '~/composables/services/**',
     '~/utils/api/services/**',
-    '~/utils/services/**',
-    '~/stores/services/**',
     '~/components/services/**',
-    '~/components/appointments/**',
     '~/pages/services/**',
     '~/pages/appointments/**',
+    // Modular alias paths
+    '~/features/appointments/**',
   ],
 }
 
@@ -108,12 +109,21 @@ const RELATIVE_VERTICAL_PATTERNS = {
   services: ['**/services/**'],
 }
 
+// Модульная изоляция: cross-module импорт через ~/features/<X>/<deep> запрещён —
+// нужно через ~/features/<X> (barrel). См. TECHDEBT (block module-isolation
+// в no-restricted-imports — best-effort из-за ограничений minimatch extglob).
+const MODULE_ISOLATION_PATTERN = {
+  group: ['~/features/*/!(index)', '~/features/*/!(index)/**'],
+  message: 'Cross-module импорт только через ~/features/<feature> (barrel index.ts), не deep path. Внутри своего модуля используй относительные пути.',
+}
+
 const banFromServices = {
   patterns: [
     {
       group: [...ALIAS_VERTICAL_PATTERNS.retail, ...RELATIVE_VERTICAL_PATTERNS.retail],
       message: 'Services не может импортировать retail. Если нужно общее — вынеси в shared (docs/vertical-isolation.md).',
     },
+    MODULE_ISOLATION_PATTERN,
   ],
 }
 
@@ -123,6 +133,7 @@ const banFromRetail = {
       group: [...ALIAS_VERTICAL_PATTERNS.services, ...RELATIVE_VERTICAL_PATTERNS.services],
       message: 'Retail не может импортировать services. Если нужно общее — вынеси в shared (docs/vertical-isolation.md).',
     },
+    MODULE_ISOLATION_PATTERN,
   ],
 }
 
@@ -137,6 +148,7 @@ const banFromShared = {
       ],
       message: 'Shared-код НЕ ДОЛЖЕН знать о вертикалях. Зависимость идёт только ОТ вертикали К shared (docs/vertical-isolation.md).',
     },
+    MODULE_ISOLATION_PATTERN,
   ],
 }
 
@@ -216,36 +228,12 @@ export default [
   },
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 4.5. Модульная изоляция: cross-module импорты только через barrel.
-  // Правило применяется только к файлам внутри features/.
-  // Пока папка пуста — правило no-op. Активируется по мере переезда модулей.
-  //
-  // Подробности: docs/plans/2026-05-10-modular-architecture-migration.md
+  // Модульная изоляция (~/features/*/<deep> через barrel) встроена в
+  // banFromServices/banFromRetail/banFromShared выше. Отдельного блока для
+  // features/** нет, потому что в flat config rule с files: ['features/**']
+  // переопределил бы no-restricted-imports вертикального правила (paths
+  // не сливаются, последний матчующий блок перезаписывает rule целиком).
   // ──────────────────────────────────────────────────────────────────────────
-  {
-    files: ['features/**'],
-    rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [
-          {
-            // Алиасное правило: deep cross-module импорт через ~/features/<X>/<deep>
-            // запрещён — нужно импортить через ~/features/<X> (barrel).
-            //
-            // ⚠️ ПРАВИЛО НЕТОЧНОЕ: extglob !(index) поддерживается minimatch'ом
-            // только частично. На практике ловит большинство явно-плохих случаев,
-            // но НЕ может отличить same-feature deep import от cross-feature
-            // (оба матчатся одним и тем же паттерном `~/features/*/...`).
-            // Реальное enforcement через import-x plugin — TECHDEBT.
-            //
-            // Внутри своего модуля sibling-импорты пиши относительными путями
-            // (./, ../X) — это идиоматично и не цепляется ни одним паттерном.
-            group: ['~/features/*/!(index)', '~/features/*/!(index)/**'],
-            message: 'Cross-module импорт только через ~/features/<feature> (barrel index.ts), не deep path. Внутри своего модуля используй относительные пути.',
-          },
-        ],
-      }],
-    },
-  },
 
   // shared/* НЕ ДОЛЖЕН импортить из features/*
   {
