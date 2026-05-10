@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T13:32:55.936Z",
+  "generated_at": "2026-05-10T13:37:03.690Z",
   "stats": {
-    "files": 88,
+    "files": 86,
     "pages": 0,
-    "symbols": 149,
+    "symbols": 144,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -692,7 +692,7 @@
     },
     "columns/addons.ts": {
       "kind": "ts",
-      "hash": "4167af946e68",
+      "hash": "a2d96421fa1f",
       "purpose": "Колонки таблиц добавок и пресетов добавок (DishList): имя, цена, вес, switch, actions",
       "symbols": [
         {
@@ -711,7 +711,7 @@
     },
     "columns/modifiers.ts": {
       "kind": "ts",
-      "hash": "f5fab0408280",
+      "hash": "9c08c4424daa",
       "purpose": "Колонки таблицы групп модификаторов: имя, опции (теги), switch активности, actions",
       "symbols": [
         {
@@ -724,7 +724,7 @@
     },
     "columns/team.ts": {
       "kind": "ts",
-      "hash": "d9e8597c5995",
+      "hash": "b568dd6d5457",
       "purpose": "Колонки таблиц команды: участники (роль, филиалы, блокировка) и приглашения (статус, дата)",
       "symbols": [
         {
@@ -821,7 +821,7 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "f87d87a9ec39",
+      "hash": "2a5e5c002805",
       "purpose": "Дефолтный layout админки: collapsible sidebar с лого/AppNav/TenantSwitcher/BranchSelector + main slot для страницы",
       "symbols": [
         {
@@ -829,382 +829,6 @@
           "kind": "component",
           "hash": "cbcf45d7",
           "purpose": "Default layout с collapsible sidebar и slot для страницы"
-        }
-      ]
-    },
-    "components/ui/AddressSuggestInput.vue": {
-      "kind": "vue",
-      "hash": "48d3cc61ba81",
-      "purpose": "Поле ввода адреса с подсказками DaData; emit('select') возвращает выбранную suggestion с координатами; опционально валидирует что выбрана именно подсказка (requirePicked)",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "c0ecd388",
-          "purpose": "{ name?, label?, placeholder?, rules?, disabled?, requirePicked? } — requirePicked включает pickedRule"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "3504eaf7",
-          "purpose": "update:modelValue + select(suggestion с координатами)"
-        }
-      ]
-    },
-    "components/ui/AddressWithMap.vue": {
-      "kind": "vue",
-      "hash": "8e049d5b9d03",
-      "purpose": "AddressSuggestInput + Яндекс.Карта с маркером и координатами; v-model:address/addressData/latitude/longitude",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "5a1a408c",
-          "purpose": "{ name?, placeholder?, rules?, mapLabel?, mapHeight? }"
-        }
-      ]
-    },
-    "components/ui/AppActionsBlock.vue": {
-      "kind": "vue",
-      "hash": "e6c69cb8d30e",
-      "purpose": "Стандартный блок действий строки таблицы: pencil/copy/trash icon-buttons + слоты prepend/append для switch/extra",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "9a3c7eb5",
-          "purpose": "{ size?, showEdit?, disableEdit?, showCopy?, showDelete? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "6f95a9f9",
-          "purpose": "edit/copy/delete"
-        }
-      ]
-    },
-    "components/ui/AppBrand.vue": {
-      "kind": "vue",
-      "hash": "d2a3d4ada295",
-      "purpose": "Брендовая отметка: AppLogo + текст 'Fastio' (для login/auth-страниц)",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "e4a6730d",
-          "purpose": "{ size?: 'small' | 'medium' }"
-        }
-      ]
-    },
-    "components/ui/AppBurger.vue": {
-      "kind": "vue",
-      "hash": "62d007a08dd1",
-      "purpose": "Кнопка-бургер для мобильного открытия sidebar (3 полосы с анимацией в крест)",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "8b3524fb",
-          "purpose": "{ open?: boolean }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "755dca6a",
-          "purpose": "click"
-        }
-      ]
-    },
-    "components/ui/AppCategoryList.vue": {
-      "kind": "vue",
-      "hash": "7eff4ab7dc3d",
-      "purpose": "Универсальный список категорий с drag-n-drop и редактированием — обёртка над features/catalog для menu и services",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "7d74bafc",
-          "purpose": "{ categories, loading, showThumbs?, itemCounts?, countText?, emptyText }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "97fc9347",
-          "purpose": "reorder/edit/delete/toggleActive"
-        },
-        {
-          "name": "CategoryListItem",
-          "kind": "type",
-          "hash": "27c0dea3",
-          "purpose": "Минимум полей категории для рендера в списке"
-        }
-      ]
-    },
-    "components/ui/AppDraggableList.vue": {
-      "kind": "vue",
-      "hash": "0aa13b5db09c",
-      "purpose": "Сортируемый список на vue-draggable-plus: handle .drag-handle, ghost-class, animation 180ms",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "0fb30420",
-          "purpose": "{ modelValue: unknown[] }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "7fd27ffa",
-          "purpose": "update:modelValue/reorder"
-        }
-      ]
-    },
-    "components/ui/AppEditableTag.vue": {
-      "kind": "vue",
-      "hash": "80a9613a192a",
-      "purpose": "Редактируемый тег (категория/фильтр) с inline-режимом: grip, label, счётчик, actions (rename/delete) и хоткеи",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "8356e580",
-          "purpose": "{ label, type?, selected?, count?, editing?, inactive?, animationDelay? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "bb3b4308",
-          "purpose": "click/rename/delete"
-        }
-      ]
-    },
-    "components/ui/AppListRow.vue": {
-      "kind": "vue",
-      "hash": "1b38cdb2592f",
-      "purpose": "Строка списка с drag-handle, опциональной превью-картинкой, name-слотом и details/append-слотами",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "1a6617f2",
-          "purpose": "{ name?, thumbUrl?, thumbWidth?, thumbHeight?, disabled? }"
-        }
-      ]
-    },
-    "components/ui/AppLogo.vue": {
-      "kind": "vue",
-      "hash": "150961d16745",
-      "purpose": "Иконка лого Fastio из /logo-mark.svg (управляемый размер)",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "d64da962",
-          "purpose": "{ size?: number = 28 }"
-        }
-      ]
-    },
-    "components/ui/AppMenuItemList.vue": {
-      "kind": "vue",
-      "hash": "40a4437d8e34",
-      "purpose": "Универсальный список элементов меню/каталога с поиском, фильтрами и пагинацией — переиспользуется блюдами/услугами",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "501916ee",
-          "purpose": "{ categoryId, title, addDataTour, emptyHintText, emptyIcon, ... }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "7e229751",
-          "purpose": "add/search/view-change"
-        }
-      ]
-    },
-    "components/ui/AppPageActionBar.vue": {
-      "kind": "vue",
-      "hash": "c2e6dc482846",
-      "purpose": "Плавающий action-bar внизу страницы: появляется при dirty-форме, кнопки Отменить/Сохранить + Cmd/Ctrl+S, читает форму из usePageForm",
-      "symbols": [
-        {
-          "name": "component",
-          "kind": "component",
-          "hash": "cbcf45d7",
-          "purpose": "Floating save-bar страницы — рендерится из default-layout"
-        }
-      ]
-    },
-    "components/ui/AppStorefrontAlert.vue": {
-      "kind": "vue",
-      "hash": "749c90f20c23",
-      "purpose": "Список UiAlert о проблемах видимости фичи на витрине (страница/секция/nav выключены) со ссылкой 'настроить'",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "5cbbf965",
-          "purpose": "{ featureKey: SiteFeatureKey }"
-        }
-      ]
-    },
-    "components/ui/ColorPicker.vue": {
-      "kind": "vue",
-      "hash": "a62df249bbd8",
-      "purpose": "Свотч-палитра цветов: пресеты + custom <input type=color>; занятые цвета приглушаются, но остаются кликабельными",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "9c837d39",
-          "purpose": "modelValue (hex), label, presets (массив hex), usedColors (приглушаемые занятые)"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "2508c3d7",
-          "purpose": "update:modelValue"
-        }
-      ]
-    },
-    "components/ui/DishItemRow.vue": {
-      "kind": "vue",
-      "hash": "7df6a6d2d107",
-      "purpose": "Строка позиции заказа в OrderModal/чеке: категория, название, модификаторы тегами, удалённые ингредиенты, итоговая цена",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "6215ccef",
-          "purpose": "{ name, categoryName?, price?, modifiers?, modifiersDelta?, removedIngredients? }"
-        }
-      ]
-    },
-    "components/ui/HintPopover.vue": {
-      "kind": "vue",
-      "hash": "2c678e3895ef",
-      "purpose": "Мини-подсказка по hover на иконке help: UiPopover trigger=hover, width 260px, delay 500ms",
-      "symbols": [
-        {
-          "name": "component",
-          "kind": "component",
-          "hash": "cbcf45d7",
-          "purpose": "Wrapper над UiPopover с иконкой help"
-        }
-      ]
-    },
-    "components/ui/ImageListManager.vue": {
-      "kind": "vue",
-      "hash": "5a9a5fdea3ba",
-      "purpose": "Сетка картинок галереи блюда: drag&drop переупорядочивание, замена через ImageUploadModal, switch видимости",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "5940e698",
-          "purpose": "{ items: ImageItem[], aspectRatio? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "41a51f2d",
-          "purpose": "update:items/reorder/replace"
-        }
-      ]
-    },
-    "components/ui/ImageUploadModal.vue": {
-      "kind": "vue",
-      "hash": "6661f27fc3be",
-      "purpose": "Модалка загрузки картинки: drag&drop файла или галерея, кадрирование под aspectRatio, эмит uploaded(blob) для родителя",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "d4d87ac6",
-          "purpose": "{ modelValue, title?, aspectRatio? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "47f95b9b",
-          "purpose": "update:modelValue/uploaded(blob)"
-        },
-        {
-          "name": "ImageAspectRatio",
-          "kind": "type",
-          "hash": "fa6e3df6",
-          "purpose": "Соотношение сторон при кадрировании"
-        }
-      ]
-    },
-    "components/ui/ImageUploadTrigger.vue": {
-      "kind": "vue",
-      "hash": "689393211d34",
-      "purpose": "Триггер загрузки картинки: показ preview с overlay 'Заменить' или empty-state, открывает ImageUploadModal",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "fbaf4c65",
-          "purpose": "{ previewUrl, compact?, aspectRatio?, ... }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "3372f16f",
-          "purpose": "uploaded/remove"
-        }
-      ]
-    },
-    "components/ui/RichTextEditor.vue": {
-      "kind": "vue",
-      "hash": "86a4a1c6ac6c",
-      "purpose": "Tiptap-редактор форматированного текста с тулбаром (bold/italic/heading/list/link) и v-model:modelValue",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "91c064ac",
-          "purpose": "{ modelValue, label?, hero? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "5f03b126",
-          "purpose": "update:modelValue"
-        }
-      ]
-    },
-    "components/ui/SettingToggle.vue": {
-      "kind": "vue",
-      "hash": "0c94372df523",
-      "purpose": "Строка настройки: UiSwitch + label + опциональная подсказка hint, выравнивание start/end",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "cecfeeef",
-          "purpose": "{ modelValue, label, hint?, disabled?, align? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "145442e8",
-          "purpose": "update:modelValue"
-        }
-      ]
-    },
-    "components/ui/TabsLayout.vue": {
-      "kind": "vue",
-      "hash": "1a1f48b50c33",
-      "purpose": "Layout страницы с UiTabs наверху и NuxtPage в main-col + опциональным sidebar-слотом; навигация через router",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "06395625",
-          "purpose": "{ tabs: Tab[], basePath, card?, fullHeight?, hideSingle? }"
         }
       ]
     },
@@ -1327,6 +951,338 @@
           "kind": "const",
           "hash": "3a1ef8e5",
           "purpose": "Стор тенанта: tenant/maybeTenant, memberships, currentRoleName, currentPermissions, businessType, init/switchTenant/update/changePlan"
+        }
+      ]
+    },
+    "shared/ui/components/AddressSuggestInput.vue": {
+      "kind": "vue",
+      "hash": "48d3cc61ba81",
+      "purpose": "Поле ввода адреса с подсказками DaData; emit('select') возвращает выбранную suggestion с координатами; опционально валидирует что выбрана именно подсказка (requirePicked)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c0ecd388",
+          "purpose": "{ name?, label?, placeholder?, rules?, disabled?, requirePicked? } — requirePicked включает pickedRule"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "3504eaf7",
+          "purpose": "update:modelValue + select(suggestion с координатами)"
+        }
+      ]
+    },
+    "shared/ui/components/AddressWithMap.vue": {
+      "kind": "vue",
+      "hash": "634fecf5bb3f",
+      "purpose": "AddressSuggestInput + Яндекс.Карта с маркером и координатами; v-model:address/addressData/latitude/longitude",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5a1a408c",
+          "purpose": "{ name?, placeholder?, rules?, mapLabel?, mapHeight? }"
+        }
+      ]
+    },
+    "shared/ui/components/AppActionsBlock.vue": {
+      "kind": "vue",
+      "hash": "e6c69cb8d30e",
+      "purpose": "Стандартный блок действий строки таблицы: pencil/copy/trash icon-buttons + слоты prepend/append для switch/extra",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9a3c7eb5",
+          "purpose": "{ size?, showEdit?, disableEdit?, showCopy?, showDelete? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "6f95a9f9",
+          "purpose": "edit/copy/delete"
+        }
+      ]
+    },
+    "shared/ui/components/AppBrand.vue": {
+      "kind": "vue",
+      "hash": "d2a3d4ada295",
+      "purpose": "Брендовая отметка: AppLogo + текст 'Fastio' (для login/auth-страниц)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "e4a6730d",
+          "purpose": "{ size?: 'small' | 'medium' }"
+        }
+      ]
+    },
+    "shared/ui/components/AppBurger.vue": {
+      "kind": "vue",
+      "hash": "62d007a08dd1",
+      "purpose": "Кнопка-бургер для мобильного открытия sidebar (3 полосы с анимацией в крест)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8b3524fb",
+          "purpose": "{ open?: boolean }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "755dca6a",
+          "purpose": "click"
+        }
+      ]
+    },
+    "shared/ui/components/AppDraggableList.vue": {
+      "kind": "vue",
+      "hash": "0aa13b5db09c",
+      "purpose": "Сортируемый список на vue-draggable-plus: handle .drag-handle, ghost-class, animation 180ms",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "0fb30420",
+          "purpose": "{ modelValue: unknown[] }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "7fd27ffa",
+          "purpose": "update:modelValue/reorder"
+        }
+      ]
+    },
+    "shared/ui/components/AppEditableTag.vue": {
+      "kind": "vue",
+      "hash": "80a9613a192a",
+      "purpose": "Редактируемый тег (категория/фильтр) с inline-режимом: grip, label, счётчик, actions (rename/delete) и хоткеи",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "8356e580",
+          "purpose": "{ label, type?, selected?, count?, editing?, inactive?, animationDelay? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "bb3b4308",
+          "purpose": "click/rename/delete"
+        }
+      ]
+    },
+    "shared/ui/components/AppListRow.vue": {
+      "kind": "vue",
+      "hash": "1b38cdb2592f",
+      "purpose": "Строка списка с drag-handle, опциональной превью-картинкой, name-слотом и details/append-слотами",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "1a6617f2",
+          "purpose": "{ name?, thumbUrl?, thumbWidth?, thumbHeight?, disabled? }"
+        }
+      ]
+    },
+    "shared/ui/components/AppLogo.vue": {
+      "kind": "vue",
+      "hash": "150961d16745",
+      "purpose": "Иконка лого Fastio из /logo-mark.svg (управляемый размер)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "d64da962",
+          "purpose": "{ size?: number = 28 }"
+        }
+      ]
+    },
+    "shared/ui/components/AppPageActionBar.vue": {
+      "kind": "vue",
+      "hash": "c2e6dc482846",
+      "purpose": "Плавающий action-bar внизу страницы: появляется при dirty-форме, кнопки Отменить/Сохранить + Cmd/Ctrl+S, читает форму из usePageForm",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Floating save-bar страницы — рендерится из default-layout"
+        }
+      ]
+    },
+    "shared/ui/components/AppStorefrontAlert.vue": {
+      "kind": "vue",
+      "hash": "749c90f20c23",
+      "purpose": "Список UiAlert о проблемах видимости фичи на витрине (страница/секция/nav выключены) со ссылкой 'настроить'",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5cbbf965",
+          "purpose": "{ featureKey: SiteFeatureKey }"
+        }
+      ]
+    },
+    "shared/ui/components/ColorPicker.vue": {
+      "kind": "vue",
+      "hash": "a62df249bbd8",
+      "purpose": "Свотч-палитра цветов: пресеты + custom <input type=color>; занятые цвета приглушаются, но остаются кликабельными",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9c837d39",
+          "purpose": "modelValue (hex), label, presets (массив hex), usedColors (приглушаемые занятые)"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "2508c3d7",
+          "purpose": "update:modelValue"
+        }
+      ]
+    },
+    "shared/ui/components/DishItemRow.vue": {
+      "kind": "vue",
+      "hash": "7df6a6d2d107",
+      "purpose": "Строка позиции заказа в OrderModal/чеке: категория, название, модификаторы тегами, удалённые ингредиенты, итоговая цена",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "6215ccef",
+          "purpose": "{ name, categoryName?, price?, modifiers?, modifiersDelta?, removedIngredients? }"
+        }
+      ]
+    },
+    "shared/ui/components/HintPopover.vue": {
+      "kind": "vue",
+      "hash": "2c678e3895ef",
+      "purpose": "Мини-подсказка по hover на иконке help: UiPopover trigger=hover, width 260px, delay 500ms",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Wrapper над UiPopover с иконкой help"
+        }
+      ]
+    },
+    "shared/ui/components/ImageListManager.vue": {
+      "kind": "vue",
+      "hash": "c35026c7a7e8",
+      "purpose": "Сетка картинок галереи блюда: drag&drop переупорядочивание, замена через ImageUploadModal, switch видимости",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "5940e698",
+          "purpose": "{ items: ImageItem[], aspectRatio? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "41a51f2d",
+          "purpose": "update:items/reorder/replace"
+        }
+      ]
+    },
+    "shared/ui/components/ImageUploadModal.vue": {
+      "kind": "vue",
+      "hash": "6661f27fc3be",
+      "purpose": "Модалка загрузки картинки: drag&drop файла или галерея, кадрирование под aspectRatio, эмит uploaded(blob) для родителя",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "d4d87ac6",
+          "purpose": "{ modelValue, title?, aspectRatio? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "47f95b9b",
+          "purpose": "update:modelValue/uploaded(blob)"
+        },
+        {
+          "name": "ImageAspectRatio",
+          "kind": "type",
+          "hash": "fa6e3df6",
+          "purpose": "Соотношение сторон при кадрировании"
+        }
+      ]
+    },
+    "shared/ui/components/ImageUploadTrigger.vue": {
+      "kind": "vue",
+      "hash": "43e06239541e",
+      "purpose": "Триггер загрузки картинки: показ preview с overlay 'Заменить' или empty-state, открывает ImageUploadModal",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "fbaf4c65",
+          "purpose": "{ previewUrl, compact?, aspectRatio?, ... }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "3372f16f",
+          "purpose": "uploaded/remove"
+        }
+      ]
+    },
+    "shared/ui/components/RichTextEditor.vue": {
+      "kind": "vue",
+      "hash": "86a4a1c6ac6c",
+      "purpose": "Tiptap-редактор форматированного текста с тулбаром (bold/italic/heading/list/link) и v-model:modelValue",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "91c064ac",
+          "purpose": "{ modelValue, label?, hero? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "5f03b126",
+          "purpose": "update:modelValue"
+        }
+      ]
+    },
+    "shared/ui/components/SettingToggle.vue": {
+      "kind": "vue",
+      "hash": "0c94372df523",
+      "purpose": "Строка настройки: UiSwitch + label + опциональная подсказка hint, выравнивание start/end",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "cecfeeef",
+          "purpose": "{ modelValue, label, hint?, disabled?, align? }"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "145442e8",
+          "purpose": "update:modelValue"
+        }
+      ]
+    },
+    "shared/ui/components/TabsLayout.vue": {
+      "kind": "vue",
+      "hash": "1a1f48b50c33",
+      "purpose": "Layout страницы с UiTabs наверху и NuxtPage в main-col + опциональным sidebar-слотом; навигация через router",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "06395625",
+          "purpose": "{ tabs: Tab[], basePath, card?, fullHeight?, hideSingle? }"
         }
       ]
     },
