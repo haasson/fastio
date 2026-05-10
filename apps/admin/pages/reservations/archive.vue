@@ -59,15 +59,15 @@ import { ref, computed, watch } from 'vue'
 import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiPagination, UiSkeleton } from '@fastio/ui'
 import type { Reservation, ReservationStatus } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
-import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
+import ReservationDrawer from '~/features/reservations/components/ReservationDrawer.vue'
 import { useDatabase } from '~/composables/data/useDatabase'
 import { useTenantStore } from '~/stores/tenant'
 import { useBranchStore } from '~/stores/branch'
-import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/composables/retail/useReservationTable'
+import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/features/reservations'
 import {
   RESERVATION_ARCHIVE_STATUSES,
   RESERVATION_ARCHIVE_STATUS_OPTIONS,
-} from '~/utils/retail/reservation-constants'
+} from '~/features/reservations'
 
 const PAGE_SIZE = 20
 

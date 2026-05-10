@@ -31,7 +31,7 @@ import type { Table, TableCallType, TableCall, KitchenQueueItem } from '@fastio/
 import { todayInTz } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { useReservationsStore } from '~/stores/retail/reservations'
+import { useReservationsStore } from '~/features/reservations'
 import { useTenantStore } from '~/stores/tenant'
 import { useAuthStore } from '~/stores/auth'
 import { useOrderStatusesStore } from '~/stores/retail/order-statuses'

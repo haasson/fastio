@@ -8,7 +8,7 @@ import {
   RESERVATION_STATUS_LABELS as STATUS_LABELS,
   RESERVATION_STATUS_TYPES as STATUS_TYPES,
   RESERVATION_STATUS_FILTER_OPTIONS,
-} from '~/utils/retail/reservation-constants'
+} from './reservation-constants'
 
 const dateColumn = {
   title: 'Дата',

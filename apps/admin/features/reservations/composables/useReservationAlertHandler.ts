@@ -1,6 +1,6 @@
 import { onUnmounted } from 'vue'
-import { reservationEvents } from '~/composables/retail/useReservationsChannel'
-import { useNewReservationCounter } from '~/composables/retail/useNewReservationCounter'
+import { reservationEvents } from './useReservationsChannel'
+import { useNewReservationCounter } from './useNewReservationCounter'
 
 /**
  * Reacts to new reservations from the shared channel: counter.

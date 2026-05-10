@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T10:53:50.378Z",
+  "generated_at": "2026-05-10T11:43:21.722Z",
   "stats": {
-    "files": 109,
+    "files": 106,
     "pages": 0,
-    "symbols": 186,
+    "symbols": 177,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -544,7 +544,7 @@
     },
     "composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "113103cb8f9d",
+      "hash": "59a01de0386f",
       "purpose": "Aggregator-агент: подключает все realtime-каналы (orders, kitchen, tables, reservations, appointments, visits, support) и регистрирует alert/inbox handlers; вызывается из default-layout",
       "symbols": [
         {
@@ -762,8 +762,8 @@
     },
     "utils/moduleToggleChecks.ts": {
       "kind": "ts",
-      "hash": "51cb570744d6",
-      "purpose": "Проверки блокеров/warnings перед отключением модуля тенанта (активные заказы, бронирования, открытые столы, очередь кухни, кастомные роли, активные записи, баннеры акций, секции/страницы витрины)",
+      "hash": "529090e3497d",
+      "purpose": "Проверяет наличие активных зависимостей модуля (заказы, бронирования, открытые столы и т.п.) перед выключением; знает обе вертикали — by design в allow-list",
       "symbols": [
         {
           "name": "ToggleIssue",
@@ -894,55 +894,6 @@
         }
       ]
     },
-    "utils/retail/reservation-constants.ts": {
-      "kind": "ts",
-      "hash": "34b9526088d3",
-      "purpose": "Константы статусов бронирований: лейблы, типы тегов, опции фильтра, активные/архивные группы",
-      "symbols": [
-        {
-          "name": "ReservationTagType",
-          "kind": "type",
-          "hash": "9c6024da",
-          "purpose": "'default' | 'primary' | 'success' | 'warning' | 'error' для UiTag"
-        },
-        {
-          "name": "RESERVATION_STATUS_LABELS",
-          "kind": "const",
-          "hash": "cfc8c38c",
-          "purpose": "Словарь ReservationStatus -> русский лейбл"
-        },
-        {
-          "name": "RESERVATION_STATUS_TYPES",
-          "kind": "const",
-          "hash": "70236c1c",
-          "purpose": "Словарь ReservationStatus -> тип тега (цвет)"
-        },
-        {
-          "name": "RESERVATION_STATUS_FILTER_OPTIONS",
-          "kind": "const",
-          "hash": "8aa9dfd8",
-          "purpose": "Опции фильтра статусов для таблицы бронирований"
-        },
-        {
-          "name": "RESERVATION_ACTIVE_STATUSES",
-          "kind": "const",
-          "hash": "c12caf12",
-          "purpose": "['pending', 'confirmed', 'seated'] — активные брони"
-        },
-        {
-          "name": "RESERVATION_ARCHIVE_STATUSES",
-          "kind": "const",
-          "hash": "b941b12b",
-          "purpose": "['completed', 'cancelled', 'no_show'] — архивные брони"
-        },
-        {
-          "name": "RESERVATION_ARCHIVE_STATUS_OPTIONS",
-          "kind": "const",
-          "hash": "885e1e11",
-          "purpose": "Опции архивных статусов для модалки 'закрытия' брони"
-        }
-      ]
-    },
     "utils/supportStatus.ts": {
       "kind": "ts",
       "hash": "321b9b02630a",
@@ -1005,19 +956,6 @@
           "kind": "const",
           "hash": "2a82cb02",
           "purpose": "Стор с statuses + CRUD (обёртка над useOrderStatuses, привязан к tenantId)"
-        }
-      ]
-    },
-    "stores/retail/reservations.ts": {
-      "kind": "ts",
-      "hash": "55d37979377a",
-      "purpose": "Pinia: бронирования с realtime по tenantId+branchId (общий ресурс для тоста/счётчиков/страниц)",
-      "symbols": [
-        {
-          "name": "useReservationsStore",
-          "kind": "const",
-          "hash": "5d347b93",
-          "purpose": "Стор-обёртка над useReservations, привязан к tenant/branch"
         }
       ]
     },
@@ -1341,19 +1279,6 @@
         }
       ]
     },
-    "columns/reservations.ts": {
-      "kind": "ts",
-      "hash": "21737cc1ee05",
-      "purpose": "Колонки таблицы бронирований: дата/время с днём недели, гость, телефон, кол-во гостей с фильтром-диапазоном, стол, статус",
-      "symbols": [
-        {
-          "name": "buildReservationColumns",
-          "kind": "function",
-          "hash": "412a9703",
-          "purpose": "Колонки для таблицы Reservation с фильтрами и опциональной колонкой стола"
-        }
-      ]
-    },
     "columns/team.ts": {
       "kind": "ts",
       "hash": "d9e8597c5995",
@@ -1466,7 +1391,7 @@
     },
     "components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "caacc7769f7e",
+      "hash": "1bf3c78603a6",
       "purpose": "Главная навигация админки: рендерит список разделов с иконками и счётчиками новизны (заказы, бронирования, записи, поддержка); поддерживает collapsed-режим",
       "symbols": [
         {

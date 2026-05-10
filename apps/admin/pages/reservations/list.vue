@@ -53,9 +53,9 @@ import { storeToRefs } from 'pinia'
 import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiSkeleton } from '@fastio/ui'
 import type { Reservation } from '@fastio/shared'
 import AppTableToolbar from '~/components/AppTableToolbar.vue'
-import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
-import { useReservationsStore } from '~/stores/retail/reservations'
-import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/composables/retail/useReservationTable'
+import ReservationDrawer from '~/features/reservations/components/ReservationDrawer.vue'
+import { useReservationsStore } from '~/features/reservations'
+import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/features/reservations'
 
 // Активные брони живут в глобальном сторе — обновляются через realtime без перезапросов.
 // ReservationsArchive держит локальный state — там пагинация server-side.

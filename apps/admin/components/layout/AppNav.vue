@@ -34,7 +34,7 @@ import { toEnabled } from '~/composables/plan/useGate.helpers'
 import { useTenantStore } from '~/stores/tenant'
 import { useNotificationPrefs } from '~/composables/data/useNotificationPrefs'
 import { useNewOrderCounter } from '~/composables/retail/useNewOrderCounter'
-import { useNewReservationCounter } from '~/composables/retail/useNewReservationCounter'
+import { useNewReservationCounter } from '~/features/reservations'
 import { useUnreadSupportCounter } from '~/composables/data/useUnreadSupportCounter'
 import { useAppointmentInboxCounter } from '~/features/appointments'
 

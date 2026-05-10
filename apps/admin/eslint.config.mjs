@@ -48,6 +48,7 @@ const RETAIL_GLOBS = [
   'pages/promotions.vue',
   // Modular paths
   'features/kitchen/**',
+  'features/reservations/**',
 ]
 
 // Файлы, которым по дизайну разрешено знать обе вертикали.
@@ -94,6 +95,7 @@ const ALIAS_VERTICAL_PATTERNS = {
     '~/pages/promotions/**',
     // Modular alias paths
     '~/features/kitchen/**',
+    '~/features/reservations/**',
   ],
   services: [
     // Legacy alias paths

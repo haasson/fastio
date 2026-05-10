@@ -31,7 +31,7 @@ import { UiCard, UiText, UiTitle, UiButton, UiSkeleton } from '@fastio/ui'
 import type { Reservation } from '@fastio/shared'
 import { todayInTz } from '@fastio/shared'
 import { useDatabase } from '~/composables/data/useDatabase'
-import { reservationEvents } from '~/composables/retail/useReservationsChannel'
+import { reservationEvents } from '~/features/reservations'
 
 type Props = {
   tenantId: string

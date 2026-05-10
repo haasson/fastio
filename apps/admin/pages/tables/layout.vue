@@ -52,12 +52,12 @@
 import { ref, computed, inject } from 'vue'
 import type { Table, Reservation } from '@fastio/shared'
 import { useTablesContext, TodayReservationsKey } from '~/composables/retail/useTablesContext'
-import { useReservationsStore } from '~/stores/retail/reservations'
+import { useReservationsStore } from '~/features/reservations'
 import useAddDishToTable from '~/composables/retail/useAddDishToTable'
 import { useGate } from '~/composables/plan/useGate'
 import TablesCanvas from '~/components/tables/TablesCanvas.vue'
 import TableDetailDrawer from '~/components/tables/TableDetailDrawer.vue'
-import ReservationDrawer from '~/components/reservations/ReservationDrawer.vue'
+import ReservationDrawer from '~/features/reservations/components/ReservationDrawer.vue'
 import DishPickerModal from '~/components/menu/DishPickerModal.vue'
 
 const ctx = useTablesContext()
