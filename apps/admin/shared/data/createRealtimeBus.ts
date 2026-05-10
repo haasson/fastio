@@ -1,5 +1,5 @@
 import { type Ref } from 'vue'
-import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
+import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 
 type Handler<T> = (payload: T) => void
 

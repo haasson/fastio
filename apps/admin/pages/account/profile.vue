@@ -27,7 +27,7 @@ import { UiText, UiButton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 const authStore = useAuthStore()
 const tenantStore = useTenantStore()

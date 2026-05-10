@@ -138,7 +138,7 @@
 import { toRefs } from 'vue'
 import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, UiAlert, useMessage } from '@fastio/ui'
 import { useDishModifiersEditor } from '../../composables/useDishModifiersEditor'
-import HintPopover from '~/components/ui/HintPopover.vue'
+import HintPopover from '~/shared/ui/components/HintPopover.vue'
 import { useTerms } from '~/features/legal'
 
 const props = defineProps<{

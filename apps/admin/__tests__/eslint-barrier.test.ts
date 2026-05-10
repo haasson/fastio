@@ -33,13 +33,13 @@ const cases = [
   },
   {
     name: 'shared не может импортировать вертикали (services)',
-    file: 'composables/data/__synthetic__.ts',
+    file: 'shared/data/__synthetic__.ts',
     code: 'import { x } from \'~/features/services-catalog\'\nexport const y = x\n',
     expectMessage: /Shared-код НЕ ДОЛЖЕН знать о вертикалях/,
   },
   {
     name: 'shared не может импортировать вертикали (retail)',
-    file: 'composables/data/__synthetic__.ts',
+    file: 'shared/data/__synthetic__.ts',
     code: 'import { x } from \'~/features/menu\'\nexport const y = x\n',
     expectMessage: /Shared-код НЕ ДОЛЖЕН знать о вертикалях/,
   },
@@ -51,8 +51,8 @@ const cases = [
   },
   {
     name: 'shared не может импортировать вертикали через относительный путь (services)',
-    file: 'composables/__tests__/__synthetic__.test.ts',
-    code: 'import { x } from \'../services/useAppointmentViewScope\'\nexport const y = x\n',
+    file: 'shared/plan/__tests__/__synthetic__.test.ts',
+    code: 'import { x } from \'../../../composables/services/useAppointmentViewScope\'\nexport const y = x\n',
     expectMessage: /Shared-код НЕ ДОЛЖЕН знать о вертикалях/,
   },
   {

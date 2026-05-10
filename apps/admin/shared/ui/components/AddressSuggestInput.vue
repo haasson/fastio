@@ -29,7 +29,7 @@ import { computed } from 'vue'
 import { UiInput } from '@fastio/ui'
 import type { ValidationRule } from '@fastio/kit'
 import type { BranchAddressData } from '@fastio/shared'
-import { useDadataSuggestions, type DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import { useDadataSuggestions, type DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'
 
 const props = withDefaults(defineProps<{
   name?: string

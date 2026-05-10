@@ -40,9 +40,9 @@ import AppearancePreview from '~/features/appearance/components/AppearancePrevie
 import ConfigIssuesModal from '~/features/appearance/components/ConfigIssuesModal.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAppearanceForm, AppearanceFormKey } from '~/features/appearance'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { usePageTitle } from '~/composables/usePageTitle'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 import type { SiteLayout } from '@fastio/shared'
 
 usePageTitle('Оформление')

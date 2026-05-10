@@ -2,7 +2,7 @@ import { h } from 'vue'
 import { UiText, UiSwitch, UiTag } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 
 type AddonDeps = {
   onToggle: (id: string, active: boolean) => void

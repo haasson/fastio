@@ -82,9 +82,9 @@ import { computed } from 'vue'
 import { UiForm, UiInput, UiInputNumber, UiRadioGroup, UiSectionHeader, UiAlert } from '@fastio/ui'
 import type { OrderNumberConfig } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useEditableForm } from '~/composables/ui/useEditableForm'
-import { useRegisterPageForm } from '~/composables/ui/usePageForm'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
+import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 

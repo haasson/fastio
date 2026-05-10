@@ -26,9 +26,9 @@ import { UiSkeleton, UiEmpty, UiText } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
 import { getTagColorPreset } from '@fastio/shared'
 import * as icons from 'lucide-vue-next'
-import AppDraggableList from '~/components/ui/AppDraggableList.vue'
-import AppListRow from '~/components/ui/AppListRow.vue'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
+import AppListRow from '~/shared/ui/components/AppListRow.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 
 const props = defineProps<{
   tags: DishTagDefinition[]

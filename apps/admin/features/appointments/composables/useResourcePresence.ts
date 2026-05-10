@@ -7,7 +7,7 @@ import {
 } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export type PresenceStatus = 'working' | 'off-hours' | 'absent' | 'hidden'
 

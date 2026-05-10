@@ -1,7 +1,7 @@
 import { h } from 'vue'
 import { UiTag, UiText, UiSwitch } from '@fastio/ui'
 import type { DataTableColumn } from '@fastio/ui'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { formatDateShort } from '@fastio/shared'
 import { effectivePromoStatus, PROMO_STATUS_FILTER_OPTIONS } from '../utils/promoStatus'
 

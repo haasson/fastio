@@ -85,10 +85,10 @@ import { navigateTo } from '#imports'
 import type { AppointmentResourceMode, StaffNameFormat } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAppointmentSettingsStore } from '~/features/appointments'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
-import { useRegisterPageForm } from '~/composables/ui/usePageForm'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useEditableForm, cancelSubmit } from '~/shared/ui/composables/useEditableForm'
+import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 const api = useDatabase()

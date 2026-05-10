@@ -140,15 +140,15 @@ import {
 import { useConfirm } from '@fastio/kit'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import AppDraggableList from '~/components/ui/AppDraggableList.vue'
-import AppListRow from '~/components/ui/AppListRow.vue'
+import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
+import AppListRow from '~/shared/ui/components/AppListRow.vue'
 import MenuItemCard from '~/features/catalog/components/ItemCard.vue'
 import MenuDishFormDrawer from './DishFormDrawer.vue'
 import { useDishes } from '../composables/useDishes'
 import { useDishTable } from '../composables/useDishTable'
-import { useItemManager } from '~/composables/ui/useItemManager'
+import { useItemManager } from '~/shared/ui/composables/useItemManager'
 import { useTagDisplay } from '~/features/catalog'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 const props = defineProps<{
   tenantId: string

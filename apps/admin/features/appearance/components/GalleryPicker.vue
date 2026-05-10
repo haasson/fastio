@@ -43,7 +43,7 @@ import { RouterLink } from 'vue-router'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiSelect, UiIcon } from '@fastio/ui'
 import type { Gallery } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{

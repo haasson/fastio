@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useAuthStore } from './auth'
-import { useTenant } from '~/composables/data/useTenant'
+import { useTenant } from '~/shared/data/useTenant'
 
 export const useTenantStore = defineStore('tenant', () => {
   const authStore = useAuthStore()

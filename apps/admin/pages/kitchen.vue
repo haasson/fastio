@@ -15,13 +15,13 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiTag } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
-import { useGate } from '~/composables/plan/useGate'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useGate } from '~/shared/plan/useGate'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import { realtimeConnected } from '~/features/orders'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { usePageTitle } from '~/composables/usePageTitle'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 
 usePageTitle('Кухня')
 

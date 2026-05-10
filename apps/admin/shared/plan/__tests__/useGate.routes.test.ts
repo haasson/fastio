@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { resolveRouteGate, isUngatedRoute, REDIRECT_FALLBACKS } from '../plan/useGate.routes'
+import { resolveRouteGate, isUngatedRoute, REDIRECT_FALLBACKS } from '../useGate.routes'
 
-const PAGES = resolve(__dirname, '../../pages')
+const PAGES = resolve(__dirname, '../../../pages')
 
 describe('isUngatedRoute', () => {
   it.each([

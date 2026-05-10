@@ -70,8 +70,8 @@ const moduleConfigs = ref<ModuleConfig[]>([
 
 vi.mock('~/shared/stores/tenant', () => ({ useTenantStore: () => tenantStore }))
 vi.mock('~/shared/stores/branch', () => ({ useBranchStore: () => branchStore }))
-vi.mock('../plan/useResolvedFeatures', () => ({ useResolvedFeatures: () => ({ resolved }) }))
-vi.mock('../plan/useModules', () => ({
+vi.mock('../useResolvedFeatures', () => ({ useResolvedFeatures: () => ({ resolved }) }))
+vi.mock('../useModules', () => ({
   useModules: () => new Proxy({}, {
     get: (_, key: string) => computed(() => moduleStates.value[key] ?? { active: false, locked: false, absent: false, enabled: false },
     ),
@@ -82,7 +82,7 @@ vi.mock('../plan/useModules', () => ({
 vi.mock('~/shared/utils/featureFlags', () => ({ AUDIT_LOG_ENABLED: false }))
 
 // Импорт после моков!
-const importGate = async () => (await import('../plan/useGate')).useGate
+const importGate = async () => (await import('../useGate')).useGate
 
 // ──────────────────────────────────────────────────────────────────────────
 // Helpers

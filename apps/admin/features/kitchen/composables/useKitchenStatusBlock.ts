@@ -1,5 +1,5 @@
 import type { Order, OrderStatusGroup } from '@fastio/shared'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 import { useConfirm } from '@fastio/kit'
 
 type KitchenBlockResult = {

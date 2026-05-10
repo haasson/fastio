@@ -45,11 +45,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { UiCard, UiText, UiButton, UiSkeleton, UiEmpty, UiSectionHeader, useConfirm, useMessage } from '@fastio/ui'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import RoleEditModal from '~/features/settings/components/RoleEditModal.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { permissionGroups } from '~/config/team-roles'
 
 const tenantStore = useTenantStore()

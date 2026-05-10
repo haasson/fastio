@@ -5,11 +5,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from '#imports'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useTerms } from '~/features/legal'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { usePageTitle } from '~/composables/usePageTitle'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 
 const gate = useGate()
 const tenantStore = useTenantStore()

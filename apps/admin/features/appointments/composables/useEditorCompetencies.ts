@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import type { Resource, Service } from '@fastio/shared'
 import { getEffectiveServiceIds } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 type CompetenciesBundle = {
   serviceResources: Awaited<ReturnType<ReturnType<typeof useDatabase>['resources']['bulkLoadCompetencies']>>['serviceResources']

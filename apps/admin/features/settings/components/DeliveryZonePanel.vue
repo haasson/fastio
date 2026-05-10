@@ -79,7 +79,7 @@ import {
   UiSpace, UiSelect, UiForm,
 } from '@fastio/ui'
 import type { DeliveryZone } from '@fastio/shared'
-import UiColorPicker from '~/components/ui/ColorPicker.vue'
+import UiColorPicker from '~/shared/ui/components/ColorPicker.vue'
 
 type ZoneForm = {
   branchId: string

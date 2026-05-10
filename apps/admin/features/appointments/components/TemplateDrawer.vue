@@ -134,7 +134,7 @@ import type {
 import { getBranchHoursForDow, pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useScheduleConflictCheck } from '../composables/useScheduleConflictCheck'
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,

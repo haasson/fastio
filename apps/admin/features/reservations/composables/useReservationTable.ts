@@ -3,7 +3,7 @@ import type { Ref, ComputedRef } from 'vue'
 import type { Reservation } from '@fastio/shared'
 import { dateStrToTs, formatDateStr } from '@fastio/shared'
 import { buildReservationColumns } from '../utils/columns'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 
 type FilterOption = { label: string; value: string }
 

@@ -1,7 +1,7 @@
 import { computed, type Ref } from 'vue'
 import { mapAppointmentEvent } from '@fastio/shared'
-import { useRealtimeList } from '~/composables/data/useRealtimeList'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeList } from '~/shared/data/useRealtimeList'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export const useAppointmentEvents = (appointmentId: Ref<string>) => {
   const api = useDatabase()

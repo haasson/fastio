@@ -104,15 +104,15 @@ import { ref, computed, reactive, onMounted, onUnmounted, watchEffect } from 'vu
 import { useRoute, useRouter } from '#imports'
 import { UiButton, UiSkeleton, UiEmpty, UiCard, UiTitle, UiText, UiTag, useMessage } from '@fastio/ui'
 import type { Appointment, AppointmentEvent, Visit } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useGate } from '~/composables/plan/useGate'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useGate } from '~/shared/plan/useGate'
 import { useAppointmentViewScope, useVisitAggregate } from '~/features/appointments'
 import { useAuthStore } from '~/shared/stores/auth'
 import { reportError } from '~/shared/utils/reportError'
 import VisitContent from '~/features/appointments/components/VisitContent.vue'
 import CancelGroupModal from '~/features/appointments/components/CancelGroupModal.vue'
 import SplitVisitModal from '~/features/appointments/components/SplitVisitModal.vue'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
 
 const route = useRoute()
 const router = useRouter()

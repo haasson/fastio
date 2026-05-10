@@ -1,8 +1,8 @@
 import { defineNuxtRouteMiddleware, navigateTo } from '#imports'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useGate } from '~/composables/plan/useGate'
-import { resolveRouteGate, isUngatedRoute, REDIRECT_FALLBACKS } from '~/composables/plan/useGate.routes'
+import { useGate } from '~/shared/plan/useGate'
+import { resolveRouteGate, isUngatedRoute, REDIRECT_FALLBACKS } from '~/shared/plan/useGate.routes'
 
 /**
  * Закрывает прямой URL-доступ к секциям, которые недоступны юзеру

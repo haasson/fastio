@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { usePlanFeatures } from '../plan/usePlanFeatures'
+import { usePlanFeatures } from '../usePlanFeatures'
 
 const mockStore: { tenant: Record<string, unknown> | null } = { tenant: null }
 

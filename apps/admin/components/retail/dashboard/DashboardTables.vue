@@ -36,8 +36,8 @@
 import { ref, computed, watch } from 'vue'
 import { UiCard, UiText, UiTitle, UiButton, UiSkeleton } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 
 type Props = {
   tenantId: string

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ref } from 'vue'
-import useDelayedLoading from '../ui/useDelayedLoading'
+import useDelayedLoading from '../useDelayedLoading'
 
 describe('useDelayedLoading', () => {
   beforeEach(() => vi.useFakeTimers())

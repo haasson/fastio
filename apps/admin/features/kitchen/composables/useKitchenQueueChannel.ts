@@ -1,6 +1,6 @@
 import { type Ref } from 'vue'
 import type { KitchenQueueItem } from '@fastio/shared'
-import { useRealtimeWatch } from '~/composables/data/useRealtimeWatch'
+import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 import { mapKitchenQueueItem } from '../api/kitchen-queue'
 
 type Handler<T> = (payload: T) => void

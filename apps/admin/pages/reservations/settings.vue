@@ -59,13 +59,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { UiAlert, UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiSwitch } from '@fastio/ui'
 import type { ReservationSettings } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useGate } from '~/composables/plan/useGate'
-import { useEditableForm } from '~/composables/ui/useEditableForm'
-import { useRegisterPageForm } from '~/composables/ui/usePageForm'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
-import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
+import { useGate } from '~/shared/plan/useGate'
+import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
+import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
+import AppStorefrontAlert from '~/shared/ui/components/AppStorefrontAlert.vue'
 
 const SLOT_STEP_OPTIONS = [
   { label: '15 мин', value: 15 },

@@ -1,7 +1,7 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import type { Reservation, ReservationFormData, ReservationStatus } from '@fastio/shared'
 import { reservationEvents } from './useReservationsChannel'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { RESERVATION_ACTIVE_STATUSES } from '../utils/reservation-constants'
 
 export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | null>) => {

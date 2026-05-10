@@ -3,9 +3,9 @@ import { UiPhotoPlaceholder, UiText, UiTag, UiSwitch } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Dish, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { useTagDisplay } from '~/features/catalog'
-import { useItemVariant } from '~/composables/useItemVariant'
+import { useItemVariant } from '~/shared/composables/useItemVariant'
 
 type Actions = {
   onEdit: (dish: Dish) => void

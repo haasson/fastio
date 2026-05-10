@@ -59,7 +59,7 @@ import { storeToRefs } from 'pinia'
 import { UiDrawer, UiInput, UiText, useMessage } from '@fastio/ui'
 import { UiIcon } from '@fastio/icons'
 import type { DrawerAction } from '@fastio/ui'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { reportError } from '~/shared/utils/reportError'
 

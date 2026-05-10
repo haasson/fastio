@@ -28,7 +28,7 @@ import KitchenStatCards from '~/features/kitchen/components/KitchenStatCards.vue
 import type { StatCardItem } from '~/features/kitchen/components/KitchenStatCards.vue'
 import type { DataTableColumns } from '@fastio/ui'
 import { type KitchenQueueItem, getKitchenUrgencyLevel, formatKitchenElapsed } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import { DELIVERY_TYPE_LABELS } from '~/config/retail/order-options'

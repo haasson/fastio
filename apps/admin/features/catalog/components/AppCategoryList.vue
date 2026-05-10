@@ -49,9 +49,9 @@ import { ref, computed, watch } from 'vue'
 import { UiSkeleton, UiEmpty, UiText, UiTag, UiSwitch } from '@fastio/ui'
 import type { SpecialCategoryType, DishTagDefinition } from '@fastio/shared'
 import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
-import AppDraggableList from '~/components/ui/AppDraggableList.vue'
-import AppListRow from '~/components/ui/AppListRow.vue'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
+import AppListRow from '~/shared/ui/components/AppListRow.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { useTagDisplay } from '~/features/catalog'
 
 export type CategoryListItem = {

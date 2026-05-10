@@ -45,8 +45,8 @@ import {
 } from 'vue-yandex-maps'
 import { UiText } from '@fastio/ui'
 import type { ValidationRule } from '@fastio/kit'
-import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
-import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import AddressSuggestInput from '~/shared/ui/components/AddressSuggestInput.vue'
+import type { DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'
 import type { BranchAddressData } from '@fastio/shared'
 
 withDefaults(defineProps<{

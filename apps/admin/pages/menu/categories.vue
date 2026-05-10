@@ -40,7 +40,7 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useCategories } from '~/features/catalog'
 import { useTags } from '~/features/catalog'
 import { useDishCounts } from '~/features/menu'
-import { useItemManager } from '~/composables/ui/useItemManager'
+import { useItemManager } from '~/shared/ui/composables/useItemManager'
 import MenuCategoryList from '~/features/menu/components/CategoryList.vue'
 import MenuCategoryFormModal from '~/features/catalog/components/CategoryFormModal.vue'
 

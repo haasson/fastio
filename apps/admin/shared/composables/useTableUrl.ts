@@ -1,4 +1,4 @@
-import { useStorefrontUrl } from '~/composables/useStorefrontUrl'
+import { useStorefrontUrl } from '~/shared/composables/useStorefrontUrl'
 
 export const useTableUrl = () => {
   const { baseUrl } = useStorefrontUrl()

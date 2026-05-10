@@ -90,7 +90,7 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiCard, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal, useMessage } from '@fastio/ui'
 import { useNotificationPrefs } from '~/features/settings'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 import { useNuxtApp, useRuntimeConfig } from '#imports'
 import { useConfirm } from '@fastio/kit'
 

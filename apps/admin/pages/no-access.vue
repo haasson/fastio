@@ -18,8 +18,8 @@
 <script setup lang="ts">
 import { definePageMeta, navigateTo } from '#imports'
 import { UiButton, UiTitle } from '@fastio/ui'
-import AppBrand from '~/components/ui/AppBrand.vue'
-import { useDatabase } from '~/composables/data/useDatabase'
+import AppBrand from '~/shared/ui/components/AppBrand.vue'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 
 definePageMeta({ layout: false })

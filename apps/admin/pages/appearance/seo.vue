@@ -124,8 +124,8 @@
 import { computed, inject } from 'vue'
 import { UiInput, UiSwitch, UiSectionHeader } from '@fastio/ui'
 import { AppearanceFormKey } from '~/features/appearance'
-import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
-import SettingToggle from '~/components/ui/SettingToggle.vue'
+import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
+import SettingToggle from '~/shared/ui/components/SettingToggle.vue'
 
 const form = inject(AppearanceFormKey)!
 const seoForm = form.seoForm

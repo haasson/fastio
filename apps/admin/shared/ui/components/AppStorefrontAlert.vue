@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { UiAlert } from '@fastio/ui'
 import type { SiteFeatureKey } from '@fastio/shared'
-import { useStorefrontVisibility } from '~/composables/ui/useStorefrontVisibility'
+import { useStorefrontVisibility } from '~/shared/ui/composables/useStorefrontVisibility'
 
 const props = defineProps<{
   featureKey: SiteFeatureKey

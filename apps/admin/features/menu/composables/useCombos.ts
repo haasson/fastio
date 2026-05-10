@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 import type { Combo, ComboFormData } from '@fastio/shared'
 import { mapCombo } from '../api/combos'
-import { useRealtimeList } from '~/composables/data/useRealtimeList'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeList } from '~/shared/data/useRealtimeList'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export function useCombos(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()

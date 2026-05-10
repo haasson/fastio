@@ -69,7 +69,7 @@
 import { computed, inject } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiCheckbox, UiSelect, UiIcon } from '@fastio/ui'
-import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
+import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 import { featureLabel, SITE_FEATURES, STRUCTURAL_SECTIONS } from '@fastio/shared'
 import type { SiteFeatureKey } from '@fastio/shared'
 import type { NavItem, SectionKey, NavPageKey } from '@fastio/shared'

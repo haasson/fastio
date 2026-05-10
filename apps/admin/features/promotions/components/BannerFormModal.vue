@@ -79,9 +79,9 @@ import { UiModal, UiForm, UiSwitch, UiSelect, UiInput } from '@fastio/ui'
 import type { ModalAction } from '@fastio/ui'
 import type { Banner, BannerFormData, Promotion, PromoCode } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
-import { useGate } from '~/composables/plan/useGate'
-import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
-import RichTextEditor from '~/components/ui/RichTextEditor.vue'
+import { useGate } from '~/shared/plan/useGate'
+import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
+import RichTextEditor from '~/shared/ui/components/RichTextEditor.vue'
 
 const props = defineProps<{
   modelValue: boolean

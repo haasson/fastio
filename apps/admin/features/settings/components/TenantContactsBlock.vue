@@ -31,7 +31,7 @@ import type { Tenant } from '@fastio/shared'
 import { DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import WorkingHoursEditor from './WorkingHoursEditor.vue'
-import { useEditableForm } from '~/composables/ui/useEditableForm'
+import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
 
 withDefaults(defineProps<{
   title?: string

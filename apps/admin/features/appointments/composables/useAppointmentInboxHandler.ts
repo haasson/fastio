@@ -3,7 +3,7 @@ import { useDebounceFn } from '@vueuse/core'
 import type { Visit } from '@fastio/shared'
 import { visitsBus } from './useVisitsChannel'
 import { useAppointmentInboxCounter } from './useAppointmentInboxCounter'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useBranchStore } from '~/shared/stores/branch'
 import { reportError } from '~/shared/utils/reportError'
 

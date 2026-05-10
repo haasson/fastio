@@ -7,8 +7,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { usePageTitle } from '~/composables/usePageTitle'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAppointmentSettingsStore } from '~/features/appointments'
 

@@ -89,8 +89,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiSegmentedControl, UiCheckbox } from '@fastio/ui'
-import RichTextEditor from '~/components/ui/RichTextEditor.vue'
-import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
+import RichTextEditor from '~/shared/ui/components/RichTextEditor.vue'
+import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, PageKey, NavPageKey } from '@fastio/shared'
 import { dishDescriptionOptions, mobileDishCardOptions } from '@fastio/shared'

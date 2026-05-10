@@ -9,10 +9,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { usePageTitle } from '~/composables/usePageTitle'
-import { useGate } from '~/composables/plan/useGate'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
+import { useGate } from '~/shared/plan/useGate'
 import type { IconName } from '@fastio/icons'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
 
 usePageTitle('Заказы')
 

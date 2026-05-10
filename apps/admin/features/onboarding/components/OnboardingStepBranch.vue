@@ -66,8 +66,8 @@ import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon, UiForm, UiCheckbox,
 import { validationRules } from '@fastio/kit'
 import type { BranchAddressData } from '@fastio/shared'
 import { useBranchStore } from '~/shared/stores/branch'
-import AddressSuggestInput from '~/components/ui/AddressSuggestInput.vue'
-import type { DadataSuggestion } from '~/composables/delivery/useDadataSuggestions'
+import AddressSuggestInput from '~/shared/ui/components/AddressSuggestInput.vue'
+import type { DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'
 import { reportError } from '~/shared/utils/reportError'
 import { defaultBranchFormData } from '~/features/branches'
 

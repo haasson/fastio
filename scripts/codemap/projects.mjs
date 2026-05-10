@@ -38,9 +38,12 @@ function adminAssign(rel) {
   // Модульная архитектура — фичевые модули не картируем
   // (агент находит их по ~/features/<feature>/index.ts barrel + по структуре).
   if (rel.startsWith('features/')) return null;
-  // shared/* — картируем как общую инфру (utils, data, plan, stores, ui, layout)
+  // shared/* — картируем как общую инфру (utils, plan, stores, ui, layout, components)
+  // shared/data/* НЕ картируем: паттерн `useX → CRUD` самообъясняющий (как и
+  // оригинальный composables/data/*).
   if (rel.startsWith('shared/')) {
     if (rel.includes('/__tests__/')) return null;
+    if (rel.startsWith('shared/data/')) return null;
     return 'main';
   }
   // composables: общие (root, ui, plan, delivery, kitchen, menu, и т.д.)

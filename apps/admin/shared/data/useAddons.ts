@@ -1,8 +1,8 @@
 import { ref, computed, type Ref } from 'vue'
 import type { AddonPreset } from '@fastio/shared'
 import { mapAddon } from '~/utils/api/addons'
-import { useRealtimeList } from '~/composables/data/useRealtimeList'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeList } from '~/shared/data/useRealtimeList'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export function useAddons(tenantId: Ref<string>) {
   const api = useDatabase()

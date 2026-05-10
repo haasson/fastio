@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 import type { ServiceFormData, ServiceWithBranchIds } from '@fastio/shared'
 import { mapService } from '@fastio/shared'
-import { useRealtimeList } from '~/composables/data/useRealtimeList'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeList } from '~/shared/data/useRealtimeList'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 
 export function useServices(tenantId: Ref<string>, categoryId: Ref<string | null>) {

@@ -45,7 +45,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber } from '@fastio/ui'
 import type { Addon } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 const props = defineProps<{
   modelValue: boolean

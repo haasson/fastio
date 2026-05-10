@@ -59,9 +59,9 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useTerms } from '~/features/legal'
 import TenantContactsBlock from '~/features/settings/components/TenantContactsBlock.vue'
-import { useRegisterPageForm } from '~/composables/ui/usePageForm'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
-import type { FormHandle } from '~/composables/ui/useEditableForm'
+import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
+import type { FormHandle } from '~/shared/ui/composables/useEditableForm'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()

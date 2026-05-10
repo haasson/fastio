@@ -33,7 +33,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiCard, UiText, UiTitle, UiButton, UiSkeleton } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { kitchenQueueEvents } from '~/features/kitchen'
 
 type Props = {

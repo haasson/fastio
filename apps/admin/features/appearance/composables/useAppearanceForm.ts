@@ -2,7 +2,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import type { InjectionKey, Ref } from 'vue'
 import type { Tenant, SiteLayout, SiteContent, TenantSeo, ConfigIssue } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, getPresetPalette, validateTenantConfig } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useMessage } from '@fastio/ui'
 

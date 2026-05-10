@@ -17,7 +17,7 @@ vi.mock('@fastio/kit', () => ({
   useConfirm: () => ({ confirm: confirmMock }),
 }))
 
-const { useUnsavedGuard } = await import('../ui/useUnsavedGuard')
+const { useUnsavedGuard } = await import('../useUnsavedGuard')
 
 const mountHost = (isDirty: Ref<boolean>) => {
   const Host = defineComponent({

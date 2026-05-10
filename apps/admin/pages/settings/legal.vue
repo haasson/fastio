@@ -110,10 +110,10 @@ import { UiCard, UiForm, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiSecti
 import type { Tenant } from '@fastio/shared'
 import { isLegalInfoComplete } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useEditableForm } from '~/composables/ui/useEditableForm'
-import { useRegisterPageForm } from '~/composables/ui/usePageForm'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
+import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 const db = useDatabase()

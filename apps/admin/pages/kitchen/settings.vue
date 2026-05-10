@@ -73,10 +73,10 @@ import { storeToRefs } from 'pinia'
 import { UiCard, UiForm, UiSelect, UiInputNumber } from '@fastio/ui'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useOrderStatusesStore } from '~/features/orders'
-import { useGate } from '~/composables/plan/useGate'
-import { useEditableForm } from '~/composables/ui/useEditableForm'
-import { useRegisterPageForm } from '~/composables/ui/usePageForm'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
+import { useGate } from '~/shared/plan/useGate'
+import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
+import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
 
 const tenantStore = useTenantStore()
 const { statuses } = storeToRefs(useOrderStatusesStore())

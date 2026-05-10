@@ -110,7 +110,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiCard, UiSkeleton, UiEmpty, UiTabs } from '@fastio/ui'
 import { type KitchenQueueItem, getOrderPhase } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
 import { kitchenQueueEvents } from '~/features/kitchen'

@@ -105,8 +105,8 @@ import { ref, computed } from 'vue'
 import { UiButton, UiMenuDropdown, UiPopover } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { Table, Reservation } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useGate } from '~/composables/plan/useGate'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useGate } from '~/shared/plan/useGate'
 
 type Props = {
   tables: Table[]

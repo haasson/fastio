@@ -14,7 +14,7 @@ vi.mock('~/shared/utils/reportError', () => ({
   reportError: reportErrorMock,
 }))
 
-const { useEditableForm } = await import('../ui/useEditableForm')
+const { useEditableForm } = await import('../useEditableForm')
 
 type Source = { a: number; b: string }
 type Form = { a: number; b: string }

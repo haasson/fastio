@@ -21,8 +21,8 @@
 <script setup lang="ts">
 import { UiButton } from '@fastio/ui'
 import { useRuntimeConfig } from '#imports'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { usePageTitle } from '~/composables/usePageTitle'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 
 usePageTitle('Помощь')
 

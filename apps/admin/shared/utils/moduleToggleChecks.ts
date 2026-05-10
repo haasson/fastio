@@ -1,7 +1,7 @@
 import type { SiteLayout } from '@fastio/shared'
 import { SITE_FEATURES } from '@fastio/shared'
 import type { ModuleKey } from '~/config/modules'
-import type { useDatabase } from '~/composables/data/useDatabase'
+import type { useDatabase } from '~/shared/data/useDatabase'
 import { RESERVATION_ACTIVE_STATUSES } from '~/features/reservations'
 
 export type ToggleIssue = {

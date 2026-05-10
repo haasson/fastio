@@ -36,7 +36,7 @@ import { ref, computed } from 'vue'
 import { UiButton, UiText } from '@fastio/ui'
 import { UiIcon } from '@fastio/icons'
 import { useTour } from '~/features/help'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 import { TOURS, TOUR_CATEGORIES } from '~/features/help/tours'
 import type { Tour } from '~/features/help/tours'
 

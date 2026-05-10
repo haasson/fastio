@@ -90,12 +90,12 @@ import { buildMinuteOptions } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useOrderStatusesStore } from '~/features/orders'
-import { useGate } from '~/composables/plan/useGate'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
-import { useRegisterPageForm } from '~/composables/ui/usePageForm'
-import { useUnsavedGuard } from '~/composables/ui/useUnsavedGuard'
-import SettingToggle from '~/components/ui/SettingToggle.vue'
+import { useGate } from '~/shared/plan/useGate'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useEditableForm, cancelSubmit } from '~/shared/ui/composables/useEditableForm'
+import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
+import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
+import SettingToggle from '~/shared/ui/components/SettingToggle.vue'
 
 const SLOT_STEP_OPTIONS = [
   { label: '15 мин', value: 15 },

@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T13:49:40.052Z",
+  "generated_at": "2026-05-10T13:58:16.709Z",
   "stats": {
     "files": 84,
     "pages": 0,
@@ -554,7 +554,7 @@
     },
     "shared/plan/useBillingConfig.ts": {
       "kind": "ts",
-      "hash": "b0e16ad27b1e",
+      "hash": "48830bc16553",
       "purpose": "Глобальный одноразовый кэш billing_config (длительность триала) с failed-флагом для UI",
       "symbols": [
         {
@@ -693,7 +693,7 @@
     },
     "shared/plan/useModules.ts": {
       "kind": "ts",
-      "hash": "f3cb5aad33b4",
+      "hash": "d967139b3d0f",
       "purpose": "Состояние модулей тенанта: active/locked/absent/enabled с учётом businessType, menuStyle, плана и тарифа (Proxy + лениво созданные computed)",
       "symbols": [
         {
@@ -725,7 +725,7 @@
     },
     "shared/plan/usePlans.ts": {
       "kind": "ts",
-      "hash": "d560a2bfb219",
+      "hash": "2f8da6c7d4e0",
       "purpose": "Глобальный реестр доступных тарифов с lazy-загрузкой и хелперами сортировки/имён",
       "symbols": [
         {
@@ -777,7 +777,7 @@
     },
     "shared/stores/tenant.ts": {
       "kind": "ts",
-      "hash": "71c9006ae1bb",
+      "hash": "3ae0c0bf860c",
       "purpose": "Глобальный Pinia-стор тенанта: оборачивает useTenant и хранит текущий tenant, memberships, permissions, businessType",
       "symbols": [
         {
@@ -1352,7 +1352,7 @@
     },
     "shared/utils/moduleToggleChecks.ts": {
       "kind": "ts",
-      "hash": "529090e3497d",
+      "hash": "c74d30088634",
       "purpose": "Проверяет наличие активных зависимостей модуля (заказы, бронирования, открытые столы и т.п.) перед выключением; знает обе вертикали — by design в allow-list",
       "symbols": [
         {

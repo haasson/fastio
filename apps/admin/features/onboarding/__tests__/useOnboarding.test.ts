@@ -26,7 +26,7 @@ const gateServices = ref(false)
 
 const makeGateResult = (enabled: boolean) => ({ enabled, reason: enabled ? null : 'disabled' as const })
 
-vi.mock('~/composables/plan/useGate', () => ({
+vi.mock('~/shared/plan/useGate', () => ({
   useGate: () => ({
     delivery: computed(() => makeGateResult(gateDelivery.value)),
     pickup: computed(() => makeGateResult(gatePickup.value)),

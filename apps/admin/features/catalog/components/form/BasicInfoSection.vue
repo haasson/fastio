@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import { UiText, UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiCheckbox } from '@fastio/ui'
-import ImageUploadTrigger from '~/components/ui/ImageUploadTrigger.vue'
+import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 
 const unitItems = [
   { label: 'г', value: 'г' },

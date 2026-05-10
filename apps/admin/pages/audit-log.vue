@@ -32,8 +32,8 @@ import { UiSectionHeader, UiEmpty, UiSelect, UiDataTable, UiTag, UiText, UiSpace
 import type { DataTableColumns } from '@fastio/ui'
 import { navigateTo } from '#imports'
 import { useAuditLog } from '~/features/audit-log'
-import { useGate } from '~/composables/plan/useGate'
-import { usePageTitle } from '~/composables/usePageTitle'
+import { useGate } from '~/shared/plan/useGate'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 
 usePageTitle('Журнал действий')
 

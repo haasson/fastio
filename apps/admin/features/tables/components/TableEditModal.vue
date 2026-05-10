@@ -70,7 +70,7 @@ import { NSwitch } from 'naive-ui'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiText, UiSegmentedControl, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Table, TableShape } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 const props = defineProps<{
   modelValue: boolean

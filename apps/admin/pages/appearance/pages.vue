@@ -77,7 +77,7 @@ import { PAGE_KEYS, STRUCTURAL_SECTIONS, featureLabel, isFeatureAvailable, type 
 import { useConfirm } from '@fastio/kit'
 import { AppearanceFormKey } from '~/features/appearance'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 
 const form = inject(AppearanceFormKey)!
 const siteLayoutForm = form.siteLayoutForm

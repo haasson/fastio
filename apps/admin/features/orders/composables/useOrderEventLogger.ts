@@ -3,7 +3,7 @@ import { normalizePhone } from '@fastio/shared'
 import { useAuthStore } from '~/shared/stores/auth'
 import { reportError } from '~/shared/utils/reportError'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 type OrderForm = {
   status: string

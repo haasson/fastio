@@ -1,5 +1,5 @@
 import { ref, watch, type Ref } from 'vue'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 type UseOrderCountsOptions = {
   excludeDeliveryTypes?: string[]

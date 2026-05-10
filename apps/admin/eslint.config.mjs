@@ -64,11 +64,11 @@ const RETAIL_GLOBS = [
 // `pages/content/banners.vue` даёт селект promotions/promoCodes для retail).
 // Это by-design: страница shared, её содержимое адаптируется по `businessType`/гейтам.
 const AGGREGATOR_FILES = [
-  'composables/data/useDatabase.ts',
-  'composables/plan/useGate.ts',
-  'composables/plan/useGate.routes.ts',
-  'composables/useRealtimeChannels.ts',
-  'components/layout/AppNav.vue',
+  'shared/data/useDatabase.ts',
+  'shared/plan/useGate.ts',
+  'shared/plan/useGate.routes.ts',
+  'shared/composables/useRealtimeChannels.ts',
+  'shared/components/layout/AppNav.vue',
   'shared/utils/moduleToggleChecks.ts',
   'config/modules.ts',
   'config/team-roles.ts',
@@ -199,18 +199,20 @@ export default [
   // и пр. это retail/services layout-файлы (Nuxt nested routing), они в вертикалях.
   {
     files: [
-      'composables/*.ts',
-      'composables/data/**',
-      'composables/plan/**',
-      'composables/__tests__/**',
-      'composables/ui/**',
+      'shared/data/**',
+      'shared/plan/**',
+      'shared/ui/composables/**',
       'utils/api/*.ts',
       'utils/api/__tests__/**',
       'shared/utils/*.ts',
       'shared/utils/__tests__/**',
       'shared/stores/*.ts',
+      'shared/composables/*.ts',
+      'shared/composables/delivery/**',
+      'shared/components/*.vue',
+      'shared/components/layout/**',
+      'shared/ui/components/**',
       'config/*.ts',
-      'components/*.vue',
       'components/ai/**',
       'components/appearance/**',
       'components/billing/**',
@@ -221,7 +223,6 @@ export default [
       'components/onboarding/**',
       'components/settings/**',
       'components/support/**',
-      'components/ui/**',
       // shared layout-страницы (top-level)
       'pages/account.vue',
       'pages/appearance.vue',
@@ -294,8 +295,18 @@ export default [
   // - shared/stores/branch.ts оборачивает useBranches/useBranch из features/branches
   // - shared/utils/moduleToggleChecks.ts проверяет блокеры отключения модулей
   //   и должен видеть feature-state (например, активные брони)
+  // - shared/components/layout/AppNav.vue собирает счётчики/гейты со всех модулей
   {
-    files: ['shared/stores/branch.ts', 'shared/utils/moduleToggleChecks.ts'],
+    files: [
+      'shared/stores/branch.ts',
+      'shared/utils/moduleToggleChecks.ts',
+      'shared/components/layout/AppNav.vue',
+      'shared/composables/useRealtimeChannels.ts',
+      'shared/plan/useGate.ts',
+      'shared/plan/useGate.routes.ts',
+      'shared/data/useDatabase.ts',
+      'shared/data/useTenant.ts',
+    ],
     rules: { 'no-restricted-imports': 'off' },
   },
 

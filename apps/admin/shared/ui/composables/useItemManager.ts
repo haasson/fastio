@@ -1,7 +1,7 @@
 import { type Ref } from 'vue'
 import { useConfirm } from '@fastio/kit'
-import useDrawer from '~/composables/ui/useDrawer'
-import useDelayedLoading from '~/composables/ui/useDelayedLoading'
+import useDrawer from '~/shared/ui/composables/useDrawer'
+import useDelayedLoading from '~/shared/ui/composables/useDelayedLoading'
 
 type Options = {
   loading: Ref<boolean>

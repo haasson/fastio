@@ -35,7 +35,7 @@ import { storeToRefs } from 'pinia'
 import type { OrderStatus, OrderStatusGroup } from '@fastio/shared'
 import { useOrderStatusesStore } from '~/features/orders'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useItemManager } from '~/composables/ui/useItemManager'
+import { useItemManager } from '~/shared/ui/composables/useItemManager'
 import OrdersStatusList from '~/features/orders/components/StatusList.vue'
 import OrdersStatusFormModal from '~/features/orders/components/StatusFormModal.vue'
 

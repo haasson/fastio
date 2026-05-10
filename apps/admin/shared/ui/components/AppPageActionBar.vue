@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { UiButton, UiText } from '@fastio/ui'
 import { useEventListener } from '@vueuse/core'
-import { usePageForm } from '~/composables/ui/usePageForm'
+import { usePageForm } from '~/shared/ui/composables/usePageForm'
 
 const form = usePageForm()
 

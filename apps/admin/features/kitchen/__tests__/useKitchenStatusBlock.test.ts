@@ -8,7 +8,7 @@ const mockConfirm = vi.fn<() => Promise<boolean | null>>()
 // Состояние для мока gate.kitchenAutoStatus.
 const mockKitchenAuto = { enabled: false, reason: 'disabled' as string | null }
 
-vi.mock('~/composables/plan/useGate', () => ({
+vi.mock('~/shared/plan/useGate', () => ({
   useGate: () => ({
     kitchenAutoStatus: computed(() => ({ ...mockKitchenAuto })),
   }),

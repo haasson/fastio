@@ -88,7 +88,7 @@ import { UiModal, UiButton, UiEmpty, UiIcon, UiText } from '@fastio/ui'
 import type { ModalAction } from '@fastio/ui'
 import type { Gallery, GalleryPhoto } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
-import ImageUploadModal from '~/components/ui/ImageUploadModal.vue'
+import ImageUploadModal from '~/shared/ui/components/ImageUploadModal.vue'
 
 const props = defineProps<{
   modelValue: boolean

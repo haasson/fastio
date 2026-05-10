@@ -1,8 +1,8 @@
 import { computed, type Ref } from 'vue'
 import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio/shared'
 import { mapCategory } from '@fastio/shared'
-import { useRealtimeList } from '~/composables/data/useRealtimeList'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeList } from '~/shared/data/useRealtimeList'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 
 export const useCategories = (tenantId: Ref<string>, kind: CategoryKind = 'food') => {

@@ -71,13 +71,13 @@ import { computed } from 'vue'
 import { UiButton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import { getItemUnitPrice } from '@fastio/shared'
-import { useGate } from '~/composables/plan/useGate'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import { useGate } from '~/shared/plan/useGate'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import type { OrderItem } from '@fastio/shared'
 
 import DishPickerModal, { type DishPickerResult } from '~/features/menu/components/DishPickerModal.vue'
-import DishItemRow from '~/components/ui/DishItemRow.vue'
-import useDrawer from '~/composables/ui/useDrawer'
+import DishItemRow from '~/shared/ui/components/DishItemRow.vue'
+import useDrawer from '~/shared/ui/composables/useDrawer'
 import { useTerms } from '~/features/legal'
 
 const props = defineProps<{

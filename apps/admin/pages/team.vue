@@ -9,9 +9,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { useGate } from '~/composables/plan/useGate'
-import { usePageTitle } from '~/composables/usePageTitle'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import { useGate } from '~/shared/plan/useGate'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 
 usePageTitle('Команда')
 

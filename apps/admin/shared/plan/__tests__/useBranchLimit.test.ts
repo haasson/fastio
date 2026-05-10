@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ref, computed } from 'vue'
 import type { ResolvedFeatures } from '@fastio/shared'
-import { useBranchLimit } from '../plan/useBranchLimit'
+import { useBranchLimit } from '../useBranchLimit'
 
 const mockResolved = ref<ResolvedFeatures>({
   modules: {
@@ -17,11 +17,11 @@ const mockResolved = ref<ResolvedFeatures>({
 
 const mockCanAddBranch = ref(true)
 
-vi.mock('../plan/useResolvedFeatures', () => ({
+vi.mock('../useResolvedFeatures', () => ({
   useResolvedFeatures: () => ({ resolved: mockResolved }),
 }))
 
-vi.mock('../plan/useGate', () => ({
+vi.mock('../useGate', () => ({
   useGate: () => ({
     addBranch: computed(() => ({
       enabled: mockCanAddBranch.value,

@@ -95,7 +95,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiSwitch, UiText, UiIcon, UiAlert, UiSegmentedControl } from '@fastio/ui'
 import type { ModifierGroup, ModifierGroupFormData } from '@fastio/shared'
-import HintPopover from '~/components/ui/HintPopover.vue'
+import HintPopover from '~/shared/ui/components/HintPopover.vue'
 
 const props = defineProps<{
   modelValue: boolean

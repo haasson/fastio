@@ -140,10 +140,10 @@ import type { DrawerAction } from '@fastio/ui'
 import type { Reservation, Table } from '@fastio/shared'
 import { validationRules, useConfirm } from '@fastio/kit'
 import { useReservationsStore } from '../stores/reservations'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 import { formatDateStr, todayInTz, nowTimeInTz } from '@fastio/shared'
 import {
   RESERVATION_STATUS_LABELS as STATUS_LABELS,

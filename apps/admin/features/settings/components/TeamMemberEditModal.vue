@@ -43,7 +43,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import { UiModal, UiSelect, UiRadioGroup, UiCheckbox } from '@fastio/ui'
 import type { TenantMember, Branch } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 
 const props = defineProps<{

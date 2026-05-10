@@ -24,8 +24,8 @@ import { UiCard, UiForm, UiSectionHeader } from '@fastio/ui'
 import type { Branch, BranchAddressData } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
 import { useBranchStore } from '~/shared/stores/branch'
-import AddressWithMap from '~/components/ui/AddressWithMap.vue'
-import { useEditableForm, cancelSubmit } from '~/composables/ui/useEditableForm'
+import AddressWithMap from '~/shared/ui/components/AddressWithMap.vue'
+import { useEditableForm, cancelSubmit } from '~/shared/ui/composables/useEditableForm'
 
 const props = defineProps<{ branch: Branch }>()
 

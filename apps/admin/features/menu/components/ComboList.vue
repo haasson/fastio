@@ -93,14 +93,14 @@ import { useLocalStorage } from '@vueuse/core'
 import { UiButton, UiSkeleton, UiSectionHeader, UiSegmentedControl, UiEmpty, UiTag } from '@fastio/ui'
 import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import AppDraggableList from '~/components/ui/AppDraggableList.vue'
-import AppListRow from '~/components/ui/AppListRow.vue'
+import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
+import AppListRow from '~/shared/ui/components/AppListRow.vue'
 import MenuItemCard from '~/features/catalog/components/ItemCard.vue'
 import MenuComboFormDrawer from './ComboFormDrawer.vue'
 import { useCombos } from '../composables/useCombos'
-import { useItemManager } from '~/composables/ui/useItemManager'
+import { useItemManager } from '~/shared/ui/composables/useItemManager'
 import { useTagDisplay } from '~/features/catalog'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 const props = defineProps<{
   tenantId: string

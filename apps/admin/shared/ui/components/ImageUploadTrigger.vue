@@ -51,8 +51,8 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue'
 import { UiIcon, UiText } from '@fastio/ui'
-import ImageUploadModal from '~/components/ui/ImageUploadModal.vue'
-import type { ImageAspectRatio } from '~/components/ui/ImageUploadModal.vue'
+import ImageUploadModal from '~/shared/ui/components/ImageUploadModal.vue'
+import type { ImageAspectRatio } from '~/shared/ui/components/ImageUploadModal.vue'
 
 const props = withDefaults(defineProps<{
   modelValue: string | null

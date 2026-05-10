@@ -24,6 +24,8 @@ export * from './composables/useOrderTable'
 export * from './composables/useOrders'
 export * from './composables/useOrdersChannel'
 export * from './composables/useStatusColor'
+export * from './composables/delivery/useAllDeliveryZones'
+export * from './composables/delivery/useOrderDelivery'
 
 // Utils
 export * from './utils/format-order'

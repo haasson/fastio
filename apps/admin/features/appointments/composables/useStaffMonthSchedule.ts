@@ -11,7 +11,7 @@ import {
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useAppointmentSettingsStore } from '../stores/appointmentSettings'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export type StaffMonthAppointment = {
   id: string

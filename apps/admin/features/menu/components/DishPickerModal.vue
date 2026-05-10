@@ -193,7 +193,7 @@ import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon 
 import type { Addon } from '@fastio/shared'
 import { isAutoCategory } from '@fastio/shared'
 import { useOrderDishPicker } from '~/features/orders'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 import { useTerms } from '~/features/legal'
 
 type PickerListItem = { type: 'dish'; data: Dish } | { type: 'combo'; data: Combo }

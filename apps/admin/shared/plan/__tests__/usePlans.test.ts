@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { usePlans } from '../plan/usePlans'
+import { usePlans } from '../usePlans'
 import type { Plan } from '@fastio/shared'
 
 const mockPlansList = vi.fn<() => Promise<Plan[]>>()
 
-vi.mock('~/composables/data/useDatabase', () => ({
+vi.mock('~/shared/data/useDatabase', () => ({
   useDatabase: () => ({
     plans: { list: mockPlansList },
   }),

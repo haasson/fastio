@@ -1,6 +1,6 @@
 import type { ResourceSlotData } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import {
   checkAppointmentsAgainstSchedule, type ScheduleConflict,
 } from '../utils/scheduleConflictCheck'

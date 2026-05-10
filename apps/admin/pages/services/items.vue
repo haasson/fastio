@@ -43,10 +43,10 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useCategories } from '~/features/catalog'
 import { useServices } from '~/features/services-catalog'
 import { useTags } from '~/features/catalog'
-import { useItemManager } from '~/composables/ui/useItemManager'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useItemManager } from '~/shared/ui/composables/useItemManager'
+import { useDatabase } from '~/shared/data/useDatabase'
 import CategoryTabs from '~/features/catalog/components/CategoryTabs.vue'
-import AppMenuItemList from '~/components/ui/AppMenuItemList.vue'
+import AppMenuItemList from '~/features/catalog/components/AppMenuItemList.vue'
 import ServiceDrawer from '~/features/services-catalog/components/ServiceDrawer.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())

@@ -78,7 +78,7 @@ import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { formatRelativeTime } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
 import TableSessionItems from './TableSessionItems.vue'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 
 const props = defineProps<{
   table: Table

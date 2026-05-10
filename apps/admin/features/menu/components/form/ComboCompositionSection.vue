@@ -80,9 +80,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { UiCollapseItem, UiButton, UiSkeleton } from '@fastio/ui'
-import DishItemRow from '~/components/ui/DishItemRow.vue'
+import DishItemRow from '~/shared/ui/components/DishItemRow.vue'
 import type { Addon, Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '../DishPickerModal.vue'
 import { useTerms } from '~/features/legal'
 

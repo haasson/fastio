@@ -7,8 +7,8 @@
 
 <script setup lang="ts">
 import { useNewReservationCounter } from '~/features/reservations'
-import TabsLayout from '~/components/ui/TabsLayout.vue'
-import { usePageTitle } from '~/composables/usePageTitle'
+import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import { usePageTitle } from '~/shared/composables/usePageTitle'
 
 usePageTitle('Бронирования')
 

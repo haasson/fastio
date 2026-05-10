@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { UiEmpty } from '@fastio/ui'
-import AppStorefrontAlert from '~/components/ui/AppStorefrontAlert.vue'
+import AppStorefrontAlert from '~/shared/ui/components/AppStorefrontAlert.vue'
 </script>
 
 <style scoped lang="scss">

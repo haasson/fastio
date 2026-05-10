@@ -69,8 +69,8 @@ import type {
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useBranchStore } from '~/shared/stores/branch'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useGate } from '~/composables/plan/useGate'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useGate } from '~/shared/plan/useGate'
 import { reportError } from '~/shared/utils/reportError'
 import CancelGroupModal from '~/features/appointments/components/CancelGroupModal.vue'
 

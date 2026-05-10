@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import type { Plan, PlanTier } from '@fastio/shared'
 import { PLAN_LEVEL_ORDER, extractPlanTier } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 
 const plans = ref<Plan[]>([])

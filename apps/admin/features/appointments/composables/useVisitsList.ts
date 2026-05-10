@@ -8,7 +8,7 @@ import type {
   VisitAggregateStatus,
   AppointmentStatus,
 } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useMessage } from '@fastio/ui'
 import { reportError } from '~/shared/utils/reportError'
 import type { VisitFilter } from '../api/visits'

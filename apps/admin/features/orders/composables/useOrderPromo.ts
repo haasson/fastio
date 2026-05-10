@@ -1,7 +1,7 @@
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import type { Order } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 
 type PromoOption = { label: string; value: string; type: 'promotion' | 'promo_code' | 'group'; id: string; children?: PromoOption[] }

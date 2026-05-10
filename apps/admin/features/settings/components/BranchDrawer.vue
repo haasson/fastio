@@ -82,8 +82,8 @@ import { BRANCH_COLOR_PRESETS, DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/sh
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { validationRules } from '@fastio/kit'
-import UiColorPicker from '~/components/ui/ColorPicker.vue'
-import AddressWithMap from '~/components/ui/AddressWithMap.vue'
+import UiColorPicker from '~/shared/ui/components/ColorPicker.vue'
+import AddressWithMap from '~/shared/ui/components/AddressWithMap.vue'
 import { defaultBranchFormData } from '~/features/branches'
 
 const tenantStore = useTenantStore()

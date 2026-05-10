@@ -84,12 +84,12 @@ import { useConfirm } from '@fastio/kit'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
-import { useBranchLimit } from '~/composables/plan/useBranchLimit'
-import { useGate } from '~/composables/plan/useGate'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useBranchLimit } from '~/shared/plan/useBranchLimit'
+import { useGate } from '~/shared/plan/useGate'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useDeliveryZoneStore } from '~/features/orders'
 import BranchDrawer from '~/features/settings/components/BranchDrawer.vue'
-import useDrawer from '~/composables/ui/useDrawer'
+import useDrawer from '~/shared/ui/composables/useDrawer'
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()

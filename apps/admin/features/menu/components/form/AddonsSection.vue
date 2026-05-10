@@ -110,9 +110,9 @@ import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect,
 import type { Addon, AddonPreset } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import AddonPickerModal from './AddonPickerModal.vue'
-import HintPopover from '~/components/ui/HintPopover.vue'
+import HintPopover from '~/shared/ui/components/HintPopover.vue'
 import { useTerms } from '~/features/legal'
 
 const props = defineProps<{

@@ -1,8 +1,8 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { mapBranch } from '../api/branches'
-import { useRealtimeList } from '~/composables/data/useRealtimeList'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeList } from '~/shared/data/useRealtimeList'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useAuditLog } from '~/features/audit-log'
 
 export const useBranches = (tenantId: Ref<string>) => {

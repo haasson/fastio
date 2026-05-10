@@ -124,7 +124,7 @@ import {
   RESOURCE_UNAVAILABILITY_REASON_LABELS, RESOURCE_UNAVAILABILITY_REASON_OPTIONS,
 } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 
 const props = defineProps<{

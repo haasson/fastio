@@ -1,7 +1,7 @@
 import { type Ref } from 'vue'
 import type { Appointment } from '@fastio/shared'
 import { mapAppointment } from '@fastio/shared'
-import { createRealtimeBus } from '~/composables/data/createRealtimeBus'
+import { createRealtimeBus } from '~/shared/data/createRealtimeBus'
 
 /**
  * Realtime broker для appointments — отдельный от `api.appointmentEvents` (CRUD журнала).

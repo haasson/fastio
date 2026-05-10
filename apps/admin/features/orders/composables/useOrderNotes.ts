@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue'
 import type { OrderNote } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
 

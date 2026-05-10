@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
 import { UiCollapseItem, UiSwitch } from '@fastio/ui'
-import { useGate } from '~/composables/plan/useGate'
+import { useGate } from '~/shared/plan/useGate'
 import { useBranchToggle } from '~/features/branches'
 
 const props = defineProps<{

@@ -56,7 +56,7 @@ import { UiCollapseItem, UiInput, UiButton, UiText, UiSelect, useMessage } from 
 import type { DishIngredient } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
-import HintPopover from '~/components/ui/HintPopover.vue'
+import HintPopover from '~/shared/ui/components/HintPopover.vue'
 
 const props = defineProps<{
   categoryDishes: Array<{ id: string; name: string; ingredients: DishIngredient[] }>

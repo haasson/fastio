@@ -1,7 +1,7 @@
 import type { AddAuditLogParams, AuditLog } from '@fastio/shared'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 import type { AuditLogsListParams } from '../api/audit-logs'
 import { AUDIT_LOG_ENABLED } from '~/shared/utils/featureFlags'

@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue'
 import type { Banner, BannerFormData } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export function useBanners(tenantId: Ref<string>) {
   const api = useDatabase()

@@ -1,6 +1,6 @@
 import { ref, watch, type Ref } from 'vue'
 import type { Order } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export const useOrderCustomerHistory = (tenantId: string, order: Ref<Order | null>) => {
   const api = useDatabase()

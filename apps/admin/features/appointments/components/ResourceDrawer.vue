@@ -119,7 +119,7 @@ import type { Resource, Service, Category, ScheduleTemplate, ResourceType } from
 import { pluralize, utcIsoToLocalDateTime, addDaysToDateStr, todayInTz } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTeam } from '~/features/team'
 import { useScheduleConflictCheck } from '../composables/useScheduleConflictCheck'
 import {

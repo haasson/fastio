@@ -29,7 +29,7 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { formatPrice } from '@fastio/shared'
 import { UiTitle, UiText } from '@fastio/ui'
-import { usePlans } from '~/composables/plan/usePlans'
+import { usePlans } from '~/shared/plan/usePlans'
 import { useTenantStore } from '~/shared/stores/tenant'
 
 const { tenant } = storeToRefs(useTenantStore())

@@ -1,5 +1,5 @@
 import type { TourStep } from '../composables/useTour'
-import type { GateRegistry } from '~/composables/plan/useGate.types'
+import type { GateRegistry } from '~/shared/plan/useGate.types'
 import { getOnboardingSteps } from './onboardingTour'
 import { getCategoryTourSteps } from './categoryTour'
 import { getDishTourSteps } from './dishTour'

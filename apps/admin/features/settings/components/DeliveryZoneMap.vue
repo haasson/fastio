@@ -116,7 +116,7 @@ import {
 import type { YandexMapListenerSettings } from 'vue-yandex-maps'
 import { UiIcon } from '@fastio/ui'
 import type { DeliveryZone, Branch } from '@fastio/shared'
-import { usePolygonDraw } from '~/composables/delivery/usePolygonDraw'
+import { usePolygonDraw } from '~/shared/composables/delivery/usePolygonDraw'
 
 type Props = {
   zones: DeliveryZone[]

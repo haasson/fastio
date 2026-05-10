@@ -45,11 +45,11 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { UiSkeleton, UiAlert, UiSectionHeader, UiEmpty, UiText } from '@fastio/ui'
-import AppDraggableList from '~/components/ui/AppDraggableList.vue'
-import AppListRow from '~/components/ui/AppListRow.vue'
+import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
+import AppListRow from '~/shared/ui/components/AppListRow.vue'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 const props = defineProps<{
   tenantId: string

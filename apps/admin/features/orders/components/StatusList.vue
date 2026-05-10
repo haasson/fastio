@@ -31,9 +31,9 @@ import { ref, watch } from 'vue'
 import { UiSkeleton, UiEmpty, UiText, UiTag } from '@fastio/ui'
 import type { OrderStatus } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_LABELS, STATUS_GROUP_COLORS } from '~/config/retail/order-status-groups'
-import AppDraggableList from '~/components/ui/AppDraggableList.vue'
-import AppListRow from '~/components/ui/AppListRow.vue'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
+import AppListRow from '~/shared/ui/components/AppListRow.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 
 const props = defineProps<{
   statuses: OrderStatus[]

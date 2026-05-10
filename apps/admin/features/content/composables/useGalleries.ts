@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue'
 import type { Gallery, GalleryFormData, GalleryPhoto } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export function useGalleries(tenantId: Ref<string>) {
   const api = useDatabase()

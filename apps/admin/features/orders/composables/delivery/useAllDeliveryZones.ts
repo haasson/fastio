@@ -2,8 +2,8 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import type { DeliveryZone, DeliveryZoneFormData } from '@fastio/shared'
 import { mapDeliveryZone } from '~/features/orders'
-import { useRealtimeList } from '~/composables/data/useRealtimeList'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useRealtimeList } from '~/shared/data/useRealtimeList'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 
 export const useAllDeliveryZones = () => {

@@ -1,6 +1,6 @@
 import { computed, type ComputedRef } from 'vue'
-import { ok, deny, useGateInfra } from '~/composables/plan/useGate.shared'
-import type { GateResult } from '~/composables/plan/useGate.types'
+import { ok, deny, useGateInfra } from '~/shared/plan/useGate.shared'
+import type { GateResult } from '~/shared/plan/useGate.types'
 
 /**
  * Гейты retail-вертикали (общепит / food).

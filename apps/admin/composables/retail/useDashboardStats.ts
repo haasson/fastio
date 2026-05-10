@@ -1,7 +1,7 @@
 import { ref, computed, watch, onUnmounted, type Ref } from 'vue'
 import type { OrderDeliveryType } from '@fastio/shared'
 import { orderEvents } from '~/features/orders'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export type DashboardPeriod = 'today' | 'week' | 'month'
 

@@ -7,7 +7,7 @@ import {
   timeToMinutes, addDaysToDateStr, localDateTimeToUtcIso, DEFAULT_TIMEZONE,
   DEFAULT_WORKING_DAY_MINUTES, sliceTime,
 } from '@fastio/shared'
-import { useDatabase } from '~/composables/data/useDatabase'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 

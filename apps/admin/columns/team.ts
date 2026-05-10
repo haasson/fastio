@@ -1,7 +1,7 @@
 import { h, type ComputedRef } from 'vue'
 import { UiTag, UiText, UiButton } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
-import AppActionsBlock from '~/components/ui/AppActionsBlock.vue'
+import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import type { TenantMember, TenantInvitation, Branch } from '@fastio/shared'
 import { formatDate } from '@fastio/shared'
 

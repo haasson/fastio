@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { reactive, watch, ref } from 'vue'
 import { UiIcon } from '@fastio/ui'
-import ImageUploadModal from '~/components/ui/ImageUploadModal.vue'
+import ImageUploadModal from '~/shared/ui/components/ImageUploadModal.vue'
 type BannerItem = {
   url: string
   enabled: boolean

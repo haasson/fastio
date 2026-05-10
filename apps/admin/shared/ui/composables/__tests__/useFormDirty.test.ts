@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { reactive } from 'vue'
-import { useFormDirty } from '../ui/useFormDirty'
+import { useFormDirty } from '../useFormDirty'
 
 describe('useFormDirty', () => {
   it('starts clean', () => {

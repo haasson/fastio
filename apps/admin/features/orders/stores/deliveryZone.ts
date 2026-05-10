@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useAllDeliveryZones } from '~/composables/delivery/useAllDeliveryZones'
+import { useAllDeliveryZones } from '../composables/delivery/useAllDeliveryZones'
 
 // Зоны доставки нужны в заказах, на странице зон и на странице филиалов,
 // поэтому держим в сторе, чтобы не создавать отдельный fetch и подписку на каждый маунт.

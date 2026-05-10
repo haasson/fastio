@@ -38,9 +38,9 @@ import type { Category } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useCategories } from '~/features/catalog'
 import { useTags } from '~/features/catalog'
-import { useDatabase } from '~/composables/data/useDatabase'
-import { useItemManager } from '~/composables/ui/useItemManager'
-import AppCategoryList from '~/components/ui/AppCategoryList.vue'
+import { useDatabase } from '~/shared/data/useDatabase'
+import { useItemManager } from '~/shared/ui/composables/useItemManager'
+import AppCategoryList from '~/features/catalog/components/AppCategoryList.vue'
 import CategoryFormModal from '~/features/catalog/components/CategoryFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
