@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-10T14:11:18.094Z",
+  "generated_at": "2026-05-11T12:54:29.438Z",
   "stats": {
     "files": 88,
     "pages": 0,
@@ -599,7 +599,7 @@
     },
     "shared/plan/useGate.retail.routes.ts": {
       "kind": "ts",
-      "hash": "2a0a27c1ac62",
+      "hash": "ecbf5afbdea0",
       "purpose": "Карта роут→RetailGateKey: SUBS (под-роуты) и ROOTS (корни), используется агрегатором useGate.routes для retail-вертикали",
       "symbols": [
         {
@@ -668,7 +668,7 @@
     },
     "shared/plan/useGate.services.routes.ts": {
       "kind": "ts",
-      "hash": "3a91bcb3ef5d",
+      "hash": "4ca512d605b3",
       "purpose": "Карта роут→ServicesGateKey: SUBS (под-роуты) и ROOTS (корни), используется агрегатором useGate.routes для services-вертикали",
       "symbols": [
         {

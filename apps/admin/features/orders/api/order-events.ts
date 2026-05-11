@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { OrderEvent } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
-import type { OrderEventRow } from '~/utils/api/db-types'
+import type { OrderEventRow } from '~/shared/data/db-types'
 
 export type AddOrderEventParams = Omit<OrderEvent, 'id' | 'createdAt'>
 

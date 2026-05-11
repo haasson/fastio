@@ -1,12 +1,14 @@
 // Public barrel of the menu module.
 
 // API
+export * from './api/addons'
 export * from './api/categories'
 export * from './api/combos'
 export * from './api/dishes'
 export * from './api/modifiers'
 
 // Composables
+export * from './composables/useAddons'
 export * from './composables/useCombos'
 export * from './composables/useDishCounts'
 export * from './composables/useDishSave'

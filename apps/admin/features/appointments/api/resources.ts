@@ -17,7 +17,7 @@ import type {
   ServiceResourceRow, ResourceCategoryRow, ResourceBranchRow,
   ScheduleTemplateRow, ScheduleTemplateDayRow,
   AppointmentRow,
-} from '~/utils/api/db-types'
+} from '~/shared/data/db-types'
 import { query } from '~/shared/utils/query'
 
 // ─── Bulk-load для availability/presence composables ─────

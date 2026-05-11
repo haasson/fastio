@@ -2,4 +2,7 @@
 // Plan-related composables (usePlans/useBillingConfig/usePlanFeatures) живут
 // в shared/plan/* — это общая инфра, не billing-specific.
 // components/ — UI billing-cabinet'а (BillingSummary, PlanCards, TransactionHistory).
-export {}
+
+// API
+export * from './api/billing'
+export * from './api/plans'

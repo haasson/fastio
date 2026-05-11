@@ -1,7 +1,7 @@
 import { type Ref } from 'vue'
 import type { TableCall } from '@fastio/shared'
 import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
-import type { TableCallRow } from '~/utils/api/db-types'
+import type { TableCallRow } from '~/shared/data/db-types'
 
 type Handler<T> = (payload: T) => void
 

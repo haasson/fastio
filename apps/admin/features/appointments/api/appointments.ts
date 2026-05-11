@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Appointment, AppointmentStatus, AppointmentFormData } from '@fastio/shared'
 import { mapAppointment, localDateTimeToUtcIso, addDaysToDateStr, DEFAULT_TIMEZONE } from '@fastio/shared'
-import type { AppointmentRow } from '~/utils/api/db-types'
+import type { AppointmentRow } from '~/shared/data/db-types'
 import { query } from '~/shared/utils/query'
 
 const FIELDS = `

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Branch, BranchAddressData, BranchFormData } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
-import type { BranchRow } from '~/utils/api/db-types'
+import type { BranchRow } from '~/shared/data/db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
 
 export const mapBranch = (raw: Record<string, unknown>): Branch => {

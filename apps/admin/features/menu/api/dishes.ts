@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Dish, DishModifierGroup, DishModifierOption } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
-import type { DishRow } from '~/utils/api/db-types'
+import type { DishRow } from '~/shared/data/db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
 import { optimizeImage } from '~/shared/utils/imageOptimize'
 

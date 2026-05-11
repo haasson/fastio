@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, parseSchedulingConfig } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
-import type { TenantRow } from './db-types'
+import type { TenantRow } from '../db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
 import { optimizeImage } from '~/shared/utils/imageOptimize'
 

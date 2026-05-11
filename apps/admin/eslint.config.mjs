@@ -197,7 +197,7 @@ export default [
       'shared/data/**',
       'shared/plan/**',
       'shared/ui/composables/**',
-      'utils/api/*.ts',
+      'shared/data/api/*.ts',
       'shared/utils/*.ts',
       'shared/utils/__tests__/**',
       'shared/stores/*.ts',

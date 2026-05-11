@@ -1,6 +1,6 @@
 import { ref, computed, type Ref } from 'vue'
 import type { AddonPreset } from '@fastio/shared'
-import { mapAddon } from '~/utils/api/addons'
+import { mapAddon } from '../api/addons'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
 

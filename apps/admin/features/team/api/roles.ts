@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
-import type { TenantRoleRow } from '~/utils/api/db-types'
+import type { TenantRoleRow } from '~/shared/data/db-types'
 
 const mapRole = (row: TenantRoleRow): TenantCustomRole => ({
   id: row.id,

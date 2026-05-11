@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BookingMode, Service, ServiceFormData, ServiceWithBranchIds } from '@fastio/shared'
 import { mapService } from '@fastio/shared'
-import type { ServiceRow } from '~/utils/api/db-types'
+import type { ServiceRow } from '~/shared/data/db-types'
 import { query } from '~/shared/utils/query'
 
 const SERVICE_FIELDS = `

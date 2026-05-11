@@ -9,7 +9,7 @@ import {
   mapScheduleTemplate,
   mapScheduleTemplateDay,
 } from '@fastio/shared'
-import type { ScheduleTemplateRow, ScheduleTemplateDayRow } from '~/utils/api/db-types'
+import type { ScheduleTemplateRow, ScheduleTemplateDayRow } from '~/shared/data/db-types'
 import { query } from '~/shared/utils/query'
 
 const TEMPLATE_FIELDS
