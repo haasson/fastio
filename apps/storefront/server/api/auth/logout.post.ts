@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getCookie, deleteCookie } from 'h3'
 import { getTenantDb } from '../../utils/tenantDb'
 import { hashSessionToken, TG_SESSION_COOKIE_NAME } from '../../utils/telegramAuth'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 export default defineEventHandler(async (event) => {
   const cookieToken = getCookie(event, TG_SESSION_COOKIE_NAME)

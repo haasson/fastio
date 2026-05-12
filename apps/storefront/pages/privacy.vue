@@ -77,9 +77,9 @@ import { FileX } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { isLegalInfoComplete } from '@fastio/shared'
 import { FsSection } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
+import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 

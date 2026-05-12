@@ -1,7 +1,7 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
 import { createRateLimiter, todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr, DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 

@@ -37,9 +37,9 @@ import { ref, onMounted } from 'vue'
 import { navigateTo } from 'nuxt/app'
 import { FsSection, FsField, FsForm, FsInput, FsButton, FsText, FsAlert } from '@fastio/public-ui'
 import { validationRules } from '@fastio/kit'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
+import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 
 const password = ref('')
 const confirmPassword = ref('')

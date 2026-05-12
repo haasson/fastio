@@ -33,9 +33,9 @@ import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
 import { defaultSiteContent, deepMerge } from '@fastio/shared'
 import { FsSection, FsRichContent } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 

@@ -22,8 +22,8 @@
 import { ref } from 'vue'
 import { useAsyncData, useRequestFetch, useRoute, createError } from 'nuxt/app'
 import { FsSection, FsText, FsRichContent } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 
 definePageMeta({ middleware: ['no-promotions'] })
 

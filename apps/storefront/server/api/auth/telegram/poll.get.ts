@@ -2,7 +2,7 @@ import { defineEventHandler, getQuery, getRequestProtocol, setCookie } from 'h3'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
 import { issueSessionToken, TG_SESSION_COOKIE_NAME } from '../../../utils/telegramAuth'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
 const SESSION_TTL_SEC = SESSION_TTL_MS / 1000

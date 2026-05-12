@@ -47,13 +47,13 @@ import { useNuxtData, useAsyncData, useRequestFetch, useRoute } from 'nuxt/app'
 import type { DeliveryZone, Tenant } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, deepMerge, isPresetDark } from '@fastio/shared'
 import { FsSection, FsText, FsRichContent } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
-import { useCurrency } from '~/composables/useCurrency'
-import { buildDeliveryText, formatZoneConditions } from '~/utils/deliveryText'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
+import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
+import { useCurrency } from '~/shared/composables/useCurrency'
+import { buildDeliveryText, formatZoneConditions } from '~/features/delivery'
 
-const DeliveryMapView = defineAsyncComponent(() => import('~/components/delivery/DeliveryMapView.vue'))
+const DeliveryMapView = defineAsyncComponent(() => import('~/features/delivery/components/DeliveryMapView.vue'))
 
 const rfetch = useRequestFetch()
 const route = useRoute()

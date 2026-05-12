@@ -1,0 +1,73 @@
+<template>
+  <div class="checkout-sidebar">
+    <FsCard class="sidebar-card">
+      <div class="sidebar-body">
+        <FsHeading as="h6" class="sidebar-title">Ваш заказ</FsHeading>
+        <SfOrderItemsList :items="cart.dishItems" :currency="currency" />
+        <FsDivider spacing="none" />
+        <CheckoutSummary
+          :subtotal="cart.dishSubtotal"
+          :delivery-fee="checkout.deliveryFee"
+          :discount-amount="checkout.discountAmount"
+          :discount-label="discountLabel"
+          :total="checkout.orderTotal"
+          :currency="currency"
+          :errors="errors"
+          :loading="loading"
+          @submit="emit('submit')"
+        />
+      </div>
+    </FsCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useCartStore } from '~/features/cart'
+import { useCheckoutStore } from '../stores/checkout'
+import { FsHeading, FsCard, FsDivider } from '@fastio/public-ui'
+import SfOrderItemsList from '~/shared/ui/sf/domain/SfOrderItemsList.vue'
+import CheckoutSummary from './CheckoutSummary.vue'
+
+type Props = {
+  currency: string
+  errors?: string[]
+  loading?: boolean
+}
+
+withDefaults(defineProps<Props>(), { errors: () => [], loading: false })
+
+const emit = defineEmits<{ submit: [] }>()
+
+const cart = useCartStore()
+const checkout = useCheckoutStore()
+
+const discountLabel = computed(() => {
+  const d = checkout.appliedDiscount
+  if (!d) return null
+  return d.isBestPick ? `${d.label} · лучшая из скидок` : d.label
+})
+</script>
+
+<style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
+.checkout-sidebar {
+  @include md {
+    position: sticky;
+    top: 80px;
+  }
+}
+
+.sidebar-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-title {
+  margin: 0;
+}
+
+</style>

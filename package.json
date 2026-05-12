@@ -30,7 +30,10 @@
     "features:validate:strict": "node scripts/features/validate-manifests.mjs --strict",
     "features:gen-barrels": "node scripts/features/gen-barrels.mjs",
     "features:gen-barrels:check": "node scripts/features/gen-barrels.mjs --check",
-    "new:feature": "node scripts/features/new-feature.mjs"
+    "new:feature": "node scripts/features/new-feature.mjs",
+    "storefront-features:validate": "node scripts/storefront-features/validate-manifests.mjs",
+    "storefront-features:validate:strict": "node scripts/storefront-features/validate-manifests.mjs --strict",
+    "new:storefront-feature": "node scripts/storefront-features/new-feature.mjs"
   },
   "workspaces": [
     "apps/*",

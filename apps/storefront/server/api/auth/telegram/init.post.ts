@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { createRateLimiter } from '@fastio/shared'
 import { useRuntimeConfig } from '#imports'
 import { getTenantDb } from '../../../utils/tenantDb'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 const NONCE_TTL_MS = 15 * 60 * 1000
 

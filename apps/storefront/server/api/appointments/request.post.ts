@@ -1,7 +1,7 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
 import { createRateLimiter } from '@fastio/shared'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 

@@ -15,9 +15,9 @@
 <script setup lang="ts">
 import { Briefcase } from 'lucide-vue-next'
 import { FsSection } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 </script>
 
 <style scoped lang="scss">

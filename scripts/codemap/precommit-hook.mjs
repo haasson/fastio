@@ -70,8 +70,17 @@ process.stdin.on('end', () => {
       execSync('node scripts/features/validate-manifests.mjs --auto-fix', {
         cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'],
       });
+      // Стейджим только реально изменённые автофиксом манифесты (не все подряд).
       try {
-        execSync('git add apps/admin/features/*/feature.manifest.ts', { cwd: ROOT, stdio: 'inherit' });
+        const dirty = execSync(
+          'git diff --name-only -- "apps/admin/features/*/feature.manifest.ts"',
+          { cwd: ROOT, encoding: 'utf8' },
+        ).trim();
+        if (dirty) {
+          for (const f of dirty.split('\n')) {
+            execSync(`git add "${f}"`, { cwd: ROOT, stdio: 'inherit' });
+          }
+        }
       } catch {}
     } catch (err) {
       if (err.status === 1) {
@@ -94,6 +103,42 @@ process.stdin.on('end', () => {
         return process.exit(2);
       }
       process.stderr.write(`[features] gen-barrels check failed: ${err.message}\n`);
+      return process.exit(2);
+    }
+  }
+
+  // ─── 3. storefront features manifests valid + AGENTS.md present ──
+  let stagedStorefrontFeatures = '';
+  try {
+    stagedStorefrontFeatures = execSync('git diff --cached --name-only --diff-filter=ACMR -- apps/storefront/features/', {
+      cwd: ROOT, encoding: 'utf8',
+    });
+  } catch {
+    // best-effort
+  }
+  if (stagedStorefrontFeatures.trim()) {
+    try {
+      execSync('node scripts/storefront-features/validate-manifests.mjs --auto-fix', {
+        cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'],
+      });
+      // Стейджим только реально изменённые автофиксом манифесты.
+      try {
+        const dirty = execSync(
+          'git diff --name-only -- "apps/storefront/features/*/feature.manifest.ts"',
+          { cwd: ROOT, encoding: 'utf8' },
+        ).trim();
+        if (dirty) {
+          for (const f of dirty.split('\n')) {
+            execSync(`git add "${f}"`, { cwd: ROOT, stdio: 'inherit' });
+          }
+        }
+      } catch {}
+    } catch (err) {
+      if (err.status === 1) {
+        process.stderr.write('\n[storefront-features] Манифесты содержат ошибки. Поправь и снова запусти git commit. Подсказки: `pnpm storefront-features:validate`\n');
+        return process.exit(2);
+      }
+      process.stderr.write(`[storefront-features] validate failed: ${err.message}\n`);
       return process.exit(2);
     }
   }

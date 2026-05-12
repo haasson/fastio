@@ -153,6 +153,53 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## GSD для больших задач
+
+GSD — это набор скиллов (`gsd-*`) для структурированной работы над крупными задачами. По умолчанию я работаю в «лёгком» режиме (Read/Edit/Bash), но для больших задач **обязательно** стартую через GSD.
+
+**Триггеры — задача считается «большой» если выполняется ≥1 из:**
+
+1. **Многошаговая** с риском потерять контекст между шагами (>5 логически связанных подзадач).
+2. **Затрагивает много файлов** (>10 файлов на запись/правку).
+3. **Долгая** — ожидаемые трудозатраты >2 часов плотной работы.
+4. **Многофайловая миграция / рефакторинг** с архитектурными изменениями (новые модули, перенос между слоями, smy schema БД).
+5. **Юзер явно говорит** «через GSD» / «по фазам» / «давай распланируем».
+
+**Что делать когда триггер сработал:**
+
+1. **Старт** — `/gsd-plan-phase` (если задача чёткая) или `/gsd-discuss-phase` (если есть размытость → требуются уточняющие вопросы перед планом).
+2. **Выполнение** — `/gsd-execute-phase` (атомарные коммиты, wave-based параллелизация, чекпоинты).
+3. **Проверка** — `/gsd-verify-work` (UAT по критериям из плана) + `/gsd-code-review` (баги/безопасность).
+4. **Если контекст закончился** — `/gsd-pause-work` для handoff'а → `/gsd-resume-work` в новой сессии.
+5. **Откат если что** — `/gsd-undo` (откат коммитов phase через манифест).
+
+**Когда GSD НЕ нужен:**
+
+- Точечный фикс в 1-3 файлах (просто Edit).
+- Code review без правок (используй встроенный `/code-review` — у тебя есть кастомный скилл).
+- Quick-task где известно что делать и куда (`/gsd-fast` или просто Edit).
+- Ответ на вопрос юзера (никаких изменений в коде).
+
+**Стандартный workflow для большой задачи:**
+
+```
+/gsd-discuss-phase (опц. — если задача неясна)
+       ↓
+/gsd-plan-phase  → PLAN.md в .planning/
+       ↓
+/gsd-execute-phase  → атомарные коммиты + чекпоинты
+       ↓
+/gsd-verify-work  → UAT
+       ↓
+/gsd-code-review  → проверка качества
+       ↓
+/gsd-ship  → PR + merge
+```
+
+**Reverse-check перед стартом работы:** если задача попадает под триггер выше и я начал делать её без GSD — остановись, признайся юзеру, предложи переключиться. Юзер может сказать «нет, делай в лёгком режиме» — тогда продолжаю напрямую.
+
+---
+
 ## База данных
 
 - **НИКОГДА не запускать `supabase db reset`** — это дропает всю базу и уничтожает данные
@@ -227,26 +274,32 @@ supabase/
 
 ## Артефакты модулей (AGENTS.md + feature.manifest.ts)
 
-В каждой материальной фиче `apps/admin/features/<X>/` лежит два артефакта:
+И в `apps/admin/features/<X>/`, и в `apps/storefront/features/<X>/` материальные фичи имеют два артефакта:
 
-- **`feature.manifest.ts`** — машиночитаемый: `key`, `vertical`, `routes`, `permissions`, `db.tables`, `db.rpc`, `realtime`, `dependsOn`. Тип — `FeatureManifest` из `features/_manifest.ts`.
+- **`feature.manifest.ts`** — машиночитаемый:
+  - **admin:** `key`, `vertical`, `routes`, `permissions`, `db.tables`, `db.rpc`, `realtime`, `dependsOn`, `tenantModule`. Тип — `FeatureManifest` из `apps/admin/features/_manifest.ts`.
+  - **storefront:** то же БЕЗ `permissions` и `tenantModule` (на витрине нет RBAC). Тип — `StorefrontFeatureManifest` из `apps/storefront/features/_manifest.ts`.
 - **`AGENTS.md`** — заметка для агента (~50 строк): что делает модуль, карта файлов, типовые задачи, антипаттерны.
 
 **Когда обновлять (обязательно):**
 
-1. Создал новую фичу `features/<NEW>/` → скопируй `templates/feature-crud/` и заполни оба файла. Без них precommit-hook заблокирует коммит.
+1. Создал новую фичу:
+   - admin: `pnpm new:feature <name>` (шаблон `templates/feature-crud/`)
+   - storefront: `pnpm new:storefront-feature <name>` (шаблон `templates/storefront-feature/`)
+
+   Без manifest+AGENTS precommit-hook заблокирует коммит.
 2. Добавил новый `api/*.ts` или `composables/*.ts` → обнови **"Карту модуля"** в AGENTS.md (одна строка в таблицу).
-3. Добавил `sb.from('<table>')` или `sb.rpc('<fn>')` в api/ → manifest подхватит автоматически через `--auto-fix` в precommit hook. Можно прогнать вручную: `pnpm features:validate --auto-fix`.
-4. Добавил pages/`<feature>`/`<sub>.vue` → добавь `{ path: '/...', purpose: '...' }` в `manifest.routes` (валидатор покажет warning если забудешь).
+3. Добавил `sb.from('<table>')` или `sb.rpc('<fn>')` в api/ → manifest подхватит автоматически через `--auto-fix` в precommit hook. Можно прогнать вручную: `pnpm features:validate --auto-fix` / `pnpm storefront-features:validate --auto-fix`.
+4. Добавил `pages/<feature>/<sub>.vue` → добавь `{ path: '/...', purpose: '...' }` в `manifest.routes` (валидатор покажет warning если забудешь).
 5. Удалил/переименовал файл, упомянутый в AGENTS.md → обнови карту (валидатор увидит).
-6. Изменил permissions в `config/team-roles.ts` → если они используются в твоей фиче, отрази в `manifest.permissions`.
+6. (admin) Изменил permissions в `config/team-roles.ts` → если они используются в твоей фиче, отрази в `manifest.permissions`.
 
-**Что проверяет валидатор** (`pnpm features:validate`):
+**Что проверяет валидатор** (`pnpm features:validate` или `pnpm storefront-features:validate`):
 
-- **Errors (блок коммита):** материальная фича без manifest/AGENTS.md, неизвестный permission, несуществующий route, неверный `key` при `tenantModule:true`.
+- **Errors (блок коммита):** материальная фича без manifest/AGENTS.md, неизвестный permission (admin), несуществующий route, неверный `key` при `tenantModule:true` (admin).
 - **Warnings (для разраба):** db.tables/rpc рассинхрон, AGENTS.md упоминает удалённый файл, новый composable не в карте модуля, dependsOn `shared.*` не найден.
 
-`pnpm features:validate --auto-fix` чинит то, что выводится из кода (`db.tables`, `db.rpc`). Остальное — руками.
+`--auto-fix` чинит то, что выводится из кода (`db.tables`, `db.rpc`). Остальное — руками.
 
 ## Архитектура admin-приложения
 
@@ -314,6 +367,45 @@ apps/admin/
 **Realtime:** все списки в реальном времени через Supabase Realtime channels. Каналы создаются в composables `features/<X>/composables/use*Channel.ts`, агрегируются в `shared/composables/useRealtimeChannels.ts`.
 
 **Cross-module импорты:** только через barrel (`~/features/<X>` → `index.ts`). Deep-paths (`~/features/<X>/api/Y`) внутри **своего** модуля — относительные пути. Полная конвенция — `docs/vertical-isolation.md`.
+
+---
+
+## Архитектура storefront-приложения
+
+**Структура (после Phase 6 модульной миграции):**
+
+```
+apps/storefront/
+  features/<X>/         # Модули — каждая фича изолирована (api?, composables?, components, stores?, utils?, types?, index.ts barrel)
+    booking, menu-catalog, table-mode, delivery, promotions, order-tracking,    # retail
+    appointments, services-catalog,                                              # services
+    cart, checkout, auth, branch, account                                        # shared aggregator
+  shared/               # Общая инфра витрины (зависимость в одну сторону — от feature к shared)
+    composables/        # useToast, useCurrency, useTheme, useModal, useConfirm, useIsMobile, useDadataSuggestions, useStorefrontTerms, useSupabaseClient, useAnalytics, useSafeHtml, usePhotoSwipe, useItemPlaceholder, useLegalCompliance, useBranchSwitcher (в features/branch), useCatalogMode (aggregator)
+    utils/              # google-fonts, reportError, product (buildProduct), tag-icons, format-removed-toast
+    ui/                 # ConfirmDialog, HeaderUserMenu, MobileUserCard + layout/{StorePageLayout} + sections/{PageShell,SiteHeader,SiteFooter,HeroSection,BannersSection,GallerySection,ReviewsSection,CategoryBar,GallerySlider} + sf/{domain,icons}/*
+  pages/                # Nuxt-роутинг (часть гибридная, часть retail-only, часть services-only)
+  server/               # Nitro endpoints (вся коммуникация с Supabase идёт через них)
+  app/, layouts/, middleware/, plugins/, types/
+```
+
+**Особенности (отличие от admin):**
+
+- **Нет permissions/RBAC** — витрина читает публичные данные тенанта; манифест без `permissions` и `tenantModule`.
+- **Нет module-toggle** — модули витрины активны всегда (UI скрывает функционал через computed на основе `tenant.modules`).
+- **Cart/checkout/delivery — гибридные shared aggregators** (хранят и DishCartItem, и ServiceCartItem; vertical='shared').
+- **Большинство pages — aggregator'ы**: главная (`/`), `/menu`, `/category/[slug]`, `/cart`, `/checkout` — гибридные, показывают MenuSection ИЛИ ServicesSection в зависимости от `businessType` тенанта.
+- **Vertical-only страницы**: `/booking` (бронь стола, retail), `/order/[id]` (треккинг заказа, retail), `/table/[id]` (QR-меню, retail), `/appointments/*` (запись на услуги, services).
+- **Коммуникация с БД — только через Nitro endpoints `server/api/*`.** Прямой `supabase.from()` из клиента — антипаттерн (RLS не пропустит без service-role, идёт через серверный слой). Поэтому у большинства фич `manifest.db.tables` пустой — данные приходят через `$fetch('/api/...')`.
+
+**Артефакты модулей storefront:** в каждой материальной фиче `apps/storefront/features/<X>/` лежит:
+
+- **`feature.manifest.ts`** — `StorefrontFeatureManifest` из `features/_manifest.ts` (БЕЗ `permissions`/`tenantModule`).
+- **`AGENTS.md`** — заметка для агента.
+
+Шаблон: `templates/storefront-feature/`. Создать новый модуль: `pnpm new:storefront-feature <name> --vertical=<retail|services|shared> --purpose="..."`. Валидация: `pnpm storefront-features:validate`.
+
+**ESLint barrier (vertical + module isolation):** `apps/storefront/eslint.config.mjs` — services↔retail взаимный запрет + deep-path запрет cross-module. Allow-list aggregators: `pages/index.vue`, `pages/cart.vue`, `pages/checkout.vue`, `pages/menu.vue`, `pages/category/**`, `features/{cart,checkout}/**`, `shared/composables/useCatalogMode.ts`, `shared/ui/{HeaderUserMenu,MobileUserCard,sections/PageShell,sections/SiteHeader,sf/domain/SfCartFab,sf/domain/SfProductCard}.vue`.
 
 ---
 

@@ -29,8 +29,8 @@
 import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
-import { useTableStore } from '~/stores/table'
-import CategoryBar from '~/components/sections/CategoryBar.vue'
+import { useTableStore } from '~/features/table-mode'
+import CategoryBar from '~/shared/ui/sections/CategoryBar.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const tableStore = useTableStore()

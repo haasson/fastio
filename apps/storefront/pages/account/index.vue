@@ -33,9 +33,9 @@ import { onMounted } from 'vue'
 import { navigateTo, useRoute } from 'nuxt/app'
 import { UserRound, ClipboardList, MapPin } from 'lucide-vue-next'
 import { FsSection, FsCard, FsButton } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import { useAuthStore } from '~/stores/auth'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
+import { useAuthStore } from '~/features/auth'
 import { storeToRefs } from 'pinia'
 
 definePageMeta({ middleware: 'no-services' })

@@ -94,19 +94,19 @@ import { navigateTo, useNuxtData, useRequestFetch, useRoute } from 'nuxt/app'
 import type { Tenant, AppointmentSettings, GroupSlotsResult, GroupSlotEntry, GroupSlotMatch } from '@fastio/shared'
 import { DEFAULT_TIMEZONE } from '@fastio/shared'
 import { FsSection, FsAlert, FsButton } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import ApptGroupDateStep from '~/components/appointments/ApptGroupDateStep.vue'
-import ApptGroupSlots from '~/components/appointments/ApptGroupSlots.vue'
-import ApptGroupRequest from '~/components/appointments/ApptGroupRequest.vue'
-import ApptStepContact from '~/components/appointments/ApptStepContact.vue'
-import ApptGroupSuccess from '~/components/appointments/ApptGroupSuccess.vue'
-import ApptReminderOffer from '~/components/appointments/ApptReminderOffer.vue'
-import { useCartStore } from '~/stores/cart'
-import { useSelectedBranchStore } from '~/stores/selectedBranch'
-import { useToast } from '~/composables/useToast'
-import { reportError } from '~/utils/reportError'
-import { useResourceLabel } from '~/composables/useResourceLabel'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
+import ApptGroupDateStep from '~/features/appointments/components/ApptGroupDateStep.vue'
+import ApptGroupSlots from '~/features/appointments/components/ApptGroupSlots.vue'
+import ApptGroupRequest from '~/features/appointments/components/ApptGroupRequest.vue'
+import ApptStepContact from '~/features/appointments/components/ApptStepContact.vue'
+import ApptGroupSuccess from '~/features/appointments/components/ApptGroupSuccess.vue'
+import ApptReminderOffer from '~/features/appointments/components/ApptReminderOffer.vue'
+import { useCartStore } from '~/features/cart'
+import { useSelectedBranchStore } from '~/features/branch'
+import { useToast } from '~/shared/composables/useToast'
+import { reportError } from '~/shared/utils/reportError'
+import { useResourceLabel } from '~/features/services-catalog'
 
 type Step = 'date' | 'slots' | 'request' | 'contact' | 'success'
 type GroupResult = {
@@ -399,7 +399,7 @@ const submitGroupBooking = async () => {
     }
 
     const headers: Record<string, string> = {}
-    const { useSupabaseClient } = await import('~/composables/useSupabaseClient')
+    const { useSupabaseClient } = await import('~/shared/composables/useSupabaseClient')
     const supabase = useSupabaseClient()
     const { data: { session } } = await supabase.auth.getSession()
     if (session) headers.Authorization = `Bearer ${session.access_token}`

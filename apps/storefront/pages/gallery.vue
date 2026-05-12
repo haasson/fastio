@@ -35,10 +35,10 @@ import { useNuxtData, useAsyncData, useRequestFetch, useRoute } from 'nuxt/app'
 import type { Gallery, Tenant } from '@fastio/shared'
 import { defaultSiteLayout, deepMerge } from '@fastio/shared'
 import { FsSection, FsHeading } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import GallerySlider from '~/components/sections/GallerySlider.vue'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
+import GallerySlider from '~/shared/ui/sections/GallerySlider.vue'
+import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
 
 const rfetch = useRequestFetch()
 const route = useRoute()

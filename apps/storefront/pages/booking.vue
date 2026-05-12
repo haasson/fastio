@@ -80,16 +80,16 @@ import type { BranchPublic, WorkingHours, WorkingHoursSchedule, ReservationSetti
 import { getScheduleForDate, DEFAULT_TIMEZONE } from '@fastio/shared'
 import { CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsHeading, FsAlert } from '@fastio/public-ui'
-import PageShell from '~/components/sections/PageShell.vue'
-import StorePageLayout from '~/components/layout/StorePageLayout.vue'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
-import BookingStepParams from '~/components/booking/BookingStepParams.vue'
-import BookingStepSlots from '~/components/booking/BookingStepSlots.vue'
-import BookingStepContact from '~/components/booking/BookingStepContact.vue'
-import BookingSuccess from '~/components/booking/BookingSuccess.vue'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
+import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
+import BookingStepParams from '~/features/booking/components/BookingStepParams.vue'
+import BookingStepSlots from '~/features/booking/components/BookingStepSlots.vue'
+import BookingStepContact from '~/features/booking/components/BookingStepContact.vue'
+import BookingSuccess from '~/features/booking/components/BookingSuccess.vue'
 
-import useBooking from '~/composables/useBooking'
-import useLegalCompliance from '~/composables/useLegalCompliance'
+import { useBooking } from '~/features/booking'
+import useLegalCompliance from '~/shared/composables/useLegalCompliance'
 
 type BookingBranch = BranchPublic
 

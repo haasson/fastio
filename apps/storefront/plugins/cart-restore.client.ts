@@ -1,5 +1,5 @@
 import { defineNuxtPlugin, onNuxtReady } from 'nuxt/app'
-import { useCartStore } from '~/stores/cart'
+import { useCartStore } from '~/features/cart'
 
 export default defineNuxtPlugin(() => {
   onNuxtReady(() => {

@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { REMINDER_TOKEN_TTL_MS, REMINDER_UUID_RE } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 type ApptRow = {
   starts_at: string

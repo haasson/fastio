@@ -22,10 +22,10 @@ import { computed } from 'vue'
 import { useRoute, navigateTo, useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
 import { defaultSiteLayout, deepMerge } from '@fastio/shared'
-import { useCatalogMode } from '~/composables/useCatalogMode'
-import PageShell from '~/components/sections/PageShell.vue'
-import MenuSection from '~/components/sections/MenuSection.vue'
-import ServicesSection from '~/components/sections/ServicesSection.vue'
+import { useCatalogMode } from '~/shared/composables/useCatalogMode'
+import PageShell from '~/shared/ui/sections/PageShell.vue'
+import MenuSection from '~/features/menu-catalog/components/MenuSection.vue'
+import ServicesSection from '~/features/services-catalog/components/ServicesSection.vue'
 
 const route = useRoute()
 const { isServicesMode, visibleCategories } = useCatalogMode()

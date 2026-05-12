@@ -748,11 +748,11 @@ import {
   FsInput, FsSelect, FsTextarea, FsCheckbox, FsSwitch, FsRadioGroup, FsField,
   FsHeading, FsText, FsTabs, FsTooltip, FsDialog, FsDrawer,
 } from '@fastio/public-ui'
-import SfOrderStatus from '~/components/sf/domain/SfOrderStatus.vue'
-import SfPriceTag from '~/components/sf/domain/SfPriceTag.vue'
-import SfStepper from '~/components/sf/domain/SfStepper.vue'
-import SfEmptyState from '~/components/sf/domain/SfEmptyState.vue'
-import { useToast } from '~/composables/useToast'
+import SfOrderStatus from '~/shared/ui/sf/domain/SfOrderStatus.vue'
+import SfPriceTag from '~/shared/ui/sf/domain/SfPriceTag.vue'
+import SfStepper from '~/shared/ui/sf/domain/SfStepper.vue'
+import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
+import { useToast } from '~/shared/composables/useToast'
 
 definePageMeta({ layout: false })
 

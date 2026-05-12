@@ -9,7 +9,7 @@ import {
 } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
-import { reportError } from '~/utils/reportError'
+import { reportError } from '~/shared/utils/reportError'
 
 type ApptRow = {
   starts_at: string

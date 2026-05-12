@@ -102,7 +102,7 @@ vi.mock('../utils/customerAuth', () => ({
   getAuthenticatedContextWithCustomer: (...args: unknown[]) => mockGetAuthCustomer(...args),
 }))
 
-vi.mock('~/utils/reportError', () => ({ reportError: vi.fn() }))
+vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
 
 // Nuxt globals
 ;(globalThis as any).createError = createError

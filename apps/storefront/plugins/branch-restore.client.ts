@@ -1,5 +1,5 @@
 import { defineNuxtPlugin, onNuxtReady } from 'nuxt/app'
-import { useSelectedBranchStore } from '~/stores/selectedBranch'
+import { useSelectedBranchStore } from '~/features/branch'
 
 export default defineNuxtPlugin(() => {
   onNuxtReady(() => {
