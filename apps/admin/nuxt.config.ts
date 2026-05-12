@@ -71,6 +71,7 @@ export default defineNuxtConfig({
     telegramAuthBotToken: '',
     telegramWebhookSecret: '',
     reminderCronSecret: '',
+    internalApiSecret: '',
     adminUrl: '',
     dadataApiKey: '',
     public: {

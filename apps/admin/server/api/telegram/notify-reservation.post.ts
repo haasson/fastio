@@ -2,8 +2,11 @@ import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { formatPhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
+import { requireInternalSecret } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
+  requireInternalSecret(event)
+
   const { reservationId, tenantId } = await readBody(event)
 
   if (!reservationId || !tenantId) return { ok: true }

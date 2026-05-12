@@ -1,4 +1,4 @@
-import { createError, defineEventHandler, getHeader, readBody } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import {
   REMINDER_TOKEN_RE,
@@ -9,6 +9,7 @@ import {
   REMINDER_OPTIONS,
 } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
+import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { reportError } from '~/shared/utils/reportError'
 
 const SKIP_PHONE_TEXT = 'Войти без номера'
@@ -33,13 +34,7 @@ export default defineEventHandler(async (event) => {
 
   if (!token) return { ok: true }
 
-  const webhookSecret = config.telegramWebhookSecret
-
-  if (webhookSecret) {
-    const incoming = getHeader(event, 'x-telegram-bot-api-secret-token')
-
-    if (incoming !== webhookSecret) throw createError({ statusCode: 403 })
-  }
+  requireTelegramWebhookSecret(event)
 
   const body: TgUpdate = await readBody(event)
 

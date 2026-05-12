@@ -38,16 +38,21 @@ Deno.serve(async (req) => {
 
   const roleData = (invitation as { tenant_roles?: { name: string } | null }).tenant_roles
 
-  const [{ data: tenant }, { data: { users } }] = await Promise.all([
+  // Targeted lookup in auth.users by email — O(1) via index, не подвержен лимиту в 1000 у listUsers().
+  const [{ data: tenant }, { count: userCount }] = await Promise.all([
     adminSupabase
       .from('tenants')
       .select('name')
       .eq('id', invitation.tenant_id)
       .single(),
-    adminSupabase.auth.admin.listUsers(),
+    adminSupabase
+      .schema('auth')
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('email', invitation.email),
   ])
 
-  const userExists = users.some((u) => u.email === invitation.email)
+  const userExists = (userCount ?? 0) > 0
 
   return json({
     email: invitation.email,

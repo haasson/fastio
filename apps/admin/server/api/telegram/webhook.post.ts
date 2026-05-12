@@ -1,12 +1,15 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
+import { requireTelegramWebhookSecret } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const token = config.telegramBotToken
 
   if (!token) return { ok: true }
+
+  requireTelegramWebhookSecret(event)
 
   const body = await readBody(event)
   const message = body?.message

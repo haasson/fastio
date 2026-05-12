@@ -2,6 +2,7 @@ import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { formatPhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
+import { requireInternalSecret } from '../../utils/auth'
 
 type OrderItem = {
   dish_name: string
@@ -14,6 +15,8 @@ type OrderItem = {
 }
 
 export default defineEventHandler(async (event) => {
+  requireInternalSecret(event)
+
   const { orderId, tenantId } = await readBody(event)
 
   if (!orderId || !tenantId) return { ok: true }

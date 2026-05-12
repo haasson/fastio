@@ -1,6 +1,7 @@
 import { normalizePhone, createRateLimiter } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getTenantDb } from '../utils/tenantDb'
+import { reportError } from '~/shared/utils/reportError'
 import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType, validatePaymentMethod } from '../services/order-validation'
 import { resolveCustomer } from '../services/order-customer'
 import { resolveDelivery } from '../services/order-delivery'
@@ -116,7 +117,8 @@ export default defineEventHandler(async (event) => {
       if (existing) return { id: existing.id, orderNumber: existing.order_number ?? null }
     }
 
-    throw createError({ statusCode: 500, message: error.message })
+    reportError(error)
+    throw createError({ statusCode: 500, message: 'Не удалось создать заказ' })
   }
 
   // 7. Создание позиций заказа
@@ -140,7 +142,7 @@ export default defineEventHandler(async (event) => {
 
     const { error: itemsError } = await db.crossTenant.from('order_items').insert(itemRows)
     if (itemsError) {
-      console.error('[order_items insert]', itemsError)
+      reportError(itemsError)
     }
 
     // Бесплатное блюдо (акция типа free_item)
@@ -157,7 +159,7 @@ export default defineEventHandler(async (event) => {
         sort_order: serverItems.length,
       })
       if (freeItemError) {
-        console.error('[free_item insert]', freeItemError)
+        reportError(freeItemError)
       }
     }
   }

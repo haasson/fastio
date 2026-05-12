@@ -5,12 +5,12 @@ import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from 
 import { loadKnowledge } from '~/server/ai/loadKnowledge'
 import { fetchTenantContext, formatContextForPrompt, type AiContext } from '~/server/ai/fetchContext'
 import { createAiTools } from '~/server/ai/tools'
+import { requireMemberOfTenant } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const { messages, tenantId, userId, currentRoute } = await readBody<{
+  const { messages, tenantId, currentRoute } = await readBody<{
     messages: UIMessage[]
     tenantId: string
-    userId: string
     currentRoute?: string
   }>(event)
 
@@ -24,12 +24,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (!tenantId || !userId) {
+  if (!tenantId) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'tenantId and userId are required',
+      statusMessage: 'tenantId is required',
     })
   }
+
+  // userId берём из JWT, а не из body — иначе кто угодно мог дёргать AI с правами произвольного пользователя.
+  const { userId } = await requireMemberOfTenant(event, tenantId)
 
   const openai = createOpenAI({ apiKey })
 
