@@ -1,6 +1,7 @@
 // Public barrel of the billing module.
-// Plan-related composables (usePlans/useBillingConfig/usePlanFeatures) живут
-// в shared/plan/* — это общая инфра, не billing-specific.
+// Низкоуровневые CRUD API (plansApi, billingApi) — здесь.
+// Composables (usePlans/useBillingConfig/usePlanFeatures) живут в shared/plan/*
+// как общая инфра — их используют гейты и UI вне billing-кабинета.
 // components/ — UI billing-cabinet'а (BillingSummary, PlanCards, TransactionHistory).
 
 // API

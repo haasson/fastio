@@ -1,4 +1,7 @@
 // Public barrel of the menu module.
+// Composables здесь — для внешних consumer'ов (pages/menu/*, cross-feature).
+// Внутри самого модуля composables импортятся через relative path,
+// чтобы не загружать barrel (см. docs/vertical-isolation.md).
 
 // API
 export * from './api/addons'
