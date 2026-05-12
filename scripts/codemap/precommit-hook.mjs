@@ -30,7 +30,7 @@ process.stdin.on('end', () => {
   const cmd = payload.tool_input?.command ?? '';
   if (!/\bgit\s+commit\b/.test(cmd)) return process.exit(0);
 
-  // запускаем scan на staged файлах
+  // ─── 1. codemap scan ──────────────────────────────────────────────
   let scanOk = true;
   try {
     execSync('node scripts/codemap/scan.mjs --staged', {
@@ -50,9 +50,53 @@ process.stdin.on('end', () => {
     try {
       execSync('git add .claude/codemap/', { cwd: ROOT, stdio: 'inherit' });
     } catch (err) {
-      // не критично, не блокируем
       process.stderr.write(`[codemap] git add codemap warning: ${err.message}\n`);
     }
   }
+
+  // ─── 2. features manifests valid + AGENTS.md present ─────────────
+  // Запускаем только если в стейдже есть что-то под apps/admin/features/
+  let stagedFeatures = '';
+  try {
+    stagedFeatures = execSync('git diff --cached --name-only --diff-filter=ACMR -- apps/admin/features/', {
+      cwd: ROOT, encoding: 'utf8',
+    });
+  } catch {
+    // best-effort, если не удалось — пропускаем
+  }
+  if (stagedFeatures.trim()) {
+    // 2a. Manifest validation + auto-fix db.tables/rpc
+    try {
+      execSync('node scripts/features/validate-manifests.mjs --auto-fix', {
+        cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'],
+      });
+      try {
+        execSync('git add apps/admin/features/*/feature.manifest.ts', { cwd: ROOT, stdio: 'inherit' });
+      } catch {}
+    } catch (err) {
+      if (err.status === 1) {
+        process.stderr.write('\n[features] Манифесты содержат ошибки. Поправь и снова запусти git commit. Подсказки: `pnpm features:validate`\n');
+        return process.exit(2);
+      }
+      process.stderr.write(`[features] validate failed: ${err.message}\n`);
+      return process.exit(2);
+    }
+
+    // 2b. Barrel staleness check (только для авто-генерируемых barrel'ов).
+    // Не блокирует если barrel ручной — там у нас маркер не стоит.
+    try {
+      execSync('node scripts/features/gen-barrels.mjs --check', {
+        cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'],
+      });
+    } catch (err) {
+      if (err.status === 1) {
+        process.stderr.write('\n[features] Barrel index.ts устарел. Прогони `pnpm features:gen-barrels` или добавь файл в barrel вручную.\n');
+        return process.exit(2);
+      }
+      process.stderr.write(`[features] gen-barrels check failed: ${err.message}\n`);
+      return process.exit(2);
+    }
+  }
+
   process.exit(0);
 });

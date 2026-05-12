@@ -136,7 +136,7 @@ const MODULE_ISOLATION_PATTERN = {
     '~/features/*/types',
     '~/features/*/types/**',
   ],
-  message: 'Cross-module импорт TS-модулей только через ~/features/<feature> (barrel index.ts), не deep path. Внутри своего модуля используй относительные пути. Vue-компоненты — deep-path разрешён (~/features/<X>/components/<Y>.vue).',
+  message: 'Cross-module импорт TS-модулей только через ~/features/<feature> (barrel index.ts), не deep path. Внутри своего модуля — относительные пути. Vue-компоненты — deep-path разрешён (~/features/<X>/components/<Y>.vue). Если это утилка/composable, нужная другому модулю — лучше вынеси в shared/utils или @fastio/shared, чем реэкспортировать через barrel.',
 }
 
 const banFromServices = {

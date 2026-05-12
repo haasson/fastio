@@ -225,6 +225,29 @@ supabase/
 
 ---
 
+## Артефакты модулей (AGENTS.md + feature.manifest.ts)
+
+В каждой материальной фиче `apps/admin/features/<X>/` лежит два артефакта:
+
+- **`feature.manifest.ts`** — машиночитаемый: `key`, `vertical`, `routes`, `permissions`, `db.tables`, `db.rpc`, `realtime`, `dependsOn`. Тип — `FeatureManifest` из `features/_manifest.ts`.
+- **`AGENTS.md`** — заметка для агента (~50 строк): что делает модуль, карта файлов, типовые задачи, антипаттерны.
+
+**Когда обновлять (обязательно):**
+
+1. Создал новую фичу `features/<NEW>/` → скопируй `templates/feature-crud/` и заполни оба файла. Без них precommit-hook заблокирует коммит.
+2. Добавил новый `api/*.ts` или `composables/*.ts` → обнови **"Карту модуля"** в AGENTS.md (одна строка в таблицу).
+3. Добавил `sb.from('<table>')` или `sb.rpc('<fn>')` в api/ → manifest подхватит автоматически через `--auto-fix` в precommit hook. Можно прогнать вручную: `pnpm features:validate --auto-fix`.
+4. Добавил pages/`<feature>`/`<sub>.vue` → добавь `{ path: '/...', purpose: '...' }` в `manifest.routes` (валидатор покажет warning если забудешь).
+5. Удалил/переименовал файл, упомянутый в AGENTS.md → обнови карту (валидатор увидит).
+6. Изменил permissions в `config/team-roles.ts` → если они используются в твоей фиче, отрази в `manifest.permissions`.
+
+**Что проверяет валидатор** (`pnpm features:validate`):
+
+- **Errors (блок коммита):** материальная фича без manifest/AGENTS.md, неизвестный permission, несуществующий route, неверный `key` при `tenantModule:true`.
+- **Warnings (для разраба):** db.tables/rpc рассинхрон, AGENTS.md упоминает удалённый файл, новый composable не в карте модуля, dependsOn `shared.*` не найден.
+
+`pnpm features:validate --auto-fix` чинит то, что выводится из кода (`db.tables`, `db.rpc`). Остальное — руками.
+
 ## Архитектура admin-приложения
 
 **Структура (после Phase 5 модульной миграции):**
