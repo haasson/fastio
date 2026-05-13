@@ -16,6 +16,14 @@ export default defineNuxtConfig({
 
   css: ['~/assets/styles/main.scss', 'photoswipe/style.css'],
 
+  // Phase 6 storefront использует `~/shared/` для composables/utils/data. Nuxt 3.12+
+  // ввёл встроенный namespace `~/shared/` для cross-runtime (client+server) utilities
+  // с impound plugin'ом, который запрещает там `#app` и Vue-composables.
+  // Переезжаем Nuxt-shared в `nuxt-shared/` — освобождаем наш `~/shared/` от ограничений.
+  dir: {
+    shared: 'nuxt-shared',
+  },
+
   components: false,
 
   modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt', '@sentry/nuxt/module'],
