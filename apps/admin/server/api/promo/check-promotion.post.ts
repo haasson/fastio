@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { getServerSupabase } from '../../utils/supabase'
+import { requireMemberOfTenant } from '../../utils/auth'
 
 const ERROR_MESSAGES: Record<string, string | ((d: Record<string, unknown>) => string)> = {
   not_found: 'Акция не найдена',
@@ -19,6 +20,8 @@ export default defineEventHandler(async (event) => {
   const scheduledAt = typeof body.scheduledAt === 'string' && body.scheduledAt ? body.scheduledAt : null
 
   if (!tenantId || !promotionId) throw createError({ statusCode: 400 })
+
+  await requireMemberOfTenant(event, tenantId)
 
   const supabase = getServerSupabase()
   const { data, error } = await supabase.rpc('check_promotion_by_id', {

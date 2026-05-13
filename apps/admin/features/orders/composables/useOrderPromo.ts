@@ -26,6 +26,13 @@ export const useOrderPromo = (
 ) => {
   const api = useDatabase()
 
+  // /api/promo/* требует JWT (requireMemberOfTenant), а $fetch его сам не приклеивает.
+  async function authHeaders(): Promise<Record<string, string>> {
+    const token = await api.auth.getAccessToken()
+
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   const rawPromotions = ref<RawPromotion[]>([])
   const rawPromoCodes = ref<RawPromoCode[]>([])
 
@@ -138,7 +145,10 @@ export const useOrderPromo = (
     try {
       const result = await $fetch<{ promotion_id: string; discount_amount: number; title: string } | null>(
         '/api/promo/best',
-        { params: { tenantId, subtotal: sub, ...(scheduledAt.value && { scheduledAt: scheduledAt.value }) } },
+        {
+          headers: await authHeaders(),
+          params: { tenantId, subtotal: sub, ...(scheduledAt.value && { scheduledAt: scheduledAt.value }) },
+        },
       )
 
       bestPromo.value = result
@@ -184,7 +194,10 @@ export const useOrderPromo = (
         const [result] = await Promise.all([
           $fetch<{ discountAmount: number }>(
             '/api/promo/recalculate',
-            { params: { tenantId, promotionId: order.value.promotionId, subtotal: val, ...(scheduledAt.value && { scheduledAt: scheduledAt.value }) } },
+            {
+              headers: await authHeaders(),
+              params: { tenantId, promotionId: order.value.promotionId, subtotal: val, ...(scheduledAt.value && { scheduledAt: scheduledAt.value }) },
+            },
           ),
           fetchBestPromo(val),
         ])
@@ -205,7 +218,11 @@ export const useOrderPromo = (
       try {
         const result = await $fetch<CheckResult>(
           '/api/promo/check-promotion',
-          { method: 'POST', body: { tenantId, promotionId, subtotal: sub, scheduledAt: scheduledAt.value } },
+          {
+            method: 'POST',
+            headers: await authHeaders(),
+            body: { tenantId, promotionId, subtotal: sub, scheduledAt: scheduledAt.value },
+          },
         )
 
         form.discountAmount = result.discountAmount
@@ -219,7 +236,11 @@ export const useOrderPromo = (
       try {
         const result = await $fetch<CheckResult>(
           '/api/promo/check',
-          { method: 'POST', body: { tenantId, code, subtotal: sub, scheduledAt: scheduledAt.value } },
+          {
+            method: 'POST',
+            headers: await authHeaders(),
+            body: { tenantId, code, subtotal: sub, scheduledAt: scheduledAt.value },
+          },
         )
 
         form.discountAmount = result.discountAmount

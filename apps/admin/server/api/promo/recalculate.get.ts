@@ -1,5 +1,6 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
 import { getServerSupabase } from '../../utils/supabase'
+import { requireMemberOfTenant } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -12,6 +13,8 @@ export default defineEventHandler(async (event) => {
   if (!Number.isFinite(subtotal) || subtotal < 0) {
     throw createError({ statusCode: 400, message: 'Некорректная сумма' })
   }
+
+  await requireMemberOfTenant(event, tenantId)
 
   const supabase = getServerSupabase()
   const { data, error } = await supabase.rpc('check_promotion_by_id', {

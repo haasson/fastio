@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { getServerSupabase } from '../../utils/supabase'
+import { requireMemberOfTenant } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -10,6 +11,8 @@ export default defineEventHandler(async (event) => {
 
   if (!tenantId || !code) throw createError({ statusCode: 400, message: 'tenantId и code обязательны' })
   if (!Number.isFinite(subtotal) || subtotal < 0) throw createError({ statusCode: 400 })
+
+  await requireMemberOfTenant(event, tenantId)
 
   const supabase = getServerSupabase()
   const { data, error } = await supabase.rpc('check_promo_code', {
