@@ -11,6 +11,7 @@
 | Файл | Что внутри |
 |---|---|
 | `api/module-configs.ts` | CRUD `module_configs`: get/upsert per-module JSON-конфиг |
+| `api/telegram-link.ts` | Привязка tg-группы: `upsertCode` + лёгкий `getTelegramChatId` для поллинга |
 | `composables/useNotificationPrefs.ts` | UI-state блока уведомлений + связь с `tenants.notifications` |
 | `components/*` | Модальные/inline-блоки: модули, биллинг-окошко, доставка, контакты, рабочие часы. Импорт deep-path |
 

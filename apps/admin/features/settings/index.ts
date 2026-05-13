@@ -2,6 +2,7 @@
 
 // API
 export * from './api/module-configs'
+export * from './api/telegram-link'
 
 // Composables
 export * from './composables/useNotificationPrefs'

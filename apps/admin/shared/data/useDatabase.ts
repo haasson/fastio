@@ -7,6 +7,7 @@ import { useNuxtApp } from '#imports'
 // no-restricted-imports на deep-path сюда не применяется.
 import { tenantsApi } from '~/shared/data/api/tenants'
 import { functionsApi } from '~/shared/data/api/functions'
+import { proxyImageApi } from '~/shared/data/api/proxy-image'
 import { realtimeApi } from '~/shared/data/api/realtime'
 import { appointmentEventsApi } from '~/features/appointments/api/appointment-events'
 import { appointmentSettingsApi } from '~/features/appointments/api/appointment-settings'
@@ -40,6 +41,7 @@ import { reservationSettingsApi } from '~/features/reservations/api/reservation-
 import { reservationsApi } from '~/features/reservations/api/reservations'
 import { servicesApi } from '~/features/services-catalog/api/services'
 import { moduleConfigsApi } from '~/features/settings/api/module-configs'
+import { telegramLinkApi } from '~/features/settings/api/telegram-link'
 import { supportApi } from '~/features/support/api/support'
 import { tableCallsApi, tableCallTypesApi } from '~/features/tables/api/table-calls'
 import { tablesApi } from '~/features/tables/api/tables'
@@ -78,6 +80,7 @@ export const useDatabase = () => {
     tenants: bindAll(tenantsApi, sb),
     auth: bindAll(authApi, sb),
     functions: bindAll(functionsApi, sb),
+    proxyImage: bindAll(proxyImageApi, sb),
     modifiers: bindAll(modifiersApi, sb),
     deliveryZones: bindAll(deliveryZonesApi, sb),
     combos: bindAll(combosApi, sb),
@@ -90,6 +93,7 @@ export const useDatabase = () => {
     plans: bindAll(plansApi, sb),
     billing: bindAll(billingApi, sb),
     moduleConfigs: bindAll(moduleConfigsApi, sb),
+    telegramLink: bindAll(telegramLinkApi, sb),
     kitchenQueue: bindAll(kitchenQueueApi, sb),
     reservations: bindAll(reservationsApi, sb),
     reservationSettings: bindAll(reservationSettingsApi, sb),

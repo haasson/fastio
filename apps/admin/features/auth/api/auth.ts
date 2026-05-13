@@ -17,6 +17,12 @@ export const authApi = {
     return sb.auth.getSession()
   },
 
+  async getAccessToken(sb: SupabaseClient): Promise<string | null> {
+    const { data: { session } } = await sb.auth.getSession()
+
+    return session?.access_token ?? null
+  },
+
   updateUser(sb: SupabaseClient, attrs: { password?: string; data?: Record<string, unknown> }) {
     return sb.auth.updateUser(attrs)
   },

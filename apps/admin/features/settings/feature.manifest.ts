@@ -19,7 +19,7 @@ export default defineFeature({
   ],
 
   db: {
-    tables: ['module_configs'],
+    tables: ['module_configs', 'telegram_link_codes', 'tenants'],
     // Большая часть «настроек» — это поля в самом tenants, мутации идут через tenantStore.update
   },
 

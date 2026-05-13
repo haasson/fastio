@@ -100,7 +100,7 @@ import { ref, computed, watch } from 'vue'
 import { Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
 import { UiModal, UiIcon, UiText, UiInput, UiButton } from '@fastio/ui'
-import { useRuntimeConfig } from '#imports'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export type ImageAspectRatio = '4:3' | '3:1' | '16:9' | '1:1' | 'free'
 
@@ -172,6 +172,8 @@ const onDrop = (e: DragEvent) => {
   goToCrop(file)
 }
 
+const { proxyImage } = useDatabase()
+
 const loadFromUrl = async () => {
   const url = urlInput.value.trim()
 
@@ -181,23 +183,8 @@ const loadFromUrl = async () => {
   urlLoading.value = true
 
   try {
-    const { supabaseUrl, supabaseAnonKey } = useRuntimeConfig().public
-    const proxyUrl = `${supabaseUrl}/functions/v1/proxy-image?url=${encodeURIComponent(url)}`
-    const response = await fetch(proxyUrl, {
-      headers: { Authorization: `Bearer ${supabaseAnonKey}` },
-    })
-
-    if (!response.ok) {
-      const status = response.status
-
-      if (status === 422) throw new Error('Ссылка не ведёт на изображение')
-      if (status === 403) throw new Error('Загрузка с этого домена недоступна')
-      if (status === 413) throw new Error('Изображение слишком большое (макс. 10 МБ)')
-      throw new Error('Не удалось загрузить')
-    }
-
-    const contentType = response.headers.get('content-type') ?? 'image/jpeg'
-    const blob = await response.blob()
+    const blob = await proxyImage.fetchAsBlob(url)
+    const contentType = blob.type || 'image/jpeg'
     const ext = contentType.split('/')[1]?.split(';')[0] ?? 'jpg'
     const file = new File([blob], `url-image.${ext}`, { type: contentType })
 

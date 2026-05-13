@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-12T12:51:33.630Z",
+  "generated_at": "2026-05-13T01:30:57.490Z",
   "stats": {
     "files": 88,
     "pages": 0,
@@ -1115,8 +1115,8 @@
     },
     "shared/ui/components/ImageUploadModal.vue": {
       "kind": "vue",
-      "hash": "6661f27fc3be",
-      "purpose": "Модалка загрузки картинки: drag&drop файла или галерея, кадрирование под aspectRatio, эмит uploaded(blob) для родителя",
+      "hash": "6b366cdcb22a",
+      "purpose": "Модалка загрузки картинки: drag&drop/файл/ссылка → кадрирование (vue-advanced-cropper) → emit('done', file). Ссылки идут через proxy-image edge function (useDatabase().proxyImage.fetchAsBlob)",
       "symbols": [
         {
           "name": "props",

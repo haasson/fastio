@@ -1,14 +1,14 @@
 import { computed, ref } from 'vue'
-import { useNuxtApp, useRoute } from '#imports'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { useRoute } from '#imports'
 import { Chat } from '@ai-sdk/vue'
 import { DefaultChatTransport } from 'ai'
 import { useTenantStore } from '~/shared/stores/tenant'
+import { useDatabase } from '~/shared/data/useDatabase'
 
 export function useAiChat() {
   const route = useRoute()
   const tenantStore = useTenantStore()
-  const { $supabase } = useNuxtApp()
+  const { auth } = useDatabase()
 
   const input = ref('')
 
@@ -16,9 +16,9 @@ export function useAiChat() {
     transport: new DefaultChatTransport({
       api: '/api/ai/chat',
       headers: async (): Promise<Record<string, string>> => {
-        const { data: { session } } = await ($supabase as SupabaseClient).auth.getSession()
+        const token = await auth.getAccessToken()
 
-        return session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+        return token ? { Authorization: `Bearer ${token}` } : {}
       },
       body: () => ({
         tenantId: tenantStore.currentTenantId,

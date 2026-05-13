@@ -91,13 +91,14 @@ import { UiCard, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal, u
 import { useNotificationPrefs } from '~/features/settings'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
-import { useNuxtApp, useRuntimeConfig } from '#imports'
+import { useRuntimeConfig } from '#imports'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useConfirm } from '@fastio/kit'
 
 const { blinkingCounter } = useNotificationPrefs()
 const tenantStore = useTenantStore()
 const gate = useGate()
-const { $supabase } = useNuxtApp()
+const { telegramLink } = useDatabase()
 const { confirm } = useConfirm()
 const { success } = useMessage()
 
@@ -125,13 +126,13 @@ const stopPolling = () => {
 const startPolling = () => {
   polling.value = true
   pollInterval = setInterval(async () => {
-    const { data } = await $supabase
-      .from('tenants')
-      .select('notifications')
-      .eq('id', tenantStore.currentTenantId)
-      .single()
+    const tid = tenantStore.currentTenantId
 
-    if (data?.notifications?.telegramChatId) {
+    if (!tid) return
+
+    const chatId = await telegramLink.getTelegramChatId(tid)
+
+    if (chatId) {
       stopPolling()
       connected.value = true
       await tenantStore.fetchTenant()
@@ -152,13 +153,15 @@ watch(showModal, (open) => {
 onUnmounted(() => stopPolling())
 
 const connectTelegram = async () => {
+  const tid = tenantStore.currentTenantId
+
+  if (!tid) return
+
   generating.value = true
   try {
     const code = Math.random().toString(36).slice(2, 10)
 
-    await $supabase
-      .from('telegram_link_codes')
-      .upsert({ code, tenant_id: tenantStore.currentTenantId }, { onConflict: 'tenant_id' })
+    await telegramLink.upsertCode(tid, code)
     linkCode.value = code
     connected.value = false
     showModal.value = true
