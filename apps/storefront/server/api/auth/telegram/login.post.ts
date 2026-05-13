@@ -1,8 +1,9 @@
-import { defineEventHandler, readBody, getRequestIP, getRequestProtocol, setCookie } from 'h3'
+import { defineEventHandler, readBody, getRequestProtocol, setCookie } from 'h3'
 import { createRateLimiter } from '@fastio/shared'
 import { useRuntimeConfig } from '#imports'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
+import { getClientIp } from '../../../utils/clientIp'
 import {
   verifyTelegramAuth,
   issueSessionToken,
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!loginRateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }

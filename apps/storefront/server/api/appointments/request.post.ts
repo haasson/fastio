@@ -1,4 +1,5 @@
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
 import { createRateLimiter } from '@fastio/shared'
 import { reportError } from '~/shared/utils/reportError'
@@ -16,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!rateLimiter.check(`appointments-request:${ip}`)) {
     throw createError({ statusCode: 429, message: 'Слишком много заявок, попробуйте через минуту.' })
   }

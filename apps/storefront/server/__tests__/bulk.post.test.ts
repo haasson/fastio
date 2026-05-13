@@ -23,7 +23,7 @@ import type { BulkPayload } from '../api/appointments/bulk.post'
 //
 // `await import('../api/appointments/bulk.post')` кешируется vitest'ом — между
 // тестами импортируется один и тот же handler. Это безопасно, потому что
-// handler резолвит все depencies (readBody, getRequestIP, getTenantDb, ...) в
+// handler резолвит все depencies (readBody, getClientIp, getTenantDb, ...) в
 // runtime внутри defineEventHandler-колбэка, а не на module-init. Поэтому
 // пере-настройка vi.fn / globalThis между тестами действительно влияет на
 // поведение. Если в bulk.post.ts появится top-level capture зависимости —
@@ -31,7 +31,7 @@ import type { BulkPayload } from '../api/appointments/bulk.post'
 // ──────────────────────────────────────────────────────────────────────────
 
 const mockReadBody = vi.fn()
-const mockGetRequestIP = vi.fn()
+let currentRemoteAddress = '127.0.0.1'
 const mockRpc = vi.fn()
 const mockGetAuthCustomer = vi.fn()
 
@@ -108,7 +108,6 @@ vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
 ;(globalThis as any).createError = createError
 ;(globalThis as any).defineEventHandler = (fn: Function) => fn
 ;(globalThis as any).readBody = (...args: unknown[]) => mockReadBody(...args)
-;(globalThis as any).getRequestIP = (...args: unknown[]) => mockGetRequestIP(...args)
 
 // ──────────────────────────────────────────────────────────────────────────
 // Хелпер: установить «здоровые» дефолты для всех DB-вызовов на happy path
@@ -160,7 +159,7 @@ function makeEvent() {
   return {
     context: { tenantId: 'tenant-A' },
     headers: new Headers(),
-    node: { req: { headers: {} }, res: {} },
+    node: { req: { headers: {}, socket: { remoteAddress: currentRemoteAddress } }, res: {} },
   } as any
 }
 
@@ -181,7 +180,7 @@ beforeEach(() => {
   resolvers = new Map()
   resolverCallIdx = new Map()
   ipCounter += 1
-  mockGetRequestIP.mockReturnValue(`127.0.0.${ipCounter}`)
+  currentRemoteAddress = `127.0.0.${ipCounter}`
 })
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -263,7 +262,7 @@ describe('POST /api/appointments/bulk — rate limit', () => {
     mockReadBody.mockResolvedValue(validBody)
 
     // Один и тот же IP во всех итерациях этого теста.
-    mockGetRequestIP.mockReturnValue('10.0.0.99')
+    currentRemoteAddress = '10.0.0.99'
 
     const mod = await import('../api/appointments/bulk.post')
     const handler = mod.default as Function

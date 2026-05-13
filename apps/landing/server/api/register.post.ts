@@ -1,7 +1,8 @@
-import { defineEventHandler, createError, readBody, getRequestIP } from 'h3'
+import { defineEventHandler, createError, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { createRateLimiter } from '@fastio/shared'
 import { getAdminClient } from '../utils/adminClient'
+import { getClientIp } from '../utils/clientIp'
 
 type RegisterBody = {
   name?: string
@@ -40,7 +41,7 @@ function validateInput(body: RegisterBody) {
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
 
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много попыток регистрации. Попробуйте позже.' })

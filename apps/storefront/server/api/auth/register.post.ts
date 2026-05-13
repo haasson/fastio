@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { ensureCustomer } from '../../utils/authHelpers'
+
+// Регистрация — редкая операция; жёсткие лимиты против spam-bomb и массового
+// замусоривания auth.users. consume_rate_limit RPC — миграция 264.
+const EMAIL_LIMIT = { max: 3, windowSeconds: 60 * 60 }
+const IP_LIMIT = { max: 5, windowSeconds: 60 * 60 }
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
@@ -15,6 +22,17 @@ export default defineEventHandler(async (event) => {
   if (password.length < 6) {
     throw createError({ statusCode: 400, message: 'Пароль должен быть не менее 6 символов' })
   }
+
+  const normalizedEmail = String(email).trim().toLowerCase()
+  const ip = getClientIp(event)
+
+  await enforceRateLimit(
+    [
+      { key: `register:email:${normalizedEmail}`, max: EMAIL_LIMIT.max, windowSeconds: EMAIL_LIMIT.windowSeconds },
+      { key: `register:ip:${ip}`, max: IP_LIMIT.max, windowSeconds: IP_LIMIT.windowSeconds },
+    ],
+    'Слишком много регистраций. Попробуйте через час.',
+  )
 
   const config = useRuntimeConfig()
   const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)

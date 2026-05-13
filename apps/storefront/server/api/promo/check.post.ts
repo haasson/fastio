@@ -1,4 +1,5 @@
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 import { createRateLimiter } from '@fastio/shared'
 
 const promoRateLimiter = createRateLimiter(10, 60_000)
@@ -6,7 +7,7 @@ const promoRateLimiter = createRateLimiter(10, 60_000)
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!promoRateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }

@@ -91,7 +91,6 @@ vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
 ;(globalThis as any).getCookie = getCookie
 ;(globalThis as any).deleteCookie = vi.fn()
 ;(globalThis as any).getRequestHeader = vi.fn().mockReturnValue(undefined)
-;(globalThis as any).getRequestIP = vi.fn().mockReturnValue('127.0.0.1')
 ;(globalThis as any).readBody = vi.fn()
 ;(globalThis as any).useRuntimeConfig = () => ({
   public: { supabaseUrl: 'http://localhost', supabaseAnonKey: 'anon' },
@@ -106,7 +105,7 @@ function makeEvent(tenantId: string, extra: Record<string, any> = {}) {
   return {
     context: { tenantId, ...extra.context },
     headers: new Headers(),
-    node: { req: { headers: {} }, res: {} },
+    node: { req: { headers: {}, socket: { remoteAddress: '127.0.0.1' } }, res: {} },
     ...extra,
   } as any
 }
@@ -610,10 +609,11 @@ describe('GET /api/orders/[id] — tenant isolation', () => {
   })
 
   it('применяет tenant_id фильтр на orders + branches (через Proxy)', async () => {
-    // orders.maybeSingle()
+    // orders.maybeSingle() — customer_id matches mocked getAuthenticatedContext customerId
+    // (см. vi.mock('../utils/customerAuth') в начале файла), чтобы IDOR guard пропустил
     mockChain.maybeSingle
       .mockResolvedValueOnce({
-        data: { id: 'order-1', tenant_id: 'tenant-A', branch_id: 'branch-1', status: null, order_items: [] },
+        data: { id: 'order-1', tenant_id: 'tenant-A', branch_id: 'branch-1', status: null, order_items: [], customer_id: 'customer-id-1', guest_token: null },
         error: null,
       })
       // branches.maybeSingle() через db.raw

@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-13T12:29:14.059Z",
+  "generated_at": "2026-05-13T14:00:25.889Z",
   "stats": {
-    "files": 42,
+    "files": 43,
     "pages": 0,
-    "symbols": 188,
+    "symbols": 189,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -327,6 +327,19 @@
           "kind": "function",
           "hash": "caa6773f",
           "purpose": "Возвращает hex первого свободного цвета палитры по списку уже занятых соседей"
+        }
+      ]
+    },
+    "src/utils/clientIp.ts": {
+      "kind": "ts",
+      "hash": "56808edf8cb9",
+      "purpose": "Чистая функция выбора client IP по trusted-header → socket fallback. Используется тонкими h3-обёртками getClientIp(event) в server/utils каждого app'а.",
+      "symbols": [
+        {
+          "name": "pickClientIp",
+          "kind": "function",
+          "hash": "32e17448",
+          "purpose": "Берёт первый IP из заголовка (если задан через trusted-proxy) или socket.remoteAddress. Без trustedHeaderValue игнорирует все user-controlled заголовки — закрывает rate-limit/IDOR spoof через X-Forwarded-For."
         }
       ]
     },

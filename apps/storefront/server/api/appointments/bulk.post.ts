@@ -1,4 +1,5 @@
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
 import { createRateLimiter, todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr, DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { reportError } from '~/shared/utils/reportError'
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }

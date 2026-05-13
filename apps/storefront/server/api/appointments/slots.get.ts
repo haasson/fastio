@@ -1,4 +1,5 @@
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 import {
   createRateLimiter, todayInTz, DEFAULT_TIMEZONE, sliceTime,
   getResourceSlotsForDate, mergeResourceSlots, getBranchSlotsForDate,
@@ -13,7 +14,7 @@ const rateLimiter = createRateLimiter(30, 60_000)
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }

@@ -1,5 +1,6 @@
 import { createRateLimiter } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 const perMinuteLimit = createRateLimiter(20, 60_000)
@@ -34,7 +35,7 @@ async function getTenantCoords(
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   const key = `${db.tenantId}:${ip}`
   if (!perMinuteLimit.check(key) || !per12hLimit.check(key)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов' })

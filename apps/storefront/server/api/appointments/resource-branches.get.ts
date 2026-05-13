@@ -1,5 +1,6 @@
 import { createRateLimiter } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 
 const MAX_IDS = 200
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -16,7 +17,7 @@ const rateLimiter = createRateLimiter(30, 60_000)
 export default defineEventHandler(async (event): Promise<Record<string, string[]>> => {
   const db = getTenantDb(event)
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }

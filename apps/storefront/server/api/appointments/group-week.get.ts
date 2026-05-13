@@ -1,4 +1,5 @@
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 import {
   createRateLimiter, todayInTz, DEFAULT_TIMEZONE, sliceTime,
   getGroupDateAvailability,
@@ -30,7 +31,7 @@ type WeekResponse = Array<{ date: string; match: GroupSlotMatch | null }>
 export default defineEventHandler(async (event): Promise<WeekResponse> => {
   const db = getTenantDb(event)
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }

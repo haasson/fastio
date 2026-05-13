@@ -1,13 +1,14 @@
-import { defineEventHandler, getQuery, createError, getRequestIP } from 'h3'
+import { defineEventHandler, getQuery, createError } from 'h3'
 import { createRateLimiter } from '@fastio/shared'
 import { getAdminClient } from '../utils/adminClient'
+import { getClientIp } from '../utils/clientIp'
 
 const SLUG_MAX_LENGTH = 63
 // In-memory limiter: rely на single-instance деплой. См. комментарий в register.post.ts.
 const rateLimiter = createRateLimiter(60, 60_000)
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
 
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов' })
