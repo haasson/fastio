@@ -1,4 +1,5 @@
 import { defineEventHandler, createError, readBody, getRequestIP } from 'h3'
+import { useRuntimeConfig } from '#imports'
 import { createRateLimiter } from '@fastio/shared'
 import { getAdminClient } from '../utils/adminClient'
 
@@ -38,6 +39,7 @@ function validateInput(body: RegisterBody) {
 }
 
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig()
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
 
   if (!rateLimiter.check(ip)) {
