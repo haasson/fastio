@@ -3,6 +3,14 @@ import nodemailer from 'npm:nodemailer@6'
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
+// RFC 5321 length + достаточно строгий формат, чтобы отсечь явный мусор. Не валидируем
+// каждую возможную форму email — задача отсечь bot-payload, не пройти полную RFC 5322.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// Durable per-(user, target) rate-limit — даже team-manager не должен спамить
+// инвайтами один email. consume_rate_limit RPC — миграция 264.
+const INVITE_LIMIT = { max: 3, windowSeconds: 10 * 60 }
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 })
@@ -36,10 +44,29 @@ Deno.serve(async (req) => {
     return json({ error: 'tenantId, email, roleId are required' }, { status: 400 })
   }
 
+  const normalizedEmail = String(email).trim().toLowerCase()
+  if (normalizedEmail.length > 254 || !EMAIL_REGEX.test(normalizedEmail)) {
+    return json({ error: 'Некорректный email' }, { status: 400 })
+  }
+
   const adminSupabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
+
+  // Durable rate-limit ДО любых БД-чтений. Ключ — пара (приглашающий, цель), чтобы
+  // team-manager не мог в цикле слать инвайты одному email'у. Параметризован
+  // tenant_id, чтобы один user, управляющий несколькими тенантами, не «съел» лимит
+  // по случайной коллизии с другим тенантом.
+  const { data: rlOk } = await adminSupabase.rpc('consume_rate_limit', {
+    _key: `invite-member:${tenantId}:${user.id}:${normalizedEmail}`,
+    _max: INVITE_LIMIT.max,
+    _window_seconds: INVITE_LIMIT.windowSeconds,
+  })
+
+  if (rlOk === false) {
+    return json({ error: 'Слишком много приглашений на этот email. Попробуйте позже.' }, { status: 429 })
+  }
 
   // Проверяем что roleId существует для этого тенанта
   const { data: targetRole } = await adminSupabase
@@ -75,9 +102,10 @@ Deno.serve(async (req) => {
   // Не-owner не может назначить роль с пермишенами, которых нет у него самого
   if (!isOwner) {
     const targetPerms = (targetRole as { permissions?: Record<string, boolean> }).permissions ?? {}
+    const callerPerms = permissions ?? {}
     const hasEscalation = Object.entries(targetPerms)
       .filter(([, v]) => v === true)
-      .some(([key]) => !permissions?.[key])
+      .some(([key]) => !callerPerms[key])
 
     if (hasEscalation) {
       return json({ error: 'Cannot assign a role with permissions you don\'t have' }, { status: 403 })
@@ -86,7 +114,7 @@ Deno.serve(async (req) => {
 
   // Проверяем статус: уже участник или есть pending-инвайт
   const { data: inviteStatus } = await adminSupabase
-    .rpc('get_invite_status', { _tenant_id: tenantId, _email: email })
+    .rpc('get_invite_status', { _tenant_id: tenantId, _email: normalizedEmail })
 
   if (inviteStatus === 'member') {
     return json({ error: 'Этот пользователь уже является участником команды' }, { status: 409 })
@@ -104,7 +132,7 @@ Deno.serve(async (req) => {
       .from('tenant_invitations')
       .update({ token, expires_at: expiresAt, role_id: roleId, branch_ids: branchIds })
       .eq('tenant_id', tenantId)
-      .eq('email', email)
+      .eq('email', normalizedEmail)
       .is('accepted_at', null)
 
     if (updateError) {
@@ -117,7 +145,7 @@ Deno.serve(async (req) => {
       .from('tenant_invitations')
       .insert({
         tenant_id: tenantId,
-        email,
+        email: normalizedEmail,
         role_id: roleId,
         invited_by: user.id,
         token,
@@ -155,13 +183,17 @@ Deno.serve(async (req) => {
       auth: { user: smtpUser, pass: smtpPass },
     })
 
-    const roleLabel = targetRole.name
+    const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+    const safeTenantName = escapeHtml(tenant?.name ?? 'Fastio')
+    const roleLabel = escapeHtml(targetRole.name)
 
     try {
       await transporter.sendMail({
         from: `"Fastio" <${smtpUser}>`,
-        to: email,
-        subject: `Вас пригласили в команду «${tenant?.name ?? 'Fastio'}»`,
+        to: normalizedEmail,
+        // subject — SMTP-заголовок (plain text), HTML-escape не нужен.
+        // \r\n-strip обязателен: иначе CRLF в имени тенанта = header-injection.
+        subject: `Вас пригласили в команду «${tenant?.name ?? 'Fastio'}»`.replace(/[\r\n]/g, ' '),
         html: `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -186,7 +218,7 @@ Deno.serve(async (req) => {
             <td style="background:#ffffff;border-radius:16px;padding:40px 40px 32px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
               <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;line-height:1.3;">Вас приглашают в команду</h1>
               <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
-                Вы получили приглашение присоединиться к команде <strong style="color:#111827;">${tenant?.name}</strong> на платформе Fastio.
+                Вы получили приглашение присоединиться к команде <strong style="color:#111827;">${safeTenantName}</strong> на платформе Fastio.
               </p>
               <table cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:10px;padding:16px 20px;margin-bottom:28px;width:100%;">
                 <tr>

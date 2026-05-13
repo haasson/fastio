@@ -13,6 +13,27 @@ const json = (body: unknown, init?: ResponseInit) =>
     headers: { 'Content-Type': 'application/json', ...corsHeaders },
   })
 
+// Durable rate-limit чтобы закрыть email-bomb. Storefront-flow ходит через Nitro
+// (/api/auth/forgot-password — уже rate-limited там), но admin/login.vue зовёт
+// функцию НАПРЯМУЮ через sb.functions.invoke без обёртки — без этого guard'а
+// атакующий может через любой anon-key слать жертве сброс пароля в цикле.
+const EMAIL_LIMIT = { max: 3, windowSeconds: 10 * 60 }
+const IP_LIMIT = { max: 10, windowSeconds: 10 * 60 }
+
+function getClientIp(req: Request): string {
+  // Приоритет: cf-connecting-ip (Cloudflare выставляет на edge, клиент подделать
+  // не может) → x-real-ip (Supabase Edge proxy) → x-forwarded-for[0] (общий fallback).
+  // Без них — 'unknown' (бакет общий, IP-лимит вырождается в глобальный, email-лимит
+  // продолжает работать как основной защитный механизм).
+  const cf = req.headers.get('cf-connecting-ip')
+  if (cf) return cf
+  const real = req.headers.get('x-real-ip')
+  if (real) return real
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) return xff.split(',')[0]?.trim() ?? 'unknown'
+  return 'unknown'
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -22,21 +43,47 @@ Deno.serve(async (req) => {
     return new Response('Method Not Allowed', { status: 405 })
   }
 
-  const { email, redirectTo } = await req.json() as { email: string; redirectTo?: string }
+  let body: { email?: unknown; redirectTo?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
-  if (!email) {
+  if (!body.email || typeof body.email !== 'string') {
     return json({ error: 'email is required' }, { status: 400 })
   }
+  const redirectTo = typeof body.redirectTo === 'string' ? body.redirectTo : undefined
+
+  const normalizedEmail = body.email.trim().toLowerCase()
+  const ip = getClientIp(req)
 
   const adminSupabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
+  const [{ data: emailOk }, { data: ipOk }] = await Promise.all([
+    adminSupabase.rpc('consume_rate_limit', {
+      _key: `send-recovery-email:email:${normalizedEmail}`,
+      _max: EMAIL_LIMIT.max,
+      _window_seconds: EMAIL_LIMIT.windowSeconds,
+    }),
+    adminSupabase.rpc('consume_rate_limit', {
+      _key: `send-recovery-email:ip:${ip}`,
+      _max: IP_LIMIT.max,
+      _window_seconds: IP_LIMIT.windowSeconds,
+    }),
+  ])
+
+  if (emailOk === false || ipOk === false) {
+    return json({ error: 'rate_limited' }, { status: 429 })
+  }
+
   // Генерируем ссылку восстановления через Admin API (без отправки письма)
   const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
     type: 'recovery',
-    email,
+    email: normalizedEmail,
     options: { redirectTo },
   })
 
@@ -62,7 +109,7 @@ Deno.serve(async (req) => {
     try {
       await transporter.sendMail({
         from: `"Fastio" <${smtpUser}>`,
-        to: email,
+        to: normalizedEmail,
         subject: 'Сброс пароля — Fastio',
         html: `<!DOCTYPE html>
 <html lang="ru">
@@ -120,7 +167,7 @@ Deno.serve(async (req) => {
       console.error('SMTP error:', err)
     }
   } else {
-    console.log(`Recovery URL for ${email}: ${recoveryUrl}`)
+    console.log(`Recovery URL for ${normalizedEmail}: ${recoveryUrl}`)
   }
 
   return json({ success: true })
