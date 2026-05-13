@@ -5,19 +5,19 @@
     handle=".drag-handle"
     :animation="180"
     ghost-class="item-ghost"
-    @update:model-value="$emit('update:modelValue', $event)"
+    @update:model-value="$emit('update:modelValue', $event as T[])"
     @end="$emit('reorder')"
   >
     <slot />
   </VueDraggable>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T">
 import { VueDraggable } from 'vue-draggable-plus'
 
-defineProps<{ modelValue: unknown[] }>()
+defineProps<{ modelValue: T[] }>()
 defineEmits<{
-  'update:modelValue': [value: unknown[]]
+  'update:modelValue': [value: T[]]
   'reorder': []
 }>()
 </script>

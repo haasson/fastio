@@ -20,12 +20,12 @@
       text="Баннеров пока нет. Добавьте первый — он появится в карусели на главной."
     />
 
-    <AppDraggableList
+    <UiDraggableList
       v-else
       v-model="banners"
       @reorder="onReorder"
     >
-      <AppListRow
+      <UiListRow
         v-for="banner in banners"
         :key="banner.id"
         :thumb-url="banner.url || null"
@@ -45,14 +45,14 @@
             :model-value="banner.enabled"
             @update:model-value="onToggleEnabled(banner.id, $event)"
           />
-          <AppActionsBlock
+          <UiRowActions
             size="small"
             @edit="openEdit(banner)"
             @delete="handleRemove(banner)"
           />
         </template>
-      </AppListRow>
-    </AppDraggableList>
+      </UiListRow>
+    </UiDraggableList>
 
     <BannerFormModal
       v-model="showModal"
@@ -67,9 +67,9 @@
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch, UiTag, useMessage, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiSwitch, UiTag, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Banner, BannerFormData } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
@@ -77,9 +77,6 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useBanners } from '~/features/content'
 import { usePromotions } from '~/features/promotions'
 import { usePromoCodes } from '~/features/promotions'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
 import AppStorefrontAlert from '~/shared/ui/components/AppStorefrontAlert.vue'
 import BannerFormModal from '~/features/promotions/components/BannerFormModal.vue'
 

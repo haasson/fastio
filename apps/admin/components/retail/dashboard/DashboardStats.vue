@@ -1,43 +1,39 @@
 <template>
   <div class="stats-root">
-    <UiCard class="stat-card">
-      <UiText size="small" class="label">Выручка</UiText>
-      <div v-if="loading" class="value-placeholder">
-        <UiSkeleton :width="120" :height="32" />
-      </div>
-      <UiTitle v-else size="h3" class="value">{{ formatPrice(revenue) }}</UiTitle>
-      <UiText size="small" class="sub">
+    <UiStatBlock
+      label="Выручка"
+      :loading="loading"
+      :value="formatPrice(revenue)"
+      :loading-width="120"
+    >
+      <template #sub>
         <span class="count">{{ ordersCount }}</span>
         {{ ordersCountWord }}
-      </UiText>
-    </UiCard>
+      </template>
+    </UiStatBlock>
 
-    <UiCard class="stat-card">
-      <UiText size="small" class="label">Средний чек</UiText>
-      <div v-if="loading" class="value-placeholder">
-        <UiSkeleton :width="100" :height="32" />
-      </div>
-      <UiTitle v-else size="h3" class="value">
-        {{ ordersCount > 0 ? formatPrice(avgOrderValue) : '—' }}
-      </UiTitle>
-      <UiText size="small" class="sub">за период</UiText>
-    </UiCard>
+    <UiStatBlock
+      label="Средний чек"
+      :loading="loading"
+      :value="ordersCount > 0 ? formatPrice(avgOrderValue) : '—'"
+      :loading-width="100"
+      sub="за период"
+    />
 
-    <UiCard class="stat-card">
-      <UiText size="small" class="label">Заказы</UiText>
-      <div v-if="loading" class="value-placeholder">
-        <UiSkeleton :width="80" :height="32" />
-      </div>
-      <UiTitle v-else size="h3" class="value">{{ ordersCount }}</UiTitle>
-      <UiText size="small" class="sub">за период</UiText>
-    </UiCard>
+    <UiStatBlock
+      label="Заказы"
+      :loading="loading"
+      :value="ordersCount"
+      :loading-width="80"
+      sub="за период"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { formatPrice, pluralize } from '@fastio/shared'
-import { UiCard, UiText, UiTitle, UiSkeleton } from '@fastio/ui'
+import { UiStatBlock } from '@fastio/ui'
 
 type Props = {
   revenue: number
@@ -48,8 +44,7 @@ type Props = {
 
 const props = defineProps<Props>()
 
-const ordersCountWord = computed(() => pluralize(props.ordersCount, 'заказ', 'заказа', 'заказов'),
-)
+const ordersCountWord = computed(() => pluralize(props.ordersCount, 'заказ', 'заказа', 'заказов'))
 </script>
 
 <style scoped lang="scss">
@@ -63,26 +58,6 @@ const ordersCountWord = computed(() => pluralize(props.ordersCount, 'заказ'
   @include mq-m {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-.stat-card {
-  gap: var(--space-4);
-}
-
-.label {
-  color: var(--color-text-hint);
-}
-
-.value {
-  margin: var(--space-4) 0;
-}
-
-.value-placeholder {
-  margin: var(--space-4) 0;
-}
-
-.sub {
-  color: var(--color-text-secondary);
 }
 
 .count {

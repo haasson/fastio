@@ -33,7 +33,7 @@
         </template>
         <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
 
-        <AppActionsBlock
+        <UiRowActions
           v-if="!readonly"
           size="small"
           :disable-edit="!isItemEditable(item)"
@@ -67,12 +67,11 @@
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiRowActions } from '@fastio/ui'
 import { computed } from 'vue'
-import { UiButton } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import { getItemUnitPrice } from '@fastio/shared'
 import { useGate } from '~/shared/plan/useGate'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import type { OrderItem } from '@fastio/shared'
 
 import { DishPickerModal, type DishPickerResult } from '~/features/menu'

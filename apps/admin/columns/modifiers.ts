@@ -1,8 +1,7 @@
 import { h } from 'vue'
-import { UiSwitch, UiTag, UiText } from '@fastio/ui'
+import { UiSwitch, UiTag, UiText, UiRowActions } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { ModifierGroup } from '@fastio/shared'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 
 type Deps = {
   onToggle: (id: string, active: boolean) => void
@@ -36,7 +35,7 @@ export const buildModifierColumns = (deps: Deps): DataTableColumns<ModifierGroup
       title: '',
       key: 'actions',
       width: 120,
-      render: (row) => h(AppActionsBlock, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
+      render: (row) => h(UiRowActions, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
         prepend: () => h(UiSwitch, { 'modelValue': row.active, 'onUpdate:modelValue': (v: boolean) => onToggle(row.id, v) }),
       }),
     },

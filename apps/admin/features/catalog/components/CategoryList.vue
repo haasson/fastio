@@ -2,8 +2,8 @@
   <div class="category-list-root">
     <UiSkeleton v-if="loading" :height="56" :count="3" />
     <UiEmpty v-else-if="categories.length === 0" icon="layoutGrid" :text="emptyText" />
-    <AppDraggableList v-else v-model="localCategories" @reorder="$emit('reorder', localCategories)">
-      <AppListRow
+    <UiDraggableList v-else v-model="localCategories" @reorder="$emit('reorder', localCategories)">
+      <UiListRow
         v-for="cat in localCategories"
         :key="cat.id"
         :name="cat.name"
@@ -37,21 +37,18 @@
             :model-value="cat.active"
             @update:model-value="$emit('toggleActive', cat.id, $event)"
           />
-          <AppActionsBlock @edit="$emit('edit', cat)" @delete="$emit('delete', cat.id)" />
+          <UiRowActions @edit="$emit('edit', cat)" @delete="$emit('delete', cat.id)" />
         </template>
-      </AppListRow>
-    </AppDraggableList>
+      </UiListRow>
+    </UiDraggableList>
   </div>
 </template>
 
 <script setup lang="ts">
+import { UiSkeleton, UiEmpty, UiText, UiTag, UiSwitch, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import { ref, computed, watch } from 'vue'
-import { UiSkeleton, UiEmpty, UiText, UiTag, UiSwitch } from '@fastio/ui'
 import type { SpecialCategoryType, DishTagDefinition } from '@fastio/shared'
 import { CATEGORY_TYPE_LABELS } from '@fastio/shared'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { useTagDisplay } from '~/features/catalog'
 
 export type CategoryListItem = {

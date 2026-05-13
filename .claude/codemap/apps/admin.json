@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-13T01:30:57.490Z",
+  "generated_at": "2026-05-13T05:00:58.543Z",
   "stats": {
-    "files": 88,
+    "files": 83,
     "pages": 0,
-    "symbols": 151,
+    "symbols": 142,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -213,8 +213,8 @@
     },
     "columns/addons.ts": {
       "kind": "ts",
-      "hash": "a2d96421fa1f",
-      "purpose": "Колонки таблиц добавок и пресетов добавок (DishList): имя, цена, вес, switch, actions",
+      "hash": "a27f2c60bfbb",
+      "purpose": "Билдеры колонок для таблиц Addon и AddonPreset (UiDataTable): чекбоксы активности, цены, actions через UiRowActions",
       "symbols": [
         {
           "name": "buildAddonColumns",
@@ -232,8 +232,8 @@
     },
     "columns/modifiers.ts": {
       "kind": "ts",
-      "hash": "9c08c4424daa",
-      "purpose": "Колонки таблицы групп модификаторов: имя, опции (теги), switch активности, actions",
+      "hash": "9e2e2294a00e",
+      "purpose": "Билдер колонок для таблицы ModifierGroup (UiDataTable): имя, тип, обязательность, toggle активности + actions через UiRowActions",
       "symbols": [
         {
           "name": "buildModifierColumns",
@@ -245,8 +245,8 @@
     },
     "columns/team.ts": {
       "kind": "ts",
-      "hash": "b568dd6d5457",
-      "purpose": "Колонки таблиц команды: участники (роль, филиалы, блокировка) и приглашения (статус, дата)",
+      "hash": "31f546000c75",
+      "purpose": "Билдеры колонок для таблиц TenantMember и TenantInvitation (UiDataTable): права/филиалы/статусы, actions через UiRowActions + block/resend",
       "symbols": [
         {
           "name": "buildMemberColumns",
@@ -908,25 +908,6 @@
         }
       ]
     },
-    "shared/ui/components/AppActionsBlock.vue": {
-      "kind": "vue",
-      "hash": "e6c69cb8d30e",
-      "purpose": "Стандартный блок действий строки таблицы: pencil/copy/trash icon-buttons + слоты prepend/append для switch/extra",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "9a3c7eb5",
-          "purpose": "{ size?, showEdit?, disableEdit?, showCopy?, showDelete? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "6f95a9f9",
-          "purpose": "edit/copy/delete"
-        }
-      ]
-    },
     "shared/ui/components/AppBrand.vue": {
       "kind": "vue",
       "hash": "d2a3d4ada295",
@@ -956,57 +937,6 @@
           "kind": "component-emits",
           "hash": "755dca6a",
           "purpose": "click"
-        }
-      ]
-    },
-    "shared/ui/components/AppDraggableList.vue": {
-      "kind": "vue",
-      "hash": "0aa13b5db09c",
-      "purpose": "Сортируемый список на vue-draggable-plus: handle .drag-handle, ghost-class, animation 180ms",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "0fb30420",
-          "purpose": "{ modelValue: unknown[] }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "7fd27ffa",
-          "purpose": "update:modelValue/reorder"
-        }
-      ]
-    },
-    "shared/ui/components/AppEditableTag.vue": {
-      "kind": "vue",
-      "hash": "80a9613a192a",
-      "purpose": "Редактируемый тег (категория/фильтр) с inline-режимом: grip, label, счётчик, actions (rename/delete) и хоткеи",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "8356e580",
-          "purpose": "{ label, type?, selected?, count?, editing?, inactive?, animationDelay? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "bb3b4308",
-          "purpose": "click/rename/delete"
-        }
-      ]
-    },
-    "shared/ui/components/AppListRow.vue": {
-      "kind": "vue",
-      "hash": "1b38cdb2592f",
-      "purpose": "Строка списка с drag-handle, опциональной превью-картинкой, name-слотом и details/append-слотами",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "1a6617f2",
-          "purpose": "{ name?, thumbUrl?, thumbWidth?, thumbHeight?, disabled? }"
         }
       ]
     },
@@ -1091,25 +1021,6 @@
           "kind": "component",
           "hash": "cbcf45d7",
           "purpose": "Wrapper над UiPopover с иконкой help"
-        }
-      ]
-    },
-    "shared/ui/components/ImageListManager.vue": {
-      "kind": "vue",
-      "hash": "c35026c7a7e8",
-      "purpose": "Сетка картинок галереи блюда: drag&drop переупорядочивание, замена через ImageUploadModal, switch видимости",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "5940e698",
-          "purpose": "{ items: ImageItem[], aspectRatio? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "41a51f2d",
-          "purpose": "update:items/reorder/replace"
         }
       ]
     },

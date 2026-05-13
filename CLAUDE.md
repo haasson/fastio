@@ -129,6 +129,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Не используй БЭМ** — пиши простые короткие имена классов
 - Для корневого класса компонента используй постфикс `-root` (например `services-root`)
 
+### UI-компоненты — что использовать
+
+**Базовые (всегда):**
+- Карточка / контейнер с padding+border → `UiCard` (НЕ `<div class="card">`)
+- Текст / параграф → `UiText` (НЕ `<p>`/`<span>`)
+- Заголовки h1-h5 → `UiTitle` (НЕ `<h*>`)
+- Тег / лейбл-маркер → `UiTag`, чип с подзаголовком → `UiChip`
+- Кнопка → `UiButton`, иконочная inline-edit → `UiEditButton`
+- Пустое состояние → `UiEmpty`
+- Loading → `UiSkeleton`
+
+**Layout-примитивы (ОБЯЗАТЕЛЬНО проверить перед вёрсткой):**
+- Заголовок страницы (h1-уровень + actions справа) → `UiPageHeader`
+- Секция формы / settings (карточка + заголовок + grid полей) → `UiFormSection`
+- "Label: value" пара → `UiKeyValue`
+- Стат-карточка дашборда → `UiStatBlock`
+- Заголовок секции внутри страницы → `UiSectionHeader`
+
+**Списки:**
+- Сортируемый список → `UiDraggableList` + `UiListRow` (+ `UiRowActions` в `#append`)
+- Несортируемый список карточек → просто `UiCard` в цикле
+- Таблица (грид с колонками) → `UiDataTable`
+
+**Оверлеи — Modal vs Drawer:**
+- **Drawer (`UiDrawer`)** — сложная форма с >5 полями или мультисекционная (создание/редактирование сущности с фото/настройками/и т.д.). Width 720-900px.
+- **Modal (`UiModal`)** — точечное действие, простая форма (1-3 поля), confirm с дополнительными опциями. Width 400-560px.
+- **BottomSheet (`UiBottomSheet`)** — на мобильных автоматически вместо Popover; явно использовать редко.
+- **Confirm (`useConfirm()` из `@fastio/ui` через `@fastio/kit`)** — простое подтверждение без формы.
+
+**Запрещено:**
+- Хардкодить `padding: 12px`, `color: #333` — только токены `var(--space-12)`, `var(--color-text)`.
+- Писать `<div>` с самопальными карточечными стилями вместо `UiCard`.
+- Изобретать grid формы вручную — использовать `UiFormSection` с `:columns`.
+
 ---
 
 ## Стиль общения

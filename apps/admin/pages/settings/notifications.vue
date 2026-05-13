@@ -1,8 +1,6 @@
 <template>
   <div class="root">
-    <UiCard size="large" class="section">
-      <UiSectionHeader title="Браузерные уведомления" />
-
+    <UiFormSection title="Браузерные уведомления" :columns="1">
       <div class="prefs">
         <div class="pref">
           <div>
@@ -12,10 +10,9 @@
           <UiSwitch v-model="blinkingCounter" />
         </div>
       </div>
-    </UiCard>
+    </UiFormSection>
 
-    <UiCard v-if="gate.telegramNotifications.value.enabled" size="large" class="section">
-      <UiSectionHeader title="Telegram" />
+    <UiFormSection v-if="gate.telegramNotifications.value.enabled" title="Telegram" :columns="1">
 
       <div class="tg-block">
         <span class="tg-icon">
@@ -48,7 +45,7 @@
           Подключить
         </UiButton>
       </div>
-    </UiCard>
+    </UiFormSection>
   </div>
 
   <UiModal
@@ -87,7 +84,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { UiCard, UiButton, UiText, UiIcon, UiSwitch, UiSectionHeader, UiModal, useMessage } from '@fastio/ui'
+import { UiFormSection, UiButton, UiText, UiIcon, UiSwitch, UiModal, useMessage } from '@fastio/ui'
 import { useNotificationPrefs } from '~/features/settings'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
@@ -213,10 +210,6 @@ const copyCode = () => {
 .root {
   @include flex-col(var(--space-12));
   max-width: 680px;
-}
-
-.section {
-  gap: var(--space-16);
 }
 
 .hint {

@@ -2,8 +2,8 @@
   <div class="tag-list-root">
     <UiSkeleton v-if="loading" :height="56" :count="3" />
     <UiEmpty v-else-if="tags.length === 0" icon="hash" text="Тегов пока нет. Создайте первый — он поможет фильтровать позиции." />
-    <AppDraggableList v-else v-model="localTags" @reorder="$emit('reorder', localTags)">
-      <AppListRow v-for="tag in localTags" :key="tag.id" :name="tag.name">
+    <UiDraggableList v-else v-model="localTags" @reorder="$emit('reorder', localTags)">
+      <UiListRow v-for="tag in localTags" :key="tag.id" :name="tag.name">
         <template #name>
           <div class="name-row">
             <span class="preview" :style="previewStyle(tag)">
@@ -13,22 +13,19 @@
           </div>
         </template>
         <template #append>
-          <AppActionsBlock @edit="$emit('edit', tag)" @delete="$emit('delete', tag.id)" />
+          <UiRowActions @edit="$emit('edit', tag)" @delete="$emit('delete', tag.id)" />
         </template>
-      </AppListRow>
-    </AppDraggableList>
+      </UiListRow>
+    </UiDraggableList>
   </div>
 </template>
 
 <script setup lang="ts">
+import { UiSkeleton, UiEmpty, UiText, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import { ref, watch } from 'vue'
-import { UiSkeleton, UiEmpty, UiText } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
 import { getTagColorPreset } from '@fastio/shared'
 import * as icons from 'lucide-vue-next'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 
 const props = defineProps<{
   tags: DishTagDefinition[]

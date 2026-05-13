@@ -4,7 +4,7 @@
       <UiButton type="primary" icon="plus" @click="openModal(null)">Добавить категорию</UiButton>
     </div>
 
-    <AppCategoryList
+    <CategoryList
       :categories="categories"
       :loading="showSkeleton"
       :item-counts="counts"
@@ -40,7 +40,7 @@ import { useCategories } from '~/features/catalog'
 import { useTags } from '~/features/catalog'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useItemManager } from '~/shared/ui/composables/useItemManager'
-import AppCategoryList from '~/features/catalog/components/AppCategoryList.vue'
+import CategoryList from '~/features/catalog/components/CategoryList.vue'
 import CategoryFormModal from '~/features/catalog/components/CategoryFormModal.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())

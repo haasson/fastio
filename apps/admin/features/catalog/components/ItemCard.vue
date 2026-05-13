@@ -35,7 +35,7 @@
           @click.stop
           @update:model-value="emit('toggle-active', $event)"
         />
-        <AppActionsBlock
+        <UiRowActions
           :show-edit="false"
           @click.stop
           @delete="emit('delete')"
@@ -46,9 +46,8 @@
 </template>
 
 <script setup lang="ts">
-import { UiCard, UiPhotoPlaceholder, UiSpace, UiSwitch, UiTag } from '@fastio/ui'
+import { UiCard, UiPhotoPlaceholder, UiSpace, UiSwitch, UiTag, UiRowActions } from '@fastio/ui'
 import { formatPrice } from '@fastio/shared'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { useItemVariant } from '~/shared/composables/useItemVariant'
 
 const { variant: placeholderVariant } = useItemVariant()

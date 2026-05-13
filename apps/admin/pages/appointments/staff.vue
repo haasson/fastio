@@ -13,12 +13,12 @@
       description="Добавьте первого сотрудника из команды"
     />
 
-    <AppDraggableList
+    <UiDraggableList
       v-else
       v-model="resources"
       @reorder="onReorder"
     >
-      <AppListRow
+      <UiListRow
         v-for="resource in resources"
         :key="resource.id"
         :name="resource.name"
@@ -39,14 +39,14 @@
             icon="calendar"
             @click="openSchedule(resource)"
           />
-          <AppActionsBlock
+          <UiRowActions
             size="small"
             @edit="openEdit(resource)"
             @delete="confirmDelete(resource)"
           />
         </template>
-      </AppListRow>
-    </AppDraggableList>
+      </UiListRow>
+    </UiDraggableList>
 
     <ResourceDrawer
       v-model="drawerOpen"
@@ -63,9 +63,9 @@
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiText, UiTag, UiSkeleton, UiEmpty, useConfirm, useMessage, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiText, UiTag, UiSkeleton, UiEmpty, useConfirm, useMessage } from '@fastio/ui'
 import type { Resource } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -73,9 +73,6 @@ import { useBranchStore } from '~/shared/stores/branch'
 import { useDatabase } from '~/shared/data/useDatabase'
 import ResourceDrawer from '~/features/appointments/components/ResourceDrawer.vue'
 import StaffScheduleModal from '~/features/appointments/components/StaffScheduleModal.vue'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { useResourcePresence, type PresenceStatus } from '~/features/appointments'
 import { reportError } from '~/shared/utils/reportError'
 

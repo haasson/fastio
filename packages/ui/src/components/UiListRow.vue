@@ -1,6 +1,6 @@
 <template>
   <div class="row-root" :class="{ disabled }">
-    <UiIcon name="grip" class="drag-handle" />
+    <UiIcon v-if="draggable" name="grip" class="drag-handle" />
 
     <div v-if="thumbUrl !== undefined" class="thumb" :style="thumbStyle">
       <img
@@ -31,15 +31,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiIcon, UiText } from '@fastio/ui'
+import { UiIcon } from '@fastio/icons'
+import UiText from './UiText.vue'
 
 const props = withDefaults(defineProps<{
   name?: string
   disabled?: boolean
+  draggable?: boolean
   thumbUrl?: string | null
   thumbWidth?: string
   thumbHeight?: string
 }>(), {
+  draggable: true,
   thumbWidth: '72px',
   thumbHeight: '48px',
 })

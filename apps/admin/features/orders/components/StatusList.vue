@@ -2,8 +2,8 @@
   <div class="status-list-root">
     <UiSkeleton v-if="loading" :height="56" :count="3" />
     <UiEmpty v-else-if="statuses.length === 0" text="Нет статусов" />
-    <AppDraggableList v-else v-model="localStatuses" @reorder="$emit('reorder', localStatuses)">
-      <AppListRow v-for="status in localStatuses" :key="status.id">
+    <UiDraggableList v-else v-model="localStatuses" @reorder="$emit('reorder', localStatuses)">
+      <UiListRow v-for="status in localStatuses" :key="status.id">
         <template #name>
           <div class="name-row">
             <span class="group-dot" :style="{ backgroundColor: STATUS_GROUP_COLORS[status.groupType] }" />
@@ -19,21 +19,18 @@
           </UiText>
         </template>
         <template #append>
-          <AppActionsBlock @edit="$emit('edit', status)" @delete="$emit('delete', status.id)" />
+          <UiRowActions @edit="$emit('edit', status)" @delete="$emit('delete', status.id)" />
         </template>
-      </AppListRow>
-    </AppDraggableList>
+      </UiListRow>
+    </UiDraggableList>
   </div>
 </template>
 
 <script setup lang="ts">
+import { UiSkeleton, UiEmpty, UiText, UiTag, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import { ref, watch } from 'vue'
-import { UiSkeleton, UiEmpty, UiText, UiTag } from '@fastio/ui'
 import type { OrderStatus } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_LABELS, STATUS_GROUP_COLORS } from '~/config/retail/order-status-groups'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 
 const props = defineProps<{
   statuses: OrderStatus[]

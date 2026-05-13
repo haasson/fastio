@@ -1,7 +1,6 @@
 import { h, type ComputedRef } from 'vue'
-import { UiTag, UiText, UiButton } from '@fastio/ui'
+import { UiTag, UiText, UiButton, UiRowActions } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import type { TenantMember, TenantInvitation, Branch } from '@fastio/shared'
 import { formatDate } from '@fastio/shared'
 
@@ -77,7 +76,7 @@ export const buildMemberColumns = (deps: MemberColumnsDeps): DataTableColumns<Te
 
         const blocked = isBlocked(row)
 
-        return h(AppActionsBlock, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
+        return h(UiRowActions, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
           default: () => h(UiButton, { type: 'text', size: 'medium', icon: blocked ? 'checkRound' : 'ban', iconBg: blocked ? 'var(--color-success)' : 'var(--color-warning)', onClick: () => onBlock(row) }),
         })
       },
@@ -138,7 +137,7 @@ export const buildInviteColumns = (deps: InviteColumnsDeps): DataTableColumns<Te
       render: (row) => {
         if (!canManageTeam.value) return null
 
-        return h(AppActionsBlock, { showEdit: false, onDelete: () => onCancel(row) }, {
+        return h(UiRowActions, { showEdit: false, onDelete: () => onCancel(row) }, {
           default: () => h(UiButton, { type: 'text', size: 'medium', icon: 'send', iconBg: 'var(--color-primary)', onClick: () => onResend(row) }),
         })
       },

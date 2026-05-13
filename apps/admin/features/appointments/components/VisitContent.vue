@@ -63,18 +63,13 @@
           <UiCard v-if="editor.totals.value.duration > 0 || editor.totals.value.price > 0">
             <UiTitle size="h4" class="card-title">Итого</UiTitle>
             <div class="totals-list">
-              <div class="total-row">
-                <UiText size="small" class="total-label">Длительность</UiText>
-                <UiText size="small">{{ formatMinutes(editor.totals.value.duration) }}</UiText>
-              </div>
-              <div class="total-row">
-                <UiText size="small" class="total-label">Стоимость</UiText>
-                <UiText size="small">{{ formatPrice(editor.totals.value.price) }}</UiText>
-              </div>
-              <div v-if="props.initialVisit?.source" class="total-row">
-                <UiText size="small" class="total-label">Источник</UiText>
-                <UiText size="small">{{ APPOINTMENT_SOURCE_LABELS[props.initialVisit.source] }}</UiText>
-              </div>
+              <UiKeyValue label="Длительность" :value="formatMinutes(editor.totals.value.duration)" />
+              <UiKeyValue label="Стоимость" :value="formatPrice(editor.totals.value.price)" />
+              <UiKeyValue
+                v-if="props.initialVisit?.source"
+                label="Источник"
+                :value="APPOINTMENT_SOURCE_LABELS[props.initialVisit.source]"
+              />
             </div>
           </UiCard>
         </div>
@@ -112,7 +107,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiCard, UiTitle, UiText, UiSkeleton, UiTag, UiDatepicker, UiSelect } from '@fastio/ui'
+import { UiCard, UiTitle, UiText, UiSkeleton, UiTag, UiDatepicker, UiSelect, UiKeyValue } from '@fastio/ui'
 import type {
   Appointment, Visit,
   AppointmentEvent,
@@ -357,17 +352,6 @@ defineExpose({
 
 .totals-list {
   @include flex-col(var(--space-8));
-}
-
-.total-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-8);
-}
-
-.total-label {
-  color: var(--color-text-secondary);
 }
 
 .muted {

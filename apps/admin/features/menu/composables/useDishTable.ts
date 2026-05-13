@@ -1,9 +1,8 @@
 import { computed, ref, h, type Ref } from 'vue'
-import { UiPhotoPlaceholder, UiText, UiTag, UiSwitch } from '@fastio/ui'
+import { UiPhotoPlaceholder, UiText, UiTag, UiSwitch, UiRowActions } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Dish, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { useTagDisplay } from '~/features/catalog'
 import { useItemVariant } from '~/shared/composables/useItemVariant'
 
@@ -68,7 +67,7 @@ export function useDishTable(dishes: Ref<Dish[]>, actions: Actions) {
       title: '',
       key: 'actions',
       width: 110,
-      render: (row) => h(AppActionsBlock, {
+      render: (row) => h(UiRowActions, {
         onEdit: () => actions.onEdit(row),
         onDelete: () => actions.onDelete(row.id),
       }, {

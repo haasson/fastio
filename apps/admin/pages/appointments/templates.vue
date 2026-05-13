@@ -13,12 +13,12 @@
       description="Создайте шаблон один раз и применяйте его к сотрудникам и объектам — недельные графики либо сменные циклы"
     />
 
-    <AppDraggableList
+    <UiDraggableList
       v-else
       v-model="templates"
       @reorder="onReorder"
     >
-      <AppListRow
+      <UiListRow
         v-for="tpl in templates"
         :key="tpl.id"
         :name="tpl.name"
@@ -33,14 +33,14 @@
         </template>
         <UiText size="small" class="hint">{{ describe(tpl) }}</UiText>
         <template #append>
-          <AppActionsBlock
+          <UiRowActions
             size="small"
             @edit="openEdit(tpl)"
             @delete="confirmDelete(tpl)"
           />
         </template>
-      </AppListRow>
-    </AppDraggableList>
+      </UiListRow>
+    </UiDraggableList>
 
     <TemplateDrawer
       v-model="drawerOpen"
@@ -51,16 +51,13 @@
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiText, UiBadge, UiSkeleton, UiEmpty, useConfirm, useMessage, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiText, UiBadge, UiSkeleton, UiEmpty, useConfirm, useMessage } from '@fastio/ui'
 import type { ScheduleTemplate } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/shared/data/useDatabase'
 import TemplateDrawer from '~/features/appointments/components/TemplateDrawer.vue'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import { reportError } from '~/shared/utils/reportError'
 
 const tenantStore = useTenantStore()

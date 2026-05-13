@@ -45,12 +45,12 @@
           </div>
 
           <!-- Порядок -->
-          <AppDraggableList
+          <UiDraggableList
             v-else-if="comboView === 'order'"
             v-model="combos"
             @reorder="reorderCombos"
           >
-            <AppListRow
+            <UiListRow
               v-for="combo in combos"
               :key="combo.id"
               :name="combo.name"
@@ -68,8 +68,8 @@
               <template #append>
                 <span class="order-price">{{ formatPrice(combo.price) }}</span>
               </template>
-            </AppListRow>
-          </AppDraggableList>
+            </UiListRow>
+          </UiDraggableList>
         </template>
       </template>
     </div>
@@ -88,13 +88,11 @@
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiSkeleton, UiSectionHeader, UiSegmentedControl, UiEmpty, UiTag, UiListRow, UiDraggableList } from '@fastio/ui'
 import { toRefs, computed, ref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import { UiButton, UiSkeleton, UiSectionHeader, UiSegmentedControl, UiEmpty, UiTag } from '@fastio/ui'
 import type { Combo, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
 import { ItemCard as MenuItemCard } from '~/features/catalog'
 import MenuComboFormDrawer from './ComboFormDrawer.vue'
 import { useCombos } from '../composables/useCombos'

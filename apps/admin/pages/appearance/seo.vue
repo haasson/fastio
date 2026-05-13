@@ -1,6 +1,6 @@
 <template>
   <div class="seo-root">
-    <UiSectionHeader title="SEO" />
+    <UiPageHeader title="SEO" />
 
     <!-- Мета-теги -->
     <div class="group">
@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue'
-import { UiInput, UiSwitch, UiSectionHeader } from '@fastio/ui'
+import { UiInput, UiSwitch, UiPageHeader } from '@fastio/ui'
 import { AppearanceFormKey } from '~/features/appearance'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 import SettingToggle from '~/shared/ui/components/SettingToggle.vue'

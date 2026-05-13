@@ -60,6 +60,17 @@ export { default as UiSectionHeader } from './components/UiSectionHeader.vue'
 export { default as UiEmpty } from './components/UiEmpty.vue'
 export { default as UiEditButton } from './components/UiEditButton.vue'
 
+// Layout primitives
+export { default as UiPageHeader } from './components/UiPageHeader.vue'
+export { default as UiFormSection } from './components/UiFormSection.vue'
+export { default as UiKeyValue } from './components/UiKeyValue.vue'
+export { default as UiStatBlock } from './components/UiStatBlock.vue'
+
+// List primitives
+export { default as UiListRow } from './components/UiListRow.vue'
+export { default as UiDraggableList } from './components/UiDraggableList.vue'
+export { default as UiRowActions } from './components/UiRowActions.vue'
+
 // Utility components
 export { default as UiDataTable } from './components/UiDataTable.vue'
 export type { DataTableColumns, DataTableColumn } from 'naive-ui'

@@ -1,7 +1,7 @@
 <template>
   <div class="audit-log-root">
-    <UiSectionHeader title="Журнал действий">
-      <template #right>
+    <UiPageHeader title="Журнал действий">
+      <template #actions>
         <UiSelect
           v-model:value="filterEntityType"
           :options="entityTypeOptions"
@@ -10,7 +10,7 @@
           style="min-width: 160px"
         />
       </template>
-    </UiSectionHeader>
+    </UiPageHeader>
 
     <UiDataTable
       :columns="columns"
@@ -28,7 +28,7 @@
 import { ref, computed, onMounted, h } from 'vue'
 import type { AuditLog } from '@fastio/shared'
 import { formatDateTime } from '@fastio/shared'
-import { UiSectionHeader, UiEmpty, UiSelect, UiDataTable, UiTag, UiText, UiSpace } from '@fastio/ui'
+import { UiPageHeader, UiEmpty, UiSelect, UiDataTable, UiTag, UiText, UiSpace } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import { navigateTo } from '#imports'
 import { useAuditLog } from '~/features/audit-log'

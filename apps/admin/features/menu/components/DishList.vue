@@ -87,12 +87,12 @@
                 </template>
 
                 <!-- Порядок: чистый DnD -->
-                <AppDraggableList
+                <UiDraggableList
                   v-else-if="dishView === 'order'"
                   v-model="dishes"
                   @reorder="reorderDishes"
                 >
-                  <AppListRow
+                  <UiListRow
                     v-for="dish in dishes"
                     :key="dish.id"
                     :name="dish.name"
@@ -104,8 +104,8 @@
                     <template #append>
                       <span class="order-price">{{ formatPrice(dish.price) }}</span>
                     </template>
-                  </AppListRow>
-                </AppDraggableList>
+                  </UiListRow>
+                </UiDraggableList>
 
               </template>
             </template>
@@ -130,18 +130,13 @@
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiDataTable, UiDivider, UiEmpty, UiInput, UiSectionHeader, UiSegmentedControl, UiSkeleton, UiListRow, UiDraggableList } from '@fastio/ui'
 import { toRefs, computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { useTerms } from '~/features/legal'
-import {
-  UiButton, UiDataTable, UiDivider, UiEmpty, UiInput,
-  UiSectionHeader, UiSegmentedControl, UiSkeleton,
-} from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
 import { ItemCard as MenuItemCard } from '~/features/catalog'
 import MenuDishFormDrawer from './DishFormDrawer.vue'
 import { useDishes } from '../composables/useDishes'

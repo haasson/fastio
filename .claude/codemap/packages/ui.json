@@ -2,11 +2,11 @@
   "project": "packages/ui",
   "submap": "main",
   "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-  "generated_at": "2026-05-10T13:57:53.930Z",
+  "generated_at": "2026-05-13T05:00:58.725Z",
   "stats": {
-    "files": 53,
+    "files": 60,
     "pages": 0,
-    "symbols": 153,
+    "symbols": 169,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -231,6 +231,25 @@
         }
       ]
     },
+    "src/components/UiDraggableList.vue": {
+      "kind": "vue",
+      "hash": "46e3ea639988",
+      "purpose": "Generic-список с drag-and-drop сортировкой на vue-draggable-plus; слот default — элементы с .drag-handle",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "0d610a25",
+          "purpose": "Пропсы UiDraggableList<T>: modelValue (T[])"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "331c2ce5",
+          "purpose": "Эмиты UiDraggableList<T>: update:modelValue (T[]), reorder"
+        }
+      ]
+    },
     "src/components/UiDrawer.vue": {
       "kind": "vue",
       "hash": "7174bc090928",
@@ -332,6 +351,19 @@
         }
       ]
     },
+    "src/components/UiFormSection.vue": {
+      "kind": "vue",
+      "hash": "0bee4d7398f6",
+      "purpose": "Карточка-секция формы: title + опц. description + responsive grid полей. Заменяет паттерн UiCard+UiSectionHeader+div.grid в settings и form-drawers",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "6ef73e4d",
+          "purpose": "Пропсы UiFormSection: title, description, size (small/medium/large), columns (1/2/3)"
+        }
+      ]
+    },
     "src/components/UiGrid.vue": {
       "kind": "vue",
       "hash": "33a405662ac9",
@@ -374,6 +406,32 @@
           "kind": "component-props",
           "hash": "9410ed73",
           "purpose": "Пропсы UiInputNumber: label, min, max, step, precision, placeholder, clearable, showButton, size, responsive, name, rules, message, status, feedback"
+        }
+      ]
+    },
+    "src/components/UiKeyValue.vue": {
+      "kind": "vue",
+      "hash": "e0832368f051",
+      "purpose": "Пара «метка: значение» для readonly-просмотра — label серый сверху/слева, value снизу/справа; align=inline (responsive: десктоп строкой, мобила стеком) или stacked (всегда стек)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "99c75e8d",
+          "purpose": "Пропсы UiKeyValue: label, value, align (inline/stacked), valueTag (тег обёртки значения: span/div/time/a/p)"
+        }
+      ]
+    },
+    "src/components/UiListRow.vue": {
+      "kind": "vue",
+      "hash": "6b30753a55e4",
+      "purpose": "Строка списка с опциональным drag-handle (draggable=true по умолчанию), thumbnail и слотами name/default/append; обычно внутри UiDraggableList",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "18cbd424",
+          "purpose": "Пропсы UiListRow: name, disabled, draggable (вкл/выкл grip), thumbUrl, thumbWidth, thumbHeight"
         }
       ]
     },
@@ -464,6 +522,19 @@
         }
       ]
     },
+    "src/components/UiPageHeader.vue": {
+      "kind": "vue",
+      "hash": "cf3568754202",
+      "purpose": "Заголовок страницы (h1-уровень) с title/description и слотом actions; title рендерится только при наличии; размеры medium/large",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "83a586e2",
+          "purpose": "Пропсы UiPageHeader: title, description, size (medium/large)"
+        }
+      ]
+    },
     "src/components/UiPagination.vue": {
       "kind": "vue",
       "hash": "42019c5d9ae1",
@@ -532,6 +603,25 @@
           "kind": "component-props",
           "hash": "600075c5",
           "purpose": "Пропсы UiRadioGroup: label, message, options, vertical, space, size, name, rules"
+        }
+      ]
+    },
+    "src/components/UiRowActions.vue": {
+      "kind": "vue",
+      "hash": "329564538b48",
+      "purpose": "Блок действий строки (edit/copy/delete) с флагами show*/disable* и слотами prepend/default/append; промоут из AppActionsBlock",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "9a3c7eb5",
+          "purpose": "Пропсы UiRowActions: size, showEdit, disableEdit, showCopy, showDelete"
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "6f95a9f9",
+          "purpose": "Эмиты UiRowActions: edit, copy, delete"
         }
       ]
     },
@@ -640,6 +730,19 @@
           "kind": "type",
           "hash": "c0125437",
           "purpose": "Тип пропсов UiSpace"
+        }
+      ]
+    },
+    "src/components/UiStatBlock.vue": {
+      "kind": "vue",
+      "hash": "aac29b121ef9",
+      "purpose": "Стат-карточка дашборда: label + большое значение (UiTitle h3) + sub-строка; поддерживает skeleton loading",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "eddbdab0",
+          "purpose": "Пропсы UiStatBlock: label, value, sub, loading, loadingWidth"
         }
       ]
     },
@@ -882,8 +985,8 @@
     },
     "src/index.ts": {
       "kind": "ts",
-      "hash": "cc90b24beb71",
-      "purpose": "Barrel-экспорт всех компонентов и типов пакета @fastio/ui",
+      "hash": "2510746d2fce",
+      "purpose": "Barrel-файл @fastio/ui: реэкспортирует все компоненты, типы и composables библиотеки",
       "symbols": [
         {
           "name": "*",
@@ -1190,6 +1293,48 @@
           "kind": "re-export",
           "hash": "66107113",
           "purpose": "Реэкспорт UiEditButton"
+        },
+        {
+          "name": "UiPageHeader",
+          "kind": "re-export",
+          "hash": "214d152f",
+          "purpose": "Реэкспорт UiPageHeader"
+        },
+        {
+          "name": "UiFormSection",
+          "kind": "re-export",
+          "hash": "7dba08a4",
+          "purpose": "Реэкспорт UiFormSection"
+        },
+        {
+          "name": "UiKeyValue",
+          "kind": "re-export",
+          "hash": "ac80f65e",
+          "purpose": "Реэкспорт UiKeyValue"
+        },
+        {
+          "name": "UiStatBlock",
+          "kind": "re-export",
+          "hash": "efd7cc69",
+          "purpose": "Реэкспорт UiStatBlock"
+        },
+        {
+          "name": "UiListRow",
+          "kind": "re-export",
+          "hash": "4522c8a2",
+          "purpose": "Реэкспорт UiListRow"
+        },
+        {
+          "name": "UiDraggableList",
+          "kind": "re-export",
+          "hash": "ba2e48ba",
+          "purpose": "Реэкспорт UiDraggableList"
+        },
+        {
+          "name": "UiRowActions",
+          "kind": "re-export",
+          "hash": "a246016a",
+          "purpose": "Реэкспорт UiRowActions"
         },
         {
           "name": "UiDataTable",

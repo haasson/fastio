@@ -76,12 +76,12 @@
                   />
                 </template>
 
-                <AppDraggableList
+                <UiDraggableList
                   v-else-if="view === 'order'"
                   v-model="localItems"
-                  @reorder="$emit('reorder', localItems as T[])"
+                  @reorder="$emit('reorder', localItems)"
                 >
-                  <AppListRow
+                  <UiListRow
                     v-for="it in localItems"
                     :key="it.id"
                     :name="it.name"
@@ -93,8 +93,8 @@
                     <template #append>
                       <span class="order-price">{{ formatPrice(it.price) }}</span>
                     </template>
-                  </AppListRow>
-                </AppDraggableList>
+                  </UiListRow>
+                </UiDraggableList>
               </template>
             </template>
           </div>
@@ -107,18 +107,11 @@
 <script setup lang="ts" generic="T extends { id: string; name: string; price: number; photos: string[]; tags: string[]; active: boolean }">
 import { computed, ref, h, watch, watchEffect, type Ref } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
-import {
-  UiButton, UiDataTable, UiDivider, UiEmpty, UiInput,
-  UiSectionHeader, UiSegmentedControl, UiSkeleton,
-  UiPhotoPlaceholder, UiText, UiTag, UiSwitch,
-} from '@fastio/ui'
+import { UiButton, UiDataTable, UiDivider, UiEmpty, UiInput, UiSectionHeader, UiSegmentedControl, UiSkeleton, UiPhotoPlaceholder, UiText, UiTag, UiSwitch, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import type { IconName } from '@fastio/icons'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import MenuItemCard from '~/features/catalog/components/ItemCard.vue'
 import { useTagDisplay } from '~/features/catalog'
 import { useItemVariant } from '~/shared/composables/useItemVariant'
@@ -219,7 +212,7 @@ const tableColumns = computed<DataTableColumns<T>>(() => [
     title: '',
     key: 'actions',
     width: 110,
-    render: (row) => h(AppActionsBlock, {
+    render: (row) => h(UiRowActions, {
       onEdit: () => emit('edit', row),
       onDelete: () => emit('delete', row.id),
     }, {

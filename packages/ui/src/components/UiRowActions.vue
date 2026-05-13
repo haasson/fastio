@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiButton } from '@fastio/ui'
+import UiButton from './UiButton.vue'
 
 type Props = {
   size?: 'tiny' | 'small' | 'medium' | 'large'

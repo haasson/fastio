@@ -1,10 +1,10 @@
 <template>
   <div class="roles-root">
-    <UiSectionHeader title="Роли">
-      <template #right>
+    <UiPageHeader title="Роли">
+      <template #actions>
         <UiButton type="primary" size="small" @click="openCreate">Создать роль</UiButton>
       </template>
-    </UiSectionHeader>
+    </UiPageHeader>
 
     <UiSkeleton v-if="tenantStore.rolesLoading" text :repeat="3" />
 
@@ -18,7 +18,7 @@
           <div class="role-info">
             <UiText size="small" class="role-name">{{ role.name }}</UiText>
           </div>
-          <AppActionsBlock
+          <UiRowActions
             size="small"
             show-copy
             @edit="openEdit(role)"
@@ -43,9 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import { UiCard, UiText, UiButton, UiSkeleton, UiEmpty, UiPageHeader, useConfirm, useMessage, UiRowActions } from '@fastio/ui'
 import { ref } from 'vue'
-import { UiCard, UiText, UiButton, UiSkeleton, UiEmpty, UiSectionHeader, useConfirm, useMessage } from '@fastio/ui'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import RoleEditModal from '~/features/settings/components/RoleEditModal.vue'
 import { useTenantStore } from '~/shared/stores/tenant'

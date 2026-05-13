@@ -19,12 +19,12 @@
       text="Галерей пока нет. Создайте первую — потом выберете её в настройках разделов."
     />
 
-    <AppDraggableList
+    <UiDraggableList
       v-else
       v-model="galleries"
       @reorder="onReorder"
     >
-      <AppListRow
+      <UiListRow
         v-for="gallery in galleries"
         :key="gallery.id"
         :name="gallery.name"
@@ -51,7 +51,7 @@
         </div>
 
         <template #append>
-          <AppActionsBlock
+          <UiRowActions
             size="small"
             @edit="openEdit(gallery)"
             @delete="handleRemove(gallery)"
@@ -62,10 +62,10 @@
                 Фото
               </button>
             </template>
-          </AppActionsBlock>
+          </UiRowActions>
         </template>
-      </AppListRow>
-    </AppDraggableList>
+      </UiListRow>
+    </UiDraggableList>
 
     <GalleryFormModal
       v-model="showFormModal"
@@ -86,16 +86,13 @@
 </template>
 
 <script setup lang="ts">
+import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiTag, UiText, UiListRow, UiDraggableList, UiRowActions } from '@fastio/ui'
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiEmpty, UiIcon, UiSkeleton, UiTag, UiText } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Gallery, GalleryFormData } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGalleries } from '~/features/content'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
 import AppStorefrontAlert from '~/shared/ui/components/AppStorefrontAlert.vue'
 import GalleryFormModal from '~/features/content/components/gallery/GalleryFormModal.vue'
 import GalleryPhotosModal from '~/features/content/components/gallery/GalleryPhotosModal.vue'

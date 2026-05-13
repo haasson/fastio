@@ -1,8 +1,7 @@
 import { h } from 'vue'
-import { UiText, UiSwitch, UiTag } from '@fastio/ui'
+import { UiText, UiSwitch, UiTag, UiRowActions } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
-import AppActionsBlock from '~/shared/ui/components/AppActionsBlock.vue'
 
 type AddonDeps = {
   onToggle: (id: string, active: boolean) => void
@@ -44,7 +43,7 @@ export const buildAddonColumns = (deps: AddonDeps): DataTableColumns<Addon> => {
       title: '',
       key: 'actions',
       width: 120,
-      render: (row) => h(AppActionsBlock, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
+      render: (row) => h(UiRowActions, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }, {
         prepend: () => h(UiSwitch, { 'modelValue': row.active, 'onUpdate:modelValue': (v: boolean) => onToggle(row.id, v) }),
       }),
     },
@@ -82,7 +81,7 @@ export const buildAddonPresetColumns = (deps: AddonPresetDeps): DataTableColumns
       title: '',
       key: 'actions',
       width: 80,
-      render: (row) => h(AppActionsBlock, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }),
+      render: (row) => h(UiRowActions, { onEdit: () => onEdit(row), onDelete: () => onRemove(row) }),
     },
   ]
 }

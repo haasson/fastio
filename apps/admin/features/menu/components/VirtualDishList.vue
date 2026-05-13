@@ -14,12 +14,12 @@
       <template v-else>
         <UiEmpty v-if="dishes.length === 0" icon="dishes" :text="`Нет блюд с тегом «${tagName}»`" />
 
-        <AppDraggableList
+        <UiDraggableList
           v-else
           v-model="dishes"
           @reorder="reorderDishes"
         >
-          <AppListRow
+          <UiListRow
             v-for="dish in dishes"
             :key="dish.id"
             :name="dish.name"
@@ -34,8 +34,8 @@
             <template #append>
               <span class="order-price">{{ formatPrice(dish.price) }}</span>
             </template>
-          </AppListRow>
-        </AppDraggableList>
+          </UiListRow>
+        </UiDraggableList>
       </template>
     </div>
 
@@ -43,10 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import { UiSkeleton, UiAlert, UiSectionHeader, UiEmpty, UiText, UiListRow, UiDraggableList } from '@fastio/ui'
 import { ref, computed, watch } from 'vue'
-import { UiSkeleton, UiAlert, UiSectionHeader, UiEmpty, UiText } from '@fastio/ui'
-import AppDraggableList from '~/shared/ui/components/AppDraggableList.vue'
-import AppListRow from '~/shared/ui/components/AppListRow.vue'
 import type { Dish, Category, DishTagDefinition } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'

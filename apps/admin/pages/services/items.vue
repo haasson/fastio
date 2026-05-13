@@ -7,7 +7,7 @@
     empty-link="/services/categories"
   />
 
-  <AppMenuItemList
+  <MenuItemList
     :items="services"
     :loading="showSkeleton || servicesLoading"
     :category-id="selectedCategoryId"
@@ -46,7 +46,7 @@ import { useTags } from '~/features/catalog'
 import { useItemManager } from '~/shared/ui/composables/useItemManager'
 import { useDatabase } from '~/shared/data/useDatabase'
 import CategoryTabs from '~/features/catalog/components/CategoryTabs.vue'
-import AppMenuItemList from '~/features/catalog/components/AppMenuItemList.vue'
+import MenuItemList from '~/features/catalog/components/MenuItemList.vue'
 import ServiceDrawer from '~/features/services-catalog/components/ServiceDrawer.vue'
 
 const { tenantId } = storeToRefs(useTenantStore())
