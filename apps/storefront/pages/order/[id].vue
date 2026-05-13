@@ -83,13 +83,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useFetch, navigateTo } from 'nuxt/app'
 import { SearchX, CircleCheck } from 'lucide-vue-next'
 import type { Order } from '@fastio/shared'
 import { formatDateTime } from '@fastio/shared'
 import { useCurrency } from '~/shared/composables/useCurrency'
 import { useStorefrontTerms } from '~/shared/composables/useStorefrontTerms'
+import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
 import { FsHeading, FsButton, FsCard, FsText, FsDivider, FsSpinner } from '@fastio/public-ui'
 import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
@@ -100,9 +101,38 @@ import SfOrderItemsList from '~/shared/ui/sf/domain/SfOrderItemsList.vue'
 const { menu } = useStorefrontTerms()
 const route = useRoute()
 const currency = useCurrency()
+const supabase = useSupabaseClient()
 
+// IDOR guard на сервере требует один из трёх кредов:
+//   1. ?t=guest_token в URL (гость пришёл из чекаута) — доступен на SSR.
+//   2. tg_session httpOnly cookie (Telegram-логин) — авто-форвардится useFetch на SSR.
+//   3. Authorization: Bearer JWT (Supabase email/password) — только на клиенте
+//      (сессия в localStorage). Если ни (1), ни (2) не сработали — onMounted
+//      ниже подкинет Bearer и сделает refresh().
 const { data: order, pending, refresh } = await useFetch<Order>(`/api/orders/${route.params.id}`, {
-  query: route.query.slug ? { slug: route.query.slug } : {},
+  query: {
+    ...(route.query.slug ? { slug: route.query.slug } : {}),
+    ...(route.query.t ? { t: route.query.t } : {}),
+  },
+  async onRequest({ options }) {
+    // На SSR localStorage недоступен — Bearer добавляем только на клиенте.
+    if (!import.meta.client) return
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (session) {
+      const headers = new Headers(options.headers)
+      headers.set('Authorization', `Bearer ${session.access_token}`)
+      options.headers = headers
+    }
+  },
+})
+
+// Email/password fallback: если SSR ничего не достал (нет ?t= и нет tg_session
+// cookie), после hydration пробуем повторить с Bearer из localStorage Supabase.
+onMounted(async () => {
+  if (order.value || pending.value) return
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session) await refresh()
 })
 
 const statusGroup = computed(() => order.value?.statusGroup ?? 'new')

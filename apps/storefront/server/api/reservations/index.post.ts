@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import { getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
 import { getTenantDb } from '../../utils/tenantDb'
+import { getClientIp } from '../../utils/clientIp'
 import { createRateLimiter, todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 
@@ -9,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
 
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
@@ -154,6 +156,9 @@ export default defineEventHandler(async (event) => {
 
   const status = autoConfirm ? 'confirmed' : 'pending'
 
+  // IDOR guard: для гостевых броней генерим token (см. /api/orders.post.ts комментарий).
+  const guestToken = customerId ? null : randomUUID()
+
   const { data, error } = await db.crossTenant
     .from('reservations')
     .insert({
@@ -167,14 +172,19 @@ export default defineEventHandler(async (event) => {
       comment: body.comment?.trim() || null,
       branch_id: branchId,
       status,
-      ...(customerId && { customer_id: customerId }),
+      ...(customerId ? { customer_id: customerId } : { guest_token: guestToken }),
     })
-    .select('id, status')
+    .select('id, status, guest_token')
     .single()
 
   if (error) {
     throw createError({ statusCode: 500, message: error.message })
   }
 
-  return { id: data.id, status: data.status, linkedToAccount: !!customerId }
+  return {
+    id: data.id,
+    status: data.status,
+    linkedToAccount: !!customerId,
+    token: (data.guest_token as string | null) ?? null,
+  }
 })

@@ -428,11 +428,12 @@ async function submitOrder() {
       }
     }
 
-    const result = await $fetch<{ id: string; orderNumber: string | null }>('/api/orders', { method: 'POST', body, headers })
+    const result = await $fetch<{ id: string; orderNumber: string | null; token: string | null }>('/api/orders', { method: 'POST', body, headers })
 
     commitClearDishes()
     checkout.clearPromo()
-    await navigateTo(`/order/${result.id}`)
+    // token заполнен только для гостей — у залогиненного customer'а guard работает по auth.
+    await navigateTo(result.token ? `/order/${result.id}?t=${result.token}` : `/order/${result.id}`)
   } catch (err: unknown) {
     const fetchErr = err as { data?: { message?: string } }
     submitErrors.value = [fetchErr?.data?.message ?? 'Не удалось оформить заказ. Попробуйте ещё раз.']

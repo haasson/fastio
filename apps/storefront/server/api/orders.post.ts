@@ -1,6 +1,8 @@
+import { randomUUID } from 'node:crypto'
 import { normalizePhone, createRateLimiter } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getTenantDb } from '../utils/tenantDb'
+import { getClientIp } from '../utils/clientIp'
 import { reportError } from '~/shared/utils/reportError'
 import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType, validatePaymentMethod } from '../services/order-validation'
 import { resolveCustomer } from '../services/order-customer'
@@ -15,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const ip = getClientIp(event)
   if (!orderRateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
   }
@@ -68,6 +70,10 @@ export default defineEventHandler(async (event) => {
     ? body.idempotencyKey.trim()
     : null
 
+  // IDOR guard: для гостевых заказов генерим token, который клиент пробрасывает в ?t=
+  // при чтении. Залогиненный customer защищён через match auth.user.id ↔ orders.customer_id.
+  const guestToken = customerId ? null : randomUUID()
+
   const { data, error } = await db.crossTenant
     .from('orders')
     .insert({
@@ -100,21 +106,31 @@ export default defineEventHandler(async (event) => {
       ...(deliveryLat !== null && { delivery_lat: deliveryLat }),
       ...(deliveryLon !== null && { delivery_lon: deliveryLon }),
       ...(tableRecord && { table_id: tableRecord.id, table_name: tableRecord.name }),
-      ...(customerId && { customer_id: customerId }),
+      ...(customerId ? { customer_id: customerId } : { guest_token: guestToken }),
       ...(validScheduledAt ? { scheduled_at: validScheduledAt } : {}),
     })
-    .select('id, order_number')
+    .select('id, order_number, guest_token')
     .single()
 
   if (error) {
     if (error.code === '23505' && idempotencyKey) {
+      // Безопасно отдавать guest_token владельцу повторной попытки: idempotency_key —
+      // 122-битный UUID, генерируется на клиенте через crypto.randomUUID() и известен
+      // ТОЛЬКО оригинальному автору запроса. Угадать его ради phishing'а PII чужого
+      // заказа невозможно. НЕ логировать idempotency_key в открытом виде.
       const { data: existing } = await db
         .from('orders')
-        .select('id, order_number')
+        .select('id, order_number, guest_token')
         .eq('idempotency_key', idempotencyKey)
         .single()
 
-      if (existing) return { id: existing.id, orderNumber: existing.order_number ?? null }
+      if (existing) {
+        return {
+          id: existing.id,
+          orderNumber: existing.order_number ?? null,
+          token: (existing.guest_token as string | null) ?? null,
+        }
+      }
     }
 
     reportError(error)
@@ -172,5 +188,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { id: data.id, orderNumber: data.order_number ?? null }
+  return {
+    id: data.id,
+    orderNumber: data.order_number ?? null,
+    token: (data.guest_token as string | null) ?? null,
+  }
 })
