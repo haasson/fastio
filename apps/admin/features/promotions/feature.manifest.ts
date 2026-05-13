@@ -26,10 +26,17 @@ export default defineFeature({
   ],
 
   dependsOn: [
+    'features.audit-log',
+    'features.content',
+    'features.menu',
     'shared.data.useDatabase',
     'shared.data.useRealtimeList',
+    'shared.plan.useGate',
     'shared.stores.tenant',
-    'features.menu',
+    'shared.ui.components.DishItemRow',
+    'shared.ui.components.ImageUploadTrigger',
+    'shared.ui.components.RichTextEditor',
+    'shared.utils.query',
     '@fastio/shared',
   ],
 })

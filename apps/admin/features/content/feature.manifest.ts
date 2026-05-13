@@ -23,16 +23,14 @@ export default defineFeature({
     // reviews/vacancies могут жить в jsonb-полях tenants или иметь свои таблицы — проверь миграции
   },
 
-  realtime: [
-    { table: 'banners', channelComposable: 'useBanners', events: ['insert', 'update', 'delete'] },
-    { table: 'galleries', channelComposable: 'useGalleries', events: ['insert', 'update', 'delete'] },
-  ],
-
   dependsOn: [
+    'features.promotions',
     'shared.data.useDatabase',
-    'shared.data.useRealtimeList',
     'shared.stores.tenant',
+    'shared.ui.components.AppStorefrontAlert',
+    'shared.ui.components.ImageUploadModal',
     'shared.utils.imageOptimize',
+    'shared.utils.query',
     '@fastio/shared',
   ],
 })

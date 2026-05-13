@@ -19,7 +19,8 @@ export default defineFeature({
   },
 
   dependsOn: [
+    'features.help',
+    'shared.data.useDatabase',
     'shared.stores.tenant',
-    '@fastio/kb',
   ],
 })

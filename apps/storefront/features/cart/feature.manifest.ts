@@ -17,10 +17,20 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'features.menu-catalog',                 // dish lookup для reconciler
-    'features.services-catalog',             // service lookup для reconciler
-    'shared.composables.useToast',
+    'features.branch',
+    'features.menu-catalog',                  // dish lookup для reconciler
+    'features.services-catalog',              // service lookup для reconciler
+    'shared.composables.useConfirm',
+    'shared.composables.useCurrency',
+    'shared.composables.useItemPlaceholder',
     'shared.composables.useStorefrontTerms',
-    '@fastio/shared',                        // OrderItem, getItemUnitPrice
+    'shared.composables.useToast',
+    'shared.ui.layout.StorePageLayout',
+    'shared.ui.sections.PageShell',
+    'shared.ui.sf.domain.SfEmptyState',
+    'shared.ui.sf.domain.SfProductModal',
+    'shared.ui.sf.domain.SfStepper',
+    'shared.utils.format-removed-toast',
+    '@fastio/shared',                         // OrderItem, getItemUnitPrice
   ],
 })

@@ -27,10 +27,17 @@ export default defineFeature({
   ],
 
   dependsOn: [
+    'features.orders',
+    'features.tables',
     'shared.data.useDatabase',
-    'shared.data.useRealtimeList',
+    'shared.data.useRealtimeWatch',
+    'shared.plan.useGate',
+    'shared.stores.auth',
     'shared.stores.tenant',
-    'shared.stores.branch',
+    'shared.ui.composables.useEditableForm',
+    'shared.ui.composables.usePageForm',
+    'shared.ui.composables.useUnsavedGuard',
+    'shared.utils.query',
     '@fastio/shared',
   ],
 })

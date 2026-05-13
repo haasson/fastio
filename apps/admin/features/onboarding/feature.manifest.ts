@@ -20,8 +20,18 @@ export default defineFeature({
   },
 
   dependsOn: [
+    'features.branches',
+    'features.help',
+    'features.legal',
+    'shared.composables.delivery.useDadataSuggestions',
+    'shared.composables.useStorefrontUrl',
+    'shared.plan.useBillingConfig',
+    'shared.plan.useGate',
+    'shared.plan.usePlans',
+    'shared.stores.branch',
     'shared.stores.tenant',
-    'shared.data.useDatabase',
+    'shared.ui.components.AddressSuggestInput',
+    'shared.utils.planFeatureLabels',
     '@fastio/shared',
   ],
 })

@@ -17,11 +17,19 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'shared.composables.useItemPlaceholder',  // плейсхолдер для услуг без фото
-    'shared.composables.useStorefrontTerms',  // термины «услуга»/«мастер» из vocabulary тенанта
+    'features.branch',
+    'features.cart',
+    'shared.composables.useConfirm',
     'shared.composables.useCurrency',         // форматирование цен на карточках
+    'shared.composables.useItemPlaceholder',  // плейсхолдер для услуг без фото
+    'shared.composables.useLegalCompliance',
+    'shared.composables.useToast',
+    'shared.ui.sf.domain.DishChips',
+    'shared.ui.sf.domain.SfEmptyState',
+    'shared.ui.sf.domain.SfProductCard',
+    'shared.ui.sf.domain.SfProductModal',
     'shared.utils.product',                   // buildProduct → ProductData для SfProductCard
-    '@fastio/shared',                         // type Service, ServiceCategory, ServiceResource
     'server.api.services',
+    '@fastio/shared',                         // type Service, ServiceCategory, ServiceResource
   ],
 })

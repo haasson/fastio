@@ -25,9 +25,10 @@ export default defineFeature({
 
   dependsOn: [
     'shared.data.useDatabase',
-    'shared.stores.tenant',
     'shared.plan.usePlans',
-    'shared.plan.useGate',
+    'shared.stores.tenant',
+    'shared.utils.planFeatureLabels',
+    'shared.utils.query',
     '@fastio/shared',
   ],
 })

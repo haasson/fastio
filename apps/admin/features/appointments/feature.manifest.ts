@@ -60,19 +60,26 @@ export default defineFeature({
   },
 
   realtime: [
+    { table: 'appointment_events', channelComposable: 'useAppointmentEvents', events: ['insert', 'update', 'delete'] },
+    { table: 'appointment_groups', channelComposable: 'useVisitsChannel', events: ['insert', 'update', 'delete'] },
     { table: 'appointments', channelComposable: 'useAppointmentsChannel', events: ['insert', 'update', 'delete'] },
-    { table: 'appointments', channelComposable: 'useVisitsChannel', events: ['insert', 'update', 'delete'] },
-    { table: 'appointment_events', channelComposable: 'useAppointmentEvents', events: ['insert'] },
   ],
 
   dependsOn: [
+    'features.services-catalog',
+    'features.team',
+    'shared.data.createRealtimeBus',
     'shared.data.useDatabase',
     'shared.data.useRealtimeList',
-    'shared.data.useRealtimeWatch',
-    'shared.stores.tenant',
+    'shared.plan.useGate',
+    'shared.plan.useGate.services',
+    'shared.stores.auth',
     'shared.stores.branch',
+    'shared.stores.tenant',
+    'shared.ui.composables.useEditableForm',
+    'shared.ui.composables.usePageForm',
+    'shared.ui.composables.useUnsavedGuard',
     'shared.utils.query',
-    'features.services-catalog',
     '@fastio/shared',
   ],
 })

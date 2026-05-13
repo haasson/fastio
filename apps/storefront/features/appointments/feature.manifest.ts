@@ -20,12 +20,17 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'features.services-catalog',        // useServicesStore для lookup
-    'features.cart',                    // ServiceCartItem на чекауте
-    'features.branch',                  // выбранный филиал → фильтр resources/services
-    'features.auth',                    // Telegram-логин для напоминаний
+    'features.account',
+    'features.auth',                                // Telegram-логин для напоминаний
+    'features.branch',                              // выбранный филиал → фильтр resources/services
+    'features.cart',                                // ServiceCartItem на чекауте
+    'features.services-catalog',                    // useServicesStore для lookup
+    'shared.composables.useLegalCompliance',
+    'shared.composables.useSupabaseClient',
     'shared.composables.useToast',
-    '@fastio/shared',                   // type Appointment, AppointmentStatus, Visit
+    'shared.ui.layout.StorePageLayout',
+    'shared.ui.sections.PageShell',
+    'shared.ui.sf.domain.SfEmptyState',
     'server.api.appointments',
     'server.api.appointments.group-slots',
     'server.api.appointments.group-week',
@@ -33,5 +38,6 @@ export default defineFeature({
     'server.api.appointments.bulk',
     'server.api.appointments.remind-offer',
     'server.api.customer.appointments',
+    '@fastio/shared',                               // type Appointment, AppointmentStatus, Visit
   ],
 })

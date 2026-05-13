@@ -20,6 +20,6 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'shared.stores.tenant',
+    '@fastio/shared',
   ],
 })

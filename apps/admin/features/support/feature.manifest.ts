@@ -22,14 +22,17 @@ export default defineFeature({
   },
 
   realtime: [
-    { table: 'support_messages', channelComposable: 'useSupportChannel', events: ['insert', 'update'] },
+    { table: 'support_tickets', channelComposable: 'useSupportChannel', events: ['insert', 'update', 'delete'] },
   ],
 
   dependsOn: [
     'shared.data.useDatabase',
-    'shared.data.useRealtimeList',
+    'shared.data.useRealtimeWatch',
     'shared.stores.tenant',
-    'shared.stores.auth',
+    'shared.utils.formatRelativeDate',
+    'shared.utils.imageOptimize',
+    'shared.utils.query',
     'shared.utils.supportStatus',
+    '@fastio/shared',
   ],
 })

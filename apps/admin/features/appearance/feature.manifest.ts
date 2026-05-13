@@ -25,8 +25,13 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'shared.stores.tenant',
+    'features.legal',
     'shared.data.useDatabase',
+    'shared.plan.useGate',
+    'shared.stores.tenant',
+    'shared.ui.components.ImageUploadTrigger',
+    'shared.ui.components.RichTextEditor',
+    'shared.ui.components.SettingToggle',
     '@fastio/shared',
   ],
 })

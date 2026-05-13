@@ -26,10 +26,26 @@ export default defineFeature({
   },
 
   dependsOn: [
+    'features.audit-log',
+    'features.legal',
+    'features.settings',
+    'shared.composables.usePageTitle',
     'shared.data.useDatabase',
-    'shared.stores.tenant',
+    'shared.data.useRealtimeList',
+    'shared.plan.useBranchLimit',
+    'shared.plan.useGate',
+    'shared.plan.useGate.helpers',
     'shared.stores.branch',
+    'shared.stores.tenant',
+    'shared.ui.components.TabsLayout',
+    'shared.ui.composables.useEditableForm',
+    'shared.ui.composables.usePageForm',
+    'shared.ui.composables.useUnsavedGuard',
+    'shared.utils.filterDefined',
     'shared.utils.query',
     '@fastio/shared',
+  ],
+  realtime: [
+    { table: 'branches', channelComposable: 'useBranches', events: ['insert', 'update', 'delete'] },
   ],
 })

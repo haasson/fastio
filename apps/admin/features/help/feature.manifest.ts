@@ -21,8 +21,14 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'shared.stores.tenant',
+    'features.legal',
+    'features.support',
+    'shared.composables.usePageTitle',
     'shared.data.useDatabase',
-    '@fastio/kb',
+    'shared.plan.useGate',
+    'shared.plan.useGate.types',
+    'shared.stores.tenant',
+    'shared.ui.components.TabsLayout',
+    '@fastio/shared',
   ],
 })

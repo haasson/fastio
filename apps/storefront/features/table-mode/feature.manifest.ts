@@ -21,7 +21,12 @@ export default defineFeature({
   ],
 
   dependsOn: [
+    'features.cart',
+    'features.menu-catalog',
+    'shared.composables.useCurrency',
     'shared.composables.useSupabaseClient', // realtime-канал к order_items / kitchen_queue
+    'shared.composables.useToast',
+    'shared.ui.sf.domain.SfFab',
     '@fastio/shared',                       // getItemUnitPrice
   ],
 })

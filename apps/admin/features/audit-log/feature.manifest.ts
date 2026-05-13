@@ -19,9 +19,13 @@ export default defineFeature({
   },
 
   dependsOn: [
+    'shared.composables.usePageTitle',
     'shared.data.useDatabase',
+    'shared.plan.useGate',
+    'shared.stores.auth',
     'shared.stores.tenant',
     'shared.utils.featureFlags',
+    'shared.utils.query',
     '@fastio/shared',
   ],
 })

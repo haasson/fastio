@@ -16,10 +16,15 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'shared.composables.useSupabaseClient', // получение текущего customer-id для брони
-    'features.branch',                       // выбранный филиал → branchId в брони
-    '@fastio/shared',                        // тип ReservationStatus
+    'features.branch',                              // выбранный филиал → branchId в брони
+    'shared.composables.useLegalCompliance',
+    'shared.composables.useSupabaseClient',         // получение текущего customer-id для брони
+    'shared.ui.layout.StorePageLayout',
+    'shared.ui.sections.PageShell',
+    'shared.ui.sf.domain.SfEmptyState',
+    'shared.ui.sf.domain.SfStepper',
     'server.api.reservations',
     'server.api.reservations.slots',
+    '@fastio/shared',                               // тип ReservationStatus
   ],
 })

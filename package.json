@@ -33,7 +33,15 @@
     "new:feature": "node scripts/features/new-feature.mjs",
     "storefront-features:validate": "node scripts/storefront-features/validate-manifests.mjs",
     "storefront-features:validate:strict": "node scripts/storefront-features/validate-manifests.mjs --strict",
-    "new:storefront-feature": "node scripts/storefront-features/new-feature.mjs"
+    "storefront-features:gen-barrels": "node scripts/storefront-features/gen-barrels.mjs",
+    "storefront-features:gen-barrels:check": "node scripts/storefront-features/gen-barrels.mjs --check",
+    "new:storefront-feature": "node scripts/storefront-features/new-feature.mjs",
+    "audit:deps": "node scripts/audit-deps.mjs",
+    "audit:deps:strict": "node scripts/audit-deps.mjs --strict",
+    "audit:deps:graph": "node scripts/audit-deps.mjs --graph",
+    "audit:realtime": "node scripts/audit-realtime.mjs",
+    "audit:realtime:strict": "node scripts/audit-realtime.mjs --strict",
+    "migration:impact": "node scripts/migration-impact.mjs"
   },
   "workspaces": [
     "apps/*",

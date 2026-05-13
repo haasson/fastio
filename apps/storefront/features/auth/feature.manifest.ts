@@ -18,13 +18,16 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'shared.composables.useSupabaseClient', // SDK-обёртка для signInWithPassword/signUp/setSession
-    'shared.composables.useToast',
-    '@fastio/shared',
+    'shared.composables.useModal',
+    'shared.composables.useSupabaseClient',         // SDK-обёртка для signInWithPassword/signUp/setSession
+    'shared.ui.layout.StorePageLayout',
+    'shared.ui.sections.PageShell',
+    'shared.ui.sf.icons.SfIconTelegram',
     'server.api.auth',
     'server.api.auth.callback',
     'server.api.auth.telegram',
     'server.api.auth.forgot-password',
     'server.api.auth.reset-password',
+    '@fastio/shared',
   ],
 })

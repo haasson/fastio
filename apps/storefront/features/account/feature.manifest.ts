@@ -19,11 +19,19 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'features.auth',                // currentCustomer
-    'shared.composables.useToast',
-    '@fastio/shared',               // type CustomerAddress, Customer
+    'features.auth',
+    'shared.composables.useConfirm',
+    'shared.composables.useCurrency',
+    'shared.composables.useDadataSuggestions',
+    'shared.composables.useStorefrontTerms',
+    'shared.composables.useSupabaseClient',
+    'shared.ui.layout.StorePageLayout',
+    'shared.ui.sections.PageShell',
+    'shared.ui.sf.domain.SfEmptyState',
+    'shared.ui.sf.domain.SfOrderStatus',
     'server.api.customer.profile',
     'server.api.customer.addresses',
     'server.api.customer.orders',
+    '@fastio/shared',                          // type CustomerAddress, Customer
   ],
 })

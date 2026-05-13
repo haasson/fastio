@@ -26,9 +26,14 @@ export default defineFeature({
   },
 
   dependsOn: [
+    'features.audit-log',
+    'features.settings',
     'shared.data.useDatabase',
+    'shared.plan.useGate',
+    'shared.plan.useGate.helpers',
+    'shared.stores.branch',
     'shared.stores.tenant',
-    'shared.stores.auth',
+    'shared.utils.query',
     '@fastio/shared',
   ],
 })

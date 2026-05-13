@@ -25,8 +25,19 @@ export default defineFeature({
   },
 
   dependsOn: [
+    'features.legal',
+    'shared.composables.useItemVariant',
     'shared.data.useDatabase',
+    'shared.data.useRealtimeList',
+    'shared.plan.useGate',
     'shared.stores.tenant',
+    'shared.ui.components.ColorPicker',
+    'shared.ui.components.ImageUploadTrigger',
+    'shared.ui.composables.useItemManager',
+    'shared.utils.query',
     '@fastio/shared',
+  ],
+  realtime: [
+    { table: 'categories', channelComposable: 'useCategories', events: ['insert', 'update', 'delete'] },
   ],
 })

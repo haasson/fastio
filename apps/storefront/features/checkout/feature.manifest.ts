@@ -16,14 +16,21 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'features.cart',                 // корзина — источник данных
-    'features.menu-catalog',         // dish lookup для validation
-    'features.auth',                 // профиль гостя (имя/телефон/email из аккаунта)
-    'features.account',              // сохранённые адреса доставки
-    'features.branch',               // выбранный филиал → branchId в заказе
-    'shared.composables.useToast',
-    '@fastio/shared',                // calcOrderTotals, DeliveryZone, Address
+    'features.auth',                          // профиль гостя (имя/телефон/email из аккаунта)
+    'features.cart',                          // корзина — источник данных
+    'features.menu-catalog',                  // dish lookup для validation
+    'shared.composables.useConfirm',
+    'shared.composables.useCurrency',
+    'shared.composables.useDadataSuggestions',
+    'shared.composables.useLegalCompliance',
+    'shared.composables.useStorefrontTerms',
+    'shared.composables.useSupabaseClient',
+    'shared.ui.layout.StorePageLayout',
+    'shared.ui.sections.PageShell',
+    'shared.ui.sf.domain.SfOrderItemsList',
+    'shared.ui.sf.domain.SfOrderTotals',
     'server.api.orders',
     'server.api.appointments.request',
+    '@fastio/shared',                         // calcOrderTotals, DeliveryZone, Address
   ],
 })

@@ -284,12 +284,26 @@ function routePathExists(routePath) {
 function sharedDepExists(dep) {
   if (!dep.startsWith('shared.')) return true
   const segments = dep.split('.').slice(1)
+  const candidates = []
+  // Прямое отображение: dot → /
   const rel = segments.join('/')
-  return [
+  candidates.push(
     path.join(SHARED_DIR, `${rel}.ts`),
     path.join(SHARED_DIR, rel, 'index.ts'),
     path.join(SHARED_DIR, `${rel}.vue`),
-  ].some((p) => fs.existsSync(p))
+  )
+  // Fallback для файлов с точкой в имени (sf.domain.SfStepper, ui.sf.icons.SfIconTelegram):
+  // склеиваем последние 2 сегмента точкой и пробуем как имя файла.
+  if (segments.length >= 2) {
+    const head = segments.slice(0, -2).join('/')
+    const tail = segments.slice(-2).join('.')
+    const merged = head ? `${head}/${tail}` : tail
+    candidates.push(
+      path.join(SHARED_DIR, `${merged}.ts`),
+      path.join(SHARED_DIR, `${merged}.vue`),
+    )
+  }
+  return candidates.some((p) => fs.existsSync(p))
 }
 
 function isMaterialFeature(featureDir) {

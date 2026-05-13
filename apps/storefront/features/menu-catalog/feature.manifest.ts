@@ -18,11 +18,17 @@ export default defineFeature({
   },
 
   dependsOn: [
+    'features.branch',
+    'features.cart',
     'shared.composables.useItemPlaceholder',  // плейсхолдер для блюд без фото
+    'shared.composables.useLegalCompliance',
     'shared.composables.useStorefrontTerms',  // термины «блюдо»/«категория» из vocabulary
-    'shared.composables.useCurrency',         // форматирование цен на карточках/модалке
+    'shared.ui.sf.domain.DishChips',
+    'shared.ui.sf.domain.SfEmptyState',
+    'shared.ui.sf.domain.SfProductCard',
+    'shared.ui.sf.domain.SfStepper',
     'shared.utils.product',                   // buildProduct → ProductData для SfProductCard
-    '@fastio/shared',                         // type Dish, Combo, Category, ClientAddon
     'server.api.menu',
+    '@fastio/shared',                         // type Dish, Combo, Category, ClientAddon
   ],
 })

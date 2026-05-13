@@ -23,8 +23,13 @@ export default defineFeature({
     tables: [],
   },
 
+  // Фича физически тонкая (нет api/composables в features/auth/), вся логика — в
+  // pages/login.vue, /invite.vue, /set-password.vue. audit-deps подбирает их
+  // через manifest.routes, поэтому depsOn заполнен.
   dependsOn: [
     'shared.data.useDatabase',
-    'shared.stores.auth',
+    'shared.stores.tenant',
+    'shared.ui.components.AppBrand',
+    'shared.utils.constants',
   ],
 })

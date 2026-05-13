@@ -30,10 +30,17 @@ export default defineFeature({
   ],
 
   dependsOn: [
+    'shared.components.AppTableToolbar',
     'shared.data.useDatabase',
     'shared.data.useRealtimeWatch',
-    'shared.stores.tenant',
+    'shared.plan.useGate',
+    'shared.stores.auth',
     'shared.stores.branch',
+    'shared.stores.tenant',
+    'shared.ui.components.AppStorefrontAlert',
+    'shared.ui.composables.useEditableForm',
+    'shared.ui.composables.usePageForm',
+    'shared.ui.composables.useUnsavedGuard',
     'shared.utils.query',
     '@fastio/shared',
   ],

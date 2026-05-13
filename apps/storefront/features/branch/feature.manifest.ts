@@ -15,11 +15,12 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'features.cart',                 // useCartReconciler для smart-reset + computeBranchCompat для validation
-    'features.menu-catalog',         // dish.branchIds lookup
-    'features.services-catalog',     // service+resource.branchIds lookup
+    'features.cart',                  // useCartReconciler для smart-reset + computeBranchCompat для validation
+    'features.menu-catalog',          // dish.branchIds lookup
+    'features.services-catalog',      // service+resource.branchIds lookup
+    'shared.composables.useConfirm',
     'shared.composables.useToast',
-    '@fastio/shared',                // type Branch
     'server.api.branches',
+    '@fastio/shared',                 // type Branch
   ],
 })
