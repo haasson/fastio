@@ -134,6 +134,7 @@ export default defineEventHandler(async (event) => {
     supabase.functions
       .invoke('send-new-tenant-email', {
         body: { email, tenantName: name, adminUrl: config.adminUrl },
+        headers: { 'x-fastio-internal-token': config.fastioInternalToken },
       })
       .catch((err) => console.error('[register] send-new-tenant-email failed', { tenantId, email, err }))
   }

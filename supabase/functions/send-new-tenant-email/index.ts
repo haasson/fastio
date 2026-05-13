@@ -2,7 +2,7 @@ import nodemailer from 'npm:nodemailer@6'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-fastio-internal-token',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
@@ -11,6 +11,26 @@ const json = (body: unknown, init?: ResponseInit) =>
     ...init,
     headers: { 'Content-Type': 'application/json', ...corsHeaders },
   })
+
+// Server-to-server секрет: функцию должны звать ТОЛЬКО серверные Nitro endpoints
+// (landing/register, backoffice/tenants). Anon-key публичен и не годится для
+// аутентификации источника — без X-Fastio-Internal-Token любой может отправлять
+// фишинг-письма с произвольным tenantName на любые email'ы.
+//
+// Настройка: supabase secrets set FASTIO_INTERNAL_TOKEN=<random32>
+// Caller'ы должны передавать тот же секрет через NUXT_FASTIO_INTERNAL_TOKEN env.
+const INTERNAL_TOKEN = Deno.env.get('FASTIO_INTERNAL_TOKEN')
+
+// Защита от HTML-injection в письме (mail-клиенты типа Outlook иногда исполняют).
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+}
+
+// adminUrl попадает в href; принимаем ТОЛЬКО https://-схемы.
+function safeAdminUrl(raw: string | undefined): string {
+  if (raw && /^https:\/\/[a-z0-9.-]+/i.test(raw)) return raw
+  return 'https://admin.fastio.ru'
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,17 +41,28 @@ Deno.serve(async (req) => {
     return new Response('Method Not Allowed', { status: 405 })
   }
 
-  const { email, tenantName, adminUrl } = await req.json() as {
-    email: string
-    tenantName: string
-    adminUrl: string
+  if (!INTERNAL_TOKEN) {
+    console.error('FASTIO_INTERNAL_TOKEN is not configured')
+    return json({ error: 'Server misconfigured' }, { status: 500 })
+  }
+  if (req.headers.get('x-fastio-internal-token') !== INTERNAL_TOKEN) {
+    return json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!email || !tenantName) {
+  let body: { email?: unknown; tenantName?: unknown; adminUrl?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const { email, tenantName, adminUrl } = body
+  if (!email || typeof email !== 'string' || !tenantName || typeof tenantName !== 'string') {
     return json({ error: 'email and tenantName are required' }, { status: 400 })
   }
 
-  const loginUrl = adminUrl || 'https://admin.fastio.ru'
+  const loginUrl = safeAdminUrl(typeof adminUrl === 'string' ? adminUrl : undefined)
+  const safeTenantName = escapeHtml(tenantName)
 
   const smtpUser = Deno.env.get('SMTP_USER')
   const smtpPass = Deno.env.get('SMTP_PASS')
@@ -48,7 +79,9 @@ Deno.serve(async (req) => {
       await transporter.sendMail({
         from: `"Fastio" <${smtpUser}>`,
         to: email,
-        subject: `Новое заведение «${tenantName}» добавлено в ваш аккаунт`,
+        // subject — SMTP-заголовок (plain text), HTML-escape не нужен.
+        // \r\n-strip обязателен: иначе CRLF в имени тенанта = header-injection.
+        subject: `Новое заведение «${tenantName}» добавлено в ваш аккаунт`.replace(/[\r\n]/g, ' '),
         html: `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -73,7 +106,7 @@ Deno.serve(async (req) => {
             <td style="background:#ffffff;border-radius:16px;padding:40px 40px 32px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
               <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;line-height:1.3;">Новое заведение</h1>
               <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
-                Для вашего аккаунта на платформе Fastio было создано новое заведение — <strong style="color:#111827;">${tenantName}</strong>.
+                Для вашего аккаунта на платформе Fastio было создано новое заведение — <strong style="color:#111827;">${safeTenantName}</strong>.
               </p>
               <p style="margin:0 0 28px;font-size:15px;color:#6b7280;line-height:1.6;">
                 Вы можете войти в панель управления с вашими текущими данными для входа и переключиться на новое заведение.

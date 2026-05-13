@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     supabaseServiceRoleKey: '', // NUXT_SUPABASE_SERVICE_ROLE_KEY
     supabaseJwtPrivateKey: '', // NUXT_SUPABASE_JWT_PRIVATE_KEY
     adminUrl: 'https://admin.fastio.ru', // NUXT_ADMIN_URL
+    fastioInternalToken: '', // NUXT_FASTIO_INTERNAL_TOKEN — server-to-server секрет для edge функций
     public: {
       siteUrl: SITE_URL, // NUXT_PUBLIC_SITE_URL
       supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL

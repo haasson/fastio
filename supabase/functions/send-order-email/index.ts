@@ -5,9 +5,27 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
-// Триггер: Database Webhook на INSERT в таблице orders
-// Настройка: Supabase Dashboard → Database → Webhooks
+// Триггер: Database Webhook на INSERT в таблице orders.
+//
+// Настройка в Supabase Dashboard → Database → Webhooks:
+//   1. Создать webhook на orders INSERT с URL этой функции
+//   2. В HTTP Headers добавить:  x-fastio-webhook-secret: <значение FASTIO_WEBHOOK_SECRET>
+//   3. Тот же секрет задать функции:  supabase secrets set FASTIO_WEBHOOK_SECRET=<random32>
+//
+// Без секрета функция возвращает 401: webhook URL утекает в edge-logs / Dashboard,
+// и без верификации заголовка любой POST мог бы триггерить отправку поддельных писем
+// тенантам (PII утечка + SMTP reputation damage).
+const WEBHOOK_SECRET = Deno.env.get('FASTIO_WEBHOOK_SECRET')
+
 Deno.serve(async (req) => {
+  if (!WEBHOOK_SECRET) {
+    console.error('FASTIO_WEBHOOK_SECRET is not configured')
+    return new Response('Server misconfigured', { status: 500 })
+  }
+  if (req.headers.get('x-fastio-webhook-secret') !== WEBHOOK_SECRET) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
   const payload = await req.json()
 
   if (payload.type !== 'INSERT') {
