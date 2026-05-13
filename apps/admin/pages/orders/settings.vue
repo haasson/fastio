@@ -4,7 +4,10 @@
     <div class="checkboxes">
       <UiCheckbox v-model="form.cash">Наличные</UiCheckbox>
       <UiCheckbox v-model="form.card">Карта при получении</UiCheckbox>
-      <UiCheckbox v-model="form.online">Онлайн</UiCheckbox>
+      <!-- Онлайн-оплата временно недоступна: провайдер (YooKassa) не интегрирован.
+           Чекбокс заблокирован — даже если включить, заказы с paymentType=online
+           отклонятся на сервере. Снимать блокировку после доделанной интеграции. -->
+      <UiCheckbox v-model="form.online" disabled>Онлайн <span class="online-soon">(скоро)</span></UiCheckbox>
     </div>
 
     <UiSectionHeader title="Предзаказ" />
@@ -211,6 +214,11 @@ useUnsavedGuard(page.isDirty)
   display: flex;
   flex-direction: column;
   gap: var(--space-12);
+}
+
+.online-soon {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .row {

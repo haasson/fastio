@@ -199,8 +199,12 @@ const PAYMENT_LABELS: Record<string, string> = {
   online: 'Онлайн',
 }
 
+// 'online' временно отключён — провайдер не интегрирован.
+// План возврата: WISHLIST.md → раздел «Онлайн-оплата (YooKassa) — провайдер не интегрирован».
+// Legacy-тенанты с paymentMethods=['cash','card','online'] увидят только cash/card.
 const paymentOptions = computed(() =>
   (tenant.value?.paymentMethods ?? ['cash', 'card'])
+    .filter((m) => m !== 'online')
     .map((m) => ({ value: m, label: PAYMENT_LABELS[m] ?? m })),
 )
 

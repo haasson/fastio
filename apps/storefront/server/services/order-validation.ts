@@ -1,7 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in', 'request'] as const
-const VALID_PAYMENT_TYPES = ['cash', 'card', 'online'] as const
+// 'online' пока НЕ принимаем — нет интеграции с платёжным провайдером
+// (YooKassa в WISHLIST). До этого фикса валидация принимала 'online', UI рисовал
+// опцию из tenant.payment_methods, БД сохраняла, но оплата фактически не
+// списывалась → курьер уезжал, оплата = 0.
+const VALID_PAYMENT_TYPES = ['cash', 'card'] as const
 
 export type DeliveryType = typeof VALID_DELIVERY_TYPES[number]
 export type PaymentType = typeof VALID_PAYMENT_TYPES[number]

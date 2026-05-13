@@ -1,7 +1,7 @@
 import { reactive, ref, computed, watch } from 'vue'
 import type { InjectionKey, Ref } from 'vue'
 import type { Tenant, SiteLayout, SiteContent, TenantSeo, ConfigIssue } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, getPresetPalette, validateTenantConfig } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, getPresetPalette, validateTenantConfig, GA_ID_RE, YM_ID_RE } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useMessage } from '@fastio/ui'
@@ -174,16 +174,16 @@ export const useAppearanceForm = (tenant: Ref<Tenant | null>) => {
 
     const ga = seo.googleAnalyticsId?.trim() || null
 
-    if (ga && !/^G-[A-Z0-9]{4,15}$/i.test(ga)) {
+    if (ga && !GA_ID_RE.test(ga)) {
       errors.push('Google Analytics ID — неверный формат, ожидается G-XXXXXXXXXX')
       seo.googleAnalyticsId = null
     } else {
-      seo.googleAnalyticsId = ga
+      seo.googleAnalyticsId = ga ? ga.toUpperCase() : null
     }
 
     const ym = seo.yandexMetrikaId?.trim() || null
 
-    if (ym && !/^\d{5,12}$/.test(ym)) {
+    if (ym && !YM_ID_RE.test(ym)) {
       errors.push('Яндекс.Метрика — неверный номер счётчика, ожидается число из 5–12 цифр')
       seo.yandexMetrikaId = null
     } else {

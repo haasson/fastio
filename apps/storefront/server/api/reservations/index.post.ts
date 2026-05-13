@@ -1,6 +1,7 @@
 import { getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
 import { getTenantDb } from '../../utils/tenantDb'
-import { createRateLimiter, todayInTz, addDaysToDateStr, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { createRateLimiter, todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
+import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 
@@ -37,7 +38,7 @@ export default defineEventHandler(async (event) => {
   // Check module enabled
   const { data: tenantData } = await db
     .from('tenants')
-    .select('modules, timezone')
+    .select('modules, timezone, working_hours_schedule')
     .single()
 
   if (!tenantData?.modules?.reservations) {
@@ -53,6 +54,12 @@ export default defineEventHandler(async (event) => {
   if (settings && !settings.enabled) {
     throw createError({ statusCode: 400, message: 'Бронирование недоступно' })
   }
+
+  // Branch working hours override (если бронь по конкретному филиалу)
+  const branchId = body.branchId || null
+  const { data: branchData } = branchId
+    ? await db.from('branches').select('working_hours_schedule').eq('id', branchId).maybeSingle()
+    : { data: null }
 
   const minGuests = settings?.min_guests ?? 1
   const maxAdvanceDays = settings?.max_advance_days ?? 30
@@ -80,6 +87,47 @@ export default defineEventHandler(async (event) => {
   if (body.reservedDate > maxDateStr) {
     throw createError({ statusCode: 400, message: `Бронирование доступно не позднее чем за ${maxAdvanceDays} дней` })
   }
+
+  // ─── Server-side slot validation ─────────────────────────────────────────
+  // Сверяем reservedTime со списком сгенерированных слотов — иначе через curl
+  // можно создать бронь на 03:00 (никогда не открыто) или любое другое время
+  // вне расписания. Capacity не проверяем: бронируется стол, не «N мест»,
+  // и заявки без table_id распределяет админ через ReservationTablePicker.
+  const branchSchedule = (branchData?.working_hours_schedule as WorkingHoursSchedule | null) ?? null
+  const schedule = branchSchedule ?? (tenantData.working_hours_schedule as WorkingHoursSchedule | null)
+  const isoDay = getIsoDayForDate(body.reservedDate)
+  const dayHours: WorkingHours = schedule
+    ? (schedule.days[isoDay] ?? schedule.default)
+    : { open: '10:00', close: '22:00' }
+
+  if (dayHours.dayOff) {
+    throw createError({ statusCode: 400, message: 'В этот день бронирование недоступно' })
+  }
+
+  const slotStep = (settings?.slot_step as number | null) ?? 30
+  const closeBuffer = (settings?.close_buffer_minutes as number | null) ?? 60
+  const slots = generateTimeSlots(dayHours.open, dayHours.close, slotStep, closeBuffer)
+
+  // На «сегодня» дополнительно отсекаем прошедшие слоты — иначе через curl
+  // можно забронировать утренний слот вечером (defense-in-depth, клиент уже фильтрует).
+  const tenantNowMin = body.reservedDate === todayStr ? timeToMinutes(nowTimeInTz(tenantTz)) : null
+  const availableSlots = slots.filter(({ timeStr, nextDay }) => {
+    if (tenantNowMin === null) return true
+    const slotMin = timeToMinutes(timeStr) + (nextDay ? 1440 : 0)
+
+    return slotMin > tenantNowMin
+  })
+
+  const normalizedTime = String(body.reservedTime).slice(0, 5)
+  const pickedSlot = availableSlots.find(s => s.timeStr === normalizedTime)
+
+  if (!pickedSlot) {
+    throw createError({ statusCode: 400, message: 'Указанное время недоступно для бронирования' })
+  }
+
+  // Overnight-расписание (open=18:00, close=02:00): слот «01:00» относится к
+  // СЛЕДУЮЩЕМУ календарному дню. Клиент шлёт исходную дату — сервер сдвигает.
+  const reservedDate = pickedSlot.nextDay ? addDaysToDateStr(body.reservedDate, 1) : body.reservedDate
 
   // Try to identify authenticated customer
   let customerId: string | null = null
@@ -114,10 +162,10 @@ export default defineEventHandler(async (event) => {
       guest_phone: body.guestPhone.trim(),
       guest_email: body.guestEmail?.trim() || null,
       guest_count: body.guestCount,
-      reserved_date: body.reservedDate,
-      reserved_time: body.reservedTime,
+      reserved_date: reservedDate,
+      reserved_time: normalizedTime,
       comment: body.comment?.trim() || null,
-      branch_id: body.branchId || null,
+      branch_id: branchId,
       status,
       ...(customerId && { customer_id: customerId }),
     })

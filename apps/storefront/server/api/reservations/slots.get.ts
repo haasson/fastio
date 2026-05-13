@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const date = query.date as string | undefined
   const branchId = query.branchId as string | undefined
+
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw createError({ statusCode: 400, message: 'Параметр date обязателен (YYYY-MM-DD)' })
   }
@@ -50,11 +51,17 @@ export default defineEventHandler(async (event) => {
   const tenantToday = todayInTz(tenantTz)
   const tenantNowMin = date === tenantToday ? timeToMinutes(nowTimeInTz(tenantTz)) : null
 
-  const filtered = slots.filter(({ timeStr, nextDay }) => {
-    if (tenantNowMin === null) return true
-    const slotMin = timeToMinutes(timeStr) + (nextDay ? 1440 : 0)
-    return slotMin > tenantNowMin
-  })
+  // Capacity-чек на витрине не делается: бронируется стол, не «N мест»,
+  // и заявки без table_id админ распределяет вручную через
+  // `apps/admin/features/reservations/components/ReservationTablePicker.vue`
+  // (там же доступен soft-warning при даблбукинге). Поэтому отдаём все
+  // будущие слоты как `available: true`.
+  return slots
+    .filter(({ timeStr, nextDay }) => {
+      if (tenantNowMin === null) return true
+      const slotMin = timeToMinutes(timeStr) + (nextDay ? 1440 : 0)
 
-  return filtered.map(({ timeStr }) => ({ time: timeStr, available: true }))
+      return slotMin > tenantNowMin
+    })
+    .map(({ timeStr }) => ({ time: timeStr, available: true }))
 })
