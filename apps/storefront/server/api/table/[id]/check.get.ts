@@ -6,6 +6,13 @@ export default defineEventHandler(async (event) => {
   const tableId = getRouterParam(event, 'id')
   if (!tableId) throw createError({ statusCode: 400 })
 
+  // IDOR guard: гость должен иметь cookie от GET /api/table/[id] (QR-сканирование).
+  // 404 — чтобы не раскрывать существование стола перебором.
+  const sessionTableId = getCookie(event, 'fastio_table')
+  if (sessionTableId !== tableId) {
+    throw createError({ statusCode: 404 })
+  }
+
   // Загружаем стол чтобы получить opened_at
   const { data: table } = await db
     .from('tables')
