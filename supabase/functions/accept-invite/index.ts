@@ -19,12 +19,19 @@ Deno.serve(async (req) => {
   )
 
   const { data: { user }, error: authError } = await userSupabase.auth.getUser()
-  if (authError || !user) {
+  if (authError || !user || !user.email) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const { token } = await req.json() as { token: string }
-  if (!token) {
+  let body: { token?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const token = body.token
+  if (!token || typeof token !== 'string') {
     return json({ error: 'token is required' }, { status: 400 })
   }
 
@@ -33,55 +40,45 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  // Находим приглашение
-  const { data: invitation } = await adminSupabase
-    .from('tenant_invitations')
-    .select('*')
-    .eq('token', token)
-    .is('accepted_at', null)
-    .single()
+  // Atomic: SELECT FOR UPDATE → проверки → INSERT membership → UPDATE accepted_at.
+  // Все условия (expired/email mismatch/already accepted) проверяются в RPC и
+  // транслируются через известные SQLSTATE. См. миграцию 269.
+  const { data, error } = await adminSupabase.rpc('accept_invitation_atomic', {
+    _token: token,
+    _user_id: user.id,
+    _user_email: user.email,
+  })
 
-  if (!invitation) {
-    return json({ error: 'Invitation not found or already accepted' }, { status: 404 })
-  }
-
-  // Проверяем срок
-  if (new Date(invitation.expires_at) < new Date()) {
-    return json({ error: 'Invitation expired' }, { status: 410 })
-  }
-
-  // Проверяем email
-  if (user.email !== invitation.email) {
-    return json({ error: 'Email mismatch' }, { status: 403 })
-  }
-
-  // Создаём membership с role_id
-  const { error: memberError } = await adminSupabase
-    .from('tenant_members')
-    .insert({
-      tenant_id: invitation.tenant_id,
-      user_id: user.id,
-      role_id: invitation.role_id,
-      branch_ids: invitation.branch_ids ?? [],
-    })
-
-  if (memberError) {
-    if (memberError.code === '23505') {
-      return json({ error: 'Already a member' }, { status: 409 })
+  if (error) {
+    // SQLSTATE-коды заданы в миграции 269 через RAISE ... USING ERRCODE.
+    // Матчим по error.code (стабильно) с fallback на error.message (на случай
+    // если PostgREST поменяет формат пробрасывания custom-кодов).
+    switch (error.code) {
+      case '23505': // unique_violation на tenant_members
+        return json({ error: 'Already a member' }, { status: 409 })
+      case '02000': // invitation_not_found
+        return json({ error: 'Invitation not found' }, { status: 404 })
+      case '23514': // invitation_already_accepted
+        return json({ error: 'Invitation already accepted' }, { status: 409 })
+      case '22023': // invitation_expired
+        return json({ error: 'Invitation expired' }, { status: 410 })
+      case '42501': // invitation_email_mismatch
+        return json({ error: 'Email mismatch' }, { status: 403 })
     }
-    console.error('Member insert error:', memberError)
-    return json({ error: 'Failed to join team' }, { status: 500 })
+
+    console.error('accept_invitation_atomic error:', error)
+    return json({ error: 'Failed to accept invitation' }, { status: 500 })
   }
 
-  // Помечаем приглашение как принятое
-  await adminSupabase
-    .from('tenant_invitations')
-    .update({ accepted_at: new Date().toISOString() })
-    .eq('id', invitation.id)
+  // RPC возвращает TABLE → всегда массив.
+  const row = data?.[0]
+  if (!row) {
+    return json({ error: 'Unexpected empty response' }, { status: 500 })
+  }
 
   return json({
     success: true,
-    tenantId: invitation.tenant_id,
-    roleId: invitation.role_id,
+    tenantId: row.tenant_id,
+    roleId: row.role_id,
   }, { status: 200 })
 })
