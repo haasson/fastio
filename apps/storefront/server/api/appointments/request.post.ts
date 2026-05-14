@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Примечания слишком длинные (макс. 1000 символов)' })
   }
 
-  const customerEmail = (body.customerEmail as string | undefined)?.trim() || null
+  let customerEmail = (body.customerEmail as string | undefined)?.trim() || null
   if (customerEmail !== null) {
     if (customerEmail.length > 254 || !EMAIL_REGEX.test(customerEmail)) {
       throw createError({ statusCode: 400, message: 'Некорректный email' })
@@ -72,6 +72,17 @@ export default defineEventHandler(async (event) => {
     customerId = authCtx.customerId
   } catch {
     // гость — продолжаем без customer_id
+  }
+
+  // Authenticated клиент с пустым body.customerEmail — подтягиваем email
+  // из его профиля (customers.email), чтобы связь visit↔customer не терялась.
+  if (customerEmail === null && customerId) {
+    const { data: customerRow } = await db
+      .from('customers')
+      .select('email')
+      .eq('id', customerId)
+      .maybeSingle()
+    customerEmail = ((customerRow?.email as string | null | undefined) ?? null)
   }
 
   // Дозагрузка услуг, проверка принадлежности тенанту и доступности
