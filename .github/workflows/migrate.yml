@@ -11,6 +11,13 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    env:
+      PGHOST: 109.71.242.205
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGCONNECT_TIMEOUT: '10'
+      PGPASSWORD: ${{ secrets.SELFHOSTED_DB_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -18,17 +25,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
 
       - name: Bootstrap migration tracking + apply new migrations
-        env:
-          PGCONNECT_TIMEOUT: 10
-          DB_URL: ${{ secrets.SELFHOSTED_DB_URL }}
         run: |
           set -e
 
           # Создаём таблицу учёта миграций если её нет.
-          # На свежем self-hosted её может не быть — этим bootstrap-ом мы помечаем
-          # все *.sql из supabase/migrations/ как applied при первом проходе
-          # (мы накатывали их вручную через docker exec psql).
-          psql "$DB_URL" -v ON_ERROR_STOP=1 <<SQL
+          # На свежем self-hosted её может не быть — bootstrap-ом помечаем все
+          # уже накатанные через docker exec миграции как applied.
+          psql -v ON_ERROR_STOP=1 <<SQL
           CREATE SCHEMA IF NOT EXISTS supabase_migrations;
           CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
             version text PRIMARY KEY,
@@ -36,34 +39,31 @@ jobs:
           );
           SQL
 
-          # Считаем сколько строк в БД.
-          existing=$(psql "$DB_URL" -tAc "SELECT count(*) FROM supabase_migrations.schema_migrations")
+          existing=$(psql -tAc "SELECT count(*) FROM supabase_migrations.schema_migrations")
           echo "Already tracked: $existing migrations"
 
-          # Если таблица пустая — bootstrap: считаем все существующие *.sql применёнными,
-          # кроме самой свежей (она и есть новая миграция).
-          # Это разовая операция — следующие пуши уже будут видеть полную таблицу.
+          # Если таблица пустая — bootstrap: помечаем все *.sql кроме последней
+          # как applied. Последняя применится в цикле ниже.
           if [ "$existing" = "0" ]; then
             echo "Empty schema_migrations — bootstrap markers for all existing migrations except the latest"
             latest=$(ls supabase/migrations/*.sql | sort -V | tail -1)
             for f in $(ls supabase/migrations/*.sql | sort -V); do
               if [ "$f" = "$latest" ]; then continue; fi
               version=$(basename "$f" .sql | cut -d'_' -f1)
-              psql "$DB_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version') ON CONFLICT DO NOTHING"
+              psql -v ON_ERROR_STOP=1 -c "INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version') ON CONFLICT DO NOTHING"
             done
             echo "Bootstrap done. Latest ($latest) will be applied below."
           fi
 
-          # Применяем все новые миграции по порядку.
           for f in $(ls supabase/migrations/*.sql | sort -V); do
             version=$(basename "$f" .sql | cut -d'_' -f1)
-            applied=$(psql "$DB_URL" -tAc "SELECT 1 FROM supabase_migrations.schema_migrations WHERE version='$version'")
+            applied=$(psql -tAc "SELECT 1 FROM supabase_migrations.schema_migrations WHERE version='$version'")
             if [ "$applied" = "1" ]; then
               continue
             fi
             echo "→ Applying $f"
-            psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$f"
-            psql "$DB_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version')"
+            psql -v ON_ERROR_STOP=1 -f "$f"
+            psql -v ON_ERROR_STOP=1 -c "INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version')"
             echo "✓ Applied $version"
           done
 
