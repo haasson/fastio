@@ -40,8 +40,6 @@ import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 import { useAuthStore } from '~/features/auth'
 import { storeToRefs } from 'pinia'
 
-definePageMeta({ middleware: 'no-services' })
-
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)
 

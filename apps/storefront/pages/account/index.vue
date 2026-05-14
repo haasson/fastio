@@ -9,12 +9,17 @@
             <span>Профиль</span>
           </FsCard>
 
-          <FsCard class="account-card" @click="navigateTo({ path: '/account/orders', query: route.query })">
+          <FsCard v-if="isRetail" class="account-card" @click="navigateTo({ path: '/account/orders', query: route.query })">
             <ClipboardList :size="20" />
             <span>Мои заказы</span>
           </FsCard>
 
-          <FsCard class="account-card" @click="navigateTo({ path: '/account/addresses', query: route.query })">
+          <FsCard v-if="isServices" class="account-card" @click="navigateTo({ path: '/account/appointments', query: route.query })">
+            <CalendarCheck :size="20" />
+            <span>Мои записи</span>
+          </FsCard>
+
+          <FsCard v-if="isRetail" class="account-card" @click="navigateTo({ path: '/account/addresses', query: route.query })">
             <MapPin :size="20" />
             <span>Адреса</span>
           </FsCard>
@@ -29,20 +34,22 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { navigateTo, useRoute } from 'nuxt/app'
-import { UserRound, ClipboardList, MapPin } from 'lucide-vue-next'
+import { computed, onMounted } from 'vue'
+import { navigateTo, useNuxtData, useRoute } from 'nuxt/app'
+import { UserRound, ClipboardList, MapPin, CalendarCheck } from 'lucide-vue-next'
 import { FsSection, FsCard, FsButton } from '@fastio/public-ui'
+import type { Tenant } from '@fastio/shared'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
 import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 import { useAuthStore } from '~/features/auth'
 import { storeToRefs } from 'pinia'
 
-definePageMeta({ middleware: 'no-services' })
-
 const route = useRoute()
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+const isServices = computed(() => tenant.value?.businessType === 'services')
+const isRetail = computed(() => tenant.value?.businessType === 'retail')
 
 onMounted(async () => {
   await authStore.init()
