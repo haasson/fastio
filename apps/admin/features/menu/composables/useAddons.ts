@@ -3,6 +3,7 @@ import type { AddonPreset } from '@fastio/shared'
 import { mapAddon } from '../api/addons'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
+import { reportError } from '~/shared/utils/reportError'
 
 export function useAddons(tenantId: Ref<string>) {
   const api = useDatabase()
@@ -57,8 +58,10 @@ export function useAddons(tenantId: Ref<string>) {
     addon.active = active
     try {
       await api.addons.toggleActive(id, active)
-    } catch {
+    } catch (e) {
       addon.active = prev
+      reportError(e)
+      throw e
     }
   }
 

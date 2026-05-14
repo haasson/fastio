@@ -9,6 +9,7 @@ import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { reportError } from '~/shared/utils/reportError'
 import { useKitchenStatusBlock } from '~/features/kitchen'
+import { useAuditLog } from '~/features/audit-log'
 
 export type UseOrdersOptions = {
   branchId?: Ref<string | null>
@@ -32,6 +33,7 @@ export function useOrders(
   const authStore = useAuthStore()
   const tenantStore = useTenantStore()
   const { checkKitchenBlock } = useKitchenStatusBlock()
+  const { log } = useAuditLog()
   const _orders = ref<Order[]>([])
   const loading = ref(false)
   const page = ref(1)
@@ -221,6 +223,13 @@ export function useOrders(
     // Clean up kitchen queue when order reaches a terminal state
     if (newStatus?.groupType === 'cancelled') {
       api.kitchenQueue.cancelForOrders([orderId]).catch(reportError)
+      log({
+        action: 'order.cancel',
+        entityType: 'order',
+        entityId: orderId,
+        entityName: order?.orderNumber ?? null,
+        payload: { fromStatus: oldStatus?.name ?? null, toStatus: newStatus.name },
+      })
     } else if (newStatus?.groupType === 'completed') {
       api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id).catch(reportError)
     }

@@ -71,6 +71,7 @@ import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiText, UiSegmentedC
 import { useConfirm } from '@fastio/kit'
 import type { Table, TableShape } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
+import { useAuditLog } from '~/features/audit-log'
 
 const props = defineProps<{
   modelValue: boolean
@@ -88,6 +89,7 @@ const api = useDatabase()
 const formRef = ref<InstanceType<typeof UiForm> | null>(null)
 const { success } = useMessage()
 const { confirm } = useConfirm()
+const { log } = useAuditLog()
 
 const saving = ref(false)
 
@@ -161,6 +163,13 @@ const handleDelete = async () => {
   if (!ok) return
 
   await api.tables.archive(props.table.id)
+  log({
+    action: 'table.delete',
+    entityType: 'table',
+    entityId: props.table.id,
+    entityName: props.table.name,
+    payload: { capacity: props.table.capacity, shape: props.table.shape },
+  })
   emit('deleted', props.table.id)
   emit('update:modelValue', false)
   success('Стол удалён')

@@ -3,6 +3,7 @@ import type { Combo, ComboFormData } from '@fastio/shared'
 import { mapCombo } from '../api/combos'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
+import { reportError } from '~/shared/utils/reportError'
 
 export function useCombos(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()
@@ -42,13 +43,30 @@ export function useCombos(tenantId: Ref<string>, categoryId: Ref<string | null>)
   const toggleActive = async (id: string, active: boolean) => {
     const combo = combos.value.find((c) => c.id === id)
 
-    if (combo) combo.active = active
-    await api.combos.toggleActive(id, active)
+    if (!combo) return
+    const prev = combo.active
+
+    combo.active = active
+    try {
+      await api.combos.toggleActive(id, active)
+    } catch (e) {
+      combo.active = prev
+      reportError(e)
+      throw e
+    }
   }
 
   const reorder = async (reordered: Combo[]) => {
+    const prev = combos.value
+
     combos.value = reordered
-    await api.combos.reorder(reordered.map((c, i) => ({ id: c.id, order: i })))
+    try {
+      await api.combos.reorder(reordered.map((c, i) => ({ id: c.id, order: i })))
+    } catch (e) {
+      combos.value = prev
+      reportError(e)
+      throw e
+    }
   }
 
   return { combos, loading, add, update, remove, toggleActive, reorder }

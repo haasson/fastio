@@ -3,6 +3,7 @@ import type { ModifierGroupFormData } from '@fastio/shared'
 import { mapModifierGroup } from '../api/modifiers'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
+import { reportError } from '~/shared/utils/reportError'
 
 export function useModifierGroups(tenantId: Ref<string>) {
   const api = useDatabase()
@@ -46,8 +47,17 @@ export function useModifierGroups(tenantId: Ref<string>) {
   const toggleActive = async (id: string, active: boolean) => {
     const group = groups.value.find((g) => g.id === id)
 
-    if (group) group.active = active
-    await api.modifiers.toggleActive(id, active)
+    if (!group) return
+    const prev = group.active
+
+    group.active = active
+    try {
+      await api.modifiers.toggleActive(id, active)
+    } catch (e) {
+      group.active = prev
+      reportError(e)
+      throw e
+    }
   }
 
   return { groups, loading, add, update, remove, toggleActive }

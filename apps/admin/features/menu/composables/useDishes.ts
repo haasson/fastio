@@ -3,9 +3,12 @@ import type { Dish } from '@fastio/shared'
 import { mapDish, type DishFormData } from '../api/dishes'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
+import { useAuditLog } from '~/features/audit-log'
+import { reportError } from '~/shared/utils/reportError'
 
 export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()
+  const { log } = useAuditLog()
 
   const { items: dishes, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value && categoryId.value ? `dishes:${tenantId.value}:${categoryId.value}` : null),
@@ -40,20 +43,46 @@ export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>)
   }
 
   const remove = async (id: string) => {
+    const dish = dishes.value.find((d) => d.id === id)
+
     await api.dishes.remove(id)
     dishes.value = dishes.value.filter((d) => d.id !== id)
+    log({
+      action: 'dish.delete',
+      entityType: 'dish',
+      entityId: id,
+      entityName: dish?.name ?? null,
+      payload: { categoryId: dish?.categoryId ?? null, price: dish?.price ?? null },
+    })
   }
 
   const toggleActive = async (id: string, active: boolean) => {
     const dish = dishes.value.find((d) => d.id === id)
 
-    if (dish) dish.active = active
-    await api.dishes.toggleActive(id, active)
+    if (!dish) return
+    const prev = dish.active
+
+    dish.active = active
+    try {
+      await api.dishes.toggleActive(id, active)
+    } catch (e) {
+      dish.active = prev
+      reportError(e)
+      throw e
+    }
   }
 
   const reorder = async (reordered: Dish[]) => {
+    const prev = dishes.value
+
     dishes.value = reordered
-    await api.dishes.reorder(reordered.map((d, i) => ({ id: d.id, order: i })))
+    try {
+      await api.dishes.reorder(reordered.map((d, i) => ({ id: d.id, order: i })))
+    } catch (e) {
+      dishes.value = prev
+      reportError(e)
+      throw e
+    }
   }
 
   return { dishes, loading, add, update, remove, toggleActive, reorder }
