@@ -11,13 +11,6 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
-    env:
-      PGHOST: 109.71.242.205
-      PGPORT: '5432'
-      PGUSER: postgres
-      PGDATABASE: postgres
-      PGCONNECT_TIMEOUT: '10'
-      PGPASSWORD: ${{ secrets.SELFHOSTED_DB_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +18,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
 
       - name: Bootstrap migration tracking + apply new migrations
+        env:
+          PGHOST: '109.71.242.205'
+          PGPORT: '5432'
+          PGUSER: 'postgres'
+          PGDATABASE: 'postgres'
+          PGCONNECT_TIMEOUT: '10'
+          PGPASSWORD: ${{ secrets.SELFHOSTED_DB_PASSWORD }}
         run: |
           set -e
 
