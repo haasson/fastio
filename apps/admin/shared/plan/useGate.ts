@@ -1,5 +1,5 @@
 import { computed, type ComputedRef } from 'vue'
-import { AUDIT_LOG_ENABLED } from '~/shared/utils/featureFlags'
+import { isAuditLogEnabled } from '~/shared/utils/featureFlags'
 import { ok, deny, useGateInfra } from './useGate.shared'
 import type { GateRegistry, GateResult, GateKey } from './useGate.types'
 
@@ -99,7 +99,7 @@ export const useGate = (): GateRegistry => {
 
   // ───── Compile-time flag gates ─────
 
-  const auditLog = flagGate(AUDIT_LOG_ENABLED)
+  const auditLog = flagGate(isAuditLogEnabled())
 
   // ───── Config-driven gates ─────
 

@@ -51,7 +51,8 @@ import { ref, reactive, watch, computed } from 'vue'
 import { UiModal, UiInput, UiCheckbox, UiText, useMessage } from '@fastio/ui'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { permissionGroups, type PermissionGroup } from '~/config/team-roles'
+import { getPermissionGroups, type PermissionGroup } from '~/config/team-roles'
+import { isAuditLogEnabled } from '~/shared/utils/featureFlags'
 
 const props = defineProps<{
   modelValue: boolean
@@ -65,6 +66,8 @@ const emit = defineEmits<{
 
 const tenantStore = useTenantStore()
 const message = useMessage()
+
+const permissionGroups = getPermissionGroups({ auditLogEnabled: isAuditLogEnabled() })
 
 const isEditing = computed(() => !!props.role?.id)
 

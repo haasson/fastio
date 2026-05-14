@@ -80,6 +80,7 @@ export default defineNuxtConfig({
       yandexMapsApiKey: '',
       telegramBotUsername: '',
       helpUrl: 'https://help.fastio.ru',
+      auditLogEnabled: false,
     },
   },
 })

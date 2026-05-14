@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import type { PermissionKey } from '@fastio/shared'
-import { permissionGroups } from '../team-roles'
-import { AUDIT_LOG_ENABLED } from '../../shared/utils/featureFlags'
+import { getPermissionGroups } from '../team-roles'
+
+const AUDIT_LOG_ENABLED = false
+const permissionGroups = getPermissionGroups({ auditLogEnabled: AUDIT_LOG_ENABLED })
 
 // Все PermissionKey — должны быть в sync с типом
 const ALL_PERMISSION_KEYS: PermissionKey[] = [

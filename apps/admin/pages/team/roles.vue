@@ -49,12 +49,15 @@ import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import RoleEditModal from '~/features/settings/components/RoleEditModal.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { permissionGroups } from '~/config/team-roles'
+import { getPermissionGroups } from '~/config/team-roles'
+import { isAuditLogEnabled } from '~/shared/utils/featureFlags'
 
 const tenantStore = useTenantStore()
 const api = useDatabase()
 const { confirm } = useConfirm()
 const message = useMessage()
+
+const permissionGroups = getPermissionGroups({ auditLogEnabled: isAuditLogEnabled() })
 
 const showEditModal = ref(false)
 const editingRole = ref<TenantCustomRole | null>(null)

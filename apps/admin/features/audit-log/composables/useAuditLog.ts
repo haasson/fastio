@@ -4,7 +4,7 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 import type { AuditLogsListParams } from '../api/audit-logs'
-import { AUDIT_LOG_ENABLED } from '~/shared/utils/featureFlags'
+import { isAuditLogEnabled } from '~/shared/utils/featureFlags'
 
 type LogParams = Omit<AddAuditLogParams, 'tenantId' | 'actorId' | 'actorName' | 'actorRole'>
 
@@ -12,9 +12,10 @@ export const useAuditLog = () => {
   const api = useDatabase()
   const authStore = useAuthStore()
   const tenantStore = useTenantStore()
+  const enabled = isAuditLogEnabled()
 
   const log = (params: LogParams) => {
-    if (!AUDIT_LOG_ENABLED) return
+    if (!enabled) return
     if (!authStore.user) return
 
     api.auditLogs.add({
@@ -27,7 +28,7 @@ export const useAuditLog = () => {
   }
 
   const list = async (params: AuditLogsListParams = {}): Promise<AuditLog[]> => {
-    if (!AUDIT_LOG_ENABLED) return []
+    if (!enabled) return []
 
     return api.auditLogs.list(tenantStore.tenant.id, params)
   }

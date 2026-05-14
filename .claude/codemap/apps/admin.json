@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-13T14:00:25.709Z",
+  "generated_at": "2026-05-14T04:56:30.534Z",
   "stats": {
     "files": 83,
     "pages": 0,
-    "symbols": 142,
+    "symbols": 143,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -175,8 +175,8 @@
     },
     "config/team-roles.ts": {
       "kind": "ts",
-      "hash": "83fbe1026428",
-      "purpose": "Конфиг permissionGroups для UI редактора ролей: ярлыки и группировка PermissionKey по разделам (Меню, Заказы, Кухня и т.д.)",
+      "hash": "04ebce558936",
+      "purpose": "Конфиг permissionGroups для UI редактора ролей: getPermissionGroups({auditLogEnabled}) возвращает группы PermissionKey по разделам (audit_log.view добавляется по runtime-флагу)",
       "symbols": [
         {
           "name": "PermissionGroup",
@@ -185,10 +185,16 @@
           "purpose": "{ label: string; permissions: { key, label }[] }"
         },
         {
-          "name": "permissionGroups",
-          "kind": "const",
-          "hash": "d33cc3d8",
-          "purpose": "Список групп прав с лейблами для UI редактора роли"
+          "name": "PermissionGroupOptions",
+          "kind": "type",
+          "hash": "3f05b44f",
+          "purpose": "Опции getPermissionGroups: auditLogEnabled — добавлять ли audit_log.view в группу Настроек"
+        },
+        {
+          "name": "getPermissionGroups",
+          "kind": "function",
+          "hash": "2dcb1e47",
+          "purpose": "Строит массив permissionGroups для UI редактора ролей; audit_log.view добавляется условно по auditLogEnabled"
         }
       ]
     },
@@ -737,8 +743,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "0033fd3d94f8",
-      "purpose": "Реестр гейтов фич админки: feature-only (модули/тариф) и permission-aware (роли); единая точка проверки доступа",
+      "hash": "0c3e6ce6c390",
+      "purpose": "Единая точка проверки доступа к фичам админки: агрегирует все гейты (retail + services) в GateRegistry с computed на каждую фичу/раздел",
       "symbols": [
         {
           "name": "useGate",
@@ -1299,14 +1305,14 @@
     },
     "shared/utils/featureFlags.ts": {
       "kind": "ts",
-      "hash": "db1eadab8200",
-      "purpose": "Compile-time feature flags админки",
+      "hash": "329d36949519",
+      "purpose": "Runtime feature-флаги админки, читаются из useRuntimeConfig().public",
       "symbols": [
         {
-          "name": "AUDIT_LOG_ENABLED",
-          "kind": "const",
-          "hash": "1a724498",
-          "purpose": "Флаг показа раздела аудит-лога (сейчас false)"
+          "name": "isAuditLogEnabled",
+          "kind": "function",
+          "hash": "d5065e6b",
+          "purpose": "Boolean-флаг включения audit-log; читает runtimeConfig.public.auditLogEnabled (ENV NUXT_PUBLIC_AUDIT_LOG_ENABLED)"
         }
       ]
     },
