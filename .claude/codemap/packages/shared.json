@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-13T14:00:25.889Z",
+  "generated_at": "2026-05-14T05:48:06.972Z",
   "stats": {
-    "files": 43,
+    "files": 44,
     "pages": 0,
-    "symbols": 189,
+    "symbols": 192,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -340,6 +340,31 @@
           "kind": "function",
           "hash": "32e17448",
           "purpose": "Берёт первый IP из заголовка (если задан через trusted-proxy) или socket.remoteAddress. Без trustedHeaderValue игнорирует все user-controlled заголовки — закрывает rate-limit/IDOR spoof через X-Forwarded-For."
+        }
+      ]
+    },
+    "src/utils/csp.ts": {
+      "kind": "ts",
+      "hash": "fa0d2499f693",
+      "purpose": "Билдер Content-Security-Policy и базовый набор security-заголовков (X-Frame, HSTS, Referrer-Policy и т.д.) для Nitro middleware admin и storefront.",
+      "symbols": [
+        {
+          "name": "buildCsp",
+          "kind": "function",
+          "hash": "4612c59c",
+          "purpose": "Собирает CSP-строку из общих директив + переопределяемого img-src (admin шире, storefront уже) + опционального report-uri (например, Sentry CSP endpoint)."
+        },
+        {
+          "name": "CspOptions",
+          "kind": "type",
+          "hash": "d2cebca3",
+          "purpose": "Параметры buildCsp: imgSrc (обязательный, разный для admin/storefront) и опциональный reportUri."
+        },
+        {
+          "name": "BASE_SECURITY_HEADERS",
+          "kind": "const",
+          "hash": "063eec30",
+          "purpose": "Готовый объект заголовков X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Strict-Transport-Security — общие для admin и storefront, спрэдятся рядом с CSP."
         }
       ]
     },
