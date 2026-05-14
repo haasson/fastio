@@ -126,7 +126,7 @@ Deno.serve(withSentry('add-custom-domain', async (req) => {
     return json({ error: 'Этот домен уже используется другим тенантом' }, { status: 409 })
   }
 
-  // DNS TXT verification — без TXT не пропускаем к Vercel API.
+  // DNS TXT verification — без TXT не пропускаем к Coolify API.
   const dns = await verifyDnsOwnership(normalizedDomain, tenant.id as string)
   if (!dns.ok) {
     // reason: no_record / mismatch / lookup_failed — нужно для дебага юзеру,
@@ -143,34 +143,43 @@ Deno.serve(withSentry('add-custom-domain', async (req) => {
     }, { status: 412 })
   }
 
-  // Vercel API с timeout — без него висящий запрос блокирует функцию.
+  const coolifyApiUrl = Deno.env.get('COOLIFY_API_URL')
+  const coolifyToken = Deno.env.get('COOLIFY_TOKEN')
+  const coolifyStorefrontUuid = Deno.env.get('COOLIFY_STOREFRONT_UUID')
+  if (!coolifyApiUrl || !coolifyToken || !coolifyStorefrontUuid) {
+    console.error('Coolify env missing:', { coolifyApiUrl: !!coolifyApiUrl, coolifyToken: !!coolifyToken, coolifyStorefrontUuid: !!coolifyStorefrontUuid })
+    return json({ error: 'Domain registration misconfigured' }, { status: 500 })
+  }
+
+  // Coolify API с timeout — без него висящий запрос блокирует функцию.
+  // Coolify API внутри VPS, но всё равно ставим timeout на случай зависания контейнера.
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10_000)
-  let vercelResponse: Response
+  let coolifyResponse: Response
   try {
-    vercelResponse = await fetch(
-      `https://api.vercel.com/v10/projects/${Deno.env.get('VERCEL_PROJECT_ID')}/domains`,
+    coolifyResponse = await fetch(
+      `${coolifyApiUrl}/api/v1/applications/${coolifyStorefrontUuid}/domains`,
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${Deno.env.get('VERCEL_TOKEN')}`,
+          Authorization: `Bearer ${coolifyToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: normalizedDomain }),
+        body: JSON.stringify({ domain: `https://${normalizedDomain}` }),
         signal: controller.signal,
       },
     )
   } catch (err) {
     clearTimeout(timeoutId)
-    console.error('Vercel API request failed:', err)
+    console.error('Coolify API request failed:', err)
     return json({ error: 'Domain registration failed' }, { status: 502 })
   }
   clearTimeout(timeoutId)
 
-  if (!vercelResponse.ok) {
-    // Не прокидываем Vercel error в клиента — он может содержать internal context.
-    const text = await vercelResponse.text().catch(() => '')
-    console.error('Vercel error:', vercelResponse.status, text)
+  if (!coolifyResponse.ok) {
+    // Не прокидываем Coolify error в клиента — он может содержать internal context.
+    const text = await coolifyResponse.text().catch(() => '')
+    console.error('Coolify error:', coolifyResponse.status, text)
     return json({ error: 'Domain registration failed' }, { status: 502 })
   }
 
