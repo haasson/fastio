@@ -50,9 +50,7 @@ export const categoriesApi = {
   },
 
   async reorder(sb: SupabaseClient, items: { id: string; order: number }[]) {
-    await Promise.all(
-      items.map(({ id, order }) => query(sb.from('categories').update({ sort_order: order }).eq('id', id))),
-    )
+    await query(sb.rpc('reorder_categories', { items }))
   },
 
   async uploadPhoto(sb: SupabaseClient, tenantId: string, file: File): Promise<string> {

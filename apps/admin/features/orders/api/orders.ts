@@ -161,8 +161,12 @@ const toOrderPayload = (data: OrderUpdateData | OrderCreateData): Partial<OrderR
   ...('kitchenLeadMinutes' in data && { kitchen_lead_minutes: data.kitchenLeadMinutes }),
 }) as Partial<OrderRow>
 
-const toItemRows = (orderId: string, items: OrderItem[]): Omit<OrderItemRow, 'id'>[] => items.map((item, i) => ({
-  order_id: orderId,
+// orderId опционален: для INSERT в order_items нужен (см. createWithItems),
+// для RPC update_order_with_items — нет (RPC игнорирует order_id из JSON,
+// подставляет p_order_id). Возврат — Partial<...>, чтобы тип покрывал оба
+// случая; конкретный потребитель сужает через cast при необходимости.
+const toItemRows = (items: OrderItem[], orderId?: string): Partial<OrderItemRow>[] => items.map((item, i) => ({
+  ...(orderId ? { order_id: orderId } : {}),
   dish_id: item.dishId,
   combo_id: item.comboId ?? null,
   dish_name: item.dishName,
@@ -277,23 +281,14 @@ export const ordersApi = {
   },
 
   async update(sb: SupabaseClient, orderId: string, data: OrderUpdateData): Promise<Order | null> {
-    // Re-insert items BEFORE updating order fields so that the kitchen_queue
-    // trigger (which fires on status change) references the new order_item IDs.
-    // Otherwise CASCADE on order_item_id deletes the just-created queue rows.
-    if (data.items) {
-      await query(sb.from('order_items').delete().eq('order_id', orderId))
-      const rows = toItemRows(orderId, data.items)
+    const itemsJson = data.items ? toItemRows(data.items) : null
+    const orderPatch = toOrderPayload(data)
 
-      if (rows.length > 0) {
-        await query(sb.from('order_items').insert(rows))
-      }
-    }
-
-    const payload = toOrderPayload(data)
-
-    if (Object.keys(payload).length > 0) {
-      await query(sb.from('orders').update(payload).eq('id', orderId))
-    }
+    await query(sb.rpc('update_order_with_items', {
+      p_order_id: orderId,
+      p_order_patch: Object.keys(orderPatch).length > 0 ? orderPatch : {},
+      p_items_json: itemsJson,
+    }))
 
     const result = await query(
       sb.from('orders').select(ORDER_SELECT).eq('id', orderId).single(),
@@ -407,7 +402,7 @@ export const ordersApi = {
     if (!result) return null
 
     const orderId = (result as { id: string }).id
-    const itemRows = toItemRows(orderId, data.items)
+    const itemRows = toItemRows(data.items, orderId)
 
     if (itemRows.length > 0) {
       await query(sb.from('order_items').insert(itemRows))

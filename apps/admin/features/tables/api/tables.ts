@@ -238,38 +238,12 @@ export const tablesApi = {
   async applyDiscount(sb: SupabaseClient, tableId: string, openedAt: string, discountAmount: number, cancelledStatusIds: string[]): Promise<void> {
     if (discountAmount <= 0) return
 
-    let q = sb.from('orders')
-      .select('id, total')
-      .eq('table_id', tableId)
-      .gte('created_at', openedAt)
-
-    if (cancelledStatusIds.length) {
-      q = q.not('status', 'in', `(${cancelledStatusIds.join(',')})`)
-    }
-
-    const orders = (await query(q)) as { id: string; total: number }[] | null
-
-    if (!orders?.length) return
-
-    const totalSum = orders.reduce((acc, o) => acc + o.total, 0)
-
-    if (totalSum <= 0) return
-
-    let remaining = discountAmount
-
-    for (let i = 0; i < orders.length; i++) {
-      const isLast = i === orders.length - 1
-      const share = isLast ? remaining : Math.round(discountAmount * orders[i].total / totalSum)
-      const clamped = Math.min(share, orders[i].total)
-
-      await query(
-        sb.from('orders')
-          .update({ discount_amount: clamped, total: orders[i].total - clamped })
-          .eq('id', orders[i].id),
-      )
-
-      remaining -= clamped
-    }
+    await query(sb.rpc('apply_table_discount', {
+      p_table_id: tableId,
+      p_opened_at: openedAt,
+      p_discount_amount: discountAmount,
+      p_cancelled_status_ids: cancelledStatusIds,
+    }))
   },
 
   async archive(sb: SupabaseClient, id: string): Promise<void> {
