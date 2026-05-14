@@ -108,6 +108,7 @@ vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
 ;(globalThis as any).createError = createError
 ;(globalThis as any).defineEventHandler = (fn: Function) => fn
 ;(globalThis as any).readBody = (...args: unknown[]) => mockReadBody(...args)
+;(globalThis as any).getRequestHeader = vi.fn().mockReturnValue(undefined)
 
 // ──────────────────────────────────────────────────────────────────────────
 // Хелпер: установить «здоровые» дефолты для всех DB-вызовов на happy path

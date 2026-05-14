@@ -26,6 +26,37 @@ export type BulkPayload = {
   branchId: string | null
 }
 
+const IDEMPOTENCY_KEY_MAX_LENGTH = 128
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_-]+$/
+
+type IdempotentResponse = {
+  visitId: string
+  appointments: Array<{ id: string; serviceId: string; startsAt: string; endsAt: string }>
+}
+
+async function buildResponseFromGroup(
+  db: ReturnType<typeof getTenantDb>,
+  groupId: string,
+): Promise<IdempotentResponse | null> {
+  const { data: rows } = await db
+    .from('appointments')
+    .select('id, service_id, starts_at, ends_at')
+    .eq('group_id', groupId)
+    .order('starts_at')
+
+  if (!rows || rows.length === 0) return null
+
+  return {
+    visitId: groupId,
+    appointments: rows.map((r) => ({
+      id: r.id as string,
+      serviceId: r.service_id as string,
+      startsAt: r.starts_at as string,
+      endsAt: r.ends_at as string,
+    })),
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
@@ -33,6 +64,26 @@ export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   if (!rateLimiter.check(ip)) {
     throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
+  }
+
+  const rawIdempotencyKey = getRequestHeader(event, 'idempotency-key')?.trim() ?? null
+  let idempotencyKey: string | null = null
+  if (rawIdempotencyKey) {
+    if (rawIdempotencyKey.length > IDEMPOTENCY_KEY_MAX_LENGTH || !IDEMPOTENCY_KEY_PATTERN.test(rawIdempotencyKey)) {
+      throw createError({ statusCode: 400, message: 'Некорректный Idempotency-Key' })
+    }
+    idempotencyKey = rawIdempotencyKey
+
+    const { data: existingGroup } = await db
+      .from('appointment_groups')
+      .select('id')
+      .eq('idempotency_key', idempotencyKey)
+      .maybeSingle()
+
+    if (existingGroup) {
+      const cached = await buildResponseFromGroup(db, existingGroup.id as string)
+      if (cached) return cached
+    }
   }
 
   const body = await readBody(event)
@@ -554,6 +605,30 @@ export default defineEventHandler(async (event) => {
   if (!parsed?.appointments?.length) {
     reportError(new Error('[bulk] RPC returned unexpected result'))
     throw createError({ statusCode: 500, message: 'Не удалось создать запись' })
+  }
+
+  if (idempotencyKey) {
+    const { error: keyError } = await db
+      .from('appointment_groups')
+      .update({ idempotency_key: idempotencyKey })
+      .eq('id', parsed.group_id)
+
+    // 23505 — параллельный запрос уже занял этот ключ за тенантом.
+    // Отдаём существующую группу, на нашу остаётся «silent twin», но это
+    // лучше чем 500: с точки зрения клиента запись прошла.
+    if (keyError && (keyError as { code?: string }).code === '23505') {
+      const { data: winner } = await db
+        .from('appointment_groups')
+        .select('id')
+        .eq('idempotency_key', idempotencyKey)
+        .maybeSingle()
+      if (winner) {
+        const cached = await buildResponseFromGroup(db, winner.id as string)
+        if (cached) return cached
+      }
+    } else if (keyError) {
+      reportError(keyError)
+    }
   }
 
   return {
