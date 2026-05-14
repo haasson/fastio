@@ -74,43 +74,72 @@ export default defineEventHandler(async (event) => {
   // при чтении. Залогиненный customer защищён через match auth.user.id ↔ orders.customer_id.
   const guestToken = customerId ? null : randomUUID()
 
-  const { data, error } = await db.crossTenant
-    .from('orders')
-    .insert({
-      tenant_id: tenantId,
-      customer_name: body.customer?.name ?? null,
-      customer_phone: body.customer?.phone ? normalizePhone(body.customer.phone) : null,
-      customer_email: body.customer?.email ?? null,
-      delivery_type: deliveryType,
-      address: body.address ?? null,
-      entrance: body.entrance ?? null,
-      floor: body.floor ?? null,
-      apartment: body.apartment ?? null,
-      intercom: body.intercom ?? null,
-      comment: body.comment ?? null,
-      promo_code: appliedPromoCode,
-      ...(appliedPromotionId && { promotion_id: appliedPromotionId }),
-      discount_amount: discountAmount,
-      subtotal,
-      delivery_fee: deliveryFee,
-      total,
-      status: initialStatusId,
-      payment_type: paymentType,
-      needs_change: paymentType === 'cash' && body.needsChange === true,
-      change_from: paymentType === 'cash' && body.needsChange === true && typeof body.changeFrom === 'number' && body.changeFrom > total
-        ? body.changeFrom
-        : null,
-      ...(idempotencyKey && { idempotency_key: idempotencyKey }),
-      ...(branchId && { branch_id: branchId }),
-      ...(matchedZone && { delivery_zone_id: matchedZone.id }),
-      ...(deliveryLat !== null && { delivery_lat: deliveryLat }),
-      ...(deliveryLon !== null && { delivery_lon: deliveryLon }),
-      ...(tableRecord && { table_id: tableRecord.id, table_name: tableRecord.name }),
-      ...(customerId ? { customer_id: customerId } : { guest_token: guestToken }),
-      ...(validScheduledAt ? { scheduled_at: validScheduledAt } : {}),
-    })
-    .select('id, order_number, guest_token')
-    .single()
+  const orderPayload: Record<string, unknown> = {
+    tenant_id: tenantId,
+    customer_name: body.customer?.name ?? null,
+    customer_phone: body.customer?.phone ? normalizePhone(body.customer.phone) : null,
+    customer_email: body.customer?.email ?? null,
+    delivery_type: deliveryType,
+    address: body.address ?? null,
+    entrance: body.entrance ?? null,
+    floor: body.floor ?? null,
+    apartment: body.apartment ?? null,
+    intercom: body.intercom ?? null,
+    comment: body.comment ?? null,
+    promo_code: appliedPromoCode,
+    promotion_id: appliedPromotionId ?? null,
+    discount_amount: discountAmount,
+    subtotal,
+    delivery_fee: deliveryFee,
+    total,
+    status: initialStatusId,
+    payment_type: paymentType,
+    needs_change: paymentType === 'cash' && body.needsChange === true,
+    change_from: paymentType === 'cash' && body.needsChange === true && typeof body.changeFrom === 'number' && body.changeFrom > total
+      ? body.changeFrom
+      : null,
+    idempotency_key: idempotencyKey,
+    branch_id: branchId ?? null,
+    delivery_zone_id: matchedZone?.id ?? null,
+    delivery_lat: deliveryLat,
+    delivery_lon: deliveryLon,
+    table_id: tableRecord?.id ?? null,
+    table_name: tableRecord?.name ?? null,
+    customer_id: customerId,
+    guest_token: guestToken,
+    scheduled_at: validScheduledAt,
+  }
+
+  const itemsPayload = serverItems.map((item, i) => ({
+    dish_id: item.dishId,
+    combo_id: item.comboId ?? null,
+    combo_items: item.comboId ? (comboItemsMap.get(item.comboId) ?? null) : null,
+    dish_name: item.dishName,
+    category_name: item.categoryName ?? null,
+    price: item.price,
+    quantity: item.quantity,
+    removed_ingredients: item.removedIngredients ?? [],
+    modifiers: item.modifiers ?? [],
+    addons: item.addons ?? [],
+    sort_order: i,
+    status: deliveryType === 'dine_in' ? 'pending' : 'confirmed',
+    added_by: authUserId,
+  }))
+
+  const freeItemPayload = freeItemPromo ? {
+    dish_id: freeItemPromo.free_dish_id,
+    dish_name: freeItemPromo.dish_name,
+    category_name: null,
+    price: 0,
+    quantity: 1,
+    sort_order: serverItems.length,
+  } : null
+
+  const { data: rpcResult, error } = await supabase.rpc('create_order_with_items_atomic', {
+    p_order_payload: orderPayload,
+    p_items_json: itemsPayload,
+    p_free_item_json: freeItemPayload,
+  })
 
   if (error) {
     if (error.code === '23505' && idempotencyKey) {
@@ -137,47 +166,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Не удалось создать заказ' })
   }
 
-  // 7. Создание позиций заказа
-  if (data) {
-    const itemRows = serverItems.map((item, i) => ({
-      order_id: data.id,
-      dish_id: item.dishId,
-      combo_id: item.comboId ?? null,
-      combo_items: item.comboId ? (comboItemsMap.get(item.comboId) ?? null) : null,
-      dish_name: item.dishName,
-      category_name: item.categoryName ?? null,
-      price: item.price,
-      quantity: item.quantity,
-      removed_ingredients: item.removedIngredients ?? [],
-      modifiers: item.modifiers ?? [],
-      addons: item.addons ?? [],
-      sort_order: i,
-      status: deliveryType === 'dine_in' ? 'pending' : 'confirmed',
-      added_by: authUserId,
-    }))
+  const result = rpcResult as { id: string; order_number: string | null; guest_token: string | null } | null
 
-    const { error: itemsError } = await db.crossTenant.from('order_items').insert(itemRows)
-    if (itemsError) {
-      reportError(itemsError)
-    }
-
-    // Бесплатное блюдо (акция типа free_item)
-    if (freeItemPromo) {
-      const { error: freeItemError } = await db.crossTenant.from('order_items').insert({
-        order_id: data.id,
-        dish_id: freeItemPromo.free_dish_id,
-        dish_name: freeItemPromo.dish_name,
-        category_name: null,
-        price: 0,
-        quantity: 1,
-        removed_ingredients: [],
-        modifiers: [],
-        sort_order: serverItems.length,
-      })
-      if (freeItemError) {
-        reportError(freeItemError)
-      }
-    }
+  if (!result) {
+    reportError(new Error('[orders.post] RPC returned empty result'))
+    throw createError({ statusCode: 500, message: 'Не удалось создать заказ' })
   }
 
   // 8. Инкремент использований промокода
@@ -189,8 +182,8 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    id: data.id,
-    orderNumber: data.order_number ?? null,
-    token: (data.guest_token as string | null) ?? null,
+    id: result.id,
+    orderNumber: result.order_number ?? null,
+    token: result.guest_token ?? null,
   }
 })
