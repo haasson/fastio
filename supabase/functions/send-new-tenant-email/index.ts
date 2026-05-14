@@ -1,4 +1,5 @@
 import nodemailer from 'npm:nodemailer@6'
+import { withSentry } from '../_shared/sentry.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,7 +33,7 @@ function safeAdminUrl(raw: string | undefined): string {
   return 'https://admin.fastio.ru'
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('send-new-tenant-email', async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -145,4 +146,4 @@ Deno.serve(async (req) => {
   }
 
   return json({ success: true })
-})
+}))

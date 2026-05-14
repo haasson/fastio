@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withSentry } from '../_shared/sentry.ts'
 
 // Module-scoped клиент: один на весь жизненный цикл инстанса.
 // Per-request передаём JWT в auth.getUser(jwt) — это валидирует токен серверно.
@@ -130,7 +131,7 @@ async function readBodyWithLimit(response: Response, limit: number): Promise<Uin
   return merged
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('proxy-image', async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: CORS_PREFLIGHT_HEADERS })
   }
@@ -191,4 +192,4 @@ Deno.serve(async (req) => {
     if (e instanceof Error && e.name === 'TimeoutError') return jsonError('Request timed out', 504)
     return jsonError('Failed to fetch', 500)
   }
-})
+}))

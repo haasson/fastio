@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withSentry } from '../_shared/sentry.ts'
 import nodemailer from 'npm:nodemailer@6'
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
@@ -11,7 +12,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // инвайтами один email. consume_rate_limit RPC — миграция 264.
 const INVITE_LIMIT = { max: 3, windowSeconds: 10 * 60 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('invite-member', async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 })
   }
@@ -258,4 +259,4 @@ Deno.serve(async (req) => {
   }
 
   return json({ success: true }, { status: 200 })
-})
+}))

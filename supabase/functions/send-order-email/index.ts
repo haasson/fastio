@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withSentry } from '../_shared/sentry.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -17,7 +18,7 @@ const supabase = createClient(
 // тенантам (PII утечка + SMTP reputation damage).
 const WEBHOOK_SECRET = Deno.env.get('FASTIO_WEBHOOK_SECRET')
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('send-order-email', async (req) => {
   if (!WEBHOOK_SECRET) {
     console.error('FASTIO_WEBHOOK_SECRET is not configured')
     return new Response('Server misconfigured', { status: 500 })
@@ -89,4 +90,4 @@ Deno.serve(async (req) => {
   }
 
   return new Response('ok', { status: 200 })
-})
+}))

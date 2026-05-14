@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withSentry } from '../_shared/sentry.ts'
 import nodemailer from 'npm:nodemailer@6'
 
 const corsHeaders = {
@@ -34,7 +35,7 @@ function getClientIp(req: Request): string {
   return 'unknown'
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('send-recovery-email', async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -171,4 +172,4 @@ Deno.serve(async (req) => {
   }
 
   return json({ success: true })
-})
+}))

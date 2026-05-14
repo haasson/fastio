@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withSentry } from '../_shared/sentry.ts'
 
 // HTTP-эндпоинт для вебхука от ЮKassa
 // URL функции вставить в личный кабинет ЮKassa → Настройки → HTTP-уведомления
@@ -9,7 +10,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 // ЮKassa подписывает тело запроса алгоритмом HMAC-SHA256 и передаёт подпись
 // в заголовке Content-Signature в формате: v1=<hex_hmac>
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('payment-webhook', async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 })
   }
@@ -134,4 +135,4 @@ Deno.serve(async (req) => {
     .eq('id', tenantId)
 
   return new Response('ok', { status: 200 })
-})
+}))

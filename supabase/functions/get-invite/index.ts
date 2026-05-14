@@ -1,8 +1,9 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withSentry } from '../_shared/sentry.ts'
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('get-invite', async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 })
   }
@@ -60,4 +61,4 @@ Deno.serve(async (req) => {
     tenantName: tenant?.name ?? '',
     userExists,
   }, { status: 200 })
-})
+}))

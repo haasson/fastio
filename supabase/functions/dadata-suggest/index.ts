@@ -1,9 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { withSentry } from '../_shared/sentry.ts'
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry('dadata-suggest', async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       headers: {
@@ -69,4 +70,4 @@ Deno.serve(async (req) => {
   } catch {
     return json({ suggestions: [] })
   }
-})
+}))
