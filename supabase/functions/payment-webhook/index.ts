@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { withSentry } from '../_shared/sentry.ts'
+import { verifyYookassaHmac } from './lib.ts'
 
 // HTTP-эндпоинт для вебхука от ЮKassa
 // URL функции вставить в личный кабинет ЮKassa → Настройки → HTTP-уведомления
@@ -30,28 +31,12 @@ Deno.serve(withSentry('payment-webhook', async (req) => {
   // Читаем тело как текст — req.json() уже нельзя будет вызвать после этого
   const body = await req.text()
 
-  // Извлекаем hex из формата "v1=<hex>"
-  const hexSig = signature.startsWith('v1=') ? signature.slice(3) : signature
-  if (!/^[0-9a-f]+$/i.test(hexSig)) {
-    return new Response('Invalid signature format', { status: 401 })
-  }
-
-  const encoder = new TextEncoder()
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secretKey),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['verify'],
-  )
-
-  const hexBytes = hexSig.match(/.{2}/g)
-  if (!hexBytes) return new Response('Invalid signature format', { status: 401 })
-  const sigBytes = new Uint8Array(hexBytes.map((b) => parseInt(b, 16)))
-  const isValid = await crypto.subtle.verify('HMAC', cryptoKey, sigBytes, encoder.encode(body))
-
-  if (!isValid) {
-    console.warn('Invalid webhook signature')
+  const hmac = await verifyYookassaHmac(body, signature, secretKey)
+  if (!hmac.ok) {
+    console.warn(`Invalid webhook signature: ${hmac.reason}`)
+    if (hmac.reason === 'invalid_format') {
+      return new Response('Invalid signature format', { status: 401 })
+    }
     return new Response('Invalid signature', { status: 401 })
   }
 

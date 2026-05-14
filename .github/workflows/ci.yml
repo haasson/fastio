@@ -42,3 +42,28 @@ jobs:
 
       - name: features:validate (storefront)
         run: pnpm storefront-features:validate
+
+  deno-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: edge-functions lint (Deno)
+        working-directory: supabase/functions
+        run: deno lint
+
+      - name: edge-functions typecheck (Deno)
+        working-directory: supabase/functions
+        run: |
+          find . -type f \( -name 'index.ts' -o -name 'lib.ts' \) \
+            -not -path './_shared/*' -print0 \
+            | xargs -0 deno check
+
+      - name: edge-functions tests (Deno)
+        working-directory: supabase/functions
+        run: deno task test
