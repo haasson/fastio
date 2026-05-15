@@ -1,0 +1,57 @@
+# Автодеплой Supabase Edge Functions на self-hosted Supabase в Coolify VPS.
+#
+# Требуемые secrets (Settings → Secrets and variables → Actions → New repository secret):
+#   - VPS_SSH_KEY: приватный SSH ключ (ed25519) для пользователя root на VPS.
+#                  Сгенерировать: ssh-keygen -t ed25519 -C "github-actions" -f gh-actions-key
+#                  Публичную часть (gh-actions-key.pub) добавить в ~/.ssh/authorized_keys на VPS.
+#                  В secret кладём содержимое приватной части целиком (включая BEGIN/END строки).
+#   - VPS_HOST:    IP или hostname VPS, например: 109.71.242.205
+#
+# Что делает workflow:
+#   1. rsync supabase/functions/ → /data/coolify/services/<id>/volumes/functions/ (БЕЗ --delete:
+#      на VPS лежат служебные main/ и hello/, удалять их нельзя)
+#   2. docker restart supabase-edge-functions-<id>
+#   3. smoke-test: дёргаем add-custom-domain без auth — ожидаем 401
+
+name: Deploy Edge Functions
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase/functions/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy functions
+        run: |
+          rsync -avz --exclude='__tests__' --exclude='.gitignore' \
+            supabase/functions/ \
+            root@${{ secrets.VPS_HOST }}:/data/coolify/services/sox6wn6mth1wotz1yomzwh5i/volumes/functions/
+
+      - name: Restart edge-runtime
+        run: |
+          ssh root@${{ secrets.VPS_HOST }} 'docker restart supabase-edge-functions-sox6wn6mth1wotz1yomzwh5i'
+
+      - name: Smoke test
+        run: |
+          sleep 5
+          code=$(curl -sS -o /dev/null -w "%{http_code}" -X POST https://db.fastio.ru/functions/v1/add-custom-domain)
+          if [ "$code" != "401" ]; then
+            echo "Expected 401, got $code"
+            exit 1
+          fi
