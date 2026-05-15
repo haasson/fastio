@@ -73,9 +73,26 @@ export default defineEventHandler(async (event) => {
 
   let userId: string
   let isNewUser = false
+  // Zombie-юзер: auth.user уже есть, но email_confirmed_at пуст — пароль не установлен.
+  // Возникает если первое invite-письмо потеряли/проигнорировали, а сейчас регистрируем второе заведение.
+  // Без resend recovery таких юзеров не пустит в админку — login требует пароль, которого нет.
+  let isPendingActivation = false
 
   if (existingUserId) {
     userId = existingUserId as string
+
+    const { data: existing } = await supabase.auth.admin.getUserById(userId)
+
+    if (existing?.user && !existing.user.email_confirmed_at) {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${config.adminUrl}/set-password`,
+      })
+      if (resetError) {
+        console.error('[register] resetPasswordForEmail failed for pending user', { email, err: resetError })
+      } else {
+        isPendingActivation = true
+      }
+    }
   } else {
     isNewUser = true
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
@@ -128,9 +145,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: rpcError.message })
   }
 
-  // 4. Уведомляем существующего пользователя о новом заведении (fire-and-forget).
-  // Не блокируем ответ юзеру, но логируем громко — это важный UX-сигнал.
-  if (!isNewUser) {
+  // 4. Уведомляем существующего активированного пользователя о новом заведении (fire-and-forget).
+  // pending — юзер уже получил recovery-ссылку выше, второе письмо «у вас новое заведение» только запутает.
+  if (!isNewUser && !isPendingActivation) {
     supabase.functions
       .invoke('send-new-tenant-email', {
         body: { email, tenantName: name, adminUrl: config.adminUrl },
