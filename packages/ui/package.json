@@ -14,7 +14,9 @@
     "maska": "^3.2.0",
     "naive-ui": "^2.42.0",
     "vaul-vue": "^0.4.1",
-    "vue": "^3.5.13",
     "vue-draggable-plus": "^0.6.1"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.13"
   }
 }

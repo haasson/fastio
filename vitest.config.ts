@@ -7,7 +7,9 @@ export default defineConfig({
   resolve: {
     dedupe: ['vue', 'pinia'],
     alias: {
-      'vue': resolve(__dirname, 'apps/admin/node_modules/vue'),
+      // vue резолвится через packages/shared/node_modules/vue (peer-symlink в pnpm-store).
+      // Раньше указывал на apps/admin/node_modules/vue, но после рефактора apps/* больше не тянут vue напрямую.
+      'vue': resolve(__dirname, 'packages/shared/node_modules/vue'),
       'pinia': resolve(__dirname, 'apps/admin/node_modules/pinia'),
       'vue-router': resolve(__dirname, 'apps/admin/test-utils/vue-router-stub.ts'),
       '#imports': resolve(__dirname, 'apps/admin/test-utils/nuxt-imports-stub.ts'),
