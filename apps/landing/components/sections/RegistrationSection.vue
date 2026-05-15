@@ -59,7 +59,6 @@
                   size="large"
                   autocomplete="off"
                   spellcheck="false"
-                  @input="onSlugInput"
                 >
                   <template #suffix>
                     <span class="slug-status">
@@ -114,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeUnmount } from 'vue'
+import { ref, reactive, onBeforeUnmount, watch } from 'vue'
 import { $fetch } from 'ofetch'
 import { CheckCircle, XCircle } from 'lucide-vue-next'
 import { FsForm, FsField, FsInput, FsButton, FsSpinner } from '@fastio/public-ui'
@@ -160,9 +159,12 @@ function scheduleSlugCheck(slug: string) {
   }, 500)
 }
 
-function onSlugInput() {
-  scheduleSlugCheck(form.slug)
-}
+// FsInput emit'ит @input до того как Vue обновит v-model — поэтому imperative
+// handler ловил stale form.slug (без последнего набранного символа). watch
+// триггерится уже после обновления реактивного значения.
+watch(() => form.slug, (newSlug) => {
+  scheduleSlugCheck(newSlug)
+})
 
 onBeforeUnmount(() => {
   if (slugTimer) clearTimeout(slugTimer)
