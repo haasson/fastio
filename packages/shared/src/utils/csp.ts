@@ -10,7 +10,7 @@ export function buildCsp(opts: CspOptions): string {
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src ${opts.imgSrc}`,
     `font-src 'self' https://fonts.gstatic.com data:`,
-    `connect-src 'self' https://db.fastio.ru wss://db.fastio.ru https://*.ingest.de.sentry.io https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://suggestions.dadata.ru https://oauth.telegram.org`,
+    `connect-src 'self' blob: https://db.fastio.ru wss://db.fastio.ru https://*.ingest.de.sentry.io https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://suggestions.dadata.ru https://oauth.telegram.org`,
     `frame-src 'self' https://oauth.telegram.org https://*.yandex.ru https://*.yandex.net`,
     `worker-src 'self' blob:`,
     `object-src 'none'`,
