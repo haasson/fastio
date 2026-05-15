@@ -151,35 +151,67 @@ Deno.serve(withSentry('add-custom-domain', async (req) => {
     return json({ error: 'Domain registration misconfigured' }, { status: 500 })
   }
 
-  // Coolify API с timeout — без него висящий запрос блокирует функцию.
-  // Coolify API внутри VPS, но всё равно ставим timeout на случай зависания контейнера.
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10_000)
-  let coolifyResponse: Response
+  const coolifyHeaders = {
+    Authorization: `Bearer ${coolifyToken}`,
+    'Content-Type': 'application/json',
+  }
+  const appUrl = `${coolifyApiUrl}/api/v1/applications/${coolifyStorefrontUuid}`
+
+  // Coolify v4 не имеет POST /domains — нужно PATCH /applications/{uuid} с полным CSV fqdn.
+  // Поэтому: GET текущий fqdn → выкинуть старый custom_domain тенанта (если был) и сам
+  // новый домен (idempotent) → PATCH весь список + instant_deploy для пересборки Traefik labels.
+
+  const withTimeout = async (url: string, init: RequestInit, ms = 10_000) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), ms)
+    try {
+      return await fetch(url, { ...init, signal: controller.signal })
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  }
+
+  let getResp: Response
   try {
-    coolifyResponse = await fetch(
-      `${coolifyApiUrl}/api/v1/applications/${coolifyStorefrontUuid}/domains`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${coolifyToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ domain: `https://${normalizedDomain}` }),
-        signal: controller.signal,
-      },
-    )
+    getResp = await withTimeout(appUrl, { method: 'GET', headers: coolifyHeaders })
   } catch (err) {
-    clearTimeout(timeoutId)
-    console.error('Coolify API request failed:', err)
+    console.error('Coolify GET app failed:', err)
     return json({ error: 'Domain registration failed' }, { status: 502 })
   }
-  clearTimeout(timeoutId)
+  if (!getResp.ok) {
+    const text = await getResp.text().catch(() => '')
+    console.error('Coolify GET app error:', getResp.status, text)
+    return json({ error: 'Domain registration failed' }, { status: 502 })
+  }
+  const app = await getResp.json().catch(() => null) as { fqdn?: string | null } | null
+  const currentFqdn = (app?.fqdn ?? '').split(',').map((s) => s.trim()).filter(Boolean)
 
-  if (!coolifyResponse.ok) {
-    // Не прокидываем Coolify error в клиента — он может содержать internal context.
-    const text = await coolifyResponse.text().catch(() => '')
-    console.error('Coolify error:', coolifyResponse.status, text)
+  const previousDomain = (tenant as { custom_domain: string | null }).custom_domain
+  const newDomainUrl = `https://${normalizedDomain}`
+  const nextFqdn = [
+    ...currentFqdn.filter((entry) => {
+      const host = entry.replace(/^https?:\/\//, '').split('/')[0]
+      if (host === normalizedDomain) return false
+      if (previousDomain && host === previousDomain) return false
+      return true
+    }),
+    newDomainUrl,
+  ]
+
+  let patchResp: Response
+  try {
+    patchResp = await withTimeout(appUrl, {
+      method: 'PATCH',
+      headers: coolifyHeaders,
+      body: JSON.stringify({ domains: nextFqdn.join(','), instant_deploy: true }),
+    })
+  } catch (err) {
+    console.error('Coolify PATCH app failed:', err)
+    return json({ error: 'Domain registration failed' }, { status: 502 })
+  }
+  if (!patchResp.ok) {
+    const text = await patchResp.text().catch(() => '')
+    console.error('Coolify PATCH app error:', patchResp.status, text)
     return json({ error: 'Domain registration failed' }, { status: 502 })
   }
 
