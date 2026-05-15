@@ -11,7 +11,7 @@
 // дёрни `await flushSentry()`, иначе на edge-runtime событие может не уйти до
 // termination воркера.
 
-import * as Sentry from 'npm:@sentry/deno@^8'
+import * as Sentry from '@sentry/deno'
 
 const dsn = Deno.env.get('SENTRY_DSN')
 // Default 'unknown' (а не 'production'): если кто-то прокинет prod-DSN в локалку

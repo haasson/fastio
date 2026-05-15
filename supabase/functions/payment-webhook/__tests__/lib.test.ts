@@ -1,4 +1,4 @@
-import { assertEquals } from 'jsr:@std/assert@1'
+import { assertEquals } from '@std/assert'
 import { verifyYookassaHmac } from '../lib.ts'
 
 // Тестовый секрет (32 байта — рекомендуется для HMAC-SHA256).

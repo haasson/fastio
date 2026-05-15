@@ -1,6 +1,6 @@
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from '@supabase/supabase-js'
 import { withSentry } from '../_shared/sentry.ts'
-import nodemailer from 'npm:nodemailer@6'
+import nodemailer from 'nodemailer'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

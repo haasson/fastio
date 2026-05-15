@@ -1,4 +1,4 @@
-import nodemailer from 'npm:nodemailer@6'
+import nodemailer from 'nodemailer'
 import { withSentry } from '../_shared/sentry.ts'
 
 const corsHeaders = {

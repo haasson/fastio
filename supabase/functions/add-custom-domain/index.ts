@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from '@supabase/supabase-js'
 import { withSentry } from '../_shared/sentry.ts'
 
 const json = (body: unknown, init?: ResponseInit) =>
