@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     },
   },
 
-  ssr: true,
+  ssr: false,
 
   css: ['~/assets/styles/main.scss', 'photoswipe/style.css'],
 
