@@ -2,6 +2,7 @@ import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireTelegramWebhookSecret } from '../../utils/auth'
+import { telegramFetch } from '../../utils/telegramFetch'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -33,7 +34,7 @@ export default defineEventHandler(async (event) => {
 
     if (threadId) payload.message_thread_id = threadId
 
-    return fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    return telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

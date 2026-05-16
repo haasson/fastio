@@ -3,6 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { formatPhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireInternalSecret } from '../../utils/auth'
+import { telegramFetch } from '../../utils/telegramFetch'
 
 type OrderItem = {
   dish_name: string
@@ -102,7 +103,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  const tgRes = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

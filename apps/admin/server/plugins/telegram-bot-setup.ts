@@ -1,5 +1,6 @@
 import { defineNitroPlugin } from 'nitropack/runtime'
 import { useRuntimeConfig } from '#imports'
+import { telegramFetch } from '../utils/telegramFetch'
 
 export default defineNitroPlugin(async () => {
   const config = useRuntimeConfig()
@@ -19,7 +20,7 @@ export default defineNitroPlugin(async () => {
   }
 
   try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+    const res = await telegramFetch(`https://api.telegram.org/bot${token}/setWebhook`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

@@ -9,6 +9,7 @@ import {
 } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
+import { telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '~/shared/utils/reportError'
 
 type ApptRow = {
@@ -65,7 +66,7 @@ export default defineEventHandler(async (event) => {
 
   const { dateStr, timeStr } = formatAppointmentDateTime(startsAt)
 
-  const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  const tgRes = await telegramFetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

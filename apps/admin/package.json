@@ -44,6 +44,7 @@
     "nuxt": "^3.21.5",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.4",
+    "undici": "^7.25.0",
     "vue": "^3.5.13",
     "vue-advanced-cropper": "^2.8.9",
     "vue-draggable-plus": "^0.6.1",

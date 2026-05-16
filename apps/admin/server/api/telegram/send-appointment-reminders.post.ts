@@ -2,6 +2,7 @@ import { defineEventHandler, getHeader } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { MAX_REMINDER_MINUTES, REMINDER_OPTIONS, formatAppointmentDateTime } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
+import { telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '~/shared/utils/reportError'
 
 type ReminderRow = {
@@ -92,10 +93,10 @@ async function processReminder(
   const greeting = appt.customer_name ? `${appt.customer_name}, напоминаем` : 'Напоминаем'
   const text = `🔔 ${greeting}!\n\nУ вас запись:\n📋 ${appt.service_name}\n📅 ${dateStr} в ${timeStr}\n\n🕐 ${opt?.label ?? `за ${row.remind_before_minutes} мин`}`
 
-  let tgRes: Response
+  let tgRes: Awaited<ReturnType<typeof telegramFetch>>
 
   try {
-    tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    tgRes = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: row.telegram_chat_id, text }),
