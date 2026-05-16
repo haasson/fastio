@@ -98,9 +98,11 @@ export default defineEventHandler(async (event) => {
       .from('pending_telegram_auths')
       .update({
         telegram_id: telegramId,
-        telegram_first_name: from.first_name ?? null,
-        telegram_last_name: from.last_name ?? null,
-        telegram_username: from.username ?? null,
+        telegram_data: {
+          first_name: from.first_name ?? null,
+          last_name: from.last_name ?? null,
+          username: from.username ?? null,
+        },
       })
       .eq('nonce', nonce)
 
