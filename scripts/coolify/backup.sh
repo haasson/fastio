@@ -8,6 +8,7 @@
 # Required env file: /etc/fastio-backup.env (chmod 600 root:root)
 #   TELEGRAM_BOT_TOKEN=...
 #   TELEGRAM_CHAT_ID=...
+#   TELEGRAM_PROXY=socks5h://127.0.0.1:1080   # опционально, для обхода RKN-блока
 #
 # Cron на VPS:
 #   0 3 * * *   /usr/local/bin/fastio-backup.sh db
@@ -65,6 +66,7 @@ notify_failure() {
     "$MODE" "$(hostname)" "$rc" "$LOG_FILE" "$tail_log")
 
   curl -sS --max-time 15 \
+    ${TELEGRAM_PROXY:+--proxy "$TELEGRAM_PROXY"} \
     -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
     --data-urlencode "parse_mode=HTML" \

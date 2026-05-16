@@ -5,7 +5,7 @@
 # временный Postgres-контейнер, проверяет что схема + ключевые таблицы живы.
 # Live БД не трогается. На фейле — Telegram alert.
 #
-# Required env file: /etc/fastio-backup.env (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+# Required env file: /etc/fastio-backup.env (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, [TELEGRAM_PROXY])
 #
 # Cron на VPS:
 #   0 5 1 * *  /usr/local/bin/fastio-restore-test.sh
@@ -66,6 +66,7 @@ notify_failure() {
     "$(hostname)" "$rc" "$LOG_FILE" "$tail_log")
 
   curl -sS --max-time 15 \
+    ${TELEGRAM_PROXY:+--proxy "$TELEGRAM_PROXY"} \
     -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
     --data-urlencode "parse_mode=HTML" \
