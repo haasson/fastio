@@ -33,6 +33,7 @@ STORAGE_RETAIN_SNAPSHOTS=4   # keep last N weekly snapshots
 LOG_RETAIN_DAYS=30
 
 MODE="${1:-db}"
+SCRIPT_START=$(date +%s)
 
 # === Setup ===
 mkdir -p "$LOG_DIR" "$BACKUP_DIR"
@@ -42,6 +43,25 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 log()  { echo "[$(date -uIs)] $*"; }
 fail() { log "ERROR: $*"; exit 1; }
 
+# Helpers для красивых нотификаций
+fmt_duration() {
+  local sec=$(( $(date +%s) - SCRIPT_START ))
+  if [ "$sec" -lt 60 ];   then echo "${sec} сек"
+  elif [ "$sec" -lt 3600 ]; then echo "$((sec/60)) мин $((sec%60)) сек"
+  else                          echo "$((sec/3600)) ч $(((sec%3600)/60)) мин"
+  fi
+}
+
+local_now() { TZ=Asia/Barnaul date '+%H:%M %d.%m.%Y'; }
+
+# rclone size → "495.193 KiB" + count; принимают любые доп. флаги (--include и т.д.)
+s3_size_human() {
+  rclone size "$@" 2>/dev/null | awk '/Total size/ {print $3, $4}'
+}
+s3_count() {
+  rclone size "$@" 2>/dev/null | awk '/Total objects/ {print $3}'
+}
+
 # Load env for Telegram creds (non-fatal — alerts simply won't fire)
 if [ -f "$ENV_FILE" ]; then
   set -a; . "$ENV_FILE"; set +a
@@ -49,28 +69,42 @@ else
   log "WARN: $ENV_FILE not found — alerts disabled"
 fi
 
-# === Telegram failure alert ===
-notify_failure() {
-  local rc=$?
-  [ "$rc" -eq 0 ] && return 0
+# === Telegram alerts (success + failure) ===
+# Тишина ≠ всё хорошо. Слать сообщение и при успехе тоже — если кружка алёртов
+# (прокси, sing-box, сервер друга) упала, отсутствие ожидаемого daily ✓ сразу
+# подскажет «что-то не так».
+tg_send() {
   [ -z "${TELEGRAM_BOT_TOKEN:-}" ] && return 0
   [ -z "${TELEGRAM_CHAT_ID:-}" ] && return 0
-
-  local tail_log
-  tail_log=$(tail -20 "$LOG_FILE" \
-    | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' \
-    | head -c 3000)
-
-  local text
-  text=$(printf '❌ <b>FastIO backup FAILED</b>\nMode: <code>%s</code>\nHost: %s\nExit: %d\nLog: <code>%s</code>\n\n<pre>%s</pre>' \
-    "$MODE" "$(hostname)" "$rc" "$LOG_FILE" "$tail_log")
-
   curl -sS --max-time 15 \
     ${TELEGRAM_PROXY:+--proxy "$TELEGRAM_PROXY"} \
     -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
     --data-urlencode "parse_mode=HTML" \
-    --data-urlencode "text=${text}" >/dev/null || true
+    --data-urlencode "text=$1" >/dev/null || true
+}
+
+notify_success() { tg_send "$1"; }
+
+notify_failure() {
+  local rc=$?
+  [ "$rc" -eq 0 ] && return 0
+
+  local tail_log err_line mode_name
+  tail_log=$(tail -20 "$LOG_FILE" \
+    | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' \
+    | head -c 3000)
+  err_line=$(grep "ERROR:" "$LOG_FILE" | tail -1 | sed -E 's/^\[[^]]+\] ERROR: //' \
+    | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' \
+    | head -c 500)
+  case "$MODE" in
+    db)      mode_name="ежедневный бэкап БД" ;;
+    storage) mode_name="недельный снапшот storage" ;;
+    *)       mode_name="$MODE" ;;
+  esac
+
+  tg_send "$(printf '🚨 <b>Бэкап упал</b> — %s\nОшибка: <code>%s</code>\nКод выхода: %d\nДлительность: %s\nЛог: <code>%s</code>\n\n<pre>%s</pre>' \
+    "$mode_name" "${err_line:-неизвестно}" "$rc" "$(fmt_duration)" "$LOG_FILE" "$tail_log")"
 }
 trap notify_failure EXIT
 
@@ -123,6 +157,13 @@ case "$MODE" in
       --min-age "${DB_RETAIN_S3_DAYS}d"
 
     log "Backup OK: ${FILENAME}"
+    notify_success "$(printf '✅ <b>Ежедневный бэкап БД</b>\nФайл: <code>%s</code>\nРазмер: %s\nДлительность: %s\nВсего на S3: %s файлов, %s\nВремя: %s Барнаул\nСледующий: завтра в 10:00' \
+      "$FILENAME" \
+      "$(du -h "$LOCAL_PATH" | cut -f1)" \
+      "$(fmt_duration)" \
+      "$(s3_count "${S3_REMOTE}/" --include 'postgres-*.sql.gz')" \
+      "$(s3_size_human "${S3_REMOTE}/" --include 'postgres-*.sql.gz')" \
+      "$(local_now)")"
     ;;
 
   storage)
@@ -156,6 +197,17 @@ case "$MODE" in
         done
 
     log "Storage backup OK: ${SNAPSHOT} (${DST_BYTES} bytes)"
+    SNAPSHOT_COUNT=$(rclone lsd "${S3_REMOTE}/" 2>/dev/null | awk '$NF ~ /^storage-/' | wc -l)
+    SNAPSHOT_FILES=$(s3_count "${S3_REMOTE}/${SNAPSHOT}/")
+    SNAPSHOT_HUMAN=$(s3_size_human "${S3_REMOTE}/${SNAPSHOT}/")
+    notify_success "$(printf '✅ <b>Недельный снапшот storage</b>\nСнапшот: <code>%s</code>\nРазмер: %s (%s файлов)\nДлительность: %s\nСнапшотов хранится: %s из %s\nВремя: %s Барнаул\nСледующий: воскресенье в 11:30' \
+      "$SNAPSHOT" \
+      "$SNAPSHOT_HUMAN" \
+      "$SNAPSHOT_FILES" \
+      "$(fmt_duration)" \
+      "$SNAPSHOT_COUNT" \
+      "$STORAGE_RETAIN_SNAPSHOTS" \
+      "$(local_now)")"
     ;;
 
   *)
