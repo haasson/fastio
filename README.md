@@ -97,7 +97,10 @@ fastio/
 ### Timeweb S3 / CDN
 
 - Бакет **`fastio-storage`** — public, фото блюд / баннеры / загрузки тенантов
-- Бакет **`fastio-backups`** — private, pg_dump бэкапы (ежедневный cron, WIP)
+- Бакет **`fastio-backups`** — private:
+  - `postgres-YYYYMMDD-HHMMSS.sql.gz` — daily pg_dump (retention 30д)
+  - `storage-YYYY-MM-DD/` — weekly снапшот `fastio-storage` (retention 4 снапшота)
+  - Скрипты: `scripts/coolify/{backup.sh,restore-test.sh}` (cron + Telegram-алёрты, restore-test ежемесячно). **Cron на VPS ещё не активирован**, см. `docs/coolify-todo-next-session.md`
 - S3 endpoint: `https://s3.twcstorage.ru`
 - CDN TTL: 7 дней
 
