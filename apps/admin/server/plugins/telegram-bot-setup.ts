@@ -9,7 +9,11 @@ export default defineNitroPlugin(async () => {
 
   if (!token || !adminUrl) return
 
-  const webhookUrl = `${adminUrl}/api/telegram/auth-webhook`
+  // Если задан внешний relay (например vercel-edge для обхода RKN-блока
+  // входящих от Telegram в РФ-VPS) — используем его. Иначе fallback на
+  // прямой admin URL (для локалки и не-РФ деплоев).
+  const webhookUrl = config.telegramAuthWebhookUrl?.trim()
+    || `${adminUrl}/api/telegram/auth-webhook`
   const body: Record<string, unknown> = {
     url: webhookUrl,
     allowed_updates: ['message', 'callback_query'],

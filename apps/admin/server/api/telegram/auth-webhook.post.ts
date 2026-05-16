@@ -88,7 +88,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: pending } = await supabase
       .from('pending_telegram_auths')
-      .select('id')
+      .select('nonce')
       .eq('nonce', nonce)
       .is('completed_at', null)
       .gt('expires_at', new Date().toISOString())

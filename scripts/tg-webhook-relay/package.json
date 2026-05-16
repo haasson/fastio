@@ -1,0 +1,6 @@
+{
+  "name": "fastio-tg-webhook-relay",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Vercel Edge relay для Telegram webhook'ов в обход RKN-блока на admin.fastio.ru"
+}
