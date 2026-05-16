@@ -4,7 +4,7 @@ import { telegramFetch } from '../utils/telegramFetch'
 
 export default defineNitroPlugin(async () => {
   const config = useRuntimeConfig()
-  const token = config.telegramAuthBotToken
+  const token = config.telegramClientBotToken
   const adminUrl = config.adminUrl
 
   if (!token || !adminUrl) return

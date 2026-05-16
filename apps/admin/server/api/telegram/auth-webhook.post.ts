@@ -31,7 +31,7 @@ type TokenRow = { appointment_id: string; expires_at: string }
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const token = config.telegramAuthBotToken?.trim()
+  const token = config.telegramClientBotToken?.trim()
 
   if (!token) return { ok: true }
 

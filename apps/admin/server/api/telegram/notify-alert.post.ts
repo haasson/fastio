@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
-  const token = config.telegramBotToken?.trim()
+  const token = config.telegramOpsBotToken?.trim()
   const chatId = config.telegramAlertChatId?.trim()
 
   if (!token || !chatId) return { ok: true }

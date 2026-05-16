@@ -51,7 +51,7 @@ const password = ref('')
 const serverError = ref('')
 const notRegistered = ref(false)
 
-const telegramEnabled = computed(() => !!config.public.telegramAuthBotUsername)
+const telegramEnabled = computed(() => !!config.public.telegramClientBotUsername)
 
 function toRegister() { modal.close(); useModal('auth-register').open() }
 function toForgot() { modal.close(); useModal('auth-forgot').open() }

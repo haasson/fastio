@@ -108,7 +108,7 @@ const connected = ref(false)
 
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
-const botUsername = useRuntimeConfig().public.telegramBotUsername
+const botUsername = useRuntimeConfig().public.telegramTenantBotUsername
 const isTelegramConnected = computed(() => !!tenantStore.tenant.notifications?.telegramChatId)
 const chatTitle = computed(() => tenantStore.tenant.notifications?.telegramChatTitle ?? null)
 

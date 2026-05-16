@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const token = config.telegramAuthBotToken?.trim()
+  const token = config.telegramClientBotToken?.trim()
 
   if (!token) return { ok: true }
 

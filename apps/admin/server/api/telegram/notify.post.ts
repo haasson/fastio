@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
   if (!orderId || !tenantId) return { ok: true }
 
   const config = useRuntimeConfig()
-  const token = config.telegramBotToken?.trim()
+  const token = config.telegramTenantBotToken?.trim()
   const adminUrl = config.adminUrl?.trim()
 
   if (!token) return { ok: true }

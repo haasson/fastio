@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
-  const botToken = config.telegramAuthBotToken
+  const botToken = config.telegramClientBotToken
   if (!botToken) throw createError({ statusCode: 503, message: 'Telegram auth не настроен' })
 
   const body = await readBody(event)

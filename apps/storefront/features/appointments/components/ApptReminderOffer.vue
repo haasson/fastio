@@ -62,7 +62,7 @@ const authStore = useAuthStore()
 const { customer } = storeToRefs(authStore)
 
 const hasTelegram = computed(() => !!customer.value?.telegramId)
-const botUsername = computed(() => (config.public.telegramAuthBotUsername as string) || '')
+const botUsername = computed(() => (config.public.telegramClientBotUsername as string) || '')
 
 const loading = ref(false)
 const sent = ref(false)

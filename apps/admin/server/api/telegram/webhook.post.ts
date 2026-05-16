@@ -6,7 +6,7 @@ import { telegramFetch } from '../../utils/telegramFetch'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const token = config.telegramBotToken
+  const token = config.telegramTenantBotToken
 
   if (!token) return { ok: true }
 

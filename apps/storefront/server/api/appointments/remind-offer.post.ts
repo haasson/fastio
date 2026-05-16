@@ -22,7 +22,7 @@ type ApptRow = {
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const botToken = config.telegramAuthBotToken?.trim()
+  const botToken = config.telegramClientBotToken?.trim()
   if (!botToken) throw createError({ statusCode: 503, message: 'Telegram-напоминания не настроены' })
 
   const { customer } = await getAuthenticatedContextWithCustomer(event)

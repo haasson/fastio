@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
-  const botUsername = config.public.telegramAuthBotUsername
+  const botUsername = config.public.telegramClientBotUsername
   if (!botUsername) throw createError({ statusCode: 503, message: 'Telegram auth не настроен' })
 
   const nonce = randomUUID().replace(/-/g, '')
