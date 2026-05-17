@@ -73,8 +73,8 @@
         >
           <UiIcon name="smartphone" :size="20" />
           <span class="link-btn-text">
-            <span class="link-btn-title">В личный чат</span>
-            <span class="link-btn-desc">Бот будет писать тебе в личку</span>
+            <UiText size="small" span class="link-btn-title">В личный чат</UiText>
+            <UiText size="tiny" span class="link-btn-desc">Бот будет писать тебе в личку</UiText>
           </span>
         </a>
 
@@ -86,8 +86,8 @@
         >
           <UiIcon name="users" :size="20" />
           <span class="link-btn-text">
-            <span class="link-btn-title">В группу</span>
-            <span class="link-btn-desc">Telegram предложит выбрать группу для бота</span>
+            <UiText size="small" span class="link-btn-title">В группу</UiText>
+            <UiText size="tiny" span class="link-btn-desc">Telegram предложит выбрать группу для бота</UiText>
           </span>
         </a>
 
@@ -313,7 +313,7 @@ const copyCode = () => {
 
 .sub-label {
   font-weight: var(--font-weight-medium);
-  color: var(--grey-800);
+  color: var(--color-title);
   margin-bottom: var(--space-2);
 }
 
@@ -355,13 +355,11 @@ const copyCode = () => {
 }
 
 .link-btn-title {
-  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
-  color: var(--grey-800);
+  color: var(--color-title);
 }
 
 .link-btn-desc {
-  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -392,6 +390,7 @@ const copyCode = () => {
     flex: 1;
     font-size: var(--font-size-md);
     font-family: monospace;
+    color: var(--color-title);
     user-select: all;
   }
 }
