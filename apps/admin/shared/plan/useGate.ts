@@ -36,9 +36,7 @@ export const useGate = (): GateRegistry => {
   const addons = moduleGate('addons')
   const combos = moduleGate('combos')
   const customers = moduleGate('customers')
-  const branchesNotNeeded = computed(() => tenantStore.maybeTenant?.onboardingState?.branchNotNeeded === true)
-  const branchesModule = moduleGate('branches')
-  const branches = computed<GateResult>(() => branchesNotNeeded.value ? deny('opted-out') : branchesModule.value)
+  const branches = moduleGate('branches')
   const customRoles = moduleGate('customRoles')
 
   /**
@@ -178,9 +176,7 @@ export const useGate = (): GateRegistry => {
   const alwaysOn = computed<GateResult>(() => isSuspended.value ? deny('suspended') : ok())
   const teamSection = permissionGate(team, 'team.manage')
   // Филиалы — только пермишен, без plan-фичи: даже на базовом тарифе доступна страница «Заведение».
-  // Если юзер на онбординге явно отказался от филиала — раздел скрываем (через флаг branchesNotNeeded).
-  const branchesAvailable = computed<GateResult>(() => branchesNotNeeded.value ? deny('opted-out') : alwaysOn.value)
-  const viewBranches = permissionGate(branchesAvailable, 'team.manage')
+  const viewBranches = permissionGate(alwaysOn, 'team.manage')
   const manageRoles = permissionGate(team, 'roles.manage')
   const viewContent = permissionGate(alwaysOn, 'content.view')
   const editContent = permissionGate(alwaysOn, 'content.edit')

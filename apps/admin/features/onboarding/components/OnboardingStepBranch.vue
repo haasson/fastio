@@ -1,14 +1,17 @@
 <template>
   <div class="step-branch-root">
-    <UiTitle size="h3">Первый филиал</UiTitle>
+    <UiTitle size="h3">{{ cityOnlyMode ? 'Город заведения' : 'Первый филиал' }}</UiTitle>
     <UiText size="small" class="hint">
-      Филиал — это адресная точка, к которой привязываются записи и сотрудники.
-      Если у вас нет физического офиса или вы работаете удалённо — создавать не обязательно,
-      но имейте в виду: изменить решение позже можно будет только через поддержку.
+      <template v-if="cityOnlyMode">
+        Укажите город — клиенты увидят его на витрине. Полный адрес можно добавить позже в разделе «Заведение».
+      </template>
+      <template v-else>
+        Филиал — это адресная точка, к которой привязываются записи и сотрудники. Без него не получится принимать заказы и бронирования.
+      </template>
     </UiText>
 
-    <UiText v-if="showError && !branchStore.hasBranches && !noPhysicalLocation" size="small" class="error">
-      Создайте филиал или отметьте чекбокс <strong>«Не указывать филиал»</strong> ниже.
+    <UiText v-if="showError && !branchStore.hasBranches" size="small" class="error">
+      {{ cityOnlyMode ? 'Выберите город из подсказок.' : 'Заполните название и адрес филиала.' }}
     </UiText>
 
     <template v-if="branchStore.hasBranches">
@@ -21,9 +24,10 @@
       </UiCard>
     </template>
 
-    <template v-else-if="!noPhysicalLocation">
+    <template v-else>
       <UiForm ref="formRef" class="fields">
         <UiInput
+          v-if="!cityOnlyMode"
           v-model="branchName"
           name="branchName"
           label="Название филиала"
@@ -35,6 +39,9 @@
           v-model="branchAddress"
           v-model:address-data="branchAddressData"
           name="branchAddress"
+          :label="cityOnlyMode ? 'Город *' : 'Адрес *'"
+          :placeholder="cityOnlyMode ? 'Начните вводить город...' : 'Начните вводить адрес...'"
+          :city-only="cityOnlyMode"
           :rules="[validationRules.address.required]"
           @pick="onAddressPick"
         />
@@ -45,56 +52,42 @@
         :loading="saving"
         @click="createBranch"
       >
-        Создать филиал
+        {{ cityOnlyMode ? 'Сохранить' : 'Создать филиал' }}
       </UiButton>
     </template>
-
-    <UiCheckbox v-if="!branchStore.hasBranches" v-model="noPhysicalLocation">
-      Не указывать филиал
-    </UiCheckbox>
-
-    <UiAlert v-if="noPhysicalLocation" type="warning" size="small">
-      Без филиала клиенты не увидят адрес на витрине, а сотрудников нельзя будет закрепить за конкретной точкой.
-      Если решение поменяется — обратитесь в поддержку, чтобы открыть раздел «Филиалы».
-    </UiAlert>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon, UiForm, UiCheckbox, UiAlert, useMessage } from '@fastio/ui'
+import { ref, computed } from 'vue'
+import { UiTitle, UiInput, UiText, UiButton, UiCard, UiIcon, UiForm, useMessage } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
 import type { BranchAddressData } from '@fastio/shared'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import AddressSuggestInput from '~/shared/ui/components/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'
 import { reportError } from '~/shared/utils/reportError'
 import { defaultBranchFormData } from '~/features/branches'
 
+const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const { error } = useMessage()
 
 const showError = ref(false)
-const noPhysicalLocation = ref(false)
 
-// Сбрасываем ошибку и опт-аут когда филиал реально создан — не оставляем «висящие» состояния,
-// иначе на след. шаге Wizard может ошибочно записать branchNotNeeded=true для тенанта с филиалом.
-watch(() => branchStore.hasBranches, (has) => {
-  if (has) {
-    showError.value = false
-    noPhysicalLocation.value = false
-  }
-})
+// Showcase-планы (бесплатные «Витрина») — упрощённый ввод: только город,
+// название филиала автогенерится из названия тенанта. Остальные планы (Старт/Про,
+// retail и services) требуют полный адрес.
+const cityOnlyMode = computed(() => {
+  const plan = tenantStore.maybeTenant?.subscription?.plan ?? ''
 
-watch(noPhysicalLocation, () => {
-  showError.value = false
+  return plan === 'retail-showcase' || plan === 'services-showcase'
 })
 
 defineExpose({
-  // Возвращаем boolean-значение, не Ref, — чтобы parent не зависел от деталей реактивности.
-  isOptedOut: () => noPhysicalLocation.value && !branchStore.hasBranches,
   validate: () => {
-    if (branchStore.hasBranches || noPhysicalLocation.value) return true
+    if (branchStore.hasBranches) return true
     showError.value = true
 
     return false
@@ -135,20 +128,27 @@ const createBranch = async () => {
 
   if (!valid) return
 
-  // Жёсткое требование: адрес выбирается только из подсказок DaData. Без addressData
-  // CHECK-constraint в БД упадёт; pickedRule в AddressSuggestInput уже подсветит поле,
-  // здесь — финальная страховка чтобы не словить серверную ошибку при сабмите.
+  // Жёсткое требование: адрес/город выбирается только из подсказок DaData. Без
+  // addressData CHECK-constraint в БД упадёт; pickedRule в AddressSuggestInput
+  // уже подсветит поле, здесь — финальная страховка.
   if (!branchAddressData.value) {
-    error('Выберите адрес во всплывающей подсказке')
+    error(cityOnlyMode.value ? 'Выберите город во всплывающей подсказке' : 'Выберите адрес во всплывающей подсказке')
 
     return
   }
 
   saving.value = true
   try {
+    // В showcase-режиме название берём из имени тенанта — юзеру не приходится
+    // выдумывать второе название (его «Главный»/«Центральный» одинаково для
+    // 95% случаев).
+    const effectiveName = cityOnlyMode.value
+      ? (tenantStore.maybeTenant?.name?.trim() || 'Основной')
+      : branchName.value.trim()
+
     await branchStore.add({
       ...defaultBranchFormData(),
-      name: branchName.value.trim(),
+      name: effectiveName,
       address: branchAddress.value.trim(),
       addressData: branchAddressData.value,
       latitude: branchLat.value,
@@ -156,7 +156,7 @@ const createBranch = async () => {
     })
   } catch (e) {
     reportError(e)
-    error('Не удалось создать филиал. Попробуйте ещё раз.')
+    error('Не удалось сохранить. Попробуйте ещё раз.')
   } finally {
     saving.value = false
   }

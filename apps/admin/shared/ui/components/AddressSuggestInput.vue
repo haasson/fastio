@@ -43,10 +43,13 @@ const props = withDefaults(defineProps<{
    * Используется в формах филиала, где BD-CHECK гарантирует структурный адрес.
    */
   requirePicked?: boolean
+  /** city-only режим: подсказки только города/нас. пункты. Для онбординга showcase. */
+  cityOnly?: boolean
 }>(), {
   label: 'Адрес *',
   placeholder: 'Начните вводить адрес...',
   requirePicked: true,
+  cityOnly: false,
 })
 
 const emit = defineEmits<{
@@ -58,7 +61,7 @@ const model = defineModel<string>({ default: '' })
 // Parent обязан хранить его рядом с address — серверная валидация заберёт оба поля.
 const addressData = defineModel<BranchAddressData | null>('addressData', { default: null })
 
-const { suggestions, search, clear, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions()
+const { suggestions, search, clear, showSuggestions, hideSuggestionsDelayed } = useDadataSuggestions({ cityOnly: props.cityOnly })
 
 const onInput = () => {
   showSuggestions.value = true

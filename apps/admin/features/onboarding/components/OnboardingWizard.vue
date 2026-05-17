@@ -195,15 +195,6 @@ const next = async () => {
         },
         timezone: form.timezone,
       })
-    } else if (currentStep.value === 'branch') {
-      if (branchStepRef.value?.isOptedOut()) {
-        await tenantStore.update({
-          onboardingState: {
-            ...tenantStore.tenant.onboardingState,
-            branchNotNeeded: true,
-          },
-        })
-      }
     } else if (currentStep.value === 'modules') {
       await tenantStore.update({
         modules: {

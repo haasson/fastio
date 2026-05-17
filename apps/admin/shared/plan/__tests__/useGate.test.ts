@@ -33,7 +33,7 @@ const resolved = ref<ResolvedFeatures>({
 })
 
 type Subscription = { status: string; plan: string }
-type OnboardingState = { branchNotNeeded?: boolean }
+type OnboardingState = Record<string, never>
 
 const tenantStore = {
   isOwner: false,
@@ -422,32 +422,8 @@ describe('useGate', () => {
     })
   })
 
-  describe('branchNotNeeded (опт-аут на онбординге)', () => {
-    it('branches opted-out если юзер выбрал «не указывать филиал»', async () => {
-      const useGate = await importGate()
-
-      allEnabled('branches')
-      tenantStore.maybeTenant.onboardingState = { branchNotNeeded: true }
-
-      const gate = useGate()
-
-      expect(gate.branches.value.enabled).toBe(false)
-      expect(gate.branches.value.reason).toBe('opted-out')
-    })
-
-    it('viewBranches opted-out если branchNotNeeded даже когда есть team.manage', async () => {
-      const useGate = await importGate()
-
-      tenantStore.maybeTenant.onboardingState = { branchNotNeeded: true }
-      tenantStore.currentPermissions = { 'team.manage': true }
-
-      const gate = useGate()
-
-      expect(gate.viewBranches.value.enabled).toBe(false)
-      expect(gate.viewBranches.value.reason).toBe('opted-out')
-    })
-
-    it('viewBranches enabled когда branchNotNeeded не выставлен', async () => {
+  describe('viewBranches — без opt-out, гейт только пермишеном', () => {
+    it('viewBranches enabled с team.manage', async () => {
       const useGate = await importGate()
 
       tenantStore.currentPermissions = { 'team.manage': true }
@@ -457,18 +433,15 @@ describe('useGate', () => {
       expect(gate.viewBranches.value.enabled).toBe(true)
     })
 
-    it('addBranch разрешает первый филиал даже при branchNotNeeded — для override через поддержку', async () => {
+    it('viewBranches forbidden без team.manage', async () => {
       const useGate = await importGate()
 
-      tenantStore.maybeTenant.onboardingState = { branchNotNeeded: true }
-      setModule('branches', { active: false, locked: true })
-      branchStore.branches = []
+      tenantStore.currentPermissions = {}
 
       const gate = useGate()
 
-      // branches возвращает opted-out → addBranch проверяет «филиалов 0?». Если да — разрешает
-      // создать главный филиал (для случая, когда поддержка вручную сбросит флаг).
-      expect(gate.addBranch.value.enabled).toBe(true)
+      expect(gate.viewBranches.value.enabled).toBe(false)
+      expect(gate.viewBranches.value.reason).toBe('forbidden')
     })
   })
 

@@ -44,12 +44,23 @@ export default defineEventHandler(async (event) => {
 
   if (!apiKey) throw createError({ statusCode: 500, message: 'DaData API key not configured' })
 
-  const coords = await getTenantCoords(tenantId)
+  const level = body.level === 'city' ? 'city' : 'address'
 
   const dadataBody: Record<string, unknown> = { query, count: 5 }
 
-  if (coords) {
-    dadataBody.locations_geo = [{ lat: coords.lat, lon: coords.lon, radius_meters: 50000 }]
+  if (level === 'city') {
+    // Показываем только города/нас. пункты — без улиц/домов. Используется
+    // на онбординге для showcase-планов где адресная точность не нужна.
+    dadataBody.from_bound = { value: 'city' }
+    dadataBody.to_bound = { value: 'settlement' }
+  } else {
+    // Полный адрес: привязываем к координатам первого филиала тенанта (радиус
+    // 50 км), чтобы не сорить однофамильными улицами из других регионов.
+    const coords = await getTenantCoords(tenantId)
+
+    if (coords) {
+      dadataBody.locations_geo = [{ lat: coords.lat, lon: coords.lon, radius_meters: 50000 }]
+    }
   }
 
   const res = await $fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address', {
