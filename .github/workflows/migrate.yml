@@ -6,6 +6,9 @@ name: Supabase Migrations
 # Postgres контейнера, (3) пароль в GH secret (внутри контейнера local-socket
 # peer-auth для роли postgres работает без пароля).
 #
+# Скорость: 3 ssh-вызова total (discover, fetch applied, apply bundle) — не по
+# одному на миграцию. Иначе SSH-handshake × N = минуты.
+#
 # Требуемые secrets (берём те же что у deploy-functions.yml):
 #   - VPS_SSH_KEY  — приватный ed25519 (BEGIN/END блок целиком)
 #   - VPS_HOST     — 109.71.242.205
@@ -17,6 +20,7 @@ on:
       - main
     paths:
       - 'supabase/migrations/**'
+      - '.github/workflows/migrate.yml'
 
 jobs:
   migrate:
@@ -38,60 +42,75 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Контейнер ищем по префиксу: при ребилде Coolify его id меняется,
-          # но префикс supabase-db- стабилен.
-          DB_CT=$(ssh -o BatchMode=yes "root@${VPS_HOST}" "docker ps --format '{{.Names}}' | grep -E '^supabase-db-' | head -1")
+          SSH="ssh -o BatchMode=yes root@${VPS_HOST}"
+
+          # 1/3 — Discover контейнера и bootstrap трекера + список applied.
+          # supabase-db- префикс стабилен при rebuild'е Coolify.
+          DB_CT=$($SSH "docker ps --format '{{.Names}}' | grep -E '^supabase-db-' | head -1")
           if [ -z "$DB_CT" ]; then
             echo "::error::supabase-db container not found on VPS"
             exit 1
           fi
           echo "DB container: $DB_CT"
 
-          # Обёртка: пайпаем stdin в docker exec psql внутри контейнера.
-          # Локальный unix-сокет, peer-auth (см. pg_hba.conf supabase образа).
-          psql_stdin() {
-            ssh -o BatchMode=yes "root@${VPS_HOST}" "docker exec -i ${DB_CT} psql -U postgres -d postgres -v ON_ERROR_STOP=1"
-          }
-          psql_cmd() {
-            ssh -o BatchMode=yes "root@${VPS_HOST}" "docker exec ${DB_CT} psql -U postgres -d postgres -v ON_ERROR_STOP=1 -tAc \"$1\""
-          }
-
-          # Bootstrap: создаём таблицу учёта если её нет.
-          psql_stdin <<'SQL'
+          # 2/3 — Bootstrap + fetch applied versions единым psql-сеансом.
+          APPLIED=$($SSH "docker exec -i $DB_CT psql -U postgres -d postgres -tA -v ON_ERROR_STOP=1" <<'SQL'
           CREATE SCHEMA IF NOT EXISTS supabase_migrations;
           CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
             version text PRIMARY KEY,
             applied_at timestamptz NOT NULL DEFAULT now()
           );
+          SELECT version FROM supabase_migrations.schema_migrations ORDER BY version;
           SQL
-
-          existing=$(psql_cmd "SELECT count(*) FROM supabase_migrations.schema_migrations")
+          )
+          # APPLIED содержит и "CREATE SCHEMA"/"CREATE TABLE" сообщения, и числа.
+          # Фильтруем только version-строки (вида цифр).
+          APPLIED_LIST=$(echo "$APPLIED" | grep -E '^[0-9]+$' || true)
+          existing=$(echo "$APPLIED_LIST" | grep -c '^' || true)
+          [ -z "$APPLIED_LIST" ] && existing=0
           echo "Already tracked: $existing migrations"
 
-          # Если таблица пустая — bootstrap: помечаем все *.sql кроме последней
-          # как applied. Последняя применится в цикле ниже.
+          declare -A APPLIED_SET
+          for v in $APPLIED_LIST; do APPLIED_SET[$v]=1; done
+
+          # Bootstrap: если трекер пустой — помечаем все *.sql кроме последней как applied.
+          # Последняя применится через общий цикл ниже как pending.
+          BUNDLE=""
           if [ "$existing" = "0" ]; then
             echo "Empty schema_migrations — bootstrap markers for all existing migrations except the latest"
             latest=$(ls supabase/migrations/*.sql | sort -V | tail -1)
             for f in $(ls supabase/migrations/*.sql | sort -V); do
               if [ "$f" = "$latest" ]; then continue; fi
               version=$(basename "$f" .sql | cut -d'_' -f1)
-              psql_cmd "INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version') ON CONFLICT DO NOTHING" >/dev/null
+              BUNDLE+="INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version') ON CONFLICT DO NOTHING;"$'\n'
+              APPLIED_SET[$version]=1
             done
-            echo "Bootstrap done. Latest ($latest) will be applied below."
           fi
 
-          # Применяем pending. Каждый файл стримим через stdin внутрь контейнера.
+          # Собираем pending в единый SQL-бандл: каждая миграция в отдельной
+          # транзакции, чтобы failure посередине не сломал атомарность остальных.
+          PENDING_COUNT=0
           for f in $(ls supabase/migrations/*.sql | sort -V); do
             version=$(basename "$f" .sql | cut -d'_' -f1)
-            applied=$(psql_cmd "SELECT 1 FROM supabase_migrations.schema_migrations WHERE version='$version'")
-            if [ "$applied" = "1" ]; then
+            if [ -n "${APPLIED_SET[$version]:-}" ]; then
               continue
             fi
-            echo "→ Applying $f"
-            psql_stdin < "$f"
-            psql_cmd "INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version')" >/dev/null
-            echo "✓ Applied $version"
+            PENDING_COUNT=$((PENDING_COUNT + 1))
+            BUNDLE+=$'\n'"\\echo '→ Applying $version ($(basename $f))'"$'\n'
+            BUNDLE+="BEGIN;"$'\n'
+            BUNDLE+=$(cat "$f")$'\n'
+            BUNDLE+="INSERT INTO supabase_migrations.schema_migrations (version) VALUES ('$version');"$'\n'
+            BUNDLE+="COMMIT;"$'\n'
           done
 
-          echo "All migrations up to date."
+          if [ "$PENDING_COUNT" = "0" ] && [ -z "$BUNDLE" ]; then
+            echo "All migrations up to date."
+            exit 0
+          fi
+
+          echo "Pending migrations: $PENDING_COUNT"
+
+          # 3/3 — Применяем bundle одним psql-сеансом внутри контейнера.
+          echo "$BUNDLE" | $SSH "docker exec -i $DB_CT psql -U postgres -d postgres -v ON_ERROR_STOP=1"
+
+          echo "All migrations applied."
