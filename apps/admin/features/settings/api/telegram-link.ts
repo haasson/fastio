@@ -24,10 +24,14 @@ const mapRow = (r: SubscriberRow): TenantTelegramSubscriber => ({
 
 export const telegramLinkApi = {
   // Создаёт/обновляет код привязки tg-чата. Один активный код на тенант (UNIQUE tenant_id).
+  // expires_at передаём явно: при upsert-update DEFAULT в DB НЕ срабатывает повторно,
+  // и без этого старая просрочка переезжает на новый код → юзер видит «код устарел».
   async upsertCode(sb: SupabaseClient, tenantId: string, code: string): Promise<void> {
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
+
     await query(
       sb.from('telegram_link_codes').upsert(
-        { code, tenant_id: tenantId },
+        { code, tenant_id: tenantId, expires_at: expiresAt },
         { onConflict: 'tenant_id' },
       ),
     )
