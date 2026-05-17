@@ -214,7 +214,9 @@ const connect = async () => {
 
   generating.value = true
   try {
-    const code = Math.random().toString(36).slice(2, 10)
+    // 6 цифр читается проще буквенно-цифровой смеси. PK-коллизия в окне 15 мин
+    // крайне маловероятна; если упадёт INSERT — юзер просто кликнет «Подключить» ещё раз.
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
 
     await telegramLink.upsertCode(tid, code)
     linkCode.value = code
