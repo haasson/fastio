@@ -56,57 +56,71 @@
   <UiModal
     v-model="showModal"
     title="Подключить Telegram"
-    :width="480"
+    :width="560"
     :closable="!justConnected"
   >
     <div class="tg-steps">
       <template v-if="!justConnected">
         <UiText size="small" class="modal-intro">
-          Выбери куда подключать. Telegram откроется и сам подставит код привязки.
+          Кликни по карточке чтобы открыть Telegram, или отсканируй QR с телефона.
         </UiText>
 
-        <a
-          :href="dmDeepLink"
-          target="_blank"
-          rel="noopener"
-          class="link-btn"
-        >
-          <UiIcon name="smartphone" :size="20" />
-          <span class="link-btn-text">
-            <UiText size="small" span class="link-btn-title">В личный чат</UiText>
-            <UiText size="tiny" span class="link-btn-desc">Бот будет писать тебе в личку</UiText>
-          </span>
-        </a>
-
-        <a
-          :href="groupDeepLink"
-          target="_blank"
-          rel="noopener"
-          class="link-btn"
-        >
-          <UiIcon name="users" :size="20" />
-          <span class="link-btn-text">
-            <UiText size="small" span class="link-btn-title">В группу</UiText>
-            <UiText size="tiny" span class="link-btn-desc">Telegram предложит выбрать группу для бота</UiText>
-          </span>
-        </a>
-
-        <details class="manual-block">
-          <summary>Подключить вручную</summary>
-          <p>Открой <b>@{{ botUsername }}</b> и отправь команду:</p>
-          <div class="tg-code">
-            <code>/start {{ linkCode }}</code>
-            <UiButton size="small" @click="copyCode">Скопировать</UiButton>
+        <div class="link-options">
+          <div class="link-option">
+            <a
+              :href="dmDeepLink"
+              target="_blank"
+              rel="noopener"
+              class="link-btn"
+            >
+              <UiIcon name="smartphone" :size="20" />
+              <span class="link-btn-text">
+                <UiText size="small" span class="link-btn-title">В личный чат</UiText>
+                <UiText size="tiny" span class="link-btn-desc">Бот будет писать тебе в личку</UiText>
+              </span>
+            </a>
+            <div class="qr-wrap">
+              <img
+                v-if="dmQrDataUrl"
+                :src="dmQrDataUrl"
+                alt="QR для подключения личного чата"
+                class="qr-img"
+              />
+              <UiText size="tiny" span class="qr-hint">или скан с телефона</UiText>
+            </div>
           </div>
-          <p class="hint">Для группы — назначь бота администратором или используй deep-link выше.</p>
-        </details>
+
+          <div class="link-option">
+            <a
+              :href="groupDeepLink"
+              target="_blank"
+              rel="noopener"
+              class="link-btn"
+            >
+              <UiIcon name="users" :size="20" />
+              <span class="link-btn-text">
+                <UiText size="small" span class="link-btn-title">В группу</UiText>
+                <UiText size="tiny" span class="link-btn-desc">Telegram предложит выбрать группу для бота</UiText>
+              </span>
+            </a>
+            <div class="qr-wrap">
+              <img
+                v-if="groupQrDataUrl"
+                :src="groupQrDataUrl"
+                alt="QR для подключения группы"
+                class="qr-img"
+              />
+              <UiText size="tiny" span class="qr-hint">или скан с телефона</UiText>
+            </div>
+          </div>
+        </div>
 
         <div class="tg-status-row">
           <span v-if="polling" class="tg-waiting">
             <span class="spinner" />
             Ожидаем подключения...
           </span>
-          <span class="tg-hint">Код действует 15 минут</span>
+          <UiText size="tiny" span class="tg-hint">Код действует 15 минут</UiText>
         </div>
       </template>
       <template v-else>
@@ -130,6 +144,7 @@ import { useGate } from '~/shared/plan/useGate'
 import { useRuntimeConfig } from '#imports'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useConfirm } from '@fastio/kit'
+import { renderQrToDataUrl } from '~/shared/utils/renderQr'
 
 const { blinkingCounter } = useNotificationPrefs()
 const tenantStore = useTenantStore()
@@ -146,6 +161,8 @@ const polling = ref(false)
 const justConnected = ref(false)
 const subscribers = ref<TenantTelegramSubscriber[]>([])
 const subsCountAtOpen = ref(0)
+const dmQrDataUrl = ref('')
+const groupQrDataUrl = ref('')
 
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
@@ -220,6 +237,16 @@ const connect = async () => {
 
     await telegramLink.upsertCode(tid, code)
     linkCode.value = code
+
+    // QR заранее, чтобы при открытии модалки не было «прыжка» от пустого слота к картинке.
+    const [dm, group] = await Promise.all([
+      renderQrToDataUrl(dmDeepLink.value, 160),
+      renderQrToDataUrl(groupDeepLink.value, 160),
+    ])
+
+    dmQrDataUrl.value = dm
+    groupQrDataUrl.value = group
+
     justConnected.value = false
     subsCountAtOpen.value = subscribers.value.length
     showModal.value = true
@@ -249,9 +276,6 @@ const disconnect = async (sub: TenantTelegramSubscriber) => {
   }
 }
 
-const copyCode = () => {
-  navigator.clipboard.writeText(`/start ${linkCode.value}`)
-}
 </script>
 
 <style scoped lang="scss">
@@ -334,14 +358,25 @@ const copyCode = () => {
   color: var(--color-text-secondary);
 }
 
-.link-btn {
-  @include flex-row(var(--space-12));
+.link-options {
+  @include flex-col(var(--space-12));
+}
+
+.link-option {
+  @include flex-col(var(--space-8));
   padding: var(--space-12);
   background: var(--color-bg-page);
   border-radius: var(--radius-12);
+}
+
+.link-btn {
+  @include flex-row(var(--space-12));
   text-decoration: none;
   color: inherit;
   align-items: center;
+  padding: var(--space-8);
+  margin: calc(-1 * var(--space-8));
+  border-radius: var(--radius-8);
   transition: background 0.15s ease;
 
   &:hover {
@@ -363,36 +398,23 @@ const copyCode = () => {
   color: var(--color-text-secondary);
 }
 
-.manual-block {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-
-  summary {
-    cursor: pointer;
-    padding: var(--space-8) 0;
-    font-weight: var(--font-weight-medium);
-  }
-
-  p {
-    margin: var(--space-8) 0;
-    /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-    line-height: 1.6;
-  }
+.qr-wrap {
+  @include flex-col(var(--space-4));
+  align-items: center;
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border-light);
 }
 
-.tg-code {
-  @include flex-row;
-  padding: var(--space-8) var(--space-12);
-  background: var(--color-bg-page);
+.qr-img {
+  width: 140px;
+  height: 140px;
   border-radius: var(--radius-8);
+  background: #fff; /* QR всегда на белом — иначе сканеры не читают */
+  padding: var(--space-4);
+}
 
-  code {
-    flex: 1;
-    font-size: var(--font-size-md);
-    font-family: monospace;
-    color: var(--color-title);
-    user-select: all;
-  }
+.qr-hint {
+  color: var(--color-text-secondary);
 }
 
 .tg-status-row {
@@ -406,7 +428,6 @@ const copyCode = () => {
 }
 
 .tg-hint {
-  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
