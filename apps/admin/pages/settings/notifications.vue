@@ -13,56 +13,94 @@
     </UiFormSection>
 
     <UiFormSection v-if="gate.telegramNotifications.value.enabled" title="Telegram" :columns="1">
+      <UiText size="small" class="tg-intro">
+        Подключи личный чат или группу — бот будет писать туда о каждом новом заказе и бронировании.
+        Можно подключить несколько чатов: сообщения улетят во все сразу.
+      </UiText>
 
-      <div class="tg-block">
-        <span class="tg-icon">
-          <UiIcon name="messageCircle" :size="28" />
-        </span>
-        <div class="tg-info">
-          <UiText size="small" class="tg-title">Уведомления в Telegram</UiText>
-          <UiText size="tiny" class="tg-desc">
-            <template v-if="isTelegramConnected">
-              {{ chatTitle ? `Подключена группа «${chatTitle}»` : 'Группа подключена' }} — заказы и бронирования будут приходить туда
-            </template>
-            <template v-else>Подключи группу — бот будет писать туда при каждом новом заказе или бронировании</template>
-          </UiText>
+      <div v-if="subscribers.length" class="subs">
+        <div v-for="sub in subscribers" :key="sub.id" class="sub">
+          <span class="sub-icon">
+            <UiIcon :name="sub.chatType === 'private' ? 'smartphone' : 'users'" :size="20" />
+          </span>
+          <div class="sub-info">
+            <UiText size="small" class="sub-label">{{ sub.label ?? 'Telegram-чат' }}</UiText>
+            <UiText size="tiny" class="sub-meta">
+              {{ chatTypeLabel(sub.chatType) }} · подключён {{ formatDate(sub.addedAt) }}
+            </UiText>
+          </div>
+          <UiButton
+            size="small"
+            :loading="removingId === sub.id"
+            @click="disconnect(sub)"
+          >
+            Отключить
+          </UiButton>
         </div>
-        <UiButton
-          v-if="isTelegramConnected"
-          size="small"
-          :loading="disconnecting"
-          @click="disconnectTelegram"
-        >
-          Отключить
-        </UiButton>
-        <UiButton
-          v-else
-          size="small"
-          type="primary"
-          :loading="generating"
-          @click="connectTelegram"
-        >
-          Подключить
-        </UiButton>
       </div>
+
+      <UiEmpty v-else message="Пока нет подключённых чатов" />
+
+      <UiButton
+        size="small"
+        type="primary"
+        :loading="generating"
+        class="add-btn"
+        @click="connect"
+      >
+        {{ subscribers.length ? 'Подключить ещё чат' : 'Подключить Telegram' }}
+      </UiButton>
     </UiFormSection>
   </div>
 
   <UiModal
     v-model="showModal"
     title="Подключить Telegram"
-    :width="440"
-    :closable="!polling"
+    :width="480"
+    :closable="!justConnected"
   >
     <div class="tg-steps">
-      <template v-if="!connected">
-        <p>1. Создай Telegram-группу (обычную или с топиками) и добавь в неё бота <b>@{{ botUsername }}</b></p>
-        <p>2. Назначь бота <b>администратором</b> группы — иначе он не сможет читать сообщения. Остальные права можно не давать</p>
-        <p>3. Отправь в группу эту команду (можно в любой топик):</p>
-        <div class="tg-code">
-          <code>/start {{ linkCode }}</code>
-          <UiButton size="small" @click="copyCode">Скопировать</UiButton>
-        </div>
+      <template v-if="!justConnected">
+        <UiText size="small" class="modal-intro">
+          Выбери куда подключать. Telegram откроется и сам подставит код привязки.
+        </UiText>
+
+        <a
+          :href="dmDeepLink"
+          target="_blank"
+          rel="noopener"
+          class="link-btn"
+        >
+          <UiIcon name="smartphone" :size="20" />
+          <span class="link-btn-text">
+            <span class="link-btn-title">В личный чат</span>
+            <span class="link-btn-desc">Бот будет писать тебе в личку</span>
+          </span>
+        </a>
+
+        <a
+          :href="groupDeepLink"
+          target="_blank"
+          rel="noopener"
+          class="link-btn"
+        >
+          <UiIcon name="users" :size="20" />
+          <span class="link-btn-text">
+            <span class="link-btn-title">В группу</span>
+            <span class="link-btn-desc">Telegram предложит выбрать группу для бота</span>
+          </span>
+        </a>
+
+        <details class="manual-block">
+          <summary>Подключить вручную</summary>
+          <p>Открой <b>@{{ botUsername }}</b> и отправь команду:</p>
+          <div class="tg-code">
+            <code>/start {{ linkCode }}</code>
+            <UiButton size="small" @click="copyCode">Скопировать</UiButton>
+          </div>
+          <p class="hint">Для группы — назначь бота администратором или используй deep-link выше.</p>
+        </details>
+
         <div class="tg-status-row">
           <span v-if="polling" class="tg-waiting">
             <span class="spinner" />
@@ -74,8 +112,8 @@
       <template v-else>
         <div class="tg-success">
           <UiIcon name="checkRound" :size="32" class="tg-success-icon" />
-          <UiText size="small" class="tg-success-text">Группа успешно подключена!</UiText>
-          <UiText size="tiny" class="tg-desc">Теперь сюда будут приходить уведомления о новых заказах и бронированиях</UiText>
+          <UiText size="small" class="tg-success-text">Чат подключён!</UiText>
+          <UiText size="tiny" class="tg-desc">Теперь уведомления о новых заказах и бронированиях будут приходить туда.</UiText>
         </div>
       </template>
     </div>
@@ -83,8 +121,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
-import { UiFormSection, UiButton, UiText, UiIcon, UiSwitch, UiModal, useMessage } from '@fastio/ui'
+import { ref, computed, watch, onUnmounted, onMounted } from 'vue'
+import { UiFormSection, UiButton, UiText, UiIcon, UiSwitch, UiModal, UiEmpty, useMessage } from '@fastio/ui'
+import type { TenantTelegramSubscriber } from '@fastio/shared'
 import { useNotificationPrefs } from '~/features/settings'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
@@ -100,17 +139,37 @@ const { confirm } = useConfirm()
 const { success } = useMessage()
 
 const generating = ref(false)
-const disconnecting = ref(false)
+const removingId = ref<string | null>(null)
 const showModal = ref(false)
 const linkCode = ref('')
 const polling = ref(false)
-const connected = ref(false)
+const justConnected = ref(false)
+const subscribers = ref<TenantTelegramSubscriber[]>([])
+const subsCountAtOpen = ref(0)
 
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
 const botUsername = useRuntimeConfig().public.telegramTenantBotUsername
-const isTelegramConnected = computed(() => !!tenantStore.tenant.notifications?.telegramChatId)
-const chatTitle = computed(() => tenantStore.tenant.notifications?.telegramChatTitle ?? null)
+
+const dmDeepLink = computed(() => `https://t.me/${botUsername}?start=${linkCode.value}`)
+const groupDeepLink = computed(() => `https://t.me/${botUsername}?startgroup=${linkCode.value}`)
+
+const chatTypeLabel = (type: TenantTelegramSubscriber['chatType']): string => {
+  if (type === 'private') return 'Личный чат'
+  if (type === 'channel') return 'Канал'
+
+  return 'Группа'
+}
+
+const formatDate = (iso: string): string => new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(new Date(iso))
+
+const loadSubscribers = async () => {
+  const tid = tenantStore.currentTenantId
+
+  if (!tid) return
+
+  subscribers.value = await telegramLink.listSubscribers(tid)
+}
 
 const stopPolling = () => {
   if (pollInterval) {
@@ -123,16 +182,11 @@ const stopPolling = () => {
 const startPolling = () => {
   polling.value = true
   pollInterval = setInterval(async () => {
-    const tid = tenantStore.currentTenantId
+    await loadSubscribers()
 
-    if (!tid) return
-
-    const chatId = await telegramLink.getTelegramChatId(tid)
-
-    if (chatId) {
+    if (subscribers.value.length > subsCountAtOpen.value) {
       stopPolling()
-      connected.value = true
-      await tenantStore.fetchTenant()
+      justConnected.value = true
       setTimeout(() => {
         showModal.value = false
       }, 2000)
@@ -143,13 +197,17 @@ const startPolling = () => {
 watch(showModal, (open) => {
   if (!open) {
     stopPolling()
-    connected.value = false
+    justConnected.value = false
   }
+})
+
+onMounted(() => {
+  loadSubscribers()
 })
 
 onUnmounted(() => stopPolling())
 
-const connectTelegram = async () => {
+const connect = async () => {
   const tid = tenantStore.currentTenantId
 
   if (!tid) return
@@ -160,7 +218,8 @@ const connectTelegram = async () => {
 
     await telegramLink.upsertCode(tid, code)
     linkCode.value = code
-    connected.value = false
+    justConnected.value = false
+    subsCountAtOpen.value = subscribers.value.length
     showModal.value = true
     startPolling()
   } finally {
@@ -168,34 +227,23 @@ const connectTelegram = async () => {
   }
 }
 
-const disconnectTelegram = async () => {
-  const title = chatTitle.value
+const disconnect = async (sub: TenantTelegramSubscriber) => {
   const ok = await confirm({
-    title: 'Отключить Telegram?',
-    message: title
-      ? `Группа «${title}» будет отключена. Уведомления о заказах и бронированиях перестанут приходить.`
-      : 'Группа будет отключена. Уведомления о заказах и бронированиях перестанут приходить.',
+    title: 'Отключить чат?',
+    message: `${sub.label ?? 'Telegram-чат'} перестанет получать уведомления о заказах и бронированиях.`,
     confirmText: 'Отключить',
     confirmType: 'error',
   })
 
   if (!ok) return
 
-  disconnecting.value = true
+  removingId.value = sub.id
   try {
-    const current = tenantStore.tenant.notifications
-
-    await tenantStore.update({
-      notifications: {
-        email: current?.email ?? null,
-        telegramChatId: null,
-        telegramThreadId: null,
-        telegramChatTitle: null,
-      },
-    })
-    success('Telegram отключён')
+    await telegramLink.removeSubscriber(sub.id)
+    await loadSubscribers()
+    success('Чат отключён')
   } finally {
-    disconnecting.value = false
+    removingId.value = null
   }
 }
 
@@ -232,44 +280,103 @@ const copyCode = () => {
   display: block;
 }
 
-.tg-block {
+.tg-intro {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+}
+
+.subs {
+  @include flex-col(var(--space-8));
+}
+
+.sub {
   @include flex-row(var(--space-12));
   padding: var(--space-12);
   background: var(--color-bg-page);
   border-radius: var(--radius-12);
+  align-items: center;
 }
 
-.tg-icon {
+.sub-icon {
   display: flex;
   align-items: center;
   color: var(--color-text-secondary);
+  flex-shrink: 0;
 }
 
-.tg-info {
+.sub-info {
   flex: 1;
   min-width: 0;
 }
 
-.tg-title {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
+.sub-label {
+  font-weight: var(--font-weight-medium);
   color: var(--grey-800);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
 }
 
-.tg-desc {
-  font-size: var(--font-size-sm);
+.sub-meta {
   color: var(--color-text-secondary);
+}
+
+.add-btn {
+  align-self: flex-start;
+  margin-top: var(--space-8);
 }
 
 .tg-steps {
   @include flex-col(var(--space-12));
+}
+
+.modal-intro {
+  color: var(--color-text-secondary);
+}
+
+.link-btn {
+  @include flex-row(var(--space-12));
+  padding: var(--space-12);
+  background: var(--color-bg-page);
+  border-radius: var(--radius-12);
+  text-decoration: none;
+  color: inherit;
+  align-items: center;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--color-bg-hover);
+  }
+}
+
+.link-btn-text {
+  @include flex-col(var(--space-2));
+  flex: 1;
+}
+
+.link-btn-title {
   font-size: var(--font-size-md);
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  line-height: 1.6;
+  font-weight: var(--font-weight-semibold);
+  color: var(--grey-800);
+}
+
+.link-btn-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.manual-block {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+
+  summary {
+    cursor: pointer;
+    padding: var(--space-8) 0;
+    font-weight: var(--font-weight-medium);
+  }
 
   p {
-    margin: 0;
+    margin: var(--space-8) 0;
+    /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+    line-height: 1.6;
   }
 }
 
@@ -315,6 +422,10 @@ const copyCode = () => {
 
 .tg-success-text {
   font-weight: var(--font-weight-semibold);
+}
+
+.tg-desc {
+  color: var(--color-text-secondary);
 }
 
 .spinner {

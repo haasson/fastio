@@ -3,7 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { formatPhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireInternalSecret } from '../../utils/auth'
-import { telegramFetch } from '../../utils/telegramFetch'
+import { broadcastToTenantTelegram } from '../../utils/telegramBroadcast'
 
 export default defineEventHandler(async (event) => {
   requireInternalSecret(event)
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const supabase = getServerSupabase()
 
   const [{ data: tenant }, { data: reservation }] = await Promise.all([
-    supabase.from('tenants').select('notifications, timezone').eq('id', tenantId).single(),
+    supabase.from('tenants').select('timezone').eq('id', tenantId).single(),
     supabase
       .from('reservations')
       .select('guest_name, guest_phone, guest_count, reserved_date, reserved_time, comment, table_name')
@@ -30,50 +30,34 @@ export default defineEventHandler(async (event) => {
       .single(),
   ])
 
-  const chatId = tenant?.notifications?.telegramChatId
-  const threadId = tenant?.notifications?.telegramThreadId ?? null
+  if (!reservation) return { ok: true }
 
-  if (!chatId || !reservation) return { ok: true }
-
-  const tz = tenant.timezone
+  const tz = tenant?.timezone
   const dateStr = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: tz })
     .format(new Date(`${reservation.reserved_date}T12:00:00Z`))
   const timeStr = reservation.reserved_time.slice(0, 5)
 
   let text = `📅 <b>Новое бронирование</b>\n\n`
 
-  const phone = reservation.guest_phone
-
   text += `👤 ${reservation.guest_name}\n`
-  text += `📞 ${formatPhone(phone)}\n`
+  text += `📞 ${formatPhone(reservation.guest_phone)}\n`
   text += `👥 ${reservation.guest_count} ${guestWord(reservation.guest_count)}\n`
   text += `🗓 ${dateStr} в ${timeStr}\n`
   if (reservation.table_name) text += `🪑 ${reservation.table_name}\n`
   if (reservation.comment) text += `💬 ${reservation.comment}\n`
 
-  const payload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: 'HTML' }
+  const phoneDigits = reservation.guest_phone.replace(/\D/g, '')
+  const replyMarkup = adminUrl
+    ? {
+        inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phoneDigits}` }]],
+      }
+    : null
 
-  if (threadId) payload.message_thread_id = threadId
-
-  if (adminUrl) {
-    const phoneDigits = reservation.guest_phone.replace(/\D/g, '')
-
-    payload.reply_markup = {
-      inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phoneDigits}` }]],
-    }
-  }
-
-  const tgRes = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-
-  if (!tgRes.ok) {
-    const err = await tgRes.json()
-
-    console.error('[telegram notify-reservation] sendMessage failed:', JSON.stringify(err))
-  }
+  await broadcastToTenantTelegram(supabase, token, tenantId, () => ({
+    text,
+    parse_mode: 'HTML',
+    ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+  }), 'telegram notify-reservation')
 
   return { ok: true }
 })

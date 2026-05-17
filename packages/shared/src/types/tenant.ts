@@ -146,9 +146,16 @@ export type TenantContacts = {
 
 export type TenantNotifications = {
   email: string | null
-  telegramChatId: string | null
-  telegramThreadId?: number | null
-  telegramChatTitle?: string | null
+}
+
+export type TenantTelegramSubscriber = {
+  id: string
+  tenantId: string
+  chatId: string
+  chatType: 'private' | 'group' | 'supergroup' | 'channel'
+  label: string | null
+  threadId: number | null
+  addedAt: string
 }
 
 export type TenantSubscription = {

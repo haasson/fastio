@@ -1,11 +1,29 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Tenant } from '@fastio/shared'
+import type { TenantTelegramSubscriber } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
 
-type TenantNotifications = Tenant['notifications']
+type SubscriberRow = {
+  id: string
+  tenant_id: string
+  chat_id: string
+  chat_type: TenantTelegramSubscriber['chatType']
+  label: string | null
+  thread_id: number | null
+  added_at: string
+}
+
+const mapRow = (r: SubscriberRow): TenantTelegramSubscriber => ({
+  id: r.id,
+  tenantId: r.tenant_id,
+  chatId: r.chat_id,
+  chatType: r.chat_type,
+  label: r.label,
+  threadId: r.thread_id,
+  addedAt: r.added_at,
+})
 
 export const telegramLinkApi = {
-  // Создаёт/обновляет код привязки tg-группы. Один активный код на тенант (UNIQUE tenant_id).
+  // Создаёт/обновляет код привязки tg-чата. Один активный код на тенант (UNIQUE tenant_id).
   async upsertCode(sb: SupabaseClient, tenantId: string, code: string): Promise<void> {
     await query(
       sb.from('telegram_link_codes').upsert(
@@ -15,13 +33,20 @@ export const telegramLinkApi = {
     )
   },
 
-  // Лёгкий запрос для поллинга факта привязки tg-чата. Не зовём tenantsApi.getById,
-  // чтобы не пулить весь tenant-row каждые N секунд.
-  async getTelegramChatId(sb: SupabaseClient, tenantId: string): Promise<string | null> {
-    const row = await query(
-      sb.from('tenants').select('notifications').eq('id', tenantId).single(),
-    )
+  async listSubscribers(sb: SupabaseClient, tenantId: string): Promise<TenantTelegramSubscriber[]> {
+    const rows = await query(
+      sb.from('tenant_telegram_subscribers')
+        .select('id, tenant_id, chat_id, chat_type, label, thread_id, added_at')
+        .eq('tenant_id', tenantId)
+        .order('added_at', { ascending: true }),
+    ) as SubscriberRow[] | null
 
-    return (row as { notifications: TenantNotifications | null } | null)?.notifications?.telegramChatId ?? null
+    return (rows ?? []).map(mapRow)
+  },
+
+  async removeSubscriber(sb: SupabaseClient, subscriberId: string): Promise<void> {
+    await query(
+      sb.from('tenant_telegram_subscribers').delete().eq('id', subscriberId),
+    )
   },
 }

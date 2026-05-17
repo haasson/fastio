@@ -3,7 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { formatPhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireInternalSecret } from '../../utils/auth'
-import { telegramFetch } from '../../utils/telegramFetch'
+import { broadcastToTenantTelegram } from '../../utils/telegramBroadcast'
 
 type OrderItem = {
   dish_name: string
@@ -30,20 +30,14 @@ export default defineEventHandler(async (event) => {
 
   const supabase = getServerSupabase()
 
-  const [{ data: tenant }, { data: order }] = await Promise.all([
-    supabase.from('tenants').select('notifications').eq('id', tenantId).single(),
-    supabase
-      .from('orders')
-      .select('order_number, total, delivery_fee, delivery_type, address, customer_phone, customer_name, table_name, comment, order_items(dish_name, quantity, price, sort_order, modifiers, addons, removed_ingredients)')
-      .eq('id', orderId)
-      .eq('tenant_id', tenantId)
-      .single(),
-  ])
+  const { data: order } = await supabase
+    .from('orders')
+    .select('order_number, total, delivery_fee, delivery_type, address, customer_phone, customer_name, table_name, comment, order_items(dish_name, quantity, price, sort_order, modifiers, addons, removed_ingredients)')
+    .eq('id', orderId)
+    .eq('tenant_id', tenantId)
+    .single()
 
-  const chatId = tenant?.notifications?.telegramChatId
-  const threadId = tenant?.notifications?.telegramThreadId ?? null
-
-  if (!chatId || !order) return { ok: true }
+  if (!order) return { ok: true }
 
   const deliveryLabel = order.delivery_type === 'delivery'
     ? '🚗 Доставка'
@@ -91,29 +85,18 @@ export default defineEventHandler(async (event) => {
   if (order.delivery_fee) text += `🚗 Доставка: ${order.delivery_fee} ₽\n`
   text += `💰 Итого: <b>${order.total} ₽</b>`
 
-  const payload: Record<string, unknown> = { chat_id: chatId, text, parse_mode: 'HTML' }
+  const phoneDigits = order.customer_phone?.replace(/\D/g, '') ?? null
+  const replyMarkup = (phoneDigits && adminUrl)
+    ? {
+        inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phoneDigits}` }]],
+      }
+    : null
 
-  if (threadId) payload.message_thread_id = threadId
-
-  if (order.customer_phone && adminUrl) {
-    const phone = order.customer_phone.replace(/\D/g, '')
-
-    payload.reply_markup = {
-      inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phone}` }]],
-    }
-  }
-
-  const tgRes = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-
-  if (!tgRes.ok) {
-    const err = await tgRes.json()
-
-    console.error('[telegram notify] sendMessage failed:', JSON.stringify(err))
-  }
+  await broadcastToTenantTelegram(supabase, token, tenantId, () => ({
+    text,
+    parse_mode: 'HTML',
+    ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+  }), 'telegram notify')
 
   return { ok: true }
 })

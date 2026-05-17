@@ -59,7 +59,7 @@ const makeTenant = (overrides: Partial<Tenant> = {}): Tenant => ({
     offerUrl: null,
   },
   workingHoursSchedule: null,
-  notifications: { email: null, telegramChatId: null },
+  notifications: { email: null },
   balance: 0,
   subscription: {
     status: 'trial',
