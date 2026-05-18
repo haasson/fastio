@@ -40,6 +40,9 @@ const initializing = ref(false)
 const polling = ref(false)
 const expired = ref(false)
 const error = ref('')
+// Per-instance (не shared между юзерами): Vue компилирует <script setup> так что
+// каждый mount получает свой замкнутый scope. SSR-безопасно — это client-only
+// логика (window.open / setInterval), на сервере код этих веток не выполнится.
 let intervalId: ReturnType<typeof setInterval> | null = null
 
 async function start() {
@@ -86,6 +89,14 @@ function startPolling(nonce: string) {
       const { status } = await $fetch<{ status: 'pending' | 'ok' | 'expired' }>(
         `/api/auth/telegram/poll?nonce=${nonce}`,
       )
+
+      // Race-guard: пока шёл await (~200ms RTT), компонент мог unmount'нуться
+      // (юзер закрыл модалку), отмениться через cancel(), сработать client-TTL
+      // или родитель уже принял 'ok' от другого источника. stopPolling() в этих
+      // путях занулил intervalId — обрабатывать ответ уже бессмысленно (и emit'нуть
+      // 'done' можно на размонтированный родитель, или включить expired UI поверх
+      // успешного логина).
+      if (intervalId === null) return
 
       if (status === 'ok') {
         stopPolling()
