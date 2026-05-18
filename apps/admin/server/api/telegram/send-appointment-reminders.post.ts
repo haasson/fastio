@@ -78,10 +78,27 @@ export default defineEventHandler(async (event) => {
 
   if (due.length === 0) return { ok: true }
 
-  await Promise.all(due.map((row) => processReminder(row, token, supabase, now)))
+  // Telegram Bot API rate-limit: ~30 msg/sec глобально на бота. Чтобы не
+  // словить 429 (а в худшем случае — temp-ban бота, который ломает весь
+  // прод-функционал уведомлений), чанкуем по 20 с паузой 1 сек между
+  // батчами. Обычно due.length = единицы, всё уйдёт первым батчем мгновенно;
+  // защита нужна на случай восстановления после простоя cron, когда
+  // накопилось 500+ напоминаний.
+  for (let i = 0; i < due.length; i += BATCH_SIZE) {
+    const batch = due.slice(i, i + BATCH_SIZE)
+
+    await Promise.all(batch.map((row) => processReminder(row, token, supabase, now)))
+
+    if (i + BATCH_SIZE < due.length) {
+      await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS))
+    }
+  }
 
   return { ok: true }
 })
+
+const BATCH_SIZE = 20
+const BATCH_DELAY_MS = 1000
 
 async function processReminder(
   row: ReminderRow,
