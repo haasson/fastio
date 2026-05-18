@@ -13,7 +13,8 @@ export function buildCsp(opts: CspOptions): string {
     `font-src 'self' https://fonts.gstatic.com data:`,
     `connect-src 'self' blob: https://db.fastio.ru wss://db.fastio.ru https://*.ingest.de.sentry.io https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://yastatic.net https://suggestions.dadata.ru https://oauth.telegram.org`,
     `frame-src 'self' https://oauth.telegram.org https://*.yandex.ru https://*.yandex.net`,
-    `worker-src 'self' blob:`,
+    // data: нужен для Yandex Maps v3 — vector renderer создаёт web-worker из inline data:application/javascript.
+    `worker-src 'self' blob: data:`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
