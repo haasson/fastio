@@ -1,5 +1,5 @@
 <template>
-  <div class="success-root">
+  <div class="success-root" data-testid="appointment-success">
     <div class="icon-wrap">
       <CalendarCheck :size="48" />
     </div>

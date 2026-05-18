@@ -30,6 +30,7 @@
         <template #right>
           <UiButton
             data-tour="add-dish"
+            data-testid="dish-add-btn"
             size="medium"
             type="primary"
             icon="plus"

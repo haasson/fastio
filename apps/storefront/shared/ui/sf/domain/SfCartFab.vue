@@ -4,6 +4,7 @@
     :count="cart.count"
     label="Корзина"
     :price="`${cart.subtotal} ${currency}`"
+    data-testid="cart-fab"
     class="cart-fab"
     @click="emit('click')"
   >

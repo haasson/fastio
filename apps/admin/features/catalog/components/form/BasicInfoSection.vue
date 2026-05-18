@@ -19,6 +19,7 @@
           name="name"
           label="Название *"
           :placeholder="namePlaceholder"
+          data-testid="catalog-item-name"
           :rules="[{ type: 'required', message: 'Введите название' }]"
           @update:model-value="$emit('update:name', $event ?? '')"
         />
@@ -26,6 +27,7 @@
           :model-value="price"
           name="price"
           label="Цена, ₽ *"
+          data-testid="catalog-item-price"
           :min="0"
           :placeholder="String(pricePlaceholder ?? 0)"
           :rules="[{ type: 'required', message: 'Введите цену' }]"

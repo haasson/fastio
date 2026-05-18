@@ -11,7 +11,7 @@
     <ul v-if="errors?.length" class="submit-errors">
       <li v-for="err in errors" :key="err">{{ err }}</li>
     </ul>
-    <FsButton size="large" class="submit-btn" :loading="loading" @click="emit('submit')">
+    <FsButton size="large" class="submit-btn" data-testid="checkout-submit" :loading="loading" @click="emit('submit')">
       Оформить заказ
     </FsButton>
     <p v-if="legalInfoComplete" class="consent-note">

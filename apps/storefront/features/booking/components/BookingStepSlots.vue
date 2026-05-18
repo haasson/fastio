@@ -12,12 +12,13 @@
     </div>
 
     <template v-else-if="slots.length">
-      <div class="slots-grid">
+      <div class="slots-grid" data-testid="booking-slots">
         <FsButton
           v-for="slot in slots"
           :key="slot.time"
           :variant="form.time === slot.time ? 'primary' : 'secondary'"
           size="medium"
+          :data-testid="`booking-slot-${slot.time}`"
           :disabled="!slot.available"
           @click="onSlotClick(slot.time)"
         >
@@ -27,7 +28,7 @@
 
       <p v-if="timeError" class="time-error">{{ timeError }}</p>
 
-      <FsButton variant="primary" size="large" @click="onNext">
+      <FsButton variant="primary" size="large" data-testid="booking-step2-next" @click="onNext">
         Продолжить
       </FsButton>
     </template>

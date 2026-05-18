@@ -1,10 +1,11 @@
 <template>
   <div class="params-root">
     <FsField v-if="branches.length > 1" label="Филиал">
-      <div class="branch-cards">
+      <div class="branch-cards" data-testid="booking-branches">
         <FsButton
           v-for="branch in branches"
           :key="branch.id"
+          data-testid="booking-branch"
           :variant="form.branchId === branch.id ? 'primary' : 'secondary'"
           size="medium"
           @click="form.branchId = branch.id"
@@ -16,13 +17,14 @@
     </FsField>
 
     <FsField label="Дата" :error="dateError">
-      <div class="dates-scroll">
+      <div class="dates-scroll" data-testid="booking-dates">
         <FsButton
           v-for="day in days"
           :key="day.value"
           :variant="form?.date === day.value ? 'primary' : 'secondary'"
           size="medium"
           class="date-btn"
+          :data-testid="`booking-date-${day.value}`"
           :disabled="day.isDayOff"
           @click="onDateClick(day.value)"
         >
@@ -32,7 +34,7 @@
       </div>
     </FsField>
 
-    <div class="guests-row">
+    <div class="guests-row" data-testid="booking-guests">
       <span class="guests-label">Количество гостей</span>
       <SfStepper
         v-model="form.guestCount"
@@ -42,7 +44,7 @@
       />
     </div>
 
-    <FsButton variant="primary" size="large" @click="onNext">
+    <FsButton variant="primary" size="large" data-testid="booking-step1-next" @click="onNext">
       Выбрать время
     </FsButton>
   </div>

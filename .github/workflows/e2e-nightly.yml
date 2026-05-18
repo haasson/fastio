@@ -1,0 +1,81 @@
+name: E2E (nightly)
+
+# Nightly полный прогон Playwright тестов + Telegram-alert при fail.
+# Не блокирует merge: запускается отдельно, результат идёт в @FastioOpsBot.
+# Можно запустить руками через workflow_dispatch перед релизом.
+on:
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC = 06:00 MSK
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-nightly
+  cancel-in-progress: false
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: start Supabase
+        # supabase start подтягивает миграции из supabase/migrations/* автоматически.
+        # config.toml [db.seed] sql_paths указывает на отсутствующий ./seed.sql —
+        # seed грузим явно следующим шагом.
+        run: supabase start
+
+      - name: apply demo seed
+        # Все 6 flow тестов и setup.mjs зависят от demo + services-start +
+        # demo@fastio.app + Маргарита/Пицца — всё это в demo.sql.
+        run: |
+          docker cp supabase/seed/demo.sql supabase_db_fastio:/tmp/seed.sql
+          docker exec supabase_db_fastio psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/seed.sql
+
+      - name: install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: run E2E suite
+        id: e2e
+        env:
+          CI: 'true'
+        run: pnpm test:e2e
+
+      - name: upload HTML report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: notify Telegram on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_OPS_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_OPS_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -z "$TELEGRAM_BOT_TOKEN" ] && exit 0
+          [ -z "$TELEGRAM_CHAT_ID" ] && exit 0
+          curl -sS --max-time 15 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "parse_mode=HTML" \
+            --data-urlencode "text=<b>FastIO E2E nightly: FAIL</b>%0A${RUN_URL}" >/dev/null || true

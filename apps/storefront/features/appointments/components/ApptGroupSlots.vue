@@ -24,12 +24,13 @@
         key="slots"
         class="slots-content"
       >
-        <div class="chips-grid">
+        <div class="chips-grid" data-testid="appointment-slots">
           <button
             v-for="entry in result.entries"
             :key="`${entry.startIsNextDay ? '1' : '0'}-${entry.startTime}`"
             type="button"
             class="chip"
+            :data-testid="`appointment-slot-${entry.startTime}`"
             :class="[
               `chip-${computeSlotTone(entry)}`,
               {
@@ -84,6 +85,7 @@
     <FsButton
       variant="primary"
       size="large"
+      data-testid="appointment-slots-confirm"
       :disabled="!selectedEntry"
       @click="emit('confirm')"
     >

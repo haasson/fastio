@@ -23,12 +23,13 @@
     </div>
 
     <!-- 2-4 branches: cards -->
-    <div v-else-if="sortedBranches.length <= 4" class="branch-cards">
+    <div v-else-if="sortedBranches.length <= 4" class="branch-cards" data-testid="pickup-branch-cards">
       <button
         v-for="branch in sortedBranches"
         :key="branch.id"
         type="button"
         class="branch-card"
+        data-testid="pickup-branch-card"
         :class="{
           selected: checkout.form.pickupBranchId === branch.id,
           disabled: !branchStatusByID.get(branch.id)?.open || branchCompat.get(branch.id) === 'red',

@@ -3,33 +3,33 @@
     <FsSection>
       <StorePageLayout :breadcrumbs="[{ label: 'Главная', to: '/' }]" current="Личный кабинет">
 
-        <div class="account-root">
-          <FsCard class="account-card" @click="navigateTo({ path: '/account/profile', query: route.query })">
+        <div class="account-root" data-testid="account-hub">
+          <FsCard class="account-card" data-testid="account-card-profile" @click="navigateTo({ path: '/account/profile', query: route.query })">
             <UserRound :size="20" />
             <span>Профиль</span>
           </FsCard>
 
-          <FsCard v-if="isRetail" class="account-card" @click="navigateTo({ path: '/account/orders', query: route.query })">
+          <FsCard v-if="isRetail" class="account-card" data-testid="account-card-orders" @click="navigateTo({ path: '/account/orders', query: route.query })">
             <ClipboardList :size="20" />
             <span>Мои заказы</span>
           </FsCard>
 
-          <FsCard v-if="isServices" class="account-card" @click="navigateTo({ path: '/account/appointments', query: route.query })">
+          <FsCard v-if="isServices" class="account-card" data-testid="account-card-appointments" @click="navigateTo({ path: '/account/appointments', query: route.query })">
             <CalendarCheck :size="20" />
             <span>Мои записи</span>
           </FsCard>
 
-          <FsCard v-if="showReservations" class="account-card" @click="navigateTo({ path: '/account/reservations', query: route.query })">
+          <FsCard v-if="showReservations" class="account-card" data-testid="account-card-reservations" @click="navigateTo({ path: '/account/reservations', query: route.query })">
             <CalendarCheck :size="20" />
             <span>Мои брони</span>
           </FsCard>
 
-          <FsCard v-if="isRetail" class="account-card" @click="navigateTo({ path: '/account/addresses', query: route.query })">
+          <FsCard v-if="isRetail" class="account-card" data-testid="account-card-addresses" @click="navigateTo({ path: '/account/addresses', query: route.query })">
             <MapPin :size="20" />
             <span>Адреса</span>
           </FsCard>
 
-          <FsButton variant="outline" block @click="onLogout">
+          <FsButton variant="outline" block data-testid="account-logout" @click="onLogout">
             Выйти
           </FsButton>
         </div>

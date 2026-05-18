@@ -21,8 +21,8 @@
             </template>
           </SfEmptyState>
 
-          <div v-else class="orders-list">
-            <FsCard v-for="order in orders" :key="order.id" class="order-card" @click="goToOrder(order.id)">
+          <div v-else class="orders-list" data-testid="account-orders-list">
+            <FsCard v-for="order in orders" :key="order.id" class="order-card" data-testid="account-order-item" @click="goToOrder(order.id)">
               <div class="order-inner">
                 <div class="order-left">
                   <div class="order-header">

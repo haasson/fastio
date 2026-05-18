@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-18T11:44:06.038Z",
+  "generated_at": "2026-05-18T15:38:04.919Z",
   "stats": {
     "files": 84,
     "pages": 0,
@@ -393,8 +393,8 @@
     },
     "shared/components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "e06fe91ed1fd",
-      "purpose": "Главная навигация админки: рендер списка nav-items по гейтам (useGate) с counter/blink для уведомлений",
+      "hash": "bd4017a13302",
+      "purpose": "Сайдбар-навигация админки: список NuxtLink'ов с иконкой, лейблом и опциональным счётчиком (новые заказы/брони/непрочитанные сообщения), фильтрация по permissions через useGate, data-testid admin-nav-<route> для E2E.",
       "symbols": [
         {
           "name": "props",

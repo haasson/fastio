@@ -25,8 +25,8 @@
             </template>
           </SfEmptyState>
 
-          <div v-else class="list">
-            <FsCard v-for="r in reservations" :key="r.id" class="resv-card">
+          <div v-else class="list" data-testid="account-reservations-list">
+            <FsCard v-for="r in reservations" :key="r.id" class="resv-card" data-testid="account-reservation-item">
               <div class="resv-inner">
                 <div class="resv-left">
                   <div class="resv-header">

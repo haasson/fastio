@@ -47,7 +47,7 @@
       <template v-else>
         <UiTitle size="h3" class="title">Вход в панель управления</UiTitle>
 
-        <UiForm class="form" @submit="handleSubmit">
+        <UiForm class="form" data-testid="admin-login-form" @submit="handleSubmit">
           <UiInput
             v-model="email"
             name="email"
@@ -55,6 +55,7 @@
             type="email"
             placeholder="you@example.com"
             :clearable="false"
+            data-testid="admin-login-email"
             :rules="[{ type: 'required', message: 'Введите email' }, { type: 'email', message: 'Некорректный email' }]"
           />
 
@@ -64,6 +65,7 @@
             label="Пароль"
             type="password"
             :clearable="false"
+            data-testid="admin-login-password"
             :rules="[{ type: 'required', message: 'Введите пароль' }]"
           />
 
@@ -73,6 +75,7 @@
             submit
             type="primary"
             block
+            data-testid="admin-login-submit"
             :loading="loading"
           >
             Войти

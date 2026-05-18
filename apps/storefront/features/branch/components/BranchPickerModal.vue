@@ -14,10 +14,11 @@
     <FsText v-else-if="branches.length === 0" variant="caption" color="secondary" class="hint">
       Сейчас нет доступных филиалов.
     </FsText>
-    <ul v-if="branches.length > 0" class="branches">
+    <ul v-if="branches.length > 0" class="branches" data-testid="branch-picker-list">
       <li v-for="b in branches" :key="b.id">
         <button
           class="branch"
+          data-testid="branch-picker-item"
           :class="{ current: b.id === branchStore.id }"
           type="button"
           @click="pick(b.id)"

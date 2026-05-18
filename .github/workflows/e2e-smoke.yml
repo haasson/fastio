@@ -1,0 +1,66 @@
+name: E2E (smoke)
+
+# Smoke-уровень: только проверка что storefront и admin вообще поднимаются и
+# отдают / без ошибок. Полный suite — в e2e-nightly.yml. Не блокирует merge
+# (требуется явный required-check в branch protection если нужно).
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: e2e-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: start Supabase
+        # supabase start подтягивает миграции из supabase/migrations/* автоматически.
+        # config.toml [db.seed] sql_paths указывает на отсутствующий ./seed.sql —
+        # seed грузим явно следующим шагом.
+        run: supabase start
+
+      - name: apply demo seed
+        # demo тенант + Маргарита + Пицца + demo@fastio.app owner — этого хватит
+        # для smoke (открыть главную) и для e2e setup.mjs (admin password reset).
+        run: |
+          docker cp supabase/seed/demo.sql supabase_db_fastio:/tmp/seed.sql
+          docker exec supabase_db_fastio psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/seed.sql
+
+      - name: install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: run smoke tests
+        env:
+          CI: 'true'
+        run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts
+
+      - name: upload HTML report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-report
+          path: playwright-report/
+          retention-days: 7

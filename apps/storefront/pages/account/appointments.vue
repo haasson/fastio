@@ -25,8 +25,8 @@
             </template>
           </SfEmptyState>
 
-          <div v-else class="list">
-            <FsCard v-for="appt in appointments" :key="appt.id" class="appt-card">
+          <div v-else class="list" data-testid="account-appointments-list">
+            <FsCard v-for="appt in appointments" :key="appt.id" class="appt-card" data-testid="account-appointment-item">
               <div class="appt-inner">
                 <div class="appt-left">
                   <div class="appt-header">

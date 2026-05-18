@@ -6,7 +6,7 @@
       :model-value="form.guestName"
       :rules="[validationRules.name.required]"
     >
-      <FsInput v-model="form.guestName" placeholder="Ваше имя" />
+      <FsInput v-model="form.guestName" placeholder="Ваше имя" data-testid="booking-name" />
     </FsField>
 
     <FsField
@@ -20,6 +20,7 @@
         type="tel"
         placeholder="+7 (999) 000-00-00"
         mask="+7 (###) ###-##-##"
+        data-testid="booking-phone"
       />
     </FsField>
 
@@ -27,7 +28,7 @@
       <FsTextarea v-model="form.comment" placeholder="Пожелания, аллергии..." :rows="3" />
     </FsField>
 
-    <FsButton type="submit" variant="primary" size="large" :loading="loading">
+    <FsButton type="submit" variant="primary" size="large" data-testid="booking-submit" :loading="loading">
       Забронировать
     </FsButton>
     <p v-if="legalInfoComplete" class="consent-note">

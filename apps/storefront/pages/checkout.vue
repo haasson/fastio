@@ -30,7 +30,7 @@
               <!-- Гость: инпуты -->
               <div v-else class="fields-stack">
                 <FsField label="Имя">
-                  <FsInput v-model="checkout.form.customerName" placeholder="Иван" autocomplete="given-name" />
+                  <FsInput v-model="checkout.form.customerName" placeholder="Иван" autocomplete="given-name" data-testid="checkout-name" />
                 </FsField>
                 <FsField label="Телефон" required :error="phoneError">
                   <FsInput
@@ -40,6 +40,7 @@
                     autocomplete="tel"
                     mask="+7 (###) ###-##-##"
                     :error="!!phoneError"
+                    data-testid="checkout-phone"
                   />
                 </FsField>
                 <FsField label="Комментарий к заказу">
@@ -62,6 +63,7 @@
                 <button
                   type="button"
                   class="delivery-tab"
+                  data-testid="checkout-tab-pickup"
                   :class="{ active: checkout.form.deliveryType === 'pickup' }"
                   @click="setDeliveryType('pickup')"
                 >

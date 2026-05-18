@@ -1,5 +1,5 @@
 <template>
-  <div class="cart-line-root">
+  <div class="cart-line-root" data-testid="cart-line-item">
     <div class="line-photo">
       <img v-if="displayPhoto" :src="displayPhoto" :alt="displayName" class="line-img" loading="lazy" >
       <div v-else class="line-placeholder">

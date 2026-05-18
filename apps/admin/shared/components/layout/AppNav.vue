@@ -1,9 +1,10 @@
 <template>
-  <nav class="nav" :class="{ 'nav--collapsed': collapsed }">
+  <nav class="nav" data-testid="admin-nav" :class="{ 'nav--collapsed': collapsed }">
     <NuxtLink
       v-for="item in navItems"
       :key="item.to"
       :to="item.to"
+      :data-testid="`admin-nav-${navTestId(item.to)}`"
       class="nav-item"
       active-class="active"
       @click="emit('navigate')"
@@ -89,6 +90,13 @@ const navItems = computed(() => {
 const emit = defineEmits<{ navigate: [] }>()
 
 defineExpose({ navItems })
+
+// Превращает route в стабильный testid: '/' → 'dashboard', '/team/members' → 'team-members'.
+function navTestId(to: string): string {
+  if (to === '/') return 'dashboard'
+
+  return to.replace(/^\//, '').replace(/\//g, '-')
+}
 </script>
 
 <style scoped lang="scss">

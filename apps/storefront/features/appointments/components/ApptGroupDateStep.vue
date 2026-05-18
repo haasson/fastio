@@ -12,11 +12,12 @@
     </div>
 
     <!-- Days strip -->
-    <div class="dates-row">
+    <div class="dates-row" data-testid="appointment-dates">
       <button
         v-for="day in visibleDays"
         :key="day.date"
         class="date-btn"
+        :data-testid="`appointment-date-${day.date}`"
         :class="{
           selected: selectedDate === day.date,
           today: day.isToday,

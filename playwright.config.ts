@@ -19,9 +19,11 @@ export default defineConfig({
   // Cleanup + upsert test-customer + tg_session перед всеми тестами.
   globalSetup: './tests/e2e/global-setup.mjs',
   fullyParallel: false, // shared DB-state — без параллельности тесты конфликтуют
-  retries: process.env.CI ? 2 : 0,
+  // retries=1 (не 2): второй ретрай редко спасает от настоящей флаки и сожрёт
+  // ~2 минуты при workers=1. timeout=60s — тестам с сетью+SSR этого стоит.
+  retries: process.env.CI ? 1 : 0,
   workers: 1,
-  timeout: 30_000,
+  timeout: 60_000,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
 
   use: {
@@ -43,9 +45,10 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm dev:storefront',
-      // /api/tenant с явным slug=demo — стабильный 200 health-check. Корень `/`
-      // на storefront требует валидный tenant в host/query, иначе 404 (правильно).
-      url: `http://localhost:${STOREFRONT_PORT}/api/tenant?slug=demo`,
+      // Health-check ИМЕННО на subdomain-хосте — прогревает tenant middleware
+      // на тот хост, через который ходят тесты. /api/tenant?slug=… отвечает
+      // 200 на любом хосте и не гарантирует что host-based resolver готов.
+      url: `http://demo.localhost:${STOREFRONT_PORT}/api/tenant`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
       stdout: 'ignore',

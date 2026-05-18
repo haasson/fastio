@@ -61,6 +61,7 @@
                 <FsButton
                   size="large"
                   class="checkout-btn"
+                  data-testid="cart-checkout-btn"
                   :disabled="!!closedStatus && !schedulingEnabled"
                   @click="navigateTo('/checkout')"
                 >
@@ -79,7 +80,7 @@
                   <FsText as="span" variant="body-sm" class="summary-label">Стоимость</FsText>
                   <FsText as="span" variant="body" :weight="700" class="summary-total">{{ cart.serviceSubtotal }} {{ currency }}</FsText>
                 </div>
-                <FsButton size="large" class="checkout-btn" @click="navigateTo('/appointments/checkout')">
+                <FsButton size="large" class="checkout-btn" data-testid="cart-services-checkout-btn" @click="navigateTo('/appointments/checkout')">
                   Подобрать время
                 </FsButton>
                 <FsButton variant="ghost" size="small" class="request-btn" @click="navigateTo('/appointments/checkout?request=1')">

@@ -15,7 +15,7 @@
         </SfEmptyState>
       </div>
 
-      <div v-else-if="order" class="order-content">
+      <div v-else-if="order" class="order-content" data-testid="order-page">
         <!-- Header -->
         <div class="order-header">
           <template v-if="isFresh">
@@ -32,7 +32,7 @@
             </FsText>
           </template>
           <div class="order-meta">
-            <span v-if="isFresh" class="order-id">Заказ #{{ order.orderNumber }}</span>
+            <span v-if="isFresh" class="order-id" data-testid="order-number">Заказ #{{ order.orderNumber }}</span>
             <SfOrderStatus :group="statusGroup" />
           </div>
         </div>

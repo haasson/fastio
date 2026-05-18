@@ -159,8 +159,8 @@ const categoryOptions = computed(() => props.categories
 const branchOptions = computed(() => branchStore.branches.map((b) => ({ label: b.name, value: b.id })))
 
 const drawerActions = computed(() => [
-  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const },
-  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, attrs: { 'data-tour': 'dish-save' } },
+  { text: 'Отмена', type: 'default' as const, actionType: 'decline' as const, attrs: { 'data-testid': 'dish-form-cancel' } as Record<string, string> },
+  { text: 'Сохранить', type: 'primary' as const, actionType: 'confirm' as const, loading: saving.value, attrs: { 'data-tour': 'dish-save', 'data-testid': 'dish-form-save' } as Record<string, string> },
 ])
 
 const defaultForm = () => ({

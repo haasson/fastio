@@ -2,6 +2,7 @@
   <!-- Mobile compact layout (shown only on mobile when mobileCompact is true) -->
   <FsCard
     v-if="mobileCompact"
+    :data-testid="`product-card-${variant}`"
     :class="['product-card-root', 'mobile-compact', { clickable: isClickable }]"
     @click="emit('cardClick')"
   >
@@ -35,6 +36,7 @@
             v-else-if="buttonAction"
             :variant="buttonAction.variant"
             size="small"
+            data-testid="product-add"
             @click.stop="onButtonClick"
           >
             <Trash2 v-if="buttonAction.icon === 'trash'" :size="16" />
@@ -49,6 +51,7 @@
 
   <!-- Default vertical layout (hidden on mobile when mobileCompact is true) -->
   <FsCard
+    :data-testid="`product-card-${variant}`"
     :image-alt="product.name"
     :class="['product-card-root', { clickable: isClickable, 'hide-mobile': mobileCompact }]"
     @click="emit('cardClick')"
@@ -95,6 +98,7 @@
             :variant="buttonAction.variant"
             size="small"
             :responsive="true"
+            data-testid="product-add"
             @click="onButtonClick"
           >
             <Trash2 v-if="buttonAction.icon === 'trash'" :size="16" />
@@ -131,6 +135,7 @@
           :variant="buttonAction.variant"
           size="small"
           :responsive="true"
+          data-testid="product-add"
           @click.stop="onButtonClick"
         >
           <Trash2 v-if="buttonAction.icon === 'trash'" :size="16" />
