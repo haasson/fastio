@@ -19,3 +19,8 @@ service-account.json
 WISHLIST.md
 docs/
 .worktrees
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

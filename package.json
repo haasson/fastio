@@ -25,6 +25,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "codemap:scan": "node scripts/codemap/scan.mjs",
     "features:validate": "node scripts/features/validate-manifests.mjs",
     "features:validate:strict": "node scripts/features/validate-manifests.mjs --strict",
@@ -48,6 +50,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@supabase/supabase-js": "^2.98.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vitest/coverage-v8": "^4.1.2",
