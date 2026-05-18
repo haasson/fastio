@@ -38,16 +38,23 @@ export default defineConfig({
     },
   ],
 
-  // Admin dev сервер в Playwright НЕ запускаем — известная Nuxt dev регрессия
-  // «Vite Node IPC socket path not configured» крашит /login на 500 даже при
-  // ssr:false (см. TECHDEBT). Storefront-only пока admin не пофикшен; для
-  // admin тестов в будущем — `pnpm build && pnpm preview` или dev-фикс.
   webServer: [
     {
       command: 'pnpm dev:storefront',
       // /api/tenant с явным slug=demo — стабильный 200 health-check. Корень `/`
       // на storefront требует валидный tenant в host/query, иначе 404 (правильно).
       url: `http://localhost:${STOREFRONT_PORT}/api/tenant?slug=demo`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+      stdout: 'ignore',
+      stderr: 'pipe',
+    },
+    {
+      command: 'pnpm dev:admin',
+      // /login — admin страница в SPA-режиме (через routeRules /**: ssr:false),
+      // отдаёт shell с 200. /favicon.ico тоже подходит, но /login ближе к
+      // реальному use case.
+      url: `http://localhost:${ADMIN_PORT}/login`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
       stdout: 'ignore',

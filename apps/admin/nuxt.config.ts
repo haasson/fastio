@@ -21,21 +21,6 @@ export default defineNuxtConfig({
     },
   },
 
-  routeRules: {
-    '/kitchen': { redirect: '/kitchen/queue' },
-    '/content': { redirect: '/content/banners' },
-    '/promotions': { redirect: '/promotions/list' },
-    '/menu': { redirect: '/menu/dishes' },
-    '/services': { redirect: '/services/items' },
-    '/appointments': { redirect: '/appointments/list' },
-    '/tables': { redirect: '/tables/list' },
-    '/reservations': { redirect: '/reservations/list' },
-    '/appearance': { redirect: '/appearance/sections' },
-    '/settings': { redirect: '/settings/contacts' },
-    '/account': { redirect: '/account/profile' },
-    '/team': { redirect: '/team/members' },
-  },
-
   app: {
     head: {
       charset: 'utf-8',
@@ -52,7 +37,32 @@ export default defineNuxtConfig({
     },
   },
 
-  ssr: false,
+  // ssr:true для admin чтобы Nuxt vite-builder поднял vite-node socket
+  // (при ssr:false env NUXT_VITE_NODE_OPTIONS не ставится для child процессов,
+  // renderer падает на getClientManifest IPC). Реально SPA-режим сохраняется
+  // через routeRules ниже: каждая страница рендерится client-only, server
+  // отдаёт только SPA shell. См. TECHDEBT «Admin dev SSR shell broken».
+  ssr: true,
+
+  routeRules: {
+    // /**: { ssr: false } — все pages в SPA-режиме (как ssr:false глобально).
+    // Серверный SSR не пытается рендерить content страницы (auth-store
+    // требует браузера), но shell со script-тегами генерируется нормально.
+    '/**': { ssr: false },
+    // route redirects (раньше были в основном routeRules-блоке):
+    '/kitchen': { redirect: '/kitchen/queue' },
+    '/content': { redirect: '/content/banners' },
+    '/promotions': { redirect: '/promotions/list' },
+    '/menu': { redirect: '/menu/dishes' },
+    '/services': { redirect: '/services/items' },
+    '/appointments': { redirect: '/appointments/list' },
+    '/tables': { redirect: '/tables/list' },
+    '/reservations': { redirect: '/reservations/list' },
+    '/appearance': { redirect: '/appearance/sections' },
+    '/settings': { redirect: '/settings/contacts' },
+    '/account': { redirect: '/account/profile' },
+    '/team': { redirect: '/team/members' },
+  },
 
   imports: {
     autoImport: false,
