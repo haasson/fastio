@@ -97,7 +97,7 @@ Deno.serve(withSentry('list-team', async (req) => {
     const email = profile?.email ?? null
     const invitedByUserId = email ? invitedByMap.get(email) : null
     const invitedBy = invitedByUserId ? getDisplayName(invitedByUserId) : null
-    const roleData = (m as { tenant_roles?: { id: string; name: string; permissions: Record<string, boolean> } | null }).tenant_roles
+    const roleData = (m as unknown as { tenant_roles?: { id: string; name: string; permissions: Record<string, boolean> } | null }).tenant_roles
 
     return {
       id: m.id,
@@ -132,7 +132,7 @@ Deno.serve(withSentry('list-team', async (req) => {
       .order('created_at', { ascending: false })
 
     invitations = (data ?? []).map(inv => {
-      const invRoleData = (inv as { tenant_roles?: { id: string; name: string } | null }).tenant_roles
+      const invRoleData = (inv as unknown as { tenant_roles?: { id: string; name: string } | null }).tenant_roles
 
       return {
         id: inv.id,

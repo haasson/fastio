@@ -37,7 +37,7 @@ Deno.serve(withSentry('get-invite', async (req) => {
     return json({ error: 'Invitation expired' }, { status: 410 })
   }
 
-  const roleData = (invitation as { tenant_roles?: { name: string } | null }).tenant_roles
+  const roleData = (invitation as unknown as { tenant_roles?: { name: string } | null }).tenant_roles
 
   // Targeted lookup in auth.users by email — O(1) via index, не подвержен лимиту в 1000 у listUsers().
   const [{ data: tenant }, { count: userCount }] = await Promise.all([
