@@ -32,6 +32,7 @@ export default defineNuxtConfig({
     supabaseServiceRoleKey: '',
     dadataApiKey: '',
     telegramClientBotToken: '',
+    telegramProxyUrl: '',
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',
