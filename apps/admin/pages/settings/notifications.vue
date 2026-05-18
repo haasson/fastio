@@ -120,7 +120,7 @@
             <span class="spinner" />
             Ожидаем подключения...
           </span>
-          <UiText size="tiny" span class="tg-hint">Код действует 15 минут</UiText>
+          <UiText size="tiny" span class="tg-hint">Код действует 3 минуты</UiText>
         </div>
       </template>
       <template v-else>
