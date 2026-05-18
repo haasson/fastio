@@ -324,7 +324,9 @@ function validate(): boolean {
 // Submit
 const submitting = ref(false)
 const submitErrors = ref<string[]>([])
-const idempotencyKey = ref('')
+// Регенерируется на каждый USER-initiated submit (см. submitOrder).
+// Auto-retry'ев внутри одного submit'а нет — поэтому простая реген-на-попытку безопасна.
+const idempotencyKey = ref<string | null>(null)
 
 onMounted(async () => {
   if (!tenant.value?.orderingEnabled) {
@@ -338,8 +340,6 @@ onMounted(async () => {
     await navigateTo('/cart')
     return
   }
-
-  idempotencyKey.value = crypto.randomUUID()
 
   const hasDelivery = tenant.value?.deliveryAvailable
   const hasPickup = tenant.value?.modules?.pickup
@@ -361,6 +361,11 @@ async function submitOrder() {
 
   submitting.value = true
   submitErrors.value = []
+
+  // НЕ переиспользуем старый ключ — если предыдущая попытка дошла до БД и создала
+  // заказ, server вернёт СТАРЫЙ заказ (со старой корзиной/адресом) при повторном
+  // submit с тем же ключом. Новый ключ = чистая попытка с актуальными данными.
+  idempotencyKey.value = crypto.randomUUID()
 
   // Snapshot dish-позиций до запроса — после успеха удалим только их,
   // а не всё, что добавилось за время `await $fetch`.
@@ -429,6 +434,11 @@ async function submitOrder() {
     }
 
     const result = await $fetch<{ id: string; orderNumber: string | null; token: string | null }>('/api/orders', { method: 'POST', body, headers })
+
+    // Ключ отыграл свою роль — сбрасываем. Если юзер каким-то образом окажется
+    // на этой же странице снова (например, через back), следующий submit
+    // сгенерит новый ключ в начале submitOrder.
+    idempotencyKey.value = null
 
     commitClearDishes()
     checkout.clearPromo()
