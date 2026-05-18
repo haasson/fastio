@@ -6,11 +6,12 @@ export type CspOptions = {
 export function buildCsp(opts: CspOptions): string {
   const directives = [
     `default-src 'self'`,
-    `script-src 'self' 'unsafe-inline' https://oauth.telegram.org https://telegram.org https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net`,
+    // yastatic.net — Yandex CDN для Maps v3 (front-maps-static bundle), без него карта не грузится.
+    `script-src 'self' 'unsafe-inline' https://oauth.telegram.org https://telegram.org https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://yastatic.net`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src ${opts.imgSrc}`,
     `font-src 'self' https://fonts.gstatic.com data:`,
-    `connect-src 'self' blob: https://db.fastio.ru wss://db.fastio.ru https://*.ingest.de.sentry.io https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://suggestions.dadata.ru https://oauth.telegram.org`,
+    `connect-src 'self' blob: https://db.fastio.ru wss://db.fastio.ru https://*.ingest.de.sentry.io https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://yastatic.net https://suggestions.dadata.ru https://oauth.telegram.org`,
     `frame-src 'self' https://oauth.telegram.org https://*.yandex.ru https://*.yandex.net`,
     `worker-src 'self' blob:`,
     `object-src 'none'`,
