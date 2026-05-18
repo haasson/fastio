@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: appt } = await db
     .from('appointments')
-    .select('id, customer_id, status, starts_at, tenant_id, allow_cancel_snapshot')
+    .select('id, customer_id, status, tenant_id, allow_cancel_snapshot')
     .eq('id', id)
     .single()
 
@@ -24,29 +24,20 @@ export default defineEventHandler(async (event) => {
   if (appt.status === 'cancelled') throw createError({ statusCode: 400, message: 'Запись уже отменена' })
   if (appt.status === 'done') throw createError({ statusCode: 400, message: 'Запись уже завершена' })
 
-  // Check cancellation deadline. Prefer the snapshot taken at booking time —
-  // tightening the live setting after the fact must not retroactively forbid
-  // a cancellation the customer had a right to.
+  // Check allow_cancel snapshot — prefer snapshot taken at booking time, чтобы
+  // ретроактивное изменение setting'а не лишило клиента права на отмену.
+  // Deadline-check убран: модель без предоплаты, late-cancel == no-show по эффекту,
+  // лучше иметь сигнал отмены чем тихий no-show (см. PREPROD-018 reservations,
+  // та же логика). Колонка cancellation_deadline_hours в БД и UI оставлена
+  // как dead code — см. TECHDEBT.
   const { data: settingsData } = await db
     .from('appointment_settings')
-    .select('allow_client_cancellation, cancellation_deadline_hours')
+    .select('allow_client_cancellation')
     .maybeSingle()
 
   const allowCancel = (appt.allow_cancel_snapshot as boolean | null)
     ?? (settingsData?.allow_client_cancellation ?? true)
   if (!allowCancel) throw createError({ statusCode: 403, message: 'Отмена недоступна' })
-
-  const deadlineHours = (settingsData?.cancellation_deadline_hours as number) ?? 2
-  const startsAt = new Date(appt.starts_at as string)
-  const nowUtc = new Date()
-  const hoursUntilStart = (startsAt.getTime() - nowUtc.getTime()) / (1000 * 60 * 60)
-
-  if (hoursUntilStart < deadlineHours) {
-    throw createError({
-      statusCode: 400,
-      message: `Отмена возможна не позднее чем за ${deadlineHours} ч. до записи`,
-    })
-  }
 
   // Возвращаем строку и проверяем error: иначе при RLS-deny клиент получает {ok:true},
   // а запись остаётся живой.
