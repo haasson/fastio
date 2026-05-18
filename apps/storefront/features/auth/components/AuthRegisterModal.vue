@@ -1,6 +1,10 @@
 <template>
   <FsDialog v-model="modal.isOpen.value" title="Регистрация" size="sm">
-    <FsForm class="register-root" @submit="onSubmit">
+    <FsAlert v-if="!legalInfoComplete" type="info">
+      Регистрация временно недоступна — заведение не заполнило юридические данные.
+    </FsAlert>
+
+    <FsForm v-else class="register-root" @submit="onSubmit">
       <FsField label="Имя">
         <FsInput v-model="name" placeholder="Как вас зовут?" />
       </FsField>
@@ -23,6 +27,11 @@
         Зарегистрироваться
       </FsButton>
 
+      <p class="consent-note">
+        Нажимая кнопку «Зарегистрироваться», вы соглашаетесь с
+        <a href="/privacy" target="_blank">обработкой персональных данных</a>
+      </p>
+
       <div class="links">
         <button type="button" class="link" @click="toLogin">Уже есть аккаунт? Войти</button>
       </div>
@@ -36,9 +45,11 @@ import { FsDialog, FsField, FsForm, FsInput, FsButton, FsAlert } from '@fastio/p
 import { validationRules } from '@fastio/kit'
 import { useAuthStore } from '../stores/auth'
 import { useModal } from '~/shared/composables/useModal'
+import useLegalCompliance from '~/shared/composables/useLegalCompliance'
 
 const authStore = useAuthStore()
 const modal = useModal('auth-register')
+const { legalInfoComplete } = useLegalCompliance()
 
 const name = ref('')
 const email = ref('')
@@ -76,5 +87,18 @@ async function onSubmit() {
   font: inherit;
 
   &:hover { text-decoration: underline; }
+}
+
+.consent-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
 }
 </style>

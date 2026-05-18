@@ -1,6 +1,10 @@
 <template>
   <FsDialog v-model="modal.isOpen.value" title="Вход" size="sm">
-    <FsForm @submit="onSubmit">
+    <FsAlert v-if="!legalInfoComplete" type="info">
+      Вход временно недоступен — заведение не заполнило юридические данные.
+    </FsAlert>
+
+    <FsForm v-else @submit="onSubmit">
       <FsField v-slot="{ hasError }" label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]">
         <FsInput v-model="email" type="email" placeholder="email@example.com" :error="hasError" />
       </FsField>
@@ -25,6 +29,11 @@
         <AuthTelegramButton @done="onTelegramDone" />
       </template>
 
+      <p class="consent-note">
+        Продолжая, вы соглашаетесь с
+        <a href="/privacy" target="_blank">обработкой персональных данных</a>
+      </p>
+
       <div class="links">
         <button type="button" class="link" @click="toRegister">Создать аккаунт</button>
         <button type="button" class="link" @click="toForgot">Забыли пароль?</button>
@@ -40,11 +49,13 @@ import { validationRules } from '@fastio/kit'
 import { useRuntimeConfig } from '#imports'
 import { useAuthStore } from '../stores/auth'
 import { useModal } from '~/shared/composables/useModal'
+import useLegalCompliance from '~/shared/composables/useLegalCompliance'
 import AuthTelegramButton from './AuthTelegramButton.vue'
 
 const authStore = useAuthStore()
 const modal = useModal('auth-login')
 const config = useRuntimeConfig()
+const { legalInfoComplete } = useLegalCompliance()
 
 const email = ref('')
 const password = ref('')
@@ -108,6 +119,19 @@ async function onTelegramDone() {
     flex: 1;
     height: 1px;
     background: var(--color-border);
+  }
+}
+
+.consent-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  a {
+    color: var(--primary);
+    text-decoration: underline;
   }
 }
 </style>
