@@ -1,6 +1,5 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody, createError, setHeader } from 'h3'
 import { useRuntimeConfig } from '#imports'
-import * as Sentry from '@sentry/nuxt'
 import { createOpenAI } from '@ai-sdk/openai'
 import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from 'ai'
 import { loadKnowledge } from '~/server/ai/loadKnowledge'
@@ -44,23 +43,13 @@ export default defineEventHandler(async (event) => {
   // userId берём из JWT, а не из body — иначе кто угодно мог дёргать AI с правами произвольного пользователя.
   const { userId } = await requireMemberOfTenant(event, tenantId)
 
-  // Durable rate-limit: per-user 30/мин (горячий: отсекает спам/скрипт-атаку)
-  // + per-tenant 500/день (cost-cap на OpenAI: ~$1-3/день/тенант на gpt-4.1-nano).
-  // consume_rate_limit (mig 264) — atomic upsert, horizontally safe в отличие
-  // от in-memory createRateLimiter. Per-tariff квота — задача Stage 1.
+  // Durable rate-limit: per-tenant 500/день (cost-cap на OpenAI: ~$1-3/день
+  // на gpt-4.1-nano) + per-user 30/мин (горячий: отсекает спам/скрипт-атаку).
+  // Tenant ПЕРВЫМ: consume_rate_limit инкрементит счётчик ДО проверки, и если
+  // tenant исчерпан, user-счётчик не должен тоже жраться — иначе один спам-юзер
+  // лочит legit-юзеров на минуту. consume_rate_limit (mig 264) — atomic upsert,
+  // horizontally safe. Per-tariff квота — задача Stage 1.
   const sb = getServerSupabase()
-
-  const { data: userOk, error: userRlError } = await sb.rpc('consume_rate_limit', {
-    _key: `ai-chat:user:${userId}`,
-    _max: RL_USER_MAX,
-    _window_seconds: RL_USER_WINDOW_SECONDS,
-  })
-
-  if (userRlError) {
-    reportError(userRlError, { context: 'ai-chat:rate-limit-user', userId, tenantId })
-    throw createError({ statusCode: 500, statusMessage: 'Rate limit check failed' })
-  }
-  if (!userOk) throw createError({ statusCode: 429, statusMessage: 'Too many requests' })
 
   const { data: tenantOk, error: tenantRlError } = await sb.rpc('consume_rate_limit', {
     _key: `ai-chat:tenant:${tenantId}`,
@@ -72,7 +61,25 @@ export default defineEventHandler(async (event) => {
     reportError(tenantRlError, { context: 'ai-chat:rate-limit-tenant', userId, tenantId })
     throw createError({ statusCode: 500, statusMessage: 'Rate limit check failed' })
   }
-  if (!tenantOk) throw createError({ statusCode: 429, statusMessage: 'Daily AI quota exhausted' })
+  if (!tenantOk) {
+    setHeader(event, 'retry-after', RL_TENANT_DAILY_WINDOW_SECONDS)
+    throw createError({ statusCode: 429, statusMessage: 'Daily AI quota exhausted' })
+  }
+
+  const { data: userOk, error: userRlError } = await sb.rpc('consume_rate_limit', {
+    _key: `ai-chat:user:${userId}`,
+    _max: RL_USER_MAX,
+    _window_seconds: RL_USER_WINDOW_SECONDS,
+  })
+
+  if (userRlError) {
+    reportError(userRlError, { context: 'ai-chat:rate-limit-user', userId, tenantId })
+    throw createError({ statusCode: 500, statusMessage: 'Rate limit check failed' })
+  }
+  if (!userOk) {
+    setHeader(event, 'retry-after', RL_USER_WINDOW_SECONDS)
+    throw createError({ statusCode: 429, statusMessage: 'Too many requests' })
+  }
 
   const openai = createOpenAI({ apiKey })
 
@@ -83,8 +90,13 @@ export default defineEventHandler(async (event) => {
 
   // 60s upper-bound на stream: gpt-4.1-nano обычно отвечает за <5s, 60s —
   // защита от зависшего upstream OpenAI. По истечении abortSignal прерывает
-  // stream, юзер видит partial response (B1 в плане). Cleanup в onFinish /
-  // onAbort / onError, чтобы таймер не утекал после штатного завершения.
+  // stream, юзер видит partial response (B1 в плане). cleanup идемпотентен:
+  // вызывается в onFinish / onAbort / onError, повторный clearTimeout — no-op.
+  //
+  // Token-usage НЕ логируем здесь: handler возвращает Response сразу через
+  // toUIMessageStreamResponse, request-scope в Sentry закрывается, и любой
+  // breadcrumb из callback'ов летит в никуда (нет активного scope). Прод-
+  // метрика token-usage — задача Stage 1 (audit_log / Grafana).
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), STREAM_TIMEOUT_MS)
   const cleanup = (): void => clearTimeout(timeoutId)
@@ -97,20 +109,8 @@ export default defineEventHandler(async (event) => {
     stopWhen: stepCountIs(3),
     maxOutputTokens: 1024,
     abortSignal: controller.signal,
-    onFinish: ({ totalUsage, finishReason }) => {
-      cleanup()
-      // Sentry breadcrumb для cost-observability: при ошибке в этом же
-      // request'е видно usage в Sentry event. Отдельный captureMessage не
-      // делаем — иначе Sentry заваливается каждым сообщением (пилот-фича).
-      // Прод-метрика token-usage — задача Stage 1 (audit_log / Grafana).
-      Sentry.addBreadcrumb({
-        category: 'ai-chat',
-        level: 'info',
-        message: `ai-chat usage=${totalUsage?.totalTokens ?? '?'} finish=${finishReason}`,
-        data: { tenantId, userId, ...totalUsage, finishReason },
-      })
-    },
-    onAbort: () => cleanup(),
+    onFinish: cleanup,
+    onAbort: cleanup,
     onError: ({ error }) => {
       cleanup()
       reportError(error, { context: 'ai-chat:stream-error', tenantId, userId })
