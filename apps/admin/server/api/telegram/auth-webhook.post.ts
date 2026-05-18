@@ -13,8 +13,6 @@ import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '~/shared/utils/reportError'
 
-const SKIP_PHONE_TEXT = 'Войти без номера'
-
 type TgUser = { id?: number; first_name?: string; last_name?: string; username?: string }
 type TgContact = { phone_number?: string; user_id?: number }
 type TgMessage = { chat?: { id?: number }; from?: TgUser; text?: string; contact?: TgContact }
@@ -115,14 +113,17 @@ export default defineEventHandler(async (event) => {
     const keyboard = {
       keyboard: [
         [{ text: '📱 Поделиться номером', request_contact: true }],
-        [{ text: SKIP_PHONE_TEXT }],
       ],
       one_time_keyboard: true,
       resize_keyboard: true,
+      // Подсказка прямо в инпут-поле. На Telegram Web reply-клавиатура скрыта
+      // по умолчанию (юзер сам её разворачивает иконкой), поэтому placeholder
+      // в инпуте — единственный always-visible сигнал.
+      input_field_placeholder: 'Нажмите кнопку с телефоном ↓',
     }
 
     await sendMessage(
-      'Поделитесь номером телефона, чтобы продолжить — или войдите без него.',
+      'Поделитесь номером телефона, чтобы войти.',
       { reply_markup: keyboard },
     )
 
@@ -141,28 +142,6 @@ export default defineEventHandler(async (event) => {
           .from('pending_telegram_auths')
           .update({
             phone,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('nonce', pending.nonce)
-      }
-    }
-
-    await sendMessage('✅ Готово! Возвращайтесь на сайт — вход выполнится автоматически.')
-
-    return { ok: true }
-  }
-
-  if (text === SKIP_PHONE_TEXT) {
-    const telegramId = String(message.from?.id ?? '')
-
-    if (telegramId) {
-      const pending = await findPendingByTelegramId(supabase, telegramId)
-
-      if (pending) {
-        await supabase
-          .from('pending_telegram_auths')
-          .update({
-            phone: null,
             completed_at: new Date().toISOString(),
           })
           .eq('nonce', pending.nonce)
