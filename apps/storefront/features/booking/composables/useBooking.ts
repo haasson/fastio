@@ -38,6 +38,11 @@ export default function useBooking() {
   const result = ref<{ id: string; status: ReservationStatus; linkedToAccount: boolean } | null>(null)
   const wasAuthenticated = ref(false)
   const error = ref<string | null>(null)
+  // Регенерируется на каждый USER-initiated submit (см. submit). Защищает от
+  // двойного тапа / refresh во время submit / медленной сети: сервер вернёт
+  // существующую бронь вместо создания второй. Auto-retry'я нет —
+  // простой реген-на-попытку безопасен.
+  const idempotencyKey = ref<string | null>(null)
 
   const rfetch = useRequestFetch()
   const supabase = useSupabaseClient()
@@ -66,6 +71,12 @@ export default function useBooking() {
     loading.value = true
     error.value = null
 
+    // НЕ переиспользуем старый ключ — если предыдущая попытка дошла до БД и
+    // создала бронь, сервер вернёт ту же бронь при повторном submit с тем же
+    // ключом (мы хотим именно это для retry'я). Новый ключ = новая попытка
+    // с актуальными данными формы.
+    idempotencyKey.value = crypto.randomUUID()
+
     try {
       const headers: Record<string, string> = {}
       const { data: { session } } = await supabase.auth.getSession()
@@ -87,8 +98,13 @@ export default function useBooking() {
           reservedTime: form.time,
           comment: form.comment || null,
           branchId: form.branchId || selectedBranch.id || null,
+          idempotencyKey: idempotencyKey.value,
         },
       })
+
+      // Ключ отыграл свою роль — сбрасываем. Следующий submit (например, после
+      // back/forward на step 1 и нового submit) сгенерит новый ключ.
+      idempotencyKey.value = null
     } catch (e: unknown) {
       const err = e as { data?: { message?: string } }
 

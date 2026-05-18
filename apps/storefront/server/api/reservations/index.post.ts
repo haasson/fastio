@@ -172,6 +172,13 @@ export default defineEventHandler(async (event) => {
   // IDOR guard: для гостевых броней генерим token (см. /api/orders.post.ts комментарий).
   const guestToken = customerId ? null : randomUUID()
 
+  // PREPROD-014: idempotency-key защищает от двойного тапа / refresh во время
+  // submit / медленной сети. UNIQUE per tenant (mig 287). При повторе с тем же
+  // ключом — отдаём существующую бронь (catch 23505 → SELECT), не создаём вторую.
+  const idempotencyKey = typeof body.idempotencyKey === 'string' && body.idempotencyKey.trim()
+    ? body.idempotencyKey.trim()
+    : null
+
   const { data, error } = await db.crossTenant
     .from('reservations')
     .insert({
@@ -185,13 +192,39 @@ export default defineEventHandler(async (event) => {
       comment: body.comment?.trim() || null,
       branch_id: branchId,
       status,
+      idempotency_key: idempotencyKey,
       ...(customerId ? { customer_id: customerId } : { guest_token: guestToken }),
     })
     .select('id, status, guest_token')
     .single()
 
   if (error) {
-    throw createError({ statusCode: 500, message: error.message })
+    if (error.code === '23505' && idempotencyKey) {
+      // Race: одновременно прошёл второй запрос с тем же ключом, бронь уже создана.
+      // Безопасно отдавать guest_token владельцу retry'я: idempotency_key — 122-битный
+      // UUID, генерируется клиентом через crypto.randomUUID() и известен ТОЛЬКО
+      // оригинальному автору. НЕ логировать idempotency_key в открытом виде.
+      const { data: existing, error: lookupError } = await db
+        .from('reservations')
+        .select('id, status, guest_token, customer_id')
+        .eq('idempotency_key', idempotencyKey)
+        .single()
+
+      if (lookupError) {
+        reportError(lookupError, { context: 'reservations.post:idempotency-lookup', tenantId })
+        throw createError({ statusCode: 500, message: 'Не удалось создать бронь' })
+      }
+
+      return {
+        id: existing.id,
+        status: existing.status,
+        linkedToAccount: !!existing.customer_id,
+        token: (existing.guest_token as string | null) ?? null,
+      }
+    }
+
+    reportError(error, { context: 'reservations.post:insert', tenantId })
+    throw createError({ statusCode: 500, message: 'Не удалось создать бронь' })
   }
 
   return {
