@@ -70,9 +70,15 @@ export default defineEventHandler(async (event) => {
   try {
     const authCtx = await getAuthenticatedContext(event)
     customerId = authCtx.customerId
-  } catch {
-    // Гость — нет auth-cookie/header или сессия истекла. By design разрешено,
-    // не логируем в Sentry чтобы не флудить (на каждый guest-запрос).
+  } catch (e) {
+    // 401 (нет cookie/header, истёкшая сессия, customer-not-found 404) — by
+    // design: гость продолжает в guest-флоу, не логируем. Инфра-ошибки
+    // (Supabase down, JWKS unavailable, network) — реально нужно знать.
+    const statusCode = (e as { statusCode?: number })?.statusCode
+
+    if (statusCode !== 401 && statusCode !== 404) {
+      reportError(e, { context: 'appointments.request.post:optional-auth' })
+    }
   }
 
   // Authenticated клиент с пустым body.customerEmail — подтягиваем email

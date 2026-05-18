@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import type { CustomerAddress } from '@fastio/shared'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { reportError } from '~/shared/utils/reportError'
+import { NotAuthenticatedError } from '~/shared/utils/errors'
 
 export const useAddressesStore = defineStore('addresses', () => {
   const addresses = ref<CustomerAddress[]>([])
@@ -11,7 +12,7 @@ export const useAddressesStore = defineStore('addresses', () => {
   async function getAuthHeader() {
     const supabase = useSupabaseClient()
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Не авторизован')
+    if (!session) throw new NotAuthenticatedError()
     return { Authorization: `Bearer ${session.access_token}` }
   }
 
@@ -21,8 +22,9 @@ export const useAddressesStore = defineStore('addresses', () => {
       const headers = await getAuthHeader()
       addresses.value = await $fetch<CustomerAddress[]>('/api/customer/addresses', { headers })
     } catch (e) {
-      // 401 (нет сессии) — by design кидаем из getAuthHeader, не логируем как ошибку.
-      if (!(e instanceof Error && e.message === 'Не авторизован')) {
+      // Гость (нет сессии) — by design, не логируем. Sentinel-класс вместо message-
+      // сравнения, чтобы локализация / переименование текста не сломали guard.
+      if (!(e instanceof NotAuthenticatedError)) {
         reportError(e, { context: 'addresses:fetch' })
       }
       addresses.value = []

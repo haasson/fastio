@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
+import { reportError } from '~/shared/utils/reportError'
 import { createRateLimiter, todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 
@@ -131,26 +132,38 @@ export default defineEventHandler(async (event) => {
   // СЛЕДУЮЩЕМУ календарному дню. Клиент шлёт исходную дату — сервер сдвигает.
   const reservedDate = pickedSlot.nextDay ? addDaysToDateStr(body.reservedDate, 1) : body.reservedDate
 
-  // Try to identify authenticated customer
+  // Try to identify authenticated customer.
+  // Logic: разделяем «нет user / невалидный JWT» (by-design guest-fallback,
+  // не шумим в Sentry) от «Supabase upstream-ошибка» (реальный инцидент,
+  // логируем). Без этого Supabase-инцидент маскировался как guest и заказ
+  // создавался под customerId=null молча.
   let customerId: string | null = null
   const authHeader = getRequestHeader(event, 'authorization')
 
   if (authHeader) {
     try {
       const authClient = getAuthSupabase(authHeader)
-      const { data: { user } } = await authClient.auth.getUser()
+      const { data: { user }, error: userError } = await authClient.auth.getUser()
 
-      if (user) {
-        const { data: customerData } = await db
+      // userError == invalid/expired JWT — нормальный guest-fallback.
+      if (!userError && user) {
+        const { data: customerData, error: customerError } = await db
           .from('customers')
           .select('id')
           .eq('auth_user_id', user.id)
           .maybeSingle()
 
-        if (customerData) customerId = customerData.id
+        if (customerError) {
+          // Реальная DB-ошибка — заказ создастся под customerId=null, но
+          // мы хотя бы увидим инцидент в Sentry.
+          reportError(customerError, { context: 'reservations.post:lookup-customer', userId: user.id })
+        } else if (customerData) {
+          customerId = customerData.id
+        }
       }
-    } catch {
-      // Auth-токен невалиден/истёк — by design разрешён guest-флоу, не шумим в Sentry
+    } catch (e) {
+      // Инфра-ошибка (network / Supabase init / JWKS) — реально надо знать.
+      reportError(e, { context: 'reservations.post:optional-auth' })
     }
   }
 
