@@ -9,6 +9,7 @@ type RegisterBody = {
   slug?: string
   email?: string
   website?: string // honeypot — бот скорее всего заполнит
+  initial_plan_key?: string
 }
 
 const SLUG_MAX_LENGTH = 63
@@ -116,9 +117,15 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // 2. trial_days из billing_config.
-  const { data: billingConfig } = await supabase.from('billing_config').select('trial_days').single()
+  // 2. trial_days из billing_config + валидация initial_plan_key.
+  const [{ data: billingConfig }, { data: planRow }] = await Promise.all([
+    supabase.from('billing_config').select('trial_days').single(),
+    body.initial_plan_key && /^[a-z0-9-]+$/.test(body.initial_plan_key)
+      ? supabase.from('plans').select('key').eq('key', body.initial_plan_key).eq('is_active', true).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
   const trialDays = billingConfig?.trial_days ?? 14
+  const initialPlan = planRow?.key ?? 'retail-showcase'
 
   // 3. Создаём тенант + tenant_members одной транзакцией через RPC.
   const { data: tenantId, error: rpcError } = await supabase.rpc('self_register_tenant', {
@@ -127,6 +134,7 @@ export default defineEventHandler(async (event) => {
     p_slug: slug,
     p_email: email,
     p_trial_days: trialDays,
+    p_initial_plan: initialPlan,
   })
 
   if (rpcError) {

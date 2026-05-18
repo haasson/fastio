@@ -55,8 +55,8 @@
               </li>
             </ul>
 
-            <FsButton as="a" href="#contact" :variant="plan.is_featured ? 'primary' : 'outline'" class="action">
-              Оставить заявку
+            <FsButton :variant="plan.is_featured ? 'primary' : 'outline'" class="action" @click="onPlanClick(plan)">
+              Попробовать бесплатно
             </FsButton>
           </div>
         </div>
@@ -104,6 +104,11 @@ const MODULE_LABELS: Record<string, string> = {
 }
 
 const props = defineProps<{ plans: PlanRow[] }>()
+
+function onPlanClick(plan: PlanRow) {
+  sessionStorage.setItem('landing_plan_key', plan.key)
+  document.getElementById('try')?.scrollIntoView({ behavior: 'smooth' })
+}
 
 const activeType = ref<'retail' | 'services'>('retail')
 

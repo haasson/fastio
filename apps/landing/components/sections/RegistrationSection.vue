@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeUnmount, watch } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
 import { $fetch } from 'ofetch'
 import { CheckCircle, XCircle } from 'lucide-vue-next'
 import { FsForm, FsField, FsInput, FsButton, FsSpinner } from '@fastio/public-ui'
@@ -121,6 +121,11 @@ import type { ValidationRule } from '@fastio/kit'
 
 const form = reactive({ name: '', slug: '', email: '' })
 const honeypot = ref('')
+const landingPlanKey = ref<string | null>(null)
+
+onMounted(() => {
+  landingPlanKey.value = sessionStorage.getItem('landing_plan_key')
+})
 const submitted = ref(false)
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
@@ -202,8 +207,10 @@ async function onSubmit() {
         slug: form.slug.toLowerCase(),
         email: form.email,
         website: honeypot.value,
+        initial_plan_key: landingPlanKey.value ?? undefined,
       },
     })
+    sessionStorage.removeItem('landing_plan_key')
     submitted.value = true
   } catch (err: unknown) {
     submitError.value = (err as { data?: { message?: string } })?.data?.message ?? 'Что-то пошло не так'
