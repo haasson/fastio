@@ -20,6 +20,24 @@
 -- - Техдолг с триггерами «когда стрелять» зафиксирован в TECHDEBT.md
 --   (раздел «SVG в tenant-assets разрешён без server-side sanitize»).
 
+-- Guard: если кто-то снёс bucket в проде до миграции, UPDATE отработает 0 rows
+-- молча → security-фикс к этому bucket'у не применится. Лучше пасть с понятной
+-- ошибкой в CI, чем тихо оставить дыру. Список синхронен с UPDATE'ами ниже.
+DO $$
+DECLARE
+  expected text[] := ARRAY['dish-images', 'addon-images', 'tenant-assets', 'support-attachments', 'documents'];
+  missing text[];
+BEGIN
+  SELECT array_agg(b) INTO missing
+  FROM unnest(expected) AS b
+  WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = b);
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION 'PREPROD-016: ожидаемые storage bucket''ы отсутствуют: %', missing;
+  END IF;
+END
+$$;
+
 -- dish-images, addon-images: фото блюд / аддонов меню, 5 MB, без SVG.
 UPDATE storage.buckets
 SET
