@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { captureException, withSentry } from '../_shared/sentry.ts'
+import { captureException, flushSentry, withSentry } from '../_shared/sentry.ts'
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
@@ -75,6 +75,11 @@ Deno.serve(withSentry('dadata-suggest', async (req) => {
     // ошибку всё равно репортим в Sentry — иначе DaData может молча лежать сутками,
     // а мы заметим только по жалобам (feedback_always_log_errors).
     captureException(e, { fn: 'dadata-suggest', stage: 'upstream-fetch' })
+    // flush ОБЯЗАТЕЛЕН: на edge-runtime воркер может terminate'нуться сразу после
+    // return, async-отправка в Sentry не успеет уйти по сети → потеря события на
+    // cold start. withSentry-обёртка делает flush только для uncaught throw'ов
+    // (catch внутри handler'а — не uncaught).
+    await flushSentry()
     return json({ suggestions: [] })
   }
 }))

@@ -17,7 +17,7 @@ async function getTenantCoords(
 ): Promise<{ lat: number; lon: number } | null> {
   if (tenantCoordsCache.has(tenantId)) return tenantCoordsCache.get(tenantId)!
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('branches')
     .select('latitude, longitude')
     .eq('tenant_id', tenantId)
@@ -25,11 +25,23 @@ async function getTenantCoords(
     .limit(1)
     .maybeSingle()
 
+  if (error) {
+    reportError(error)
+
+    return null // не кэшируем, пусть следующий запрос попробует снова
+  }
+
   const coords = data?.latitude && data?.longitude
     ? { lat: data.latitude as number, lon: data.longitude as number }
     : null
 
-  tenantCoordsCache.set(tenantId, coords)
+  // null НЕ кэшируем (тот же паттерн что admin после PREPROD-004). Если филиал
+  // тенанта появится / у него обновятся координаты — следующий запрос подтянет
+  // их вместо вечной null-записи в этом nitro-инстансе. Положительный coords
+  // кэшируется бессрочно — координаты филиалов меняются редко, рестарт деплоя
+  // сбросит кэш.
+  if (coords) tenantCoordsCache.set(tenantId, coords)
+
   return coords
 }
 
