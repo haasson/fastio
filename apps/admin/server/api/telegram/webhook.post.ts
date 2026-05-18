@@ -5,6 +5,10 @@ import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '~/shared/utils/reportError'
 
+const LINK_CODE_REGEX = /^\d{6}$/
+const RATE_LIMIT_MAX_ATTEMPTS = 5
+const RATE_LIMIT_WINDOW_SECONDS = 15 * 60
+
 type ChatType = 'private' | 'group' | 'supergroup' | 'channel'
 
 type TgChat = {
@@ -62,6 +66,12 @@ export default defineEventHandler(async (event) => {
   const isForum = chat.is_forum === true
   const threadId: number | null = message.message_thread_id ?? (isForum ? 1 : null)
 
+  // Format-фильтр ДО rate-limit: жжёт квоту только валидным 6-значным кодом.
+  // Иначе /start abc, /start hello, любой мусор тоже расходовал бы попытки
+  // и legit-юзер с опечатками упирался бы в лимит из-за чужого спама / своих
+  // не-кодов в чат с ботом.
+  if (!LINK_CODE_REGEX.test(code)) return { ok: true }
+
   const supabase = getServerSupabase()
 
   // Rate-limit ДО lookup: 6-значный код = 9×10⁵ комбинаций, без лимита подбирается
@@ -69,10 +79,15 @@ export default defineEventHandler(async (event) => {
   // 5 попыток за 15 мин на chat: legit-юзер вводит код 1-2 раза → не достаёт;
   // атакующий упирается. Silent return при hit — не отвечаем боту, чтобы атакующий
   // не узнал что попал в лимит (UX legit не страдает: он сюда не попадает).
+  //
+  // Race window: между SELECT linkCode и DELETE нет lock — два webhook'а с
+  // правильно угаданным кодом теоретически могут оба пройти SELECT и оба
+  // INSERT'нуться (второй упадёт в 23505). Это accepted risk варианта B
+  // (защищает rate-limit + TTL 3 мин); атомарный DELETE RETURNING — на потом.
   const { data: rlAllowed, error: rlError } = await supabase.rpc('consume_rate_limit', {
     _key: `telegram-link:${chatId}`,
-    _max: 5,
-    _window_seconds: 15 * 60,
+    _max: RATE_LIMIT_MAX_ATTEMPTS,
+    _window_seconds: RATE_LIMIT_WINDOW_SECONDS,
   })
 
   if (rlError) {
@@ -80,7 +95,16 @@ export default defineEventHandler(async (event) => {
 
     return { ok: true }
   }
-  if (!rlAllowed) return { ok: true }
+  if (!rlAllowed) {
+    // Sentry-сигнал на лимит: всплеск = либо атака на подбор, либо legit-юзер
+    // забил неправильными кодами (M2 review). Алерт по deviation в Sentry.
+    reportError(new Error('[telegram] link-code rate-limited'), {
+      context: 'telegram-webhook:rate-limit-hit',
+      chatId: String(chatId),
+    })
+
+    return { ok: true }
+  }
 
   const sendMessage = (text: string, html = false) => {
     const payload: Record<string, unknown> = { chat_id: chatId, text }

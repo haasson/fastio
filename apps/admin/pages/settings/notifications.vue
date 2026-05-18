@@ -233,13 +233,19 @@ const connect = async () => {
   try {
     // 6 цифр читается проще буквенно-цифровой смеси. Энтропия закрывается
     // server-side rate-limit'ом в /api/telegram/webhook (5 попыток/15 мин на chat).
-    // crypto.getRandomValues — чтобы код не был предсказуем при знании seed (Math.random
-    // не cryptographically secure). PK-коллизия в окне 3 мин крайне маловероятна;
-    // если упадёт INSERT — юзер просто кликнет «Подключить» ещё раз.
+    // crypto.getRandomValues — чтобы выход PRNG не восстанавливался по нескольким
+    // наблюдениям (Math.random в V8 — xorshift128+, state восстанавливается за ~5).
+    //
+    // Деление вместо `% 900000` — modulo-bias на Uint32: 2³² mod 900000 = 167296,
+    // т.е. первые ~167K значений (100000-267295) встречались бы в 2× чаще. Через
+    // floor(buf/2³² * 900000) bias уходит (uniform mapping [0,1) → [0, 900000)).
+    //
+    // PK-коллизия в окне 3 мин крайне маловероятна; если упадёт INSERT — юзер
+    // просто кликнет «Подключить» ещё раз.
     const buf = new Uint32Array(1)
 
     globalThis.crypto.getRandomValues(buf)
-    const code = (100000 + (buf[0] % 900000)).toString()
+    const code = (100000 + Math.floor((buf[0] / 0x100000000) * 900000)).toString()
 
     await telegramLink.upsertCode(tid, code)
     linkCode.value = code
