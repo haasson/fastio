@@ -90,6 +90,7 @@ import BookingSuccess from '~/features/booking/components/BookingSuccess.vue'
 
 import { useBooking } from '~/features/booking'
 import useLegalCompliance from '~/shared/composables/useLegalCompliance'
+import { reportError } from '~/shared/utils/reportError'
 
 type BookingBranch = BranchPublic
 
@@ -109,7 +110,8 @@ const { data: branches } = await useAsyncData<BookingBranch[]>(
       const data = await rfetch<BookingBranch[]>('/api/branches')
       if (data.length === 1) form.branchId = data[0].id
       return data
-    } catch {
+    } catch (e) {
+      reportError(e, { context: 'booking:fetchBranches' })
       return []
     }
   },
@@ -122,7 +124,8 @@ const { data: settings } = await useAsyncData<ReservationSettings | null>(
     if (!reservationsEnabled.value) return null
     try {
       return await rfetch<ReservationSettings>('/api/reservations/settings')
-    } catch {
+    } catch (e) {
+      reportError(e, { context: 'booking:fetchReservationSettings' })
       return null
     }
   },

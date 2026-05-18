@@ -105,6 +105,7 @@ import AddonsSection from './form/AddonsSection.vue'
 import IngredientsSection from './form/IngredientsSection.vue'
 import NutritionSection from './form/NutritionSection.vue'
 import SettingsSection from './form/SettingsSection.vue'
+import { reportError } from '~/shared/utils/reportError'
 
 const props = defineProps<{
   modelValue: boolean
@@ -300,7 +301,9 @@ const onConfirm = async () => {
     }
 
     emit('saved')
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'DishFormDrawer:save', tenantId: props.tenantId, dishId: props.dish?.id ?? null })
+
     return false
   } finally {
     saving.value = false

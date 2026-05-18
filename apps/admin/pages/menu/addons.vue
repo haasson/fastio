@@ -114,6 +114,7 @@ import { useTerms } from '~/features/legal'
 import { buildAddonColumns, buildAddonPresetColumns } from '~/columns/addons'
 import AddonFormModal from '~/features/menu/components/AddonFormModal.vue'
 import AddonPresetFormModal from '~/features/menu/components/AddonPresetFormModal.vue'
+import { reportError } from '~/shared/utils/reportError'
 
 const db = useDatabase()
 const tenantStore = useTenantStore()
@@ -190,7 +191,8 @@ const handleRemoveAddon = async (addon: Addon) => {
   if (ok) {
     try {
       await remove(addon.id)
-    } catch {
+    } catch (e) {
+      reportError(e, { context: 'menu/addons:handleRemoveAddon', addonId: addon.id })
       message.error('Не удалось удалить добавку')
     }
   }
@@ -207,7 +209,8 @@ const handleRemovePreset = async (preset: AddonPreset) => {
   if (ok) {
     try {
       await removePreset(preset.id)
-    } catch {
+    } catch (e) {
+      reportError(e, { context: 'menu/addons:handleRemovePreset', presetId: preset.id })
       message.error('Не удалось удалить пресет')
     }
   }

@@ -83,6 +83,7 @@ import type { DadataSuggestion } from '~/shared/composables/useDadataSuggestions
 import { useDadataSuggestions } from '~/shared/composables/useDadataSuggestions'
 import { FsInput, FsAlert, FsDropdownList, FsField } from '@fastio/public-ui'
 import { validationRules } from '@fastio/kit'
+import { reportError } from '~/shared/utils/reportError'
 
 type Props = { currency: string }
 defineProps<Props>()
@@ -171,7 +172,8 @@ async function checkAddress(lat: number, lon: number) {
       checkout.outsideZones = false
       checkout.hasZones = false
     }
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'AddressManualInput:checkAddress', lat, lon })
     checkout.deliveryZone = null
     checkout.outsideZones = false
   } finally {

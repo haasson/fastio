@@ -165,6 +165,7 @@ const loadSavedFilter = (): string[] => {
 
     return raw ? (JSON.parse(raw) as string[]) : []
   } catch {
+    // localStorage недоступен (приватный режим) или JSON битый — graceful degrade на пустой фильтр
     return []
   }
 }
@@ -223,7 +224,8 @@ const load = async () => {
   error.value = false
   try {
     items.value = await api.kitchenQueue.listActive(tenantStore.tenant.id)
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'kitchen/queue:load', tenantId: tenantStore.tenant.id })
     error.value = true
   } finally {
     loading.value = false

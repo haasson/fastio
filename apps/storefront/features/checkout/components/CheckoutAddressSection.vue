@@ -96,6 +96,7 @@ import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { useNuxtData } from 'nuxt/app'
 import { FsHeading, FsAlert } from '@fastio/public-ui'
 import AddressManualInput from './AddressManualInput.vue'
+import { reportError } from '~/shared/utils/reportError'
 
 type Props = { currency: string }
 defineProps<Props>()
@@ -152,7 +153,8 @@ async function fetchAddresses() {
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
     preselectAddress()
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'CheckoutAddressSection:fetchAddresses' })
     savedAddresses.value = []
   } finally {
     addressesLoading.value = false
@@ -240,7 +242,8 @@ async function checkAddress(lat: number, lon: number) {
       checkout.hasZones = false
       branchClosedInfo.value = null
     }
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'CheckoutAddressSection:checkAddress', lat, lon })
     checkout.deliveryZone = null
     checkout.outsideZones = false
     branchClosedInfo.value = null

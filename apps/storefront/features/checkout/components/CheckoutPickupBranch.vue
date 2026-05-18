@@ -89,6 +89,7 @@ import { computeBranchCompat, type BranchStatus as CompatStatus } from '~/featur
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
 import { formatBranchAddressShort, formatWorkingHours, isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { BranchPublic, WorkingHoursSchedule, Tenant } from '@fastio/shared'
+import { reportError } from '~/shared/utils/reportError'
 
 type BranchStatus = ReturnType<typeof isOpenNow>
 
@@ -231,7 +232,8 @@ onMounted(async () => {
         checkout.form.pickupBranchId = only.id
       }
     }
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'CheckoutPickupBranch:loadBranches' })
     error.value = 'Не удалось загрузить пункты самовывоза'
   } finally {
     loading.value = false

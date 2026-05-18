@@ -66,6 +66,7 @@ import { FsDialog, FsField, FsForm, FsInput, FsTextarea, FsButton, FsDropdownLis
 import { validationRules } from '@fastio/kit'
 import type { DadataSuggestion } from '~/shared/composables/useDadataSuggestions'
 import { useDadataSuggestions } from '~/shared/composables/useDadataSuggestions'
+import { reportError } from '~/shared/utils/reportError'
 
 const props = defineProps<{
   address?: CustomerAddress | null
@@ -159,7 +160,8 @@ async function onSuggestionSelect(item: { value: string; [key: string]: unknown 
         body: { lat, lon: lng, subtotal: 0 },
       })
       outsideZone.value = result?.outsideZones === true
-    } catch {
+    } catch (e) {
+      reportError(e, { context: 'AddressFormModal:checkZone', lat, lng })
       zoneCheckFailed.value = true
       outsideZone.value = false
     }

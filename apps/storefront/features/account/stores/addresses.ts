@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CustomerAddress } from '@fastio/shared'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
+import { reportError } from '~/shared/utils/reportError'
 
 export const useAddressesStore = defineStore('addresses', () => {
   const addresses = ref<CustomerAddress[]>([])
@@ -19,7 +20,11 @@ export const useAddressesStore = defineStore('addresses', () => {
     try {
       const headers = await getAuthHeader()
       addresses.value = await $fetch<CustomerAddress[]>('/api/customer/addresses', { headers })
-    } catch {
+    } catch (e) {
+      // 401 (нет сессии) — by design кидаем из getAuthHeader, не логируем как ошибку.
+      if (!(e instanceof Error && e.message === 'Не авторизован')) {
+        reportError(e, { context: 'addresses:fetch' })
+      }
       addresses.value = []
     } finally {
       loading.value = false

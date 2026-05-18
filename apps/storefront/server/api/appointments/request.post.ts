@@ -71,7 +71,8 @@ export default defineEventHandler(async (event) => {
     const authCtx = await getAuthenticatedContext(event)
     customerId = authCtx.customerId
   } catch {
-    // гость — продолжаем без customer_id
+    // Гость — нет auth-cookie/header или сессия истекла. By design разрешено,
+    // не логируем в Sentry чтобы не флудить (на каждый guest-запрос).
   }
 
   // Authenticated клиент с пустым body.customerEmail — подтягиваем email

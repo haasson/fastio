@@ -72,6 +72,7 @@ function hashesEqual(a: string, b: string): boolean {
   try {
     return timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'))
   } catch {
+    // Невалидный hex (атакующий передал мусор) — не равны, в Sentry не шумим
     return false
   }
 }

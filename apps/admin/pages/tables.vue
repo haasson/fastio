@@ -40,6 +40,7 @@ import { tableCallEvents } from '~/features/tables'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import { TablesContextKey, TodayReservationsKey } from '~/features/tables'
 import type { TableSession, TableSessionItem } from '~/features/tables'
+import { reportError } from '~/shared/utils/reportError'
 
 usePageTitle('Столы')
 
@@ -315,7 +316,8 @@ const onCancelKitchen = async (ids: string[], charged: boolean) => {
   try {
     await api.kitchenQueue.cancelItems(ids, charged)
     reloadKitchenDishes()
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'tables:onCancelKitchen', tableId, dishIds: ids, charged })
     kitchenDishes.value[tableId] = prevKq
     warning('Не удалось отменить блюдо')
   }
@@ -333,7 +335,8 @@ const onServeKitchen = async (ids: string[]) => {
   try {
     await api.kitchenQueue.serveItems(ids, userId.value)
     reloadKitchenDishes()
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'tables:onServeKitchen', tableId, dishIds: ids })
     kitchenDishes.value[tableId] = prevKq
     warning('Не удалось подать блюдо')
   }

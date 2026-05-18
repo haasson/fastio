@@ -41,6 +41,7 @@ import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiText, UiCheckbox } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
+import { reportError } from '~/shared/utils/reportError'
 
 const props = defineProps<{
   modelValue: boolean
@@ -104,7 +105,9 @@ const handleSave = async () => {
     }
     emit('saved')
     emit('update:modelValue', false)
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'AddonPresetFormModal:save', tenantId: props.tenantId, presetId: props.preset?.id ?? null })
+
     return false
   } finally {
     saving.value = false

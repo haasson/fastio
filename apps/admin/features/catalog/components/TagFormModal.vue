@@ -70,6 +70,7 @@ import { TAG_COLOR_PRESETS, getTagColorPreset, getTagIconPresets, getTagNamePlac
 import * as icons from 'lucide-vue-next'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
+import { reportError } from '~/shared/utils/reportError'
 
 const props = defineProps<{
   modelValue: boolean
@@ -142,7 +143,9 @@ const handleSave = async () => {
     }
     emit('saved')
     emit('update:modelValue', false)
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'TagFormModal:save', tenantId: props.tenantId, tagId: props.tag?.id ?? null })
+
     return false
   } finally {
     saving.value = false

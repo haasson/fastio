@@ -46,6 +46,7 @@ import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber } from '@fastio/ui'
 import type { Addon } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
+import { reportError } from '~/shared/utils/reportError'
 
 const props = defineProps<{
   modelValue: boolean
@@ -107,7 +108,9 @@ const handleSave = async () => {
     }
     emit('saved')
     emit('update:modelValue', false)
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'AddonFormModal:save', tenantId: props.tenantId, addonId: props.addon?.id ?? null })
+
     return false
   } finally {
     saving.value = false

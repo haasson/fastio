@@ -150,7 +150,7 @@ export default defineEventHandler(async (event) => {
         if (customerData) customerId = customerData.id
       }
     } catch {
-      // proceed as guest
+      // Auth-токен невалиден/истёк — by design разрешён guest-флоу, не шумим в Sentry
     }
   }
 

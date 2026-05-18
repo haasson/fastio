@@ -114,6 +114,7 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
 import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
 import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
+import { reportError } from '~/shared/utils/reportError'
 
 const tenantStore = useTenantStore()
 const db = useDatabase()
@@ -168,7 +169,8 @@ const uploadOffer = async (event: Event) => {
   uploading.value = true
   try {
     form.offerUrl = await db.tenants.uploadDocument(tenantStore.tenant.id, file, 'offer')
-  } catch {
+  } catch (e) {
+    reportError(e, { context: 'settings/legal:uploadOffer', tenantId: tenantStore.tenant.id })
     error('Ошибка загрузки файла')
   } finally {
     uploading.value = false

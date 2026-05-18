@@ -66,6 +66,7 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
       }
     }
   } catch {
+    // Input-validation ошибка (битый JSON от клиента) — отдаём 4xx, в Sentry не шумим
     throw createError({ statusCode: 400, message: 'Параметр items содержит некорректный JSON' })
   }
 

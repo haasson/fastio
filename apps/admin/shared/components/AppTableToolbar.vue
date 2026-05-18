@@ -62,6 +62,7 @@ onMounted(() => {
 
     visibleModel.value = valid?.length ? valid : all
   } catch {
+    // localStorage недоступен или JSON битый — фолбэк на все колонки
     visibleModel.value = all
   }
 })
