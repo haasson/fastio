@@ -6,8 +6,9 @@ import { reportError } from '~/shared/utils/reportError'
 
 export default defineEventHandler(async (event): Promise<Reservation[]> => {
   // Same auth-pattern как в customer/appointments.get.ts: поддерживаем Bearer JWT
-  // (Supabase email/password) и tg_session cookie. Cross-tenant защита через
-  // сравнение customer.tenantId === db.tenantId (cookie с другого домена не сработает).
+  // (Supabase email/password) и tg_session cookie. customerAuth уже загружает
+  // customer'а с .eq('tenant_id', event.context.tenantId) → проверка ниже
+  // defense-in-depth на случай если customerAuth-логика поменяется.
   const db = getTenantDb(event)
   const { customer } = await getAuthenticatedContextWithCustomer(event)
 

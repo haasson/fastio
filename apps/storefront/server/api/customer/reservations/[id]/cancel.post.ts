@@ -1,6 +1,7 @@
 import { getTenantDb } from '../../../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../../../utils/customerAuth'
 import { reportError } from '~/shared/utils/reportError'
+import { todayInTz, nowTimeInTz, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: reservation, error: fetchError } = await db
     .from('reservations')
-    .select('id, customer_id, status, allow_cancel_snapshot')
+    .select('id, customer_id, status, allow_cancel_snapshot, reserved_date, reserved_time')
     .eq('id', id)
     .maybeSingle()
 
@@ -42,6 +43,31 @@ export default defineEventHandler(async (event) => {
   // сигнал отмены чем тихий no-show.
   if (reservation.status !== 'pending' && reservation.status !== 'confirmed') {
     throw createError({ statusCode: 400, message: 'Эту бронь уже нельзя отменить' })
+  }
+
+  // Date+time guard: клиент не должен «отменять» прошедшую бронь которую тенант
+  // забыл перевести в no_show/completed — иначе клиент-no-show превращается в
+  // cancel_by_customer и искажает тенант-аналитику. timezone-aware (как в
+  // reservations/index.post.ts для валидации create-on-past).
+  const { data: tenant } = await db
+    .from('tenants')
+    .select('timezone')
+    .maybeSingle()
+  const tenantTz = (tenant?.timezone as string | undefined) ?? DEFAULT_TIMEZONE
+  const todayStr = todayInTz(tenantTz)
+  const reservedDateStr = reservation.reserved_date as string
+  const reservedTimeStr = (reservation.reserved_time as string).slice(0, 5)
+
+  if (reservedDateStr < todayStr) {
+    throw createError({ statusCode: 400, message: 'Эту бронь уже нельзя отменить' })
+  }
+  if (reservedDateStr === todayStr) {
+    const nowMin = timeToMinutes(nowTimeInTz(tenantTz))
+    const reservedMin = timeToMinutes(reservedTimeStr)
+
+    if (reservedMin <= nowMin) {
+      throw createError({ statusCode: 400, message: 'Эту бронь уже нельзя отменить' })
+    }
   }
 
   // .select+.single — иначе на RLS-deny клиент получит {ok:true}, а запись жива.

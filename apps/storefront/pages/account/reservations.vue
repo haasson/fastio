@@ -81,10 +81,14 @@ const cancellingId = ref<string | null>(null)
 
 // Cancellable только pending/confirmed + snapshot=true (snapshot=null → legacy
 // бронь до миграции 288, для них фолбэк на live settings делает сервер; UI
-// показывает кнопку оптимистично, при отказе вернётся 403).
+// показывает кнопку оптимистично, при отказе вернётся 403). Date+time guard
+// best-effort в локальной tz клиента — сервер делает строгую проверку в tenant-tz.
 const canCancel = (r: Reservation) => {
   if (r.status !== 'pending' && r.status !== 'confirmed') return false
   if (r.allowCancelSnapshot === false) return false
+  const reservedTs = new Date(`${r.reservedDate}T${r.reservedTime}`).getTime()
+
+  if (reservedTs <= Date.now()) return false
 
   return true
 }
