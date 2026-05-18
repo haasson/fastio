@@ -3,6 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { telegramFetch } from '../../utils/telegramFetch'
+import { reportError } from '~/shared/utils/reportError'
 
 type ChatType = 'private' | 'group' | 'supergroup' | 'channel'
 
@@ -63,6 +64,24 @@ export default defineEventHandler(async (event) => {
 
   const supabase = getServerSupabase()
 
+  // Rate-limit ДО lookup: 6-значный код = 9×10⁵ комбинаций, без лимита подбирается
+  // спамом /start <code>. consume_rate_limit (mig 264) — durable, horizontal-safe.
+  // 5 попыток за 15 мин на chat: legit-юзер вводит код 1-2 раза → не достаёт;
+  // атакующий упирается. Silent return при hit — не отвечаем боту, чтобы атакующий
+  // не узнал что попал в лимит (UX legit не страдает: он сюда не попадает).
+  const { data: rlAllowed, error: rlError } = await supabase.rpc('consume_rate_limit', {
+    _key: `telegram-link:${chatId}`,
+    _max: 5,
+    _window_seconds: 15 * 60,
+  })
+
+  if (rlError) {
+    reportError(rlError, { context: 'telegram-webhook:rate-limit', chatId: String(chatId) })
+
+    return { ok: true }
+  }
+  if (!rlAllowed) return { ok: true }
+
   const sendMessage = (text: string, html = false) => {
     const payload: Record<string, unknown> = { chat_id: chatId, text }
 
@@ -84,6 +103,13 @@ export default defineEventHandler(async (event) => {
     .maybeSingle() as { data: { tenant_id: string; tenants: { name: string } } | null }
 
   if (!linkCode) {
+    // Sentry схлопывает по chatId fingerprint'у — алёрт по deviation настраивается в Sentry.
+    // codePrefix (2 цифры) даёт корреляцию между попытками не раскрывая полный код в логах.
+    reportError(new Error('[telegram] invalid link-code attempt'), {
+      context: 'telegram-webhook:invalid-code',
+      chatId: String(chatId),
+      codePrefix: code.slice(0, 2),
+    })
     await sendMessage('❌ Код устарел или недействителен. Сгенерируй новый в настройках.')
 
     return { ok: true }
@@ -104,7 +130,11 @@ export default defineEventHandler(async (event) => {
 
   // 23505 = unique_violation → этот чат уже привязан к этому тенанту
   if (insertError && insertError.code !== '23505') {
-    console.error('[telegram webhook] subscriber insert failed:', insertError)
+    reportError(insertError, {
+      context: 'telegram-webhook:subscriber-insert',
+      chatId: String(chatId),
+      tenantId: linkCode.tenant_id,
+    })
     await sendMessage('⚠️ Не удалось сохранить подписку. Попробуй ещё раз.')
 
     return { ok: true }

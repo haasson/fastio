@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-16T11:51:30.794Z",
+  "generated_at": "2026-05-18T11:10:49.324Z",
   "stats": {
-    "files": 83,
+    "files": 84,
     "pages": 0,
-    "symbols": 143,
+    "symbols": 144,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -348,8 +348,8 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "4afb56e9c722",
-      "purpose": "Дефолтный layout админки: collapsible sidebar с лого/AppNav/TenantSwitcher/BranchSelector + main slot для страницы",
+      "hash": "092376d487ca",
+      "purpose": "Default layout админки — sidebar + topbar + slot для страницы, collapsible навигация",
       "symbols": [
         {
           "name": "component",
@@ -361,8 +361,8 @@
     },
     "shared/components/AppTableToolbar.vue": {
       "kind": "vue",
-      "hash": "5489aed1010b",
-      "purpose": "Универсальный тулбар для таблиц: поиск, слот фильтров, меню видимости столбцов, сброс фильтров, слот actions",
+      "hash": "a00d721239ab",
+      "purpose": "Тулбар для табличных страниц: поиск, счётчик активных фильтров, настройка видимости колонок, кнопка reset",
       "symbols": [
         {
           "name": "props",
@@ -429,6 +429,19 @@
         }
       ]
     },
+    "shared/components/layout/PartialInitBanner.vue": {
+      "kind": "vue",
+      "hash": "ae7883381822",
+      "purpose": "Баннер «частичная инициализация» — показывается когда один из tenantStore.init() сторов упал (allSettled fallback)",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Inline-баннер сверху страницы с описанием упавших разделов и кнопкой retry"
+        }
+      ]
+    },
     "shared/components/layout/PastDueBanner.vue": {
       "kind": "vue",
       "hash": "7f6a0c2f462d",
@@ -444,14 +457,14 @@
     },
     "shared/composables/delivery/useDadataSuggestions.ts": {
       "kind": "ts",
-      "hash": "37347cac1b25",
-      "purpose": "Обёртка над shared-DaData с tenantId-привязкой через серверный прокси админки",
+      "hash": "ace52eb8f6d1",
+      "purpose": "Composable для address suggestions через DaData proxy (admin /api/dadata/suggest) — debounce, кэш, отмена in-flight запросов",
       "symbols": [
         {
           "name": "useDadataSuggestions",
           "kind": "function",
-          "hash": "fdf31941",
-          "purpose": "Подсказки адресов DaData с привязкой к tenantId через серверный прокси"
+          "hash": "6a9cf3e6",
+          "purpose": "Возвращает { suggestions, loading, query } для address-input компонентов; level=address|city"
         },
         {
           "name": "DadataSuggestion",
@@ -743,8 +756,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "0c3e6ce6c390",
-      "purpose": "Единая точка проверки доступа к фичам админки: агрегирует все гейты (retail + services) в GateRegistry с computed на каждую фичу/раздел",
+      "hash": "811ec616ad03",
+      "purpose": "Корневой gate-агрегатор: объединяет retail+services+shared gate registries, для проверки доступа фич по плану/модулям",
       "symbols": [
         {
           "name": "useGate",
@@ -871,8 +884,8 @@
     },
     "shared/stores/tenant.ts": {
       "kind": "ts",
-      "hash": "3ae0c0bf860c",
-      "purpose": "Глобальный Pinia-стор тенанта: оборачивает useTenant и хранит текущий tenant, memberships, permissions, businessType",
+      "hash": "20a3dc3f9127",
+      "purpose": "Pinia store текущего тенанта: tenant/memberships/currentRoleName/currentPermissions/businessType + init/switchTenant/update/changePlan",
       "symbols": [
         {
           "name": "useTenantStore",
@@ -884,8 +897,8 @@
     },
     "shared/ui/components/AddressSuggestInput.vue": {
       "kind": "vue",
-      "hash": "66f71c041b86",
-      "purpose": "Поле ввода адреса с подсказками DaData; emit('select') возвращает выбранную suggestion с координатами; опционально валидирует что выбрана именно подсказка (requirePicked)",
+      "hash": "74817e23d755",
+      "purpose": "Адресный input с DaData-подсказками — VeeValidate-совместимый, с опциональным pickedRule (требовать выбор из списка)",
       "symbols": [
         {
           "name": "props",
@@ -1401,14 +1414,14 @@
     },
     "shared/utils/query.ts": {
       "kind": "ts",
-      "hash": "e7be3a0c652b",
-      "purpose": "Враппер Supabase-запроса: бросает исключение и показывает naive-message при error",
+      "hash": "bc043083922d",
+      "purpose": "Тонкая обёртка над supabase builder: разворачивает PromiseLike, логирует и кидает ошибку при error, возвращает data",
       "symbols": [
         {
           "name": "query",
           "kind": "function",
-          "hash": "ee78e78a",
-          "purpose": "await query(supabasePromise) -> data; throw + toast при error"
+          "hash": "82b03f6f",
+          "purpose": "await query(sb.from('x')...) → data | throws; внутри reportError при PostgresError"
         }
       ]
     },
@@ -1427,14 +1440,14 @@
     },
     "shared/utils/reportError.ts": {
       "kind": "ts",
-      "hash": "a054a510d5ce",
-      "purpose": "Единая отправка ошибок в Sentry через @sentry/nuxt captureException",
+      "hash": "c2d52337eaf7",
+      "purpose": "Обёртка над @sentry/nuxt captureException с опциональным extra-context (chatId, tenantId, route и т.п.)",
       "symbols": [
         {
           "name": "reportError",
           "kind": "function",
-          "hash": "2919befe",
-          "purpose": "Отправляет ошибку в Sentry"
+          "hash": "e6934789",
+          "purpose": "reportError(error: unknown, context?: Record<str,unknown>) — отправляет в Sentry с extra"
         }
       ]
     },

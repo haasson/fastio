@@ -26,8 +26,10 @@ export const telegramLinkApi = {
   // Создаёт/обновляет код привязки tg-чата. Один активный код на тенант (UNIQUE tenant_id).
   // expires_at передаём явно: при upsert-update DEFAULT в DB НЕ срабатывает повторно,
   // и без этого старая просрочка переезжает на новый код → юзер видит «код устарел».
+  // TTL 3 мин — окно подбора 6-значного кода при rate-limit 5/15мин на chat,
+  // без UX-удара (юзер успевает открыть бот и переслать в группу).
   async upsertCode(sb: SupabaseClient, tenantId: string, code: string): Promise<void> {
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
+    const expiresAt = new Date(Date.now() + 3 * 60 * 1000).toISOString()
 
     await query(
       sb.from('telegram_link_codes').upsert(

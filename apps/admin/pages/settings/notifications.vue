@@ -231,9 +231,15 @@ const connect = async () => {
 
   generating.value = true
   try {
-    // 6 цифр читается проще буквенно-цифровой смеси. PK-коллизия в окне 15 мин
-    // крайне маловероятна; если упадёт INSERT — юзер просто кликнет «Подключить» ещё раз.
-    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    // 6 цифр читается проще буквенно-цифровой смеси. Энтропия закрывается
+    // server-side rate-limit'ом в /api/telegram/webhook (5 попыток/15 мин на chat).
+    // crypto.getRandomValues — чтобы код не был предсказуем при знании seed (Math.random
+    // не cryptographically secure). PK-коллизия в окне 3 мин крайне маловероятна;
+    // если упадёт INSERT — юзер просто кликнет «Подключить» ещё раз.
+    const buf = new Uint32Array(1)
+
+    globalThis.crypto.getRandomValues(buf)
+    const code = (100000 + (buf[0] % 900000)).toString()
 
     await telegramLink.upsertCode(tid, code)
     linkCode.value = code

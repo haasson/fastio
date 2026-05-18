@@ -21,21 +21,8 @@ export default defineFeature({
   ],
 
   db: {
-    tables: [
-      'addon_preset_items',
-      'addon_presets',
-      'addons',
-      'categories',
-      'combo_items',
-      'combos',
-      'dish_addons',
-      'dish_modifier_groups',
-      'dish_modifier_options',
-      'dishes',
-      'modifier_groups',
-      'modifier_options',
-    ],
-    rpc: ['combos_set_branch_ids', 'dishes_set_branch_ids', 'reorder_dishes'],
+    tables: ['addon_preset_items', 'addon_presets', 'addons', 'categories', 'combo_items', 'combos', 'dish_addons', 'dish_modifier_groups', 'dish_modifier_options', 'dishes', 'modifier_groups', 'modifier_options'],
+    rpc: ['combos_set_branch_ids', 'dishes_set_branch_ids', 'reorder_categories', 'reorder_dishes'],
   },
 
   realtime: [

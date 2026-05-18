@@ -18,13 +18,8 @@ export default defineFeature({
   ],
 
   db: {
-    tables: [
-      'tables',
-      'table_calls',
-      'table_call_types',
-      // tables.api также пишет в orders при добавлении блюда в стол — компромисс по дизайну
-      'orders',
-    ],
+    tables: ['orders', 'table_call_types', 'table_calls', 'tables'],
+    rpc: ['apply_table_discount'],
   },
 
   realtime: [
