@@ -1,4 +1,4 @@
-import { defineEventHandler, getHeader } from 'h3'
+import { createError, defineEventHandler, getHeader } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { MAX_REMINDER_MINUTES, REMINDER_OPTIONS, formatAppointmentDateTime } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
@@ -15,12 +15,25 @@ type ReminderRow = {
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
 
+  // Совпадает по паттерну с requireInternalSecret/requireTelegramWebhookSecret из utils/auth.ts:
+  // missing env → 500 (а не молча skip — иначе endpoint открыт публично и любой может
+  // триггерить рассылку напоминаний → DOS на Telegram-API + ban наших ботов).
+  // wrong secret → 403 (а не {ok:true} — это маскировало бы попытки атаки в логах).
   const secret = config.reminderCronSecret?.trim()
 
-  if (secret) {
-    if (getHeader(event, 'x-reminder-cron-secret') !== secret) {
-      return { ok: true } // молча игнорируем — не раскрываем существование эндпоинта
-    }
+  if (!secret) {
+    // reportError + console.error: console.error пойдёт в Coolify logs (видно
+    // здесь и сейчас), reportError создаст Sentry-инцидент с fingerprint —
+    // Sentry схлопнет 1440 алертов/день в одну issue вместо потопа.
+    const err = new Error('[reminder-cron] NUXT_REMINDER_CRON_SECRET not configured')
+
+    console.error(err.message)
+    reportError(err)
+    throw createError({ statusCode: 500, statusMessage: 'Cron secret not configured' })
+  }
+
+  if (getHeader(event, 'x-reminder-cron-secret') !== secret) {
+    throw createError({ statusCode: 403 })
   }
 
   const token = config.telegramClientBotToken?.trim()
