@@ -16,6 +16,8 @@ const ADMIN_PORT = 4710
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // Cleanup + upsert test-customer + tg_session перед всеми тестами.
+  globalSetup: './tests/e2e/global-setup.mjs',
   fullyParallel: false, // shared DB-state — без параллельности тесты конфликтуют
   retries: process.env.CI ? 2 : 0,
   workers: 1,
