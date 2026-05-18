@@ -63,10 +63,11 @@ export default defineEventHandler(async (event) => {
 
   const supabase = getServerSupabase()
 
-  const sendMessage = (text: string) => {
+  const sendMessage = (text: string, html = false) => {
     const payload: Record<string, unknown> = { chat_id: chatId, text }
 
     if (threadId) payload.message_thread_id = threadId
+    if (html) payload.parse_mode = 'HTML'
 
     return telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
@@ -77,10 +78,10 @@ export default defineEventHandler(async (event) => {
 
   const { data: linkCode } = await supabase
     .from('telegram_link_codes')
-    .select('tenant_id')
+    .select('tenant_id, tenants!inner(name)')
     .eq('code', code)
     .gt('expires_at', new Date().toISOString())
-    .maybeSingle()
+    .maybeSingle() as { data: { tenant_id: string; tenants: { name: string } } | null }
 
   if (!linkCode) {
     await sendMessage('❌ Код устарел или недействителен. Сгенерируй новый в настройках.')
@@ -88,6 +89,7 @@ export default defineEventHandler(async (event) => {
     return { ok: true }
   }
 
+  const tenantName = linkCode.tenants?.name?.trim() || 'заведению'
   const label = chatLabel(chat, message.from)
 
   const { error: insertError } = await supabase
@@ -112,16 +114,24 @@ export default defineEventHandler(async (event) => {
   await supabase.from('telegram_link_codes').delete().eq('code', code)
 
   if (insertError?.code === '23505') {
-    await sendMessage('ℹ️ Этот чат уже подключён к ресторану. Уведомления приходят сюда.')
+    await sendMessage(`ℹ️ Этот чат уже подключён к <b>${escapeHtml(tenantName)}</b>. Уведомления приходят сюда.`, true)
 
     return { ok: true }
   }
 
   const successMessage = chatType === 'private'
-    ? '✅ Личный чат подключён к ресторану! Теперь уведомления о новых заказах и бронированиях будут приходить сюда.'
-    : '✅ Группа подключена к ресторану! Теперь уведомления о новых заказах и бронированиях будут приходить сюда.'
+    ? `✅ Личный чат подключён к <b>${escapeHtml(tenantName)}</b>. Сюда будут приходить уведомления о новых заказах и записях клиентов.`
+    : `✅ Группа подключена к <b>${escapeHtml(tenantName)}</b>. Сюда будут приходить уведомления о новых заказах и записях клиентов.`
 
-  await sendMessage(successMessage)
+  await sendMessage(successMessage, true)
 
   return { ok: true }
 })
+
+// Telegram HTML mode: парсит <b>, <i>, <a> и т.п. Значит '&', '<', '>' в plain
+// тексте надо эскейпить — иначе при имени тенанта типа «<Test>» бот ответит
+// "Bad Request: can't parse entities". См. https://core.telegram.org/bots/api#html-style
+const escapeHtml = (s: string): string => s
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
