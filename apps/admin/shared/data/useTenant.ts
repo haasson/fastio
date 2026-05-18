@@ -123,65 +123,95 @@ export const useTenant = (userId: Ref<string | null>) => {
     }
   }
 
+  // Counter версии init'а — гонка возможна при быстром logout/login (старый
+  // init дотягивает результаты ПОСЛЕ того как dispose() уже почистил стейт
+  // нового тенанта). Проверяем myToken после каждого await — если изменился,
+  // выходим молча, не перезаписываем чужой state.
+  let initToken = 0
+
   const init = async () => {
     if (!userId.value) return
 
+    const myToken = ++initToken
+
     loading.value = true
+    // Сбрасываем флаг перед началом — если был partial-fail в прошлом init'е,
+    // на refetch баннер не должен оставаться видимым до завершения нового allSettled.
+    partialInitFailures.value = []
 
-    const data = await api.members.listByUser(userId.value)
+    try {
+      const data = await api.members.listByUser(userId.value)
 
-    memberships.value = data
+      if (myToken !== initToken) return // нас уже отменил более новый init
 
-    if (memberships.value.length === 0) {
-      loading.value = false
+      memberships.value = data
 
-      return
+      if (memberships.value.length === 0) return
+
+      const savedId = localStorage.getItem(STORAGE_KEY)
+      const savedExists = savedId && memberships.value.some((m) => m.tenantId === savedId)
+
+      currentTenantId.value = savedExists ? savedId : memberships.value[0].tenantId
+
+      const { load: loadPlans } = usePlans()
+      const { load: loadConfigs } = useModuleConfigs()
+
+      // Объектная форма (а не позиционный массив) — позволяет добавлять loader'ы
+      // без боязни сломать hardcoded results[0] для tenant. `tenantIdx` берётся
+      // из labels.indexOf, не из магического `0`.
+      const loaders = {
+        tenant: fetchTenant(),
+        plans: loadPlans(),
+        configs: loadConfigs(),
+        roles: rolesApi.load(),
+      }
+      const labels = Object.keys(loaders) as Array<keyof typeof loaders>
+
+      // allSettled (а не Promise.all) — чтобы временная хикка БД на одном из
+      // неосновных загрузчиков (plans/configs/roles) не блокировала вход в админку
+      // белым экраном. tenant — единственный критичный, без него выходим как раньше.
+      const results = await Promise.allSettled(Object.values(loaders))
+
+      if (myToken !== initToken) return // нас уже отменил более новый init
+
+      const failures: string[] = []
+
+      results.forEach((result, index) => {
+        if (result.status !== 'rejected') return
+
+        const slot = labels[index]
+
+        failures.push(slot)
+        // Защита от падения самого reportError (например, Sentry transport down) —
+        // иначе forEach прервётся и проглотит остальные failures + throw для tenant.
+        try {
+          reportError(result.reason, { context: 'tenant-init', slot })
+        } catch (e) {
+          console.error('[tenant-init] reportError failed:', e)
+        }
+      })
+
+      const tenantIdx = labels.indexOf('tenant')
+      const tenantResult = results[tenantIdx]
+
+      if (tenantResult.status === 'rejected') {
+        throw tenantResult.reason
+      }
+
+      // Деградируем UX: пустые plans → «нет тарифов», пустые configs → дефолты,
+      // пустые roles → permissions check вернёт false (юзер увидит «нет доступа»
+      // на permission-gated разделах, но войти сможет).
+      partialInitFailures.value = failures.filter((slot) => slot !== 'tenant')
+
+      await loadModuleStores()
+    } finally {
+      // loading флаг под guard'ом myToken: если нас отменили — новый init уже
+      // сам разрулит loading; не перезапишем его false и не «откроем» дверь до
+      // того как новый init успел положить true→false.
+      if (myToken === initToken) {
+        loading.value = false
+      }
     }
-
-    const savedId = localStorage.getItem(STORAGE_KEY)
-    const savedExists = savedId && memberships.value.some((m) => m.tenantId === savedId)
-
-    currentTenantId.value = savedExists ? savedId : memberships.value[0].tenantId
-
-    const { load: loadPlans } = usePlans()
-    const { load: loadConfigs } = useModuleConfigs()
-
-    // allSettled (а не Promise.all) — чтобы временная хикка БД на одном из
-    // неосновных загрузчиков (plans/configs/roles) не блокировала вход в админку
-    // белым экраном. tenant — единственный критичный, без него выходим как раньше.
-    const results = await Promise.allSettled([
-      fetchTenant(),
-      loadPlans(),
-      loadConfigs(),
-      rolesApi.load(),
-    ])
-    const labels = ['tenant', 'plans', 'configs', 'roles'] as const
-
-    const failures: string[] = []
-
-    results.forEach((result, index) => {
-      if (result.status !== 'rejected') return
-
-      const slot = labels[index]
-
-      failures.push(slot)
-      reportError(result.reason, { context: 'tenant-init', slot })
-    })
-
-    const tenantResult = results[0]
-
-    if (tenantResult.status === 'rejected') {
-      loading.value = false
-      throw tenantResult.reason
-    }
-
-    // Деградируем UX: пустые plans → «нет тарифов», пустые configs → дефолты,
-    // пустые roles → permissions check вернёт false (юзер увидит «нет доступа»
-    // на permission-gated разделах, но войти сможет).
-    partialInitFailures.value = failures.filter((slot) => slot !== 'tenant')
-
-    await loadModuleStores()
-    loading.value = false
   }
 
   /**
