@@ -1,5 +1,14 @@
-import { describe, it, expect } from 'vitest'
-import { mapBranch } from '../api/branches'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { branchesApi, mapBranch } from '../api/branches'
+
+// Заглушка для reportError — мы только проверяем, что он вызван на error-path,
+// без реального улёта в Sentry. Путь должен совпадать с импортом в branches.ts.
+const reportErrorMock = vi.fn()
+
+vi.mock('~/shared/utils/reportError', () => ({
+  reportError: (...args: unknown[]) => reportErrorMock(...args),
+}))
 
 const makeBranchRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'branch-1',
@@ -78,5 +87,134 @@ describe('mapBranch', () => {
 
     expect(branch.createdAt).toBe('2026-01-01T00:00:00Z')
     expect(branch.updatedAt).toBe('2026-01-01T00:00:00Z')
+  })
+})
+
+// ─── hasActiveReservations / hasActiveAppointments (PREPROD-020) ────────────
+//
+// Fluent-мок строителя PostgREST. Любой chainable метод (.select/.eq/.in/.gte)
+// возвращает сам builder; await на builder → resolved result. Передаём
+// `chainSpy`, чтобы тест мог проверить какие eq/in/gte вызывались.
+type QueryResult = { count: number | null; error: { message: string } | null }
+
+const makeBuilder = (result: QueryResult, chainSpy: Record<string, unknown[][]>) => {
+  const builder: Record<string, unknown> = {
+    then: (resolve: (r: QueryResult) => unknown) => resolve(result),
+  }
+
+  for (const m of ['select', 'eq', 'in', 'gte'] as const) {
+    chainSpy[m] = []
+    builder[m] = (...args: unknown[]) => {
+      chainSpy[m].push(args)
+
+      return builder
+    }
+  }
+
+  return builder
+}
+
+const makeSb = (result: QueryResult, chainSpy: Record<string, unknown[][]>): SupabaseClient => ({
+  from: (_table: string) => makeBuilder(result, chainSpy),
+} as unknown as SupabaseClient)
+
+describe('branchesApi.hasActiveReservations', () => {
+  beforeEach(() => {
+    reportErrorMock.mockReset()
+  })
+
+  it('count > 0 → true (есть активная бронь)', async () => {
+    const sb = makeSb({ count: 3, error: null }, {})
+    const result = await branchesApi.hasActiveReservations(sb, 'branch-1', 'tenant-1')
+
+    expect(result).toBe(true)
+  })
+
+  it('count = 0 → false (активных броней нет)', async () => {
+    const sb = makeSb({ count: 0, error: null }, {})
+    const result = await branchesApi.hasActiveReservations(sb, 'branch-1', 'tenant-1')
+
+    expect(result).toBe(false)
+  })
+
+  it('count = null → false (PostgREST вернул null без ошибки)', async () => {
+    const sb = makeSb({ count: null, error: null }, {})
+    const result = await branchesApi.hasActiveReservations(sb, 'branch-1', 'tenant-1')
+
+    expect(result).toBe(false)
+  })
+
+  it('фильтрует по tenant_id, branch_id и активным статусам', async () => {
+    const chain: Record<string, unknown[][]> = {}
+    const sb = makeSb({ count: 0, error: null }, chain)
+
+    await branchesApi.hasActiveReservations(sb, 'branch-1', 'tenant-1')
+
+    expect(chain.eq).toContainEqual(['tenant_id', 'tenant-1'])
+    expect(chain.eq).toContainEqual(['branch_id', 'branch-1'])
+    expect(chain.in).toContainEqual(['status', ['pending', 'confirmed', 'seated']])
+    // reserved_date >= today (YYYY-MM-DD)
+    expect(chain.gte[0][0]).toBe('reserved_date')
+    expect(chain.gte[0][1]).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('error от Supabase → reportError + fail-safe true', async () => {
+    const sb = makeSb({ count: null, error: { message: 'permission denied' } }, {})
+    const result = await branchesApi.hasActiveReservations(sb, 'branch-1', 'tenant-1')
+
+    expect(result).toBe(true) // fail-safe — блокируем архивацию
+    expect(reportErrorMock).toHaveBeenCalledOnce()
+    expect(reportErrorMock.mock.calls[0][1]).toMatchObject({
+      context: 'branches.hasActiveReservations',
+      branchId: 'branch-1',
+      tenantId: 'tenant-1',
+    })
+  })
+})
+
+describe('branchesApi.hasActiveAppointments', () => {
+  beforeEach(() => {
+    reportErrorMock.mockReset()
+  })
+
+  it('count > 0 → true (есть активная запись)', async () => {
+    const sb = makeSb({ count: 1, error: null }, {})
+    const result = await branchesApi.hasActiveAppointments(sb, 'branch-1', 'tenant-1')
+
+    expect(result).toBe(true)
+  })
+
+  it('count = 0 → false (активных записей нет)', async () => {
+    const sb = makeSb({ count: 0, error: null }, {})
+    const result = await branchesApi.hasActiveAppointments(sb, 'branch-1', 'tenant-1')
+
+    expect(result).toBe(false)
+  })
+
+  it('фильтрует по tenant_id, branch_id и активным статусам', async () => {
+    const chain: Record<string, unknown[][]> = {}
+    const sb = makeSb({ count: 0, error: null }, chain)
+
+    await branchesApi.hasActiveAppointments(sb, 'branch-1', 'tenant-1')
+
+    expect(chain.eq).toContainEqual(['tenant_id', 'tenant-1'])
+    expect(chain.eq).toContainEqual(['branch_id', 'branch-1'])
+    expect(chain.in).toContainEqual(['status', ['new', 'confirmed']])
+    // starts_at >= now (ISO timestamp с миллисекундами и Z)
+    expect(chain.gte[0][0]).toBe('starts_at')
+    expect(chain.gte[0][1]).toMatch(/^\d{4}-\d{2}-\d{2}T.*Z$/)
+  })
+
+  it('error от Supabase → reportError + fail-safe true', async () => {
+    const sb = makeSb({ count: null, error: { message: 'rls violation' } }, {})
+    const result = await branchesApi.hasActiveAppointments(sb, 'branch-1', 'tenant-1')
+
+    expect(result).toBe(true) // fail-safe
+    expect(reportErrorMock).toHaveBeenCalledOnce()
+    expect(reportErrorMock.mock.calls[0][1]).toMatchObject({
+      context: 'branches.hasActiveAppointments',
+      branchId: 'branch-1',
+      tenantId: 'tenant-1',
+    })
   })
 })

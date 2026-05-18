@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Branch, BranchAddressData, BranchFormData } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
+import { reportError } from '~/shared/utils/reportError'
 import type { BranchRow } from '~/shared/data/db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
 
@@ -157,6 +158,59 @@ export const branchesApi = {
       .select('id', { count: 'exact', head: true })
       .eq('branch_id', branchId)
       .in('status', statusIds)
+
+    return (count ?? 0) > 0
+  },
+
+  /**
+   * Активные брони стола на этом филиале на сегодня и в будущем.
+   * Активные = status ∈ {pending, confirmed, seated}; completed/cancelled/no_show
+   * фильтруются. Дата сравнивается по `reserved_date` (date YYYY-MM-DD) — берём
+   * локальный «сегодня» в YYYY-MM-DD, чтобы не зависеть от UTC-сдвига (брони
+   * хранятся как локальная дата филиала).
+   */
+  async hasActiveReservations(sb: SupabaseClient, branchId: string, tenantId: string): Promise<boolean> {
+    const today = new Date().toISOString().slice(0, 10)
+    const { count, error } = await sb
+      .from('reservations')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('branch_id', branchId)
+      .in('status', ['pending', 'confirmed', 'seated'])
+      .gte('reserved_date', today)
+
+    if (error) {
+      reportError(error, { context: 'branches.hasActiveReservations', branchId, tenantId })
+
+      // Fail-safe: при ошибке считаем что есть активные — блокируем архивацию,
+      // лучше ложно-положительный, чем потерять брони.
+      return true
+    }
+
+    return (count ?? 0) > 0
+  },
+
+  /**
+   * Активные записи на услуги на этом филиале в будущем (starts_at >= now).
+   * Активные = status ∈ {new, confirmed}; cancelled/done фильтруются.
+   * starts_at — timestamptz, сравниваем с текущим UTC-моментом.
+   */
+  async hasActiveAppointments(sb: SupabaseClient, branchId: string, tenantId: string): Promise<boolean> {
+    const nowIso = new Date().toISOString()
+    const { count, error } = await sb
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('branch_id', branchId)
+      .in('status', ['new', 'confirmed'])
+      .gte('starts_at', nowIso)
+
+    if (error) {
+      reportError(error, { context: 'branches.hasActiveAppointments', branchId, tenantId })
+
+      // Fail-safe: при ошибке блокируем архивацию (см. hasActiveReservations).
+      return true
+    }
 
     return (count ?? 0) > 0
   },

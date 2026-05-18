@@ -121,12 +121,42 @@ const handleSave = async (data: BranchFormData) => {
 }
 
 const handleArchive = async (branch: Branch) => {
-  const hasActive = await api.branches.hasActiveOrders(branch.id, tenantId.value)
+  // Проверки последовательно: orders → reservations → appointments.
+  // Любая активная сущность блокирует архивацию с понятным сообщением — иначе
+  // запись «исчезает» из админ-фильтров (where archived_at IS NULL), клиент
+  // придёт, его не ждут. См. PREPROD-020.
+  const [hasOrders, hasReservations, hasAppointments] = await Promise.all([
+    api.branches.hasActiveOrders(branch.id, tenantId.value),
+    api.branches.hasActiveReservations(branch.id, tenantId.value),
+    api.branches.hasActiveAppointments(branch.id, tenantId.value),
+  ])
 
-  if (hasActive) {
+  if (hasOrders) {
     await confirm({
       title: 'Нельзя архивировать филиал',
       message: `У филиала «${branch.name}» есть активные заказы. Переведите все заказы в статус «Выполнен» или «Отменён», а затем попробуйте снова.`,
+      confirmText: false,
+      cancelText: 'Понятно',
+    })
+
+    return
+  }
+
+  if (hasReservations) {
+    await confirm({
+      title: 'Нельзя архивировать филиал',
+      message: `У филиала «${branch.name}» есть активные брони стола. Перенесите их в другой филиал или отмените, а затем попробуйте снова.`,
+      confirmText: false,
+      cancelText: 'Понятно',
+    })
+
+    return
+  }
+
+  if (hasAppointments) {
+    await confirm({
+      title: 'Нельзя архивировать филиал',
+      message: `У филиала «${branch.name}» есть активные записи на услуги. Перенесите их в другой филиал или отмените, а затем попробуйте снова.`,
       confirmText: false,
       cancelText: 'Понятно',
     })
