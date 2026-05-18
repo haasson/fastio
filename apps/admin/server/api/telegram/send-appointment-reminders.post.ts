@@ -117,6 +117,17 @@ async function processReminder(
 
   if (!claimed?.length) return // уже застолблено другим воркером
 
+  // Защита от мусора в БД: Telegram chat_id всегда integer (positive для приватных
+  // чатов, negative для групп). Если в telegram_chat_id попала пустая строка или
+  // не-число (баг при сохранении, миграция данных и т.п.), Telegram вернёт 400 и
+  // мы запишем permanent-error на КАЖДУЮ минуту cron'а (sent_at уже now, повторов
+  // нет, но reportError будет шуметь). Лучше отсечь до fetch.
+  if (!/^-?\d+$/.test(row.telegram_chat_id)) {
+    reportError(new Error(`[reminder-cron] invalid telegram_chat_id format for reminder ${row.id}: ${JSON.stringify(row.telegram_chat_id)}`))
+
+    return
+  }
+
   const { appointment: appt } = row
   const { dateStr, timeStr } = formatAppointmentDateTime(new Date(appt.starts_at))
   const opt = REMINDER_OPTIONS.find((o) => o.minutes === row.remind_before_minutes)
