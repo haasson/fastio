@@ -144,40 +144,59 @@ export const branchesApi = {
   },
 
   async hasActiveOrders(sb: SupabaseClient, branchId: string, tenantId: string): Promise<boolean> {
-    const { data: statuses } = await sb
+    const { data: statuses, error: statusesError } = await sb
       .from('order_statuses')
       .select('id')
       .eq('tenant_id', tenantId)
       .in('group_type', ['new', 'in_progress'])
 
+    if (statusesError) {
+      reportError(statusesError, { context: 'branches.hasActiveOrders.statuses', branchId, tenantId })
+
+      // Fail-safe: при ошибке считаем что есть активные — блокируем архивацию.
+      // Парность с hasActiveReservations/hasActiveAppointments.
+      return true
+    }
+
     if (!statuses || statuses.length === 0) return false
 
     const statusIds = statuses.map((s: { id: string }) => s.id)
-    const { count } = await sb
+    const { count, error: ordersError } = await sb
       .from('orders')
       .select('id', { count: 'exact', head: true })
       .eq('branch_id', branchId)
       .in('status', statusIds)
 
+    if (ordersError) {
+      reportError(ordersError, { context: 'branches.hasActiveOrders.orders', branchId, tenantId })
+
+      return true
+    }
+
     return (count ?? 0) > 0
   },
 
   /**
-   * Активные брони стола на этом филиале на сегодня и в будущем.
-   * Активные = status ∈ {pending, confirmed, seated}; completed/cancelled/no_show
-   * фильтруются. Дата сравнивается по `reserved_date` (date YYYY-MM-DD) — берём
-   * локальный «сегодня» в YYYY-MM-DD, чтобы не зависеть от UTC-сдвига (брони
-   * хранятся как локальная дата филиала).
+   * Активные брони стола на этом филиале — сегодня позже текущего времени или
+   * в будущем. Активные = status ∈ {pending, confirmed, seated}; completed/
+   * cancelled/no_show фильтруются.
+   *
+   * Просрочка по времени учитывается через .or(): «сегодня и время бронирования
+   * не наступило ИЛИ дата позже сегодня». Иначе бронь на сегодня 10:00 при
+   * текущих 18:00 ложно блокировала бы архивацию.
    */
   async hasActiveReservations(sb: SupabaseClient, branchId: string, tenantId: string): Promise<boolean> {
-    const today = new Date().toISOString().slice(0, 10)
+    const now = new Date()
+    const today = now.toISOString().slice(0, 10)
+    const nowTime = now.toISOString().slice(11, 19) // HH:MM:SS (UTC; reserved_time хранится как локальная — допустимое приближение, см. ниже)
+
     const { count, error } = await sb
       .from('reservations')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('branch_id', branchId)
       .in('status', ['pending', 'confirmed', 'seated'])
-      .gte('reserved_date', today)
+      .or(`reserved_date.gt.${today},and(reserved_date.eq.${today},reserved_time.gte.${nowTime})`)
 
     if (error) {
       reportError(error, { context: 'branches.hasActiveReservations', branchId, tenantId })
