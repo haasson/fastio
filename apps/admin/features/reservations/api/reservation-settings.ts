@@ -13,6 +13,7 @@ const mapSettings = (raw: Record<string, unknown>): ReservationSettings => ({
   maxGuests: raw.max_guests as number,
   maxGuestsAuto: (raw.max_guests_auto as boolean) ?? false,
   autoConfirm: raw.auto_confirm as boolean,
+  allowClientCancellation: (raw.allow_client_cancellation as boolean) ?? true,
 })
 
 export const reservationSettingsApi = {
@@ -43,6 +44,7 @@ export const reservationSettingsApi = {
     if (data.maxGuests !== undefined) payload.max_guests = data.maxGuests
     if (data.maxGuestsAuto !== undefined) payload.max_guests_auto = data.maxGuestsAuto
     if (data.autoConfirm !== undefined) payload.auto_confirm = data.autoConfirm
+    if (data.allowClientCancellation !== undefined) payload.allow_client_cancellation = data.allowClientCancellation
 
     const result = await query(
       sb.from('reservation_settings').upsert(payload, { onConflict: 'tenant_id' }).select('*').single(),

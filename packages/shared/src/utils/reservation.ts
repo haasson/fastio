@@ -1,5 +1,14 @@
 import type { Reservation, ReservationStatus } from '../types/reservation'
 
+export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
+  pending: 'Ожидает',
+  confirmed: 'Подтверждена',
+  seated: 'За столом',
+  completed: 'Завершена',
+  cancelled: 'Отменена',
+  no_show: 'Не явился',
+}
+
 export const mapReservation = (raw: Record<string, unknown>): Reservation => ({
   id: raw.id as string,
   tenantId: raw.tenant_id as string,
@@ -21,6 +30,7 @@ export const mapReservation = (raw: Record<string, unknown>): Reservation => ({
   completedAt: raw.completed_at as string | null,
   cancelledAt: raw.cancelled_at as string | null,
   cancelReason: raw.cancel_reason as string | null,
+  allowCancelSnapshot: (raw.allow_cancel_snapshot as boolean | null) ?? null,
   createdAt: raw.created_at as string,
   updatedAt: raw.updated_at as string,
 })

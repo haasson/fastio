@@ -26,5 +26,6 @@ export default defineEventHandler(async (event): Promise<ReservationSettings | n
     maxGuests,
     maxGuestsAuto,
     autoConfirm: data.auto_confirm as boolean,
+    allowClientCancellation: (data.allow_client_cancellation as boolean | null) ?? true,
   }
 })

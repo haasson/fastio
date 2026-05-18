@@ -19,6 +19,11 @@
             <span>Мои записи</span>
           </FsCard>
 
+          <FsCard v-if="showReservations" class="account-card" @click="navigateTo({ path: '/account/reservations', query: route.query })">
+            <CalendarCheck :size="20" />
+            <span>Мои брони</span>
+          </FsCard>
+
           <FsCard v-if="isRetail" class="account-card" @click="navigateTo({ path: '/account/addresses', query: route.query })">
             <MapPin :size="20" />
             <span>Адреса</span>
@@ -50,6 +55,10 @@ const { isAuthenticated } = storeToRefs(authStore)
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const isServices = computed(() => tenant.value?.businessType === 'services')
 const isRetail = computed(() => tenant.value?.businessType === 'retail')
+// Брони показываем для retail-тенантов с активным modules.reservations.
+// Сервер всё равно вернёт 403 если попытаться отменить чужую/чужого тенанта,
+// но карточку прячем чтобы не вводить юзера в заблуждение.
+const showReservations = computed(() => isRetail.value && !!tenant.value?.modules?.reservations)
 
 onMounted(async () => {
   await authStore.init()

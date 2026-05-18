@@ -51,6 +51,15 @@
           label="Авто: брать вместимость самого большого стола"
         />
       </div>
+
+      <UiSectionHeader
+        title="Отмена клиентом"
+        description="Может ли клиент отменить свою бронь в личном кабинете на сайте"
+      />
+      <UiSwitch
+        v-model:value="form.allowClientCancellation"
+        label="Разрешить клиенту отменять бронь"
+      />
     </UiForm>
   </div>
 </template>
@@ -103,6 +112,7 @@ const page = useEditableForm({
     closeBufferMinutes: s?.closeBufferMinutes ?? 60,
     maxGuests: s?.maxGuests ?? 20,
     maxGuestsAuto: s?.maxGuestsAuto ?? false,
+    allowClientCancellation: s?.allowClientCancellation ?? true,
   }),
   save: async (data) => {
     const tenantId = tenantStore.currentTenantId

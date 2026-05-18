@@ -22,6 +22,7 @@ export type Reservation = {
   completedAt: string | null
   cancelledAt: string | null
   cancelReason: string | null
+  allowCancelSnapshot: boolean | null
   createdAt: string
   updatedAt: string
 }
@@ -48,6 +49,7 @@ export type ReservationSettings = {
   maxGuests: number
   maxGuestsAuto: boolean      // if true, maxGuests is derived from largest table capacity
   autoConfirm: boolean
+  allowClientCancellation: boolean // позволяет клиенту отменить бронь из /account/reservations
 }
 
 export type ReservationSettingsFormData = Partial<Omit<ReservationSettings, 'id' | 'tenantId'>>

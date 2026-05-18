@@ -179,6 +179,11 @@ export default defineEventHandler(async (event) => {
     ? body.idempotencyKey.trim()
     : null
 
+  // PREPROD-018: snapshot настройки «клиент может отменять» (mig 288) — чтобы
+  // тенант не мог ретроактивно лишить клиента права на отмену уже сделанной
+  // брони. Default true (как и сама колонка settings).
+  const allowCancelSnapshot = (settings?.allow_client_cancellation as boolean | undefined) ?? true
+
   const { data, error } = await db.crossTenant
     .from('reservations')
     .insert({
@@ -193,6 +198,7 @@ export default defineEventHandler(async (event) => {
       branch_id: branchId,
       status,
       idempotency_key: idempotencyKey,
+      allow_cancel_snapshot: allowCancelSnapshot,
       ...(customerId ? { customer_id: customerId } : { guest_token: guestToken }),
     })
     .select('id, status, guest_token')
