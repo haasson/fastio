@@ -51,14 +51,20 @@ export type DadataSuggestionsOptions = {
   proxyUrl: string
   debounce?: number
   extraBody?: Record<string, unknown> | (() => Record<string, unknown>)
+  // Если задано — вызывается перед каждым fetch'ем и результат мёржится с
+  // дефолтными заголовками. Нужно для прокидывания Authorization: Bearer <JWT>
+  // на endpoint'ы за auth-гейтом (admin /api/dadata/suggest требует JWT, см.
+  // requireMemberOfTenant). Storefront-обёртка может не передавать.
+  headers?: () => Promise<Record<string, string>> | Record<string, string>
 }
 
 export const useDadataSuggestions = (options: DadataSuggestionsOptions | string) => {
-  const { proxyUrl, debounce = 300, extraBody } = typeof options === 'string'
+  const { proxyUrl, debounce = 300, extraBody, headers } = typeof options === 'string'
     ? { proxyUrl: options } as DadataSuggestionsOptions
     : options
 
   const resolveExtraBody = () => (typeof extraBody === 'function' ? extraBody() : extraBody ?? {})
+  const resolveHeaders = async (): Promise<Record<string, string>> => (headers ? await headers() : {})
 
   const suggestions = ref<DadataSuggestion[]>([])
   const loading = ref(false)
@@ -73,9 +79,12 @@ export const useDadataSuggestions = (options: DadataSuggestionsOptions | string)
 
     loading.value = true
     try {
+      const extraHeaders = await resolveHeaders()
       const res = await fetch(proxyUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Content-Type ПОСЛЕ extraHeaders — authoritative. Не даём callback'у
+        // случайно отдать text/plain и сломать readBody на сервере.
+        headers: { ...extraHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, ...resolveExtraBody() }),
       })
 
