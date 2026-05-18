@@ -16,6 +16,21 @@ Deno.serve(withSentry('payment-webhook', async (req) => {
     return new Response('Method Not Allowed', { status: 405 })
   }
 
+  // ── 0. Kill-switch ────────────────────────────────────────────────────
+  // Интеграция с онлайн-оплатой (ЮKassa) пока не запущена в проде. До тех пор,
+  // пока флаг YOOKASSA_INTEGRATION_ENABLED='true' не выставлен явно, webhook
+  // отвечает 410 Gone и НИЧЕГО НЕ ДЕЛАЕТ с подпиской/балансом — даже если кто-то
+  // нашёл URL и шлёт валидные с виду события. 410, а не 503, чтобы ЮKassa не
+  // ретраила доставку по 24ч экспоненциально (5xx триггерят повторы).
+  //
+  // Полная валидация webhook'а (status === 'succeeded', сверка amount/currency
+  // с планом, idempotent атомарное обновление через RPC, IP-whitelist YooKassa,
+  // запись в billing_transactions с type='external_payment') откладывается до
+  // момента подключения онлайн-оплаты — см. LATER.md → "PREPROD-001 deferred".
+  if (Deno.env.get('YOOKASSA_INTEGRATION_ENABLED') !== 'true') {
+    return new Response('Payment integration disabled', { status: 410 })
+  }
+
   // ── 1. Верификация подписи ЮKassa ──────────────────────────────────────
   const secretKey = Deno.env.get('YOOKASSA_WEBHOOK_SECRET')
   if (!secretKey) {
