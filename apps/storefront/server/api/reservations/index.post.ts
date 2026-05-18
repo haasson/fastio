@@ -4,7 +4,7 @@ import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
 import { reportError } from '~/shared/utils/reportError'
 import { createRateLimiter, todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
-import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
+import type { WorkingHours, WorkingHoursSchedule, ReservationStatus } from '@fastio/shared'
 
 const rateLimiter = createRateLimiter(5, 60_000)
 
@@ -204,23 +204,31 @@ export default defineEventHandler(async (event) => {
       // Безопасно отдавать guest_token владельцу retry'я: idempotency_key — 122-битный
       // UUID, генерируется клиентом через crypto.randomUUID() и известен ТОЛЬКО
       // оригинальному автору. НЕ логировать idempotency_key в открытом виде.
+      //
+      // maybeSingle (не single): между catch 23505 и SELECT winner может ещё быть
+      // в транзакции (read-committed snapshot), запись не видна. Тогда existing=null
+      // → проваливаемся в общий throw 500 без шума в Sentry (race-cases частые).
       const { data: existing, error: lookupError } = await db
         .from('reservations')
         .select('id, status, guest_token, customer_id')
         .eq('idempotency_key', idempotencyKey)
-        .single()
+        .returns<{ id: string; status: ReservationStatus; guest_token: string | null; customer_id: string | null }[]>()
+        .maybeSingle()
 
       if (lookupError) {
         reportError(lookupError, { context: 'reservations.post:idempotency-lookup', tenantId })
         throw createError({ statusCode: 500, message: 'Не удалось создать бронь' })
       }
 
-      return {
-        id: existing.id,
-        status: existing.status,
-        linkedToAccount: !!existing.customer_id,
-        token: (existing.guest_token as string | null) ?? null,
+      if (existing) {
+        return {
+          id: existing.id,
+          status: existing.status,
+          linkedToAccount: !!existing.customer_id,
+          token: existing.guest_token ?? null,
+        }
       }
+      // existing=null → winner ещё в транзакции, fallthrough в общий 500
     }
 
     reportError(error, { context: 'reservations.post:insert', tenantId })

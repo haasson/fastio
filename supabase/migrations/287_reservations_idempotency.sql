@@ -2,7 +2,7 @@
 -- В отличие от orders (mig 039/262) у reservations его не было — двойной тап /
 -- refresh во время submit / медленная сеть → 2 одинаковые брони. UNIQUE per
 -- tenant (как в 262 для orders) — глобальный UNIQUE был DoS-вектором: внешний
--- актор мог занять предсказуемый ключ и валить чужие резерверации.
+-- актор мог занять предсказуемый ключ и валить чужие резервации.
 
 ALTER TABLE reservations
   ADD COLUMN IF NOT EXISTS idempotency_key text;
