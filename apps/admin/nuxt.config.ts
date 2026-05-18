@@ -3,6 +3,18 @@ import { dirname, resolve } from 'node:path'
 
 const rootDir = dirname(fileURLToPath(import.meta.url))
 
+// Dev: ssr:true + routeRules { '/**': { ssr: false } } обходит Nuxt 3.21 bug
+// (при ssr:false env NUXT_VITE_NODE_OPTIONS не ставится для child процессов,
+// renderer падает на getClientManifest IPC → 500 на каждый cold-запрос).
+// vite-node socket поднимается как для storefront ssr:true, но per-route SSR
+// не делается — каждая страница рендерится client-only из SPA shell.
+//
+// Prod: ssr:false как было раньше. При ssr:true в build падает Rollup на
+// scoped style компонентов (TenantSwitcher etc) — Vite не может обработать
+// inline style imports в SSR-environment. Coolify запускает в проде, vite-node
+// IPC там не нужен (всё уже собрано в .output).
+const isDev = process.env.NODE_ENV !== 'production'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
@@ -37,19 +49,10 @@ export default defineNuxtConfig({
     },
   },
 
-  // ssr:true для admin чтобы Nuxt vite-builder поднял vite-node socket
-  // (при ssr:false env NUXT_VITE_NODE_OPTIONS не ставится для child процессов,
-  // renderer падает на getClientManifest IPC). Реально SPA-режим сохраняется
-  // через routeRules ниже: каждая страница рендерится client-only, server
-  // отдаёт только SPA shell. См. TECHDEBT «Admin dev SSR shell broken».
-  ssr: true,
+  ssr: isDev,
 
   routeRules: {
-    // /**: { ssr: false } — все pages в SPA-режиме (как ssr:false глобально).
-    // Серверный SSR не пытается рендерить content страницы (auth-store
-    // требует браузера), но shell со script-тегами генерируется нормально.
-    '/**': { ssr: false },
-    // route redirects (раньше были в основном routeRules-блоке):
+    ...(isDev ? { '/**': { ssr: false } } : {}),
     '/kitchen': { redirect: '/kitchen/queue' },
     '/content': { redirect: '/content/banners' },
     '/promotions': { redirect: '/promotions/list' },
