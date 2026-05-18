@@ -31,6 +31,7 @@ export const useTenantStore = defineStore('tenant', () => {
     removeRole: tenantApi.removeRole,
     getRoleById: tenantApi.getRoleById,
     hasMultipleTenants: tenantApi.hasMultipleTenants,
+    partialInitFailures: tenantApi.partialInitFailures,
     init: tenantApi.init,
     fetchTenant: tenantApi.fetchTenant,
     update: tenantApi.update,

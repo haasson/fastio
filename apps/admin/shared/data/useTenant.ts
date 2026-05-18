@@ -28,6 +28,9 @@ export const useTenant = (userId: Ref<string | null>) => {
   const currentTenantId = ref<string | null>(null)
   const maybeTenant = ref<Tenant | null>(null)
   const loading = ref(false)
+  // Метки неосновных загрузчиков (plans/configs/roles), которые упали в init().
+  // UI показывает баннер «частичная загрузка не удалась» — см. PartialInitBanner.vue.
+  const partialInitFailures = ref<string[]>([])
 
   const rolesApi = useRoles(currentTenantId)
 
@@ -143,7 +146,40 @@ export const useTenant = (userId: Ref<string | null>) => {
     const { load: loadPlans } = usePlans()
     const { load: loadConfigs } = useModuleConfigs()
 
-    await Promise.all([fetchTenant(), loadPlans(), loadConfigs(), rolesApi.load()])
+    // allSettled (а не Promise.all) — чтобы временная хикка БД на одном из
+    // неосновных загрузчиков (plans/configs/roles) не блокировала вход в админку
+    // белым экраном. tenant — единственный критичный, без него выходим как раньше.
+    const results = await Promise.allSettled([
+      fetchTenant(),
+      loadPlans(),
+      loadConfigs(),
+      rolesApi.load(),
+    ])
+    const labels = ['tenant', 'plans', 'configs', 'roles'] as const
+
+    const failures: string[] = []
+
+    results.forEach((result, index) => {
+      if (result.status !== 'rejected') return
+
+      const slot = labels[index]
+
+      failures.push(slot)
+      reportError(result.reason, { context: 'tenant-init', slot })
+    })
+
+    const tenantResult = results[0]
+
+    if (tenantResult.status === 'rejected') {
+      loading.value = false
+      throw tenantResult.reason
+    }
+
+    // Деградируем UX: пустые plans → «нет тарифов», пустые configs → дефолты,
+    // пустые roles → permissions check вернёт false (юзер увидит «нет доступа»
+    // на permission-gated разделах, но войти сможет).
+    partialInitFailures.value = failures.filter((slot) => slot !== 'tenant')
+
     await loadModuleStores()
     loading.value = false
   }
@@ -188,6 +224,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     maybeTenant.value = null
     memberships.value = []
     currentTenantId.value = null
+    partialInitFailures.value = []
     localStorage.removeItem(STORAGE_KEY)
   }
 
@@ -213,6 +250,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     removeRole: rolesApi.remove,
     getRoleById: rolesApi.getRoleById,
     hasMultipleTenants,
+    partialInitFailures,
     init,
     fetchTenant,
     switchTenant,

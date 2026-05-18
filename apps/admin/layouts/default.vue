@@ -50,6 +50,7 @@
     <!-- Main -->
     <div class="main">
       <PastDueBanner />
+      <PartialInitBanner />
 
       <header class="topbar">
         <div class="burger-wrap">
@@ -101,6 +102,7 @@ import BranchSelector from '~/shared/components/layout/BranchSelector.vue'
 import OnboardingWizard from '~/features/onboarding/components/OnboardingWizard.vue'
 import OnboardingChecklist from '~/features/onboarding/components/OnboardingChecklist.vue'
 import PastDueBanner from '~/shared/components/layout/PastDueBanner.vue'
+import PartialInitBanner from '~/shared/components/layout/PartialInitBanner.vue'
 import UiAppBurger from '~/shared/ui/components/AppBurger.vue'
 import UiAppLogo from '~/shared/ui/components/AppLogo.vue'
 import AiChat from '~/features/ai-assistant/components/AiChat.vue'
