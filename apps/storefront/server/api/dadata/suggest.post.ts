@@ -1,6 +1,7 @@
 import { createRateLimiter } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
+import { reportError } from '~/shared/utils/reportError'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 const perMinuteLimit = createRateLimiter(20, 60_000)
@@ -55,15 +56,28 @@ export default defineEventHandler(async (event) => {
     dadataBody.locations_geo = [{ lat: coords.lat, lon: coords.lon, radius_meters: 50000 }]
   }
 
-  const res = await $fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Token ${apiKey}`,
-    },
-    body: dadataBody,
-  })
+  // DaData — вспомогательная фича автодополнения адреса. Если внешний сервис лёг
+  // или подвис, не валим весь чекаут/онбординг витрины: возвращаем пустые
+  // suggestions (тот же контракт что у success-path), юзер вводит руками.
+  // Timeout 5s защищает Nitro-воркер от зависших соединений (PREPROD-010).
+  try {
+    const res = await $fetch<{ suggestions?: unknown[] }>(
+      'https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Token ${apiKey}`,
+        },
+        body: dadataBody,
+        timeout: 5000,
+      },
+    )
 
-  return res
+    return res
+  } catch (e) {
+    reportError(new Error(`[dadata-storefront] proxy fetch failed: ${(e as Error).message}`))
+    return { suggestions: [] }
+  }
 })

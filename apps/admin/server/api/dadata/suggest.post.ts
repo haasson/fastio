@@ -114,6 +114,8 @@ export default defineEventHandler(async (event) => {
         'Authorization': `Token ${apiKey}`,
       },
       body: dadataBody,
+      // Hard cap: подвисший DaData не должен держать Nitro-воркер дольше 5с (PREPROD-010).
+      timeout: 5000,
     })
   } catch (e) {
     // DaData transient (5xx, network timeout, DNS) — отдаём 503, чтобы фронт

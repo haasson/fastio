@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { withSentry } from '../_shared/sentry.ts'
+import { captureException, withSentry } from '../_shared/sentry.ts'
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
@@ -57,6 +57,9 @@ Deno.serve(withSentry('dadata-suggest', async (req) => {
         'Authorization': `Token ${apiKey}`,
       },
       body: JSON.stringify({ query, count: 5 }),
+      // Hard cap 5s: DaData transient (5xx/network/DNS) не должен держать edge-воркер
+      // дольше — Deno AbortSignal.timeout стреляет DOMException('TimeoutError') (PREPROD-010).
+      signal: AbortSignal.timeout(5000),
     })
 
     const data = await res.json()
@@ -67,7 +70,11 @@ Deno.serve(withSentry('dadata-suggest', async (req) => {
         'Access-Control-Allow-Origin': '*',
       },
     })
-  } catch {
+  } catch (e) {
+    // Graceful degrade: фронт получает пустой массив и юзер вводит руками. Но
+    // ошибку всё равно репортим в Sentry — иначе DaData может молча лежать сутками,
+    // а мы заметим только по жалобам (feedback_always_log_errors).
+    captureException(e, { fn: 'dadata-suggest', stage: 'upstream-fetch' })
     return json({ suggestions: [] })
   }
 }))
