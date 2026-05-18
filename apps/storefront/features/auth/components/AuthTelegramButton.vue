@@ -1,15 +1,24 @@
 <template>
   <div class="tg-btn-root">
-    <button v-if="!polling" type="button" class="tg-btn" :disabled="initializing" @click="start">
+    <button v-if="!polling && !expired" type="button" class="tg-btn" :disabled="initializing" @click="start">
       <SfIconTelegram v-if="!initializing" :size="22" class="tg-icon" />
       <FsSpinner v-else size="small" class="tg-spinner" />
       Войти через Telegram
     </button>
 
-    <div v-else class="waiting">
+    <div v-else-if="polling" class="waiting">
       <FsSpinner size="small" />
       <span class="hint">Откройте Telegram и нажмите Start</span>
       <button type="button" class="cancel" @click="cancel">Отмена</button>
+    </div>
+
+    <div v-else class="expired">
+      <p class="expired-text">Время ожидания вышло. Попробуйте начать заново.</p>
+      <button type="button" class="tg-btn" :disabled="initializing" @click="restart">
+        <SfIconTelegram v-if="!initializing" :size="22" class="tg-icon" />
+        <FsSpinner v-else size="small" class="tg-spinner" />
+        Начать заново
+      </button>
     </div>
 
     <p v-if="error" class="tg-error">{{ error }}</p>
@@ -24,8 +33,12 @@ import { reportError } from '~/shared/utils/reportError'
 
 const emit = defineEmits<{ done: [] }>()
 
+// Должен совпадать с NONCE_TTL_MS в server/api/auth/telegram/init.post.ts (15 минут).
+const POLL_MAX_DURATION_MS = 15 * 60 * 1000
+
 const initializing = ref(false)
 const polling = ref(false)
+const expired = ref(false)
 const error = ref('')
 let intervalId: ReturnType<typeof setInterval> | null = null
 
@@ -33,6 +46,7 @@ async function start() {
   if (polling.value || initializing.value) return
   initializing.value = true
   error.value = ''
+  expired.value = false
   try {
     const { nonce, botUsername } = await $fetch<{ nonce: string; botUsername: string }>(
       '/api/auth/telegram/init',
@@ -50,10 +64,24 @@ async function start() {
   }
 }
 
+function restart() {
+  expired.value = false
+  start()
+}
+
 function startPolling(nonce: string) {
   // На всякий случай — не плодим параллельные интервалы.
   stopPolling()
+  const startedAt = Date.now()
   intervalId = setInterval(async () => {
+    // Локальный TTL-стоп: nonce на сервере живёт 15 минут, после этого
+    // долбить /poll бесполезно — освобождаем worker'ов и показываем UX.
+    if (Date.now() - startedAt > POLL_MAX_DURATION_MS) {
+      stopPolling()
+      polling.value = false
+      expired.value = true
+      return
+    }
     try {
       const { status } = await $fetch<{ status: 'pending' | 'ok' | 'expired' }>(
         `/api/auth/telegram/poll?nonce=${nonce}`,
@@ -65,6 +93,7 @@ function startPolling(nonce: string) {
       } else if (status === 'expired') {
         stopPolling()
         polling.value = false
+        expired.value = true
       }
     } catch (e) {
       // network hiccup — keep polling, но всё равно логируем
@@ -76,6 +105,7 @@ function startPolling(nonce: string) {
 function cancel() {
   stopPolling()
   polling.value = false
+  expired.value = false
   error.value = ''
 }
 
@@ -151,6 +181,19 @@ onUnmounted(stopPolling)
   margin-top: 8px;
   font-size: 13px;
   color: var(--color-error);
+  text-align: center;
+}
+
+.expired {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.expired-text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary);
   text-align: center;
 }
 </style>
