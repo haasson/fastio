@@ -90,8 +90,8 @@ const channels: Channel[] = [
   gap: 10px;
   flex: 1;
   padding: 14px 20px;
-  background: var(--ln-accent);
-  border: 1px solid var(--ln-accent);
+  background: var(--primary);
+  border: 1px solid var(--primary);
   border-radius: var(--radius-card);
   text-decoration: none;
   transition: background 0.15s, border-color 0.15s;

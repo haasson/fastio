@@ -28,7 +28,7 @@
         </a>
       </nav>
 
-      <FsButton as="a" href="#try" variant="primary" class="cta-desktop cta-accent">
+      <FsButton as="a" href="#try" variant="primary" class="cta-desktop">
         Начать бесплатно
       </FsButton>
 
@@ -60,7 +60,7 @@
       </a>
     </nav>
     <div class="mobile-bottom">
-      <FsButton as="a" href="#try" variant="primary" size="large" class="cta-accent" @click="menuOpen = false">
+      <FsButton as="a" href="#try" variant="primary" size="large" @click="menuOpen = false">
         Начать бесплатно
       </FsButton>
     </div>
@@ -195,13 +195,6 @@ onUnmounted(() => {
   &:hover {
     color: rgba(245, 243, 238, 0.85);
   }
-}
-
-.cta-accent {
-  --primary: var(--ln-accent);
-  --on-primary: #fff;
-  --primary-hover: var(--primary-hover);
-  border-radius: 8px;
 }
 
 .cta-desktop {
