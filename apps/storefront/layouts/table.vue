@@ -9,7 +9,10 @@
       >
       <span v-else class="tenant-name">{{ tenantName }}</span>
       <ClientOnly>
-        <span v-if="tableStore.tableName" class="table-badge">{{ tableStore.tableName }}</span>
+        <div v-if="tableStore.tableId" class="table-header-actions">
+          <CallWaiterButton :table-id="tableStore.tableId" />
+          <span v-if="tableStore.tableName" class="table-badge">{{ tableStore.tableName }}</span>
+        </div>
       </ClientOnly>
     </header>
 
@@ -29,7 +32,7 @@
 import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
-import { useTableStore } from '~/features/table-mode'
+import { useTableStore, CallWaiterButton } from '~/features/table-mode'
 import CategoryBar from '~/shared/ui/sections/CategoryBar.vue'
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
@@ -73,8 +76,14 @@ const tenantName = computed(() => tenant.value?.name ?? '')
   @include text-body(600);
 }
 
-.table-badge {
+.table-header-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-badge {
   padding: 4px 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);

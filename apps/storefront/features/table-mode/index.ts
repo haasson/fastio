@@ -3,3 +3,4 @@
 
 export { useTableStore, type CheckItem } from './stores/table'
 export { useTableRealtime } from './composables/useTableRealtime'
+export { default as CallWaiterButton } from './components/CallWaiterButton.vue'

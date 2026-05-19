@@ -2,7 +2,7 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-18T15:38:05.101Z",
+  "generated_at": "2026-05-19T01:16:22.861Z",
   "stats": {
     "files": 8,
     "pages": 0,
@@ -92,8 +92,8 @@
     },
     "layouts/table.vue": {
       "kind": "vue",
-      "hash": "13080c3d3008",
-      "purpose": "Layout режима стола (QR-меню): минималистичный header с лого тенанта + CategoryBar (без navigation, без cart fab)",
+      "hash": "0bd163059ff1",
+      "purpose": "Layout страниц /table/[id]: sticky header (logo + tableBadge + кнопка вызова официанта) и sticky CategoryBar",
       "symbols": [
         {
           "name": "component",

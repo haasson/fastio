@@ -11,7 +11,7 @@ export default defineFeature({
 
   db: {
     // Прямой supabase.from() в realtime-канале (подписка на order_items + kitchen_queue).
-    // Никаких .from().select() нет — только канал .on('postgres_changes', { table: ... }).
+    // table_calls / table_call_types / tables — через server endpoints, в feature/ напрямую не читаются.
     tables: ['order_items', 'kitchen_queue'],
   },
 
