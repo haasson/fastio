@@ -1,8 +1,7 @@
 import { useRouter, useRuntimeConfig } from '#imports'
 import { useOnboarding, type OnboardingStepView } from './useOnboarding'
 import { useStorefrontUrl } from '~/shared/composables/useStorefrontUrl'
-import { useTour } from '~/features/help'
-import { TOURS } from '~/features/help/tours'
+import { TOURS, useTour } from '~/features/help'
 
 /**
  * Интенты пользователя в онбординге.
