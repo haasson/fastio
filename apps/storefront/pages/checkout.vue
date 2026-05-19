@@ -102,7 +102,6 @@
             <CheckoutAddressSection
               v-if="checkout.form.deliveryType === 'delivery' && tenant?.deliveryAvailable"
               ref="addressRef"
-              :currency="currency"
             />
 
             <FsAlert
@@ -171,7 +170,6 @@
           </div>
 
           <CheckoutSidebar
-            :currency="currency"
             :errors="submitErrors"
             :loading="submitting"
             @submit="submitOrder"
@@ -195,7 +193,6 @@ import { useCheckoutStore } from '~/features/checkout'
 import { useAuthStore } from '~/features/auth'
 import { useConfirm } from '~/shared/composables/useConfirm'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
 import { FsSection, FsHeading, FsInput, FsTextarea, FsField, FsRadioGroup, FsSelect, FsCheckbox, FsAlert } from '@fastio/public-ui'
 import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
@@ -211,7 +208,6 @@ const authStore = useAuthStore()
 const { confirm } = useConfirm()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
-const currency = useCurrency()
 
 const showDeliveryTabs = computed(() => {
   return !!tenant.value?.deliveryAvailable && !!tenant.value?.modules?.pickup

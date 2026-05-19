@@ -103,13 +103,13 @@
         Адрес вне зоны доставки
       </UiAlert>
       <UiAlert v-else-if="deliveryInfo.belowMinOrder" type="warning" size="small">
-        Минимальная сумма для этого адреса: {{ deliveryInfo.minOrderAmount }} ₽
+        Минимальная сумма для этого адреса: {{ formatPrice(deliveryInfo.minOrderAmount) }}
       </UiAlert>
       <template v-else>
         <UiAlert type="success" size="small">
-          Доставка: <strong>{{ deliveryInfo.effectiveFee === 0 ? 'бесплатно' : `${deliveryInfo.effectiveFee} ₽` }}</strong>
+          Доставка: <strong>{{ deliveryInfo.effectiveFee === 0 ? 'бесплатно' : formatPrice(deliveryInfo.effectiveFee) }}</strong>
           <span v-if="deliveryInfo.amountUntilFree > 0" class="zone-hint">
-            (бесплатно от {{ deliveryInfo.freeDeliveryFrom }} ₽, ещё {{ deliveryInfo.amountUntilFree }} ₽)
+            (бесплатно от {{ formatPrice(deliveryInfo.freeDeliveryFrom) }}, ещё {{ formatPrice(deliveryInfo.amountUntilFree) }})
           </span>
         </UiAlert>
         <UiAlert v-if="deliveryInfo.branchAutoSwitched" type="info" size="small">
@@ -173,7 +173,7 @@
     <div class="totals">
       <div class="total-line">
         <span class="total-key">Сумма</span>
-        <span class="total-val">{{ subtotal }} ₽</span>
+        <span class="total-val">{{ formatPrice(subtotal) }}</span>
       </div>
       <div v-if="promoOptions.length" class="total-line">
         <span class="total-key">Скидка / акция</span>
@@ -186,7 +186,7 @@
             class="promo-select"
             @update:value="emit('promo-select', $event != null ? String($event) : null)"
           />
-          <span v-if="(form.discountAmount ?? 0) > 0" class="total-val discount">−{{ form.discountAmount }} ₽</span>
+          <span v-if="(form.discountAmount ?? 0) > 0" class="total-val discount">−{{ formatPrice(form.discountAmount) }}</span>
         </div>
       </div>
       <div v-if="bestPromoHint" class="promo-hint">
@@ -203,7 +203,7 @@
       </div>
       <div class="total-line total-final">
         <span class="total-key">Итого</span>
-        <span class="total-val">{{ total }} ₽</span>
+        <span class="total-val">{{ formatPrice(total) }}</span>
       </div>
     </div>
 
@@ -219,7 +219,7 @@
     </div>
     <div v-if="form.paymentType === 'cash' && form.needsChange" class="change-row">
       <span class="block-label">Сдача с</span>
-      <span class="change-value">{{ form.changeFrom }} ₽</span>
+      <span class="change-value">{{ formatPrice(form.changeFrom) }}</span>
     </div>
   </div>
 
@@ -236,7 +236,7 @@ import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, UiSlider
 import { validationRules } from '@fastio/kit'
 import type { Order, DeliveryZone } from '@fastio/shared'
 import type { DeliveryInfo } from '../composables/delivery/useOrderDelivery'
-import { findDeliveryZone, useSchedulingSlots } from '@fastio/shared'
+import { findDeliveryZone, useSchedulingSlots, formatPrice } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
 import { useDadataSuggestions, type DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'

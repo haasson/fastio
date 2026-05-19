@@ -10,7 +10,7 @@
     <div class="line-body">
       <div class="line-top">
         <FsText as="span" variant="body-sm" class="line-name">{{ displayName }}</FsText>
-        <FsText v-if="totalPrice !== null" as="span" variant="body-sm" class="line-price">{{ totalPrice }} {{ currency }}</FsText>
+        <FsText v-if="totalPrice !== null" as="span" variant="body-sm" class="line-price">{{ formatPrice(totalPrice) }}</FsText>
       </div>
 
       <FsText v-if="summary" as="p" variant="caption" class="line-mods">{{ summary }}</FsText>
@@ -23,7 +23,7 @@
       <div class="line-controls">
         <div class="line-left">
           <template v-if="isDish && dishItem">
-            <FsText as="span" variant="caption" class="unit-price">{{ unitPrice }} {{ currency }} / шт.</FsText>
+            <FsText as="span" variant="caption" class="unit-price">{{ formatPrice(unitPrice) }} / шт.</FsText>
             <SfStepper
               :model-value="dishItem.quantity"
               size="small"
@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Pencil, Trash2 } from 'lucide-vue-next'
-import { getItemUnitPrice, getItemSummary } from '@fastio/shared'
+import { getItemUnitPrice, getItemSummary, formatPrice } from '@fastio/shared'
 import type { CartItem, DishCartItem, ServiceCartItem } from '../stores/cart'
 import { isDishItem, isServiceItem } from '../stores/cart'
 import SfStepper from '~/shared/ui/sf/domain/SfStepper.vue'
@@ -75,13 +75,11 @@ const { placeholderIcon } = useItemPlaceholder()
 type Props = {
   item: CartItem
   index: number
-  currency?: string
   canEdit?: boolean
   resources?: Array<{ id: string; name: string }>
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currency: '₽',
   canEdit: true,
   resources: () => [],
 })

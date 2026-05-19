@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { PromoCode } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { buildPromoStatusColumn, buildPromoActivePeriodColumn, buildPromoActionsColumn } from './_shared'
 
 type Deps = {
@@ -30,7 +31,7 @@ export const buildPromoCodeColumns = (deps: Deps): DataTableColumns<PromoCode> =
       render: (row) => h(
         UiText,
         { size: 'tiny', style: 'color: var(--color-success); font-weight: 600' },
-        () => row.discountType === 'percent' ? `−${row.discountValue}%` : `−${row.discountValue} ₽`,
+        () => row.discountType === 'percent' ? `−${row.discountValue}%` : `−${formatPrice(row.discountValue)}`,
       ),
     },
     {
@@ -38,7 +39,7 @@ export const buildPromoCodeColumns = (deps: Deps): DataTableColumns<PromoCode> =
       key: 'minOrderAmount',
       width: 110,
       sorter: (a, b) => (a.minOrderAmount ?? 0) - (b.minOrderAmount ?? 0),
-      render: (row) => h(UiText, { size: 'tiny', style: 'color: var(--color-text-secondary)' }, () => row.minOrderAmount ? `от ${row.minOrderAmount} ₽` : '—'),
+      render: (row) => h(UiText, { size: 'tiny', style: 'color: var(--color-text-secondary)' }, () => row.minOrderAmount ? `от ${formatPrice(row.minOrderAmount)}` : '—'),
     },
     {
       title: 'Использований',

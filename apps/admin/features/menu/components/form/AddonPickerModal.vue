@@ -20,7 +20,7 @@
         >
           {{ addon.name }}
           <UiText size="tiny" color="secondary" span>
-            · {{ addon.price }} ₽<template v-if="addon.weight"> · {{ addon.weight }} г</template>
+            · {{ formatPrice(addon.price) }}<template v-if="addon.weight"> · {{ addon.weight }} г</template>
           </UiText>
         </UiCheckbox>
       </div>
@@ -50,6 +50,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiTabs, UiCheckbox, UiText, UiEmpty } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 
 const props = defineProps<{
   modelValue: boolean

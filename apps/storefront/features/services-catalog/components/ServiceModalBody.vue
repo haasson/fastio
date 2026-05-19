@@ -52,9 +52,8 @@ type ServiceInfo = {
 
 const props = withDefaults(defineProps<{
   service: ServiceInfo
-  currency?: string
   isEdit?: boolean
-}>(), { currency: '₽', isEdit: false })
+}>(), { isEdit: false })
 
 const emit = defineEmits<{
   close: []

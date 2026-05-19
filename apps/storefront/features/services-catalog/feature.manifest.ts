@@ -20,7 +20,6 @@ export default defineFeature({
     'features.branch',
     'features.cart',
     'shared.composables.useConfirm',
-    'shared.composables.useCurrency',         // форматирование цен на карточках
     'shared.composables.useItemPlaceholder',  // плейсхолдер для услуг без фото
     'shared.composables.useLegalCompliance',
     'shared.composables.useToast',

@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, watch, type Ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import type { Order } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 
@@ -124,7 +125,7 @@ export const useOrderPromo = (
     // Show hint only if best promo gives more than current discount
     if (bp.discountAmount <= form.discountAmount) return null
 
-    return { text: `«${bp.title}» даст скидку ${bp.discountAmount} ₽`, value: bp.value }
+    return { text: `«${bp.title}» даст скидку ${formatPrice(bp.discountAmount)}`, value: bp.value }
   })
 
   // When scheduled delivery time changes — re-validate selected promo with visible error

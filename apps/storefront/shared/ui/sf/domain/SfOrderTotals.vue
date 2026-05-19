@@ -1,20 +1,21 @@
 <template>
   <div class="order-totals-root">
-    <div class="totals-row"><span>Подытог</span><span>{{ subtotal }} {{ currency }}</span></div>
-    <div v-if="deliveryFee > 0" class="totals-row"><span>Доставка</span><span>{{ deliveryFee }} {{ currency }}</span></div>
-    <div v-if="discountAmount > 0" class="totals-row totals-discount"><span>{{ discountLabel ?? 'Скидка' }}</span><span>−{{ discountAmount }} {{ currency }}</span></div>
-    <div class="totals-row totals-total"><span>Итого</span><span>{{ total }} {{ currency }}</span></div>
+    <div class="totals-row"><span>Подытог</span><span>{{ formatPrice(subtotal) }}</span></div>
+    <div v-if="deliveryFee > 0" class="totals-row"><span>Доставка</span><span>{{ formatPrice(deliveryFee) }}</span></div>
+    <div v-if="discountAmount > 0" class="totals-row totals-discount"><span>{{ discountLabel ?? 'Скидка' }}</span><span>−{{ formatPrice(discountAmount) }}</span></div>
+    <div class="totals-row totals-total"><span>Итого</span><span>{{ formatPrice(total) }}</span></div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { formatPrice } from '@fastio/shared'
+
 type Props = {
   subtotal: number
   deliveryFee: number
   discountAmount: number
   discountLabel?: string | null
   total: number
-  currency: string
 }
 
 defineProps<Props>()

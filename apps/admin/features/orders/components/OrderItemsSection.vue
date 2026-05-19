@@ -31,7 +31,7 @@
         <template v-else>
           <span class="qty-value qty-readonly">× {{ item.quantity }}</span>
         </template>
-        <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
+        <span class="item-price">{{ formatPrice(getItemUnitPrice(item) * item.quantity) }}</span>
 
         <UiRowActions
           v-if="!readonly"
@@ -70,7 +70,7 @@
 import { UiButton, UiRowActions } from '@fastio/ui'
 import { computed } from 'vue'
 import { useConfirm } from '@fastio/kit'
-import { getItemUnitPrice } from '@fastio/shared'
+import { getItemUnitPrice, formatPrice } from '@fastio/shared'
 import { useGate } from '~/shared/plan/useGate'
 import type { OrderItem } from '@fastio/shared'
 

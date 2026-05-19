@@ -2,19 +2,20 @@
   <div class="footer">
     <SfStepper v-model="qty" :min="1" :max="99" />
     <FsButton variant="primary" class="add-btn" @click="emit('confirm')">
-      {{ confirmLabel }} за {{ totalPrice }} {{ currency }}
+      {{ confirmLabel }} за {{ formatPrice(totalPrice) }}
     </FsButton>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import SfStepper from '~/shared/ui/sf/domain/SfStepper.vue'
 import { FsButton } from '@fastio/public-ui'
+import { formatPrice } from '@fastio/shared'
 
 type Props = {
   modelValue: number
   totalPrice: number
-  currency: string
   mode?: 'add' | 'edit' | 'order'
 }
 

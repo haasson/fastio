@@ -31,21 +31,21 @@
           <button type="button" class="addr-back-btn" @click="switchToSaved">
             ← Мои адреса
           </button>
-          <AddressManualInput ref="manualInputRef" :currency="currency" @verified="onManualVerified" />
+          <AddressManualInput ref="manualInputRef" @verified="onManualVerified" />
         </div>
 
         <!-- Статус доставки для сохранённого адреса -->
         <template v-if="showSavedAddressStatus">
           <FsAlert v-if="checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
-            Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong> (без учёта доставки)
+            Минимальная сумма заказа для доставки по данному адресу: <strong>{{ formatPrice(checkout.minOrderAmount) }}</strong> (без учёта доставки)
           </FsAlert>
           <template v-else-if="checkout.hasZones">
             <FsAlert v-if="zoneMatched" type="success" :icon="Check">
               Доставка:
               <strong v-if="zoneFee === 0">бесплатно</strong>
-              <strong v-else>{{ zoneFee }} {{ currency }}</strong>
+              <strong v-else>{{ formatPrice(zoneFee) }}</strong>
               <span v-if="checkout.deliveryZone!.freeDeliveryFrom && zoneFee > 0" class="zone-hint">
-                (бесплатно от {{ checkout.deliveryZone!.freeDeliveryFrom }} {{ currency }})
+                (бесплатно от {{ formatPrice(checkout.deliveryZone!.freeDeliveryFrom) }})
               </span>
             </FsAlert>
             <FsAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
@@ -58,9 +58,9 @@
           <FsAlert v-else-if="showFixedFee" type="success" :icon="Check">
             Доставка:
             <strong v-if="fixedFee === 0">бесплатно</strong>
-            <strong v-else>{{ fixedFee }} {{ currency }}</strong>
+            <strong v-else>{{ formatPrice(fixedFee) }}</strong>
             <span v-if="tenantFreeDeliveryFrom > 0 && fixedFee > 0" class="zone-hint">
-              (бесплатно от {{ tenantFreeDeliveryFrom }} {{ currency }})
+              (бесплатно от {{ formatPrice(tenantFreeDeliveryFrom) }})
             </span>
           </FsAlert>
           <FsAlert v-if="branchClosedInfo && zoneMatched && !checkout.belowMinOrder" type="warning" :icon="Clock">
@@ -73,13 +73,13 @@
 
       <!-- Нет сохранённых адресов -->
       <template v-else>
-        <AddressManualInput ref="manualInputRef" :currency="currency" @verified="onManualVerified" />
+        <AddressManualInput ref="manualInputRef" @verified="onManualVerified" />
       </template>
     </template>
 
     <!-- Гость -->
     <template v-else>
-      <AddressManualInput ref="manualInputRef" :currency="currency" @verified="onManualVerified" />
+      <AddressManualInput ref="manualInputRef" @verified="onManualVerified" />
     </template>
   </section>
 </template>
@@ -88,7 +88,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { Check, X, Clock, AlertTriangle } from 'lucide-vue-next'
 import type { CustomerAddress, Tenant, WorkingHoursSchedule } from '@fastio/shared'
-import { isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { isOpenNow, DEFAULT_TIMEZONE, formatPrice } from '@fastio/shared'
 import { useCheckoutStore } from '../stores/checkout'
 import { useCartStore } from '~/features/cart'
 import { useAuthStore } from '~/features/auth'
@@ -98,8 +98,6 @@ import { FsHeading, FsAlert } from '@fastio/public-ui'
 import AddressManualInput from './AddressManualInput.vue'
 import { reportError } from '~/shared/utils/reportError'
 
-type Props = { currency: string }
-defineProps<Props>()
 
 const checkout = useCheckoutStore()
 const cart = useCartStore()

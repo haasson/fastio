@@ -50,7 +50,6 @@ import { FsSection, FsText, FsRichContent } from '@fastio/public-ui'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
 import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import { buildDeliveryText, formatZoneConditions } from '~/features/delivery'
 
 const DeliveryMapView = defineAsyncComponent(() => import('~/features/delivery/components/DeliveryMapView.vue'))
@@ -63,7 +62,6 @@ await useAsyncData('delivery-zones', () => rfetch<DeliveryZone[]>('/api/delivery
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const { data: zones } = useNuxtData<DeliveryZone[]>('delivery-zones')
-const currency = useCurrency()
 
 type SiteLayoutType = ReturnType<typeof defaultSiteLayout>
 type SiteContentType = ReturnType<typeof defaultSiteContent>
@@ -82,7 +80,7 @@ const isDark = computed(() => isPresetDark(tenant.value?.theme?.preset ?? ''))
 const manualText = computed(() => content.value.delivery?.manualText ?? '')
 
 const autoText = computed(() =>
-  buildDeliveryText(zones.value ?? [], tenant.value!, currency.value),
+  buildDeliveryText(zones.value ?? [], tenant.value!),
 )
 
 const mapDescription = computed(() => {
@@ -96,7 +94,7 @@ const mapDescription = computed(() => {
   const sameFee = active.every((z) => z.deliveryFee === active[0].deliveryFee && z.freeDeliveryFrom === active[0].freeDeliveryFrom)
   if (!sameFee) return `${prefix} Стоимость доставки зависит от зоны.`
 
-  return `${prefix} ${formatZoneConditions(active[0], currency.value)}.`
+  return `${prefix} ${formatZoneConditions(active[0])}.`
 })
 </script>
 

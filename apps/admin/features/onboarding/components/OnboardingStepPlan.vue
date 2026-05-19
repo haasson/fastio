@@ -21,7 +21,7 @@
       >
         <div class="card-header">
           <UiTitle size="h4" class="plan-name">{{ card.name }}</UiTitle>
-          <UiBadge type="default">{{ card.price > 0 ? `${card.price} ₽/мес` : 'Бесплатно' }}</UiBadge>
+          <UiBadge type="default">{{ card.price > 0 ? `${formatPrice(card.price)}/мес` : 'Бесплатно' }}</UiBadge>
         </div>
 
         <UiText size="small" class="plan-desc">{{ card.description }}</UiText>
@@ -45,7 +45,7 @@
 import { computed, onMounted } from 'vue'
 import { UiTitle, UiText, UiIcon, UiBadge, UiCard } from '@fastio/ui'
 import type { BusinessType } from '@fastio/shared'
-import { pluralize } from '@fastio/shared'
+import { pluralize, formatPrice } from '@fastio/shared'
 import { usePlans } from '~/shared/plan/usePlans'
 import { useBillingConfig } from '~/shared/plan/useBillingConfig'
 import { getPlanFeatureLabels, getPrevPlanName } from '~/shared/utils/planFeatureLabels'

@@ -14,7 +14,7 @@
         :type="STATUS_GROUP_TAG_TYPES[getStatusById(o.status)!.groupType]"
       >{{ getStatusById(o.status)!.name }}</UiTag>
       <span class="history-items">{{ o.items.map((i) => i.dishName).join(', ') }}</span>
-      <span class="history-total">{{ o.total }} ₽</span>
+      <span class="history-total">{{ formatPrice(o.total) }}</span>
       <span class="history-date">{{ formatDate(o.createdAt) }}</span>
     </div>
   </div>
@@ -24,6 +24,7 @@
 import { useRouter } from '#imports'
 import { UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useOrderStatusesStore } from '../stores/order-statuses'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'

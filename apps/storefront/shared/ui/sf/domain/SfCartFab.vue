@@ -3,7 +3,7 @@
     :visible="cart.count > 0"
     :count="cart.count"
     label="Корзина"
-    :price="`${cart.subtotal} ${currency}`"
+    :price="formatPrice(cart.subtotal)"
     data-testid="cart-fab"
     class="cart-fab"
     @click="emit('click')"
@@ -20,15 +20,13 @@ import { computed } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { ShoppingCart } from 'lucide-vue-next'
 import type { BranchPublic, Tenant } from '@fastio/shared'
-import { formatBranchAddressShort } from '@fastio/shared'
+import { formatBranchAddressShort, formatPrice } from '@fastio/shared'
 import { useCartStore } from '~/features/cart'
 import { useSelectedBranchStore } from '~/features/branch'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import SfFab from '~/shared/ui/sf/domain/SfFab.vue'
 
 const emit = defineEmits<{ click: [] }>()
 const cart = useCartStore()
-const currency = useCurrency()
 const branchStore = useSelectedBranchStore()
 const { data: branchesData } = useNuxtData<BranchPublic[]>('branches')
 const { data: tenant } = useNuxtData<Tenant>('tenant')

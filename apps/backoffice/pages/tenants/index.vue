@@ -68,6 +68,7 @@ import {
   NDataTable, NTag, NButton, NModal, NForm, NFormItem, NInput, NSpace,
   type DataTableColumns, type FormInst, type FormRules,
 } from 'naive-ui'
+import { formatPrice } from '@fastio/shared'
 
 const router = useRouter()
 
@@ -160,7 +161,7 @@ const columns: DataTableColumns<TenantRow> = [
     title: 'Баланс',
     key: 'balance',
     width: 120,
-    render: (row) => `${row.balance} ₽`,
+    render: (row) => formatPrice(row.balance),
     sorter: (a, b) => a.balance - b.balance,
   },
   {

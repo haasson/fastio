@@ -66,7 +66,7 @@
         <li v-for="(item, i) in visibleItems" :key="item.id ?? i" class="item">
           <span class="item-name">{{ item.dishName }}</span>
           <span class="item-qty">× {{ item.quantity }}</span>
-          <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} ₽</span>
+          <span class="item-price">{{ formatPrice(getItemUnitPrice(item) * item.quantity) }}</span>
         </li>
         <li v-if="hiddenItemsCount > 0" class="item-more">+{{ hiddenItemsCount }} ещё</li>
       </ul>
@@ -77,7 +77,7 @@
       <UiIcon name="promotions" :size="14" />
       <template v-if="order.promoCode">Промокод <strong>{{ order.promoCode }}</strong></template>
       <template v-else>Акция</template>
-      : −{{ order.discountAmount }} ₽
+      : −{{ formatPrice(order.discountAmount) }}
     </div>
 
     <!-- Комментарий -->
@@ -89,13 +89,13 @@
     <div class="footer">
       <div class="total-row">
         <span class="total-label">Итого</span>
-        <span class="total">{{ order.total }} ₽</span>
+        <span class="total">{{ formatPrice(order.total) }}</span>
       </div>
       <span class="payment-type">
         <UiIcon :name="paymentIcon" :size="13" />
         {{ PAYMENT_TYPE_LABELS[order.paymentType] }}
         <template v-if="order.needsChange && order.paymentType === 'cash'">
-          · сдача с {{ order.changeFrom }} ₽
+          · сдача с {{ formatPrice(order.changeFrom) }}
         </template>
       </span>
     </div>
@@ -126,7 +126,7 @@
 import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone, utcIsoToLocalDateTime, todayInTz, addDaysToDateStr } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, utcIsoToLocalDateTime, todayInTz, addDaysToDateStr, formatPrice } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/retail/order-status-groups'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/retail/order-options'

@@ -16,7 +16,7 @@
       >
         <div class="card-header">
           <UiTitle size="h4" class="plan-name">{{ card.name }}</UiTitle>
-          <UiBadge v-if="card.price > 0" type="default">{{ card.price }} ₽/мес</UiBadge>
+          <UiBadge v-if="card.price > 0" type="default">{{ formatPrice(card.price) }}/мес</UiBadge>
           <UiBadge v-else type="default">Бесплатно</UiBadge>
         </div>
 
@@ -69,6 +69,7 @@ import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiTitle, UiText, UiIcon, UiButton, UiCard, UiSectionHeader, UiBadge, UiPopover, UiAlert, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
+import { formatPrice } from '@fastio/shared'
 import { usePlans } from '~/shared/plan/usePlans'
 import { getPlanFeatureLabels, getPrevPlanName, getChangePlanConfirmText } from '~/shared/utils/planFeatureLabels'
 import { useTenantStore } from '~/shared/stores/tenant'

@@ -21,7 +21,6 @@ export default defineFeature({
   dependsOn: [
     'features.auth',
     'shared.composables.useConfirm',
-    'shared.composables.useCurrency',
     'shared.composables.useDadataSuggestions',
     'shared.composables.useStorefrontTerms',
     'shared.composables.useSupabaseClient',
@@ -32,6 +31,6 @@ export default defineFeature({
     'server.api.customer.profile',
     'server.api.customer.addresses',
     'server.api.customer.orders',
-    '@fastio/shared',                          // type CustomerAddress, Customer
+    '@fastio/shared',                          // formatPrice, type CustomerAddress, Customer
   ],
 })

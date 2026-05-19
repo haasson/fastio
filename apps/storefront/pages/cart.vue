@@ -25,7 +25,6 @@
               :key="item._key"
               :item="item"
               :index="globalIndex(item._key)"
-              :currency="currency"
               :can-edit="canEditDish(item.dishId)"
               @change="onChange"
               @remove="onRemove"
@@ -36,7 +35,6 @@
               :key="item._key"
               :item="item"
               :index="globalIndex(item._key)"
-              :currency="currency"
               :resources="resourcesMap.get(item.serviceId) ?? []"
               :can-edit="(resourcesMap.get(item.serviceId) ?? []).length > 0"
               @remove="onRemoveService"
@@ -56,7 +54,7 @@
                 </FsAlert>
                 <div class="summary-row">
                   <FsText as="span" variant="body-sm" class="summary-label">Сумма заказа</FsText>
-                  <FsText as="span" variant="body" :weight="700" class="summary-total">{{ cart.dishSubtotal }} {{ currency }}</FsText>
+                  <FsText as="span" variant="body" :weight="700" class="summary-total">{{ formatPrice(cart.dishSubtotal) }}</FsText>
                 </div>
                 <FsButton
                   size="large"
@@ -78,7 +76,7 @@
                 </div>
                 <div v-if="cart.serviceSubtotal > 0" class="summary-row">
                   <FsText as="span" variant="body-sm" class="summary-label">Стоимость</FsText>
-                  <FsText as="span" variant="body" :weight="700" class="summary-total">{{ cart.serviceSubtotal }} {{ currency }}</FsText>
+                  <FsText as="span" variant="body" :weight="700" class="summary-total">{{ formatPrice(cart.serviceSubtotal) }}</FsText>
                 </div>
                 <FsButton size="large" class="checkout-btn" data-testid="cart-services-checkout-btn" @click="navigateTo('/appointments/checkout')">
                   Подобрать время
@@ -107,7 +105,6 @@
         :modifiers="editState.modifiers"
         :addons="editState.addons"
         :max-addons="editState.maxAddons"
-        :currency="currency"
         :initial-quantity="editState.initialQuantity"
         :initial-removed-ingredients="editState.initialRemovedIngredients"
         :initial-modifiers="editState.initialModifiers"
@@ -127,14 +124,13 @@
       <template #meta>
         <div class="service-meta">
           <FsText as="span" variant="caption">{{ editServiceInfo.duration }} мин</FsText>
-          <FsText v-if="editServiceInfo.price" as="span" variant="caption" :weight="700" class="meta-price">{{ editServiceInfo.price }} {{ currency }}</FsText>
+          <FsText v-if="editServiceInfo.price" as="span" variant="caption" :weight="700" class="meta-price">{{ formatPrice(editServiceInfo.price) }}</FsText>
         </div>
         <BranchAvailabilityHint :branch-ids="editServiceInfo.branchIds" />
       </template>
       <ServiceModalBody
         :key="editServiceInfo.id"
         :service="editServiceInfo"
-        :currency="currency"
         :is-edit="true"
         @close="showServiceModal = false"
       />
@@ -147,13 +143,12 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { navigateTo, useNuxtData } from 'nuxt/app'
 import { ShoppingCart, Clock } from 'lucide-vue-next'
 import type { Tenant, WorkingHoursSchedule } from '@fastio/shared'
-import { isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { isOpenNow, DEFAULT_TIMEZONE, formatPrice } from '@fastio/shared'
 import { useStorefrontTerms } from '~/shared/composables/useStorefrontTerms'
 import { useCartStore, type ServiceCartItem } from '~/features/cart'
 import { useMenuStore } from '~/features/menu-catalog'
 import { useServicesStore } from '~/features/services-catalog'
 import { useCartEdit } from '~/features/cart'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import { reportError } from '~/shared/utils/reportError'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
 import { FsSection, FsButton, FsSpinner, FsCard, FsAlert, FsText } from '@fastio/public-ui'
@@ -170,7 +165,6 @@ const { menu, item: itemTerm } = useStorefrontTerms()
 const cart = useCartStore()
 const menuStore = useMenuStore()
 const servicesStore = useServicesStore()
-const currency = useCurrency()
 const { editKey, editState, openEdit, onItemEdited } = useCartEdit()
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')

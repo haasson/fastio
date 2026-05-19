@@ -1,4 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
+import { formatPrice } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireMemberOfTenant } from '../../utils/auth'
 
@@ -9,7 +10,7 @@ const ERROR_MESSAGES: Record<string, string | ((d: Record<string, unknown>) => s
   expired: 'Акция завершена',
   weekday: 'Акция не действует в этот день недели',
   time_range: (d) => `Акция действует с ${d.time_from} до ${d.time_to}`,
-  min_order: (d) => `Минимальная сумма заказа — ${d.min_order_amount} ₽`,
+  min_order: (d) => `Минимальная сумма заказа — ${formatPrice(Number(d.min_order_amount))}`,
 }
 
 export default defineEventHandler(async (event) => {

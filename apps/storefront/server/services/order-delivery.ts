@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DeliveryZone, DeliveryZoneRow, WorkingHoursSchedule } from '@fastio/shared'
-import { findDeliveryZone, mapDeliveryZoneRow, isOpenNow } from '@fastio/shared'
+import { findDeliveryZone, mapDeliveryZoneRow, isOpenNow, formatPrice } from '@fastio/shared'
 import type { DeliveryType, TenantOrderConfig } from './order-validation'
 import { calcDeliveryFee } from './order-calc'
 
@@ -163,7 +163,7 @@ export async function resolveDelivery(
   if (deliveryType === 'delivery' && subtotal < minOrder) {
     throw createError({
       statusCode: 400,
-      message: `Минимальная сумма заказа для доставки: ${minOrder} ₽`,
+      message: `Минимальная сумма заказа для доставки: ${formatPrice(minOrder)}`,
     })
   }
 

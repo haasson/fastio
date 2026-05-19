@@ -8,7 +8,7 @@
         </FsText>
         <FsText v-if="summary" variant="caption" color="secondary">{{ summary }}</FsText>
       </div>
-      <FsText variant="body-sm" :weight="500">{{ itemTotal }} {{ currency }}</FsText>
+      <FsText variant="body-sm" :weight="500">{{ formatPrice(itemTotal) }}</FsText>
     </div>
     <div class="status-bar" :class="statusColor" />
   </div>
@@ -17,16 +17,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { FsText } from '@fastio/public-ui'
-import { getItemUnitPrice, getItemSummary } from '@fastio/shared'
+import { getItemUnitPrice, getItemSummary, formatPrice } from '@fastio/shared'
 import type { CheckItem } from '../stores/table'
-import { useCurrency } from '~/shared/composables/useCurrency'
 
 const props = defineProps<{
   item: CheckItem
   statusColor: 'warning' | 'info' | 'success'
 }>()
-
-const currency = useCurrency()
 
 const itemTotal = computed(() => getItemUnitPrice(props.item) * props.item.quantity)
 

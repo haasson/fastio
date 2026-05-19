@@ -26,16 +26,16 @@
           <div v-if="tenant.businessType === 'retail'"><span class="label">Стиль меню:</span> {{ tenant.menuStyle }}</div>
           <div><span class="label">Статус подписки:</span> <NTag :type="statusType" size="small">{{ tenant.subscription?.status }}</NTag></div>
           <div><span class="label">Текущий тариф:</span> {{ currentPlanName }}</div>
-          <div><span class="label">Баланс:</span> <strong :class="{ 'balance-low': tenant.balance <= 0 }">{{ tenant.balance }} ₽</strong></div>
+          <div><span class="label">Баланс:</span> <strong :class="{ 'balance-low': tenant.balance <= 0 }">{{ formatPrice(tenant.balance) }}</strong></div>
           <div v-if="tenant.subscription?.renewsAt"><span class="label">Следующее списание:</span> {{ formatDateNumeric(tenant.subscription.renewsAt) }}</div>
           <div>
             <span class="label">Цена подписки:</span>
             <template v-if="tenant.subscription?.priceOverride != null">
-              <strong>{{ tenant.subscription.priceOverride }} ₽</strong>
+              <strong>{{ formatPrice(tenant.subscription.priceOverride) }}</strong>
               <NTag size="tiny" class="override-tag">кастомная</NTag>
             </template>
             <template v-else>
-              {{ currentPlanPrice }} ₽ <span class="hint">(по тарифу)</span>
+              {{ formatPrice(currentPlanPrice) }} <span class="hint">(по тарифу)</span>
             </template>
           </div>
         </div>
@@ -104,7 +104,7 @@
             :loading="changePlanLoading === plan.key"
             @click="handleChangePlan(plan.key)"
           >
-            {{ plan.name }} ({{ plan.price > 0 ? `${plan.price} ₽` : 'Бесплатно' }})
+            {{ plan.name }} ({{ plan.price > 0 ? formatPrice(plan.price) : 'Бесплатно' }})
           </NButton>
         </div>
       </section>
@@ -154,7 +154,7 @@ import { useRoute, useFetch, navigateTo } from '#imports'
 import { $fetch } from 'ofetch'
 import { ref, computed, h, watch } from 'vue'
 import { NButton, NTag, NInput, NInputNumber, NDataTable, NModal, NSpace, type DataTableColumns } from 'naive-ui'
-import { formatDateNumeric } from '@fastio/shared'
+import { formatDateNumeric, formatPrice } from '@fastio/shared'
 
 const route = useRoute()
 const tenantId = route.params.id as string
@@ -298,9 +298,9 @@ const handleChangePlan = async (planKey: string) => {
   if (!targetPlan) return
 
   const isUpgrade = (targetPlan.sort_order ?? 0) > (currentPlan?.sort_order ?? 0)
-  const priceLabel = targetPlan.price > 0 ? `${targetPlan.price} ₽` : 'Бесплатно'
+  const priceLabel = targetPlan.price > 0 ? formatPrice(targetPlan.price) : 'Бесплатно'
   const message = isUpgrade
-    ? `Перейти на тариф «${targetPlan.name}» (${priceLabel}/мес)?\n\nС баланса сразу спишется ${targetPlan.price} ₽, начнётся новый оплачиваемый период на 30 дней. Неиспользованные деньги за текущий тариф не возвращаются.`
+    ? `Перейти на тариф «${targetPlan.name}» (${priceLabel}/мес)?\n\nС баланса сразу спишется ${formatPrice(targetPlan.price)}, начнётся новый оплачиваемый период на 30 дней. Неиспользованные деньги за текущий тариф не возвращаются.`
     : `Понизить тариф до «${targetPlan.name}» (${priceLabel}/мес)?\n\nДеньги сейчас не списываются. В следующую дату платежа будет списано по новому тарифу.`
 
   if (!window.confirm(message)) return
@@ -368,7 +368,7 @@ const txColumns: DataTableColumns<TxRow> = [
     title: 'Сумма',
     key: 'amount',
     width: 120,
-    render: (row) => `${row.amount > 0 ? '+' : ''}${row.amount} ₽`,
+    render: (row) => `${row.amount > 0 ? '+' : ''}${formatPrice(row.amount)}`,
   },
   {
     title: 'Описание',

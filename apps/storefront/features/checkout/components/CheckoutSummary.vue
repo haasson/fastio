@@ -6,7 +6,6 @@
       :discount-amount="discountAmount"
       :discount-label="discountLabel"
       :total="total"
-      :currency="currency"
     />
     <ul v-if="errors?.length" class="submit-errors">
       <li v-for="err in errors" :key="err">{{ err }}</li>
@@ -34,7 +33,6 @@ type Props = {
   discountAmount: number
   discountLabel?: string | null
   total: number
-  currency: string
   errors?: string[]
   loading?: boolean
 }

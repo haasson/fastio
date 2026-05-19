@@ -29,7 +29,6 @@ type UseDishCustomizationProps = {
   item: ModalItem
   modifiers: DishModifierGroup[]
   addons: ClientAddon[]
-  currency?: string
   initialQuantity?: number
   initialRemovedIngredients?: string[]
   initialModifiers?: OrderItemModifier[]
@@ -38,8 +37,6 @@ type UseDishCustomizationProps = {
 }
 
 export function useDishCustomization(props: UseDishCustomizationProps) {
-  const currency = props.currency ?? '₽'
-
   // --- State ---
   const quantity = ref(props.initialQuantity ?? 1)
   const removedSet = ref(new Set<string>(props.initialRemovedIngredients ?? []))
@@ -177,7 +174,6 @@ export function useDishCustomization(props: UseDishCustomizationProps) {
     weightUnit: props.item.weightUnit ?? 'г',
     unitPrice,
     totalPrice,
-    currency,
 
     // Methods
     selectModifier,

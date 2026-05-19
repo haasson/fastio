@@ -44,7 +44,6 @@
               :key="svc.id"
               variant="service"
               :product="productByService[svc.id]"
-              :currency="currency"
               :duration="svc.duration"
               :can-book="bookingEnabled && svc.isBookable"
               :in-cart="isInCart(svc.id)"
@@ -72,14 +71,13 @@
     <template #meta>
       <div class="meta">
         <span class="meta-item">{{ modalService.duration }} мин</span>
-        <span v-if="modalService.price" class="meta-item meta-price">{{ modalService.price }} {{ currency }}</span>
+        <span v-if="modalService.price" class="meta-item meta-price">{{ formatPrice(modalService.price) }}</span>
       </div>
     </template>
     <ServiceModalBody
       v-if="bookingEnabled"
       :key="modalService.id"
       :service="modalService"
-      :currency="currency"
       :is-edit="isInCart(modalService.id)"
       @close="showModal = false"
     />
@@ -89,12 +87,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Tenant, Category } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { useNuxtData, useRouter } from 'nuxt/app'
 import { FsSection, FsHeading, FsCard, FsText } from '@fastio/public-ui'
 import { useServicesStore, type ServiceCard } from '../stores/services'
 import { useCartStore } from '~/features/cart'
 import { useSelectedBranchStore } from '~/features/branch'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import useLegalCompliance from '~/shared/composables/useLegalCompliance'
 import { useItemPlaceholder } from '~/shared/composables/useItemPlaceholder'
 import SfProductCard from '~/shared/ui/sf/domain/SfProductCard.vue'
@@ -116,7 +114,6 @@ const { data: tenant } = useNuxtData<Tenant>('tenant')
 const servicesStore = useServicesStore()
 const cart = useCartStore()
 const branchStore = useSelectedBranchStore()
-const currency = useCurrency()
 const router = useRouter()
 const { legalInfoComplete } = useLegalCompliance()
 const { placeholderIcon } = useItemPlaceholder()

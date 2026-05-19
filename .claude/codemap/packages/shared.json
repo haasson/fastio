@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-19T06:56:52.282Z",
+  "generated_at": "2026-05-19T10:48:53.888Z",
   "stats": {
     "files": 45,
     "pages": 0,
@@ -544,14 +544,14 @@
     },
     "src/utils/format.ts": {
       "kind": "ts",
-      "hash": "59beac09a82b",
-      "purpose": "Форматирование цены (RUB, без копеек) и плюрализация по числу для русского языка",
+      "hash": "c484e9e1f348",
+      "purpose": "Форматирование цен (RUB с thousand-separator'ами) и pluralize для русского склонения",
       "symbols": [
         {
           "name": "formatPrice",
           "kind": "function",
-          "hash": "bf95c80d",
-          "purpose": "Форматирует число в рубли по ru-RU без дробной части: 1250 → «1 250 ₽»"
+          "hash": "014c4603",
+          "purpose": "Цена с символом ₽ и пробелами в тысячах. Принимает unknown: number/numeric-string → формат, остальное (null/NaN/object/...) → прочерк"
         },
         {
           "name": "pluralize",

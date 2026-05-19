@@ -4,7 +4,26 @@ const priceFormatter = new Intl.NumberFormat('ru-RU', {
   maximumFractionDigits: 0,
 })
 
-export const formatPrice = (price: number) => priceFormatter.format(price)
+/**
+ * Форматирует цену с символом ₽ и thousand-separator'ами:
+ * `1500` → `"1 500 ₽"`, `0` → `"0 ₽"`, `"200"` → `"200 ₽"`.
+ *
+ * Принимает любой `unknown` — number/numeric-string форматируется, всё
+ * остальное (null, undefined, NaN, boolean, object, нечисловая строка)
+ * возвращает прочерк. Если по логике компонента пустое значение это
+ * «бесплатно» или «скрыто», заворачивай в условие в шаблоне, а не
+ * подсовывай 0.
+ */
+export const formatPrice = (value: unknown): string => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? priceFormatter.format(value) : '—'
+  }
+  if (typeof value === 'string') {
+    const num = Number(value)
+    return Number.isFinite(num) ? priceFormatter.format(num) : '—'
+  }
+  return '—'
+}
 
 /**
  * Склонение существительного по числу (русский язык).

@@ -40,7 +40,7 @@
           </template>
           <template v-else-if="compact">
             <span class="item-price">{{ item.price }} × {{ item.quantity }}</span>
-            <span class="item-total">{{ item.price * item.quantity }} ₽</span>
+            <span class="item-total">{{ formatPrice(item.price * item.quantity) }}</span>
             <UiButton
               size="small"
               type="text"
@@ -50,8 +50,8 @@
             />
           </template>
           <template v-else>
-            <span class="item-price">{{ item.price }} ₽</span>
-            <span class="item-total">{{ item.price * item.quantity }} ₽</span>
+            <span class="item-price">{{ formatPrice(item.price) }}</span>
+            <span class="item-total">{{ formatPrice(item.price * item.quantity) }}</span>
             <UiStepper
               :model-value="item.quantity"
               :min="0"
@@ -80,7 +80,7 @@
         <span class="cooking-dot" :class="item.dotClass" />
         <span class="cooking-name">{{ item.dishName }}</span>
         <span class="cooking-qty">×{{ item.count }}</span>
-        <span class="cooking-price">{{ item.totalPrice }} ₽</span>
+        <span class="cooking-price">{{ formatPrice(item.totalPrice) }}</span>
         <UiMenuDropdown
           v-if="checkoutMode"
           :items="kitchenMenuItems(item)"
@@ -111,7 +111,7 @@
     <!-- Stats -->
     <div v-if="showStats" class="stats">
       <span class="stat-orders">{{ session?.count ?? 0 }} {{ pluralize(session?.count ?? 0, 'заказ', 'заказа', 'заказов') }}</span>
-      <span class="stat-sum">{{ session?.sum ?? 0 }} ₽</span>
+      <span class="stat-sum">{{ formatPrice(session?.sum ?? 0) }}</span>
     </div>
   </div>
 </template>
@@ -121,7 +121,7 @@ import { ref, computed } from 'vue'
 import { UiButton, UiTag, UiStepper, UiMenuDropdown } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
-import { orderItemKey, pluralize } from '@fastio/shared'
+import { orderItemKey, pluralize, formatPrice } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
 import { useKitchenProgress, type KitchenProgressRow } from '~/features/kitchen'
 

@@ -33,13 +33,12 @@
         :selected-addon-ids="[...selectedAddonIds]"
         :can-select-more-addons="canSelectMoreAddons"
         :addons-count-label="addonsCountLabel"
-        :currency="custCurrency"
         @select-modifier="selectModifier"
         @update:removed-ingredients="removedSet = new Set($event)"
         @update:selected-addon-ids="selectedAddonIds = new Set($event)"
       />
 
-      <DishModalFooter v-if="!viewOnly" v-model="quantity" :total-price="totalPrice" :currency="custCurrency" :mode="mode" @confirm="onConfirm" />
+      <DishModalFooter v-if="!viewOnly" v-model="quantity" :total-price="totalPrice" :mode="mode" @confirm="onConfirm" />
     </div>
   </FsDialog>
 </template>
@@ -63,7 +62,6 @@ type Props = {
   item: ModalItem
   modifiers: DishModifierGroup[]
   addons: ClientAddon[]
-  currency?: string
   viewOnly?: boolean
   mode?: 'add' | 'edit' | 'order'
   initialQuantity?: number
@@ -73,7 +71,7 @@ type Props = {
   maxAddons?: number | null
 }
 
-const props = withDefaults(defineProps<Props>(), { currency: '₽', mode: 'add' })
+const props = withDefaults(defineProps<Props>(), { mode: 'add' })
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'add': [item: CartItem]
@@ -91,14 +89,12 @@ const {
   totalPrice,
   canSelectMoreAddons,
   addonsCountLabel,
-  currency: custCurrency,
   selectModifier,
   buildCartItem,
 } = useDishCustomization({
   item: props.item,
   modifiers: props.modifiers,
   addons: props.addons,
-  currency: props.currency,
   initialQuantity: props.initialQuantity,
   initialRemovedIngredients: props.initialRemovedIngredients,
   initialModifiers: props.initialModifiers,

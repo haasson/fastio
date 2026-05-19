@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Promotion } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { buildPromoStatusColumn, buildPromoActivePeriodColumn, buildPromoActionsColumn } from './_shared'
 
 const PROMOTION_TYPE_LABELS: Record<string, string> = {
@@ -46,7 +47,7 @@ export const buildPromotionColumns = (deps: Deps): DataTableColumns<Promotion> =
         return h(
           UiText,
           { size: 'tiny', style: 'color: var(--color-success); font-weight: 600' },
-          () => row.discountType === 'percent' ? `−${row.discountValue}%` : `−${row.discountValue} ₽`,
+          () => row.discountType === 'percent' ? `−${row.discountValue}%` : `−${formatPrice(row.discountValue)}`,
         )
       },
     },

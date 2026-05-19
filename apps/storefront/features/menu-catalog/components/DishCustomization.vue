@@ -24,7 +24,6 @@
       :items="modifierChips(group)"
       mode="radio"
       :model-value="[selectedModifiers[group.groupId]]"
-      :currency="currency"
       :group-name="`mod-${group.groupId}`"
       @update:model-value="emit('selectModifier', group.groupId, $event[0])"
     />
@@ -35,7 +34,6 @@
       :items="ingredientChips"
       mode="toggle"
       :model-value="removedIngredients"
-      :currency="currency"
       @update:model-value="emit('update:removedIngredients', $event)"
     />
 
@@ -46,7 +44,6 @@
       mode="checkbox"
       :model-value="selectedAddonIds"
       :disabled-select="!canSelectMoreAddons"
-      :currency="currency"
       @update:model-value="emit('update:selectedAddonIds', $event)"
     />
   </div>
@@ -73,10 +70,9 @@ type Props = {
   selectedAddonIds: string[]
   canSelectMoreAddons?: boolean
   addonsCountLabel?: string | null
-  currency?: string
 }
 
-const props = withDefaults(defineProps<Props>(), { currency: '₽' })
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   selectModifier: [groupId: string, optionId: string]

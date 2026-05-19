@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-19T09:49:07.922Z",
+  "generated_at": "2026-05-19T10:48:53.698Z",
   "stats": {
     "files": 84,
     "pages": 0,
@@ -219,8 +219,8 @@
     },
     "columns/addons.ts": {
       "kind": "ts",
-      "hash": "a27f2c60bfbb",
-      "purpose": "Билдеры колонок для таблиц Addon и AddonPreset (UiDataTable): чекбоксы активности, цены, actions через UiRowActions",
+      "hash": "d7a427dad989",
+      "purpose": "Конфиг колонок для админских таблиц аддонов и пресетов аддонов (name/price/weight/actions)",
       "symbols": [
         {
           "name": "buildAddonColumns",
@@ -1019,8 +1019,8 @@
     },
     "shared/ui/components/DishItemRow.vue": {
       "kind": "vue",
-      "hash": "7df6a6d2d107",
-      "purpose": "Строка позиции заказа в OrderModal/чеке: категория, название, модификаторы тегами, удалённые ингредиенты, итоговая цена",
+      "hash": "e3571934745a",
+      "purpose": "Строка-карточка блюда в списках админки: имя, цена, модификаторы/удалённые ингредиенты/аддоны через UiTag, дельты цен через formatPrice",
       "symbols": [
         {
           "name": "props",
@@ -1389,8 +1389,8 @@
     },
     "shared/utils/planFeatureLabels.ts": {
       "kind": "ts",
-      "hash": "c823d46acca1",
-      "purpose": "Текстовые описания фич плана для тариф-карточек и confirm-диалога смены тарифа",
+      "hash": "e89b5fa1173c",
+      "purpose": "Формирование списка фич для отображения в карточках тарифов (с локализованными labels по menuStyle тенанта)",
       "symbols": [
         {
           "name": "getPlanFeatureLabels",

@@ -34,7 +34,7 @@
               closable
               @close="detachAddon(addon.id)"
             >
-              {{ addon.name }} · {{ addon.price }} ₽
+              {{ addon.name }} · {{ formatPrice(addon.price) }}
             </UiTag>
           </div>
 
@@ -108,7 +108,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect, UiInputNumber, UiEditButton, UiAlert, useMessage } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
-import { pluralize } from '@fastio/shared'
+import { pluralize, formatPrice } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { useDatabase } from '~/shared/data/useDatabase'
 import AddonPickerModal from './AddonPickerModal.vue'

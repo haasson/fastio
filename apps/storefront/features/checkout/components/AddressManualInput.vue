@@ -41,14 +41,14 @@
 
     <template v-if="!addressError">
       <FsAlert v-if="checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
-        Минимальная сумма заказа для доставки по данному адресу: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong> (без учёта доставки)
+        Минимальная сумма заказа для доставки по данному адресу: <strong>{{ formatPrice(checkout.minOrderAmount) }}</strong> (без учёта доставки)
       </FsAlert>
       <FsAlert v-else-if="checkout.deliveryZone && !checkout.outsideZones" type="success" :icon="Check">
         Доставка:
         <strong v-if="zoneFee === 0">бесплатно</strong>
-        <strong v-else>{{ zoneFee }} {{ currency }}</strong>
+        <strong v-else>{{ formatPrice(zoneFee) }}</strong>
         <span v-if="checkout.deliveryZone.freeDeliveryFrom && zoneFee > 0" class="zone-hint">
-          (бесплатно от {{ checkout.deliveryZone.freeDeliveryFrom }} {{ currency }})
+          (бесплатно от {{ formatPrice(checkout.deliveryZone.freeDeliveryFrom) }})
         </span>
       </FsAlert>
       <FsAlert v-else-if="checkout.outsideZones" type="error" :icon="X">
@@ -60,14 +60,14 @@
       <FsAlert v-else-if="addressVerified && !checkout.hasZones" type="success" :icon="Check">
         Доставка:
         <strong v-if="fixedFee === 0">бесплатно</strong>
-        <strong v-else>{{ fixedFee }} {{ currency }}</strong>
+        <strong v-else>{{ formatPrice(fixedFee) }}</strong>
         <span v-if="tenantFreeDeliveryFrom > 0 && fixedFee > 0" class="zone-hint">
-          (бесплатно от {{ tenantFreeDeliveryFrom }} {{ currency }})
+          (бесплатно от {{ formatPrice(tenantFreeDeliveryFrom) }})
         </span>
       </FsAlert>
     </template>
     <FsAlert v-if="addressError && !checkout.hasZones && checkout.belowMinOrder" type="warning" :icon="AlertTriangle">
-      Минимальная сумма заказа для доставки: <strong>{{ checkout.minOrderAmount }} {{ currency }}</strong> (без учёта доставки)
+      Минимальная сумма заказа для доставки: <strong>{{ formatPrice(checkout.minOrderAmount) }}</strong> (без учёта доставки)
     </FsAlert>
   </div>
 </template>
@@ -77,6 +77,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useNuxtData } from 'nuxt/app'
 import { Check, AlertTriangle, X } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { useCheckoutStore } from '../stores/checkout'
 import { useCartStore } from '~/features/cart'
 import type { DadataSuggestion } from '~/shared/composables/useDadataSuggestions'
@@ -85,8 +86,6 @@ import { FsInput, FsAlert, FsDropdownList, FsField } from '@fastio/public-ui'
 import { validationRules } from '@fastio/kit'
 import { reportError } from '~/shared/utils/reportError'
 
-type Props = { currency: string }
-defineProps<Props>()
 const emit = defineEmits<{ verified: [] }>()
 
 const checkout = useCheckoutStore()

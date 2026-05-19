@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
-import { formatPhone, normalizePhone } from '@fastio/shared'
+import { formatPhone, normalizePhone, formatPrice } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireInternalSecret } from '../../utils/auth'
 import { broadcastToTenantTelegram } from '../../utils/telegramBroadcast'
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
         + (i.addons?.reduce((s, a) => s + a.price * a.quantity, 0) ?? 0)
       ) * i.quantity
 
-      let line = `• <b>${i.dish_name}</b> × ${i.quantity} — ${itemTotal} ₽`
+      let line = `• <b>${i.dish_name}</b> × ${i.quantity} — ${formatPrice(itemTotal)}`
 
       if (i.modifiers?.length) {
         line += `\n  <i>${i.modifiers.map((m) => m.optionName).join(', ')}</i>`
@@ -82,8 +82,8 @@ export default defineEventHandler(async (event) => {
 
   text += `\n${sep}\n${items}\n${sep}\n\n`
 
-  if (order.delivery_fee) text += `🚗 Доставка: ${order.delivery_fee} ₽\n`
-  text += `💰 Итого: <b>${order.total} ₽</b>`
+  if (order.delivery_fee) text += `🚗 Доставка: ${formatPrice(order.delivery_fee)}\n`
+  text += `💰 Итого: <b>${formatPrice(order.total)}</b>`
 
   // customer_phone в orders уже хранится в каноне '7XXXXXXXXXX' (см. orders.post.ts),
   // но на всякий случай прогоняем через shared normalizePhone — защита от старых

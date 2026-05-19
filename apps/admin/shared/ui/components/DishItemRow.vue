@@ -6,7 +6,7 @@
           <span v-if="categoryName" class="category">{{ categoryName }}</span>
           <span class="name">{{ name }}</span>
         </div>
-        <span v-if="price != null" class="row-price">{{ price }} ₽</span>
+        <span v-if="price != null" class="row-price">{{ formatPrice(price) }}</span>
       </div>
       <div v-if="modifiers?.length" class="row">
         <div class="tags">
@@ -19,10 +19,10 @@
             round
           >
             {{ mod.name }}
-            <template v-if="mod.priceDelta > 0"> +{{ mod.priceDelta }}₽</template>
+            <template v-if="mod.priceDelta > 0"> +{{ formatPrice(mod.priceDelta) }}</template>
           </UiTag>
         </div>
-        <span v-if="modifiersDelta > 0" class="row-price delta">+{{ modifiersDelta }} ₽</span>
+        <span v-if="modifiersDelta > 0" class="row-price delta">+{{ formatPrice(modifiersDelta) }}</span>
       </div>
       <div v-if="removedIngredients?.length" class="row">
         <div class="tags">
@@ -50,10 +50,10 @@
             empty
             round
           >
-            {{ addon.name }} +{{ addon.price }}₽
+            {{ addon.name }} +{{ formatPrice(addon.price) }}
           </UiTag>
         </div>
-        <span v-if="addonsTotal > 0" class="row-price delta">+{{ addonsTotal }} ₽</span>
+        <span v-if="addonsTotal > 0" class="row-price delta">+{{ formatPrice(addonsTotal) }}</span>
       </div>
     </div>
     <div class="controls">
@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { UiTag, UiIcon } from '@fastio/ui'
+import { formatPrice } from '@fastio/shared'
 
 type ModifierTag = { name: string; priceDelta: number }
 type AddonTag = { name: string; price: number }

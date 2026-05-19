@@ -48,7 +48,7 @@
               <div v-else class="item-no-photo" />
             </div>
             <span class="item-name">{{ entry.data.name }}</span>
-            <span class="item-price">{{ entry.data.price }} ₽</span>
+            <span class="item-price">{{ formatPrice(entry.data.price) }}</span>
             <div class="item-controls">
               <UiStepper
                 :model-value="dishQty[entry.data.id] ?? 1"
@@ -74,7 +74,7 @@
         </div>
         <div class="summary-info">
           <span class="summary-name">{{ selectedDish.name }}</span>
-          <span class="summary-price">{{ selectedDish.price }} ₽</span>
+          <span class="summary-price">{{ formatPrice(selectedDish.price) }}</span>
         </div>
       </div>
 
@@ -146,7 +146,7 @@
             @update:model-value="selectedAddonIds.has(addon.id) ? selectedAddonIds.delete(addon.id) : selectedAddonIds.add(addon.id)"
           >
             {{ addon.name }}
-            <span class="addon-price" :class="{ 'addon-price-active': selectedAddonIds.has(addon.id) }">+{{ addon.price }} ₽</span>
+            <span class="addon-price" :class="{ 'addon-price-active': selectedAddonIds.has(addon.id) }">+{{ formatPrice(addon.price) }}</span>
             <span v-if="addon.weight" class="addon-weight">{{ addon.weight }} г</span>
             <span v-if="!addon.active" class="addon-unavailable">недоступно</span>
           </UiCheckbox>
@@ -157,7 +157,7 @@
             @update:model-value="selectedAddonIds.has(addon.addonId) ? selectedAddonIds.delete(addon.addonId) : selectedAddonIds.add(addon.addonId)"
           >
             {{ addon.addonName }}
-            <span class="addon-price" :class="{ 'addon-price-active': selectedAddonIds.has(addon.addonId) }">+{{ addon.price }} ₽</span>
+            <span class="addon-price" :class="{ 'addon-price-active': selectedAddonIds.has(addon.addonId) }">+{{ formatPrice(addon.price) }}</span>
             <span class="addon-unavailable">удалено</span>
           </UiCheckbox>
         </div>
@@ -191,7 +191,7 @@ import { ref, computed, reactive, toRef, watch } from 'vue'
 import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput, UiStepper } from '@fastio/ui'
 import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import type { Addon } from '@fastio/shared'
-import { isAutoCategory } from '@fastio/shared'
+import { isAutoCategory, formatPrice } from '@fastio/shared'
 import { useOrderDishPicker } from '~/features/orders'
 import { useGate } from '~/shared/plan/useGate'
 import { useTerms } from '~/features/legal'

@@ -29,7 +29,7 @@
           :model-value="form.addonIds.includes(addon.id)"
           @update:model-value="toggleAddon(addon.id, $event)"
         >
-          {{ addon.name }} · {{ addon.price }} ₽
+          {{ addon.name }} · {{ formatPrice(addon.price) }}
         </UiCheckbox>
       </div>
     </UiForm>
@@ -40,6 +40,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiText, UiCheckbox } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '~/shared/utils/reportError'
 

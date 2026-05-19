@@ -3,7 +3,7 @@
     <div v-for="item in items" :key="item.id ?? item.dishName" class="order-item">
       <div class="item-main">
         <span class="item-name">{{ item.dishName }} × {{ item.quantity }}</span>
-        <span class="item-price">{{ getItemUnitPrice(item) * item.quantity }} {{ currency }}</span>
+        <span class="item-price">{{ formatPrice(getItemUnitPrice(item) * item.quantity) }}</span>
       </div>
       <p v-if="getItemSummaryText(item)" class="item-detail">{{ getItemSummaryText(item) }}</p>
       <p v-if="item.status === 'pending'" class="item-detail item-pending">Ожидает подтверждения</p>
@@ -13,11 +13,10 @@
 
 <script setup lang="ts">
 import type { OrderItem } from '@fastio/shared'
-import { getItemUnitPrice, getItemSummary } from '@fastio/shared'
+import { getItemUnitPrice, getItemSummary, formatPrice } from '@fastio/shared'
 
 type Props = {
   items: OrderItem[]
-  currency: string
 }
 
 defineProps<Props>()

@@ -17,12 +17,11 @@ export default defineFeature({
   },
 
   dependsOn: [
-    'shared.composables.useCurrency',   // форматирование цен в тексте зон
     'shared.composables.useIsMobile',   // мобильная компоновка карты vs текста
     'shared.ui.layout.StorePageLayout',
     'shared.ui.sections.PageShell',
     'shared.ui.sf.domain.SfEmptyState',
     'server.api.delivery-zones',
-    '@fastio/shared',                   // findDeliveryZone, defaultSiteLayout, type DeliveryZone
+    '@fastio/shared',                   // findDeliveryZone, defaultSiteLayout, formatPrice, type DeliveryZone
   ],
 })

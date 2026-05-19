@@ -12,7 +12,7 @@
     <div class="summary-item">
       <UiText size="small" class="summary-label">Баланс</UiText>
       <UiTitle size="h3" :class="{ 'balance-low': (tenant.balance ?? 0) < price }">
-        {{ formatPrice(tenant.balance ?? 0) }}
+        {{ formatPrice(tenant.balance) }}
       </UiTitle>
     </div>
 

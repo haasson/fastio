@@ -1,5 +1,5 @@
 import type { Plan, MenuStyle } from '@fastio/shared'
-import { extractPlanTier, getPlanTierOrder } from '@fastio/shared'
+import { extractPlanTier, getPlanTierOrder, formatPrice } from '@fastio/shared'
 
 const MODULE_LABELS: Record<string, string> = {
   delivery: 'Доставка',
@@ -65,5 +65,5 @@ export const getPrevPlanName = (plan: Plan, allPlans: readonly Plan[]): string |
 export const getChangePlanConfirmText = (price: number, isOnTrial: boolean): string => {
   if (isOnTrial) return 'Тариф изменится сразу. Списаний не будет — вы на пробном периоде.'
 
-  return `Сейчас с баланса спишется ${price.toLocaleString('ru')} ₽, и начнётся новый оплачиваемый период на 30 дней. Неиспользованные деньги за текущий тариф не возвращаются.`
+  return `Сейчас с баланса спишется ${formatPrice(price)}, и начнётся новый оплачиваемый период на 30 дней. Неиспользованные деньги за текущий тариф не возвращаются.`
 }

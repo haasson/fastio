@@ -3,7 +3,7 @@
     <FsCard class="sidebar-card">
       <div class="sidebar-body">
         <FsHeading as="h6" class="sidebar-title">Ваш заказ</FsHeading>
-        <SfOrderItemsList :items="cart.dishItems" :currency="currency" />
+        <SfOrderItemsList :items="cart.dishItems" />
         <FsDivider spacing="none" />
         <CheckoutSummary
           :subtotal="cart.dishSubtotal"
@@ -11,7 +11,6 @@
           :discount-amount="checkout.discountAmount"
           :discount-label="discountLabel"
           :total="checkout.orderTotal"
-          :currency="currency"
           :errors="errors"
           :loading="loading"
           @submit="emit('submit')"
@@ -30,7 +29,6 @@ import SfOrderItemsList from '~/shared/ui/sf/domain/SfOrderItemsList.vue'
 import CheckoutSummary from './CheckoutSummary.vue'
 
 type Props = {
-  currency: string
   errors?: string[]
   loading?: boolean
 }

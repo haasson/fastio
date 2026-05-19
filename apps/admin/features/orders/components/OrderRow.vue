@@ -30,7 +30,7 @@
 
     <div class="right">
       <span class="time">{{ relativeTime }}</span>
-      <span class="total">{{ order.total }} ₽</span>
+      <span class="total">{{ formatPrice(order.total) }}</span>
       <UiButton
         v-for="target in quickActionStatuses"
         :key="target.id"
@@ -50,7 +50,7 @@
 import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { formatPhone } from '@fastio/shared'
+import { formatPhone, formatPrice } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS } from '~/config/retail/order-options'

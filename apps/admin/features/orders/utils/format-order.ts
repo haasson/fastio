@@ -1,4 +1,5 @@
 import type { OrderEventType } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { PAYMENT_TYPE_LABELS, DELIVERY_TYPE_LABELS } from '~/config/retail/order-options'
 
 type EventMeta = Record<string, unknown>
@@ -28,7 +29,7 @@ export const formatFieldValue = (field: string, value: unknown): string => {
   if (value === null || value === undefined || value === '') return '—'
   if (field === 'payment_type') return PAYMENT_TYPE_LABELS[String(value)] ?? String(value)
   if (field === 'delivery_type') return DELIVERY_TYPE_LABELS[String(value)] ?? String(value)
-  if (field === 'delivery_fee') return `${value} ₽`
+  if (field === 'delivery_fee') return formatPrice(value)
 
   return String(value)
 }

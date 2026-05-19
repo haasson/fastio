@@ -3,7 +3,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { useNuxtData } from 'nuxt/app'
 import type { Tenant } from '@fastio/shared'
-import { localDateTimeToUtcIso, addDaysToDateStr, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { localDateTimeToUtcIso, addDaysToDateStr, DEFAULT_TIMEZONE, formatPrice } from '@fastio/shared'
 import { useCartStore, computeBranchCompat  } from '~/features/cart'
 import { useMenuStore } from '~/features/menu-catalog'
 import { useAuthStore } from '~/features/auth'
@@ -134,7 +134,7 @@ export const useCheckoutStore = defineStore('checkout', () => {
   }
 
   function mapPromoError(raw: RawPromoCheck): string {
-    if (raw?.min_order_amount != null) return `Минимальная сумма заказа — ${raw.min_order_amount} ₽`
+    if (raw?.min_order_amount != null) return `Минимальная сумма заказа — ${formatPrice(raw.min_order_amount)}`
     return 'Промокод недействителен'
   }
 

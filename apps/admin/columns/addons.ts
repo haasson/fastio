@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { UiText, UiSwitch, UiTag, UiRowActions } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 
 type AddonDeps = {
   onToggle: (id: string, active: boolean) => void
@@ -30,7 +31,7 @@ export const buildAddonColumns = (deps: AddonDeps): DataTableColumns<Addon> => {
       key: 'price',
       width: 110,
       sorter: (a, b) => a.price - b.price,
-      render: (row) => h(UiText, { size: 'tiny' }, () => `${row.price} ₽`),
+      render: (row) => h(UiText, { size: 'tiny' }, () => formatPrice(row.price)),
     },
     {
       title: 'Вес',
@@ -72,7 +73,7 @@ export const buildAddonPresetColumns = (deps: AddonPresetDeps): DataTableColumns
           row.addonIds.map((id) => {
             const addon = addonById(id)
 
-            return h(UiTag, { key: id, size: 'small', type: 'primary', empty: true, round: true }, () => addon ? `${addon.name} · ${addon.price} ₽` : id)
+            return h(UiTag, { key: id, size: 'small', type: 'primary', empty: true, round: true }, () => addon ? `${addon.name} · ${formatPrice(addon.price)}` : id)
           }),
         )
       },

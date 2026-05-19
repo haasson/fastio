@@ -21,7 +21,7 @@
           <SfPriceTag
             :price="product.price"
             :prefix="dishPricePrefix"
-            :currency="currency"
+
             size="small"
           />
           <SfStepper
@@ -84,7 +84,7 @@
           <SfPriceTag
             :price="product.price"
             :prefix="overlayPricePrefix"
-            :currency="currency"
+
           />
           <SfStepper
             v-if="stepperCount !== null"
@@ -120,7 +120,7 @@
         <SfPriceTag
           :price="product.price"
           :prefix="dishPricePrefix"
-          :currency="currency"
+
         />
         <SfStepper
           v-if="stepperCount !== null"
@@ -163,7 +163,6 @@ import type { ProductData } from '~/shared/utils/product'
 type Props = {
   variant: 'dish' | 'service'
   product: ProductData
-  currency?: string
   mobileCompact?: boolean
   overlay?: boolean
   // dish-specific
@@ -178,7 +177,6 @@ type Props = {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currency: '₽',
   orderingEnabled: true,
   cartCount: 0,
   hasModifiers: false,

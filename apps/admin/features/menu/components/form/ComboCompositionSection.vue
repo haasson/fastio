@@ -40,7 +40,7 @@
                 @click="changeQty(item.key, 1)"
               />
             </div>
-            <span class="item-price">{{ getItemPrice(item) * item.quantity }} ₽</span>
+            <span class="item-price">{{ formatPrice(getItemPrice(item) * item.quantity) }}</span>
           </DishItemRow>
         </ul>
 
@@ -59,12 +59,12 @@
         <div v-if="displayItems.length > 0" class="totals">
           <div class="total-row">
             <span class="total-label">{{ `Сумма ${item.plural.gen}` }}</span>
-            <span class="total-value">{{ dishesTotal }} ₽</span>
+            <span class="total-value">{{ formatPrice(dishesTotal) }}</span>
           </div>
           <template v-if="comboPrice !== null && comboPrice > 0">
             <div class="total-row">
               <span class="total-label">Цена комбо</span>
-              <span class="total-value">{{ comboPrice }} ₽</span>
+              <span class="total-value">{{ formatPrice(comboPrice) }}</span>
             </div>
             <div class="total-row" :class="discountClass">
               <span class="total-label">{{ discountLabel }}</span>
@@ -82,6 +82,7 @@ import { ref, computed, watch } from 'vue'
 import { UiCollapseItem, UiButton, UiSkeleton } from '@fastio/ui'
 import DishItemRow from '~/shared/ui/components/DishItemRow.vue'
 import type { Addon, Category, ComboItemInput, DishModifierGroup } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import DishPickerModal, { type DishPickerResult } from '../DishPickerModal.vue'
 import { useTerms } from '~/features/legal'
@@ -213,7 +214,7 @@ const discountFormatted = computed(() => {
   const pct = dishesTotal.value > 0 ? Math.round((Math.abs(discount.value) / dishesTotal.value) * 100) : 0
   const sign = discount.value > 0 ? '−' : '+'
 
-  return `${sign}${Math.abs(discount.value)} ₽ (${pct}%)`
+  return `${sign}${formatPrice(Math.abs(discount.value))} (${pct}%)`
 })
 
 const discountClass = computed(() => {

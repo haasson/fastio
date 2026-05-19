@@ -2,7 +2,7 @@ import { computed, h, type Ref } from 'vue'
 import { UiTag, UiText } from '@fastio/ui'
 import type { DataTableColumn, DataTableColumns } from '@fastio/ui'
 import type { Order, OrderStatus } from '@fastio/shared'
-import { formatPhone } from '@fastio/shared'
+import { formatPhone, formatPrice } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'
 import { DELIVERY_TYPE_LABELS, PAYMENT_TYPE_LABELS } from '~/config/retail/order-options'
 import { formatRelativeTime } from '@fastio/shared'
@@ -153,7 +153,7 @@ export function useOrderTable(options: UseOrderTableOptions) {
           width: 90,
           sorter: true,
           sortOrder: sortOrderFor('total'),
-          render: (row: Order) => h('span', { class: 'col-total' }, `${row.total} ₽`),
+          render: (row: Order) => h('span', { class: 'col-total' }, formatPrice(row.total)),
         } satisfies DataTableColumn<Order>]
         : [],
       ...(branchId.value === null && branchFilterOptions.length > 1 && isVisible('branchId'))

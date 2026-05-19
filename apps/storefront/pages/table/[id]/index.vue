@@ -21,7 +21,7 @@
       :visible="tableStore.itemCount > 0"
       :count="tableStore.itemCount"
       label="Чек"
-      :price="`${tableStore.checkTotal} ${currency}`"
+      :price="formatPrice(tableStore.checkTotal)"
       @click="checkOpen = true"
     >
       <template #icon>
@@ -64,7 +64,7 @@
       <div class="check-footer">
         <div class="check-total">
           <FsText variant="body" :weight="600">Итого</FsText>
-          <FsText variant="body" :weight="600">{{ tableStore.checkTotal }} {{ currency }}</FsText>
+          <FsText variant="body" :weight="600">{{ formatPrice(tableStore.checkTotal) }}</FsText>
         </div>
       </div>
     </template>
@@ -77,9 +77,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useAsyncData, useRequestFetch, useNuxtData } from 'nuxt/app'
 import { FsHeading, FsText, FsDrawer, FsButton, FsAlert } from '@fastio/public-ui'
 import type { Tenant } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import { useTableStore, useTableRealtime, type CheckItem } from '~/features/table-mode'
 import { useToast } from '~/shared/composables/useToast'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import { isDishItem, type CartItem } from '~/features/cart'
 import { reportError } from '~/shared/utils/reportError'
 import { ClipboardList } from 'lucide-vue-next'
@@ -93,7 +93,6 @@ const route = useRoute()
 const rfetch = useRequestFetch()
 const tableStore = useTableStore()
 const { success: showSuccess, error: showError } = useToast()
-const currency = useCurrency()
 
 const tableId = route.params.id as string
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}

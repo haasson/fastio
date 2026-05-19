@@ -290,7 +290,7 @@ const planGroups = computed(() => [
   { type: 'services', label: 'Услуги и запись (services)', plans: allPlans.value.filter((p) => p.business_type === 'services') },
 ])
 
-import { getPlanTierOrder } from '@fastio/shared'
+import { getPlanTierOrder, formatPrice } from '@fastio/shared'
 
 const editing = ref<PlanRow | null>(null)
 const modalOpen = ref(false)
@@ -436,7 +436,7 @@ const columns: DataTableColumns<PlanRow> = [
     title: 'Цена',
     key: 'price',
     width: 120,
-    render: (row) => row.price > 0 ? `${row.price} ₽` : 'Бесплатно',
+    render: (row) => row.price > 0 ? formatPrice(row.price) : 'Бесплатно',
     sorter: (a, b) => a.price - b.price,
   },
   { title: 'Порядок', key: 'sort_order', width: 90, sorter: (a, b) => a.sort_order - b.sort_order },

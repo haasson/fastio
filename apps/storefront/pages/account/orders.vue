@@ -27,7 +27,7 @@
                 <div class="order-left">
                   <div class="order-header">
                     <span class="order-number">#{{ order.orderNumber }}</span>
-                    <span class="order-total">{{ order.total }} {{ currency }}</span>
+                    <span class="order-total">{{ formatPrice(order.total) }}</span>
                   </div>
                   <span class="order-meta">{{ formatDate(order.createdAt) }} · {{ order.items.length }} {{ itemsLabel(order.items.length) }}</span>
                 </div>
@@ -58,7 +58,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { navigateTo, useRoute } from 'nuxt/app'
 import type { Order } from '@fastio/shared'
-import { pluralize, formatDateTime } from '@fastio/shared'
+import { pluralize, formatDateTime, formatPrice } from '@fastio/shared'
 import { ShoppingBag, ChevronRight } from 'lucide-vue-next'
 import { FsSection, FsCard, FsButton } from '@fastio/public-ui'
 import { useStorefrontTerms } from '~/shared/composables/useStorefrontTerms'
@@ -69,7 +69,6 @@ import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
 import { useAuthStore } from '~/features/auth'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import { storeToRefs } from 'pinia'
 
 definePageMeta({ middleware: 'no-services' })
@@ -78,7 +77,6 @@ const { menu } = useStorefrontTerms()
 const route = useRoute()
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)
-const currency = useCurrency()
 
 const orders = ref<Order[]>([])
 const loading = ref(true)

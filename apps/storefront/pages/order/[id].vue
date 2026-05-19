@@ -42,7 +42,7 @@
           <div class="order-card-body">
           <FsHeading as="h6">Ваш заказ</FsHeading>
 
-          <SfOrderItemsList :items="order.items" :currency="currency" />
+          <SfOrderItemsList :items="order.items" />
 
           <FsDivider spacing="none" />
 
@@ -51,7 +51,6 @@
             :delivery-fee="order.deliveryFee"
             :discount-amount="order.discountAmount"
             :total="order.total"
-            :currency="currency"
           />
           </div>
         </FsCard>
@@ -88,7 +87,6 @@ import { useRoute, useFetch, navigateTo } from 'nuxt/app'
 import { SearchX, CircleCheck } from 'lucide-vue-next'
 import type { Order } from '@fastio/shared'
 import { formatDateTime } from '@fastio/shared'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import { useStorefrontTerms } from '~/shared/composables/useStorefrontTerms'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
@@ -100,7 +98,6 @@ import SfOrderItemsList from '~/shared/ui/sf/domain/SfOrderItemsList.vue'
 
 const { menu } = useStorefrontTerms()
 const route = useRoute()
-const currency = useCurrency()
 const supabase = useSupabaseClient()
 
 // IDOR guard на сервере требует один из трёх кредов:

@@ -33,7 +33,7 @@
           :style="{ left: `${tooltipPos.x + 14}px`, top: `${tooltipPos.y + 14}px` }"
         >
           <FsText as="span" variant="caption" :weight="600">{{ hoveredZone.name }}</FsText>
-          <FsText as="span" variant="xs" color="secondary" class="tooltip-text">{{ formatZoneConditions(hoveredZone, currency) }}</FsText>
+          <FsText as="span" variant="xs" color="secondary" class="tooltip-text">{{ formatZoneConditions(hoveredZone) }}</FsText>
         </div>
       </div>
     </div>
@@ -44,7 +44,7 @@
 
     <FsDrawer v-model="drawerOpen" :title="selectedZone?.name" size="sm">
       <div v-if="selectedZone" class="drawer-info">
-        <FsText variant="body-sm" class="drawer-conditions">{{ formatZoneConditions(selectedZone, currency) }}</FsText>
+        <FsText variant="body-sm" class="drawer-conditions">{{ formatZoneConditions(selectedZone) }}</FsText>
       </div>
     </FsDrawer>
   </div>
@@ -66,7 +66,6 @@ import { FsDrawer, FsText } from '@fastio/public-ui'
 import type { DeliveryZone } from '@fastio/shared'
 import { findDeliveryZone } from '@fastio/shared'
 import { useIsMobile } from '~/shared/composables/useIsMobile'
-import { useCurrency } from '~/shared/composables/useCurrency'
 import { formatZoneConditions } from '../utils/deliveryText'
 
 type Props = {
@@ -77,7 +76,6 @@ type Props = {
 const props = defineProps<Props>()
 
 const isMobile = useIsMobile()
-const currency = useCurrency()
 
 const mapRoot = ref<HTMLElement | null>(null)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -4,22 +4,22 @@
     :class="[`size-${size}`, { 'is-responsive': responsive }]"
   >
     <span v-if="prefix" class="price-prefix">{{ prefix }}</span>
-    <span class="price-main">{{ price }} {{ currency }}</span>
-    <span v-if="oldPrice" class="price-old">{{ oldPrice }} {{ currency }}</span>
+    <span class="price-main">{{ formatPrice(price) }}</span>
+    <span v-if="oldPrice" class="price-old">{{ formatPrice(oldPrice) }}</span>
   </span>
 </template>
 <script setup lang="ts">
+import { formatPrice } from '@fastio/shared'
+
 type Props = {
   price: number
   oldPrice?: number
   prefix?: string
-  currency?: string
   size?: 'small' | 'medium' | 'large'
   responsive?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
-  currency: '₽',
   size: 'medium',
   responsive: false,
 })

@@ -105,7 +105,7 @@ describe('formatFieldValue', () => {
   })
 
   it('delivery_fee → с символом рубля', () => {
-    expect(formatFieldValue('delivery_fee', 200)).toBe('200 ₽')
+    expect(formatFieldValue('delivery_fee', 200)).toBe('200 ₽')
   })
 
   it('произвольное поле → String(value)', () => {

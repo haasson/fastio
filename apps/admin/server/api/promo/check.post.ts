@@ -1,4 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
+import { formatPrice } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireMemberOfTenant } from '../../utils/auth'
 
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   if (!result?.valid) {
     const message = result?.min_order_amount != null
-      ? `Минимальная сумма заказа — ${result.min_order_amount} ₽`
+      ? `Минимальная сумма заказа — ${formatPrice(result.min_order_amount)}`
       : 'Промокод недействителен'
 
     return { valid: false, discountAmount: 0, error: message }

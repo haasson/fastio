@@ -34,7 +34,7 @@
           >
           {{ item.label }}
           <span v-if="item.priceDelta && item.priceDelta > 0" class="chip-price">
-            +{{ item.priceDelta }} {{ currency }}
+            +{{ formatPrice(item.priceDelta) }}
           </span>
         </FsTag>
       </template>
@@ -57,7 +57,7 @@
           >
           {{ item.label }}
           <span v-if="item.priceDelta && item.priceDelta > 0" class="chip-price">
-            +{{ item.priceDelta }} {{ currency }}
+            +{{ formatPrice(item.priceDelta) }}
           </span>
         </FsTag>
       </template>
@@ -67,6 +67,7 @@
 
 <script setup lang="ts">
 import { FsText, FsTag } from '@fastio/public-ui'
+import { formatPrice } from '@fastio/shared'
 
 type ChipItem = {
   id: string
@@ -80,12 +81,10 @@ type Props = {
   mode: 'radio' | 'checkbox' | 'toggle'
   modelValue: string[]
   disabledSelect?: boolean
-  currency?: string
   groupName?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currency: '₽',
   groupName: 'chips',
 })
 

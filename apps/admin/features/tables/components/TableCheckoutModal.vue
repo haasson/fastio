@@ -53,12 +53,12 @@
       <!-- Total -->
       <div class="total-row">
         <template v-if="compensationAmount > 0 || discountAmount > 0">
-          <span class="total-original">{{ session?.sum ?? 0 }} ₽</span>
+          <span class="total-original">{{ formatPrice(session?.sum ?? 0) }}</span>
         </template>
-        <span v-if="compensationAmount > 0" class="total-discount">− {{ compensationAmount }} ₽ отмена</span>
-        <span v-if="discountAmount > 0" class="total-discount">− {{ discountAmount }} ₽ скидка</span>
+        <span v-if="compensationAmount > 0" class="total-discount">− {{ formatPrice(compensationAmount) }} отмена</span>
+        <span v-if="discountAmount > 0" class="total-discount">− {{ formatPrice(discountAmount) }} скидка</span>
         <span class="total-label">Итого</span>
-        <span class="total-sum">{{ finalSum }} ₽</span>
+        <span class="total-sum">{{ formatPrice(finalSum) }}</span>
       </div>
     </div>
 
@@ -80,6 +80,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiModal, UiButton } from '@fastio/ui'
 import type { Table, KitchenQueueItem } from '@fastio/shared'
+import { formatPrice } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
 import TableSessionItems from './TableSessionItems.vue'
 

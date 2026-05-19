@@ -20,7 +20,6 @@ export default defineFeature({
     'features.cart',                          // корзина — источник данных
     'features.menu-catalog',                  // dish lookup для validation
     'shared.composables.useConfirm',
-    'shared.composables.useCurrency',
     'shared.composables.useDadataSuggestions',
     'shared.composables.useLegalCompliance',
     'shared.composables.useStorefrontTerms',
