@@ -160,13 +160,28 @@ const handleReset = async () => {
   resetLoading.value = true
 
   const appUrl = window.location.origin
+  // Edge function возвращает унифицированный envelope:
+  //   200 → { success: true, message }
+  //   4xx/5xx → { success: false, error, code } — supabase-js кидает в `error`,
+  //   body доступен через context.json().
   const { error: err } = await api.functions.sendRecoveryEmail({
     email: resetEmail.value,
     redirectTo: `${appUrl}/set-password`,
   })
 
   if (err) {
-    resetError.value = 'Не удалось отправить письмо. Попробуйте ещё раз.'
+    let message = 'Не удалось отправить письмо. Попробуйте ещё раз.'
+
+    try {
+      const body = await (err as {
+        context?: { json?: () => Promise<{ error?: string; code?: string }> }
+      }).context?.json?.()
+
+      if (body?.code === 'rate_limited') {
+        message = body.error ?? 'Слишком много запросов. Попробуйте позже.'
+      }
+    } catch { /* ignore parse errors */ }
+    resetError.value = message
   } else {
     resetSent.value = true
   }

@@ -54,15 +54,29 @@ onMounted(async () => {
     return
   }
 
-  // Загружаем детали инвайта
+  // Загружаем детали инвайта.
+  // Edge function возвращает унифицированный envelope:
+  //   200 → { success: true, email, roleName, tenantName, userExists }
+  //   4xx/5xx → { success: false, error, code } — supabase-js кидает в `error`,
+  //   body доступен через context.json().
   const { data, error } = await api.functions.getInvite({ token })
 
-  if (error || data?.error) {
-    const msg = data?.error ?? ''
+  let code: string | null = null
 
-    if (msg === 'Invitation already accepted') {
+  if (error) {
+    try {
+      const body = await (error as {
+        context?: { json?: () => Promise<{ code?: string }> }
+      }).context?.json?.()
+
+      code = body?.code ?? null
+    } catch { /* ignore parse errors */ }
+  }
+
+  if (error || !data?.success) {
+    if (code === 'already_accepted') {
       fatalError.value = 'Это приглашение уже было принято'
-    } else if (msg === 'Invitation expired') {
+    } else if (code === 'expired') {
       fatalError.value = 'Срок действия приглашения истёк'
     } else {
       fatalError.value = 'Приглашение не найдено или недействительно'

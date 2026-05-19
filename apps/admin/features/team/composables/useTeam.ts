@@ -12,9 +12,14 @@ export const useTeam = () => {
 
   const { data, loading, execute: load } = useQuery(async () => {
     if (!tenantStore.currentTenantId) return null
-    const { data } = await api.functions.listTeam({ tenantId: tenantStore.currentTenantId })
+    // Edge function возвращает унифицированный envelope:
+    //   200 → { success: true, members, invitations }
+    //   4xx/5xx → { success: false, error, code }
+    const { data, error } = await api.functions.listTeam({ tenantId: tenantStore.currentTenantId })
 
-    return data as { members: TenantMember[]; invitations: TenantInvitation[] } | null
+    if (error || !data?.success) return null
+
+    return data as { success: true; members: TenantMember[]; invitations: TenantInvitation[] }
   })
 
   const members = computed<TenantMember[]>(() => data.value?.members ?? [])

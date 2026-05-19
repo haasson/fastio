@@ -2,6 +2,12 @@ import { createClient } from '@supabase/supabase-js'
 import { withSentry } from '../_shared/sentry.ts'
 import nodemailer from 'nodemailer'
 
+// Унифицированный envelope ответа:
+//   success: { success: true, message }
+//   error:   { success: false, error, code }
+// Любой исход «email отправлен / email не существует / SMTP не настроен» схлопнут
+// в один success — чтобы атакующий не мог через ответ определить существование
+// учётки.
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
@@ -14,12 +20,21 @@ const json = (body: unknown, init?: ResponseInit) =>
     headers: { 'Content-Type': 'application/json', ...corsHeaders },
   })
 
+const ok = () =>
+  json({ success: true, message: 'Если такой email существует, на него отправлено письмо для сброса пароля.' }, { status: 200 })
+
+const err = (status: number, code: string, error: string) =>
+  json({ success: false, error, code }, { status })
+
 // Durable rate-limit чтобы закрыть email-bomb. Storefront-flow ходит через Nitro
 // (/api/auth/forgot-password — уже rate-limited там), но admin/login.vue зовёт
 // функцию НАПРЯМУЮ через sb.functions.invoke без обёртки — без этого guard'а
 // атакующий может через любой anon-key слать жертве сброс пароля в цикле.
 const EMAIL_LIMIT = { max: 3, windowSeconds: 10 * 60 }
 const IP_LIMIT = { max: 10, windowSeconds: 10 * 60 }
+
+// RFC 5321 length + достаточно строгий формат, чтобы отсечь явный мусор.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function getClientIp(req: Request): string {
   // Приоритет: cf-connecting-ip (Cloudflare выставляет на edge, клиент подделать
@@ -41,22 +56,25 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 })
+    return err(405, 'method_not_allowed', 'Method Not Allowed')
   }
 
   let body: { email?: unknown; redirectTo?: unknown }
   try {
     body = await req.json()
   } catch {
-    return json({ error: 'Invalid JSON body' }, { status: 400 })
+    return err(400, 'invalid_body', 'Invalid JSON body')
   }
 
   if (!body.email || typeof body.email !== 'string') {
-    return json({ error: 'email is required' }, { status: 400 })
+    return err(400, 'missing_fields', 'email is required')
   }
   const redirectTo = typeof body.redirectTo === 'string' ? body.redirectTo : undefined
 
   const normalizedEmail = body.email.trim().toLowerCase()
+  if (normalizedEmail.length > 254 || !EMAIL_REGEX.test(normalizedEmail)) {
+    return err(400, 'invalid_email', 'Некорректный email')
+  }
   const ip = getClientIp(req)
 
   const adminSupabase = createClient(
@@ -64,7 +82,7 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  const [{ data: emailOk }, { data: ipOk }] = await Promise.all([
+  const [emailRl, ipRl] = await Promise.all([
     adminSupabase.rpc('consume_rate_limit', {
       _key: `send-recovery-email:email:${normalizedEmail}`,
       _max: EMAIL_LIMIT.max,
@@ -77,8 +95,13 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
     }),
   ])
 
-  if (emailOk === false || ipOk === false) {
-    return json({ error: 'rate_limited' }, { status: 429 })
+  if (emailRl.error || ipRl.error) {
+    console.error('consume_rate_limit error:', emailRl.error ?? ipRl.error)
+    return err(500, 'rate_limit_failed', 'Failed to check rate limit')
+  }
+
+  if (emailRl.data === false || ipRl.data === false) {
+    return err(429, 'rate_limited', 'Слишком много запросов. Попробуйте позже.')
   }
 
   // Генерируем ссылку восстановления через Admin API (без отправки письма)
@@ -91,7 +114,7 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
   if (linkError || !linkData?.properties?.action_link) {
     // Не раскрываем существует ли email — всегда возвращаем success
     console.error('generateLink error:', linkError?.message ?? 'no action_link')
-    return json({ success: true })
+    return ok()
   }
 
   const recoveryUrl = linkData.properties.action_link
@@ -164,12 +187,12 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
 </body>
 </html>`,
       })
-    } catch (err) {
-      console.error('SMTP error:', err)
+    } catch (smtpErr) {
+      console.error('SMTP error:', smtpErr)
     }
   } else {
     console.log(`Recovery URL for ${normalizedEmail}: ${recoveryUrl}`)
   }
 
-  return json({ success: true })
+  return ok()
 }))

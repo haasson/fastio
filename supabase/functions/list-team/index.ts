@@ -1,16 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 import { withSentry } from '../_shared/sentry.ts'
+
+// Унифицированный envelope ответа:
+//   success: { success: true, members, invitations }
+//   error:   { success: false, error, code }
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
 
+const err = (status: number, code: string, error: string) =>
+  json({ success: false, error, code }, { status })
+
 Deno.serve(withSentry('list-team', async (req) => {
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 })
+    return err(405, 'method_not_allowed', 'Method Not Allowed')
   }
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
-    return new Response('Unauthorized', { status: 401 })
+    return err(401, 'unauthorized', 'Unauthorized')
   }
 
   const userSupabase = createClient(
@@ -21,12 +28,19 @@ Deno.serve(withSentry('list-team', async (req) => {
 
   const { data: { user }, error: authError } = await userSupabase.auth.getUser()
   if (authError || !user) {
-    return new Response('Unauthorized', { status: 401 })
+    return err(401, 'unauthorized', 'Unauthorized')
   }
 
-  const { tenantId } = await req.json() as { tenantId: string }
+  let payload: { tenantId?: unknown }
+  try {
+    payload = await req.json()
+  } catch {
+    return err(400, 'invalid_body', 'Invalid JSON body')
+  }
+
+  const tenantId = typeof payload.tenantId === 'string' ? payload.tenantId : ''
   if (!tenantId) {
-    return json({ error: 'tenantId is required' }, { status: 400 })
+    return err(400, 'missing_fields', 'tenantId is required')
   }
 
   const adminSupabase = createClient(
@@ -35,35 +49,46 @@ Deno.serve(withSentry('list-team', async (req) => {
   )
 
   // Проверяем что запрашивающий — участник тенанта
-  const { data: membership } = await adminSupabase
+  const { data: membership, error: memErr } = await adminSupabase
     .from('tenant_members')
     .select('role_id, tenant_roles(permissions)')
     .eq('tenant_id', tenantId)
     .eq('user_id', user.id)
     .single()
 
-  if (!membership) {
-    return json({ error: 'Not a member' }, { status: 403 })
+  if (memErr || !membership) {
+    if (memErr) console.error('membership lookup error:', memErr)
+    return err(403, 'forbidden', 'Not a member')
   }
 
   const isOwner = membership.role_id === null
   const permissions = (membership as { tenant_roles?: { permissions?: Record<string, boolean> } }).tenant_roles?.permissions
 
   // Загружаем мемберов с ролями
-  const { data: members } = await adminSupabase
+  const { data: members, error: membersErr } = await adminSupabase
     .from('tenant_members')
     .select('id, tenant_id, user_id, role_id, branch_ids, blocked_until, created_at, tenant_roles(id, name, permissions)')
     .eq('tenant_id', tenantId)
     .order('created_at')
 
+  if (membersErr) {
+    console.error('members query error:', membersErr)
+    return err(500, 'members_query_failed', 'Failed to load team members')
+  }
+
   const memberUserIds = (members ?? []).map(m => m.user_id)
 
   // Загружаем принятые инвайты для отображения "кто пригласил"
-  const { data: acceptedInvites } = await adminSupabase
+  const { data: acceptedInvites, error: acceptedErr } = await adminSupabase
     .from('tenant_invitations')
     .select('email, invited_by')
     .eq('tenant_id', tenantId)
     .not('accepted_at', 'is', null)
+
+  if (acceptedErr) {
+    console.error('accepted invites query error:', acceptedErr)
+    return err(500, 'invitations_query_failed', 'Failed to load accepted invitations')
+  }
 
   // email участника → user_id пригласившего
   const invitedByMap = new Map(
@@ -79,8 +104,13 @@ Deno.serve(withSentry('list-team', async (req) => {
   // на auth.uid(). Используем tenant-scoped вариант, чтобы исключить утечку
   // профилей мемберов чужого тенанта в multi-tenant сценарии.
   const allUserIds = [...new Set([...memberUserIds, ...inviterUserIds])]
-  const { data: profileRows } = await userSupabase
+  const { data: profileRows, error: profilesErr } = await userSupabase
     .rpc('get_user_profiles_for_tenant', { p_tenant_id: tenantId, user_ids: allUserIds })
+
+  if (profilesErr) {
+    console.error('profile rpc error:', profilesErr)
+    return err(500, 'profiles_query_failed', 'Failed to load user profiles')
+  }
 
   type UserProfile = { user_id: string; email: string; full_name: string | null }
   const profileMap = new Map<string, UserProfile>(
@@ -124,12 +154,17 @@ Deno.serve(withSentry('list-team', async (req) => {
   // (INVITATION_COLUMNS) — правки делать в обоих местах.
   let invitations: unknown[] = []
   if (isOwner || permissions?.['team.manage']) {
-    const { data } = await adminSupabase
+    const { data, error: pendingErr } = await adminSupabase
       .from('tenant_invitations')
       .select('id, tenant_id, email, role_id, invited_by, expires_at, accepted_at, created_at, branch_ids, tenant_roles(id, name)')
       .eq('tenant_id', tenantId)
       .is('accepted_at', null)
       .order('created_at', { ascending: false })
+
+    if (pendingErr) {
+      console.error('pending invitations query error:', pendingErr)
+      return err(500, 'invitations_query_failed', 'Failed to load pending invitations')
+    }
 
     invitations = (data ?? []).map(inv => {
       const invRoleData = (inv as unknown as { tenant_roles?: { id: string; name: string } | null }).tenant_roles
@@ -149,5 +184,5 @@ Deno.serve(withSentry('list-team', async (req) => {
     })
   }
 
-  return json({ members: enrichedMembers, invitations }, { status: 200 })
+  return json({ success: true, members: enrichedMembers, invitations }, { status: 200 })
 }))
