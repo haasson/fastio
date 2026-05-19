@@ -104,6 +104,13 @@ vi.mock('../utils/customerAuth', () => ({
 
 vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
 
+// enforceRateLimit подтягивает getServerSupabase → useRuntimeConfig, который в
+// тестах не определён. Моаем no-op — рейт-лимит ходит на тот же `db.raw`-клиент,
+// который уже замокан, и реальная проверка лимита в этих тестах не важна.
+vi.mock('../utils/enforceRateLimit', () => ({
+  enforceRateLimit: vi.fn(async () => {}),
+}))
+
 // Nuxt globals
 ;(globalThis as any).createError = createError
 ;(globalThis as any).defineEventHandler = (fn: Function) => fn
@@ -172,12 +179,18 @@ const validBody: BulkPayload = {
   branchId: null,
 }
 
-// Каждый тест сбрасывает rate-limit через уникальный IP, чтобы не упереться
-// в лимит createRateLimiter(5, 60_000) после 5 успешных тестов.
+// Уникальный IP per-test — на случай если в логах нужно различать события.
+// rate-limit замокан no-op'ом выше (vi.mock('../utils/enforceRateLimit')) —
+// IP больше не влияет на счётчики.
 let ipCounter = 0
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks()
+  // clearAllMocks снимает mockImplementation у замоканных vi.fn() — возвращаем
+  // дефолтный no-op обратно, иначе любой тест без явного mockImplementationOnce
+  // получит `undefined` (await undefined тут проходит, но не intended).
+  const { enforceRateLimit } = await import('../utils/enforceRateLimit')
+  ;(enforceRateLimit as ReturnType<typeof vi.fn>).mockImplementation(async () => {})
   resolvers = new Map()
   resolverCallIdx = new Map()
   ipCounter += 1
@@ -258,22 +271,18 @@ describe('POST /api/appointments/bulk — валидация body', () => {
 // ──────────────────────────────────────────────────────────────────────────
 
 describe('POST /api/appointments/bulk — rate limit', () => {
-  it('после 5 запросов с одного IP → 429', async () => {
+  it('enforceRateLimit бросает → handler прокидывает 429', async () => {
     happyPath()
     mockReadBody.mockResolvedValue(validBody)
 
-    // Один и тот же IP во всех итерациях этого теста.
-    currentRemoteAddress = '10.0.0.99'
+    const { enforceRateLimit } = await import('../utils/enforceRateLimit')
+    ;(enforceRateLimit as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+      throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
+    })
 
     const mod = await import('../api/appointments/bulk.post')
     const handler = mod.default as Function
 
-    // 5 успешных
-    for (let i = 0; i < 5; i++) {
-      await handler(makeEvent())
-    }
-
-    // 6-я должна быть отбита rate-limiter'ом
     await expect(handler(makeEvent())).rejects.toMatchObject({ statusCode: 429 })
   })
 })

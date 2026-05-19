@@ -1,7 +1,8 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import {
-  createRateLimiter, todayInTz, DEFAULT_TIMEZONE, sliceTime,
+  todayInTz, DEFAULT_TIMEZONE, sliceTime,
   getGroupDateAvailability,
   localDateTimeToUtcIso, addDaysToDateStr, utcIsoToLocalDateTime,
   DEFAULT_WORKING_DAY_MINUTES,
@@ -15,8 +16,6 @@ import type {
   WorkingHoursSchedule,
   GroupSlotMatch,
 } from '@fastio/shared'
-
-const rateLimiter = createRateLimiter(120, 60_000)
 
 type WeekResponse = Array<{ date: string; match: GroupSlotMatch | null }>
 
@@ -32,9 +31,10 @@ export default defineEventHandler(async (event): Promise<WeekResponse> => {
   const db = getTenantDb(event)
 
   const ip = getClientIp(event)
-  if (!rateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  await enforceRateLimit(
+    [{ key: `appointments-group-week:tenant-ip:${db.tenantId}:${ip}`, max: 120, windowSeconds: 60 }],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const query = getQuery(event)
   const datesRaw = query.dates as string | undefined

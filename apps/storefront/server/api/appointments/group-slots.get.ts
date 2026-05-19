@@ -1,7 +1,8 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import {
-  createRateLimiter, todayInTz, DEFAULT_TIMEZONE, sliceTime,
+  todayInTz, DEFAULT_TIMEZONE, sliceTime,
   findGroupSlotsWithFallback,
   getBranchHoursForDow, timeToMinutes,
   localDateTimeToUtcIso, addDaysToDateStr,
@@ -14,15 +15,14 @@ import type {
   ResourceUnavailability,
 } from '@fastio/shared'
 
-const rateLimiter = createRateLimiter(30, 60_000)
-
 export default defineEventHandler(async (event): Promise<GroupSlotsResult> => {
   const db = getTenantDb(event)
 
   const ip = getClientIp(event)
-  if (!rateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  await enforceRateLimit(
+    [{ key: `appointments-group-slots:tenant-ip:${db.tenantId}:${ip}`, max: 30, windowSeconds: 60 }],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const query = getQuery(event)
   const date = query.date as string | undefined

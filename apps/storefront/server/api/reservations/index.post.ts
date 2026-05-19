@@ -2,21 +2,20 @@ import { randomUUID } from 'node:crypto'
 import { getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { reportError } from '~/shared/utils/reportError'
-import { createRateLimiter, todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule, ReservationStatus } from '@fastio/shared'
-
-const rateLimiter = createRateLimiter(5, 60_000)
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
   const ip = getClientIp(event)
-
-  if (!rateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  await enforceRateLimit(
+    [{ key: `reservations:tenant-ip:${tenantId}:${ip}`, max: 5, windowSeconds: 60 }],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const body = await readBody(event)
 

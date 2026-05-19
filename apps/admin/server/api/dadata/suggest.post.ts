@@ -64,8 +64,7 @@ export default defineEventHandler(async (event) => {
   // Durable rate-limit: 30 запросов/мин на пару (user, tenant). Onboarding ввод
   // адреса с debounce 300мс даёт ~3 запроса/сек = 180/мин при потоковом наборе,
   // но фактически юзер вводит постепенно с паузами → реально 5-10/мин. 30 — c запасом.
-  // consume_rate_limit (миграция 264) — atomic upsert, horizontally safe в отличие
-  // от in-memory createRateLimiter (deprecated, не выживает рестарт + multi-instance).
+  // consume_rate_limit (миграция 264) — atomic upsert, horizontally safe.
   const sb = getServerSupabase()
   const { data: allowed, error: rlError } = await sb.rpc('consume_rate_limit', {
     _key: `dadata:${userId}:${tenantId}`,

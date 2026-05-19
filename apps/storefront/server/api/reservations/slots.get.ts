@@ -1,17 +1,17 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
-import { createRateLimiter, getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
+import { getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
-
-const rateLimiter = createRateLimiter(30, 60_000)
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
   const ip = getClientIp(event)
-  if (!rateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  await enforceRateLimit(
+    [{ key: `reservations-slots:tenant-ip:${db.tenantId}:${ip}`, max: 30, windowSeconds: 60 }],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const query = getQuery(event)
   const date = query.date as string | undefined

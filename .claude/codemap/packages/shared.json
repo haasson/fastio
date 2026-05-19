@@ -2,9 +2,9 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-14T05:48:06.972Z",
+  "generated_at": "2026-05-19T03:15:06.175Z",
   "stats": {
-    "files": 44,
+    "files": 43,
     "pages": 0,
     "symbols": 192,
     "undescribed_files": 0,
@@ -345,8 +345,8 @@
     },
     "src/utils/csp.ts": {
       "kind": "ts",
-      "hash": "fa0d2499f693",
-      "purpose": "Билдер Content-Security-Policy и базовый набор security-заголовков (X-Frame, HSTS, Referrer-Policy и т.д.) для Nitro middleware admin и storefront.",
+      "hash": "ce6ee45445ab",
+      "purpose": "Builder Content-Security-Policy header'а: единый набор директив для admin/storefront/landing с whitelist'ом telegram, yandex maps, dadata, sentry, fonts.",
       "symbols": [
         {
           "name": "buildCsp",
@@ -757,19 +757,6 @@
         }
       ]
     },
-    "src/utils/rateLimit.ts": {
-      "kind": "ts",
-      "hash": "8495fe02114f",
-      "purpose": "In-memory rate limiter с TTL-окном и автоочисткой — для server-роутов (auth, формы и т.п.)",
-      "symbols": [
-        {
-          "name": "createRateLimiter",
-          "kind": "function",
-          "hash": "0c534e53",
-          "purpose": "Фабрика rate-лимитера: { check(key) → bool } разрешает максимум max запросов в окне windowMs"
-        }
-      ]
-    },
     "src/utils/reconcile-cart.ts": {
       "kind": "ts",
       "hash": "0e5df18bab82",
@@ -869,9 +856,15 @@
     },
     "src/utils/reservation.ts": {
       "kind": "ts",
-      "hash": "40774cd7d472",
-      "purpose": "Маппер сырой записи бронирования стола в Reservation (с обрезкой времени до HH:MM)",
+      "hash": "44d7ea13e5cd",
+      "purpose": "Утилы домена 'бронирование стола': лейблы статусов + mapReservation (snake_case → camelCase).",
       "symbols": [
+        {
+          "name": "RESERVATION_STATUS_LABELS",
+          "kind": "const",
+          "hash": "cfc8c38c",
+          "purpose": "RU-лейблы статусов бронирования для UI: pending/confirmed/seated/completed/cancelled/no_show."
+        },
         {
           "name": "mapReservation",
           "kind": "function",
@@ -1430,8 +1423,8 @@
     },
     "src/composables/useDadataSuggestions.ts": {
       "kind": "ts",
-      "hash": "7b766e1cad59",
-      "purpose": "DaData composable + типы DadataAddressData/DadataSuggestion с типизированными ~12 полями (geo/иерархия/дом/квартира/FIAS/qc) при сохранении остального хвоста",
+      "hash": "6747da5b581b",
+      "purpose": "Composable для DaData-автокомплита адреса: типы DadataAddressData/DadataSuggestion + ref-state с debounce + helpers поиска/скрытия. Работает поверх прокси-endpoint'а тенанта.",
       "symbols": [
         {
           "name": "DadataAddressData",
@@ -1448,8 +1441,8 @@
         {
           "name": "DadataSuggestionsOptions",
           "kind": "type",
-          "hash": "e2ad684c",
-          "purpose": "Опции composable'а: proxyUrl, debounce, extraBody (статика или функция)"
+          "hash": "4c6aaaff",
+          "purpose": "Опции composable: { proxyUrl, debounce?, extraBody?, headers?() } — headers нужны для admin'а который ходит за auth-гейтом."
         },
         {
           "name": "useDadataSuggestions",

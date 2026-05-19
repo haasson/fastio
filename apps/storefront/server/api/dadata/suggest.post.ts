@@ -1,11 +1,8 @@
-import { createRateLimiter } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { reportError } from '~/shared/utils/reportError'
 import type { SupabaseClient } from '@supabase/supabase-js'
-
-const perMinuteLimit = createRateLimiter(20, 60_000)
-const per12hLimit = createRateLimiter(250, 12 * 60 * 60 * 1000)
 
 const tenantCoordsCache = new Map<string, { lat: number; lon: number } | null>()
 
@@ -49,10 +46,14 @@ export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
   const ip = getClientIp(event)
-  const key = `${db.tenantId}:${ip}`
-  if (!perMinuteLimit.check(key) || !per12hLimit.check(key)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов' })
-  }
+  const scope = `tenant-ip:${db.tenantId}:${ip}`
+  await enforceRateLimit(
+    [
+      { key: `dadata:1m:${scope}`, max: 20, windowSeconds: 60 },
+      { key: `dadata:12h:${scope}`, max: 250, windowSeconds: 12 * 60 * 60 },
+    ],
+    'Слишком много запросов',
+  )
 
   const body = await readBody(event)
   const query = String(body.query ?? '').trim()

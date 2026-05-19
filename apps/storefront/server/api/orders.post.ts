@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto'
-import { normalizePhone, createRateLimiter } from '@fastio/shared'
+import { normalizePhone } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getTenantDb } from '../utils/tenantDb'
 import { getClientIp } from '../utils/clientIp'
+import { enforceRateLimit } from '../utils/enforceRateLimit'
 import { reportError } from '~/shared/utils/reportError'
 import { validateBasicFields, fetchOrderInitialData, validateModulesForDeliveryType, validatePaymentMethod } from '../services/order-validation'
 import { resolveCustomer } from '../services/order-customer'
@@ -11,16 +12,20 @@ import { validateAndBuildItems } from '../services/order-items'
 import { resolvePromo } from '../services/order-promo'
 import { calcOrderTotal } from '../services/order-calc'
 
-const orderRateLimiter = createRateLimiter(5, 60_000)
-
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
   const ip = getClientIp(event)
-  if (!orderRateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  // Global per-IP cap + per-(tenant, IP) — защита от спам-заказов на N тенантов
+  // с одного IP. Подробнее CR-01 в REVIEW PREPROD-102.
+  await enforceRateLimit(
+    [
+      { key: `orders:ip:${ip}`, max: 15, windowSeconds: 60 },
+      { key: `orders:tenant-ip:${tenantId}:${ip}`, max: 5, windowSeconds: 60 },
+    ],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const body = await readBody(event)
   const supabase = db.raw

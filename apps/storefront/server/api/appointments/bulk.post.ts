@@ -1,10 +1,9 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
-import { createRateLimiter, todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr, DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
+import { todayInTz, localDateTimeToUtcIso, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, addDaysToDateStr, DEFAULT_APPOINTMENT_SETTINGS } from '@fastio/shared'
 import { reportError } from '~/shared/utils/reportError'
-
-const rateLimiter = createRateLimiter(5, 60_000)
 
 const NOTES_MAX_LENGTH = 1000
 
@@ -62,9 +61,10 @@ export default defineEventHandler(async (event) => {
   const { tenantId } = db
 
   const ip = getClientIp(event)
-  if (!rateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  await enforceRateLimit(
+    [{ key: `appointments-bulk:tenant-ip:${tenantId}:${ip}`, max: 5, windowSeconds: 60 }],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const rawIdempotencyKey = getRequestHeader(event, 'idempotency-key')?.trim() ?? null
   let idempotencyKey: string | null = null

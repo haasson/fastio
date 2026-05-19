@@ -1,8 +1,8 @@
 import { defineEventHandler, createError, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
-import { createRateLimiter } from '@fastio/shared'
 import { getAdminClient } from '../utils/adminClient'
 import { getClientIp } from '../utils/clientIp'
+import { enforceRateLimit } from '../utils/enforceRateLimit'
 
 type RegisterBody = {
   name?: string
@@ -13,9 +13,6 @@ type RegisterBody = {
 }
 
 const SLUG_MAX_LENGTH = 63
-// In-memory limiter: рассчитан на single-instance деплой.
-// При репликации заменить на Supabase-backed (таблица rate_limits) или Redis.
-const rateLimiter = createRateLimiter(5, 60 * 60 * 1000)
 
 class ValidationError extends Error {
   constructor(message: string) {
@@ -44,9 +41,10 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const ip = getClientIp(event)
 
-  if (!rateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много попыток регистрации. Попробуйте позже.' })
-  }
+  await enforceRateLimit(
+    [{ key: `landing-register:ip:${ip}`, max: 5, windowSeconds: 3600 }],
+    'Слишком много попыток регистрации. Попробуйте позже.',
+  )
 
   const body = await readBody<RegisterBody>(event)
 

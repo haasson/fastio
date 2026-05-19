@@ -1,9 +1,9 @@
 import { defineEventHandler, readBody, getRequestProtocol, setCookie } from 'h3'
-import { createRateLimiter } from '@fastio/shared'
 import { useRuntimeConfig } from '#imports'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
 import { getClientIp } from '../../../utils/clientIp'
+import { enforceRateLimit } from '../../../utils/enforceRateLimit'
 import {
   verifyTelegramAuth,
   issueSessionToken,
@@ -14,17 +14,21 @@ import { reportError } from '~/shared/utils/reportError'
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
 const SESSION_TTL_SEC = SESSION_TTL_MS / 1000
 
-// 10 attempts per minute per IP — generous for legitimate widget use, prevents flood.
-const loginRateLimiter = createRateLimiter(10, 60_000)
-
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
   const { tenantId } = db
 
   const ip = getClientIp(event)
-  if (!loginRateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  // Два правила: global per-IP cap (закрывает credential-stuffing через
+  // итерацию по чужим tenant-доменам с одного IP) + per-(tenant, IP) cap
+  // (защита конкретного тенанта от флуда). См. CR-01 в REVIEW PREPROD-102.
+  await enforceRateLimit(
+    [
+      { key: `tg-auth-login:ip:${ip}`, max: 30, windowSeconds: 60 },
+      { key: `tg-auth-login:tenant-ip:${tenantId}:${ip}`, max: 10, windowSeconds: 60 },
+    ],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const config = useRuntimeConfig()
   const botToken = config.telegramClientBotToken

@@ -1,11 +1,9 @@
-import { createRateLimiter } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
 
 const MAX_IDS = 200
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-const rateLimiter = createRateLimiter(30, 60_000)
 
 /**
  * Возвращает branchIds для списка ресурсов: { [resourceId]: branchIds[] }.
@@ -18,9 +16,10 @@ export default defineEventHandler(async (event): Promise<Record<string, string[]
   const db = getTenantDb(event)
 
   const ip = getClientIp(event)
-  if (!rateLimiter.check(ip)) {
-    throw createError({ statusCode: 429, message: 'Слишком много запросов. Попробуйте позже.' })
-  }
+  await enforceRateLimit(
+    [{ key: `appointments-resource-branches:tenant-ip:${db.tenantId}:${ip}`, max: 30, windowSeconds: 60 }],
+    'Слишком много запросов. Попробуйте позже.',
+  )
 
   const query = getQuery(event)
   const idsParam = query.ids as string | undefined

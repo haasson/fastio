@@ -1,10 +1,8 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
-import { createRateLimiter } from '@fastio/shared'
+import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { reportError } from '~/shared/utils/reportError'
-
-const rateLimiter = createRateLimiter(5, 60_000)
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const PHONE_REGEX = /^[0-9+\-() ]+$/
@@ -18,9 +16,10 @@ export default defineEventHandler(async (event) => {
   const { tenantId } = db
 
   const ip = getClientIp(event)
-  if (!rateLimiter.check(`appointments-request:${ip}`)) {
-    throw createError({ statusCode: 429, message: 'Слишком много заявок, попробуйте через минуту.' })
-  }
+  await enforceRateLimit(
+    [{ key: `appointments-request:tenant-ip:${tenantId}:${ip}`, max: 5, windowSeconds: 60 }],
+    'Слишком много заявок, попробуйте через минуту.',
+  )
 
   const body = await readBody(event)
 
