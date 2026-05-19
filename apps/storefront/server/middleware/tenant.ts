@@ -21,7 +21,22 @@ export default defineEventHandler(async (event) => {
     await computeDeliveryAvailable(supabase, mapped)
     event.context.tenantId = tenant.id
     event.context.tenant = mapped
-    checkSuspended(mapped)
+
+    // PREPROD-117 + Wave-5 CR-01: на suspended-тенанте Vue-роуты редиректит
+    // `middleware/suspended.global.ts` на /suspended, но API под /api/* минует
+    // page-middleware → без этой защиты POST /api/orders, POST /api/customer/*
+    // и т.п. продолжают работать и заведение получает заказы в просрочке.
+    // Whitelist симметричен page-middleware: auth-flow и health/tenant lookup —
+    // открыты, чтобы юзер мог залогиниться и UI смог проверить статус.
+    if (mapped.subscription?.status === 'suspended' && url.pathname.startsWith('/api/')) {
+      const allowed = url.pathname.startsWith('/api/auth/')
+        || url.pathname.startsWith('/api/health')
+        || url.pathname === '/api/tenant'
+      if (!allowed) {
+        throw createError({ statusCode: 503, message: 'Заведение временно недоступно' })
+      }
+    }
+
     return
   }
 
@@ -46,7 +61,6 @@ export default defineEventHandler(async (event) => {
         await computeDeliveryAvailable(supabase, mapped)
         event.context.tenantId = byDevSlug.id
         event.context.tenant = mapped
-        checkSuspended(mapped)
         return
       }
     }
@@ -72,10 +86,4 @@ async function computeDeliveryAvailable(supabase: ReturnType<typeof getServerSup
     }
   }
   tenant.orderingEnabled = tenant.deliveryAvailable || tenant.modules.pickup
-}
-
-function checkSuspended(tenant: ReturnType<typeof mapTenant>) {
-  if (tenant.subscription?.status === 'suspended') {
-    throw createError({ statusCode: 503, message: 'Заведение временно недоступно' })
-  }
 }
