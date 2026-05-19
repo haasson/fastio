@@ -41,7 +41,7 @@
           <div
             class="ph-hero-text"
             :style="{ textAlign: props.layout.sections.hero.contentAlign ?? 'left' }"
-            v-html="content.hero.text"
+            v-html="sanitizedHeroText"
           />
         </div>
       </div>
@@ -112,11 +112,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import DOMPurify from 'dompurify'
 import { UiIcon } from '@fastio/ui'
 import type { SiteLayout, SiteContent, TenantTheme } from '@fastio/shared'
 import { featureLabel, paletteToCssVars, getHeroGradient, heroContentPositionStyle } from '@fastio/shared'
 
 const props = defineProps<{ layout: SiteLayout; content: SiteContent; theme: TenantTheme }>()
+
+// Контент hero.text — это HTML, который тенант редактирует в админке.
+// Без sanitize любая вставка `<script>` или `onerror=` исполнится прямо в превью.
+const sanitizedHeroText = computed(() => DOMPurify.sanitize(props.content.hero.text ?? ''))
 
 const btnRadiusMap: Record<string, string> = {
   square: '1px',
