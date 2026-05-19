@@ -1,5 +1,7 @@
 import { mapCustomerAddress } from '../../../utils/supabase'
 import { getAuthenticatedContext } from '../../../utils/customerAuth'
+import { validateAddressTextFields } from './_validate'
+import { reportError } from '~/shared/utils/reportError'
 
 export default defineEventHandler(async (event) => {
   const { customerId, supabase } = await getAuthenticatedContext(event)
@@ -8,6 +10,8 @@ export default defineEventHandler(async (event) => {
   if (!body.address) {
     throw createError({ statusCode: 400, message: 'Адрес обязателен' })
   }
+
+  validateAddressTextFields(body)
 
   const coords = body.coordinates
   if (
@@ -36,7 +40,10 @@ export default defineEventHandler(async (event) => {
     .select('*')
     .single()
 
-  if (error || !data) throw createError({ statusCode: 500, message: 'Не удалось сохранить адрес' })
+  if (error || !data) {
+    reportError(error ?? new Error('customer_addresses insert returned no row'))
+    throw createError({ statusCode: 500, message: 'Не удалось сохранить адрес' })
+  }
 
   return mapCustomerAddress(data)
 })

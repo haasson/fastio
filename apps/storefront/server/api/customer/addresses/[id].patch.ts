@@ -1,5 +1,7 @@
 import { mapCustomerAddress } from '../../../utils/supabase'
 import { getAuthenticatedContext } from '../../../utils/customerAuth'
+import { assertAddressFieldLength, type AddressTextField } from './_validate'
+import { reportError } from '~/shared/utils/reportError'
 
 export default defineEventHandler(async (event) => {
   const { customerId, supabase } = await getAuthenticatedContext(event)
@@ -9,12 +11,13 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const updates: Record<string, unknown> = {}
 
-  const textFields = ['label', 'address', 'entrance', 'floor', 'apartment', 'intercom', 'comment'] as const
+  const textFields = ['label', 'address', 'entrance', 'floor', 'apartment', 'intercom', 'comment'] as const satisfies readonly AddressTextField[]
   for (const field of textFields) {
     if (body[field] !== undefined) {
       if (body[field] !== null && typeof body[field] !== 'string') {
         throw createError({ statusCode: 400, message: `Некорректное поле: ${field}` })
       }
+      assertAddressFieldLength(field, body[field])
       updates[field] = body[field]
     }
   }
@@ -41,9 +44,13 @@ export default defineEventHandler(async (event) => {
     .eq('id', addressId)
     .eq('customer_id', customerId)
     .select('*')
-    .single()
+    .maybeSingle()
 
-  if (error || !data) throw createError({ statusCode: 404, message: 'Адрес не найден' })
+  if (error) {
+    reportError(error)
+    throw createError({ statusCode: 500, message: 'Не удалось обновить адрес' })
+  }
+  if (!data) throw createError({ statusCode: 404, message: 'Адрес не найден' })
 
   return mapCustomerAddress(data)
 })

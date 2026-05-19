@@ -751,7 +751,7 @@ describe('PATCH /api/customer/addresses/[id] — customer_id isolation', () => {
   })
 
   it('требует совпадения address.id И customer_id', async () => {
-    mockChain.single.mockResolvedValueOnce({ data: { id: 'addr-1' }, error: null })
+    mockChain.maybeSingle.mockResolvedValueOnce({ data: { id: 'addr-1' }, error: null })
 
     const mod = await import('../api/customer/addresses/[id].patch')
     const handler = mod.default as Function
@@ -763,7 +763,7 @@ describe('PATCH /api/customer/addresses/[id] — customer_id isolation', () => {
   })
 
   it('бросает 404 если адрес не найден или принадлежит другому customer', async () => {
-    mockChain.single.mockResolvedValueOnce({ data: null, error: { message: 'No rows' } })
+    mockChain.maybeSingle.mockResolvedValueOnce({ data: null, error: null })
 
     const mod = await import('../api/customer/addresses/[id].patch')
     const handler = mod.default as Function
