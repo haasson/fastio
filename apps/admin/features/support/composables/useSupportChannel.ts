@@ -5,15 +5,23 @@ import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 import { useUnreadSupportCounter } from './useUnreadSupportCounter'
 
 type Handler<T> = (payload: T) => void
+type VoidHandler = () => void
 
 // Module-level — shared across the app
 const ticketUpdateHandlers = new Set<Handler<SupportTicket>>()
+const reconnectHandlers = new Set<VoidHandler>()
 
 export const supportEvents = {
   onTicketUpdate(handler: Handler<SupportTicket>) {
     ticketUpdateHandlers.add(handler)
 
     return () => ticketUpdateHandlers.delete(handler)
+  },
+  // PREPROD-110: триггерится при reconnect realtime-канала.
+  onReconnect(handler: VoidHandler) {
+    reconnectHandlers.add(handler)
+
+    return () => reconnectHandlers.delete(handler)
   },
 }
 
@@ -51,6 +59,12 @@ export function useSupportChannel(tenantId: Ref<string | null>) {
     },
     onInsert: () => {
       refreshUnread()
+    },
+    // PREPROD-110: reconnect — счётчик непрочитанных мог разойтись с сервером,
+    // пересинхронизируем + broadcast'им consumer'ам (TicketChat и т.д.).
+    onReconnect: () => {
+      refreshUnread()
+      reconnectHandlers.forEach((h) => h())
     },
   })
 

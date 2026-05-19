@@ -70,6 +70,15 @@ export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | nu
     reservations.value = reservations.value.filter((x) => x.id !== id)
   })
 
+  // PREPROD-110: за период disconnect'а могли пропасть INSERT/UPDATE/DELETE
+  // события. Полный refetch восстанавливает консистентность с сервером.
+  // FIXME: handler НЕ unsubscribe'ится при unmount компонента (как и onInsert/
+  // onUpdate/onDelete выше) — pre-existing pattern в этом composable. Утечка
+  // handler'ов на каждый remount. Чинить отдельным коммитом.
+  reservationEvents.onReconnect(() => {
+    void fetch()
+  })
+
   const refresh = fetch
 
   const update = async (id: string, data: {

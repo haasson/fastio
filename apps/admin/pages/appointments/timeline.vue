@@ -516,12 +516,18 @@ const offUpdate = appointmentBus.onUpdate((a) => {
 // филиале: лишний один query за 200мс — ничего страшного, корректность важнее.
 const offDelete = appointmentBus.onDelete(() => scheduleFetch())
 
+// PREPROD-110: после reconnect могли пропасть INSERT/UPDATE/DELETE события за
+// период отсутствия. scheduleFetch debounce'ит, так что несколько триггеров
+// (от разных bus'ов) свернутся в один реальный fetch.
+const offReconnect = appointmentBus.onReconnect(() => scheduleFetch())
+
 onUnmounted(() => {
   if (fetchTimer) clearTimeout(fetchTimer)
   clearInterval(nowTimer)
   offInsert()
   offUpdate()
   offDelete()
+  offReconnect()
 })
 </script>
 

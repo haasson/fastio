@@ -4,10 +4,12 @@ import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 import type { TableCallRow } from '~/shared/data/db-types'
 
 type Handler<T> = (payload: T) => void
+type VoidHandler = () => void
 
 // Module-level — shared across the app
 const insertHandlers = new Set<Handler<TableCall>>()
 const updateHandlers = new Set<Handler<TableCall>>()
+const reconnectHandlers = new Set<VoidHandler>()
 
 const mapRow = (row: TableCallRow): TableCall => ({
   id: row.id,
@@ -30,6 +32,12 @@ export const tableCallEvents = {
 
     return () => updateHandlers.delete(handler)
   },
+  // PREPROD-110: триггерится при reconnect realtime-канала.
+  onReconnect(handler: VoidHandler) {
+    reconnectHandlers.add(handler)
+
+    return () => reconnectHandlers.delete(handler)
+  },
 }
 
 /**
@@ -48,5 +56,6 @@ export function useTableCallsChannel(tenantId: Ref<string | null>) {
 
       updateHandlers.forEach((h) => h(call))
     },
+    onReconnect: () => reconnectHandlers.forEach((h) => h()),
   })
 }

@@ -4,11 +4,13 @@ import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 import { mapKitchenQueueItem } from '../api/kitchen-queue'
 
 type Handler<T> = (payload: T) => void
+type VoidHandler = () => void
 
 // Module-level — shared across the app
 const insertHandlers = new Set<Handler<KitchenQueueItem>>()
 const updateHandlers = new Set<Handler<KitchenQueueItem>>()
 const deleteHandlers = new Set<Handler<{ id: string }>>()
+const reconnectHandlers = new Set<VoidHandler>()
 
 export const kitchenQueueEvents = {
   onInsert(handler: Handler<KitchenQueueItem>) {
@@ -25,6 +27,13 @@ export const kitchenQueueEvents = {
     deleteHandlers.add(handler)
 
     return () => deleteHandlers.delete(handler)
+  },
+  // PREPROD-110: триггерится при reconnect realtime-канала. Consumer'ы
+  // используют чтобы пересинхронизировать очередь кухни с сервером.
+  onReconnect(handler: VoidHandler) {
+    reconnectHandlers.add(handler)
+
+    return () => reconnectHandlers.delete(handler)
   },
 }
 
@@ -47,5 +56,6 @@ export function useKitchenQueueChannel(tenantId: Ref<string | null>) {
     onDelete: (row) => {
       deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id }))
     },
+    onReconnect: () => reconnectHandlers.forEach((h) => h()),
   })
 }

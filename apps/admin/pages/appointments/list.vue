@@ -136,6 +136,8 @@ const scheduleRefresh = () => {
 const realtimeSubs = [
   visitsBus.onInsert(scheduleRefresh),
   visitsBus.onUpdate(scheduleRefresh),
+  // PREPROD-110: после reconnect могли пропасть события за период отсутствия.
+  visitsBus.onReconnect(scheduleRefresh),
 ]
 
 onUnmounted(() => {

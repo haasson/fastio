@@ -8,6 +8,13 @@ type Handlers = {
   onInsert?: (row: Record<string, unknown>) => void
   onUpdate?: (row: Record<string, unknown>) => void
   onDelete?: (row: Record<string, unknown>) => void
+  /**
+   * PREPROD-110: fires on connection transition false→true (reconnect after
+   * disconnect). НЕ fires на initial SUBSCRIBED — для холодного старта
+   * данные обычно уже загружены consumer'ом отдельно. Используется чтобы
+   * подтянуть события, которые могли пропасть пока канал был оборван.
+   */
+  onReconnect?: () => void
 }
 
 export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers: Handlers) {
@@ -16,11 +23,16 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
   let channel: RealtimeChannel | null = null
 
   const isConnected = ref(false)
+  // Стартуем с true, чтобы пропустить первый SUBSCRIBED (initial connect).
+  // Сбрасываем в false на dispose, чтобы новый setup() корректно отработал
+  // как «первая подписка» (без фантомного onReconnect).
+  let wasConnected = true
 
   const dispose = () => {
     if (channel) api.realtime.removeChannel(channel)
     channel = null
     isConnected.value = false
+    wasConnected = true
   }
 
   const setup = async (value: string) => {
@@ -29,7 +41,13 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
       ...(handlers.onInsert && { onInsert: ({ new: row }) => handlers.onInsert!(row) }),
       ...(handlers.onUpdate && { onUpdate: ({ new: row }) => handlers.onUpdate!(row) }),
       ...(handlers.onDelete && { onDelete: ({ old: row }) => handlers.onDelete!(row) }),
-      onStatus: (connected) => { isConnected.value = connected },
+      onStatus: (connected) => {
+        isConnected.value = connected
+        if (connected && !wasConnected) {
+          handlers.onReconnect?.()
+        }
+        wasConnected = connected
+      },
     })
   }
 

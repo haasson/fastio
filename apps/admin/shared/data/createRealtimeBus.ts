@@ -2,11 +2,18 @@ import { type Ref } from 'vue'
 import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 
 type Handler<T> = (payload: T) => void
+type VoidHandler = () => void
 
 export type RealtimeBus<T> = {
   onInsert(handler: Handler<T>): () => boolean
   onUpdate(handler: Handler<T>): () => boolean
   onDelete(handler: Handler<{ id: string }>): () => boolean
+  /**
+   * PREPROD-110: fires когда канал восстановился после disconnect.
+   * Consumer'ы используют для рефетча данных, которые могли разойтись
+   * с сервером за период отсутствия (пропущенные INSERT/UPDATE/DELETE).
+   */
+  onReconnect(handler: VoidHandler): () => boolean
   attach(tenantId: Ref<string | null>): void
 }
 
@@ -23,12 +30,14 @@ export function createRealtimeBus<T>(opts: {
   const insertHandlers = new Set<Handler<T>>()
   const updateHandlers = new Set<Handler<T>>()
   const deleteHandlers = new Set<Handler<{ id: string }>>()
+  const reconnectHandlers = new Set<VoidHandler>()
 
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
       insertHandlers.clear()
       updateHandlers.clear()
       deleteHandlers.clear()
+      reconnectHandlers.clear()
     })
   }
 
@@ -56,12 +65,18 @@ export function createRealtimeBus<T>(opts: {
 
       return () => deleteHandlers.delete(handler)
     },
+    onReconnect(handler) {
+      reconnectHandlers.add(handler)
+
+      return () => reconnectHandlers.delete(handler)
+    },
     attach(tenantId) {
       useRealtimeWatch(opts.table, tenantId, {
         column: 'tenant_id',
         onInsert: (row) => broadcast(row, insertHandlers),
         onUpdate: (row) => broadcast(row, updateHandlers),
         onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
+        onReconnect: () => reconnectHandlers.forEach((h) => h()),
       })
     },
   }

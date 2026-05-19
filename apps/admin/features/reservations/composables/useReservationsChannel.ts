@@ -4,11 +4,13 @@ import { mapReservation } from '@fastio/shared'
 import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 
 type Handler<T> = (payload: T) => void
+type VoidHandler = () => void
 
 // Module-level — shared across the app
 const insertHandlers = new Set<Handler<Reservation>>()
 const updateHandlers = new Set<Handler<Reservation>>()
 const deleteHandlers = new Set<Handler<{ id: string }>>()
+const reconnectHandlers = new Set<VoidHandler>()
 
 export const reservationEvents = {
   onInsert(handler: Handler<Reservation>) {
@@ -25,6 +27,13 @@ export const reservationEvents = {
     deleteHandlers.add(handler)
 
     return () => deleteHandlers.delete(handler)
+  },
+  // PREPROD-110: триггерится при reconnect realtime-канала. Consumer'ы
+  // используют чтобы пересинхронизировать список броней с сервером.
+  onReconnect(handler: VoidHandler) {
+    reconnectHandlers.add(handler)
+
+    return () => reconnectHandlers.delete(handler)
   },
 }
 
@@ -47,5 +56,6 @@ export function useReservationsChannel(tenantId: Ref<string | null>) {
     onInsert: (row) => broadcast(row, insertHandlers),
     onUpdate: (row) => broadcast(row, updateHandlers),
     onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
+    onReconnect: () => reconnectHandlers.forEach((h) => h()),
   })
 }

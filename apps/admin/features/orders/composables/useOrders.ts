@@ -187,10 +187,18 @@ export function useOrders(
     }
   })
 
+  // PREPROD-110: после disconnect могли пропасть INSERT/UPDATE/DELETE
+  // события за период отсутствия. Полный refetch текущей страницы
+  // восстанавливает консистентность с сервером.
+  const offReconnect = orderEvents.onReconnect(() => {
+    void fetchOrders()
+  })
+
   onUnmounted(() => {
     offInsert()
     offUpdate()
     offDelete()
+    offReconnect()
   })
 
   const updateStatus = async (orderId: string, newStatusId: string) => {

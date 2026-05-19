@@ -231,6 +231,13 @@ const unsubOrderUpdate = orderEvents.onUpdate((order) => {
   if (order.tableId) reloadTableSums(order.tableId)
 })
 
+// PREPROD-110: после reconnect могли пропасть события (новые столы открыты,
+// вызовы появились/сняты и т.д.). Реалтайм-сокет общий, так что достаточно
+// подписаться на один bus — load() пересинхронизирует всё.
+const unsubCallsReconnect = tableCallEvents.onReconnect(() => {
+  if (tenantId.value) void load(tenantId.value)
+})
+
 onUnmounted(() => {
   unsubCallInsert()
   unsubCallUpdate()
@@ -238,6 +245,7 @@ onUnmounted(() => {
   unsubKqUpdate()
   unsubOrderInsert()
   unsubOrderUpdate()
+  unsubCallsReconnect()
 })
 
 // ── Actions ───────────────────────────────────────────────────

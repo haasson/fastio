@@ -4,11 +4,13 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 
 type Handler<T> = (payload: T) => void
+type VoidHandler = () => void
 
 // Module-level — shared across the app
 const insertHandlers = new Set<Handler<Order>>()
 const updateHandlers = new Set<Handler<Order>>()
 const deleteHandlers = new Set<Handler<{ id: string }>>()
+const reconnectHandlers = new Set<VoidHandler>()
 
 export const realtimeConnected = ref(false)
 
@@ -27,6 +29,14 @@ export const orderEvents = {
     deleteHandlers.add(handler)
 
     return () => deleteHandlers.delete(handler)
+  },
+  // PREPROD-110: триггерится при reconnect realtime-канала. Consumer'ы
+  // используют чтобы пересинхронизировать список заказов с сервером —
+  // INSERT/UPDATE/DELETE за период disconnect'а могли пропасть.
+  onReconnect(handler: VoidHandler) {
+    reconnectHandlers.add(handler)
+
+    return () => reconnectHandlers.delete(handler)
   },
 }
 
@@ -51,6 +61,7 @@ export function useOrdersChannel(tenantId: Ref<string | null>) {
     onInsert: (row) => fetchAndBroadcast(row, insertHandlers),
     onUpdate: (row) => fetchAndBroadcast(row, updateHandlers),
     onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
+    onReconnect: () => reconnectHandlers.forEach((h) => h()),
   })
 
   watch(isConnected, (v) => {

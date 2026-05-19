@@ -20,6 +20,10 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
   const loading = ref(false)
 
   let channel: RealtimeChannel | null = null
+  // PREPROD-110: трекинг текущего состояния соединения для детекта reconnect.
+  // Стартуем с true: первый SUBSCRIBED после setup() пропускаем (initial fetch
+  // выше уже наполнил items, refresh был бы дублирующим запросом).
+  let wasConnected = true
 
   // Добавляет элемент в список, если он проходит фильтр и ещё не присутствует
   const onInsert = ({ new: row }: { new: Record<string, unknown> }) => {
@@ -52,9 +56,23 @@ export function useRealtimeList<T extends { id: string }>(options: Options<T>) {
     loading.value = true
     items.value = await options.fetch()
     loading.value = false
+    wasConnected = true
 
     await api.realtime.setupAuth()
-    channel = api.realtime.subscribeToTable(key, options.table, filter, { onInsert, onUpdate, onDelete })
+    channel = api.realtime.subscribeToTable(key, options.table, filter, {
+      onInsert,
+      onUpdate,
+      onDelete,
+      onStatus: (connected) => {
+        // Переход false→true = reconnect. За период отсутствия мы могли
+        // пропустить INSERT/UPDATE/DELETE — делаем full reload, чтобы
+        // восстановить консистентность списка с сервером.
+        if (connected && !wasConnected) {
+          void refresh()
+        }
+        wasConnected = connected
+      },
+    })
   }
 
   watch(
