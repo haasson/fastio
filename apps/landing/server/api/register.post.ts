@@ -41,6 +41,7 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const ip = getClientIp(event)
 
+  // Per-IP проверка до парсинга body — иначе атакующий шлёт мусор и сжигает только email-bucket жертвы.
   await enforceRateLimit(
     [{ key: `landing-register:ip:${ip}`, max: 5, windowSeconds: 3600 }],
     'Слишком много попыток регистрации. Попробуйте позже.',
@@ -62,6 +63,14 @@ export default defineEventHandler(async (event) => {
     }
     throw err
   }
+
+  // Per-email проверка ПОСЛЕ валидации формата — без неё атакующий с ботнетом
+  // шлёт invite-email на чужой email с разных IP → email-bomb на жертву.
+  // Делаем после validateInput, чтобы не дёргать RPC для невалидных email'ов.
+  await enforceRateLimit(
+    [{ key: `landing-register:email:${email.toLowerCase()}`, max: 5, windowSeconds: 3600 }],
+    'Слишком много попыток регистрации. Попробуйте позже.',
+  )
 
   const supabase = getAdminClient()
 
