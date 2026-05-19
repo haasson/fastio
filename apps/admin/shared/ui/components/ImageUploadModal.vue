@@ -40,8 +40,8 @@
         </UiButton>
       </div>
 
-      <UiText v-if="urlError" size="tiny" color="var(--color-error)">
-        {{ urlError }}
+      <UiText v-if="urlError || pickError" size="tiny" color="var(--color-error)">
+        {{ urlError || pickError }}
       </UiText>
 
       <input
@@ -120,6 +120,9 @@ const emit = defineEmits<{
   'done': [file: File]
 }>()
 
+const MAX_FILE_BYTES = 20 * 1024 * 1024 // 20 MB
+const MAX_FILE_MB = MAX_FILE_BYTES / 1024 / 1024
+
 const step = ref<'pick' | 'crop'>('pick')
 const inputRef = ref<HTMLInputElement | null>(null)
 const cropperRef = ref<InstanceType<typeof Cropper> | null>(null)
@@ -128,7 +131,28 @@ const dragging = ref(false)
 const urlInput = ref('')
 const urlLoading = ref(false)
 const urlError = ref('')
+const pickError = ref('')
 const cropping = ref(false)
+
+const validateFile = (file: File): boolean => {
+  if (!file.type.startsWith('image/')) {
+    pickError.value = 'Можно загрузить только изображение'
+
+    return false
+  }
+
+  if (file.size > MAX_FILE_BYTES) {
+    const sizeMb = (file.size / 1024 / 1024).toFixed(1)
+
+    pickError.value = `Файл слишком большой (${sizeMb} MB). Максимум — ${MAX_FILE_MB} MB`
+
+    return false
+  }
+
+  pickError.value = ''
+
+  return true
+}
 
 const parsedRatio = computed(() => {
   if (props.aspectRatio === 'free') return undefined
@@ -148,27 +172,35 @@ const defaultSize = ({ imageSize }: { imageSize: { width: number; height: number
   height: imageSize.height,
 })
 
-const openPicker = () => inputRef.value?.click()
+const openPicker = () => {
+  pickError.value = ''
+  inputRef.value?.click()
+}
 
 const goToCrop = (file: File) => {
   if (imageSrc.value) URL.revokeObjectURL(imageSrc.value)
   imageSrc.value = URL.createObjectURL(file)
+  pickError.value = ''
   step.value = 'crop'
 }
 
 const onFileChange = (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  input.value = ''
 
   if (!file) return
+  if (!validateFile(file)) return
   goToCrop(file)
-  ;(e.target as HTMLInputElement).value = ''
 }
 
 const onDrop = (e: DragEvent) => {
   dragging.value = false
   const file = e.dataTransfer?.files?.[0]
 
-  if (!file || !file.type.startsWith('image/')) return
+  if (!file) return
+  if (!validateFile(file)) return
   goToCrop(file)
 }
 
@@ -180,6 +212,7 @@ const loadFromUrl = async () => {
   if (!url) return
 
   urlError.value = ''
+  pickError.value = ''
   urlLoading.value = true
 
   try {
@@ -187,6 +220,13 @@ const loadFromUrl = async () => {
     const contentType = blob.type || 'image/jpeg'
     const ext = contentType.split('/')[1]?.split(';')[0] ?? 'jpg'
     const file = new File([blob], `url-image.${ext}`, { type: contentType })
+
+    if (!validateFile(file)) {
+      urlError.value = pickError.value
+      pickError.value = ''
+
+      return
+    }
 
     goToCrop(file)
     urlInput.value = ''
@@ -242,11 +282,12 @@ const resetState = () => {
   }
   urlInput.value = ''
   urlError.value = ''
+  pickError.value = ''
   urlLoading.value = false
   dragging.value = false
   cropping.value = false
 
-  if (props.initialFile) {
+  if (props.initialFile && validateFile(props.initialFile)) {
     imageSrc.value = URL.createObjectURL(props.initialFile)
     step.value = 'crop'
   } else {
