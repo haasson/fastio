@@ -1,8 +1,9 @@
-import { defineEventHandler, readBody, getRequestProtocol, setCookie } from 'h3'
+import { defineEventHandler, readBody, setCookie } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
 import { getClientIp } from '../../../utils/clientIp'
+import { isSecureRequest } from '../../../utils/isSecureRequest'
 import { enforceRateLimit } from '../../../utils/enforceRateLimit'
 import {
   verifyTelegramAuth,
@@ -70,11 +71,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Ошибка создания сессии' })
   }
 
-  // Bind `secure` to the actual request protocol (xfp-aware) instead of `!import.meta.dev`:
-  // staging/preview domains run prod-mode but may serve over http, where Secure-cookies are dropped.
+  // `secure` зависит от реального протокола запроса (xfp-aware): за Traefik
+  // TLS терминируется на прокси, socket всегда non-encrypted, — без чтения
+  // x-forwarded-proto Secure-cookie не выставится и сессия не сохранится.
   setCookie(event, TG_SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: getRequestProtocol(event, { xForwardedProto: true }) === 'https',
+    secure: isSecureRequest(event),
     sameSite: 'lax',
     path: '/',
     maxAge: SESSION_TTL_SEC,

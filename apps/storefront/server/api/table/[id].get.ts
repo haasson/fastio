@@ -1,4 +1,5 @@
 import { getTenantDb } from '../../utils/tenantDb'
+import { isSecureRequest } from '../../utils/isSecureRequest'
 
 // Сколько живёт cookie `fastio_table`. Гость может сидеть за столом часами,
 // но 24h — разумный потолок: следующий день QR могут отсканить другие гости,
@@ -48,7 +49,9 @@ export default defineEventHandler(async (event) => {
     setCookie(event, 'fastio_table', tableId, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: !import.meta.dev,
+      // xfp-aware: за Traefik socket всегда non-encrypted, поэтому жёсткий
+      // `!import.meta.dev` ставил Secure поверх http и cookie дропался браузером.
+      secure: isSecureRequest(event),
       path: '/',
       maxAge: TABLE_COOKIE_TTL_SECONDS,
     })

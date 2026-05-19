@@ -1,6 +1,7 @@
-import { defineEventHandler, getQuery, getRequestProtocol, setCookie } from 'h3'
+import { defineEventHandler, getQuery, setCookie } from 'h3'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
+import { isSecureRequest } from '../../../utils/isSecureRequest'
 import { issueSessionToken, TG_SESSION_COOKIE_NAME } from '../../../utils/telegramAuth'
 import { reportError } from '~/shared/utils/reportError'
 
@@ -62,7 +63,7 @@ export default defineEventHandler(async (event) => {
 
   setCookie(event, TG_SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: getRequestProtocol(event, { xForwardedProto: true }) === 'https',
+    secure: isSecureRequest(event),
     sameSite: 'lax',
     path: '/',
     maxAge: SESSION_TTL_SEC,

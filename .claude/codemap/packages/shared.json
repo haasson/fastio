@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-19T03:15:06.175Z",
+  "generated_at": "2026-05-19T06:53:36.012Z",
   "stats": {
-    "files": 43,
+    "files": 45,
     "pages": 0,
-    "symbols": 192,
+    "symbols": 195,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -370,8 +370,8 @@
     },
     "src/utils/date.ts": {
       "kind": "ts",
-      "hash": "60a5ec6d2d1e",
-      "purpose": "Форматирование дат и времени для отображения в UI (formatDate, formatDateShort, formatMinutes, isoToTs и др.)",
+      "hash": "f48305073006",
+      "purpose": "Утилиты форматирования дат и времени для UI: длительность, короткий/полный формат, ISO ↔ локальные строки",
       "symbols": [
         {
           "name": "formatMinutes",
@@ -414,6 +414,12 @@
           "kind": "function",
           "hash": "33a52402",
           "purpose": "ISO → «1 марта, 14:30» (дата + время)"
+        },
+        {
+          "name": "formatDateNumeric",
+          "kind": "function",
+          "hash": "6237de85",
+          "purpose": "ISO → «01.03.2024» (dd.mm.yyyy, для счетов и таблиц)"
         },
         {
           "name": "dateStrToTs",
@@ -641,6 +647,19 @@
           "kind": "function",
           "hash": "2e6b4d0d",
           "purpose": "Стабильный ключ позиции корзины: одинаковое блюдо с одинаковыми модификаторами/допами/убранными ингредиентами даёт одну строку"
+        }
+      ]
+    },
+    "src/utils/paymentMethods.ts": {
+      "kind": "ts",
+      "hash": "a1b10e891d3f",
+      "purpose": "Дефолтный список методов оплаты — единый источник для admin/storefront/server fallback'ов",
+      "symbols": [
+        {
+          "name": "DEFAULT_PAYMENT_METHODS",
+          "kind": "const",
+          "hash": "f1fd5a05",
+          "purpose": "Readonly ['cash', 'card'] — методы оплаты для нового тенанта (online ждёт интеграции YooKassa)"
         }
       ]
     },
@@ -958,6 +977,19 @@
           "kind": "type",
           "hash": "d7a4a7e1",
           "purpose": "Опция слота: { value, label, disabled? }"
+        }
+      ]
+    },
+    "src/utils/secureRequest.ts": {
+      "kind": "ts",
+      "hash": "c64237cb6db2",
+      "purpose": "Определение HTTPS-протокола для cookie Secure-флага: trusted x-forwarded-proto (только при TRUST_PROXY) или socket.encrypted",
+      "symbols": [
+        {
+          "name": "pickSecureFlag",
+          "kind": "function",
+          "hash": "f81140ac",
+          "purpose": "Чистая функция: trusted xfp + socket.encrypted → boolean (cookie Secure-флаг)"
         }
       ]
     },
