@@ -1,46 +1,128 @@
+import type { H3Event } from 'h3'
+import type { Tenant } from '@fastio/shared'
+import { reportError } from '~/shared/utils/reportError'
 import { getServerSupabase, mapTenant } from '../utils/supabase'
+import { lookupTenantByHost } from '../utils/tenantCache'
 
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   if (url.pathname.startsWith('/_nuxt') || url.pathname.startsWith('/__nuxt')) return
 
-  const supabase = getServerSupabase()
   const host = getRequestHeader(event, 'x-original-host') || getRequestHost(event)
   const domain = host.split(':')[0]
-  const slug = domain.split('.')[0]
+  const supabase = getServerSupabase()
 
-  // Ищем по кастомному домену и slug параллельно
-  const [{ data: byDomain }, { data: bySlug }] = await Promise.all([
+  // PREPROD-112: кэш стабильной части Tenant + защита от stampede.
+  // subscription освежается отдельно — см. mergeFreshSubscription.
+  const result = await lookupTenantByHost(domain, () => doDbLookup(supabase, domain))
+
+  if (result.tenant) {
+    // Cache-hit может нести stale subscription.status (admin/billing-job
+    // обновили БД после кэширования). Без freshness suspended-tenant
+    // продолжал бы принимать заказы до 60s. На fresh-пути subscription
+    // только что из БД → re-fetch не нужен.
+    const tenant = result.source === 'cache'
+      ? await mergeFreshSubscription(supabase, result.tenant)
+      : result.tenant
+    applyTenantToContext(event, tenant)
+    assertNotSuspended(tenant, url)
+    return
+  }
+
+  return devFallbackOrThrow(event, supabase, url)
+})
+
+async function doDbLookup(
+  supabase: ReturnType<typeof getServerSupabase>,
+  domain: string,
+): Promise<Tenant | null> {
+  const slug = domain.split('.')[0]
+  const [domainRes, slugRes] = await Promise.all([
     supabase.from('tenants').select('*').eq('custom_domain', domain).maybeSingle(),
     supabase.from('tenants').select('*').eq('slug', slug).maybeSingle(),
   ])
 
-  const tenant = byDomain ?? bySlug
+  if (domainRes.error) reportError(domainRes.error)
+  if (slugRes.error) reportError(slugRes.error)
+
+  const tenant = domainRes.data ?? slugRes.data
   if (tenant) {
     const mapped = mapTenant(tenant)
     await computeDeliveryAvailable(supabase, mapped)
-    event.context.tenantId = tenant.id
-    event.context.tenant = mapped
-
-    // PREPROD-117 + Wave-5 CR-01: на suspended-тенанте Vue-роуты редиректит
-    // `middleware/suspended.global.ts` на /suspended, но API под /api/* минует
-    // page-middleware → без этой защиты POST /api/orders, POST /api/customer/*
-    // и т.п. продолжают работать и заведение получает заказы в просрочке.
-    // Whitelist симметричен page-middleware: auth-flow и health/tenant lookup —
-    // открыты, чтобы юзер мог залогиниться и UI смог проверить статус.
-    if (mapped.subscription?.status === 'suspended' && url.pathname.startsWith('/api/')) {
-      const allowed = url.pathname.startsWith('/api/auth/')
-        || url.pathname.startsWith('/api/health')
-        || url.pathname === '/api/tenant'
-      if (!allowed) {
-        throw createError({ statusCode: 503, message: 'Заведение временно недоступно' })
-      }
-    }
-
-    return
+    return mapped
   }
 
-  // Dev fallback: ?slug=demo-pizza or slug from Referer header (for client-side API calls)
+  // Не нашли тенанта НИ в одном успешном запросе. Если при этом был
+  // partial failure (один запрос упал, второй вернул null) — мы не
+  // можем быть уверены, что тенант реально не существует: упавший
+  // запрос мог его найти. Throw 503 вместо negative-cache, чтобы
+  // следующий request мог retry. Если оба упали — тем более 503.
+  // Если оба отработали и оба вернули null — это легитимный «not found»,
+  // его и возвращаем (lookupTenantByHost закэширует на TTL_MISS_MS).
+  if (domainRes.error || slugRes.error) {
+    throw createError({ statusCode: 503, message: 'Database temporarily unavailable' })
+  }
+
+  return null
+}
+
+async function mergeFreshSubscription(
+  supabase: ReturnType<typeof getServerSupabase>,
+  cached: Tenant,
+): Promise<Tenant> {
+  try {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('subscription')
+      .eq('id', cached.id)
+      .maybeSingle()
+    if (error) {
+      reportError(error)
+      // Fail-open: при DB-хикке используем cached subscription, чтобы
+      // не валить весь storefront. Кратковременная stale-видимость
+      // приемлема — это худшее, что может случиться при недоступной БД.
+      return cached
+    }
+    if (!data || data.subscription == null) return cached
+    return { ...cached, subscription: data.subscription as Tenant['subscription'] }
+  } catch (e) {
+    reportError(e)
+    return cached
+  }
+}
+
+function applyTenantToContext(event: H3Event, tenant: Tenant): void {
+  event.context.tenantId = tenant.id
+  event.context.tenant = tenant
+}
+
+function assertNotSuspended(tenant: Tenant, url: URL): void {
+  // PREPROD-117 + Wave-5 CR-01: на suspended-тенанте Vue-роуты редиректит
+  // middleware/suspended.global.ts на /suspended, но API под /api/* минует
+  // page-middleware → без этой защиты POST /api/orders, POST /api/customer/*
+  // и т.п. продолжают работать и заведение получает заказы в просрочке.
+  // Whitelist симметричен page-middleware: auth-flow и health/tenant lookup —
+  // открыты, чтобы юзер мог залогиниться и UI смог проверить статус.
+  if (tenant.subscription?.status !== 'suspended') return
+  if (!url.pathname.startsWith('/api/')) return
+
+  const allowed = url.pathname.startsWith('/api/auth/')
+    || url.pathname.startsWith('/api/health')
+    || url.pathname === '/api/tenant'
+  if (!allowed) {
+    throw createError({ statusCode: 503, message: 'Заведение временно недоступно' })
+  }
+}
+
+async function devFallbackOrThrow(
+  event: H3Event,
+  supabase: ReturnType<typeof getServerSupabase>,
+  url: URL,
+): Promise<void> {
+  // Dev fallback: ?slug=demo-pizza or slug from Referer header (для client-side
+  // API вызовов, где referer хранит slug). Намеренно не кэшируется — ключ был бы
+  // per-query-slug, а не per-host; в проде это не работает (Coolify Traefik
+  // routing по domain). Бьём БД каждый раз — норма для dev.
   if (import.meta.dev) {
     const querySlug = getQuery(event).slug as string | undefined
     const referer = getRequestHeader(event, 'referer')
@@ -59,17 +141,23 @@ export default defineEventHandler(async (event) => {
       if (byDevSlug) {
         const mapped = mapTenant(byDevSlug)
         await computeDeliveryAvailable(supabase, mapped)
-        event.context.tenantId = byDevSlug.id
-        event.context.tenant = mapped
+        applyTenantToContext(event, mapped)
+        // Применяем suspended-guard и в dev-пути тоже — иначе локально
+        // suspended-тенант продолжал бы обслуживать API, что мешает
+        // тестировать billing-флоу.
+        assertNotSuspended(mapped, url)
         return
       }
     }
   }
 
   throw createError({ statusCode: 404, message: 'Tenant not found' })
-})
+}
 
-async function computeDeliveryAvailable(supabase: ReturnType<typeof getServerSupabase>, tenant: ReturnType<typeof mapTenant>) {
+async function computeDeliveryAvailable(
+  supabase: ReturnType<typeof getServerSupabase>,
+  tenant: Tenant,
+): Promise<void> {
   if (tenant.modules.delivery) {
     if (tenant.deliveryMode === 'fixed') {
       tenant.deliveryAvailable = true
