@@ -15,7 +15,8 @@ service-account.json
 .vercel
 .env*.local
 WISHLIST.md
-docs/
+docs/*
+!docs/secrets-rotation.md
 .worktrees
 
 # Playwright
