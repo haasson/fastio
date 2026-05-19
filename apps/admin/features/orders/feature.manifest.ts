@@ -25,7 +25,7 @@ export default defineFeature({
 
   db: {
     tables: ['delivery_zones', 'order_events', 'order_items', 'order_notes', 'order_statuses', 'orders'],
-    rpc: ['ensure_scheduled_holding_status', 'update_order_with_items'],
+    rpc: ['delete_order_item_atomic', 'ensure_scheduled_holding_status', 'update_order_status', 'update_order_with_items'],
   },
 
   realtime: [

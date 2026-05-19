@@ -2,8 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Order, OrderItem, OrderDeliveryType, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import { normalizePhone, orderItemKey } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
+import { reportError } from '~/shared/utils/reportError'
 import type { OrderRow, OrderItemRow } from '~/shared/data/db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
+
+type RemoveItemEnvelope
+  = | { ok: true; order_deleted?: boolean }
+    | { ok: false; reason: 'not_found' | 'forbidden' }
 
 const ORDER_SELECT = '*, order_items(*)' as const
 
@@ -362,17 +367,26 @@ export const ordersApi = {
     return row ? { id: row.id, orderId: row.order_id } : null
   },
 
-  async removeItem(sb: SupabaseClient, orderItemId: string, orderId: string): Promise<void> {
-    // Delete order_item (kitchen_queue cascades via ON DELETE CASCADE)
-    await query(sb.from('order_items').delete().eq('id', orderItemId))
+  async removeItem(sb: SupabaseClient, orderItemId: string): Promise<void> {
+    // Атомарно: lock на orders, DELETE order_item, DELETE order если пусто.
+    // kitchen_queue cascades через ON DELETE CASCADE.
+    const envelope = await query(
+      sb.rpc('delete_order_item_atomic', { p_order_item_id: orderItemId }),
+    ) as RemoveItemEnvelope | null
 
-    // If order has no items left, delete it
-    const remaining = await query(
-      sb.from('order_items').select('id').eq('order_id', orderId).limit(1),
-    )
-
-    if (!remaining?.length) {
-      await query(sb.from('orders').delete().eq('id', orderId))
+    if (!envelope) {
+      // empty_envelope = реальная ошибка RPC (Postgres вернул NULL вместо jsonb).
+      reportError(new Error('delete_order_item_atomic returned empty envelope'), {
+        context: 'orders.removeItem',
+        orderItemId,
+      })
+      throw new Error('Ошибка сервера')
+    }
+    if (envelope.ok === false) {
+      // not_found — типичный double-click / stale realtime UI (другой кассир
+      // уже удалил), Sentry не нужен.
+      // forbidden — permission снят между загрузкой UI и кликом, тоже не bug.
+      throw new Error(envelope.reason === 'forbidden' ? 'Недостаточно прав' : 'Позиция не найдена')
     }
   },
 

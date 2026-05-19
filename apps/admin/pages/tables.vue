@@ -351,7 +351,7 @@ const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
     return
   }
 
-  await api.orders.removeItem(item.id, item.orderId)
+  await api.orders.removeItem(item.id)
   success(`${sessionItem.dishName} удалено`)
   reloadTableSums(table.id)
   reloadKitchenDishes()
