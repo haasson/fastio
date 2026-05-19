@@ -1,59 +1,60 @@
 import { getTenantDb } from '../../../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../../../utils/customerAuth'
+import { reportError } from '~/shared/utils/reportError'
+
+// PREPROD-143: отмена записи клиентом идёт через RPC cancel_appointment_by_customer.
+// RPC берёт row-lock на запись, проверяет ownership/allow_cancel_snapshot,
+// меняет статус и пишет audit-event в appointment_events. Прямой UPDATE
+// раньше тихо терял audit-trail — менеджер в админке не видел «отменено
+// клиентом» в истории.
+
+type CancelResult =
+  | { ok: true; id: string }
+  | { ok: false; reason: string }
+
+const REASON_MESSAGES: Record<string, { statusCode: number, message: string }> = {
+  invalid_args: { statusCode: 400, message: 'Некорректные данные' },
+  not_found: { statusCode: 404, message: 'Запись не найдена' },
+  forbidden: { statusCode: 403, message: 'Нет доступа к записи' },
+  already_cancelled: { statusCode: 400, message: 'Запись уже отменена' },
+  already_done: { statusCode: 400, message: 'Запись уже завершена' },
+  cancel_disabled: { statusCode: 403, message: 'Отмена недоступна' },
+}
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
   // Поддерживаем оба способа авторизации: email/password (Bearer) и Telegram (cookie).
   // Telegram-only клиенты в записи имеют user_id=null, поэтому проверка владения
-  // ведётся через сопоставление customer.authUserId или customer.phone с записью.
+  // ведётся через customer.id (RPC сравнивает с appointments.customer_id).
   const { customer } = await getAuthenticatedContextWithCustomer(event)
   if (customer.tenantId !== db.tenantId) throw createError({ statusCode: 403 })
 
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400 })
 
-  const { data: appt } = await db
-    .from('appointments')
-    .select('id, customer_id, status, tenant_id, allow_cancel_snapshot')
-    .eq('id', id)
-    .single()
+  const { data, error } = await db.raw.rpc('cancel_appointment_by_customer', {
+    p_appointment_id: id,
+    p_customer_id: customer.id,
+  })
 
-  if (!appt) throw createError({ statusCode: 404 })
-  if (appt.customer_id !== customer.id) throw createError({ statusCode: 403 })
-  if (appt.status === 'cancelled') throw createError({ statusCode: 400, message: 'Запись уже отменена' })
-  if (appt.status === 'done') throw createError({ statusCode: 400, message: 'Запись уже завершена' })
-
-  // Check allow_cancel snapshot — prefer snapshot taken at booking time, чтобы
-  // ретроактивное изменение setting'а не лишило клиента права на отмену.
-  // Deadline-check убран: модель без предоплаты, late-cancel == no-show по эффекту,
-  // лучше иметь сигнал отмены чем тихий no-show (см. PREPROD-018 reservations,
-  // та же логика). Колонка cancellation_deadline_hours в БД и UI оставлена
-  // как dead code — см. TECHDEBT.
-  const { data: settingsData } = await db
-    .from('appointment_settings')
-    .select('allow_client_cancellation')
-    .maybeSingle()
-
-  const allowCancel = (appt.allow_cancel_snapshot as boolean | null)
-    ?? (settingsData?.allow_client_cancellation ?? true)
-  if (!allowCancel) throw createError({ statusCode: 403, message: 'Отмена недоступна' })
-
-  // Возвращаем строку и проверяем error: иначе при RLS-deny клиент получает {ok:true},
-  // а запись остаётся живой.
-  const { data: updated, error: updateError } = await db
-    .from('appointments')
-    .update({
-      status: 'cancelled',
-      cancelled_by: 'customer',
-      cancelled_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .select('id, status')
-    .single()
-
-  if (updateError || !updated) {
+  if (error) {
+    reportError(error, { context: 'customer.appointments.cancel:rpc' })
     throw createError({ statusCode: 500, message: 'Не удалось отменить запись' })
+  }
+
+  const result = data as CancelResult | null
+  if (!result) {
+    reportError(new Error('cancel_appointment_by_customer returned null'), {
+      context: 'customer.appointments.cancel:rpc-empty',
+      appointmentId: id,
+    })
+    throw createError({ statusCode: 500, message: 'Не удалось отменить запись' })
+  }
+
+  if (!result.ok) {
+    const mapped = REASON_MESSAGES[result.reason] ?? { statusCode: 400, message: 'Не удалось отменить запись' }
+    throw createError(mapped)
   }
 
   return { ok: true }
