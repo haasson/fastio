@@ -2,15 +2,12 @@
   <div class="color-picker-root">
     <UiText v-if="label" size="small">{{ label }}</UiText>
     <div class="swatches">
-      <button
+      <UiPickerItem
         v-for="c in presets"
         :key="c"
-        type="button"
+        :selected="modelValue === c"
         class="swatch"
-        :class="{
-          selected: modelValue === c,
-          used: isUsed(c),
-        }"
+        :class="{ used: isUsed(c) }"
         :style="{ background: c }"
         @click="$emit('update:modelValue', c)"
       />
@@ -25,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiText } from '@fastio/ui'
+import { UiText, UiPickerItem } from '@fastio/ui'
 
 const props = withDefaults(defineProps<{
   modelValue: string
@@ -59,19 +56,21 @@ const isUsed = (hex: string) => props.usedColors.includes(hex)
   flex-wrap: wrap;
 }
 
+// Canonical color swatch size: 32×32 round. Стандартизировано вместе с TagFormModal color-grid.
 .swatch {
-  width: 26px;
-  height: 26px;
+  // Selected ring специально --color-text (а не primary), чтобы контрастировать с
+  // любым swatch-цветом — иначе синий primary swatch при выборе сливается с primary ring.
+  --picker-selected-border: var(--color-text);
+
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2.5px solid transparent;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.1s, border-color 0.15s, opacity 0.15s;
 
-  &:hover { transform: scale(1.15); }
+  &:hover {
+    transform: scale(1.15);
+  }
 
-  &.selected {
-    border-color: var(--color-text);
+  &.ui-picker-item--selected {
     transform: scale(1.15);
   }
 
@@ -81,8 +80,8 @@ const isUsed = (hex: string) => props.usedColors.includes(hex)
 }
 
 .custom {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1.5px solid var(--color-border);
   cursor: pointer;

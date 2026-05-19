@@ -7,21 +7,26 @@
       <div class="presets-header">
         <UiSegmentedControl v-model="category" :items="categoryOptions" />
         <div v-if="showNav" class="page-nav">
-          <button class="nav-btn" :disabled="page === 0" @click="page--">
-            <UiIcon name="chevronLeft" :size="16" />
-          </button>
-          <button class="nav-btn" :disabled="page >= maxPage" @click="page++">
-            <UiIcon name="chevronRight" :size="16" />
-          </button>
+          <UiButton
+            size="small"
+            icon="chevronLeft"
+            :disabled="page === 0"
+            @click="page--"
+          />
+          <UiButton
+            size="small"
+            icon="chevronRight"
+            :disabled="page >= maxPage"
+            @click="page++"
+          />
         </div>
       </div>
       <div class="presets">
-        <button
+        <UiPickerItem
           v-for="preset in visiblePresets"
           :key="preset.value"
-          type="button"
+          :selected="themeForm.preset === preset.value && !themeForm.activeCustomId"
           class="theme-card"
-          :class="{ active: themeForm.preset === preset.value && !themeForm.activeCustomId }"
           :style="{
             '--p-bg': preset.palette.bg,
             '--p-surface': preset.palette.surface,
@@ -49,7 +54,7 @@
             </span>
           </span>
           <span class="card-name">{{ preset.label }}</span>
-        </button>
+        </UiPickerItem>
       </div>
     </div>
 
@@ -103,7 +108,7 @@
 
 <script setup lang="ts">
 import { computed, h, inject, onMounted, onUnmounted, ref, watch } from 'vue'
-import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiIcon, UiSectionHeader } from '@fastio/ui'
+import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiIcon, UiSectionHeader, UiButton, UiPickerItem } from '@fastio/ui'
 import type { SelectOption } from 'naive-ui'
 import { themePresets, fontOptions } from '~/config/theme-presets'
 import { GOOGLE_FONTS, isGoogleFontValue, fontFamilyCSS, googleFontsBatchUrl } from '~/config/google-fonts'
@@ -253,28 +258,6 @@ const cardShadowOptions = [
   gap: var(--space-4);
 }
 
-.nav-btn {
-  @include flex-center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-8);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-card);
-  color: var(--color-text);
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-
-  &:hover:not(:disabled) {
-    background: var(--color-bg-hover);
-    border-color: var(--color-text-hint);
-  }
-
-  &:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-}
-
 .presets {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -287,22 +270,23 @@ const cardShadowOptions = [
 
 // ─── theme card ───────────────────────────────────────────────────────────────
 
+// UiPickerItem уже делает border + selected ring. Здесь — палитра-зависимый фон/тень.
 .theme-card {
-  @include flex-col;
+  --picker-selected-border: var(--p-primary);
+  --picker-hover-border: var(--p-primary, var(--color-primary));
+
+  flex-direction: column;
   padding: var(--space-8);
-  border: 2px solid var(--p-border, var(--color-border));
+  border-color: var(--p-border, var(--color-border));
   border-radius: var(--radius-8);
   background: var(--p-bg, var(--color-bg));
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
   position: relative;
 
   &:hover {
     box-shadow: 0 0 0 1px var(--p-primary, var(--color-primary));
   }
 
-  &.active {
-    border-color: var(--p-primary);
+  &.ui-picker-item--selected {
     box-shadow: 0 0 0 1px var(--p-primary);
   }
 }

@@ -32,7 +32,7 @@
             class="thumb"
           >
             <img :src="url" alt="" />
-            <button class="thumb-remove" @click="removeImage(i)">&times;</button>
+            <UiChipRemove variant="overlay" class="thumb-remove" @click="removeImage(i)" />
           </div>
           <label
             v-if="previewUrls.length < 3"
@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiDrawer, UiInput, UiText, useMessage } from '@fastio/ui'
+import { UiDrawer, UiInput, UiText, useMessage, UiChipRemove } from '@fastio/ui'
 import { UiIcon } from '@fastio/icons'
 import type { DrawerAction } from '@fastio/ui'
 import { useDatabase } from '~/shared/data/useDatabase'
@@ -173,23 +173,11 @@ const onSubmit = async () => {
   }
 }
 
+// UiChipRemove overlay variant сам делает background/hover; родитель только позиционирует.
 .thumb-remove {
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 20px;
-  height: 20px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-white);
-  font-size: var(--font-size-md);
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .attach-btn {

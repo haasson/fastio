@@ -43,16 +43,15 @@
       <div v-if="form.type === 'weekday'" class="weekdays">
         <span class="weekdays-label">Дни недели *</span>
         <div class="weekday-buttons">
-          <button
+          <UiPickerItem
             v-for="day in weekdays"
             :key="day.value"
-            type="button"
+            :selected="form.conditions.weekdays?.includes(day.value) ?? false"
             class="weekday-btn"
-            :class="{ active: form.conditions.weekdays?.includes(day.value) }"
             @click="toggleWeekday(day.value)"
           >
             {{ day.label }}
-          </button>
+          </UiPickerItem>
         </div>
       </div>
 
@@ -139,7 +138,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, nextTick } from 'vue'
-import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiSelect, UiDatepicker, UiTimepicker, UiAlert, UiButton } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiSwitch, UiRadioGroup, UiSelect, UiDatepicker, UiTimepicker, UiAlert, UiButton, UiPickerItem } from '@fastio/ui'
 import type { Promotion, PromotionFormData, PromotionConditions } from '@fastio/shared'
 import type { ValidationRule } from '@fastio/kit'
 import { isoToTs, tsToIso, tsToIsoEndOfDay } from '@fastio/shared'
@@ -358,25 +357,20 @@ const onConfirm = () => {
   overflow: hidden;
 }
 
+// UiPickerItem уже даёт border ring + hover. Здесь — square size + visible default border + selected fill.
 .weekday-btn {
+  --picker-hover-border: var(--color-primary);
+
   width: 40px;
   height: 40px;
+  border-color: var(--color-border);
   border-radius: var(--radius-8);
-  border: 1.5px solid var(--color-border);
-  background: none;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
 
-  &:hover {
-    border-color: var(--color-primary);
-  }
-
-  &.active {
+  &.ui-picker-item--selected {
     background: var(--color-primary);
-    border-color: var(--color-primary);
     color: var(--color-white);
   }
 }

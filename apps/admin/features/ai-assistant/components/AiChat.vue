@@ -1,4 +1,10 @@
 <template>
+  <!--
+    AI Chat — standalone widget с уникальным дизайном (floating FAB, panel header
+    icon-toggle, error retry text-link, input area icon-submit). Все кнопки имеют
+    специфичные стили (round FAB, square icon, inline text), не покрываются
+    UiButton/UiPickerItem без потери визуальной идентичности — оставлены raw.
+  -->
   <div class="ai-chat-root">
     <!-- Floating button -->
     <button class="fab" :class="{ active: isOpen }" @click="isOpen = !isOpen">

@@ -8,11 +8,11 @@
     <UiText v-if="showError && !delivery && !pickup && !dineIn" size="small" class="error">Выберите хотя бы один способ заказа</UiText>
 
     <div class="options">
-      <button
+      <UiPickerItem
         v-for="option in options"
         :key="option.key"
+        :selected="option.value"
         class="option"
-        :class="{ selected: option.value }"
         @click="toggle(option.key)"
       >
         <span class="option-icon">{{ option.emoji }}</span>
@@ -21,14 +21,14 @@
           <UiText size="small" class="option-desc">{{ option.desc }}</UiText>
         </div>
         <div class="toggle-indicator" :class="{ on: option.value }" />
-      </button>
+      </UiPickerItem>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { UiTitle, UiText } from '@fastio/ui'
+import { UiTitle, UiText, UiPickerItem } from '@fastio/ui'
 
 const props = defineProps<{
   delivery: boolean
@@ -111,24 +111,20 @@ const toggle = (key: ModuleKey) => {
   gap: var(--space-8);
 }
 
+// UiPickerItem уже даёт border/hover/focus ring. Здесь — full-width card layout.
 .option {
+  --picker-hover-border: var(--color-primary);
+
   display: flex;
   align-items: center;
   gap: var(--space-16);
   padding: var(--space-16);
-  border: 1.5px solid var(--color-border);
+  border-color: var(--color-border);
   border-radius: var(--radius-12);
   background: var(--color-bg-card);
-  cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, background 0.15s;
 
-  &:hover {
-    border-color: var(--color-primary);
-  }
-
-  &.selected {
-    border-color: var(--color-primary);
+  &.ui-picker-item--selected {
     background: var(--color-bg-hover);
   }
 }

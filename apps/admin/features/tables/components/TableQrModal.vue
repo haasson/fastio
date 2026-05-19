@@ -22,22 +22,7 @@
       <div class="pdf-section">
         <UiText size="small" class="section-title">Скачать PDF для печати</UiText>
 
-        <div class="mode-switch">
-          <button
-            class="mode-btn"
-            :class="{ 'mode-btn--active': mode === 'single' }"
-            @click="mode = 'single'"
-          >
-            Только {{ table?.name }}
-          </button>
-          <button
-            class="mode-btn"
-            :class="{ 'mode-btn--active': mode === 'all' }"
-            @click="mode = 'all'"
-          >
-            Все столы ({{ allTables.length }})
-          </button>
-        </div>
+        <UiSegmentedControl v-model="mode" :items="modeOptions" size="small" />
 
         <!-- Single mode: just copies count -->
         <div v-if="mode === 'single'" class="copies-single">
@@ -83,7 +68,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { NQrCode } from 'naive-ui'
-import { UiModal, UiButton, UiText, UiInputNumber } from '@fastio/ui'
+import { UiModal, UiButton, UiText, UiInputNumber, UiSegmentedControl } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useTableUrl } from '~/shared/composables/useTableUrl'
@@ -109,6 +94,11 @@ const generating = ref(false)
 const qrPreviewRef = ref<HTMLElement | null>(null)
 const mode = ref<'single' | 'all'>('single')
 const singleCopies = ref(1)
+
+const modeOptions = computed(() => [
+  { label: `Только ${props.table?.name ?? ''}`, value: 'single' as const },
+  { label: `Все столы (${props.allTables.length})`, value: 'all' as const },
+])
 
 type TableCopyItem = { table: Table; copies: number }
 
@@ -214,35 +204,6 @@ const downloadPdf = async () => {
 
 .section-title {
   font-weight: var(--font-weight-semibold);
-}
-
-.mode-switch {
-  display: flex;
-  gap: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-8);
-  overflow: hidden;
-}
-
-.mode-btn {
-  flex: 1;
-  padding: var(--space-8) var(--space-12);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  background: var(--color-bg);
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  transition: background 0.15s, color 0.15s;
-
-  & + & {
-    border-left: 1px solid var(--color-border);
-  }
-
-  &--active {
-    background: var(--color-primary);
-    color: var(--color-white);
-  }
 }
 
 .copies-single {

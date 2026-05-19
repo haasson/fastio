@@ -2,6 +2,11 @@
   <div class="editor-root">
     <label v-if="label" class="label">{{ label }}</label>
     <div class="editor-wrap">
+      <!--
+        Toolbar — изолированный rich-text editor контрол. Все кнопки имеют
+        стандартный editor-toolbar дизайн (square icon-tile с active state),
+        не унифицируются с другими button-паттернами проекта — оставлены raw.
+      -->
       <div class="toolbar">
         <button
           type="button"

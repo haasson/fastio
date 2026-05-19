@@ -90,14 +90,11 @@
               @change="uploadOffer"
             />
           </label>
-          <button
+          <UiChipRemove
             v-if="form.offerUrl"
-            type="button"
-            class="doc-remove"
+            :size="14"
             @click="form.offerUrl = null"
-          >
-            <UiIcon name="close" :size="14" />
-          </button>
+          />
         </div>
       </div>
     </UiCard>
@@ -106,7 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiCard, UiForm, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiSectionHeader } from '@fastio/ui'
+import { UiCard, UiForm, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiSectionHeader, UiChipRemove } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { isLegalInfoComplete } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -237,16 +234,4 @@ const uploadOffer = async (event: Event) => {
   display: none;
 }
 
-.doc-remove {
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--color-text-hint);
-  display: flex;
-  align-items: center;
-  padding: var(--space-4);
-  border-radius: var(--radius-4);
-
-  &:hover { color: var(--color-error); }
-}
 </style>

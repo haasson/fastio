@@ -1,16 +1,16 @@
 <template>
   <div class="gradient-picker-root">
-    <button
+    <UiPickerItem
       v-for="g in resolvedGradients"
       :key="g.id"
-      class="item"
-      :class="{ active: modelValue === g.id }"
+      :selected="modelValue === g.id"
       :title="g.label"
+      class="item"
       @click="emit('update:modelValue', g.id)"
     >
       <div class="preview" :style="{ background: g.resolvedCss }" />
       <span class="name">{{ g.label }}</span>
-    </button>
+    </UiPickerItem>
   </div>
 </template>
 
@@ -18,6 +18,7 @@
 import { computed } from 'vue'
 import { heroGradients, resolveGradientCss } from '@fastio/shared'
 import type { ThemePalette } from '@fastio/shared'
+import { UiPickerItem } from '@fastio/ui'
 
 const props = defineProps<{
   modelValue: string
@@ -40,25 +41,12 @@ const resolvedGradients = computed(() => heroGradients.map((g) => ({
   gap: var(--space-8);
 }
 
+// UiPickerItem уже делает border + selected ring. Здесь — только layout.
 .item {
-  display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--space-4);
-  background: none;
-  border: 2px solid transparent;
   border-radius: var(--radius-8);
   padding: var(--space-4);
-  cursor: pointer;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: var(--color-border);
-  }
-
-  &.active {
-    border-color: var(--color-primary);
-  }
 }
 
 .preview {

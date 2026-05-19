@@ -22,9 +22,7 @@
             <UiIcon name="grip" :size="12" />
           </span>
           <span class="item-name">{{ gallery.name }}</span>
-          <button type="button" class="remove-btn" @click="onRemove(gallery.id)">
-            <UiIcon name="close" :size="12" />
-          </button>
+          <UiChipRemove @click="onRemove(gallery.id)" />
         </div>
       </VueDraggable>
     </div>
@@ -41,7 +39,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiSelect, UiIcon } from '@fastio/ui'
+import { UiSelect, UiIcon, UiChipRemove } from '@fastio/ui'
 import type { Gallery } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -134,22 +132,6 @@ const onReorder = () => {
   flex: 1;
   font-size: var(--font-size-sm);
   color: var(--color-text);
-}
-
-.remove-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  padding: var(--space-4);
-  border-radius: var(--radius-4);
-  flex-shrink: 0;
-  transition: color 0.15s;
-
-  &:hover { color: var(--color-text); }
 }
 
 .hint {

@@ -9,6 +9,8 @@ export { default as UiBadge } from './components/UiBadge.vue'
 export { default as UiCounter } from './components/UiCounter.vue'
 export { default as UiTag } from './components/UiTag.vue'
 export { default as UiChip } from './components/UiChip.vue'
+export { default as UiChipRemove } from './components/UiChipRemove.vue'
+export { default as UiPickerItem } from './components/UiPickerItem.vue'
 export { default as UiFilterReset } from './components/UiFilterReset.vue'
 export { default as UiDivider } from './components/UiDivider.vue'
 

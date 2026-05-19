@@ -1,18 +1,17 @@
 <template>
   <UiCollapseItem name="tags" title="Теги">
     <div class="tags-section-root">
-      <button
+      <UiPickerItem
         v-for="tag in availableTags"
         :key="tag.id"
-        type="button"
+        :selected="modelValue.includes(tag.id)"
         class="tag-chip"
-        :class="{ active: modelValue.includes(tag.id) }"
         :style="chipStyle(tag)"
         @click="onToggle(tag.id, !modelValue.includes(tag.id))"
       >
         <component :is="getIcon(tag.icon)" :size="14" :stroke-width="2.5" />
         <span>{{ tag.name }}</span>
-      </button>
+      </UiPickerItem>
       <UiText v-if="availableTags.length === 0" size="small" style="color: var(--color-text-secondary)">
         Нет доступных тегов. Создайте теги во вкладке «Теги».
       </UiText>
@@ -21,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { UiCollapseItem, UiText } from '@fastio/ui'
+import { UiCollapseItem, UiText, UiPickerItem } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
 import { getTagColorPreset } from '@fastio/shared'
 import * as icons from 'lucide-vue-next'
@@ -58,29 +57,24 @@ const chipStyle = (tag: DishTagDefinition) => {
   gap: var(--space-8);
 }
 
+// UiPickerItem уже даёт ring/hover/focus. Здесь — pill shape + tag-color theming.
 .tag-chip {
-  display: inline-flex;
-  align-items: center;
+  --picker-hover-border: var(--chip-color, var(--color-text-secondary));
+  --picker-selected-border: var(--chip-color);
+
   gap: var(--space-4);
   padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-full);
-  border: 1.5px solid var(--color-border);
+  border-color: var(--color-border);
   background: var(--color-fill-quaternary);
   color: var(--color-text-secondary);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all 0.15s;
   user-select: none;
 
-  &:hover {
-    border-color: var(--chip-color, var(--color-text-secondary));
-  }
-
-  &.active {
+  &.ui-picker-item--selected {
     color: var(--chip-color);
     background: var(--chip-bg);
-    border-color: var(--chip-color);
   }
 }
 </style>

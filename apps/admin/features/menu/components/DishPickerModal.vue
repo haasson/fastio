@@ -12,23 +12,23 @@
         <UiInput v-model="searchQuery" :placeholder="`Поиск ${item.gen}…`" clearable />
 
         <div v-if="!searchQuery" class="cats">
-          <button
+          <UiPickerItem
             v-if="showCombos && allCombos.length"
+            :selected="selectedCatId === 'combos'"
             class="cat"
-            :class="{ active: selectedCatId === 'combos' }"
             @click="selectedCatId = 'combos'"
           >
             Комбо
-          </button>
-          <button
+          </UiPickerItem>
+          <UiPickerItem
             v-for="cat in availableCategories"
             :key="cat.id"
+            :selected="selectedCatId === cat.id"
             class="cat"
-            :class="{ active: selectedCatId === cat.id }"
             @click="selectedCatId = cat.id"
           >
             {{ cat.name }}
-          </button>
+          </UiPickerItem>
         </div>
 
         <div class="list">
@@ -188,7 +188,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, toRef, watch } from 'vue'
-import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput, UiStepper } from '@fastio/ui'
+import { UiModal, UiButton, UiIcon, UiTag, UiCheckbox, UiInput, UiStepper, UiPickerItem } from '@fastio/ui'
 import type { Combo, Dish, DishModifierGroup, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import type { Addon } from '@fastio/shared'
 import { isAutoCategory, formatPrice } from '@fastio/shared'
@@ -526,25 +526,22 @@ const onConfirm = () => {
   gap: var(--space-8);
 }
 
+// UiPickerItem уже даёт ring/hover/focus. Здесь — pill shape.
 .cat {
   padding: var(--space-4) var(--space-12);
   border-radius: var(--radius-full);
-  border: 1.5px solid var(--color-border);
-  background: transparent;
+  border-color: var(--color-border);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
 
   &:hover {
     background: var(--color-bg-hover);
     color: var(--color-title);
   }
 
-  &.active {
+  &.ui-picker-item--selected {
     background: var(--color-primary);
-    border-color: var(--color-primary);
     color: var(--color-white);
   }
 }

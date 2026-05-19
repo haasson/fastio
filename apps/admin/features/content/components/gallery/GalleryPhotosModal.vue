@@ -60,9 +60,7 @@
               <UiIcon name="image" :size="16" />
             </div>
           </div>
-          <button type="button" class="delete-btn" @click="handleRemove(photo.id)">
-            <UiIcon name="close" :size="12" />
-          </button>
+          <UiChipRemove variant="overlay" class="delete-btn" @click="handleRemove(photo.id)" />
         </div>
 
         <div v-if="uploading" class="photo-item photo-item--loading">
@@ -84,7 +82,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiModal, UiButton, UiEmpty, UiIcon, UiText } from '@fastio/ui'
+import { UiModal, UiButton, UiEmpty, UiIcon, UiText, UiChipRemove } from '@fastio/ui'
 import type { ModalAction } from '@fastio/ui'
 import type { Gallery, GalleryPhoto } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
@@ -227,25 +225,12 @@ const modalActions = computed((): ModalAction[] => [
   color: var(--color-text-secondary);
 }
 
+// UiChipRemove overlay variant сам делает background/hover; родитель только позиционирует.
 .delete-btn {
   position: absolute;
   top: 4px;
   right: 4px;
   z-index: 2;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-white);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: background 0.15s;
-
-  &:hover { background: rgba(0, 0, 0, 0.75); }
 }
 
 :deep(.photo-ghost) {

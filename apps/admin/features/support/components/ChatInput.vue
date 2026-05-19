@@ -7,7 +7,7 @@
         class="mini-thumb"
       >
         <img :src="url" alt="" />
-        <button class="mini-remove" @click="removeImage(i)">&times;</button>
+        <UiChipRemove variant="overlay" class="mini-remove" @click="removeImage(i)" />
       </div>
     </div>
     <div class="input-row">
@@ -44,6 +44,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
 import { UiIcon } from '@fastio/icons'
+import { UiChipRemove } from '@fastio/ui'
 
 const emit = defineEmits<{
   send: [body: string, imageUrls: string[]]
@@ -134,23 +135,11 @@ const removeImage = (index: number) => {
   }
 }
 
+// UiChipRemove overlay variant сам делает background/hover; родитель только позиционирует.
 .mini-remove {
   position: absolute;
   top: 1px;
   right: 1px;
-  width: 16px;
-  height: 16px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-white);
-  font-size: var(--font-size-xs);
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .input-row {

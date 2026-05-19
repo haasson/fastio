@@ -67,12 +67,7 @@
               <span class="chip-label">{{ chipDateLabel(chip.dateStr, chip.isRecurring) }}</span>
               <span class="chip-sub">{{ chip.dayOff ? 'Выходной' : `${chip.open} – ${chip.close}` }}</span>
               <span v-if="chip.isRecurring" class="chip-recurring">Ежегодно</span>
-              <button
-                class="chip-remove"
-                type="button"
-                title="Удалить"
-                @click.stop="removeException(chip.key)"
-              >×</button>
+              <UiChipRemove @click="removeException(chip.key)" />
             </div>
           </div>
         </template>
@@ -83,7 +78,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue'
-import { UiTimepicker, UiSwitch, UiText, UiButton, UiDatepicker } from '@fastio/ui'
+import { UiTimepicker, UiSwitch, UiText, UiButton, UiDatepicker, UiChipRemove } from '@fastio/ui'
 import type { WorkingHoursSchedule, ScheduleException } from '@fastio/shared'
 
 const DAYS = [
@@ -400,7 +395,7 @@ watch(state, () => emitValue(), { deep: true, flush: 'sync' })
   &:hover {
     border-color: var(--ex-accent);
 
-    .chip-remove {
+    :deep(.ui-chip-remove) {
       opacity: 1;
     }
   }
@@ -444,27 +439,17 @@ watch(state, () => emitValue(), { deep: true, flush: 'sync' })
   color: var(--ex-accent);
 }
 
-.chip-remove {
-  @include button-reset;
+// Absolute floating × hidden by default, shown on .exception-chip hover. Стили самого ×-button — в UiChipRemove.
+.exception-chip :deep(.ui-chip-remove) {
   position: absolute;
   top: var(--space-4);
   right: var(--space-4);
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  line-height: 1;
-  color: var(--color-text-hint);
   opacity: 0;
-  transition: opacity var(--transition-fast), color var(--transition-fast);
-  border-radius: var(--radius-4);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--color-error);
-  }
+  // opacity для show/hide на hover родителя + сохраняем background/color transitions из UiChipRemove.
+  transition:
+    opacity var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
 </style>

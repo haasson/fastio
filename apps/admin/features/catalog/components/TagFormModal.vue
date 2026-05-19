@@ -21,33 +21,31 @@
       <div class="field" data-tour="tag-icon">
         <UiText size="small" weight="medium" class="label">Иконка</UiText>
         <div class="icon-grid">
-          <button
+          <UiPickerItem
             v-for="icon in iconPresets"
             :key="icon"
-            type="button"
+            :selected="form.icon === icon"
             class="icon-btn"
-            :class="{ active: form.icon === icon }"
             @click="form.icon = icon"
           >
             <component :is="getIcon(icon)" :size="18" />
-          </button>
+          </UiPickerItem>
         </div>
       </div>
 
       <div class="field" data-tour="tag-color">
         <UiText size="small" weight="medium" class="label">Цвет</UiText>
         <div class="color-grid">
-          <button
+          <UiPickerItem
             v-for="c in TAG_COLOR_PRESETS"
             :key="c.key"
-            type="button"
+            :selected="form.color === c.key"
             class="color-btn"
-            :class="{ active: form.color === c.key }"
             :style="{ '--dot-color': c.color, '--dot-bg': c.background }"
             @click="form.color = c.key"
           >
             <span class="color-dot" :style="{ backgroundColor: c.color }" />
-          </button>
+          </UiPickerItem>
         </div>
       </div>
 
@@ -64,7 +62,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiForm, UiInput, UiText } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiText, UiPickerItem } from '@fastio/ui'
 import type { DishTagDefinition } from '@fastio/shared'
 import { TAG_COLOR_PRESETS, getTagColorPreset, getTagIconPresets, getTagNamePlaceholder } from '@fastio/shared'
 import * as icons from 'lucide-vue-next'
@@ -166,25 +164,19 @@ const handleSave = async () => {
   gap: var(--space-4);
 }
 
+// UiPickerItem уже делает border + selected ring. Здесь — только размер/фон/цвет иконки.
 .icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 36px;
   height: 36px;
   border-radius: var(--radius-8);
-  border: 2px solid transparent;
   background: var(--color-fill-quaternary);
   color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.15s;
 
   &:hover {
     background: var(--color-fill-tertiary);
   }
 
-  &.active {
-    border-color: var(--color-primary);
+  &.ui-picker-item--selected {
     color: var(--color-primary);
     background: var(--color-primary-light);
   }
@@ -196,19 +188,14 @@ const handleSave = async () => {
   gap: var(--space-8);
 }
 
+// UiPickerItem уже делает border + selected ring. Здесь — только размер/фон/colored shadow.
 .color-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid transparent;
   background: var(--dot-bg);
-  cursor: pointer;
-  transition: all 0.15s;
 
-  &.active {
+  &.ui-picker-item--selected {
     box-shadow: 0 0 8px 2px var(--dot-color);
   }
 }

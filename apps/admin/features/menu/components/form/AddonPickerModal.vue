@@ -28,19 +28,19 @@
       <!-- Таб: Пресеты -->
       <div v-else class="preset-list">
         <UiEmpty v-if="presets.length === 0" text="Пресетов пока нет" />
-        <button
+        <UiPickerItem
           v-for="preset in presets"
           v-else
           :key="preset.id"
+          :selected="selectedPresetId === preset.id"
           class="preset-option"
-          :class="{ selected: selectedPresetId === preset.id }"
           @click="selectedPresetId = preset.id"
         >
           <UiText size="small" :weight="600">{{ preset.name }}</UiText>
           <UiText size="tiny" color="secondary" class="preset-addons">
             {{ preset.addonIds.map(id => addonById(id)?.name).filter(Boolean).join(', ') || '—' }}
           </UiText>
-        </button>
+        </UiPickerItem>
       </div>
     </div>
   </UiModal>
@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiTabs, UiCheckbox, UiText, UiEmpty } from '@fastio/ui'
+import { UiModal, UiTabs, UiCheckbox, UiText, UiEmpty, UiPickerItem } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 
@@ -140,23 +140,22 @@ const handleConfirm = () => {
   overflow-y: auto;
 }
 
+// UiPickerItem уже даёт ring/hover/focus. Здесь — full-width row layout.
 .preset-option {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   width: 100%;
   text-align: left;
   padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-8);
-  border: 1px solid var(--color-border);
-  background: transparent;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  border-color: var(--color-border);
 
   &:hover {
     background: var(--color-bg-page);
   }
 
-  &.selected {
-    border-color: var(--color-primary);
+  &.ui-picker-item--selected {
     background: color-mix(in srgb, var(--color-primary) 8%, transparent);
   }
 }
