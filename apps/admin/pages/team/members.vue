@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   UiInput, UiSelect, UiButton, UiAlert, UiText,
   UiSpace, UiSkeleton, UiDataTable, UiForm, UiRadioGroup, UiCheckbox, useConfirm, useMessage, UiSectionHeader,
@@ -262,7 +262,6 @@ const handleCancelInvite = async (inv: TenantInvitation) => {
   if (confirmed) await cancelInvite(inv.id)
 }
 
-onMounted(() => load())
 </script>
 
 <style scoped lang="scss">
