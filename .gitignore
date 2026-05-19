@@ -5,8 +5,6 @@ node_modules
 dist
 .output
 .nuxt
-.firebase
-.firebase-data
 supabase/.temp
 supabase/functions/.secrets
 *.local
