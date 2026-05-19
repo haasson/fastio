@@ -14,6 +14,9 @@ export default defineFeature({
     { path: '/appointments/objects', purpose: 'Объекты (комнаты/столы/площадки), где проходят визиты' },
     { path: '/appointments/templates', purpose: 'Шаблоны недельных расписаний' },
     { path: '/appointments/settings', purpose: 'Шаг слотов, буферы, авто-подтверждение, лимиты' },
+    { path: '/appointments/visits/new', purpose: 'Создание нового визита (мульти-сервис) с подбором ресурсов и слотов' },
+    { path: '/appointments/visits/[id]', purpose: 'Карточка визита: услуги, статус, история событий, оплата' },
+    { path: '/appointments/appointment/[id]', purpose: 'Карточка одиночной записи внутри визита' },
   ],
 
   permissions: [
@@ -40,6 +43,8 @@ export default defineFeature({
       'schedule_templates',
       'schedule_template_days',
       'service_resources',
+      'appointment_reminder_tokens',
+      'appointment_reminder_offers',
     ],
     rpc: [
       'create_appointment',
