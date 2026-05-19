@@ -14,6 +14,9 @@ export default defineEventHandler(async (event) => {
   const { data, error, count } = await db
     .from('orders')
     .select('*, order_items(*)', { count: 'exact' })
+    // tenantDb Proxy уже инжектит .eq('tenant_id', db.tenantId) после .select(),
+    // дублируем явно как defense-in-depth от misconfiguration (PREPROD-137).
+    .eq('tenant_id', db.tenantId)
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
@@ -27,6 +30,8 @@ export default defineEventHandler(async (event) => {
     const { data: statuses } = await db
       .from('order_statuses')
       .select('id, name, group_type')
+      // defense-in-depth: tenantDb Proxy инжектит, дублируем явно (PREPROD-137).
+      .eq('tenant_id', db.tenantId)
       .in('id', statusIds)
     for (const s of statuses ?? []) statusMap[s.id] = s
   }
