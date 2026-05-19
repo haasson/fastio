@@ -23,6 +23,10 @@ export const formatDateMonthDay = (isoOrTs: string | number): string =>
 export const formatDateTime = (iso: string): string =>
   new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 
+/** "01.03.2024" — цифровой формат dd.mm.yyyy. Для биллинга/админских таблиц. */
+export const formatDateNumeric = (iso: string): string =>
+  new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
 /**
  * "YYYY-MM-DD" → timestamp (полдень local time, чтобы избежать UTC-сдвига).
  * Использовать везде вместо `new Date(dateStr + 'T12:00:00').getTime()`.

@@ -18,7 +18,7 @@
 
     <div v-if="price > 0 && tenant.subscription.renewsAt" class="summary-item">
       <UiText size="small" class="summary-label">Следующее списание</UiText>
-      <UiTitle size="h4">{{ formatDate(tenant.subscription.renewsAt) }}</UiTitle>
+      <UiTitle size="h4">{{ formatDateNumeric(tenant.subscription.renewsAt) }}</UiTitle>
       <UiText size="small" class="summary-sub">{{ formatPrice(price) }}</UiText>
     </div>
   </div>
@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { formatPrice } from '@fastio/shared'
+import { formatPrice, formatDateNumeric } from '@fastio/shared'
 import { UiTitle, UiText } from '@fastio/ui'
 import { usePlans } from '~/shared/plan/usePlans'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -38,8 +38,6 @@ const { plans } = usePlans()
 const currentPlan = computed(() => plans.value.find((p) => p.key === tenant.value.subscription?.plan))
 const planName = computed(() => currentPlan.value?.name ?? tenant.value.subscription?.plan ?? '—')
 const price = computed(() => tenant.value.subscription?.priceOverride ?? currentPlan.value?.price ?? 0)
-
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 </script>
 
 <style scoped lang="scss">

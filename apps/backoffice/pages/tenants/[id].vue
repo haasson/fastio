@@ -27,7 +27,7 @@
           <div><span class="label">Статус подписки:</span> <NTag :type="statusType" size="small">{{ tenant.subscription?.status }}</NTag></div>
           <div><span class="label">Текущий тариф:</span> {{ currentPlanName }}</div>
           <div><span class="label">Баланс:</span> <strong :class="{ 'balance-low': tenant.balance <= 0 }">{{ tenant.balance }} ₽</strong></div>
-          <div v-if="tenant.subscription?.renewsAt"><span class="label">Следующее списание:</span> {{ formatDate(tenant.subscription.renewsAt) }}</div>
+          <div v-if="tenant.subscription?.renewsAt"><span class="label">Следующее списание:</span> {{ formatDateNumeric(tenant.subscription.renewsAt) }}</div>
           <div>
             <span class="label">Цена подписки:</span>
             <template v-if="tenant.subscription?.priceOverride != null">
@@ -154,6 +154,7 @@ import { useRoute, useFetch, navigateTo } from '#imports'
 import { $fetch } from 'ofetch'
 import { ref, computed, h, watch } from 'vue'
 import { NButton, NTag, NInput, NInputNumber, NDataTable, NModal, NSpace, type DataTableColumns } from 'naive-ui'
+import { formatDateNumeric } from '@fastio/shared'
 
 const route = useRoute()
 const tenantId = route.params.id as string
@@ -214,8 +215,6 @@ const currentPlanPrice = computed(() => {
 
   return plan?.price ?? 0
 })
-
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
 // ─── Topup ──────────────────────────────────────────────────────────────────────
 
@@ -357,7 +356,7 @@ const txColumns: DataTableColumns<TxRow> = [
     title: 'Дата',
     key: 'created_at',
     width: 140,
-    render: (row) => formatDate(row.created_at),
+    render: (row) => formatDateNumeric(row.created_at),
   },
   {
     title: 'Тип',

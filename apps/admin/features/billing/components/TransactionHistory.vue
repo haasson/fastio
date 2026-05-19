@@ -12,7 +12,7 @@
         <span>Описание</span>
       </div>
       <div v-for="tx in transactions" :key="tx.id" class="tx-row">
-        <span>{{ formatDate(tx.createdAt) }}</span>
+        <span>{{ formatDateNumeric(tx.createdAt) }}</span>
         <UiTag :type="txTagType(tx.type)" size="small">{{ txLabel(tx.type) }}</UiTag>
         <span :class="{ 'tx-positive': tx.amount > 0, 'tx-negative': tx.amount < 0 }">
           {{ tx.amount > 0 ? '+' : '' }}{{ formatPrice(tx.amount) }}
@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { BillingTransaction, BillingTransactionType } from '@fastio/shared'
-import { formatPrice } from '@fastio/shared'
+import { formatPrice, formatDateNumeric } from '@fastio/shared'
 import { UiTag, UiSectionHeader } from '@fastio/ui'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -36,8 +36,6 @@ const tenantStore = useTenantStore()
 
 const transactions = ref<BillingTransaction[]>([])
 const loading = ref(true)
-
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
 const txLabel = (type: BillingTransactionType) => {
   const labels: Record<BillingTransactionType, string> = { topup: 'Пополнение', charge: 'Списание', refund: 'Возврат' }
