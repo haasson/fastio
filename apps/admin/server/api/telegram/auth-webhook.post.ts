@@ -84,7 +84,7 @@ export default defineEventHandler(async (event) => {
 
     const telegramId = String(from.id)
 
-    const { data: pending } = await supabase
+    const { data: pending, error: pendingError } = await supabase
       .from('pending_telegram_auths')
       .select('nonce')
       .eq('nonce', nonce)
@@ -92,7 +92,17 @@ export default defineEventHandler(async (event) => {
       .gt('expires_at', new Date().toISOString())
       .maybeSingle()
 
-    await supabase
+    if (pendingError) reportError(pendingError)
+
+    if (!pending) {
+      await sendMessage('❌ Ссылка для входа устарела или недействительна. Попробуйте войти заново.')
+
+      return { ok: true }
+    }
+
+    // UPDATE только после того как убедились, что nonce валидный (not expired, not completed).
+    // Иначе любой /start с угаданным/протёкшим nonce триггерил бы запись в БД.
+    const { error: updateError } = await supabase
       .from('pending_telegram_auths')
       .update({
         telegram_id: telegramId,
@@ -103,9 +113,12 @@ export default defineEventHandler(async (event) => {
         },
       })
       .eq('nonce', nonce)
+      .is('completed_at', null)
+      .gt('expires_at', new Date().toISOString())
 
-    if (!pending) {
-      await sendMessage('❌ Ссылка для входа устарела или недействительна. Попробуйте войти заново.')
+    if (updateError) {
+      reportError(updateError)
+      await sendMessage('❌ Не удалось сохранить вход. Попробуйте ещё раз.')
 
       return { ok: true }
     }
