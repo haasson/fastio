@@ -14,6 +14,7 @@
 | `api/telegram-link.ts` | Привязка tg-чатов: `upsertCode` (одноразовый код), `listSubscribers` (для polling/UI), `removeSubscriber` (отвязка) |
 | `composables/useNotificationPrefs.ts` | UI-state блока уведомлений + связь с `tenants.notifications` |
 | `components/*` | Модальные/inline-блоки: модули, биллинг-окошко, доставка, контакты, рабочие часы. Импорт deep-path |
+| `components/TelegramConnectModal.vue` | Модалка подключения tg-чата (DM/группа) с QR + ожиданием подключения. Pure presentational: state polling/justConnected/QR прокидывается из `pages/settings/notifications.vue` через props |
 
 ## Типовые задачи
 
