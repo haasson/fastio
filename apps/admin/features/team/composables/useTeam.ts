@@ -23,6 +23,10 @@ export const useTeam = () => {
   const invite = async (email: string, roleId: string, branchIds: string[] = []) => {
     if (!tenantStore.currentTenantId) return
 
+    // Edge function возвращает унифицированный envelope:
+    //   200 → { success: true, message }
+    //   4xx/5xx → { success: false, error, code }
+    // На non-2xx supabase-js кидает `error` с context.json() — оттуда читаем envelope.
     const { error } = await api.functions.inviteMember({
       tenantId: tenantStore.currentTenantId,
       email,
@@ -32,14 +36,18 @@ export const useTeam = () => {
 
     if (error) {
       let message = 'Не удалось отправить приглашение'
+      let code: string | null = null
 
       try {
-        const body = await (error as { context?: { json?: () => Promise<{ error?: string }> } }).context?.json?.()
+        const body = await (error as {
+          context?: { json?: () => Promise<{ error?: string; code?: string }> }
+        }).context?.json?.()
 
         if (body?.error) message = body.error
+        if (body?.code) code = body.code
       } catch { /* ignore parse errors */ }
 
-      return { error, message }
+      return { error, message, code }
     }
 
     log({
@@ -52,7 +60,7 @@ export const useTeam = () => {
 
     await load()
 
-    return { error: null, message: null }
+    return { error: null, message: null, code: null }
   }
 
   const changeRole = async (memberId: string, roleId: string) => {

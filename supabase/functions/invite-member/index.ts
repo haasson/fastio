@@ -1,8 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 import { withSentry } from '../_shared/sentry.ts'
 import nodemailer from 'nodemailer'
+
+// Унифицированный envelope ответа:
+//   success: { success: true, message: string }
+//   error:   { success: false, error: string, code: string }
+// Все success-like исходы (реальная отправка, уже участник, pending-invite без force)
+// схлопнуты в единый 200 — иначе team-manager может выявить, в каких чужих тенантах
+// email зарегистрирован (PREPROD-107, security audit S14).
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
+
+const ok = (message: string) =>
+  json({ success: true, message }, { status: 200 })
+
+const err = (status: number, code: string, error: string) =>
+  json({ success: false, error, code }, { status })
+
+const GENERIC_SUCCESS = 'Приглашение обработано'
 
 // RFC 5321 length + достаточно строгий формат, чтобы отсечь явный мусор. Не валидируем
 // каждую возможную форму email — задача отсечь bot-payload, не пройти полную RFC 5322.
@@ -14,12 +29,12 @@ const INVITE_LIMIT = { max: 3, windowSeconds: 10 * 60 }
 
 Deno.serve(withSentry('invite-member', async (req) => {
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 })
+    return err(405, 'method_not_allowed', 'Method Not Allowed')
   }
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
-    return new Response('Unauthorized', { status: 401 })
+    return err(401, 'unauthorized', 'Unauthorized')
   }
 
   const userSupabase = createClient(
@@ -30,24 +45,31 @@ Deno.serve(withSentry('invite-member', async (req) => {
 
   const { data: { user }, error: authError } = await userSupabase.auth.getUser()
   if (authError || !user) {
-    return new Response('Unauthorized', { status: 401 })
+    return err(401, 'unauthorized', 'Unauthorized')
   }
 
-  const { tenantId, email, roleId, branchIds = [], force = false } = await req.json() as {
-    tenantId: string
-    email: string
-    roleId: string
-    branchIds?: string[]
-    force?: boolean
+  let payload: { tenantId?: unknown; email?: unknown; roleId?: unknown; branchIds?: unknown; force?: unknown }
+  try {
+    payload = await req.json()
+  } catch {
+    return err(400, 'invalid_body', 'Invalid JSON body')
   }
 
-  if (!tenantId || !email || !roleId) {
-    return json({ error: 'tenantId, email, roleId are required' }, { status: 400 })
+  const tenantId = typeof payload.tenantId === 'string' ? payload.tenantId : ''
+  const emailRaw = typeof payload.email === 'string' ? payload.email : ''
+  const roleId = typeof payload.roleId === 'string' ? payload.roleId : ''
+  const branchIds = Array.isArray(payload.branchIds)
+    ? payload.branchIds.filter((b): b is string => typeof b === 'string')
+    : []
+  const force = payload.force === true
+
+  if (!tenantId || !emailRaw || !roleId) {
+    return err(400, 'missing_fields', 'tenantId, email, roleId are required')
   }
 
-  const normalizedEmail = String(email).trim().toLowerCase()
+  const normalizedEmail = emailRaw.trim().toLowerCase()
   if (normalizedEmail.length > 254 || !EMAIL_REGEX.test(normalizedEmail)) {
-    return json({ error: 'Некорректный email' }, { status: 400 })
+    return err(400, 'invalid_email', 'Некорректный email')
   }
 
   const adminSupabase = createClient(
@@ -59,45 +81,50 @@ Deno.serve(withSentry('invite-member', async (req) => {
   // team-manager не мог в цикле слать инвайты одному email'у. Параметризован
   // tenant_id, чтобы один user, управляющий несколькими тенантами, не «съел» лимит
   // по случайной коллизии с другим тенантом.
-  const { data: rlOk } = await adminSupabase.rpc('consume_rate_limit', {
+  const { data: rlOk, error: rlErr } = await adminSupabase.rpc('consume_rate_limit', {
     _key: `invite-member:${tenantId}:${user.id}:${normalizedEmail}`,
     _max: INVITE_LIMIT.max,
     _window_seconds: INVITE_LIMIT.windowSeconds,
   })
 
+  if (rlErr) {
+    console.error('consume_rate_limit error:', rlErr)
+    return err(500, 'rate_limit_failed', 'Failed to check rate limit')
+  }
+
   if (rlOk === false) {
-    return json({ error: 'Слишком много приглашений на этот email. Попробуйте позже.' }, { status: 429 })
+    return err(429, 'rate_limited', 'Слишком много приглашений на этот email. Попробуйте позже.')
   }
 
   // Проверяем что roleId существует для этого тенанта
-  const { data: targetRole } = await adminSupabase
+  const { data: targetRole, error: roleErr } = await adminSupabase
     .from('tenant_roles')
     .select('id, name, permissions')
     .eq('id', roleId)
     .eq('tenant_id', tenantId)
     .single()
 
-  if (!targetRole) {
-    return json({ error: 'Invalid role' }, { status: 400 })
+  if (roleErr || !targetRole) {
+    return err(400, 'invalid_role', 'Invalid role')
   }
 
   // Проверяем что приглашающий имеет permission team.manage
-  const { data: membership } = await adminSupabase
+  const { data: membership, error: memErr } = await adminSupabase
     .from('tenant_members')
     .select('role_id, tenant_roles(permissions)')
     .eq('tenant_id', tenantId)
     .eq('user_id', user.id)
     .single()
 
-  if (!membership) {
-    return json({ error: 'Insufficient permissions' }, { status: 403 })
+  if (memErr || !membership) {
+    return err(403, 'forbidden', 'Insufficient permissions')
   }
 
   // Owner (role_id IS NULL) имеет все пермишены
   const isOwner = membership.role_id === null
   const permissions = (membership as { tenant_roles?: { permissions?: Record<string, boolean> } }).tenant_roles?.permissions
   if (!isOwner && !permissions?.['team.manage']) {
-    return json({ error: 'Insufficient permissions' }, { status: 403 })
+    return err(403, 'forbidden', 'Insufficient permissions')
   }
 
   // Не-owner не может назначить роль с пермишенами, которых нет у него самого
@@ -109,19 +136,27 @@ Deno.serve(withSentry('invite-member', async (req) => {
       .some(([key]) => !callerPerms[key])
 
     if (hasEscalation) {
-      return json({ error: 'Cannot assign a role with permissions you don\'t have' }, { status: 403 })
+      return err(403, 'role_escalation', 'Cannot assign a role with permissions you don\'t have')
     }
   }
 
-  // Проверяем статус: уже участник или есть pending-инвайт
-  const { data: inviteStatus } = await adminSupabase
+  // Проверяем статус: уже участник или есть pending-инвайт.
+  // ВАЖНО: оба случая (member / pending без force) возвращают тот же 200, что и
+  // успешная отправка — без этого вызывающий мог бы перебором email'ов выявить,
+  // в каких чужих тенантах email зарегистрирован (PREPROD-107).
+  const { data: inviteStatus, error: statusErr } = await adminSupabase
     .rpc('get_invite_status', { _tenant_id: tenantId, _email: normalizedEmail })
 
+  if (statusErr) {
+    console.error('get_invite_status error:', statusErr)
+    return err(500, 'status_check_failed', 'Failed to check invite status')
+  }
+
   if (inviteStatus === 'member') {
-    return json({ error: 'Этот пользователь уже является участником команды' }, { status: 409 })
+    return ok(GENERIC_SUCCESS)
   }
   if (inviteStatus === 'pending' && !force) {
-    return json({ error: 'Приглашение этому пользователю уже отправлено' }, { status: 409 })
+    return ok(GENERIC_SUCCESS)
   }
 
   const token = crypto.randomUUID()
@@ -138,7 +173,7 @@ Deno.serve(withSentry('invite-member', async (req) => {
 
     if (updateError) {
       console.error('Resend error:', updateError)
-      return json({ error: 'Failed to resend invitation' }, { status: 500 })
+      return err(500, 'resend_failed', 'Failed to resend invitation')
     }
   } else {
     // Создаём новое приглашение
@@ -156,16 +191,22 @@ Deno.serve(withSentry('invite-member', async (req) => {
 
     if (inviteError) {
       console.error('Invite error:', inviteError)
-      return json({ error: 'Failed to create invitation' }, { status: 500 })
+      return err(500, 'invite_failed', 'Failed to create invitation')
     }
   }
 
   // Получаем имя тенанта для письма
-  const { data: tenant } = await adminSupabase
+  const { data: tenant, error: tenantErr } = await adminSupabase
     .from('tenants')
     .select('name')
     .eq('id', tenantId)
     .single()
+
+  if (tenantErr) {
+    // Не блокирующая ошибка — упадёт только subject/body персонализация,
+    // ниже подставим дефолтное имя. Логируем для Sentry.
+    console.error('tenant lookup error:', tenantErr)
+  }
 
   const appUrl = Deno.env.get('APP_URL') ?? 'https://admin.fastio.ru'
   const inviteUrl = `${appUrl}/invite?token=${token}`
@@ -253,10 +294,10 @@ Deno.serve(withSentry('invite-member', async (req) => {
 </body>
 </html>`,
       })
-    } catch (err) {
-      console.error('SMTP error:', err)
+    } catch (smtpErr) {
+      console.error('SMTP error:', smtpErr)
     }
   }
 
-  return json({ success: true }, { status: 200 })
+  return ok(GENERIC_SUCCESS)
 }))
