@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
-import { formatPhone } from '@fastio/shared'
+import { formatPhone, normalizePhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireInternalSecret } from '../../utils/auth'
 import { broadcastToTenantTelegram } from '../../utils/telegramBroadcast'
@@ -85,7 +85,10 @@ export default defineEventHandler(async (event) => {
   if (order.delivery_fee) text += `🚗 Доставка: ${order.delivery_fee} ₽\n`
   text += `💰 Итого: <b>${order.total} ₽</b>`
 
-  const phoneDigits = order.customer_phone?.replace(/\D/g, '') ?? null
+  // customer_phone в orders уже хранится в каноне '7XXXXXXXXXX' (см. orders.post.ts),
+  // но на всякий случай прогоняем через shared normalizePhone — защита от старых
+  // записей с '+'/маской, чтобы tel:-URL всегда был корректный.
+  const phoneDigits = order.customer_phone ? normalizePhone(order.customer_phone) : null
   const replyMarkup = (phoneDigits && adminUrl)
     ? {
         inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phoneDigits}` }]],

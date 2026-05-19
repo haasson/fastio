@@ -1,3 +1,4 @@
+import { validateAndNormalizeRussianPhone } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
@@ -5,7 +6,6 @@ import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { reportError } from '~/shared/utils/reportError'
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const PHONE_REGEX = /^[0-9+\-() ]+$/
 // Простая проверка вида user@host.tld — ровно один @, точка в host. Длиной до 254
 // (RFC 5321). Не претендует на полное соответствие RFC 5322 — задача отсечь мусор
 // и явные опечатки на этапе INSERT, а не валидировать «всё что разрешено».
@@ -29,8 +29,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Укажите корректное имя (1–200 символов)' })
   }
 
-  const customerPhone = (body.customerPhone as string | undefined)?.trim() ?? ''
-  if (customerPhone.length < 5 || customerPhone.length > 30 || !PHONE_REGEX.test(customerPhone)) {
+  // Канонизируем телефон в '7XXXXXXXXXX'. Раньше держали локальный PHONE_REGEX
+  // и пропускали что угодно вида '+7 (999)…' в БД — теперь единый формат через
+  // shared-утилку, как и в reservations/orders.
+  const rawCustomerPhone = (body.customerPhone as string | undefined)?.trim() ?? ''
+  const customerPhone = rawCustomerPhone ? validateAndNormalizeRussianPhone(rawCustomerPhone) : null
+  if (!customerPhone) {
     throw createError({ statusCode: 400, message: 'Укажите корректный номер телефона' })
   }
 
@@ -125,32 +129,49 @@ export default defineEventHandler(async (event) => {
 
   const validPreferredIds = new Set<string>()
   if (preferredIds.length > 0) {
-    const { data: resourceRows } = await db
+    const { data: resourceRows, error: resourcesError } = await db
       .from('resources')
       .select('id')
       .in('id', preferredIds)
       .eq('is_active', true)
+
+    if (resourcesError) {
+      reportError(resourcesError, { context: 'appointments.request.post:resources-lookup' })
+      throw createError({ statusCode: 500, message: 'Не удалось загрузить исполнителей' })
+    }
 
     for (const r of (resourceRows ?? [])) validPreferredIds.add(r.id as string)
   }
 
   // Валидация филиала + enforcement per_branch режима.
   if (branchId) {
-    const { data: branchRow } = await db
+    const { data: branchRow, error: branchError } = await db
       .from('branches')
       .select('id')
       .eq('id', branchId)
       .maybeSingle()
+    if (branchError) {
+      reportError(branchError, { context: 'appointments.request.post:branch-lookup' })
+      throw createError({ statusCode: 500, message: 'Не удалось проверить филиал' })
+    }
     if (!branchRow) {
       throw createError({ statusCode: 400, message: 'Указанный филиал не найден в этом тенанте' })
     }
   } else {
-    const { data: tenantRow } = await db
+    const { data: tenantRow, error: tenantError } = await db
       .from('tenants')
       .select('branch_selection_mode')
       .maybeSingle()
+    if (tenantError) {
+      reportError(tenantError, { context: 'appointments.request.post:tenant-lookup' })
+      throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки тенанта' })
+    }
     if (tenantRow?.branch_selection_mode === 'per_branch') {
-      const { count } = await db.from('branches').select('id', { count: 'exact', head: true })
+      const { count, error: countError } = await db.from('branches').select('id', { count: 'exact', head: true })
+      if (countError) {
+        reportError(countError, { context: 'appointments.request.post:branch-count' })
+        throw createError({ statusCode: 500, message: 'Не удалось загрузить филиалы' })
+      }
       if ((count ?? 0) > 1) {
         throw createError({ statusCode: 400, message: 'Выберите филиал для записи' })
       }

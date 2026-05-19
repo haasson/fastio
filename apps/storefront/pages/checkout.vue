@@ -166,7 +166,7 @@ import { useNuxtData, navigateTo } from 'nuxt/app'
 import { Truck, PersonStanding, AlertTriangle } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
 import { validationRules } from '@fastio/kit'
-import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots, DEFAULT_TIMEZONE, DEFAULT_PAYMENT_METHODS, validateAndNormalizeRussianPhone } from '@fastio/shared'
 import { useStorefrontTerms } from '~/shared/composables/useStorefrontTerms'
 import { useCartStore } from '~/features/cart'
 import { useCheckoutStore } from '~/features/checkout'
@@ -205,7 +205,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 // План возврата: WISHLIST.md → раздел «Онлайн-оплата (YooKassa) — провайдер не интегрирован».
 // Legacy-тенанты с paymentMethods=['cash','card','online'] увидят только cash/card.
 const paymentOptions = computed(() =>
-  (tenant.value?.paymentMethods ?? ['cash', 'card'])
+  (tenant.value?.paymentMethods ?? DEFAULT_PAYMENT_METHODS)
     .filter((m) => m !== 'online')
     .map((m) => ({ value: m, label: PAYMENT_LABELS[m] ?? m })),
 )
@@ -288,11 +288,12 @@ function validate(): boolean {
   const errors: string[] = []
 
   if (!authStore.isAuthenticated) {
-    const phoneDigits = checkout.form.customerPhone.replace(/\D/g, '')
-    if (!phoneDigits) {
+    // Используем shared-утилку чтобы клиентская и серверная валидация
+    // не расходились (раньше клиент пропускал 11+ цифр, сервер требовал ровно 10/11).
+    if (!checkout.form.customerPhone.trim()) {
       phoneError.value = validationRules.phone.required.message
       errors.push(validationRules.phone.required.message)
-    } else if (phoneDigits.length < 11) {
+    } else if (!validateAndNormalizeRussianPhone(checkout.form.customerPhone)) {
       phoneError.value = validationRules.phone.format.message
       errors.push(validationRules.phone.format.message)
     }

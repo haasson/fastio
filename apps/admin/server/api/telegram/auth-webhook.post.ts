@@ -7,6 +7,7 @@ import {
   formatAppointmentDateTime,
   isValidReminderMinutes,
   REMINDER_OPTIONS,
+  validateAndNormalizeRussianPhone,
 } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireTelegramWebhookSecret } from '../../utils/auth'
@@ -144,20 +145,45 @@ export default defineEventHandler(async (event) => {
   }
 
   if (message.contact) {
-    const phone = message.contact.phone_number?.replace(/\D/g, '') ?? null
+    // Telegram отдаёт phone_number в международном формате (например '+79991234567'
+    // или '79991234567' без плюса). Пропускаем через shared-утилку, чтобы хранить
+    // канон '7XXXXXXXXXX' — тот же что и в orders/reservations. Не-РФ номера
+    // (например '+12025550100') утилка вернёт null — сохраним как null и залогируем,
+    // чтобы видеть в Sentry если такое начнёт массово приходить.
+    const rawPhone = message.contact.phone_number ?? null
+    const phone = rawPhone ? validateAndNormalizeRussianPhone(rawPhone) : null
+
+    // На фронте стоит маска +7 — практически все contact'ы от Telegram приходят
+    // с РФ-номером. Не-РФ сюда попадёт только если юзер сам поделился контактом
+    // другой страны (Telegram отдаёт номер привязанный к его аккаунту).
+    // В этом случае показываем явный отказ — не хотим юзера без идентификации.
+    if (rawPhone && !phone) {
+      reportError(new Error(`[tg-auth] non-RU phone from contact: ${rawPhone.slice(0, 4)}…`))
+      await sendMessage('❌ Принимаем только российские номера. Войдите с РФ-номера или через сайт.')
+
+      return { ok: true }
+    }
+
     const telegramId = String(message.contact.user_id ?? message.from?.id ?? '')
 
     if (telegramId) {
       const pending = await findPendingByTelegramId(supabase, telegramId)
 
       if (pending) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('pending_telegram_auths')
           .update({
             phone,
             completed_at: new Date().toISOString(),
           })
           .eq('nonce', pending.nonce)
+
+        if (updateError) {
+          reportError(updateError)
+          await sendMessage('❌ Не удалось завершить вход. Попробуйте ещё раз.')
+
+          return { ok: true }
+        }
       }
     }
 

@@ -4,7 +4,7 @@ import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '../../utils/clientIp'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { reportError } from '~/shared/utils/reportError'
-import { todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule, ReservationStatus } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
@@ -26,8 +26,12 @@ export default defineEventHandler(async (event) => {
   if (!body.guestPhone?.trim()) {
     throw createError({ statusCode: 400, message: 'Укажите телефон' })
   }
-  const phoneDigits = body.guestPhone.trim().replace(/\D/g, '')
-  if (phoneDigits.length < 10 || phoneDigits.length > 12) {
+  // Канонизируем телефон в '7XXXXXXXXXX' через shared-утилку.
+  // Раньше принимали 10–12 цифр без нормализации формы — в БД попадали и
+  // '+7 (999)…', и '8999…', и '79991234567'. Это ломало поиск клиента по
+  // телефону в админке. Теперь храним единый формат.
+  const normalizedGuestPhone = validateAndNormalizeRussianPhone(body.guestPhone)
+  if (!normalizedGuestPhone) {
     throw createError({ statusCode: 400, message: 'Некорректный номер телефона' })
   }
   if (!body.reservedDate || !body.reservedTime) {
@@ -38,20 +42,29 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check module enabled
-  const { data: tenantData } = await db
+  const { data: tenantData, error: tenantError } = await db
     .from('tenants')
     .select('modules, timezone, working_hours_schedule')
     .single()
 
+  if (tenantError) {
+    reportError(tenantError, { context: 'reservations.post:tenant-lookup' })
+    throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки' })
+  }
   if (!tenantData?.modules?.reservations) {
     throw createError({ statusCode: 400, message: 'Бронирование недоступно' })
   }
 
   // Get and validate settings
-  const { data: settings } = await db
+  const { data: settings, error: settingsError } = await db
     .from('reservation_settings')
     .select('*')
     .maybeSingle()
+
+  if (settingsError) {
+    reportError(settingsError, { context: 'reservations.post:settings-lookup' })
+    throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки' })
+  }
 
   if (settings && !settings.enabled) {
     throw createError({ statusCode: 400, message: 'Бронирование недоступно' })
@@ -188,7 +201,7 @@ export default defineEventHandler(async (event) => {
     .insert({
       tenant_id: tenantId,
       guest_name: body.guestName.trim(),
-      guest_phone: body.guestPhone.trim(),
+      guest_phone: normalizedGuestPhone,
       guest_email: body.guestEmail?.trim() || null,
       guest_count: body.guestCount,
       reserved_date: reservedDate,

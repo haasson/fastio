@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-19T03:15:05.985Z",
+  "generated_at": "2026-05-19T06:55:47.011Z",
   "stats": {
     "files": 84,
     "pages": 0,
@@ -1045,8 +1045,8 @@
     },
     "shared/ui/components/ImageUploadModal.vue": {
       "kind": "vue",
-      "hash": "6b366cdcb22a",
-      "purpose": "Модалка загрузки картинки: drag&drop/файл/ссылка → кадрирование (vue-advanced-cropper) → emit('done', file). Ссылки идут через proxy-image edge function (useDatabase().proxyImage.fetchAsBlob)",
+      "hash": "7038c87dac7f",
+      "purpose": "Модалка загрузки изображения с input/drag-n-drop/URL fetch, MIME-валидацией и 20MB лимитом на client-side",
       "symbols": [
         {
           "name": "props",

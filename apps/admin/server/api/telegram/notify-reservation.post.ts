@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
-import { formatPhone } from '@fastio/shared'
+import { formatPhone, normalizePhone } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireInternalSecret } from '../../utils/auth'
 import { broadcastToTenantTelegram } from '../../utils/telegramBroadcast'
@@ -46,7 +46,9 @@ export default defineEventHandler(async (event) => {
   if (reservation.table_name) text += `🪑 ${reservation.table_name}\n`
   if (reservation.comment) text += `💬 ${reservation.comment}\n`
 
-  const phoneDigits = reservation.guest_phone.replace(/\D/g, '')
+  // guest_phone теперь хранится в каноне '7XXXXXXXXXX' (см. reservations/index.post.ts),
+  // но прогоняем через shared normalizePhone на случай старых записей с маской/+.
+  const phoneDigits = normalizePhone(reservation.guest_phone)
   const replyMarkup = adminUrl
     ? {
         inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phoneDigits}` }]],

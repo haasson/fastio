@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { normalizePhone } from '@fastio/shared'
+import { validateAndNormalizeRussianPhone } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getTenantDb } from '../utils/tenantDb'
 import { getClientIp } from '../utils/clientIp'
@@ -32,6 +32,20 @@ export default defineEventHandler(async (event) => {
 
   // 1. Валидация входных данных
   const { deliveryType, paymentType } = validateBasicFields(body)
+
+  // Нормализуем телефон один раз на входе через shared-утилку.
+  // Раньше делали normalizePhone без проверки длины — сохраняли мусор вроде
+  // '123' / '79' в customer_phone. Теперь — единый канон '7XXXXXXXXXX' или 400.
+  // Гость без логина может пропустить телефон (null), а вот непустой невалидный
+  // — это уже ошибка ввода, отбиваем сразу.
+  const rawCustomerPhone = typeof body.customer?.phone === 'string' ? body.customer.phone.trim() : ''
+  let normalizedCustomerPhone: string | null = null
+  if (rawCustomerPhone) {
+    normalizedCustomerPhone = validateAndNormalizeRussianPhone(rawCustomerPhone)
+    if (!normalizedCustomerPhone) {
+      throw createError({ statusCode: 400, message: 'Некорректный номер телефона' })
+    }
+  }
 
   // 2. Данные тенанта + начальный статус + резолв клиента (параллельно)
   const authHeader = getRequestHeader(event, 'authorization')
@@ -82,7 +96,7 @@ export default defineEventHandler(async (event) => {
   const orderPayload: Record<string, unknown> = {
     tenant_id: tenantId,
     customer_name: body.customer?.name ?? null,
-    customer_phone: body.customer?.phone ? normalizePhone(body.customer.phone) : null,
+    customer_phone: normalizedCustomerPhone,
     customer_email: body.customer?.email ?? null,
     delivery_type: deliveryType,
     address: body.address ?? null,
