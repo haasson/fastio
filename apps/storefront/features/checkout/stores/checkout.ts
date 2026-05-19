@@ -37,6 +37,7 @@ type CheckoutForm = {
   deliveryType: 'delivery' | 'pickup'
   customerName: string
   customerPhone: string
+  customerEmail: string
   comment: string
   paymentType: 'cash' | 'card' | 'online'
   needsChange: boolean
@@ -58,6 +59,7 @@ const FORM_DEFAULTS: CheckoutForm = {
   deliveryType: 'delivery',
   customerName: '',
   customerPhone: '',
+  customerEmail: '',
   comment: '',
   paymentType: 'card',
   needsChange: false,
@@ -257,6 +259,7 @@ export const useCheckoutStore = defineStore('checkout', () => {
 
     if (authStore.customerName) form.customerName = authStore.customerName
     if (authStore.customerPhone) form.customerPhone = authStore.customerPhone
+    if (authStore.customerEmail) form.customerEmail = authStore.customerEmail
   }
 
   return {

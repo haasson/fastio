@@ -22,9 +22,21 @@
                     <span class="info-value">{{ authStore.customerPhone || '—' }}</span>
                   </div>
                 </div>
-                <FsField label="Комментарий к заказу">
-                  <FsTextarea v-model="checkout.form.comment" placeholder="Пожелания к заказу..." :rows="2" resize="none" />
-                </FsField>
+                <div class="fields-stack">
+                  <FsField label="Email (для связи)" :error="emailError">
+                    <FsInput
+                      v-model="checkout.form.customerEmail"
+                      type="email"
+                      placeholder="email@example.com (необязательно)"
+                      autocomplete="email"
+                      :error="!!emailError"
+                      data-testid="checkout-email"
+                    />
+                  </FsField>
+                  <FsField label="Комментарий к заказу">
+                    <FsTextarea v-model="checkout.form.comment" placeholder="Пожелания к заказу..." :rows="2" resize="none" />
+                  </FsField>
+                </div>
               </template>
 
               <!-- Гость: инпуты -->
@@ -41,6 +53,16 @@
                     mask="+7 (###) ###-##-##"
                     :error="!!phoneError"
                     data-testid="checkout-phone"
+                  />
+                </FsField>
+                <FsField label="Email (для связи)" :error="emailError">
+                  <FsInput
+                    v-model="checkout.form.customerEmail"
+                    type="email"
+                    placeholder="email@example.com (необязательно)"
+                    autocomplete="email"
+                    :error="!!emailError"
+                    data-testid="checkout-email"
                   />
                 </FsField>
                 <FsField label="Комментарий к заказу">
@@ -165,7 +187,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useNuxtData, navigateTo } from 'nuxt/app'
 import { Truck, PersonStanding, AlertTriangle } from 'lucide-vue-next'
 import type { Tenant } from '@fastio/shared'
-import { validationRules } from '@fastio/kit'
+import { validationRules, validateRule } from '@fastio/kit'
 import { localDateTimeToUtcIso, isAsapAvailable, addDaysToDateStr, useSchedulingSlots, DEFAULT_TIMEZONE, DEFAULT_PAYMENT_METHODS, validateAndNormalizeRussianPhone } from '@fastio/shared'
 import { useStorefrontTerms } from '~/shared/composables/useStorefrontTerms'
 import { useCartStore } from '~/features/cart'
@@ -277,12 +299,17 @@ function setDeliveryType(type: 'delivery' | 'pickup') {
 const phoneError = ref('')
 watch(() => checkout.form.customerPhone, () => { phoneError.value = '' })
 
+// Email validation (optional — пусто = OK; если введено — проверяем формат)
+const emailError = ref('')
+watch(() => checkout.form.customerEmail, () => { emailError.value = '' })
+
 // Address validation
 const addressRef = ref<InstanceType<typeof CheckoutAddressSection> | null>(null)
 const pickupBranchRef = ref<InstanceType<typeof CheckoutPickupBranch> | null>(null)
 
 function validate(): boolean {
   phoneError.value = ''
+  emailError.value = ''
   submitErrors.value = []
 
   const errors: string[] = []
@@ -296,6 +323,17 @@ function validate(): boolean {
     } else if (!validateAndNormalizeRussianPhone(checkout.form.customerPhone)) {
       phoneError.value = validationRules.phone.format.message
       errors.push(validationRules.phone.format.message)
+    }
+  }
+
+  // Email опционален: пустая строка — OK; непустая — должна пройти format-rule.
+  // Та же логика и для гостя, и для залогиненного (он мог изменить pre-filled значение).
+  const emailValue = checkout.form.customerEmail.trim()
+  if (emailValue) {
+    const err = validateRule(emailValue, validationRules.email.format)
+    if (err) {
+      emailError.value = err
+      errors.push(err)
     }
   }
 
@@ -379,6 +417,7 @@ async function submitOrder() {
       customer: {
         name: checkout.form.customerName || undefined,
         phone: checkout.form.customerPhone,
+        email: checkout.form.customerEmail.trim() || undefined,
       },
       items: cart.dishItems.map((item) => ({
         dishId: item.dishId,
