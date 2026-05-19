@@ -1,12 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+// authApi.signUp удалён: client-side signUp в admin приглашал orphan auth.users
+// в обход проверок. Создание admin-юзера через invite-flow идёт через server-side
+// edge function `accept-invite` (admin.createUser), что позволяет безопасно
+// выставить GOTRUE_DISABLE_SIGNUP=true в GoTrue.
 export const authApi = {
   signIn(sb: SupabaseClient, email: string, password: string) {
     return sb.auth.signInWithPassword({ email, password })
-  },
-
-  signUp(sb: SupabaseClient, email: string, password: string, options?: { data?: Record<string, unknown>; emailRedirectTo?: string }) {
-    return sb.auth.signUp({ email, password, options })
   },
 
   signOut(sb: SupabaseClient) {

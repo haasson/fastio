@@ -6,11 +6,7 @@
       <UiTitle size="h3" class="title">{{ title }}</UiTitle>
       <UiText size="small" class="subtitle">{{ subtitle }}</UiText>
 
-      <UiAlert v-if="emailConfirmSent" type="info" style="margin-bottom: var(--space-16)">
-        Проверьте почту — отправили письмо для подтверждения регистрации
-      </UiAlert>
-
-      <UiForm v-if="!emailConfirmSent" :error="error" @submit="handleSubmit">
+      <UiForm :error="error" @submit="handleSubmit">
         <UiInput
           v-if="showNameField"
           v-model="form.name"
@@ -72,7 +68,7 @@
 import { reactive, ref, computed } from 'vue'
 import { definePageMeta, useRoute, navigateTo } from '#imports'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiAlert, UiCheckbox } from '@fastio/ui'
+import { UiCard, UiForm, UiInput, UiButton, UiTitle, UiText, UiCheckbox } from '@fastio/ui'
 import AppBrand from '~/shared/ui/components/AppBrand.vue'
 import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/shared/utils/constants'
 
@@ -88,7 +84,6 @@ const isRecovery = !!sessionStorage.getItem(RECOVERY_PENDING_KEY)
 const form = reactive({ name: '', password: '', passwordConfirm: '', agreed: false })
 const error = ref('')
 const loading = ref(false)
-const emailConfirmSent = ref(false)
 
 const isInvite = !!(inviteToken && inviteEmail)
 const isTenant = !isRecovery && !isInvite
@@ -136,7 +131,8 @@ const handleSubmit = async () => {
 
   // Инвайт нового юзера — нужно создать аккаунт
   if (inviteToken && inviteEmail) {
-    // Проверяем: вдруг юзер уже авторизован (вернулся по confirmation-ссылке)
+    // Если юзер уже залогинен (например, владелец принимает invite в чужой
+    // tenant) — accept-invite обрабатывает authenticated-mode.
     const { data: { session } } = await api.auth.getSession()
 
     if (session) {
@@ -148,32 +144,35 @@ const handleSubmit = async () => {
       return
     }
 
-    const appUrl = window.location.origin
-    const { error: signUpError } = await api.auth.signUp(inviteEmail, form.password, {
-      data: { full_name: form.name },
-      emailRedirectTo: `${appUrl}/set-password?token=${inviteToken}&email=${encodeURIComponent(inviteEmail)}`,
+    // Unauthenticated: server создаёт user через admin API + accept invitation.
+    // client-side signUp удалён (PREPROD-099 follow-up) — disable signup в GoTrue
+    // не сломает этот flow, потому что admin.createUser работает service-role.
+    const { error: acceptError } = await api.functions.acceptInvite({
+      token: inviteToken,
+      password: form.password,
+      fullName: form.name,
     })
 
-    if (signUpError) {
+    if (acceptError) {
       error.value = 'Не удалось создать аккаунт. Попробуйте ещё раз'
       loading.value = false
 
       return
     }
 
-    const { data: { session: newSession } } = await api.auth.getSession()
+    // Логиним свежесозданного юзера обычным паролем (signIn не блокируется
+    // GOTRUE_DISABLE_SIGNUP).
+    const { error: signInError } = await api.auth.signIn(inviteEmail, form.password)
 
-    if (newSession) {
-      await api.functions.acceptInvite({ token: inviteToken })
-      sessionStorage.removeItem(INVITE_PENDING_KEY)
-      window.location.href = '/'
+    if (signInError) {
+      error.value = 'Аккаунт создан, но не удалось войти. Попробуйте на странице входа.'
+      loading.value = false
 
       return
     }
 
-    // Продакшн: ждём подтверждения email
-    emailConfirmSent.value = true
-    loading.value = false
+    sessionStorage.removeItem(INVITE_PENDING_KEY)
+    window.location.href = '/'
 
     return
   }
