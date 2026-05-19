@@ -1,13 +1,33 @@
 export type CspOptions = {
   imgSrc: string
+  /**
+   * Per-request nonce для inline-скриптов. Если задан — script-src получает
+   * `'nonce-XXX' 'strict-dynamic'`. Без nonce (например в dev/edge case)
+   * fallback на старое поведение с host-whitelist'ом.
+   */
+  nonce?: string
   reportUri?: string
 }
 
 export function buildCsp(opts: CspOptions): string {
+  // CSP3 поведение, которое мы эксплуатируем:
+  //   1. `'unsafe-inline'` игнорируется браузером когда в директиве есть
+  //      `nonce-XXX` (или hash-source). Спасает legacy CSP2-браузеры от
+  //      слома (там nonce неизвестен → fallback на 'unsafe-inline').
+  //   2. Host-source `https:` игнорируется когда есть `'strict-dynamic'`.
+  //      Спасает легаси-браузеры от слома (там strict-dynamic неизвестен →
+  //      fallback на host-allowlist `https:`).
+  // В современных браузерах эффективная policy = "'nonce-XXX' 'strict-dynamic'",
+  // в Safari iOS ≤15.3 — degraded protection (открытый `https:`+`unsafe-inline`).
+  // Это компромисс ради совместимости; убрать fallback можно когда iOS 15 уйдёт
+  // в маргинал (<0.5% траффика).
+  const scriptSrc = opts.nonce
+    ? `script-src 'self' 'unsafe-inline' 'nonce-${opts.nonce}' 'strict-dynamic' https:`
+    : `script-src 'self' 'unsafe-inline' https://oauth.telegram.org https://telegram.org https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://yastatic.net`
+
   const directives = [
     `default-src 'self'`,
-    // yastatic.net — Yandex CDN для Maps v3 (front-maps-static bundle), без него карта не грузится.
-    `script-src 'self' 'unsafe-inline' https://oauth.telegram.org https://telegram.org https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://yastatic.net`,
+    scriptSrc,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src ${opts.imgSrc}`,
     `font-src 'self' https://fonts.gstatic.com data:`,
@@ -31,4 +51,21 @@ export const BASE_SECURITY_HEADERS: Record<string, string> = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+}
+
+/**
+ * Регекс для приклеивания CSP-nonce ко всем `<script>` без атрибута `nonce`.
+ * Используется в Nitro `render:html` hook'ах storefront/admin.
+ *
+ * Negative lookahead `(?![^>]*\snonce=)` пропускает теги, у которых nonce уже есть
+ * (например inline-скрипт, который сам разработчик пометил вручную).
+ *
+ * Известное ограничение: regex'ом нельзя надёжно отличить `<script>` как тег
+ * от `<script>` как текста внутри атрибута (например `<div data-x="<script>...">`).
+ * В FastIO такой пейлоад появиться может только через `v-html` без `useSafeHtml`
+ * — текущая конвенция требует sanitize все `v-html`, поэтому риска нет. См.
+ * TECHDEBT.md если потребуется ужесточить.
+ */
+export function buildNonceInjector(nonce: string): (chunk: string) => string {
+  return (chunk: string) => chunk.replace(/<script(?![^>]*\snonce=)/gi, `<script nonce="${nonce}"`)
 }

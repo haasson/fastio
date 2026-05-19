@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-19T10:48:53.888Z",
+  "generated_at": "2026-05-19T11:43:43.428Z",
   "stats": {
     "files": 45,
     "pages": 0,
-    "symbols": 195,
+    "symbols": 196,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -345,8 +345,8 @@
     },
     "src/utils/csp.ts": {
       "kind": "ts",
-      "hash": "ce6ee45445ab",
-      "purpose": "Builder Content-Security-Policy header'а: единый набор директив для admin/storefront/landing с whitelist'ом telegram, yandex maps, dadata, sentry, fonts.",
+      "hash": "71cee60c2c8c",
+      "purpose": "Строит Content-Security-Policy для storefront и admin (CSP3 nonce + strict-dynamic при наличии nonce, host-whitelist fallback без него) и регекс-инжектор nonce для render:html.",
       "symbols": [
         {
           "name": "buildCsp",
@@ -355,10 +355,16 @@
           "purpose": "Собирает CSP-строку из общих директив + переопределяемого img-src (admin шире, storefront уже) + опционального report-uri (например, Sentry CSP endpoint)."
         },
         {
+          "name": "buildNonceInjector",
+          "kind": "function",
+          "hash": "6d076ba3",
+          "purpose": "Возвращает функцию, которая приклеивает CSP-nonce ко всем <script> без атрибута nonce в HTML-chunk'е (используется в Nitro render:html plugin'ах)."
+        },
+        {
           "name": "CspOptions",
           "kind": "type",
-          "hash": "d2cebca3",
-          "purpose": "Параметры buildCsp: imgSrc (обязательный, разный для admin/storefront) и опциональный reportUri."
+          "hash": "17b6bbad",
+          "purpose": "Аргументы buildCsp: imgSrc (override img-src), опц. nonce (включает CSP3 nonce+strict-dynamic режим) и опц. reportUri (Sentry CSP endpoint)."
         },
         {
           "name": "BASE_SECURITY_HEADERS",
