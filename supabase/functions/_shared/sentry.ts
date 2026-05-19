@@ -30,20 +30,29 @@ if (dsn) {
 
 export const sentryEnabled = Boolean(dsn)
 
-export function captureException(err: unknown, context?: Record<string, unknown>) {
+export function captureException(
+  err: unknown,
+  context?: Record<string, unknown>,
+  tags?: Record<string, string | number | boolean>,
+) {
   if (!sentryEnabled) return
-  Sentry.captureException(err, context ? { extra: context } : undefined)
+  const hint: { extra?: Record<string, unknown>; tags?: Record<string, string | number | boolean> } = {}
+  if (context) hint.extra = context
+  if (tags) hint.tags = tags
+  Sentry.captureException(err, Object.keys(hint).length ? hint : undefined)
 }
 
 export function captureMessage(
   message: string,
   level: 'info' | 'warning' | 'error' = 'error',
   context?: Record<string, unknown>,
+  tags?: Record<string, string | number | boolean>,
 ) {
   if (!sentryEnabled) return
   Sentry.captureMessage(message, {
     level,
     extra: context,
+    ...(tags ? { tags } : {}),
   })
 }
 

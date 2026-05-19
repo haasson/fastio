@@ -1,5 +1,28 @@
 import { createClient } from '@supabase/supabase-js'
-import { withSentry } from '../_shared/sentry.ts'
+import { captureException, flushSentry, withSentry } from '../_shared/sentry.ts'
+
+// FNV-1a 64-bit hash → bigint-safe для pg_try_advisory_xact_lock(bigint).
+// Postgres bigint = signed 64-bit. JS number теряет точность после 2^53, поэтому
+// собираем хеш в BigInt и приводим к подписанному диапазону через wrap-around,
+// потом отдаём как Number (advisory lock принимает int8 — supabase-js сериализует
+// BigInt не везде корректно, а число до Number.MAX_SAFE_INTEGER через biased mod —
+// уже достаточно для распределения по ключам).
+//
+// Берём mod 2^53-1 чтобы получить безопасное JS-число; коллизии теоретически
+// возможны, но для дробящего barrier'а на FQDN их вероятность пренебрежима.
+function hashStringToInt(input: string): number {
+  const FNV_OFFSET = 0xcbf29ce484222325n
+  const FNV_PRIME = 0x100000001b3n
+  const MASK_64 = (1n << 64n) - 1n
+  let hash = FNV_OFFSET
+  for (let i = 0; i < input.length; i++) {
+    hash ^= BigInt(input.charCodeAt(i))
+    hash = (hash * FNV_PRIME) & MASK_64
+  }
+  // Сжимаем в Number.MAX_SAFE_INTEGER, чтобы supabase-js точно сериализовал в JSON.
+  const safe = hash % BigInt(Number.MAX_SAFE_INTEGER)
+  return Number(safe)
+}
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
@@ -171,6 +194,25 @@ Deno.serve(withSentry('add-custom-domain', async (req) => {
     }
   }
 
+  // Advisory lock против concurrent попыток зарегать один и тот же FQDN.
+  // pg_try_advisory_xact_lock держит лок до конца транзакции — а здесь транзакция
+  // implicit вокруг одного RPC-вызова (см. комментарий в миграции 297). Лок работает
+  // как «дробящий barrier»: если две edge-функции одновременно дёрнули RPC,
+  // одна получит true, другая — false → 409. Окно гонки между RPC-вызовом и
+  // Coolify GET/PATCH остаётся ненулевым, но это лучшее что можно сделать без
+  // dedicated pending_domains таблицы с UNIQUE constraint.
+  const lockKey = hashStringToInt(`custom-domain:${normalizedDomain}`)
+  const { data: locked, error: lockError } = await adminSupabase.rpc('try_advisory_xact_lock', { p_key: lockKey })
+  if (lockError) {
+    console.error('try_advisory_xact_lock failed:', lockError)
+    captureException(lockError, { fn: 'add-custom-domain', stage: 'advisory-lock', fqdn: normalizedDomain })
+    await flushSentry()
+    return json({ error: 'Domain registration failed' }, { status: 500 })
+  }
+  if (locked !== true) {
+    return json({ error: 'Параллельная регистрация этого домена уже выполняется, повторите запрос через несколько секунд' }, { status: 409 })
+  }
+
   let getResp: Response
   try {
     getResp = await withTimeout(appUrl, { method: 'GET', headers: coolifyHeaders })
@@ -184,7 +226,10 @@ Deno.serve(withSentry('add-custom-domain', async (req) => {
     return json({ error: 'Domain registration failed' }, { status: 502 })
   }
   const app = await getResp.json().catch(() => null) as { fqdn?: string | null } | null
-  const currentFqdn = (app?.fqdn ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+  // Сохраняем исходный CSV в первоначальном виде — для compensation rollback,
+  // чтобы вернуть Coolify в state до нашего PATCH (а не «реконструированный» список).
+  const previousFqdnCsv = app?.fqdn ?? ''
+  const currentFqdn = previousFqdnCsv.split(',').map((s) => s.trim()).filter(Boolean)
 
   const previousDomain = (tenant as { custom_domain: string | null }).custom_domain
   const newDomainUrl = `https://${normalizedDomain}`
@@ -215,10 +260,87 @@ Deno.serve(withSentry('add-custom-domain', async (req) => {
     return json({ error: 'Domain registration failed' }, { status: 502 })
   }
 
-  await adminSupabase
+  // Coolify уже зарегил домен. Если DB UPDATE упадёт — у нас будет orphan-домен
+  // в Coolify (Traefik роутит трафик в наше приложение, но БД не знает про этот
+  // tenant↔domain маппинг → витрина не определит тенанта по hostname).
+  // Поэтому: попытка UPDATE → если ошибка → compensation PATCH откатить Coolify
+  // обратно к previousFqdnCsv.
+  const { error: updateError } = await adminSupabase
     .from('tenants')
     .update({ custom_domain: normalizedDomain })
     .eq('id', tenant.id)
+
+  if (updateError) {
+    // 23505 = unique_violation на tenants_custom_domain_key. Возникает когда параллельный
+    // запрос успел вставить тот же домен между нашими preflight-check и UPDATE
+    // (advisory lock сужает окно, но не закрывает полностью). Это ожидаемая
+    // race-ситуация, а не баг — НЕ шлём в Sentry, чтобы не засрать дашборд.
+    const isUniqueViolation = (updateError as { code?: string })?.code === '23505'
+    console.error('DB UPDATE custom_domain failed, attempting Coolify rollback:', updateError)
+    if (!isUniqueViolation) {
+      captureException(updateError, {
+        fn: 'add-custom-domain',
+        stage: 'db-update',
+        fqdn: normalizedDomain,
+        tenantId: tenant.id,
+      })
+    }
+
+    // Compensation: возвращаем Coolify к исходному CSV. instant_deploy:true чтобы
+    // Traefik сразу убрал labels — иначе домен останется висеть в роутере.
+    let rollbackResp: Response | null = null
+    let rollbackErr: unknown = null
+    try {
+      rollbackResp = await withTimeout(appUrl, {
+        method: 'PATCH',
+        headers: coolifyHeaders,
+        body: JSON.stringify({ domains: previousFqdnCsv, instant_deploy: true }),
+      })
+    } catch (err) {
+      rollbackErr = err
+    }
+
+    if (rollbackErr || !rollbackResp || !rollbackResp.ok) {
+      // Двойной фейл: Coolify добавил домен, БД не записала, rollback тоже упал.
+      // Это требует ручного фикса: либо вручную убрать домен из Coolify UI,
+      // либо вручную проставить custom_domain в tenants. Поднимаем alert-уровень.
+      const rollbackStatus = rollbackResp?.status
+      const rollbackText = rollbackResp ? await rollbackResp.text().catch(() => '') : ''
+      captureException(
+        rollbackErr ?? new Error(`Coolify rollback failed: status=${rollbackStatus} body=${rollbackText}`),
+        {
+          fn: 'add-custom-domain',
+          stage: 'compensation-failed',
+          fqdn: normalizedDomain,
+          tenantId: tenant.id,
+          originalError: String(updateError?.message ?? updateError),
+          rollbackStatus,
+          rollbackBody: rollbackText.slice(0, 500),
+          manualFix: `1) Coolify: убрать ${newDomainUrl} из app ${coolifyStorefrontUuid} domains; 2) Проверить tenants.custom_domain для tenant ${tenant.id}`,
+        },
+        { compensation: true, severity: 'critical', alert: true },
+      )
+      await flushSentry()
+      return json({
+        error: 'Domain registration partially failed — администратор уведомлён, домен будет настроен вручную',
+      }, { status: 503 })
+    }
+
+    // Rollback успешен — состояние консистентно (Coolify откатился, БД и так не обновилась).
+    if (!isUniqueViolation) {
+      captureException(updateError, {
+        fn: 'add-custom-domain',
+        stage: 'db-update-rolled-back',
+        fqdn: normalizedDomain,
+        tenantId: tenant.id,
+      }, { compensation: true })
+      await flushSentry()
+      return json({ error: 'Не удалось сохранить домен, попробуйте ещё раз' }, { status: 503 })
+    }
+    // unique_violation после rollback: домен забрал другой тенант между нашими проверкой и UPDATE.
+    await flushSentry()
+    return json({ error: 'Этот домен уже используется другим тенантом' }, { status: 409 })
+  }
 
   return json({ success: true, domain: normalizedDomain }, { status: 200 })
 }))
