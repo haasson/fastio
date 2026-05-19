@@ -2,11 +2,11 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": null,
-  "generated_at": "2026-05-19T06:58:10.608Z",
+  "generated_at": "2026-05-19T07:50:41.390Z",
   "stats": {
-    "files": 8,
+    "files": 9,
     "pages": 0,
-    "symbols": 8,
+    "symbols": 9,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -35,6 +35,19 @@
           "kind": "other",
           "hash": "52c2ad43",
           "purpose": "navigateTo('/') когда tenant.businessType === 'services'"
+        }
+      ]
+    },
+    "middleware/suspended.global.ts": {
+      "kind": "ts",
+      "hash": "62419f208a40",
+      "purpose": "Page-middleware: при suspended-тенанте редиректит Vue-роуты на /suspended (whitelist /suspended + /privacy)",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "cefd0a73",
+          "purpose": "Глобальный route-middleware suspended-flow на storefront (SSR + client navigation)"
         }
       ]
     },

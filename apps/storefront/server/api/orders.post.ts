@@ -154,10 +154,15 @@ export default defineEventHandler(async (event) => {
     sort_order: serverItems.length,
   } : null
 
+  // PREPROD-114: promo_code инкрементится внутри RPC в той же транзакции
+  // что и INSERT INTO orders. Раньше делали отдельный increment_promo_code_usage
+  // после успешного create — на worker crash между этими шагами оставался
+  // order без инкремента used_count.
   const { data: rpcResult, error } = await supabase.rpc('create_order_with_items_atomic', {
     p_order_payload: orderPayload,
     p_items_json: itemsPayload,
     p_free_item_json: freeItemPayload,
+    p_promo_code: appliedPromoCode && discountAmount > 0 ? appliedPromoCode : null,
   })
 
   if (error) {
@@ -192,13 +197,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Не удалось создать заказ' })
   }
 
-  // 8. Инкремент использований промокода
-  if (appliedPromoCode && discountAmount > 0) {
-    await supabase.rpc('increment_promo_code_usage', {
-      p_tenant_id: tenantId,
-      p_code: appliedPromoCode,
-    })
-  }
+  // Инкремент used_count промокода теперь делает create_order_with_items_atomic
+  // в той же транзакции (см. p_promo_code выше) — PREPROD-114.
 
   return {
     id: result.id,

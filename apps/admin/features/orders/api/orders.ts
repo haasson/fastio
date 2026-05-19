@@ -391,7 +391,28 @@ export const ordersApi = {
   },
 
   async updateStatus(sb: SupabaseClient, orderId: string, status: string) {
-    await query(sb.from('orders').update({ status }).eq('id', orderId))
+    // PREPROD-144: переход в группу cancelled должен атомарно откатывать
+    // used_count промокода — иначе клиент не сможет реюзнуть код после
+    // того как админ отменил его заказ. RPC update_order_status делает
+    // UPDATE + декремент в одной транзакции.
+    const { error } = await sb.rpc('update_order_status', {
+      p_order_id: orderId,
+      p_new_status: status,
+    })
+
+    if (error) {
+      reportError(error, { context: 'ordersApi.updateStatus', orderId, status })
+      // Локализуем Postgres-коды как в `query()` helper'е (сосед update() так делает).
+      // 42501 — RAISE EXCEPTION 'Permission denied' / cross-tenant guard.
+      // P0001 — RAISE EXCEPTION 'Order not found' (или другой бизнес-fail в RPC).
+      const userMessage = error.code === '42501'
+        ? 'Недостаточно прав'
+        : error.code === 'P0001'
+          ? 'Заказ не найден'
+          : 'Не удалось изменить статус заказа'
+
+      throw new Error(userMessage)
+    }
   },
 
   async markKitchenCompleted(sb: SupabaseClient, orderId: string): Promise<void> {
