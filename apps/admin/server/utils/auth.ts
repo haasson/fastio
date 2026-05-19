@@ -1,22 +1,8 @@
 import { createError, getHeader, getRequestHeader, type H3Event } from 'h3'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import { useRuntimeConfig } from '#imports'
-
-// Singleton service-role клиент: переиспользуется между запросами в пределах одного nitro instance,
-// чтобы не создавать новый http-клиент на каждый вызов requireMemberOfTenant().
-let cachedAdminClient: SupabaseClient | null = null
-
-function getAdminClient(): SupabaseClient {
-  if (cachedAdminClient) return cachedAdminClient
-
-  const config = useRuntimeConfig()
-
-  cachedAdminClient = createClient(config.public.supabaseUrl, config.supabaseServiceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
-
-  return cachedAdminClient
-}
+import { reportError } from '~/shared/utils/reportError'
+import { getServerSupabase, resetServerSupabase } from './supabase'
 
 /**
  * Проверяет что запрос пришёл от внутреннего вызывающего (триггеры БД через pg_net,
@@ -78,16 +64,32 @@ export async function requireMemberOfTenant(
   const { data: { user }, error } = await userClient.auth.getUser()
 
   if (error || !user) {
+    if (error) reportError(error, { ctx: 'requireMemberOfTenant.getUser' })
+
     throw createError({ statusCode: 401, statusMessage: 'Invalid session' })
   }
 
   // Через service-role минуем RLS на tenant_members, плюс берём blocked_until для финального чека.
-  const { data: membership } = await getAdminClient()
+  const { data: membership, error: membershipError } = await getServerSupabase()
     .from('tenant_members')
     .select('user_id, blocked_until')
     .eq('tenant_id', tenantId)
     .eq('user_id', user.id)
     .maybeSingle()
+
+  if (membershipError) {
+    reportError(membershipError, { ctx: 'requireMemberOfTenant.membershipQuery', tenantId, userId: user.id })
+
+    // 401 от Supabase в service-role операции => ключ протух / ротировали без рестарта.
+    // Сбрасываем singleton, чтобы следующий запрос пересоздал клиент с актуальным ключом.
+    const status = (membershipError as { status?: number }).status
+
+    if (status === 401) {
+      resetServerSupabase()
+    }
+
+    throw createError({ statusCode: 500, statusMessage: 'Failed to verify tenant membership' })
+  }
 
   if (!membership) {
     throw createError({ statusCode: 403, statusMessage: 'Not a member of this tenant' })
