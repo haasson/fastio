@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { withSentry } from '../_shared/sentry.ts'
+import { captureException, flushSentry, withSentry } from '../_shared/sentry.ts'
 import nodemailer from 'nodemailer'
 
 // Унифицированный envelope ответа:
@@ -7,7 +7,9 @@ import nodemailer from 'nodemailer'
 //   error:   { success: false, error, code }
 // Любой исход «email отправлен / email не существует / SMTP не настроен» схлопнут
 // в один success — чтобы атакующий не мог через ответ определить существование
-// учётки.
+// учётки. SMTP-сбой (нет коннекта / 5xx от relay) — единственное исключение:
+// отдаём 503 + code='smtp_failed' (PREPROD-116), чтобы клиент мог retry'ить и
+// отличить transient от рейт-лимита (429) / валидации (400).
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
@@ -188,7 +190,22 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
 </html>`,
       })
     } catch (smtpErr) {
+      // Transient SMTP failure → 503: клиент может ретраить, отличает от 429/400.
+      // Откатываем consume_rate_limit для email+ip бакетов — иначе при системном
+      // даунтайме юзер упрётся в 429 после 3 попыток и не сможет повторить.
+      // Если release сам упал — логируем, но всё равно отдаём 503 (не маскируем
+      // SMTP-ошибку проблемой со счётчиком).
       console.error('SMTP error:', smtpErr)
+      captureException(smtpErr, { fn: 'send-recovery-email', stage: 'smtp-send' })
+      const releases = await Promise.all([
+        adminSupabase.rpc('release_rate_limit', { _key: `send-recovery-email:email:${normalizedEmail}` }),
+        adminSupabase.rpc('release_rate_limit', { _key: `send-recovery-email:ip:${ip}` }),
+      ])
+      for (const r of releases) {
+        if (r.error) console.error('release_rate_limit error:', r.error)
+      }
+      await flushSentry()
+      return err(503, 'smtp_failed', 'Не удалось отправить письмо. Попробуйте ещё раз через минуту.')
     }
   } else {
     console.log(`Recovery URL for ${normalizedEmail}: ${recoveryUrl}`)
