@@ -4,38 +4,39 @@
 
 ## Что модуль делает
 
-Поддерживает три способа логина:
-1. **Email + password** (`AuthLoginModal` / `AuthRegisterModal`) — стандартный Supabase Auth.
-2. **Telegram OAuth** (`AuthTelegramButton` / `AuthTelegramWidget`) — через бота `telegramAuthBotToken`. Гость жмёт кнопку → редирект на t.me → бот возвращает init_data → сервер валидирует HMAC → сессия Supabase.
-3. **Восстановление пароля** (`AuthForgotPasswordModal` → email с ссылкой → `pages/reset-password.vue`).
+**Единственный способ логина — Telegram** (через бота). Email/password удалён в PREPROD-099 ([[storefront-tg-only-auth]] в memory). Не предлагать возвращать.
 
-`useAuthStore` хранит текущего `User` (Supabase user) + `customer` (наш доменный профиль с phone/name/email/telegram_id).
+Flow:
+1. Гость жмёт «Войти» → открывается `AuthLoginModal` с кнопкой `AuthTelegramButton`.
+2. Кнопка дёргает `POST /api/auth/telegram/init` → получает `nonce` + `botUsername`, открывает `https://t.me/<bot>?start=<nonce>` в новой вкладке.
+3. Параллельно poll'ит `GET /api/auth/telegram/poll?nonce=<nonce>` каждые 2 сек (макс. 15 мин).
+4. Когда бот возвращает init_data на webhook, сервер выставляет HttpOnly cookie `tg_session` (token_hash в БД `customer_sessions`) и помечает nonce как `ok`.
+5. `AuthTelegramButton` ловит `status: 'ok'` → emit('done') → `useAuthStore.loginWithTelegram()` подтягивает customer через `/api/auth/me`.
+
+`useAuthStore` хранит `customer` (наш доменный профиль с phone/name/email/telegram_id) + `authMode: 'tg' | null`.
 
 ## Карта модуля
 
 | Файл | Что внутри |
 |---|---|
-| `stores/auth.ts` | `useAuthStore` — текущий user, customer, методы login/logout/refresh + computed isAuthenticated |
-| `components/AuthLoginModal.vue` | Модалка логина (email + password) + кнопка Telegram |
-| `components/AuthRegisterModal.vue` | Модалка регистрации (email + password + имя) |
-| `components/AuthForgotPasswordModal.vue` | Запрос ссылки на восстановление по email |
-| `components/AuthTelegramButton.vue` | Кнопка «Войти через Telegram» (deep-link на бота) |
-| `components/AuthTelegramWidget.vue` | Виджет Telegram Login Widget (альтернативный flow на десктопе) |
+| `stores/auth.ts` | `useAuthStore` — customer, init, fetchProfile, loginWithTelegram, logout, updateProfile, showLogin |
+| `components/AuthLoginModal.vue` | Модалка с одной TG-кнопкой + legal-compliance проверка |
+| `components/AuthTelegramButton.vue` | Сама кнопка с polling-логикой 15-минутного TTL |
 
 ## Типовые задачи
 
 - **Изменить логику hash-проверки telegram init_data:** правится в `apps/storefront/server/utils/telegramAuth.ts`, не здесь (клиент только UI).
-- **Новый способ логина (VK ID, Яндекс ID):** добавь новый Modal-компонент + endpoint на сервере. Состояние в `useAuthStore` минимальное.
-- **Поля профиля в регистрации:** правь `AuthRegisterModal.vue` + `/api/auth/register`.
+- **Поменять текст / consent-note** в логин-модалке — `AuthLoginModal.vue`.
+- **Поля профиля** редактируются на странице `/account/profile` через `PATCH /api/customer/profile`.
 
 ## Антипаттерны (не делай так)
 
-- ❌ Прямой `supabase.auth.signInWithPassword` из компонента — пиши через `useAuthStore.login()`, чтобы customer profile подгружался единообразно.
-- ❌ Хранить пароль/токен в state. Supabase SDK сам управляет access/refresh tokens.
+- ❌ Возвращать email/password логин — это намеренно удалено, см. memory [[storefront-tg-only-auth]].
+- ❌ Хранить token в state — Supabase SDK + HttpOnly cookie сами управляют сессией.
 - ❌ Импорт `~/stores/auth` снаружи модуля (старый путь) — используй `~/features/auth`.
 - ❌ Запускать `useAuthStore` ДО `app.vue` инициализации — в SSR Pinia ещё не готов, может крашнуть.
 
 ## Куда расти
 
-- **Flash Call** (WISHLIST): SMS-логин через SMSC.ru, custom Supabase SMS hook — отдельный endpoint + новая модалка.
-- **VK ID / Яндекс ID** (WISHLIST): OAuth2 flows — каждый = новая кнопка + серверный handler.
+- **VK ID / Яндекс ID** (WISHLIST): OAuth2 flows через Supabase Auth — каждый = новая кнопка в модалке + серверный handler. В `stores/auth.ts` ветка `authMode='supabase'` сейчас **dormant** (после PREPROD-099 достижима только для legacy-сессий, которые тут же signOut'ятся) — при добавлении OAuth-провайдера оживёт без переписывания.
+- **Flash Call** (WISHLIST): SMS-логин через SMSC.ru, custom Supabase SMS hook.

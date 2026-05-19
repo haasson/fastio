@@ -5,6 +5,9 @@ import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { useModal } from '~/shared/composables/useModal'
 import { reportError } from '~/shared/utils/reportError'
 
+// 'supabase' остаётся на случай будущих OAuth-providers (VK ID и т.д.) — сейчас
+// storefront-кастомеры логинятся ТОЛЬКО через Telegram ([[storefront-tg-only-auth]]),
+// поэтому 'supabase' живая ветка только для legacy-сессий до cleanup-миграции.
 type AuthMode = 'tg' | 'supabase' | null
 
 export const useAuthStore = defineStore('auth', () => {
@@ -28,6 +31,16 @@ export const useAuthStore = defineStore('auth', () => {
     if (session) {
       authMode.value = 'supabase'
       await fetchProfile()
+      // PREPROD-099: после удаления email-auth у legacy-юзеров (без telegram_id и
+      // без auth.users-записи после миграции 290) /api/auth/me вернёт 401 →
+      // customer = null. SDK при этом session в localStorage считает валидной —
+      // каждая загрузка страницы делает лишний 401-roundtrip. Вычищаем session.
+      // Для будущих OAuth-providers (VK/Apple через Supabase) ветка customer != null
+      // останется живой — никаких регрессий.
+      if (!customer.value) {
+        await supabase.auth.signOut()
+        authMode.value = null
+      }
     } else {
       // No Supabase session — try to resolve via tg cookie. Server returns 401 if absent or expired.
       await fetchProfile()
@@ -63,50 +76,6 @@ export const useAuthStore = defineStore('auth', () => {
       // 401 just means «not signed in» — expected on guest pageviews, don't pollute Sentry.
       if (status !== 401 && status !== 404) reportError(err)
       customer.value = null
-    }
-  }
-
-  async function login(email: string, password: string) {
-    loading.value = true
-    try {
-      const result = await $fetch<{ customer: Customer; session: { access_token: string; refresh_token: string } }>(
-        '/api/auth/login',
-        { method: 'POST', body: { email, password } },
-      )
-
-      const supabase = useSupabaseClient()
-      await supabase.auth.setSession({
-        access_token: result.session.access_token,
-        refresh_token: result.session.refresh_token,
-      })
-
-      authMode.value = 'supabase'
-      customer.value = result.customer
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function register(name: string, email: string, password: string) {
-    loading.value = true
-    try {
-      const result = await $fetch<{ customer: Customer; session: { access_token: string; refresh_token: string } }>(
-        '/api/auth/register',
-        { method: 'POST', body: { name, email, password } },
-      )
-
-      if (result.session) {
-        const supabase = useSupabaseClient()
-        await supabase.auth.setSession({
-          access_token: result.session.access_token,
-          refresh_token: result.session.refresh_token,
-        })
-      }
-
-      authMode.value = 'supabase'
-      customer.value = result.customer
-    } finally {
-      loading.value = false
     }
   }
 
@@ -159,9 +128,7 @@ export const useAuthStore = defineStore('auth', () => {
     customerEmail,
     init,
     fetchProfile,
-    login,
     loginWithTelegram,
-    register,
     logout,
     updateProfile,
     showLogin,

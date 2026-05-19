@@ -187,7 +187,6 @@ export default withNuxt(
       'pages/gallery.vue',
       'pages/vacancies.vue',
       'pages/privacy.vue',
-      'pages/reset-password.vue',
       'pages/ui.vue',
       'pages/account/profile.vue',
       'pages/account/addresses.vue',

@@ -1,51 +1,35 @@
 <template>
   <FsDialog v-model="modal.isOpen.value" title="Вход" size="sm">
-    <FsAlert v-if="!legalInfoComplete" type="info">
-      Вход временно недоступен — заведение не заполнило юридические данные.
-    </FsAlert>
+    <div class="login-root">
+      <FsAlert v-if="!legalInfoComplete" type="info">
+        Вход временно недоступен — заведение не заполнило юридические данные.
+      </FsAlert>
 
-    <FsForm v-else @submit="onSubmit">
-      <FsField v-slot="{ hasError }" label="Email" required name="email" :model-value="email" :rules="[validationRules.email.required, validationRules.email.format]">
-        <FsInput v-model="email" type="email" placeholder="email@example.com" :error="hasError" />
-      </FsField>
-
-      <FsField v-slot="{ hasError }" label="Пароль" required name="password" :model-value="password" :rules="[validationRules.password.required]">
-        <FsInput v-model="password" type="password" placeholder="Пароль" :error="hasError" />
-      </FsField>
-
-      <FsAlert v-if="serverError" type="error">{{ serverError }}</FsAlert>
-
-      <FsButton type="submit" :loading="authStore.loading" block>
-        Войти
-      </FsButton>
-
-      <FsButton v-if="notRegistered" type="button" variant="outline" block @click="toRegister">
-        Зарегистрироваться
-      </FsButton>
-
-      <template v-if="telegramEnabled">
-        <div class="divider"><span>или</span></div>
-
-        <AuthTelegramButton @done="onTelegramDone" />
+      <template v-else-if="!telegramEnabled">
+        <FsAlert type="warning">
+          Вход через Telegram не настроен. Сообщите администратору заведения.
+        </FsAlert>
       </template>
 
-      <p class="consent-note">
-        Продолжая, вы соглашаетесь с
-        <a href="/privacy" target="_blank">обработкой персональных данных</a>
-      </p>
+      <template v-else>
+        <FsText color="secondary">
+          Для входа в аккаунт используйте Telegram — это безопасно и не требует регистрации.
+        </FsText>
 
-      <div class="links">
-        <button type="button" class="link" @click="toRegister">Создать аккаунт</button>
-        <button type="button" class="link" @click="toForgot">Забыли пароль?</button>
-      </div>
-    </FsForm>
+        <AuthTelegramButton @done="onTelegramDone" />
+
+        <p class="consent-note">
+          Продолжая, вы соглашаетесь с
+          <a href="/privacy" target="_blank">обработкой персональных данных</a>
+        </p>
+      </template>
+    </div>
   </FsDialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { FsDialog, FsField, FsForm, FsInput, FsButton, FsAlert } from '@fastio/public-ui'
-import { validationRules } from '@fastio/kit'
+import { computed } from 'vue'
+import { FsDialog, FsAlert, FsText } from '@fastio/public-ui'
 import { useRuntimeConfig } from '#imports'
 import { useAuthStore } from '../stores/auth'
 import { useModal } from '~/shared/composables/useModal'
@@ -57,28 +41,7 @@ const modal = useModal('auth-login')
 const config = useRuntimeConfig()
 const { legalInfoComplete } = useLegalCompliance()
 
-const email = ref('')
-const password = ref('')
-const serverError = ref('')
-const notRegistered = ref(false)
-
 const telegramEnabled = computed(() => !!config.public.telegramClientBotUsername)
-
-function toRegister() { modal.close(); useModal('auth-register').open() }
-function toForgot() { modal.close(); useModal('auth-forgot').open() }
-
-async function onSubmit() {
-  serverError.value = ''
-  notRegistered.value = false
-  try {
-    await authStore.login(email.value, password.value)
-    modal.close()
-  } catch (err: unknown) {
-    const fetchErr = err as { status?: number; data?: { message?: string } }
-    serverError.value = fetchErr?.data?.message ?? 'Ошибка входа'
-    notRegistered.value = fetchErr?.status === 403
-  }
-}
 
 async function onTelegramDone() {
   await authStore.loginWithTelegram()
@@ -89,41 +52,14 @@ async function onTelegramDone() {
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
 
-.links {
+.login-root {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.link {
-  @include text-caption;
-  color: var(--primary);
-  cursor: pointer;
-  background: none;
-  border: none;
-  font: inherit;
-
-  &:hover { text-decoration: underline; }
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--color-border);
-  }
+  flex-direction: column;
+  gap: 16px;
 }
 
 .consent-note {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: 12px;
   line-height: 1.4;
   color: var(--color-text-secondary);

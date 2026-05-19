@@ -3,31 +3,27 @@ import { defineFeature } from '../_manifest'
 export default defineFeature({
   key: 'auth',
   vertical: 'shared',
-  purpose: 'Аутентификация гостя storefront: email/password + Telegram OAuth (через ботa), восстановление пароля по email',
+  purpose: 'Аутентификация гостя storefront: ТОЛЬКО через Telegram (через бота, deep-link / poll). Email/password удалён в PREPROD-099.',
 
   routes: [
-    { path: '/reset-password', purpose: 'Установка нового пароля по токену из email-ссылки' },
-    // Login/Register/ForgotPassword — модалки, не отдельные страницы (открываются inline в layout).
+    // Модалка login открывается inline в layout — отдельной страницы нет.
   ],
 
   db: {
     // Прямого supabase.from() из клиента нет — всё через Supabase auth SDK
-    // (signInWithPassword, signUp, resetPasswordForEmail) и Nitro endpoints
-    // /api/auth/* для дополнительной валидации.
+    // (onAuthStateChange/setSession/signOut) и Nitro endpoints /api/auth/*
+    // (TG init/poll/login/logout + me).
     tables: [],
   },
 
   dependsOn: [
     'shared.composables.useModal',
-    'shared.composables.useSupabaseClient',         // SDK-обёртка для signInWithPassword/signUp/setSession
-    'shared.ui.layout.StorePageLayout',
-    'shared.ui.sections.PageShell',
+    'shared.composables.useSupabaseClient',
+    'shared.composables.useLegalCompliance',
     'shared.ui.sf.icons.SfIconTelegram',
-    'server.api.auth',
-    'server.api.auth.callback',
     'server.api.auth.telegram',
-    'server.api.auth.forgot-password',
-    'server.api.auth.reset-password',
+    'server.api.auth.me',
+    'server.api.auth.logout',
     '@fastio/shared',
   ],
 })

@@ -6,8 +6,6 @@
     <ClientOnly>
       <FsToastProvider :toasts="toasts" :on-dismiss="dismiss as (id: string | number) => void" />
       <AuthLoginModal />
-      <AuthRegisterModal />
-      <AuthForgotPasswordModal />
       <ConfirmDialog />
     </ClientOnly>
   </div>
@@ -20,8 +18,6 @@ import type { BranchPublic, Tenant } from '@fastio/shared'
 import { paletteToCssVars } from '@fastio/shared'
 import { useAuthStore } from '~/features/auth'
 import AuthLoginModal from '~/features/auth/components/AuthLoginModal.vue'
-import AuthRegisterModal from '~/features/auth/components/AuthRegisterModal.vue'
-import AuthForgotPasswordModal from '~/features/auth/components/AuthForgotPasswordModal.vue'
 import useTheme from '~/shared/composables/useTheme'
 import { isGoogleFontValue, fontFamilyCSS, googleFontUrl } from '~/shared/utils/google-fonts'
 import { FsToastProvider } from '@fastio/public-ui'
