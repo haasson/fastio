@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Tenant, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle, PaymentMethod } from '@fastio/shared'
-import { mapDeliveryZoneRow, defaultSeo, resolveModules, parseSchedulingConfig } from '@fastio/shared'
+import { mapDeliveryZoneRow, defaultSeo, resolveModules, parseSchedulingConfig, DEFAULT_PAYMENT_METHODS } from '@fastio/shared'
 
 export function getServerSupabase() {
   const config = useRuntimeConfig()
@@ -57,7 +57,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     },
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config as Record<string, unknown> | null),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
-    paymentMethods: ((row.payment_methods as string[] | null) ?? ['cash', 'card']) as PaymentMethod[],
+    paymentMethods: ((row.payment_methods as string[] | null) ?? [...DEFAULT_PAYMENT_METHODS]) as PaymentMethod[],
     branchSelectionMode: row.branch_selection_mode as Tenant['branchSelectionMode'],
     createdAt: row.created_at as string,
   }

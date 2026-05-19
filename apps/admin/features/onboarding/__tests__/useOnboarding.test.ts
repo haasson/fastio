@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref, computed } from 'vue'
-import { emptyOnboardingState, type Tenant, type OnboardingState, type TenantModules } from '@fastio/shared'
+import { emptyOnboardingState, DEFAULT_PAYMENT_METHODS, type Tenant, type OnboardingState, type TenantModules } from '@fastio/shared'
 
 const emptyModules = (): TenantModules => ({
   delivery: false,
@@ -102,7 +102,7 @@ const makeTenant = (overrides: Partial<Tenant> = {}): Tenant => ({
     nextStatusId: null,
   },
   legalInfo: null,
-  paymentMethods: ['cash', 'card'],
+  paymentMethods: [...DEFAULT_PAYMENT_METHODS],
   branchSelectionMode: 'unified',
   createdAt: new Date().toISOString(),
   ...overrides,

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { DEFAULT_PAYMENT_METHODS } from '@fastio/shared'
 
-const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in', 'request'] as const
+const VALID_DELIVERY_TYPES = ['delivery', 'pickup', 'dine_in'] as const
 // 'online' пока НЕ принимаем — нет интеграции с платёжным провайдером
 // (YooKassa в WISHLIST). До этого фикса валидация принимала 'online', UI рисовал
 // опцию из tenant.payment_methods, БД сохраняла, но оплата фактически не
@@ -75,7 +76,7 @@ export async function fetchOrderInitialData(
       deliveryMinOrder: Number(tenantData.delivery_min_order),
       deliveryMode: (tenantData.delivery_mode as string) ?? 'zones',
       modules: tenantData.modules as Record<string, boolean> | null,
-      paymentMethods: (tenantData.payment_methods as string[] | null) ?? ['cash', 'card'],
+      paymentMethods: (tenantData.payment_methods as string[] | null) ?? [...DEFAULT_PAYMENT_METHODS],
     },
     initialStatusId: initialStatusData.id as string,
   }

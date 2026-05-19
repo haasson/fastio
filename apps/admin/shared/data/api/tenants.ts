@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, parseSchedulingConfig } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, parseSchedulingConfig, DEFAULT_PAYMENT_METHODS } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
 import type { TenantRow } from '../db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
@@ -64,7 +64,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     },
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config ?? {}),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
-    paymentMethods: (row.payment_methods ?? ['cash', 'card']) as Tenant['paymentMethods'],
+    paymentMethods: (row.payment_methods ?? [...DEFAULT_PAYMENT_METHODS]) as Tenant['paymentMethods'],
     branchSelectionMode: row.branch_selection_mode,
     createdAt: row.created_at,
   }
