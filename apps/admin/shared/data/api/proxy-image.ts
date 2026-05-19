@@ -8,6 +8,7 @@ function messageForStatus(status: number | undefined): string {
   if (status === 413) return 'Изображение слишком большое (макс. 10 МБ)'
   if (status === 422) return 'Ссылка не ведёт на изображение'
   if (status === 429) return 'Слишком много запросов, попробуйте через минуту'
+  if (status === 503) return 'Сервис временно недоступен, попробуйте позже'
   if (status === 504) return 'Удалённый сервер не ответил вовремя'
 
   return 'Не удалось загрузить'

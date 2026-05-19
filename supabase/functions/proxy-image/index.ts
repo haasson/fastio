@@ -1,12 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
-import { withSentry } from '../_shared/sentry.ts'
+import { captureException, withSentry } from '../_shared/sentry.ts'
 import { readBodyWithLimit, resolvesToPublicIp } from './lib.ts'
 
-// Module-scoped клиент: один на весь жизненный цикл инстанса.
-// Per-request передаём JWT в auth.getUser(jwt) — это валидирует токен серверно.
+// Module-scoped клиенты: один экземпляр на весь жизненный цикл воркера.
+// anon — для валидации user JWT через auth.getUser(jwt).
+// service-role — для consume_rate_limit (GRANT EXECUTE TO service_role в миграции 264).
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_ANON_KEY')!,
+)
+
+const adminSupabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
 const CORS_PREFLIGHT_HEADERS = {
@@ -18,31 +24,35 @@ const CORS_ORIGIN_HEADER = { 'Access-Control-Allow-Origin': '*' }
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const FETCH_TIMEOUT_MS = 10_000
-const RATE_LIMIT_MAX = 10 // запросов
-const RATE_LIMIT_WINDOW_MS = 60_000 // в минуту
 
-// Per-user in-memory rate limit. Не идеален при множественных инстансах edge runtime,
-// но базовая защита от спама в рамках одного инстанса работает.
-const rateBuckets = new Map<string, number[]>()
+// Durable RL (PREPROD-118). Replaces in-memory Map → выживает рестарт воркера и
+// шарится между инстансами edge-runtime при горизонтальном масштабировании.
+//
+// Два scope'а параллельно (см. PREPROD-102 naming convention):
+//  • user — основной кап для админа: одна сессия редактирования меню тянет
+//    20-50 картинок; 100/min даёт запас, не давая залить кухню бесплатным
+//    bandwidth через скомпрометированный токен.
+//  • ip — global cap по IP: защита от ботнета с пачкой токенов одного арендатора
+//    и от ошибочного фронта, который зацикливает invoke. 300/min покрывает
+//    нормальную команду (3-5 операторов за NAT'ом) и режет abuse.
+//
+// Tenant scope не вводим: endpoint не получает tenantId (admin-side вызов без
+// явного контекста аренды). Если потом появится — добавить ключ
+// `proxy-image:tenant-ip:<tid>:<ip>` без удаления существующих.
+const USER_LIMIT = { max: 100, windowSeconds: 60 }
+const IP_LIMIT = { max: 300, windowSeconds: 60 }
 
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now()
-  const cutoff = now - RATE_LIMIT_WINDOW_MS
-  const hits = (rateBuckets.get(userId) ?? []).filter((t) => t > cutoff)
-  if (hits.length >= RATE_LIMIT_MAX) {
-    rateBuckets.set(userId, hits)
-    return false
-  }
-  hits.push(now)
-  rateBuckets.set(userId, hits)
-  // Чистим записи, у которых ВСЕ хиты протухли, чтобы Map не рос неограниченно
-  // по уникальным userId при длительной жизни инстанса
-  if (rateBuckets.size > 256) {
-    for (const [k, v] of rateBuckets) {
-      if (v.length === 0 || v[v.length - 1] <= cutoff) rateBuckets.delete(k)
-    }
-  }
-  return true
+function getClientIp(req: Request): string {
+  // Приоритет: cf-connecting-ip (Cloudflare, клиент подделать не может) →
+  // x-real-ip (Supabase Edge proxy) → x-forwarded-for[0]. Без них — 'unknown'
+  // (бакет общий, IP-лимит вырождается в глобальный; per-user продолжает работать).
+  const cf = req.headers.get('cf-connecting-ip')
+  if (cf) return cf
+  const real = req.headers.get('x-real-ip')
+  if (real) return real
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) return xff.split(',')[0]?.trim() ?? 'unknown'
+  return 'unknown'
 }
 
 function jsonError(message: string, status: number) {
@@ -67,7 +77,33 @@ Deno.serve(withSentry('proxy-image', async (req) => {
   const { data: { user }, error: authError } = await supabase.auth.getUser(jwt)
   if (authError || !user) return jsonError('Unauthorized', 401)
 
-  if (!checkRateLimit(user.id)) return jsonError('Too many requests', 429)
+  // Durable rate-limit (fail-closed): RPC error → 503, иначе один из ключей
+  // даст false → 429. Sentry для алерта если RPC ронятся (search_path / DB
+  // перегружена / SERVICE_ROLE_KEY ротирован без рестарта воркера).
+  const ip = getClientIp(req)
+  const [userRes, ipRes] = await Promise.all([
+    adminSupabase.rpc('consume_rate_limit', {
+      _key: `proxy-image:user:${user.id}`,
+      _max: USER_LIMIT.max,
+      _window_seconds: USER_LIMIT.windowSeconds,
+    }),
+    adminSupabase.rpc('consume_rate_limit', {
+      _key: `proxy-image:ip:${ip}`,
+      _max: IP_LIMIT.max,
+      _window_seconds: IP_LIMIT.windowSeconds,
+    }),
+  ])
+
+  if (userRes.error || ipRes.error) {
+    const rpcErr = userRes.error ?? ipRes.error
+    console.error('[proxy-image] consume_rate_limit failed:', rpcErr)
+    captureException(rpcErr, { fn: 'proxy-image', stage: 'rate-limit' })
+    return jsonError('Rate limit unavailable', 503)
+  }
+
+  if (userRes.data === false || ipRes.data === false) {
+    return jsonError('Too many requests', 429)
+  }
 
   let url: unknown
   try { ({ url } = await req.json()) }
