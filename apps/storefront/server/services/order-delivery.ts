@@ -126,7 +126,7 @@ export async function resolveDelivery(
     }
   }
 
-  if (!branchId && deliveryType !== 'dine_in' && deliveryType !== 'request') {
+  if (!branchId && deliveryType !== 'dine_in') {
     throw createError({ statusCode: 400, message: 'Не удалось определить филиал для заказа' })
   }
 

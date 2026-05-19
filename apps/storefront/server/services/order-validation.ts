@@ -101,7 +101,4 @@ export function validateModulesForDeliveryType(
   if (deliveryType === 'dine_in' && !modules?.dineIn) {
     throw createError({ statusCode: 400, message: 'Заказ со стола недоступен' })
   }
-  if (deliveryType === 'request' && modules?.delivery) {
-    throw createError({ statusCode: 400, message: 'Используйте обычный заказ для этого заведения' })
-  }
 }
