@@ -24,7 +24,7 @@ const mapAuditLog = (raw: Record<string, unknown>): AuditLog => {
     entityId: row.entity_id,
     entityName: row.entity_name,
     payload: row.payload ?? {},
-    createdAt: row.created_at,
+    createdAt: row.created_at ?? new Date().toISOString(),
   }
 }
 

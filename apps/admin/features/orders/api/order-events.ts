@@ -17,7 +17,7 @@ export const mapOrderEvent = (raw: Record<string, unknown>): OrderEvent => {
     actorRole: row.actor_role,
     eventType: row.event_type as OrderEvent['eventType'],
     meta: row.meta,
-    createdAt: row.created_at,
+    createdAt: row.created_at ?? new Date().toISOString(),
   }
 }
 

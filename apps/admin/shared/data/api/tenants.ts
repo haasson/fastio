@@ -27,7 +27,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
 
   return {
     id: row.id,
-    ownerId: row.owner_id,
+    ownerId: row.owner_id ?? '',
     name: row.name,
     slug: row.slug,
     customDomain: row.custom_domain,

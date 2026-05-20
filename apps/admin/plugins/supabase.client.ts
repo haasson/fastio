@@ -1,6 +1,7 @@
 import { defineNuxtPlugin, navigateTo, useRuntimeConfig } from '#imports'
 import { createClient } from '@supabase/supabase-js'
 import { useAuthStore } from '~/shared/stores/auth'
+import type { Database } from '~/shared/data/database.types'
 import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/shared/utils/constants'
 import { reportError } from '@fastio/shared/observability'
 
@@ -16,7 +17,7 @@ export default defineNuxtPlugin(async () => {
     sessionStorage.setItem(RECOVERY_PENDING_KEY, '1')
   }
 
-  const supabase = createClient(
+  const supabase = createClient<Database>(
     config.public.supabaseUrl,
     config.public.supabaseAnonKey,
   )

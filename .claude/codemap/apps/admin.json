@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-20T02:06:55.549Z",
+  "generated_at": "2026-05-20T03:47:10.796Z",
   "stats": {
     "files": 83,
     "pages": 0,
@@ -309,8 +309,8 @@
     },
     "plugins/supabase.client.ts": {
       "kind": "ts",
-      "hash": "a6688743e23d",
-      "purpose": "Nuxt-плагин: создаёт Supabase-клиент (anon), читает текущую сессию через getSession() в try/catch (fail-graceful через reportError + setUser(null)), пушит юзера в authStore, подписывается на onAuthStateChange",
+      "hash": "d3447e574680",
+      "purpose": "Nuxt-плагин: типизированный `createClient<Database>` + onAuthStateChange → authStore + редирект на /login при SIGNED_OUT.",
       "symbols": [
         {
           "name": "default",

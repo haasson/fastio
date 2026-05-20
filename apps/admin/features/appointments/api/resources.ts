@@ -70,7 +70,7 @@ export const resourcesApi = {
       sb.from('resources').select(RESOURCE_FIELDS).eq('tenant_id', tenantId).order('sort_order').order('name'),
     )
 
-    return (data ?? []).map((r) => mapResource(r as unknown as ResourceRow))
+    return (data ?? []).map((r) => mapResource(r as ResourceRow))
   },
 
   /**
@@ -126,7 +126,7 @@ export const resourcesApi = {
         .order('name'),
     )
 
-    return (data ?? []).map((r) => mapResource(r as unknown as ResourceRow))
+    return (data ?? []).map((r) => mapResource(r as ResourceRow))
   },
 
   async countActiveByType(sb: SupabaseClient, tenantId: string): Promise<{ person: number; object: number }> {
@@ -303,7 +303,7 @@ export const resourcesApi = {
   async getSchedules(sb: SupabaseClient, resourceId: string): Promise<ResourceSchedule[]> {
     const { data } = await sb.from('resource_schedules').select('*').eq('resource_id', resourceId).order('day_of_week')
 
-    return (data ?? []).map((r) => mapResourceSchedule(r as unknown as ResourceScheduleRow))
+    return (data ?? []).map((r) => mapResourceSchedule(r as ResourceScheduleRow))
   },
 
   async upsertSchedule(
@@ -328,7 +328,7 @@ export const resourcesApi = {
   async getDisabledSlots(sb: SupabaseClient, resourceId: string): Promise<ResourceDisabledSlot[]> {
     const { data } = await sb.from('resource_disabled_slots').select('*').eq('resource_id', resourceId)
 
-    return (data ?? []).map((r) => mapResourceDisabledSlot(r as unknown as ResourceDisabledSlotRow))
+    return (data ?? []).map((r) => mapResourceDisabledSlot(r as ResourceDisabledSlotRow))
   },
 
   async toggleDisabledSlot(
@@ -356,7 +356,7 @@ export const resourcesApi = {
   async getDateOverrides(sb: SupabaseClient, resourceId: string): Promise<ResourceDateOverride[]> {
     const { data } = await sb.from('resource_date_overrides').select('*').eq('resource_id', resourceId).order('date')
 
-    return (data ?? []).map((r) => mapResourceDateOverride(r as unknown as ResourceDateOverrideRow))
+    return (data ?? []).map((r) => mapResourceDateOverride(r as ResourceDateOverrideRow))
   },
 
   async getDateOverridesRange(
@@ -371,7 +371,7 @@ export const resourcesApi = {
       .lte('date', toDate)
       .order('date')
 
-    return (data ?? []).map((r) => mapResourceDateOverride(r as unknown as ResourceDateOverrideRow))
+    return (data ?? []).map((r) => mapResourceDateOverride(r as ResourceDateOverrideRow))
   },
 
   async getDateDisabledSlotsRange(
@@ -385,7 +385,7 @@ export const resourcesApi = {
       .gte('date', fromDate)
       .lte('date', toDate)
 
-    return (data ?? []).map((r) => mapResourceDateDisabledSlot(r as unknown as ResourceDateDisabledSlotRow))
+    return (data ?? []).map((r) => mapResourceDateDisabledSlot(r as ResourceDateDisabledSlotRow))
   },
 
   async upsertDateOverride(
@@ -414,7 +414,7 @@ export const resourcesApi = {
   async getDateDisabledSlots(sb: SupabaseClient, resourceId: string, date: string): Promise<ResourceDateDisabledSlot[]> {
     const { data } = await sb.from('resource_date_disabled_slots').select('*').eq('resource_id', resourceId).eq('date', date)
 
-    return (data ?? []).map((r) => mapResourceDateDisabledSlot(r as unknown as ResourceDateDisabledSlotRow))
+    return (data ?? []).map((r) => mapResourceDateDisabledSlot(r as ResourceDateDisabledSlotRow))
   },
 
   async generateShiftSchedule(

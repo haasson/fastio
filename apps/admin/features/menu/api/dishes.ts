@@ -13,7 +13,7 @@ export const mapDish = (raw: Record<string, unknown>, branchIds: string[] = []):
   return {
     id: row.id,
     tenantId: row.tenant_id,
-    categoryId: row.category_id,
+    categoryId: row.category_id ?? '',
     name: row.name,
     description: row.description,
     longDescription: row.long_description ?? null,
@@ -155,6 +155,7 @@ export const dishesApi = {
     ;(data ?? []).forEach((row) => {
       const cid = (row as Pick<DishRow, 'category_id'>).category_id
 
+      if (cid === null) return
       counts[cid] = (counts[cid] ?? 0) + 1
     })
 
