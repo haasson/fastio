@@ -349,7 +349,8 @@ const handleZoneRemove = async () => {
   &.fullscreen {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    // Полноэкранный режим карты — поверх контента и sidebar.
+    z-index: var(--z-modal);
     height: auto;
   }
 }

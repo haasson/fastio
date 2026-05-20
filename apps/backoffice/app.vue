@@ -59,6 +59,7 @@ const handleNav = (key: string) => {
   background: #fff;
   position: sticky;
   top: 0;
+  // backoffice не использует @fastio/styles — оставляем число.
   z-index: 100;
 }
 

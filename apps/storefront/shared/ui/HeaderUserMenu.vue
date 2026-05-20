@@ -109,7 +109,7 @@ async function onLogout() {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  z-index: 50;
+  z-index: var(--z-dropdown);
   overflow: hidden;
   padding: 4px 0;
 }

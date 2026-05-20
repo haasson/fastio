@@ -109,7 +109,7 @@ onUnmounted(() => {
 .header-root {
   position: sticky;
   top: 0;
-  z-index: var(--z-sticky, 100);
+  z-index: var(--z-header);
   background: transparent;
   transition: background 0.25s, border-color 0.25s;
 

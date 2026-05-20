@@ -63,7 +63,8 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   margin-inline: auto;
   width: fit-content;
   max-width: calc(100vw - var(--space-32));
-  z-index: 40;
+  // Sticky action bar поверх контента, но ниже sidebar/topbar и модалок.
+  z-index: var(--z-sticky);
 
   display: flex;
   align-items: center;

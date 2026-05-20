@@ -110,13 +110,13 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 .sticky-header {
   position: sticky;
   top: 0;
-  z-index: 200;
+  z-index: var(--z-header);
 }
 
 .sticky-category-bar {
   position: sticky;
   top: var(--header-height);
-  z-index: 99;
+  z-index: var(--z-sticky);
 }
 
 .page-content {

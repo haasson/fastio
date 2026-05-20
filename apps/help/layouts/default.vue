@@ -32,7 +32,7 @@
   border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: var(--z-header);
   flex-shrink: 0;
 }
 

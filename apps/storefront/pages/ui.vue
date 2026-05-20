@@ -866,7 +866,7 @@ const stepperCapped = ref(1)
 .ui-nav {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-sticky);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   display: flex;

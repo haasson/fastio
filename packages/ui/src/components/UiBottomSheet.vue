@@ -129,7 +129,8 @@ onUnmounted(() => {
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2100;
+  // Должно быть выше Naive UI модалок (~2000), которые могут быть в DOM ниже.
+  z-index: var(--z-above-naive);
   background: var(--overlay-bg);
 }
 
@@ -138,7 +139,8 @@ onUnmounted(() => {
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 2101;
+  // Контент над overlay (+1).
+  z-index: calc(var(--z-above-naive) + 1);
   display: flex;
   flex-direction: column;
   max-width: var(--bottom-sheet-max-width, 640px);
@@ -187,6 +189,7 @@ onUnmounted(() => {
 .header {
   position: sticky;
   top: 0;
+  // Local stacking — sticky header внутри scrollable .content drawer'а.
   z-index: 10;
   margin-bottom: var(--space-12);
   background: var(--color-white);

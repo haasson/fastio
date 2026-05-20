@@ -203,7 +203,8 @@ async function onTableOrder(item: CartItem) {
   bottom: 80px;
   left: 16px;
   right: 16px;
-  z-index: 201;
+  // Тост-стиль уведомление: над контентом и sticky-header.
+  z-index: var(--z-toast);
   justify-content: space-between;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }

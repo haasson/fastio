@@ -205,7 +205,8 @@ const kbUrl = computed(() => {
   top: 0;
   left: 0;
   height: 100vh;
-  z-index: 100;
+  // На мобиле сайдбар оверлеит контент как drawer — выше .overlay backdrop.
+  z-index: var(--z-modal);
   transition: transform 0.25s ease, width 0.25s ease;
   transform: translateX(-100%);
 
@@ -325,6 +326,7 @@ const kbUrl = computed(() => {
   color: var(--grey-400);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
+  // Local stacking — кнопка коллапса над краем .sidebar.
   z-index: 1;
 
   &:hover {
@@ -488,7 +490,7 @@ const kbUrl = computed(() => {
   padding: 0 var(--space-24);
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: var(--z-sticky);
 }
 
 .page-title-wrap {
@@ -535,7 +537,8 @@ const kbUrl = computed(() => {
   position: fixed;
   inset: 0;
   background: var(--overlay-bg);
-  z-index: 99;
+  // Backdrop ниже .sidebar (--z-modal), но выше контента/topbar.
+  z-index: var(--z-overlay);
 
   @include mq-m {
     display: none;

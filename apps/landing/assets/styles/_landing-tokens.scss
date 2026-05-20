@@ -1,3 +1,6 @@
+// Z-index шкала — единая на весь монорепо.
+@use '@fastio/styles/variables/z-index';
+
 :root {
   // Landing-specific palette
   --ln-black: #0d0c0b;
@@ -53,12 +56,6 @@
   --ctrl-fs: 16px;
   --ctrl-gap: 8px;
   --ctrl-icon: 18px;
-
-  // Z-index
-  --z-sticky: 200;
-  --z-overlay: 300;
-  --z-modal: 400;
-  --z-toast: 500;
 }
 
 @media (min-width: 768px) {

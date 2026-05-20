@@ -287,6 +287,7 @@ const handleActionClick = async (action: ModalAction) => {
   position: absolute;
   top: 0;
   left: 0;
+  // Local stacking — loading-spinner поверх контента самой модалки.
   z-index: 10;
   display: flex;
   width: 100%;
