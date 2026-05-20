@@ -39,8 +39,13 @@ export default defineEventHandler(async (event) => {
 
   let text = `📅 <b>Новое бронирование</b>\n\n`
 
+  // PREPROD-220: guest_phone в БД nullable (например, бронь сделанная через
+  // админку без телефона). formatPhone/normalizePhone требуют string, упадёт
+  // на null. Если телефона нет — просто скрываем строку и inline-кнопку.
+  const guestPhone = reservation.guest_phone ?? ''
+
   text += `👤 ${reservation.guest_name}\n`
-  text += `📞 ${formatPhone(reservation.guest_phone)}\n`
+  if (guestPhone) text += `📞 ${formatPhone(guestPhone)}\n`
   text += `👥 ${reservation.guest_count} ${guestWord(reservation.guest_count)}\n`
   text += `🗓 ${dateStr} в ${timeStr}\n`
   if (reservation.table_name) text += `🪑 ${reservation.table_name}\n`
@@ -48,8 +53,8 @@ export default defineEventHandler(async (event) => {
 
   // guest_phone теперь хранится в каноне '7XXXXXXXXXX' (см. reservations/index.post.ts),
   // но прогоняем через shared normalizePhone на случай старых записей с маской/+.
-  const phoneDigits = normalizePhone(reservation.guest_phone)
-  const replyMarkup = adminUrl
+  const phoneDigits = guestPhone ? normalizePhone(guestPhone) : ''
+  const replyMarkup = adminUrl && phoneDigits
     ? {
         inline_keyboard: [[{ text: '📞 Позвонить', url: `${adminUrl}/api/tel/${phoneDigits}` }]],
       }

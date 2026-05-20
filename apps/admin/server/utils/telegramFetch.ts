@@ -1,6 +1,20 @@
 import { fetch, ProxyAgent } from 'undici'
 import { useRuntimeConfig } from '#imports'
 
+// PREPROD-245: единая константа для Telegram Bot API. Хардкод
+// `https://api.telegram.org` раскидан по 9+ callsites — при смене на
+// зеркало / mock в тестах / прокси-mirror меняется в одном месте.
+export const TELEGRAM_API_BASE = 'https://api.telegram.org'
+
+/**
+ * Строит URL метода Bot API: `https://api.telegram.org/bot<TOKEN>/<method>`.
+ * Использовать вместо `\`${TELEGRAM_API_BASE}/bot${token}/${method}\``, чтобы
+ * не плодить опечатки в шаблонах и проще было поменять base в одном месте.
+ */
+export function telegramApiUrl(token: string, method: string): string {
+  return `${TELEGRAM_API_BASE}/bot${token}/${method}`
+}
+
 // VPS в РФ → api.telegram.org заблочен Роскомнадзором по IP. Если задан
 // NUXT_TELEGRAM_PROXY_URL (например http://host.docker.internal:1081 → sing-box
 // HTTP inbound), все вызовы к Telegram идут через прокси. Без переменной —

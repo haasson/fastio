@@ -3,6 +3,13 @@ import { useRuntimeConfig } from '#imports'
 
 // См. apps/admin/server/utils/telegramFetch.ts — та же логика для storefront.
 
+// PREPROD-245: единая константа для Telegram Bot API. Симметрично admin.
+export const TELEGRAM_API_BASE = 'https://api.telegram.org'
+
+export function telegramApiUrl(token: string, method: string): string {
+  return `${TELEGRAM_API_BASE}/bot${token}/${method}`
+}
+
 let cached: { dispatcher: ProxyAgent | undefined } | null = null
 
 function getDispatcher(): ProxyAgent | undefined {

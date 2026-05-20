@@ -2,7 +2,7 @@ import { defineEventHandler, readBody } from 'h3'
 import * as Sentry from '@sentry/nuxt'
 import { useRuntimeConfig } from '#imports'
 import { requireInternalSecret } from '../../utils/auth'
-import { telegramFetch } from '../../utils/telegramFetch'
+import { telegramApiUrl, telegramFetch } from '../../utils/telegramFetch'
 
 // Endpoint для алёртов от monitor_edge_errors(). Вызывается из БД через pg_net
 // каждые 15 мин если 4xx/5xx в net._http_response пробивают порог.
@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
     `Sentry: проект edge-functions → recent issues`,
   ].join('\n')
 
-  const tgRes = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  const tgRes = await telegramFetch(telegramApiUrl(token, 'sendMessage'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),

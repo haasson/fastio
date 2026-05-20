@@ -1,13 +1,32 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Tenant, Dish, Combo, Order, Customer, CustomerAddress, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle, PaymentMethod } from '@fastio/shared'
 import { mapDeliveryZoneRow, defaultSeo, resolveModules, parseSchedulingConfig, DEFAULT_PAYMENT_METHODS } from '@fastio/shared'
 
-export function getServerSupabase() {
+// Service-role Supabase клиент для серверных эндпоинтов витрины.
+// PREPROD-224: singleton по namespace nitro instance (симметрично admin
+// PREPROD-120) — один клиент переиспользуется между запросами, чтобы не
+// плодить http-агенты на каждый вызов.
+//
+// `resetServerSupabase()` — вызывать на 401 от Supabase (после ротации
+// service-role-key), чтобы пересоздать клиент с новым ключом без полного
+// рестарта процесса.
+let cachedClient: SupabaseClient | null = null
+
+export function getServerSupabase(): SupabaseClient {
+  if (cachedClient) return cachedClient
+
   const config = useRuntimeConfig()
-  return createClient(
+  cachedClient = createClient(
     config.public.supabaseUrl,
     config.supabaseServiceRoleKey,
+    { auth: { persistSession: false, autoRefreshToken: false } },
   )
+
+  return cachedClient
+}
+
+export function resetServerSupabase(): void {
+  cachedClient = null
 }
 
 export function getAuthSupabase(authHeader: string) {

@@ -2,7 +2,7 @@ import { createError, defineEventHandler, getHeader } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { MAX_REMINDER_MINUTES, REMINDER_OPTIONS, formatAppointmentDateTime } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
-import { telegramFetch } from '../../utils/telegramFetch'
+import { telegramApiUrl, telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '~/shared/utils/reportError'
 
 type ReminderRow = {
@@ -137,7 +137,7 @@ async function processReminder(
   let tgRes: Awaited<ReturnType<typeof telegramFetch>>
 
   try {
-    tgRes = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    tgRes = await telegramFetch(telegramApiUrl(token, 'sendMessage'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: row.telegram_chat_id, text }),

@@ -35,6 +35,12 @@ jobs:
         run: pnpm lint
 
       - name: tests
+        env:
+          # PREPROD-225: включаем drift-check для TENANT_TABLES. Сам тест
+          # сидит за двойным гардом (`enabled && SUPABASE_URL && KEY`) и
+          # скипается, если supabase не поднят. Реальная проверка идёт
+          # только на nightly-job с живой БД, тут флаг просто разрешает.
+          RUN_TENANT_TABLES_DRIFT_CHECK: '1'
         run: pnpm test:run
 
       - name: features:validate (admin)

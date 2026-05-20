@@ -2,6 +2,7 @@ import { defineNuxtPlugin, navigateTo, useRuntimeConfig } from '#imports'
 import { createClient } from '@supabase/supabase-js'
 import { useAuthStore } from '~/shared/stores/auth'
 import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/shared/utils/constants'
+import { reportError } from '~/shared/utils/reportError'
 
 export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()
@@ -22,10 +23,20 @@ export default defineNuxtPlugin(async () => {
 
   const authStore = useAuthStore()
 
-  // Получаем текущую сессию при старте
-  const { data: { session } } = await supabase.auth.getSession()
+  // PREPROD-232: getSession читает из localStorage/IndexedDB и может бросить
+  // (Safari private mode, кривые данные, плохой коннект в редких сценариях).
+  // Это плагин — без try/catch unhandled throw валит весь bootstrap Nuxt и
+  // пользователь видит белый экран вместо логина. Failing gracefully:
+  // считаем сессию пустой, юзера на /login отправит middleware/auth.
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession()
 
-  authStore.setUser(session?.user ?? null)
+    if (error) reportError(error, { ctx: 'plugins/supabase.client:getSession' })
+    authStore.setUser(session?.user ?? null)
+  } catch (e) {
+    reportError(e, { ctx: 'plugins/supabase.client:getSession' })
+    authStore.setUser(null)
+  }
 
   // Слушаем изменения состояния авторизации
   supabase.auth.onAuthStateChange((event, session) => {
