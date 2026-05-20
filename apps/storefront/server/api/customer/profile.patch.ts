@@ -1,7 +1,7 @@
 import { validateAndNormalizeRussianPhone } from '@fastio/shared'
 import { mapCustomer } from '../../utils/supabase'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const NAME_MAX_LENGTH = 100
 

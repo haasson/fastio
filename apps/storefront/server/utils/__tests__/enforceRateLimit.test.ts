@@ -10,7 +10,7 @@ vi.mock('../supabase', () => ({
   getServerSupabase: () => ({ rpc: (...args: unknown[]) => mockRpc(...args) }),
 }))
 const mockReportError = vi.fn()
-vi.mock('~/shared/utils/reportError', () => ({
+vi.mock('@fastio/shared/observability', () => ({
   reportError: (err: unknown) => mockReportError(err),
 }))
 

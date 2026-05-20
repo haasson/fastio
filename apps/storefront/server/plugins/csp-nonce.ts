@@ -1,6 +1,6 @@
 import { defineNitroPlugin } from 'nitropack/runtime'
 import { buildNonceInjector } from '@fastio/shared'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 /**
  * Приклеивает per-request nonce ко всем inline-скриптам в SSR-рендере.

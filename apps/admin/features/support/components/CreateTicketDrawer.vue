@@ -61,7 +61,7 @@ import { UiIcon } from '@fastio/icons'
 import type { DrawerAction } from '@fastio/ui'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 defineProps<{
   show: boolean

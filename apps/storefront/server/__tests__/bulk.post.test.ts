@@ -102,7 +102,7 @@ vi.mock('../utils/customerAuth', () => ({
   getAuthenticatedContextWithCustomer: (...args: unknown[]) => mockGetAuthCustomer(...args),
 }))
 
-vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
+vi.mock('@fastio/shared/observability', () => ({ reportError: vi.fn() }))
 
 // enforceRateLimit подтягивает getServerSupabase → useRuntimeConfig, который в
 // тестах не определён. Моаем no-op — рейт-лимит ходит на тот же `db.raw`-клиент,

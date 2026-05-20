@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import type { Customer } from '@fastio/shared'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { useModal } from '~/shared/composables/useModal'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 // 'supabase' остаётся на случай будущих OAuth-providers (VK ID и т.д.) — сейчас
 // storefront-кастомеры логинятся ТОЛЬКО через Telegram ([[storefront-tg-only-auth]]),

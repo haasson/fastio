@@ -2,7 +2,7 @@ import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
 import { mapReservation } from '@fastio/shared'
 import type { Reservation } from '@fastio/shared'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export default defineEventHandler(async (event): Promise<Reservation[]> => {
   // Same auth-pattern как в customer/appointments.get.ts: поддерживаем Bearer JWT

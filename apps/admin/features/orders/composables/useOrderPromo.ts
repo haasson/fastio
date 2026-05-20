@@ -3,7 +3,7 @@ import { watchDebounced } from '@vueuse/core'
 import type { Order } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type PromoOption = { label: string; value: string; type: 'promotion' | 'promo_code' | 'group'; id: string; children?: PromoOption[] }
 

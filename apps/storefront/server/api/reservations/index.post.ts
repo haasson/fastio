@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
 import { getTenantDb } from '../../utils/tenantDb'
-import { getClientIp } from '../../utils/clientIp'
+import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule, ReservationStatus } from '@fastio/shared'
 

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useCookie } from 'nuxt/app'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const STORAGE_KEY = 'fs-selected-branch-id'
 // Cookie позволяет SSR увидеть выбранный филиал и отдать сразу отфильтрованный

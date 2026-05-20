@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import type { Plan, PlanTier } from '@fastio/shared'
 import { PLAN_LEVEL_ORDER, extractPlanTier } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const plans = ref<Plan[]>([])
 const loaded = ref(false)

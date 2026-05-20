@@ -2,12 +2,12 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-19T14:57:06.194Z",
+  "generated_at": "2026-05-20T01:40:06.913Z",
   "stats": {
-    "files": 84,
+    "files": 83,
     "pages": 0,
-    "symbols": 144,
-    "undescribed_files": 0,
+    "symbols": 143,
+    "undescribed_files": 4,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
   },
@@ -573,8 +573,8 @@
     },
     "shared/plan/useBillingConfig.ts": {
       "kind": "ts",
-      "hash": "48830bc16553",
-      "purpose": "Глобальный одноразовый кэш billing_config (длительность триала) с failed-флагом для UI",
+      "hash": "bfdd286fa45e",
+      "purpose": null,
       "symbols": [
         {
           "name": "useBillingConfig",
@@ -832,8 +832,8 @@
     },
     "shared/plan/usePlans.ts": {
       "kind": "ts",
-      "hash": "2f8da6c7d4e0",
-      "purpose": "Глобальный реестр доступных тарифов с lazy-загрузкой и хелперами сортировки/имён",
+      "hash": "883c72464a0d",
+      "purpose": null,
       "symbols": [
         {
           "name": "usePlans",
@@ -1166,8 +1166,8 @@
     },
     "shared/ui/composables/useEditableForm.ts": {
       "kind": "ts",
-      "hash": "be575054b7c3",
-      "purpose": "Универсальная фабрика settings-формы поверх reactive source: build/reset/submit с дефолтным success/error-тостом и reportError",
+      "hash": "10fc44de9767",
+      "purpose": null,
       "symbols": [
         {
           "name": "FormHandle",
@@ -1414,8 +1414,8 @@
     },
     "shared/utils/query.ts": {
       "kind": "ts",
-      "hash": "bc043083922d",
-      "purpose": "Тонкая обёртка над supabase builder: разворачивает PromiseLike, логирует и кидает ошибку при error, возвращает data",
+      "hash": "dfa67c7ff982",
+      "purpose": null,
       "symbols": [
         {
           "name": "query",
@@ -1435,19 +1435,6 @@
           "kind": "function",
           "hash": "a9214437",
           "purpose": "(url, size) -> data:image/png base64 для вставки в PDF/img"
-        }
-      ]
-    },
-    "shared/utils/reportError.ts": {
-      "kind": "ts",
-      "hash": "c2d52337eaf7",
-      "purpose": "Обёртка над @sentry/nuxt captureException с опциональным extra-context (chatId, tenantId, route и т.п.)",
-      "symbols": [
-        {
-          "name": "reportError",
-          "kind": "function",
-          "hash": "e6934789",
-          "purpose": "reportError(error: unknown, context?: Record<str,unknown>) — отправляет в Sentry с extra"
         }
       ]
     },

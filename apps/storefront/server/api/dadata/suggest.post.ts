@@ -1,7 +1,7 @@
 import { getTenantDb } from '../../utils/tenantDb'
-import { getClientIp } from '../../utils/clientIp'
+import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 const tenantCoordsCache = new Map<string, { lat: number; lon: number } | null>()

@@ -81,7 +81,7 @@ vi.mock('../utils/customerAuth', () => ({
   getAuthenticatedContextWithCustomer: vi.fn().mockResolvedValue(null),
 }))
 
-vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
+vi.mock('@fastio/shared/observability', () => ({ reportError: vi.fn() }))
 
 // Nuxt auto-imports которые используются в server/api/* без explicit import
 ;(globalThis as any).createError = createError

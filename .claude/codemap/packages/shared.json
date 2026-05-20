@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-19T14:57:06.363Z",
+  "generated_at": "2026-05-20T01:40:07.103Z",
   "stats": {
-    "files": 45,
+    "files": 49,
     "pages": 0,
-    "symbols": 196,
+    "symbols": 200,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1500,6 +1500,58 @@
           "kind": "function",
           "hash": "8fd50cf8",
           "purpose": "Возвращает { dateOptions, timeSlots } для планируемого заказа: учитывает таймзону тенанта, lead-time delivery/pickup и шаг слота"
+        }
+      ]
+    },
+    "src/server/clientIp.ts": {
+      "kind": "ts",
+      "hash": "0131a27a6862",
+      "purpose": "H3-обёртка над pure pickClientIp: резолвит ENV (TRUST_PROXY, TRUSTED_IP_HEADER) и возвращает реальный IP клиента для rate-limit/IDOR-guard.",
+      "symbols": [
+        {
+          "name": "getClientIp",
+          "kind": "function",
+          "hash": "3b3cb2d2",
+          "purpose": "Возвращает реальный IP клиента из H3Event с учётом TRUST_PROXY/TRUSTED_IP_HEADER ENV; фолбэк на socket.remoteAddress."
+        }
+      ]
+    },
+    "src/server/index.ts": {
+      "kind": "ts",
+      "hash": "807d3b3d0308",
+      "purpose": "Re-export подмодуля @fastio/shared/server: серверные H3-обёртки (getClientIp).",
+      "symbols": [
+        {
+          "name": "*",
+          "kind": "re-export",
+          "hash": "25720c6e",
+          "purpose": "Barrel: re-exports getClientIp и пр."
+        }
+      ]
+    },
+    "src/observability/index.ts": {
+      "kind": "ts",
+      "hash": "7a8c736ba263",
+      "purpose": "Re-export подмодуля @fastio/shared/observability: интеграция с Sentry (reportError).",
+      "symbols": [
+        {
+          "name": "*",
+          "kind": "re-export",
+          "hash": "106f82aa",
+          "purpose": "Barrel: re-exports reportError."
+        }
+      ]
+    },
+    "src/observability/reportError.ts": {
+      "kind": "ts",
+      "hash": "6b7c47a57ca8",
+      "purpose": "Унифицированный reportError() для admin/storefront: тонкая обёртка над @sentry/nuxt.captureException с поддержкой extra-context.",
+      "symbols": [
+        {
+          "name": "reportError",
+          "kind": "function",
+          "hash": "e6934789",
+          "purpose": "Шлёт ошибку в Sentry; если передан context — кладёт его в extra payload."
         }
       ]
     }

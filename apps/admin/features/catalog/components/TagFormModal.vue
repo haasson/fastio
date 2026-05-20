@@ -68,7 +68,7 @@ import { TAG_COLOR_PRESETS, getTagColorPreset, getTagIconPresets, getTagNamePlac
 import * as icons from 'lucide-vue-next'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const props = defineProps<{
   modelValue: boolean

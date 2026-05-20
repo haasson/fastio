@@ -1,5 +1,5 @@
 import { getServerSupabase } from './supabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 /**
  * Durable per-key rate-limit через RPC `consume_rate_limit` (миграция 264).

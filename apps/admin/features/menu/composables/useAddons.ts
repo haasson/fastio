@@ -3,7 +3,7 @@ import type { AddonPreset } from '@fastio/shared'
 import { mapAddon } from '../api/addons'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export function useAddons(tenantId: Ref<string>) {
   const api = useDatabase()

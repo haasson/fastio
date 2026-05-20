@@ -1,7 +1,7 @@
 import { createError, getHeader, getRequestHeader, type H3Event } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { useRuntimeConfig } from '#imports'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { getServerSupabase, resetServerSupabase } from './supabase'
 
 /**

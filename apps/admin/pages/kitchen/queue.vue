@@ -110,7 +110,7 @@ import { useGate } from '~/shared/plan/useGate'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import KitchenQueueItem from '~/features/kitchen/components/KitchenQueueItem.vue'
 import KitchenWorkCard from '~/features/kitchen/components/KitchenWorkCard.vue'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { mergeRealtimeItem } from '~/features/kitchen'
 
 const api = useDatabase()

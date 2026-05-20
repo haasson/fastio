@@ -3,7 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { MAX_REMINDER_MINUTES, REMINDER_OPTIONS, formatAppointmentDateTime } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { telegramFetch } from '../../utils/telegramFetch'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type ReminderRow = {
   id: string

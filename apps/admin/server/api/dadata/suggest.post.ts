@@ -2,7 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireMemberOfTenant } from '../../utils/auth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const tenantCoordsCache = new Map<string, { lat: number; lon: number } | null>()
 

@@ -2,7 +2,7 @@ import type { H3Event } from 'h3'
 import type { Customer } from '@fastio/shared'
 import { getAuthSupabase, getServerSupabase, mapCustomer } from './supabase'
 import { hashSessionToken, TG_SESSION_COOKIE_NAME } from './telegramAuth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
 // Sliding-renewal threshold: only bump expires_at when the remaining TTL has dropped

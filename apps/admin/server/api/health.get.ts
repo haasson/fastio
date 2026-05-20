@@ -1,6 +1,6 @@
 import { defineEventHandler, setResponseStatus } from 'h3'
 import { getServerSupabase } from '../utils/supabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 // Coolify/Traefik liveness-probe бьёт сюда. ВАЖНО: при degraded DB вернуть 503
 // (а не 200 со status:'degraded'), иначе оркестратор не снимет инстанс с балансера

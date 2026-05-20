@@ -6,7 +6,7 @@ import { useRealtimeWatch } from '~/shared/data/useRealtimeWatch'
 import { usePlans } from '~/shared/plan/usePlans'
 import { useModuleConfigs } from '~/shared/plan/useModules'
 import { useRoles } from '~/features/team'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type MembershipWithTenant = {
   id: string

@@ -67,7 +67,7 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import AddressSuggestInput from '~/shared/ui/components/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { defaultBranchFormData } from '~/features/branches'
 
 const tenantStore = useTenantStore()

@@ -2,7 +2,7 @@ import type { Appointment, AppointmentStatus } from '@fastio/shared'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export type FormSnapshot = {
   serviceId: string | null

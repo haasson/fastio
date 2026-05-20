@@ -96,7 +96,7 @@ import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { useNuxtData } from 'nuxt/app'
 import { FsHeading, FsAlert } from '@fastio/public-ui'
 import AddressManualInput from './AddressManualInput.vue'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 
 const checkout = useCheckoutStore()

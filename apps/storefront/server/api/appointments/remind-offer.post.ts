@@ -10,7 +10,7 @@ import {
 import { getTenantDb } from '../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../utils/customerAuth'
 import { telegramFetch } from '../../utils/telegramFetch'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type ApptRow = {
   starts_at: string

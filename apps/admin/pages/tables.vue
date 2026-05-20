@@ -40,7 +40,7 @@ import { tableCallEvents } from '~/features/tables'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import { TablesContextKey, TodayReservationsKey } from '~/features/tables'
 import type { TableSession, TableSessionItem } from '~/features/tables'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 usePageTitle('Столы')
 

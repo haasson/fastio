@@ -3,7 +3,7 @@ import type { Combo, ComboFormData } from '@fastio/shared'
 import { mapCombo } from '../api/combos'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export function useCombos(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()

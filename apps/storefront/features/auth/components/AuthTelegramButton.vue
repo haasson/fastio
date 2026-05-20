@@ -29,7 +29,7 @@
 import { ref, onUnmounted } from 'vue'
 import { FsSpinner } from '@fastio/public-ui'
 import SfIconTelegram from '~/shared/ui/sf/icons/SfIconTelegram.vue'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const emit = defineEmits<{ done: [] }>()
 

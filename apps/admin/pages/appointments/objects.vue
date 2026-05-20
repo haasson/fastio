@@ -62,7 +62,7 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/shared/data/useDatabase'
 import ResourceDrawer from '~/features/appointments/components/ResourceDrawer.vue'
 import { useResourcePresence, type PresenceStatus } from '~/features/appointments'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const formatDateRu = (date: string): string => {
   const [y, m, d] = date.split('-').map(Number)

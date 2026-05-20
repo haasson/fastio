@@ -10,7 +10,7 @@ import {
   type ServiceCartItem,
 } from '../stores/cart'
 
-vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
+vi.mock('@fastio/shared/observability', () => ({ reportError: vi.fn() }))
 
 // --- helpers ---
 
@@ -233,7 +233,7 @@ describe('useCartStore', () => {
     })
 
     it('kind mismatch — логирует ошибку и не меняет item', async () => {
-      const { reportError } = await import('~/shared/utils/reportError')
+      const { reportError } = await import('@fastio/shared/observability')
       store.add(makeDish())
       store.replace(0, makeService())
       expect(store.items[0].kind).toBe('dish')

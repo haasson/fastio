@@ -2,9 +2,9 @@ import { defineEventHandler } from 'h3'
 import { randomUUID } from 'node:crypto'
 import { useRuntimeConfig } from '#imports'
 import { getTenantDb } from '../../../utils/tenantDb'
-import { getClientIp } from '../../../utils/clientIp'
+import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../../utils/enforceRateLimit'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const NONCE_TTL_MS = 15 * 60 * 1000
 

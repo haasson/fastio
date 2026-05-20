@@ -1,6 +1,6 @@
 import { createDiscreteApi } from 'naive-ui'
 
-import { reportError } from './reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const { message } = createDiscreteApi(['message'])
 

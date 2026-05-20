@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
 import { isSecureRequest } from '../../../utils/isSecureRequest'
 import { issueSessionToken, TG_SESSION_COOKIE_NAME } from '../../../utils/telegramAuth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
 const SESSION_TTL_SEC = SESSION_TTL_MS / 1000

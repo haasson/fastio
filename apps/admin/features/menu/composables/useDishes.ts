@@ -4,7 +4,7 @@ import { mapDish, type DishFormData } from '../api/dishes'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useAuditLog } from '~/features/audit-log'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()

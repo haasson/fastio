@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { formatPhone, normalizePhone } from '@fastio/shared'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireInternalSecret } from '../../utils/auth'
 import { broadcastToTenantTelegram } from '../../utils/telegramBroadcast'

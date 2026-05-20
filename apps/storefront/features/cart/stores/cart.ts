@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { OrderItem } from '@fastio/shared'
 import { getItemUnitPrice } from '@fastio/shared'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export type DishCartItem = OrderItem & {
   kind: 'dish'

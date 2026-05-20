@@ -3,7 +3,7 @@ import type { DishModifierGroup, OrderItemModifier } from '@fastio/shared'
 import { isDishItem, useCartStore, type CartItem } from '../stores/cart'
 import type { ModalItem, ClientAddon  } from '~/features/menu-catalog'
 import { useMenuStore } from '~/features/menu-catalog'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type EditState = {
   open: boolean
