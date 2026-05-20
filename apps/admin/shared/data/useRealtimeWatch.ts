@@ -15,6 +15,24 @@ type Handlers = {
    * подтянуть события, которые могли пропасть пока канал был оборван.
    */
   onReconnect?: () => void
+  /**
+   * PREPROD-260: вторичный фильтр (обычно `branch_id`). Если задан и
+   * `.value !== null` — Realtime подпишется только на строки с этим
+   * значением, экономя bandwidth при смене филиала.
+   *
+   * Лимит Supabase Realtime — один column в `filter`, поэтому когда задан
+   * branch — он перекрывает primary tenant-фильтр (RLS на сервере всё равно
+   * обеспечивает tenant-isolation). При `branchId.value === null` ("все
+   * филиалы") — оставляем primary фильтр по tenant.
+   *
+   * Edge case: row с `branch_id IS NULL` (cross-branch операции) НЕ попадут
+   * в канал, когда филиал выбран — это сознательно, такие записи не
+   * относятся к выбранному филиалу.
+   */
+  secondary?: {
+    column: string
+    value: Ref<string | null>
+  }
 }
 
 export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers: Handlers) {
@@ -35,25 +53,49 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
     wasConnected = true
   }
 
-  const setup = async (value: string) => {
+  const setup = async (primaryValue: string, secondaryValue: string | null) => {
     await api.realtime.setupAuth()
-    channel = api.realtime.subscribeToTable(`${table}:${value}`, table, `${column}=eq.${value}`, {
-      ...(handlers.onInsert && { onInsert: ({ new: row }) => handlers.onInsert!(row) }),
-      ...(handlers.onUpdate && { onUpdate: ({ new: row }) => handlers.onUpdate!(row) }),
-      ...(handlers.onDelete && { onDelete: ({ old: row }) => handlers.onDelete!(row) }),
-      onStatus: (connected) => {
-        isConnected.value = connected
-        if (connected && !wasConnected) {
-          handlers.onReconnect?.()
-        }
-        wasConnected = connected
+
+    // ChannelKey включает оба значения — при смене filial канал
+    // пересоздаётся (предыдущий dispose() уже отписался от старого).
+    const effectiveColumn = secondaryValue && handlers.secondary
+      ? handlers.secondary.column
+      : column
+    const effectiveValue = secondaryValue && handlers.secondary
+      ? secondaryValue
+      : primaryValue
+    const channelKey = secondaryValue && handlers.secondary
+      ? `${table}:${primaryValue}:${handlers.secondary.column}=${secondaryValue}`
+      : `${table}:${primaryValue}`
+
+    channel = api.realtime.subscribeToTable(
+      channelKey,
+      table,
+      `${effectiveColumn}=eq.${effectiveValue}`,
+      {
+        ...(handlers.onInsert && { onInsert: ({ new: row }) => handlers.onInsert!(row) }),
+        ...(handlers.onUpdate && { onUpdate: ({ new: row }) => handlers.onUpdate!(row) }),
+        ...(handlers.onDelete && { onDelete: ({ old: row }) => handlers.onDelete!(row) }),
+        onStatus: (connected) => {
+          isConnected.value = connected
+          if (connected && !wasConnected) {
+            handlers.onReconnect?.()
+          }
+          wasConnected = connected
+        },
       },
-    })
+    )
   }
 
-  watch(id, (value) => {
+  // Watcher с двумя источниками: при изменении любого из них канал
+  // переподписывается. Без secondary — поведение как было.
+  const sources = handlers.secondary
+    ? () => [id.value, handlers.secondary!.value.value] as const
+    : () => [id.value, null] as const
+
+  watch(sources, ([primary, secondary]) => {
     dispose()
-    if (value) setup(value)
+    if (primary) setup(primary, secondary)
   }, { immediate: true })
 
   if (getCurrentInstance()) onUnmounted(dispose)

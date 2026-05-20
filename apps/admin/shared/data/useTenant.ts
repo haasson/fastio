@@ -225,19 +225,51 @@ export const useTenant = (userId: Ref<string | null>) => {
     localStorage.setItem(STORAGE_KEY, tenantId)
   }
 
+  // PREPROD-230: ловим зависшие апдейты тенанта (медленная БД / отвалившаяся
+  // сеть). Без таймаута оптимистично применённый state остаётся «грязным»
+  // навсегда — UI показывает изменения, а на бэке их нет, пока юзер не
+  // перезагрузит страницу. 10s — заведомо больше нормального round-trip
+  // (p99 ~1.5s), но достаточно короткий чтобы юзер сразу понял что-то не так.
+  const TENANT_UPDATE_TIMEOUT_MS = 10_000
+
   const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt' | 'subscription' | 'balance'>>) => {
     if (!maybeTenant.value) return
 
     const snapshot = maybeTenant.value
+    const changedFields = Object.keys(data)
 
     maybeTenant.value = { ...snapshot, ...data }
 
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error('tenant update timeout'))
+      }, TENANT_UPDATE_TIMEOUT_MS)
+    })
+
     try {
-      await api.tenants.update(snapshot.id, data)
+      await Promise.race([api.tenants.update(snapshot.id, data), timeoutPromise])
     } catch (e) {
       maybeTenant.value = snapshot
+
+      const isTimeout = e instanceof Error && e.message === 'tenant update timeout'
+
+      if (isTimeout) {
+        reportError(new Error('tenant update timeout'), {
+          context: 'tenant-update',
+          tenantId: snapshot.id,
+          fields: changedFields,
+        })
+        throw new Error('Не удалось сохранить, попробуйте ещё раз')
+      }
+
       reportError(e)
       throw new Error('Не удалось сохранить изменения')
+    } finally {
+      // Освобождаем таймер даже на успехе — иначе на быстром UPDATE один лишний
+      // setTimeout доживёт ещё 10s в памяти. Особенно вредно при частых
+      // toggle'ах (modules, theme presets).
+      if (timeoutId !== null) clearTimeout(timeoutId)
     }
   }
 

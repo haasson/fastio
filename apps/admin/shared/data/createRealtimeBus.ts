@@ -14,7 +14,12 @@ export type RealtimeBus<T> = {
    * с сервером за период отсутствия (пропущенные INSERT/UPDATE/DELETE).
    */
   onReconnect(handler: VoidHandler): () => boolean
-  attach(tenantId: Ref<string | null>): void
+  /**
+   * PREPROD-260: при наличии `branchId` шина переподписывается на канал
+   * `branch_id=eq.X` при смене филиала — меньше трафика при `null`
+   * (=== "все филиалы") берётся tenant-level канал как раньше.
+   */
+  attach(tenantId: Ref<string | null>, branchId?: Ref<string | null>): void
 }
 
 /**
@@ -70,13 +75,14 @@ export function createRealtimeBus<T>(opts: {
 
       return () => reconnectHandlers.delete(handler)
     },
-    attach(tenantId) {
+    attach(tenantId, branchId) {
       useRealtimeWatch(opts.table, tenantId, {
         column: 'tenant_id',
         onInsert: (row) => broadcast(row, insertHandlers),
         onUpdate: (row) => broadcast(row, updateHandlers),
         onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
         onReconnect: () => reconnectHandlers.forEach((h) => h()),
+        ...(branchId && { secondary: { column: 'branch_id', value: branchId } }),
       })
     },
   }

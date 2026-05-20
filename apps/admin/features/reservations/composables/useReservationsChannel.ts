@@ -39,8 +39,13 @@ export const reservationEvents = {
 
 /**
  * Call ONCE in layout. Creates a single realtime channel for reservations.
+ *
+ * PREPROD-260: при наличии `branchId` подписка переключается на
+ * `branch_id=eq.X`. Reservations с `branch_id IS NULL` (старые/legacy)
+ * не попадают в канал когда branch выбран — соответствует UI-фильтру в
+ * `useReservations`, который тоже отсекает чужие branchId.
  */
-export function useReservationsChannel(tenantId: Ref<string | null>) {
+export function useReservationsChannel(tenantId: Ref<string | null>, branchId?: Ref<string | null>) {
   const broadcast = (row: Record<string, unknown>, handlers: Set<Handler<Reservation>>) => {
     try {
       const reservation = mapReservation(row)
@@ -57,5 +62,6 @@ export function useReservationsChannel(tenantId: Ref<string | null>) {
     onUpdate: (row) => broadcast(row, updateHandlers),
     onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
     onReconnect: () => reconnectHandlers.forEach((h) => h()),
+    ...(branchId && { secondary: { column: 'branch_id', value: branchId } }),
   })
 }

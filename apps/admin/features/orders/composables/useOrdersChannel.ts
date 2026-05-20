@@ -42,8 +42,13 @@ export const orderEvents = {
 
 /**
  * Call ONCE in layout. Creates a single realtime channel for orders.
+ *
+ * PREPROD-260: при наличии `branchId` подписка переключается на
+ * `branch_id=eq.X` — заказы других филиалов не приходят, экономим
+ * bandwidth. `branchId.value === null` → tenant-level подписка (все
+ * филиалы), поведение как раньше.
  */
-export function useOrdersChannel(tenantId: Ref<string | null>) {
+export function useOrdersChannel(tenantId: Ref<string | null>, branchId?: Ref<string | null>) {
   const { orders } = useDatabase()
 
   const fetchAndBroadcast = async (
@@ -62,6 +67,7 @@ export function useOrdersChannel(tenantId: Ref<string | null>) {
     onUpdate: (row) => fetchAndBroadcast(row, updateHandlers),
     onDelete: (row) => deleteHandlers.forEach((h) => h({ id: (row as { id: string }).id })),
     onReconnect: () => reconnectHandlers.forEach((h) => h()),
+    ...(branchId && { secondary: { column: 'branch_id', value: branchId } }),
   })
 
   watch(isConnected, (v) => {

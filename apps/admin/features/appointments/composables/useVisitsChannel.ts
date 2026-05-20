@@ -9,6 +9,9 @@ export const visitsBus = createRealtimeBus<Visit>({
   logTag: 'useVisitsChannel',
 })
 
-export function useVisitsChannel(tenantId: Ref<string | null>) {
-  visitsBus.attach(tenantId)
+// PREPROD-260: branchId optional — при выборе филиала канал переподписан
+// на `branch_id=eq.X`. NULL branch_id (legacy/cross-branch) визиты не
+// попадают в канал когда branch выбран.
+export function useVisitsChannel(tenantId: Ref<string | null>, branchId?: Ref<string | null>) {
+  visitsBus.attach(tenantId, branchId)
 }
