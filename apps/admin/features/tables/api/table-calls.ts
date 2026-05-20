@@ -11,7 +11,7 @@ const mapCallType = (raw: Record<string, unknown>): TableCallType => {
     tenantId: row.tenant_id,
     name: row.name,
     sortOrder: row.sort_order,
-    createdAt: row.created_at,
+    createdAt: row.created_at ?? new Date().toISOString(),
   }
 }
 
@@ -24,7 +24,7 @@ const mapCall = (raw: Record<string, unknown>): TableCall => {
     tableId: row.table_id,
     callTypeId: row.call_type_id,
     callTypeName: row.call_type_name,
-    createdAt: row.created_at,
+    createdAt: row.created_at ?? new Date().toISOString(),
     resolvedAt: row.resolved_at,
   }
 }

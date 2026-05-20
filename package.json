@@ -11,6 +11,8 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:studio": "supabase studio",
+    "db:gen-types": "pnpm dlx supabase gen types typescript --local --schema public > apps/admin/shared/data/database.types.ts",
+    "db:gen-types:check": "node scripts/db/check-types-drift.mjs",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",

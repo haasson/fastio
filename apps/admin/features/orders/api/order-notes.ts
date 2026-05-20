@@ -10,7 +10,7 @@ export const mapOrderNote = (raw: Record<string, unknown>): OrderNote => {
     id: row.id,
     orderId: row.order_id,
     tenantId: row.tenant_id,
-    authorId: row.author_id,
+    authorId: row.author_id ?? '',
     authorName: row.author_name,
     authorRole: row.author_role,
     content: row.content,

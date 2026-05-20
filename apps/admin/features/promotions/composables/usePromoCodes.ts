@@ -48,8 +48,8 @@ export function usePromoCodes(tenantId: Ref<string>) {
       entityName: item.code,
       payload: {
         changed: Object.keys(data),
-        before: pickFields(before as unknown as Record<string, unknown>, Object.keys(data)),
-        after: pickFields(item as unknown as Record<string, unknown>, Object.keys(data)),
+        before: pickFields(before, Object.keys(data)),
+        after: pickFields(item, Object.keys(data)),
       },
     })
   }

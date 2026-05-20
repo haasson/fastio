@@ -13,7 +13,7 @@ const mapInvitation = (raw: Record<string, unknown>): TenantInvitation => {
     email: row.email,
     roleId: row.role_id ?? null,
     roleName: role?.name ?? null,
-    invitedBy: row.invited_by,
+    invitedBy: row.invited_by ?? '',
     expiresAt: row.expires_at,
     acceptedAt: row.accepted_at,
     createdAt: row.created_at,

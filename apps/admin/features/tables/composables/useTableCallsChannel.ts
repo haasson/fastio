@@ -17,7 +17,7 @@ const mapRow = (row: TableCallRow): TableCall => ({
   tableId: row.table_id,
   callTypeId: row.call_type_id,
   callTypeName: row.call_type_name,
-  createdAt: row.created_at,
+  createdAt: row.created_at ?? new Date().toISOString(),
   resolvedAt: row.resolved_at,
 })
 

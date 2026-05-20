@@ -12,12 +12,12 @@ export const mapCombo = (raw: Record<string, unknown>, branchIds: string[] = [])
     tenantId: row.tenant_id,
     categoryId: row.category_id,
     name: row.name,
-    description: row.description,
+    description: row.description ?? '',
     price: row.price,
     photos: row.photos ?? [],
     tags: [],
-    active: row.active,
-    order: row.sort_order,
+    active: row.active ?? true,
+    order: row.sort_order ?? 0,
     branchIds,
   }
 }

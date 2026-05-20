@@ -99,7 +99,7 @@ export const mapOrder = (raw: Record<string, unknown>): Order => {
     id: row.id,
     tenantId: row.tenant_id,
     customerName: row.customer_name,
-    customerPhone: row.customer_phone,
+    customerPhone: row.customer_phone ?? '',
     customerEmail: row.customer_email,
     items: (row.order_items ?? []).map(mapOrderItem),
     deliveryType: row.delivery_type,

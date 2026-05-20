@@ -35,7 +35,7 @@ const getFullImpl = async (sb: SupabaseClient, templateId: string): Promise<Sche
     sb.from('schedule_template_days').select('*').eq('template_id', templateId).order('day_index'),
   )
 
-  const days: ScheduleTemplateDay[] = (daysData ?? []).map((r) => mapScheduleTemplateDay(r as unknown as ScheduleTemplateDayRow),
+  const days: ScheduleTemplateDay[] = (daysData ?? []).map((r) => mapScheduleTemplateDay(r as ScheduleTemplateDayRow),
   )
 
   return { ...tpl, days }
@@ -66,7 +66,7 @@ export const scheduleTemplatesApi = {
       sb.from('schedule_templates').select(TEMPLATE_FIELDS).eq('tenant_id', tenantId).order('sort_order').order('name'),
     )
 
-    return (data ?? []).map((r) => mapScheduleTemplate(r as unknown as ScheduleTemplateRow))
+    return (data ?? []).map((r) => mapScheduleTemplate(r as ScheduleTemplateRow))
   },
 
   /**
