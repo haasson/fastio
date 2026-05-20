@@ -1,6 +1,7 @@
 # FastIO — Manual Testing Plan v2 (тенант-ориентированный, prod)
 
-> Дата: 2026-05-13
+> Дата: 2026-05-20
+> Обновлён: 172 коммита после первой версии — исправлено мёртвое, добавлены новые фичи
 > Среда: **production** (`admin.fastio.ru`, `<slug>.fastio.ru`, `help.fastio.ru`)
 > Цель: пройти весь функционал в логичном порядке. План ведёт за руку: «создай такого тенанта → выбери то-то → проверь это → переключи модуль → переходи к следующему».
 >
@@ -107,6 +108,21 @@
 
 > На `showcase` плане **все** модули заказа/записи locked.
 
+### 0.6 Режим «агент рядом»
+
+План рассчитан на прохождение вместе с агентом. У агента SSH-доступ к проду и полные права:
+- SQL: `docker exec -i <container> psql -U postgres fastio`
+- Supabase REST API с service-role ключом
+- curl к admin/storefront API
+- Чтение docker logs и Edge Function logs (Supabase Dashboard)
+
+Маркеры в разделах:
+- 🤖 **Агент готовит** — агент выполняет SQL/curl/RPC, говорит «готово» с конкретными ID
+- 👤 **Ты** — что делать в браузере
+- 🔍 **Агент проверяет** — SQL/лог-чек после твоих действий
+
+Клиентов на проде нет — агент может делать всё без ограничений.
+
 ---
 
 ## 1. Реестр тенантов
@@ -166,18 +182,36 @@
 
 Секреты задаются один раз через `supabase secrets set` (Cloud Dashboard → Edge Functions → Secrets). Если хотя бы один не выставлен — соответствующая функция вернёт 401/500, и фича отвалится молча (без UI-ошибки, только в Edge logs). Проверь до начала прогона:
 
-- [ ] **`FASTIO_WEBHOOK_SECRET`** — секрет для `send-order-email`. **Без него письма клиентам о новых заказах не уходят.**
-  - `supabase secrets set FASTIO_WEBHOOK_SECRET=$(openssl rand -hex 32)`
-  - Supabase Dashboard → **Database** → **Webhooks** → выбрать webhook на `orders INSERT` (URL должен указывать на функцию `send-order-email`) → **HTTP Headers** добавить `x-fastio-webhook-secret: <значение FASTIO_WEBHOOK_SECRET>`. Если webhook'а ещё нет — создать заново.
 - [ ] **`FASTIO_INTERNAL_TOKEN`** — server-to-server секрет для `send-new-tenant-email`. **Без него welcome-письма после регистрации тенанта не приходят.**
   - `supabase secrets set FASTIO_INTERNAL_TOKEN=$(openssl rand -hex 32)`
   - Тот же токен прокинуть в env обоих caller'ов:
     - landing: `NUXT_FASTIO_INTERNAL_TOKEN=<значение>` (Vercel/Coolify env)
     - backoffice: `NUXT_FASTIO_INTERNAL_TOKEN=<значение>`
   - Проверка: после регистрации нового тенанта через лендинг — на email должно прийти «Новое заведение... добавлено». Если не пришло — Supabase Dashboard → Edge Functions → `send-new-tenant-email` → Logs, ищи 401 или «Server misconfigured».
-- [ ] **`SMTP_USER` / `SMTP_PASS`** — общие SMTP-креды (используют `send-order-email`, `send-new-tenant-email`, `send-recovery-email`, `invite-member`). Без них все письма уходят в `console.log` вместо отправки. Проверь хотя бы по одному из сценариев (сброс пароля проще всего: `/forgot-password`).
-- [ ] **`VERCEL_PROJECT_ID` / `VERCEL_TOKEN`** — для `add-custom-domain`. Нужны только если будешь тестировать подключение кастомных доменов (сейчас UI нет, см. WISHLIST).
+- [ ] **`SMTP_USER` / `SMTP_PASS`** — общие SMTP-креды (используют `send-new-tenant-email`, `send-recovery-email`, `invite-member`). Без них все письма уходят в `console.log` вместо отправки. Проверь хотя бы по одному из сценариев (сброс пароля проще всего: `/forgot-password`).
+- [ ] **`COOLIFY_TOKEN` / `COOLIFY_PROJECT_ID`** — для `add-custom-domain`. Нужны только если будешь тестировать подключение кастомных доменов. Кастомные домены управляются через Coolify API (`feat(add-custom-domain): Vercel API → Coolify API`).
 - [ ] Smoke: после ставки секретов вызови `supabase functions list` и убедись, что все функции `ACTIVE` (не `ERROR` при старте).
+
+### 2.7 Три Telegram-бота (проверить до начала)
+
+`refactor(telegram): 3 разделённых бота по назначению`
+
+| Бот | Назначение | Токен |
+|---|---|---|
+| Bot #1 (tenant bot) | Уведомления заведения — заказы, брони, записи, вызовы официанта | `NUXT_TELEGRAM_TENANT_BOT_TOKEN` |
+| Bot #2 (auth bot) | Telegram Login для клиентов на витрине | `NUXT_TELEGRAM_AUTH_BOT_TOKEN` |
+| Bot #3 (ops bot) | Системные алёрты команды FastIO (pg_cron, backup) | `TELEGRAM_OPS_BOT_TOKEN` |
+
+- [ ] Все 3 бота активны (`/start` отвечает)
+- [ ] Токены выставлены в env (Coolify → Environment Variables)
+
+### 2.8 Sentry мониторинг (P2)
+
+`feat(admin-sentry-server)`, `feat(edge-functions-sentry)`
+
+- [ ] [P2] Sentry DSN выставлен в env (`SENTRY_DSN`) для admin и edge-functions
+- [ ] [P2] Вызови намеренную ошибку (невалидный запрос) → в Sentry появляется issue
+- [ ] Если Sentry не настроен — пропустить, отметить как known gap
 
 ---
 
@@ -206,6 +240,7 @@
 - [ ] Введи сильный пароль → submit
 - [ ] [HP] Автологин → попадаешь на онбординг-визард в админке
 - [ ] **На этом этапе тенант уже создан**: `name=TEST T1 Кафе Луна`, `slug=test-t1-cafe`, `subscription.plan=start`, `trialEndsAt = +14 дней`. Можно проверить read-only в Supabase Dashboard → `tenants` (если есть доступ)
+- [ ] [HP] [P1] Зарегистрируйся через кнопку «Pro» на лендинге (CTA тарифов) → в URL должен быть параметр `?plan=pro` → в онбординге шаг 3 (plan) уже выбран Pro
 
 #### 3.1.2 Шаги онбординга (для retail — 7 шагов)
 
@@ -213,7 +248,8 @@
 - [ ] **Шаг 2 (menuStyle)**: выбери **«Меню» (food)**. Залочено навсегда.
 - [ ] **Шаг 3 (plan)**: дефолт после регистрации — `start` на триале. Выбери **«Про»** (2490 ₽) — это вызовет `billing_change_plan` RPC. В featureLabels должны быть перечислены: kitchen, dineIn, combos, reservations, customRoles, branches. После выбора плана модули автоматически проставятся (`delivery=true, pickup=true` если план их открывает).
 - [ ] **Шаг 4 (info)**: name pre-fill `TEST T1 Кафе Луна` (можно оставить или укоротить). Введи **телефон** (реальный, твой) и **часовой пояс**. Slug/email тут не показываются — они уже зафиксированы с лендинга.
-- [ ] **Шаг 5 (branch)**: создай первый филиал «Центр», адрес — выбери через Dadata (реальный московский), рабочие часы по шаблону. Не нажимай «без филиала».
+- [ ] **Шаг 5 (branch)**: создай первый филиал «Центр», адрес — выбери через Dadata (реальный московский), рабочие часы по шаблону.
+  > Примечание: на showcase шаг 5 = только город, без адреса; на остальных планах — обязательный первый филиал.
 - [ ] **Шаг 6 (modules)**: тут только три тоггла — Доставка / Самовывоз / За столиком. Включи **все три**. Остальные модули (modifiers/addons/combos/promotions/kitchen/reservations/customers) тут НЕ показываются — их включишь после.
 - [ ] **Шаг 7 (complete)**: финальный экран → готово.
 
@@ -263,6 +299,17 @@
 - [ ] [EC] [P2] Длинное название не ломает сетку (десктоп + mobile)
 - [ ] [HP] В `/appearance/sections` → `pageSettings.menu.dishDescriptionMode = 'overlay'` → описание «Веган» накладывается поверх фото
 - [ ] [HP] `mobileDishCard = 'horizontal'` → mobile preview: карточки в строчку с фото слева
+- [ ] [NEG] [P1] Фото >20MB → client-side ошибка до upload (ImageUploadModal)
+- [ ] [NEG] [P1] Файл неверного MIME (например .txt переименованный в .jpg) → ошибка валидации
+- [ ] [HP] Фото ≤20MB правильного MIME → загружается успешно
+- 🔍 **Агент проверяет** (server-side лимиты):
+  ```bash
+  curl -X POST 'https://<supabase>/storage/v1/object/dish-images/test-big.jpg' \
+    -H "Authorization: Bearer <anon_key>" \
+    -H "Content-Type: image/jpeg" \
+    --data-binary @/tmp/bigfile.bin
+  # Ожидание: 413 или 400 (file size limit exceeded)
+  ```
 
 #### 3.2.3 Теги (`/menu/tags`)
 
@@ -327,6 +374,12 @@
 - [ ] Глобально (tenant): `deliveryFee = 100`, `deliveryMinOrder = 500`
 - [ ] Парк: переопредели fee = 150, minOrder = 700
 - [ ] [HP] Заказ в зоне Центра — fee 100, min 500; в зоне Парка — fee 150, min 700
+
+#### 3.3.3 Branch archive guard (fix(branch-archive-guard))
+
+- [ ] [NEG] [P1] Попытка архивировать/удалить филиал при наличии активных броней → блокер с сообщением
+- [ ] [NEG] [P1] Попытка при активных appointments → блокер
+- [ ] [HP] Отмени все зависимости → архивация проходит
 
 ### 3.4 Доставка и зоны (`/orders/delivery`)
 
@@ -441,6 +494,19 @@
 - [ ] [HP] Закрыть стол №1 → новые заказы на него блокируются. Открытие URL → «Стол закрыт».
 - [ ] [HP] **Вызов официанта** на витрине стола (bell) → [RT] появляется в `/tables/calls`
 - [ ] [HP] Отметить «обработан» → исчезает из активных
+
+#### Telegram-уведомление о вызове официанта (migration 299 — задеплоить!)
+
+> ⚠️ Перед тестом: применить `supabase/migrations/299_telegram_notify_appointments_and_calls.sql`
+> и задеплоить `apps/admin/server/api/telegram/notify-table-call.post.ts`
+
+🤖 **Агент готовит**: ничего — вызов делаешь сам
+👤 **Ты**: нажми bell «Вызов официанта» на витрине стола
+🔍 **Агент проверяет**: `SELECT id, call_type_name, created_at FROM table_calls ORDER BY created_at DESC LIMIT 1`
+
+- [ ] [HP] В TG-чат (Bot #1) приходит сообщение: «🛎 Вызов официанта | Стол: X | Тип: Y»
+- [ ] [HP] [RT] Уведомление в TG приходит одновременно с появлением в `/tables/calls`
+- [ ] [NEG] Telegram не подключён → вызов создаётся, TG-сообщение не падает с ошибкой
 - [ ] [HP] Экспорт QR-кодов в PDF (кнопка в `/tables/list`) → коды читаемые
 - [ ] [NEG] [P1] Попытка выключить модуль `dineIn` при открытых столах с активными заказами → блокер (см. `shared/utils/moduleToggleChecks.ts`)
 
@@ -457,6 +523,7 @@
 - [ ] [EC] Слот в последний час перед закрытием — отсутствует (closeBufferMinutes)
 - [ ] [EC] [P1] Нерабочий день → слотов нет
 - [ ] [EC] [P1] Telegram-уведомление по брони включает ссылку (миграция 265)
+- [ ] [HP] [P1] Idempotency брони: двойная отправка формы бронирования → создаётся одна бронь (fix(reservations-idempotency): UNIQUE key)
 - [ ] [NEG] Выключить `reservations` при активных бронях (pending/confirmed/seated) → блокер
 
 ### 3.9 Промо (модуль `promotions`, `/promotions/{list,promo-codes}`)
@@ -519,16 +586,26 @@
 - [ ] [EC] [P1] Положи Бургер Луна 590 → в админке смени цену на 650 → при checkout сумма пересчитается по 650
 - [ ] [EC] [P2] Корзина с 50+ позициями: производительность, скролл, итоги
 - [ ] [EC] [P1] **Branch cart compatibility** (план 2026-05-03): переключи филиал на витрине при непустой корзине → проверь поведение (или очистка, или предупреждение, или сохранение — смотри как ведёт)
+- [ ] [HP] Оформи заказ без email (поле опциональное) → заказ создаётся успешно
+- [ ] [HP] Поле email в форме помечено как необязательное
+- [ ] [HP] Оформи заказ с email → email сохраняется в заказе (`SELECT email FROM orders WHERE ...`)
 
 ### 3.11 Аккаунт клиента (модуль `customers`, страницы `/account/{index,profile,orders,addresses,appointments}` на витрине)
 
-- [ ] Регистрация на витрине: `customer+t1@example.com` / `Test123!` → аккаунт создан, автовход
+- [ ] Регистрация на витрине: только через **Telegram Login** (нужен TG аккаунт с привязанным телефоном) — `refactor(storefront-tg-only-auth)` + `refactor(telegram-auth-mandatory-phone)`
 - [ ] [HP] [P1] `/account/profile`: имя, телефон → сохранено
 - [ ] [HP] `/account/addresses`: добавить адрес → используется при checkout
 - [ ] [HP] Удалить адрес
 - [ ] [HP] `/account/orders`: все заказы клиента
-- [ ] [NEG] Регистрация с тем же email → ошибка
+- [ ] [NEG] Попытка войти без привязанного телефона в TG → отказ (Telegram требует телефон)
 - [ ] [NEG] Вход с неверным паролем → ошибка. После N попыток — **rate limit** (миграция 264 `auth_rate_limits` → `consume_rate_limit` RPC)
+
+#### Мои брони (feat(account-reservations))
+
+- [ ] [HP] `/account/reservations` — список броней авторизованного клиента
+- [ ] [HP] Будущая бронь → кнопка «Отменить» → статус → cancelled
+- [ ] [NEG] Прошедшая бронь → кнопка отмены недоступна (date+time guard)
+
 - [ ] **Выключи `customers`** в `/settings/modules` → попытка открыть `/account` на витрине → редирект/заглушка; оформление только как гость
 
 ### 3.12 Внешний вид (`/appearance/{theme,sections,pages,seo}`)
@@ -562,6 +639,13 @@
 - [ ] `robots: 'noindex'` → `<meta name="robots" content="noindex">`
 - [ ] Валидация: невалидный Google Analytics ID → ошибка в форме
 
+#### Динамический sitemap и robots (feat(storefront-seo))
+
+- [ ] [HP] `https://<slug_t1>.fastio.ru/robots.txt` → содержит корректные правила (`Allow: /` при noindex=false)
+- [ ] [HP] `https://<slug_t1>.fastio.ru/sitemap.xml` → XML с URL страниц тенанта
+- [ ] [HP] Смени robots: noindex в `/appearance/seo` → `robots.txt` содержит `Disallow: /`
+- [ ] Смени обратно robots: index → `robots.txt` содержит `Allow: /`
+
 #### 3.12.5 Навигация (валидация)
 
 - [ ] [EC] [P1] В navItems добавь scroll к секции, которой нет в `sectionsOrder` → ошибка валидации
@@ -574,6 +658,9 @@
 - [ ] Пустая галерея → секция скрыта
 - [ ] Вакансии (`/content/vacancies`): добавь 2 → видны на `/vacancies` витрины
 - [ ] Отзывы (`/content/reviews`): добавь 3 → секция reviews на главной
+- [ ] [NEG] [P1] Фото >20MB → client-side ошибка до upload (аналогично разделу 3.2.2)
+- [ ] [NEG] [P1] Файл неверного MIME → ошибка валидации
+- [ ] [HP] Фото ≤20MB правильного MIME → загружается успешно
 
 ### 3.14 Команда и роли (модуль `customRoles`, `/team/{members,roles}`)
 
@@ -608,20 +695,37 @@
 #### 3.15.2 Уведомления (`/settings/notifications`)
 
 - [ ] **Email**: задай адрес (твой реальный с +-алиасом `you+notify-t1@gmail.com`) → проверь почту после нового заказа
-- [ ] **Telegram**: подключи через прод-бота:
-  1. Создай Telegram-группу (обычную или с топиками)
-  2. Добавь в неё прод-бота проекта (имя бота показывается в admin UI — `@{botUsername}`)
-  3. В админке: «Подключить Telegram» → следуй инструкции (отправь команду/payload в группу). Под капотом — `telegram-link.getTelegramChatId` (миграция 263 — internal secret в `vault`)
-- [ ] [HP] Новый заказ → сообщение в чат
+#### Telegram multi-subscribers (feat(telegram-subscribers))
+
+Новая модель: несколько подписчиков на уведомления (личные DM + группы), не один chatId.
+
+Привязка:
+1. В `/settings/notifications` → «Добавить подписчика»
+2. Получаешь 6-значный цифровой код (TTL 3 мин), QR-код виден в UI
+3. В личку Bot #1 или в группу с ботом отправь `/start <код>` или просто код
+4. Подписчик добавлен в список
+
+- [ ] Добавь 2 подписчика (один personal DM, один TG-группа)
+- [ ] [HP] Создай заказ → оба получают уведомление
+- [ ] Удали одного подписчика → только второй получает
+- [ ] [EC] Код просрочен (>3 мин) → ошибка привязки
+- [ ] [EC] Один и тот же chat подписан дважды → дедупликация (одно уведомление)
+- [ ] [HP] Новый заказ → сообщение в чат (Bot #1)
 - [ ] [HP] Если задан `telegramThreadId` (топик) — в конкретный топик
 - [ ] [HP] Новая бронь → ссылка на бронь в сообщении (миграция 265)
 - [ ] [CROSS] Уведомления на уровне филиала: задай контакт для Парка → заказ из Парка → в чат Парка
-- [ ] **Отключи Telegram** → заказы создаются, сообщения не идут
+- [ ] **Отключи Telegram** (удали всех подписчиков) → заказы создаются, сообщения не идут
 
 #### 3.15.3 Юридические (`/settings/legal`)
 
 - [ ] Заполни `legalInfo`: `legalName`, `inn`, `ogrn`, `legalAddress`, `privacyEmail`
 - [ ] [HP] `isLegalInfoComplete` → true (нужно для прохождения определённых onboarding-checks)
+
+#### Legal compliance gate (feat(storefront-auth-compliance))
+
+- [ ] [HP] [P1] Заполни все поля legalInfo → `isLegalInfoComplete = true` → TG Login на витрине доступен
+- [ ] [NEG] [P1] Очисти `legalName` / `inn` → `isLegalInfoComplete = false` → TG Login заблокирован, показывается сообщение
+- [ ] [HP] При TG Login показывается consent-текст со ссылкой на `/legal/privacy`
 
 #### 3.15.4 Юридические страницы (`/legal/{oferta,privacy}`)
 
@@ -884,9 +988,22 @@
 
 ### 5.13 Customers + история записей
 
-- [ ] Регистрация клиента: `client+t3@example.com` → запись на услугу
+- [ ] Регистрация клиента: через TG Login на витрине T3 → запись на услугу
 - [ ] [HP] В `/account/appointments` (на витрине) клиент видит свою историю
 - [ ] [HP] Может отменить future-запись если разрешено настройками
+
+#### Отмена записи клиентом (fix(appointment-rpc-hardening))
+
+- [ ] [HP] В `/account/appointments` будущая запись имеет кнопку «Отменить»
+- [ ] [HP] Клик → вызывается `cancel_by_customer` RPC → запись переходит в cancelled
+- [ ] [HP] [P1] В таймлайне admin запись исчезает / меняет цвет
+- 🔍 **Агент проверяет**: `SELECT event_type FROM appointment_events WHERE appointment_id='<id>' ORDER BY created_at DESC LIMIT 1` → должен быть `'cancelled_by_customer'`
+- [ ] [NEG] Прошедшая запись → кнопки отмены нет
+- [ ] [NEG] Попытка создать запись с отрицательной длительностью через API → CHECK constraint
+
+#### Storefront account/appointments (feat(storefront-account-services))
+
+- [ ] [HP] T3 `/account/` для клиента: войди через TG на витрине T3 → `/account/appointments` показывает историю записей
 
 ### 5.14 Custom Roles для services
 
@@ -906,7 +1023,46 @@
 - [ ] Включи обратно
 - [ ] [NEG] Выключить `branches` при наличии записей в разных филиалах → проверь поведение
 
-### 5.16 Что НЕ должно работать на T3
+### 5.16 Telegram-уведомления о записях и заявках (migration 299)
+
+> ⚠️ Перед тестом: применить migration 299 + задеплоить `notify-appointment-group.post.ts`
+> Vault secrets: `telegram_notify_appointment_group_url` (или выводится из базового `telegram_notify_url`)
+
+#### 5.16.1 Новая запись (status='active')
+
+🤖 **Агент готовит**: TG подписчик подключён к T3
+
+👤 **Ты**: создай запись в таймлайне (услуга + мастер + клиент + дата)
+
+🔍 **Агент проверяет**:
+```sql
+SELECT id, status, customer_name FROM appointment_groups ORDER BY created_at DESC LIMIT 1;
+```
+
+- [ ] [HP] В TG приходит «✨ Новая запись» с именем клиента, датой, услугами, мастером, итогом
+- [ ] [HP] Несколько услуг в визите → все перечислены в сообщении
+
+#### 5.16.2 Новая заявка (status='request')
+
+👤 **Ты**: отправь заявку с витрины (без выбора слота)
+
+- [ ] [HP] В TG приходит «📩 Новая заявка» с именем, телефоном, перечнем услуг
+
+#### 5.16.3 Race-guard
+
+🤖 **Агент готовит**: создаёт группу через SQL, сразу же меняет status='cancelled'
+
+- [ ] [HP] [P1] TG-уведомление **НЕ** приходит (триггер отфильтровал отменённую группу)
+
+#### 5.16.4 Fallback URL
+
+🔍 **Агент проверяет**:
+```sql
+SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'telegram_notify_appointment_group_url';
+-- Если NULL — должен работать через базовый URL
+```
+
+### 5.17 Что НЕ должно работать на T3
 
 - [ ] В навигации нет /menu, /orders, /kitchen, /tables, /reservations, /promotions
 - [ ] Прямой URL `/menu` → no-access / redirect
@@ -1023,24 +1179,19 @@
   ```
 - [ ] [HP] `subscription.status` → `active`, badge снят, витрина открыта
 
-### 6.7 Payment webhook security (Edge Function `payment-webhook`)
+### 6.7 Payment webhook — отключён (kill-switch)
 
-- [ ] Открой Supabase Dashboard → Edge Functions → `payment-webhook` → Logs (вкладку держи открытой)
-- [ ] [NEG] [P0] curl без подписи:
+> `chore(payment-webhook): kill-switch для отключённой ЮKassa-интеграции`
+
+ЮKassa интеграция отключена. Endpoint возвращает заглушку.
+
+- [ ] [NEG] [P0] curl POST на payment-webhook → **503 / disabled** (не 200, не изменений в transactions)
   ```bash
   curl -i -X POST 'https://<supabase-project>.supabase.co/functions/v1/payment-webhook' \
        -H 'Content-Type: application/json' \
        -d '{"event": "payment.succeeded", "amount": 999999, "tenantId": "<t4_uuid>"}'
   ```
-  Ожидание: **401/403**. В Logs — запись с reason=missing/invalid signature. В `transactions` — ничего нового.
-- [ ] [NEG] [P0] curl с фейковой подписью (любая строка в `X-Signature` или подобном заголовке провайдера):
-  ```bash
-  curl -i -X POST ... -H 'X-Signature: deadbeef' -d '{...}'
-  ```
-  Ожидание: **401/403**, баланс не меняется.
-- [ ] [HP] [P1] Если у провайдера есть test-mode/sandbox cards — инициируй настоящий тестовый платёж (через backoffice или фронт). Webhook приходит, подпись валидна → `transactions` пополняется, `balance` растёт.
-- [ ] [P0] Между фейками сделай SELECT по `transactions` — там не должно появляться записей от инъекций.
-- [ ] (См. `project_security_audit.md` в memory — этот webhook помечен как critical, фикс должен быть применён)
+- [ ] [P0] `SELECT * FROM transactions WHERE created_at > now() - interval '1 min'` после curl → пусто
 
 ### 6.8 Billing protection (миграция 266 `billing_rpc_lockdown`)
 
@@ -1112,6 +1263,7 @@
 
 #### 7.1.5 Backoffice auth
 
+- [ ] [HP] [P0] Открой backoffice в incognito без credentials → **Basic Auth prompt** (не 200, не JSON). После `feat(backoffice-auth)`: восстановлен Basic Auth middleware.
 - [ ] [P1] Открой backoffice URL в incognito без креденшелов → ожидание: 401/403/login-redirect. Auth-механизм зависит от деплоя (Basic Auth, OIDC, или middleware). Внутренний код использует service-role клиент (`apps/backoffice/server/utils/adminClient.ts`), но без авторизации до него не доходит.
 - [ ] [NEG] [P0] Прямой curl на backoffice API endpoint (например `/api/plans`) без авторизации → 401
 
@@ -1121,6 +1273,18 @@
 - [ ] [NEG] [P1] **Forgot password** (`apps/storefront/server/api/auth/forgot-password.post.ts`): спам-запросы → rate limit (та же RPC, отдельный bucket)
 - [ ] [NEG] [P1] **Lander register** (`apps/landing/server/api/register.post.ts`): in-memory rate limiter — 5 регистраций / IP / час. Попробуй 6-ю → 429 «Слишком много попыток регистрации»
 - [ ] [NEG] [P2] **Honeypot**: в DevTools → Elements найди скрытое поле `name="website"` в форме регистрации → заполни любым значением → submit → 400 «Invalid request»
+- [ ] [NEG] [P1] **Per-email rate limit**: попробуй зарегистрировать один email 6 раз (в т.ч. с разных IP):
+  🤖 **Агент симулирует**:
+  ```bash
+  for i in {1..6}; do
+    curl -X POST 'https://fastio.ru/api/register' \
+      -H "Content-Type: application/json" \
+      -H "X-Forwarded-For: 10.0.0.$i" \
+      -d '{"name":"Test","slug":"test-rl-'$i'","email":"you+t1@gmail.com"}'
+    echo "Attempt $i: $?"
+  done
+  # Ожидание: после 5-й попытки — 429 (per-email limit, независимо от IP)
+  ```
 
 #### 7.1.7 RPC lockdown (миграции 266, 263)
 
@@ -1134,6 +1298,8 @@
 - [ ] Смена статуса в окне A → окно B обновляется
 - [ ] Свернуть вкладку B на 5 мин → развернуть → данные актуальны
 - [ ] **Разрыв WS**: DevTools → Network → Offline 30 сек → Online → переподключение, данные подтягиваются
+- [ ] [HP] [P1] **Auto-reconnect**: DevTools → Network → Offline 30 сек → Online → данные подтягиваются автоматически без F5 (`fix(realtime-auto-reconnect)`)
+- [ ] [HP] [P2] **Tenant cache TTL**: смени настройку в admin (например `primaryColor`) → через ~30 сек (cache TTL) изменение появляется на витрине без перезагрузки admin (`perf(tenant-cache)`)
 - [ ] [EC] [P2] Admin + Kitchen в разных окнах → одинаковые realtime события
 - [ ] [HP] [P1] T3: новая заявка appointment → звук в `/appointments/visits`
 
@@ -1215,9 +1381,9 @@
 
 ### 8.2 Промо / купоны / race / time-bound
 
-- [ ] [P0] **`used_count` не откатывается при отмене заказа**.
+- [ ] [P0] **`used_count` декрементируется при отмене заказа** (`fix(promo-code-lifecycle-atomic)`).
   Создай заказ с промокодом `LIMIT5` (usage_limit=5, usedCount=0). После создания `usedCount=1`. Отмени заказ через admin.
-  - [ ] `SELECT used_count FROM promo_codes WHERE code='LIMIT5'` → **остался 1** (не уменьшился). Это by-design — комментарий в `042_increment_promo_code_usage.sql`. Зафиксируй как известное поведение.
+  - [ ] `SELECT used_count FROM promo_codes WHERE code='LIMIT5'` → **вернулся в 0** — при отмене заказа счётчик декрементируется (атомарный inc/decrement в одной транзакции).
 - [ ] [P0] **Race по usage_limit**. Поставь `LIMIT5` в состояние `used_count=4, usage_limit=5`. Открой 3 incognito-вкладки, в каждой собери корзину с этим промокодом. **Одновременно** нажми «Оформить» в 3 вкладках:
   - [ ] Должен пройти ровно **1**, остальные две → отказ «Промокод исчерпан» (либо race-error, но не «used_count=7»)
 - [ ] [P0] **Промокод применён → корзина уменьшилась < minOrderAmount → промокод отвалился?**
@@ -1422,6 +1588,12 @@
 - [ ] Все новые/переработанные фичи отражены в `packages/kb/content/*.md` (CLAUDE.md правило)
 - [ ] AGENTS.md в `apps/admin/features/<X>` и `apps/storefront/features/<X>` актуален
 - [ ] `pnpm features:validate` и `pnpm storefront-features:validate` проходят
+
+### 9.6 pg_cron monitor (feat(edge-alerts-monitor))
+
+- [ ] Supabase Dashboard → Database → Cron Jobs → найди job `monitor-edge-errors` → статус Active
+- [ ] [P1] `last_run` не null и без ошибок
+- [ ] [P2] Спровоцируй ошибку edge function (неверный secret) → через ~1 мин в ops-чат (Bot #3) приходит alert
 
 ### 9.5 Уборка после тестов
 
