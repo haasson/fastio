@@ -23,12 +23,12 @@ WAL'ами или нужна максимальная простота — fallb
 |---|---|
 | **WAL archiving (continuous)** | `archive_command` → wal-g → S3 каждые 60s через `/etc/postgresql-custom/wal-push.sh` |
 | `twS3:fastio-backups/wal-g/` | wal-g basebackups + WAL сегменты (brotli-сжатые) |
-| `/usr/local/bin/fastio-walg-basebackup.sh` | Weekly воскресенье 02:30 UTC — базовый снимок БД |
+| `/usr/local/bin/fastio-walg-basebackup.sh` | Weekly вс 20:00 UTC (03:00 Барнаул) — базовый снимок БД |
 | **`/usr/local/bin/fastio-restore-pitr.sh`** | **PITR restore — до точной секунды.** Этот скрипт — основной инструмент при инцидентах |
-| `/usr/local/bin/fastio-backup.sh db` | Daily 03:00 UTC: `pg_dump → S3` (вторая линия защиты) |
+| `/usr/local/bin/fastio-backup.sh db` | Daily 19:00 UTC (02:00 Барнаул): `pg_dump → S3` (вторая линия защиты) |
 | `/usr/local/bin/fastio-restore-prod.sh` | Logical restore из pg_dump (когда PITR не подходит / S3-WAL недоступны) |
-| `/usr/local/bin/fastio-restore-test.sh` | Monthly 1 числа 05:00 UTC: автотест что dump восстанавливается + Telegram alert |
-| `/usr/local/bin/fastio-walg-restore-test.sh` | Monthly 1 числа 06:00 UTC: end-to-end PITR test (basebackup-fetch + recovery + verify) + Telegram alert |
+| `/usr/local/bin/fastio-restore-test.sh` | Monthly 1 числа 21:00 UTC (04:00 Барнаул): автотест что dump восстанавливается + Telegram alert |
+| `/usr/local/bin/fastio-walg-restore-test.sh` | Monthly 1 числа 22:00 UTC (05:00 Барнаул): end-to-end PITR test + Telegram alert |
 | `/usr/local/bin/fastio-restore-storage.sh` | Storage restore (фото блюд) из weekly snapshot |
 | `/var/backups/fastio/` | Локальные dump'ы и safety-snapshot'ы (PGDATA tar'ы, safety pg_dump'ы) |
 | `/etc/postgresql-custom/wal-g.env` | S3 creds для wal-g (chmod 600 postgres:postgres) |
@@ -300,8 +300,8 @@ SELECT max(created_at) FROM orders;
 
 **Два automatic restore-теста** каждый месяц на VPS, оба шлют Telegram alert при провале:
 
-1. **`fastio-restore-test.sh`** (1 число 05:00 UTC) — logical restore из daily pg_dump в изолированный Postgres. Подтверждает что daily dump'ы валидные.
-2. **`fastio-walg-restore-test.sh`** (1 число 06:00 UTC) — end-to-end PITR через wal-g: `backup-fetch LATEST` → recovery с `restore_command` → promote → verify schema. Подтверждает что вся wal-g цепочка работает (S3 reachable, ключи валидные, basebackup корректный, WAL'ы применяются).
+1. **`fastio-restore-test.sh`** (1 число 21:00 UTC / 04:00 Барнаул) — logical restore из daily pg_dump в изолированный Postgres. Подтверждает что daily dump'ы валидные.
+2. **`fastio-walg-restore-test.sh`** (1 число 22:00 UTC / 05:00 Барнаул) — end-to-end PITR через wal-g: `backup-fetch LATEST` → recovery с `restore_command` → promote → verify schema. Подтверждает что вся wal-g цепочка работает (S3 reachable, ключи валидные, basebackup корректный, WAL'ы применяются).
 
 **Manual run:**
 ```bash
