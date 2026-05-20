@@ -105,7 +105,7 @@ import AddonsSection from './form/AddonsSection.vue'
 import IngredientsSection from './form/IngredientsSection.vue'
 import NutritionSection from './form/NutritionSection.vue'
 import SettingsSection from './form/SettingsSection.vue'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const props = defineProps<{
   modelValue: boolean

@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('~/shared/utils/reportError', () => ({
+vi.mock('@fastio/shared/observability', () => ({
   reportError: vi.fn(),
 }))
 
@@ -17,6 +17,7 @@ vi.mock('#imports', () => ({
 
 vi.mock('../../../utils/telegramFetch', () => ({
   telegramFetch: vi.fn(async () => ({ json: async () => ({ ok: true }) })),
+  telegramApiUrl: (token: string, method: string) => `https://api.telegram.org/bot${token}/${method}`,
 }))
 
 vi.mock('../../../utils/auth', () => ({

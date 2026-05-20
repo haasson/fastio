@@ -1,9 +1,9 @@
 import { validateAndNormalizeRussianPhone } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
-import { getClientIp } from '../../utils/clientIp'
+import { getClientIp } from '@fastio/shared/server'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 // Простая проверка вида user@host.tld — ровно один @, точка в host. Длиной до 254

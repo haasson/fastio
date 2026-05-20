@@ -1,7 +1,7 @@
 import { defineEventHandler, createError, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { getAdminClient } from '../utils/adminClient'
-import { getClientIp } from '../utils/clientIp'
+import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../utils/enforceRateLimit'
 
 type RegisterBody = {

@@ -84,7 +84,7 @@ import type { DadataSuggestion } from '~/shared/composables/useDadataSuggestions
 import { useDadataSuggestions } from '~/shared/composables/useDadataSuggestions'
 import { FsInput, FsAlert, FsDropdownList, FsField } from '@fastio/public-ui'
 import { validationRules } from '@fastio/kit'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const emit = defineEmits<{ verified: [] }>()
 

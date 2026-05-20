@@ -6,14 +6,30 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./server": "./src/server/index.ts",
+    "./observability": "./src/observability/index.ts",
     "./configs/eslint": "./configs/eslint.js"
   },
   "scripts": {
     "test": "vitest",
     "test:run": "vitest run"
   },
+  "peerDependencies": {
+    "@sentry/nuxt": "^10.0.0",
+    "h3": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/nuxt": {
+      "optional": true
+    },
+    "h3": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "vue": "^3.5.0",
+    "h3": "^1.15.0",
+    "@sentry/nuxt": "^10.47.0",
     "@eslint/js": "^9.35.0",
     "@stylistic/eslint-plugin": "^5.3.1",
     "eslint-plugin-vue": "^10.4.0",

@@ -1,6 +1,6 @@
 import { getTenantDb } from '../../../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../../../utils/customerAuth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { todayInTz, nowTimeInTz, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {

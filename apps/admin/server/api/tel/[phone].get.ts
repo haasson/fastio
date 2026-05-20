@@ -1,5 +1,5 @@
 import { defineEventHandler, getRouterParam, sendRedirect, createError } from 'h3'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const PHONE_FORMAT = /^\+?\d+$/
 

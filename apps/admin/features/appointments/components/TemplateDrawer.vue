@@ -139,7 +139,7 @@ import { useScheduleConflictCheck } from '../composables/useScheduleConflictChec
 import {
   buildSlotDataFromWeeklyTemplate, buildSlotDataFromShiftTemplate,
 } from '../utils/scheduleConflictCheck'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const props = defineProps<{
   modelValue: boolean

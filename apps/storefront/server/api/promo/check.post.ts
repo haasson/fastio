@@ -1,5 +1,5 @@
 import { getTenantDb } from '../../utils/tenantDb'
-import { getClientIp } from '../../utils/clientIp'
+import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
 
 export default defineEventHandler(async (event) => {

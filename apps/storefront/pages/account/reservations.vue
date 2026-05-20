@@ -68,7 +68,7 @@ import ReservationStatusBadge from '~/features/booking/components/ReservationSta
 import { useAuthStore } from '~/features/auth'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { useToast } from '~/shared/composables/useToast'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import type { Reservation } from '@fastio/shared'
 import { formatDateTime, pluralize } from '@fastio/shared'
 

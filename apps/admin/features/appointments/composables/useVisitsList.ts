@@ -10,7 +10,7 @@ import type {
 } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useMessage } from '@fastio/ui'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import type { VisitFilter } from '../api/visits'
 
 export type { VisitListRow, InboxRow, InboxFilter, VisitAggregateStatus }

@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import type { Tenant } from '@fastio/shared'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { getServerSupabase, mapTenant } from '../utils/supabase'
 import { lookupTenantByHost } from '../utils/tenantCache'
 

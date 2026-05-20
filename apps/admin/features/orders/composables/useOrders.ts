@@ -7,7 +7,7 @@ import { orderEvents } from './useOrdersChannel'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { useKitchenStatusBlock } from '~/features/kitchen'
 import { useAuditLog } from '~/features/audit-log'
 

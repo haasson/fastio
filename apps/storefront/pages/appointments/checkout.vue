@@ -105,7 +105,7 @@ import ApptReminderOffer from '~/features/appointments/components/ApptReminderOf
 import { useCartStore } from '~/features/cart'
 import { useSelectedBranchStore } from '~/features/branch'
 import { useToast } from '~/shared/composables/useToast'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { useResourceLabel } from '~/features/services-catalog'
 
 type Step = 'date' | 'slots' | 'request' | 'contact' | 'success'

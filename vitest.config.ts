@@ -11,17 +11,16 @@ export default defineConfig({
       'pinia': resolve(__dirname, 'apps/admin/node_modules/pinia'),
       'vue-router': resolve(__dirname, 'apps/admin/test-utils/vue-router-stub.ts'),
       '#imports': resolve(__dirname, 'apps/admin/test-utils/nuxt-imports-stub.ts'),
-      // Транзитный алиас для перенесённых admin-utils (Phase 5.2): storefront-тесты
-      // и server-код мокают/импортят '~/utils/reportError', т.к. vitest alias `~`
-      // указывает на apps/admin. Удалить после storefront-миграции.
-      '~/utils/reportError': resolve(__dirname, 'apps/admin/shared/utils/reportError.ts'),
       '~': resolve(__dirname, 'apps/admin'),
+      // Subpath-аliasы должны идти перед основным @fastio/shared
+      '@fastio/shared/server': resolve(__dirname, 'packages/shared/src/server/index.ts'),
+      '@fastio/shared/observability': resolve(__dirname, 'packages/shared/src/observability/index.ts'),
       '@fastio/shared': resolve(__dirname, 'packages/shared/src'),
       '@fastio/ui': resolve(__dirname, 'packages/ui/src'),
       '@fastio/icons': resolve(__dirname, 'packages/icons/src'),
       '@fastio/kit': resolve(__dirname, 'packages/kit/src'),
       // Прямой путь в pnpm store — при обновлении h3 обновить версию здесь вручную (см. TECHDEBT.md)
-      'h3': resolve(__dirname, 'node_modules/.pnpm/h3@1.15.5/node_modules/h3/dist/index.mjs'),
+      'h3': resolve(__dirname, 'node_modules/.pnpm/h3@1.15.11/node_modules/h3/dist/index.mjs'),
     },
   },
   test: {

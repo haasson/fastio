@@ -7,7 +7,7 @@ import { fetchTenantContext, formatContextForPrompt, type AiContext } from '~/se
 import { createAiTools } from '~/server/ai/tools'
 import { requireMemberOfTenant } from '~/server/utils/auth'
 import { getServerSupabase } from '~/server/utils/supabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const STREAM_TIMEOUT_MS = 60_000
 const RL_USER_MAX = 30

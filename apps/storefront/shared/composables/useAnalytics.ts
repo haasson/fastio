@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { useHead } from 'nuxt/app'
 import type { TenantSeo } from '@fastio/shared'
 import { GA_ID_RE, YM_ID_RE } from '@fastio/shared'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 // ID идут в inline-script через ${interpolation}, поэтому интерполируем
 // ТОЛЬКО после strict-валидации — иначе manager-аккаунт получает arbitrary JS

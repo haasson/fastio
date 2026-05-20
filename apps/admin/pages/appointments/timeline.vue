@@ -75,7 +75,7 @@ import { useBranchStore } from '~/shared/stores/branch'
 import { useAppointmentSettingsStore, useAppointmentViewScope, appointmentBus, buildTimelineAvailability, type TimelineAvailability, useTimelineMoveBlocker, useEditorCompetencies } from '~/features/appointments'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useGate } from '~/shared/plan/useGate'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import AppointmentTimelineGrid from '~/features/appointments/components/AppointmentTimelineGrid.vue'
 import MoveAppointmentConfirmModal, { type MovePending } from '~/features/appointments/components/MoveAppointmentConfirmModal.vue'
 

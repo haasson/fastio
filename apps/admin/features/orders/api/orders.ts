@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Order, OrderItem, OrderDeliveryType, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import { normalizePhone, orderItemKey } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import type { OrderRow, OrderItemRow } from '~/shared/data/db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
 

@@ -66,7 +66,7 @@ import { FsDialog, FsField, FsForm, FsInput, FsTextarea, FsButton, FsDropdownLis
 import { validationRules } from '@fastio/kit'
 import type { DadataSuggestion } from '~/shared/composables/useDadataSuggestions'
 import { useDadataSuggestions } from '~/shared/composables/useDadataSuggestions'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const props = defineProps<{
   address?: CustomerAddress | null

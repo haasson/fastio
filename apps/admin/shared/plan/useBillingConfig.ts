@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { DEFAULT_TRIAL_DAYS } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const trialDays = ref(DEFAULT_TRIAL_DAYS)
 const loaded = ref(false)

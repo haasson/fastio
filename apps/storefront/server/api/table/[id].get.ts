@@ -1,6 +1,6 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { isSecureRequest } from '../../utils/isSecureRequest'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 // PREPROD-263: сократили TTL cookie `fastio_table` с 24h до 6h — середина
 // рабочей смены. Гость может сидеть за столом часами, но 6h — разумный потолок:

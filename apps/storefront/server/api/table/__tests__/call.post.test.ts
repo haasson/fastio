@@ -55,7 +55,7 @@ vi.mock('../../../utils/tenantDb', () => ({
 }))
 
 const mockReportError = vi.fn()
-vi.mock('~/shared/utils/reportError', () => ({
+vi.mock('@fastio/shared/observability', () => ({
   reportError: (...args: unknown[]) => mockReportError(...args),
 }))
 

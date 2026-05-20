@@ -114,7 +114,7 @@ import { useTerms } from '~/features/legal'
 import { buildAddonColumns, buildAddonPresetColumns } from '~/columns/addons'
 import AddonFormModal from '~/features/menu/components/AddonFormModal.vue'
 import AddonPresetFormModal from '~/features/menu/components/AddonPresetFormModal.vue'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const db = useDatabase()
 const tenantStore = useTenantStore()

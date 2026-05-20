@@ -10,7 +10,7 @@ import {
   type ServiceCartItem,
 } from '../stores/cart'
 
-vi.mock('~/shared/utils/reportError', () => ({ reportError: vi.fn() }))
+vi.mock('@fastio/shared/observability', () => ({ reportError: vi.fn() }))
 
 // --- helpers ---
 
@@ -233,7 +233,7 @@ describe('useCartStore', () => {
     })
 
     it('kind mismatch — логирует ошибку и не меняет item', async () => {
-      const { reportError } = await import('~/shared/utils/reportError')
+      const { reportError } = await import('@fastio/shared/observability')
       store.add(makeDish())
       store.replace(0, makeService())
       expect(store.items[0].kind).toBe('dish')
@@ -473,7 +473,7 @@ describe('useCartStore', () => {
     })
 
     it('broken JSON в localStorage — не падает, корзина пустая, restored=true', async () => {
-      const { reportError } = await import('~/shared/utils/reportError')
+      const { reportError } = await import('@fastio/shared/observability')
       localStorage.setItem('cart', '{{invalid-json')
 
       setActivePinia(createPinia())
@@ -497,7 +497,7 @@ describe('useCartStore', () => {
 
     // PREPROD-227: zod-валидация. Item с битыми типами → отбрасывается, не валит весь стор.
     it('item с невалидным price (строка вместо числа) — отбрасывается с reportError', async () => {
-      const { reportError } = await import('~/shared/utils/reportError')
+      const { reportError } = await import('@fastio/shared/observability')
       const good = makeDish({ dishId: 'good' })
       const bad = { ...makeDish({ dishId: 'bad' }), price: 'not-a-number' }
       localStorage.setItem('cart', JSON.stringify([good, bad]))
@@ -512,7 +512,7 @@ describe('useCartStore', () => {
     })
 
     it('item с отрицательным quantity — отбрасывается', async () => {
-      const { reportError } = await import('~/shared/utils/reportError')
+      const { reportError } = await import('@fastio/shared/observability')
       localStorage.setItem('cart', JSON.stringify([
         { ...makeDish(), quantity: -3 },
       ]))
@@ -526,7 +526,7 @@ describe('useCartStore', () => {
     })
 
     it('localStorage payload не массив — корзина пустая + reportError', async () => {
-      const { reportError } = await import('~/shared/utils/reportError')
+      const { reportError } = await import('@fastio/shared/observability')
       localStorage.setItem('cart', JSON.stringify({ items: [] }))
 
       setActivePinia(createPinia())

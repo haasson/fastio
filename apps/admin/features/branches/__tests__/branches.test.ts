@@ -6,7 +6,7 @@ import { branchesApi, mapBranch } from '../api/branches'
 // без реального улёта в Sentry. Путь должен совпадать с импортом в branches.ts.
 const reportErrorMock = vi.fn()
 
-vi.mock('~/shared/utils/reportError', () => ({
+vi.mock('@fastio/shared/observability', () => ({
   reportError: (...args: unknown[]) => reportErrorMock(...args),
 }))
 

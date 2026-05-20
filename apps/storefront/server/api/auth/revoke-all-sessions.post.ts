@@ -2,7 +2,7 @@ import { defineEventHandler, deleteCookie } from 'h3'
 import { getAuthenticatedContext } from '../../utils/customerAuth'
 import { getTenantDb } from '../../utils/tenantDb'
 import { TG_SESSION_COOKIE_NAME } from '../../utils/telegramAuth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 /**
  * PREPROD-210: «Выйти со всех устройств».

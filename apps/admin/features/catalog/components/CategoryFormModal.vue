@@ -96,7 +96,7 @@ import type { Category, CategoryKind, CategoryType, DishTagDefinition } from '@f
 import { slugify, CATEGORY_COLOR_PALETTE, getCategoryColorHex, getNextCategoryColor } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useGate } from '~/shared/plan/useGate'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 import ColorPicker from '~/shared/ui/components/ColorPicker.vue'
 

@@ -68,7 +68,7 @@ import ApptStatusBadge from '~/features/appointments/components/ApptStatusBadge.
 import { useAuthStore } from '~/features/auth'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { useToast } from '~/shared/composables/useToast'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import type { Appointment } from '@fastio/shared'
 import { formatDateTime } from '@fastio/shared'
 

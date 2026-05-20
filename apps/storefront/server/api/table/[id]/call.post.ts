@@ -1,4 +1,4 @@
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { getTenantDb } from '../../../utils/tenantDb'
 
 const DEFAULT_CALL_TYPE_NAME = 'Вызвать официанта'

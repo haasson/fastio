@@ -46,7 +46,7 @@ import { ref, computed, watch } from 'vue'
 import { UiModal, UiForm, UiInput, UiInputNumber } from '@fastio/ui'
 import type { Addon } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const props = defineProps<{
   modelValue: boolean

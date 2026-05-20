@@ -55,7 +55,7 @@ import PageShell from '~/shared/ui/sections/PageShell.vue'
 import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 import { useAuthStore } from '~/features/auth'
 import { useConfirm } from '~/shared/composables/useConfirm'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()

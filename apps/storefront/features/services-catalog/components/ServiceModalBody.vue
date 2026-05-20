@@ -26,7 +26,7 @@ import { FsButton, FsSkeleton } from '@fastio/public-ui'
 import DishChips from '~/shared/ui/sf/domain/DishChips.vue'
 import { useCartStore } from '~/features/cart'
 import { useSelectedBranchStore } from '~/features/branch'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { useResourceLabel } from '../composables/useResourceLabel'
 import { useToast } from '~/shared/composables/useToast'
 

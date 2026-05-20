@@ -3,7 +3,7 @@ import type { Category, CategoryData, CategoryKind, CategoryType } from '@fastio
 import { mapCategory } from '@fastio/shared'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { useAuditLog } from '~/features/audit-log'
 
 export const useCategories = (tenantId: Ref<string>, kind: CategoryKind = 'food') => {

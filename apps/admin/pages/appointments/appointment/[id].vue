@@ -74,7 +74,7 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useGate } from '~/shared/plan/useGate'
 import { useAppointmentViewScope } from '~/features/appointments'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { storeToRefs } from 'pinia'
 
 const route = useRoute()

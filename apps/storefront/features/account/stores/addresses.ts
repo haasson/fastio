@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CustomerAddress } from '@fastio/shared'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { NotAuthenticatedError } from '~/shared/utils/errors'
 
 export const useAddressesStore = defineStore('addresses', () => {

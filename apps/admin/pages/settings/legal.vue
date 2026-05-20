@@ -111,7 +111,7 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
 import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
 import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const tenantStore = useTenantStore()
 const db = useDatabase()

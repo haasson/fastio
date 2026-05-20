@@ -5,7 +5,7 @@ import { visitsBus } from './useVisitsChannel'
 import { useAppointmentInboxCounter } from './useAppointmentInboxCounter'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useBranchStore } from '~/shared/stores/branch'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 // Счётчик «Новых» в инбоксе. После 230 заявка — это визит со status='request',
 // отдельной таблицы appointment_requests больше нет. countNew учитывает оба

@@ -1,6 +1,6 @@
 import { getTenantDb } from '../../../../utils/tenantDb'
 import { getAuthenticatedContextWithCustomer } from '../../../../utils/customerAuth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 // PREPROD-143: отмена записи клиентом идёт через RPC cancel_appointment_by_customer.
 // RPC берёт row-lock на запись, проверяет ownership/allow_cancel_snapshot,

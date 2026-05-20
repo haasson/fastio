@@ -1,7 +1,7 @@
 import { mapCustomerAddress } from '../../../utils/supabase'
 import { getAuthenticatedContext } from '../../../utils/customerAuth'
 import { validateAddressTextFields } from './_validate'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export default defineEventHandler(async (event) => {
   const { customerId, supabase } = await getAuthenticatedContext(event)

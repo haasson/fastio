@@ -11,7 +11,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockReportError = vi.fn()
 
-vi.mock('~/shared/utils/reportError', () => ({
+vi.mock('@fastio/shared/observability', () => ({
   reportError: (...args: unknown[]) => mockReportError(...args),
 }))
 

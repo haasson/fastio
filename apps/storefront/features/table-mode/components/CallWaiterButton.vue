@@ -40,7 +40,7 @@ import { ref, onMounted } from 'vue'
 import { FsDrawer } from '@fastio/public-ui'
 import { BellRing } from 'lucide-vue-next'
 import { useToast } from '~/shared/composables/useToast'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const props = defineProps<{ tableId: string }>()
 

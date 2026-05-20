@@ -3,7 +3,7 @@ import type { ModifierGroupFormData } from '@fastio/shared'
 import { mapModifierGroup } from '../api/modifiers'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export function useModifierGroups(tenantId: Ref<string>) {
   const api = useDatabase()

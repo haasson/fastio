@@ -90,7 +90,7 @@ import BookingSuccess from '~/features/booking/components/BookingSuccess.vue'
 
 import { useBooking } from '~/features/booking'
 import useLegalCompliance from '~/shared/composables/useLegalCompliance'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type BookingBranch = BranchPublic
 

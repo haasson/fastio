@@ -2,7 +2,7 @@ import { defineNuxtPlugin, navigateTo, useRuntimeConfig } from '#imports'
 import { createClient } from '@supabase/supabase-js'
 import { useAuthStore } from '~/shared/stores/auth'
 import { INVITE_PENDING_KEY, RECOVERY_PENDING_KEY } from '~/shared/utils/constants'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()

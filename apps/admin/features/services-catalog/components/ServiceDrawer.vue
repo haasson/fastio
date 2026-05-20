@@ -139,7 +139,7 @@ import { useAppointmentSettingsStore } from '~/features/appointments'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTags } from '~/features/catalog'
 import { useBranchToggle } from '~/features/branches'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import { BasicInfoSection } from '~/features/catalog'
 import { TagsSection } from '~/features/catalog'
 

@@ -5,7 +5,7 @@ import { useServicesStore } from '~/features/services-catalog'
 import { useConfirm, type ConfirmSection } from '~/shared/composables/useConfirm'
 import { useToast } from '~/shared/composables/useToast'
 import { getMissingBranchDishNames } from '~/features/cart'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 /**
  * Смена филиала в режиме per_branch.

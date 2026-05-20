@@ -156,6 +156,8 @@ export const PROJECTS = {
     sources: [
       { dir: 'src/utils', exclude: ['__tests__'] },
       { dir: 'src/composables' },
+      { dir: 'src/server' },
+      { dir: 'src/observability' },
     ],
     assign: () => 'main',
     maps: ['main'],

@@ -3,7 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { telegramApiUrl, telegramFetch } from '../../utils/telegramFetch'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 const LINK_CODE_REGEX = /^\d{6}$/
 const RATE_LIMIT_MAX_ATTEMPTS = 5

@@ -46,7 +46,7 @@ import { supportStatusMap as statusMap } from '~/shared/utils/supportStatus'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { supportEvents } from '../composables/useSupportChannel'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 import MessageBubble from './MessageBubble.vue'
 import ChatInput from './ChatInput.vue'
 

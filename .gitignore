@@ -24,3 +24,6 @@ test-results/
 playwright-report/
 playwright/.cache/
 tests/e2e/.fixtures.json
+
+# Claude Code worktrees
+.claude/worktrees/

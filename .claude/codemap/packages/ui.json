@@ -2,14 +2,14 @@
   "project": "packages/ui",
   "submap": "main",
   "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-  "generated_at": "2026-05-13T05:00:58.725Z",
+  "generated_at": "2026-05-20T01:40:07.165Z",
   "stats": {
-    "files": 60,
+    "files": 62,
     "pages": 0,
-    "symbols": 169,
-    "undescribed_files": 0,
+    "symbols": 175,
+    "undescribed_files": 3,
     "undescribed_pages": 0,
-    "undescribed_symbols": 0
+    "undescribed_symbols": 6
   },
   "files": {
     "src/components/UiAlert.vue": {
@@ -124,6 +124,25 @@
           "kind": "component-emits",
           "hash": "4838fa2f",
           "purpose": "Эмиты UiChip: click"
+        }
+      ]
+    },
+    "src/components/UiChipRemove.vue": {
+      "kind": "vue",
+      "hash": "6b2b3dd64d8f",
+      "purpose": null,
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "2a4b513f",
+          "purpose": null
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "4838fa2f",
+          "purpose": null
         }
       ]
     },
@@ -561,6 +580,25 @@
         }
       ]
     },
+    "src/components/UiPickerItem.vue": {
+      "kind": "vue",
+      "hash": "c1d4cc3aee98",
+      "purpose": null,
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c0f98052",
+          "purpose": null
+        },
+        {
+          "name": "emits",
+          "kind": "component-emits",
+          "hash": "4838fa2f",
+          "purpose": null
+        }
+      ]
+    },
     "src/components/UiPicture.vue": {
       "kind": "vue",
       "hash": "800c5fbfee27",
@@ -985,8 +1023,8 @@
     },
     "src/index.ts": {
       "kind": "ts",
-      "hash": "2510746d2fce",
-      "purpose": "Barrel-файл @fastio/ui: реэкспортирует все компоненты, типы и composables библиотеки",
+      "hash": "d899509378ee",
+      "purpose": null,
       "symbols": [
         {
           "name": "*",
@@ -1035,6 +1073,18 @@
           "kind": "re-export",
           "hash": "b0d4bd2d",
           "purpose": "Реэкспорт UiChip"
+        },
+        {
+          "name": "UiChipRemove",
+          "kind": "re-export",
+          "hash": "a9980cf6",
+          "purpose": null
+        },
+        {
+          "name": "UiPickerItem",
+          "kind": "re-export",
+          "hash": "c7f61ee2",
+          "purpose": null
         },
         {
           "name": "UiFilterReset",

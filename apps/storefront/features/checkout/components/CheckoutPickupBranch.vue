@@ -90,7 +90,7 @@ import { computeBranchCompat, type BranchStatus as CompatStatus } from '~/featur
 import { FsHeading, FsSelect, FsSpinner } from '@fastio/public-ui'
 import { formatBranchAddressShort, formatWorkingHours, isOpenNow, DEFAULT_TIMEZONE } from '@fastio/shared'
 import type { BranchPublic, WorkingHoursSchedule, Tenant } from '@fastio/shared'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type BranchStatus = ReturnType<typeof isOpenNow>
 

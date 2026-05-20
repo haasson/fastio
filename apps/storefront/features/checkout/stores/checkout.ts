@@ -7,7 +7,7 @@ import { localDateTimeToUtcIso, addDaysToDateStr, DEFAULT_TIMEZONE, formatPrice 
 import { useCartStore, computeBranchCompat  } from '~/features/cart'
 import { useMenuStore } from '~/features/menu-catalog'
 import { useAuthStore } from '~/features/auth'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type AutoPromo = {
   promotionId: string

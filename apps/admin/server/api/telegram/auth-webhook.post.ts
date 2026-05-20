@@ -12,7 +12,7 @@ import {
 import { getServerSupabase } from '../../utils/supabase'
 import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { telegramApiUrl, telegramFetch } from '../../utils/telegramFetch'
-import { reportError } from '~/shared/utils/reportError'
+import { reportError } from '@fastio/shared/observability'
 
 type TgUser = { id?: number; first_name?: string; last_name?: string; username?: string }
 type TgContact = { phone_number?: string; user_id?: number }

@@ -1,6 +1,6 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
 import { getAdminClient } from '../utils/adminClient'
-import { getClientIp } from '../utils/clientIp'
+import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../utils/enforceRateLimit'
 
 const SLUG_MAX_LENGTH = 63

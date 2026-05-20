@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import { getHeader } from 'h3'
-import { pickClientIp } from '@fastio/shared'
+
+import { pickClientIp } from '../utils/clientIp'
 
 /**
  * Реальный IP клиента для rate-limit / IDOR-guard.
