@@ -65,12 +65,18 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, nextTick, inject, computed, toRefs } from 'vue'
+import { reactive, watch, nextTick, inject, computed, toRefs, defineAsyncComponent } from 'vue'
 import { UiSegmentedControl, UiRadioGroup } from '@fastio/ui'
 import ContentPositionPicker from './ContentPositionPicker.vue'
 import GradientPicker from './GradientPicker.vue'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
-import RichTextEditor from '~/shared/ui/components/RichTextEditor.vue'
+
+// RichTextEditor тянет tiptap (~366 kB). Грузим лениво — редактор живёт
+// только внутри hero-секции на странице appearance.
+const RichTextEditor = defineAsyncComponent(
+  () => import('~/shared/ui/components/RichTextEditor.vue'),
+)
+
 import type { SiteLayout, SiteContent } from '@fastio/shared'
 import { AppearanceFormKey } from '../composables/useAppearanceForm'
 

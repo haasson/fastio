@@ -11,4 +11,5 @@ export * from './composables/useTableCallAlertHandler'
 export * from './composables/useAddDishToTable'
 
 // Utils
-export * from './utils/generateTableQrPdf'
+// generateTableQrPdf НЕ ре-экспортится из barrel — это lazy утилка с
+// dynamic-import jspdf. Импортируется напрямую из TableQrModal.vue.

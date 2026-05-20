@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { UiSkeleton, UiAlert, UiSegmentedControl, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
@@ -109,9 +109,14 @@ import { useDeliveryZoneStore } from '~/features/orders'
 import { useZoneEditor, type ZoneForm } from '~/shared/composables/delivery/useZoneEditor'
 import { useGate } from '~/shared/plan/useGate'
 import AppStorefrontAlert from '~/shared/ui/components/AppStorefrontAlert.vue'
-import DeliveryZoneMap from '~/features/settings/components/DeliveryZoneMap.vue'
 import DeliveryZonePanel from '~/features/settings/components/DeliveryZonePanel.vue'
 import SettingsDelivery from '~/features/settings/components/SettingsDelivery.vue'
+
+// DeliveryZoneMap тащит vue-yandex-maps (~массивный chunk). Лениво грузим,
+// чтобы карта попала в отдельный route-chunk и не в main entry.
+const DeliveryZoneMap = defineAsyncComponent(
+  () => import('~/features/settings/components/DeliveryZoneMap.vue'),
+)
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()

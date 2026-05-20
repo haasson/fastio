@@ -74,14 +74,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, defineAsyncComponent } from 'vue'
 import { UiModal, UiForm, UiSwitch, UiSelect, UiInput } from '@fastio/ui'
 import type { ModalAction } from '@fastio/ui'
 import type { Banner, BannerFormData, Promotion, PromoCode } from '@fastio/shared'
 import { featureLabel } from '@fastio/shared'
 import { useGate } from '~/shared/plan/useGate'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
-import RichTextEditor from '~/shared/ui/components/RichTextEditor.vue'
+
+// RichTextEditor тянет tiptap (~366 kB). Грузим лениво — банн-модалка
+// открывается редко, а редактор показывается ещё реже (только для типов
+// promotion/promo_code).
+const RichTextEditor = defineAsyncComponent(
+  () => import('~/shared/ui/components/RichTextEditor.vue'),
+)
 
 const props = defineProps<{
   modelValue: boolean

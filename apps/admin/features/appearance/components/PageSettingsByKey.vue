@@ -87,10 +87,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { UiSegmentedControl, UiCheckbox } from '@fastio/ui'
-import RichTextEditor from '~/shared/ui/components/RichTextEditor.vue'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
+
+// RichTextEditor тянет tiptap (~366 kB). Грузим лениво — редактор показывается
+// только для вкладок about/delivery страницы appearance.
+const RichTextEditor = defineAsyncComponent(
+  () => import('~/shared/ui/components/RichTextEditor.vue'),
+)
+
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, PageKey, NavPageKey } from '@fastio/shared'
 import { dishDescriptionOptions, mobileDishCardOptions } from '@fastio/shared'

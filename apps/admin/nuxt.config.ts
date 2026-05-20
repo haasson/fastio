@@ -75,7 +75,9 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@vueuse/nuxt', '@sentry/nuxt/module'],
 
-  css: ['~/assets/css/ui.scss', 'vue-yandex-maps/css', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
+  // vue-yandex-maps/css импортируется внутри features/settings/components/DeliveryZoneMap.vue,
+  // чтобы CSS попадал в lazy-chunk вместе с компонентом, а не в main bundle.
+  css: ['~/assets/css/ui.scss', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
 
   runtimeConfig: {
     openaiApiKey: '',
