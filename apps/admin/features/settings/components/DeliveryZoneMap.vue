@@ -112,11 +112,26 @@ import {
   YandexMapControls,
   YandexMapZoomControl,
   YandexMapControlButton,
+  createYmapsOptions,
 } from 'vue-yandex-maps'
 import type { YandexMapListenerSettings } from 'vue-yandex-maps'
+// CSS импортируется здесь (а не в nuxt.config.css), чтобы попасть в lazy-chunk
+// карты, а не в main bundle.
+// @ts-expect-error — TS не знает про /css side-effect subpath библиотеки, но
+// Vite его резолвит штатно.
+import 'vue-yandex-maps/css'
+import { useRuntimeConfig } from '#imports'
 import { UiIcon } from '@fastio/ui'
 import type { DeliveryZone, Branch } from '@fastio/shared'
 import { usePolygonDraw } from '~/shared/composables/delivery/usePolygonDraw'
+
+// Опции карты раньше выставлялись через plugins/yandex-maps.client.ts. Плагин
+// удалён ради bundle-splitting — vue-yandex-maps теперь живёт только в lazy-chunk
+// этого компонента (импортируется через defineAsyncComponent в потребителях).
+// createYmapsOptions идемпотентен — повторный вызов в SPA-навигации безопасен.
+const yandexApiKey = useRuntimeConfig().public.yandexMapsApiKey as string
+
+if (yandexApiKey) createYmapsOptions({ apikey: yandexApiKey })
 
 type Props = {
   zones: DeliveryZone[]

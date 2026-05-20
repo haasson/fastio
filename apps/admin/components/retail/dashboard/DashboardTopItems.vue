@@ -14,7 +14,7 @@
       <UiSkeleton height="200" />
     </div>
     <div v-else-if="topItems.length > 0" class="chart-wrap">
-      <apexchart
+      <LazyApexChart
         type="bar"
         :height="chartHeight"
         :options="chartOptions"
@@ -31,6 +31,7 @@
 import { computed, inject, ref, type Ref } from 'vue'
 import { UiCard, UiText, UiSkeleton, UiSelect } from '@fastio/ui'
 import type { BusinessType } from '@fastio/shared'
+import LazyApexChart from './LazyApexChart.vue'
 
 const isDark = inject<Ref<boolean>>('isDark', ref(false))
 

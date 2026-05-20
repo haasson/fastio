@@ -5,7 +5,7 @@
       <UiSkeleton height="200" />
     </div>
     <div v-else-if="hasData" class="chart-wrap">
-      <apexchart
+      <LazyApexChart
         type="donut"
         height="220"
         :options="chartOptions"
@@ -22,6 +22,7 @@
 import { computed, inject, ref, type Ref } from 'vue'
 import { pluralize } from '@fastio/shared'
 import { UiCard, UiText, UiSkeleton } from '@fastio/ui'
+import LazyApexChart from './LazyApexChart.vue'
 
 const isDark = inject<Ref<boolean>>('isDark', ref(false))
 

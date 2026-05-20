@@ -1,4 +1,4 @@
-import { jsPDF } from 'jspdf'
+import type { jsPDF } from 'jspdf'
 import { renderQrToDataUrl } from '~/shared/utils/renderQr'
 
 type TableQrItem = {
@@ -32,6 +32,8 @@ export const generateTableQrPdf = async (
   items: TableQrItem[],
   restaurantName: string,
 ): Promise<void> => {
+  // jspdf весит ~386 kB. Грузим только в момент нажатия «Скачать PDF».
+  const { jsPDF } = await import('jspdf')
   const doc = new jsPDF('portrait', 'mm', 'a4')
 
   await loadFont(doc)
