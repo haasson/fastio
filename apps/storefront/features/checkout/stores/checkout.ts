@@ -55,6 +55,10 @@ type CheckoutForm = {
   scheduledTime: string
 }
 
+// paymentType: 'card' — заглушка-плейсхолдер; реальный дефолт собирается из
+// tenant.paymentMethods[0] в useCheckoutStore (см. initialPaymentType ниже).
+// Если в будущем появится reset формы — нужно использовать `buildFormDefaults(tenant)`
+// или подменить только paymentType, чтобы reset не сбрасывал на хардкод 'card'.
 const FORM_DEFAULTS: CheckoutForm = {
   deliveryType: 'delivery',
   customerName: '',

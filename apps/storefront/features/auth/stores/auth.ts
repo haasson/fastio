@@ -100,6 +100,15 @@ export const useAuthStore = defineStore('auth', () => {
     authMode.value = null
   }
 
+  // Принудительный локальный cleanup — для случаев когда серверная сессия уже
+  // невалидна (например, после revoke-all-sessions с серверным deleteCookie),
+  // а нужно синхронизировать клиентский state чтобы UI не врал. Использовать
+  // только в error-paths, обычный logout/signOut делается через logout().
+  function forceClear() {
+    customer.value = null
+    authMode.value = null
+  }
+
   async function updateProfile(data: { name?: string; phone?: string }) {
     const headers: Record<string, string> = {}
     const supabaseToken = await getSupabaseToken()
@@ -130,6 +139,7 @@ export const useAuthStore = defineStore('auth', () => {
     fetchProfile,
     loginWithTelegram,
     logout,
+    forceClear,
     updateProfile,
     showLogin,
   }

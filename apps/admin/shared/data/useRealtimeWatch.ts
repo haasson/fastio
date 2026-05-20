@@ -46,7 +46,16 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
   // как «первая подписка» (без фантомного onReconnect).
   let wasConnected = true
 
+  // Generation counter защищает от race при быстрой смене branch: watcher
+  // синхронно вызывает dispose() → setup(), несколько setup() уходят в await
+  // setupAuth() параллельно. Без epoch'a первый завершивший setup устанавливает
+  // channel=A, потом второй затирает channel=B и канал A остаётся подписанным
+  // на сервере без ссылки → утечка. Epoch проверяется ПОСЛЕ await: если он
+  // устарел, abort'имся и не трогаем channel/wasConnected.
+  let epoch = 0
+
   const dispose = () => {
+    epoch++
     if (channel) api.realtime.removeChannel(channel)
     channel = null
     isConnected.value = false
@@ -54,7 +63,10 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
   }
 
   const setup = async (primaryValue: string, secondaryValue: string | null) => {
+    const myEpoch = ++epoch
+
     await api.realtime.setupAuth()
+    if (myEpoch !== epoch) return // устарел — другой setup опередил, аборт
 
     // ChannelKey включает оба значения — при смене filial канал
     // пересоздаётся (предыдущий dispose() уже отписался от старого).
@@ -77,6 +89,10 @@ export function useRealtimeWatch(table: string, id: Ref<string | null>, handlers
         ...(handlers.onUpdate && { onUpdate: ({ new: row }) => handlers.onUpdate!(row) }),
         ...(handlers.onDelete && { onDelete: ({ old: row }) => handlers.onDelete!(row) }),
         onStatus: (connected) => {
+          // Если этот канал уже устарел (epoch продвинулся пока он
+          // переподключался), статусы игнорируем — onReconnect не дергаем,
+          // wasConnected не трогаем чтобы не повлиять на текущий setup.
+          if (myEpoch !== epoch) return
           isConnected.value = connected
           if (connected && !wasConnected) {
             handlers.onReconnect?.()

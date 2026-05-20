@@ -118,8 +118,13 @@ async function onRevokeAll() {
     // Серверная кука стёрта эндпоинтом, но клиентский authStore про это
     // не знает — чистим его явно. logout() также подметает Supabase legacy session.
     await authStore.logout()
-    navigateTo('/')
+    await navigateTo('/')
   } catch (err: unknown) {
+    // Zombie-state guard: revoke-endpoint мог УСПЕТЬ стереть куку до того как
+    // authStore.logout() упал (network blip / 500). UI в этом случае держит
+    // customer в сторе, а на сервере куки нет → следующий /api/customer/* = 401.
+    // forceClear() синхронизирует client-state независимо от того где именно упало.
+    authStore.forceClear()
     const fetchErr = err as { data?: { message?: string } }
     revokeError.value = fetchErr?.data?.message ?? 'Не удалось завершить сессии'
     reportError(err)

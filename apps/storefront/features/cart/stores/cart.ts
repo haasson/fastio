@@ -402,24 +402,38 @@ export const useCartStore = defineStore('cart', () => {
       const legacyRaw = localStorage.getItem(LEGACY_CART_KEY)
       if (legacyRaw !== null) {
         if (raw === null) {
-          // Переносим legacy → новый ключ. Делаем setItem ДО parse, чтобы
-          // даже если содержимое битое, юзер не получил миграцию повторно
-          // при следующем restore (legacy будет удалён).
+          // Переносим legacy → новый ключ. Удаляем legacy ТОЛЬКО если write
+          // прошёл — иначе на Safari Private (QuotaExceededError на любой setItem)
+          // получим: новый не создан, legacy удалён → данные потеряны при
+          // следующем restore. raw = legacyRaw для in-memory работы текущей сессии.
+          let migrated = false
           try {
             localStorage.setItem(key, legacyRaw)
+            migrated = true
           } catch (e) {
             reportError(e instanceof Error ? e : new Error('[cart.restore] legacy migration write failed'), {
               context: 'cart-restore',
             })
           }
           raw = legacyRaw
-        }
-        try {
-          localStorage.removeItem(LEGACY_CART_KEY)
-        } catch (e) {
-          reportError(e instanceof Error ? e : new Error('[cart.restore] legacy cleanup failed'), {
-            context: 'cart-restore',
-          })
+          if (migrated) {
+            try {
+              localStorage.removeItem(LEGACY_CART_KEY)
+            } catch (e) {
+              reportError(e instanceof Error ? e : new Error('[cart.restore] legacy cleanup failed'), {
+                context: 'cart-restore',
+              })
+            }
+          }
+        } else {
+          // raw уже из нового ключа — legacy просто удалить.
+          try {
+            localStorage.removeItem(LEGACY_CART_KEY)
+          } catch (e) {
+            reportError(e instanceof Error ? e : new Error('[cart.restore] legacy cleanup failed'), {
+              context: 'cart-restore',
+            })
+          }
         }
       }
       if (!raw) return

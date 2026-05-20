@@ -17,12 +17,18 @@ let deleteResult: { error: unknown; count: number | null } = { error: null, coun
 const deleteCalls: Array<{ deleteArgs: unknown[]; eqs: Array<[string, unknown]> }> = []
 const deletedCookies: Array<{ name: string }> = []
 
-function buildDeleteBuilder() {
+// Билдер симулирует реальный tenantDb Proxy: при .delete() автоматически
+// пушит ['tenant_id', tenantId] в eqs (как делает wrapTenantTable в проде).
+// Это позволяет проверить что endpoint полагается на инъекцию — если кто-то
+// рефакторит на `db.crossTenant.from(...)` без tenant-фильтра, тест поймает.
+function buildDeleteBuilder(injectedTenantId: string) {
   const eqs: Array<[string, unknown]> = []
   let captured: { deleteArgs: unknown[] } | null = null
   const builder: any = {
     delete(...args: unknown[]) {
       captured = { deleteArgs: args }
+      // Auto-inject tenant_id как реальный Proxy в tenantDb.ts.
+      eqs.push(['tenant_id', injectedTenantId])
       return builder
     },
     eq(col: string, val: unknown) {
@@ -45,7 +51,7 @@ vi.mock('../../../utils/tenantDb', () => ({
   getTenantDb: () => ({
     tenantId: 'tenant-A',
     from(_table: string) {
-      return buildDeleteBuilder()
+      return buildDeleteBuilder('tenant-A')
     },
   }),
 }))
@@ -88,9 +94,12 @@ describe('POST /api/auth/revoke-all-sessions', () => {
 
     expect(result).toEqual({ ok: true, revoked: 3 })
 
-    // Один DELETE с фильтром customer_id (tenant_id инжектится proxy'м tenantDb)
+    // Один DELETE с фильтром customer_id + tenant_id (Proxy инжектит tenant_id
+    // автоматически — если кто-то перепишет на crossTenant без tenant-фильтра,
+    // тест поймает: сессии других тенантов того же customer_id могут пострадать).
     expect(deleteCalls).toHaveLength(1)
     expect(deleteCalls[0].eqs).toContainEqual(['customer_id', VALID_CUSTOMER_ID])
+    expect(deleteCalls[0].eqs).toContainEqual(['tenant_id', 'tenant-A'])
     // delete вызван с { count: 'exact' } — мы передаём options для возврата count
     expect(deleteCalls[0].deleteArgs[0]).toEqual({ count: 'exact' })
 

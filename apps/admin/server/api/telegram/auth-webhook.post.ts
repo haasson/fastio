@@ -28,6 +28,21 @@ type TgUpdate = { message?: TgMessage; callback_query?: TgCallbackQuery }
 type ApptRow = { starts_at: string; service_name: string; status: string }
 type TokenRow = { appointment_id: string; expires_at: string }
 
+// In-memory throttle для Sentry: при глобальной поломке consume_rate_limit
+// (DB down / RPC missing) каждый webhook event генерил бы Sentry event и топил
+// квоту. 60 секунд достаточно чтобы алёрт сработал, но event'ов не было 1000+/min.
+// Single-thread Nitro — race-free без mutex.
+const RL_ERROR_THROTTLE_MS = 60_000
+let lastRlErrorReportedAt = 0
+
+function reportRlErrorThrottled(err: unknown, telegramId: string): void {
+  const now = Date.now()
+
+  if (now - lastRlErrorReportedAt < RL_ERROR_THROTTLE_MS) return
+  lastRlErrorReportedAt = now
+  reportError(err, { context: 'tg-auth-webhook:rate-limit', telegramId })
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const token = config.telegramClientBotToken?.trim()
@@ -101,7 +116,10 @@ export default defineEventHandler(async (event) => {
     })
 
     if (rlError) {
-      reportError(rlError, { context: 'tg-auth-webhook:rate-limit', telegramId })
+      // Throttle: при глобальной поломке consume_rate_limit (DB down/RPC missing)
+      // каждый webhook event генерил бы Sentry event. Дедуплицируем до 1/мин
+      // чтобы не топить квоту — для алёрта одного event достаточно.
+      reportRlErrorThrottled(rlError, telegramId)
 
       return { ok: true }
     }
@@ -122,7 +140,15 @@ export default defineEventHandler(async (event) => {
       .gt('expires_at', new Date().toISOString())
       .maybeSingle()
 
-    if (pendingError) reportError(pendingError)
+    if (pendingError) {
+      // DB-ошибка (timeout/connection drop), а НЕ невалидный nonce. Шлём отдельное
+      // сообщение — иначе юзер видит «ссылка устарела» и тратит ещё RL-попытки
+      // на retry, плюс в Sentry «много expired nonce» маскирует DB-инцидент.
+      reportError(pendingError, { context: 'tg-auth-webhook:pending-lookup', telegramId, nonce })
+      await sendMessage('❌ Ошибка сервера. Попробуйте через минуту.')
+
+      return { ok: true }
+    }
 
     if (!pending) {
       await sendMessage('❌ Ссылка для входа устарела или недействительна. Попробуйте войти заново.')

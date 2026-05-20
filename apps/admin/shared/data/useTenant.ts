@@ -232,8 +232,19 @@ export const useTenant = (userId: Ref<string | null>) => {
   // (p99 ~1.5s), но достаточно короткий чтобы юзер сразу понял что-то не так.
   const TENANT_UPDATE_TIMEOUT_MS = 10_000
 
+  // In-flight mutex: snapshot-based rollback ломается если ДО завершения текущего
+  // update прилетел ещё один. snapshot=A, optimistic=B; второй вызов: snapshot=B,
+  // optimistic=C; первый падает по timeout → rollback на A, теряем C. UI обычно
+  // блокирует кнопку через `saving`, но keyboard shortcut / programmatic call
+  // могут обойти. Mutex кидает явную ошибку чтобы юзер ретрайнул.
+  const updateInFlight = ref(false)
+
   const update = async (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt' | 'subscription' | 'balance'>>) => {
     if (!maybeTenant.value) return
+    if (updateInFlight.value) {
+      throw new Error('Сохранение уже выполняется, подождите')
+    }
+    updateInFlight.value = true
 
     const snapshot = maybeTenant.value
     const changedFields = Object.keys(data)
@@ -270,6 +281,7 @@ export const useTenant = (userId: Ref<string | null>) => {
       // setTimeout доживёт ещё 10s в памяти. Особенно вредно при частых
       // toggle'ах (modules, theme presets).
       if (timeoutId !== null) clearTimeout(timeoutId)
+      updateInFlight.value = false
     }
   }
 

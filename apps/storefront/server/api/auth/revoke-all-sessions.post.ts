@@ -9,16 +9,13 @@ import { reportError } from '@fastio/shared/observability'
  *
  * Удаляет ВСЕ `customer_sessions` текущего кастомера в этом тенанте —
  * включая ту, из которой пришёл этот запрос. После DELETE текущая кука
- * `tg_session` указывает на удалённый token_hash → следующий запрос
- * получит 401 в `getAuthenticatedContext`, кука будет вычищена. Здесь
- * сами очищаем кулу заранее чтобы клиент сразу видел разлогин (без
- * лишнего round-trip).
+ * `tg_session` указывает на удалённый token_hash. Здесь сами очищаем куку,
+ * чтобы при SSR-рендере '/' после редиректа не было лишнего 401 в request'е.
  *
- * Email/password (Supabase) auth тут не трогаем — Supabase SDK сам
- * хранит сессию в localStorage клиента и инвалидируется через
- * `supabase.auth.signOut()` со стороны UI. После PREPROD-099 кастомеры
- * на storefront логинятся ТОЛЬКО через Telegram, поэтому Supabase-ветка
- * — только для legacy сессий.
+ * UI после успешного revoke вызывает authStore.logout() — он дёргает
+ * /api/auth/logout (no-op без cookie) и supabase.auth.signOut() для legacy
+ * Supabase сессий. После PREPROD-099 storefront-кастомеры логинятся только
+ * через Telegram, signOut нужен только для пользователей с legacy-сессиями.
  */
 export default defineEventHandler(async (event) => {
   // Требуем валидную сессию — нельзя revoke если не залогинен.
