@@ -472,7 +472,8 @@ describe('useCartStore', () => {
       expect(store2.items[0].kind).toBe('dish')
     })
 
-    it('broken JSON в localStorage — не падает, корзина пустая, restored=true', () => {
+    it('broken JSON в localStorage — не падает, корзина пустая, restored=true', async () => {
+      const { reportError } = await import('~/shared/utils/reportError')
       localStorage.setItem('cart', '{{invalid-json')
 
       setActivePinia(createPinia())
@@ -481,6 +482,8 @@ describe('useCartStore', () => {
 
       expect(store2.items).toHaveLength(0)
       expect(store2.restored).toBe(true)
+      // PREPROD-233: тихий fail должен попадать в Sentry
+      expect(reportError).toHaveBeenCalled()
     })
 
     it('пустой localStorage — restored=true, items=[]', () => {
@@ -490,6 +493,120 @@ describe('useCartStore', () => {
 
       expect(store2.items).toHaveLength(0)
       expect(store2.restored).toBe(true)
+    })
+
+    // PREPROD-227: zod-валидация. Item с битыми типами → отбрасывается, не валит весь стор.
+    it('item с невалидным price (строка вместо числа) — отбрасывается с reportError', async () => {
+      const { reportError } = await import('~/shared/utils/reportError')
+      const good = makeDish({ dishId: 'good' })
+      const bad = { ...makeDish({ dishId: 'bad' }), price: 'not-a-number' }
+      localStorage.setItem('cart', JSON.stringify([good, bad]))
+
+      setActivePinia(createPinia())
+      const store2 = useCartStore()
+      store2.restore()
+
+      expect(store2.items).toHaveLength(1)
+      expect((store2.items[0] as DishCartItem).dishId).toBe('good')
+      expect(reportError).toHaveBeenCalled()
+    })
+
+    it('item с отрицательным quantity — отбрасывается', async () => {
+      const { reportError } = await import('~/shared/utils/reportError')
+      localStorage.setItem('cart', JSON.stringify([
+        { ...makeDish(), quantity: -3 },
+      ]))
+
+      setActivePinia(createPinia())
+      const store2 = useCartStore()
+      store2.restore()
+
+      expect(store2.items).toHaveLength(0)
+      expect(reportError).toHaveBeenCalled()
+    })
+
+    it('localStorage payload не массив — корзина пустая + reportError', async () => {
+      const { reportError } = await import('~/shared/utils/reportError')
+      localStorage.setItem('cart', JSON.stringify({ items: [] }))
+
+      setActivePinia(createPinia())
+      const store2 = useCartStore()
+      store2.restore()
+
+      expect(store2.items).toHaveLength(0)
+      expect(reportError).toHaveBeenCalled()
+    })
+
+    // PREPROD-264: префикс по slug + миграция legacy-ключа `cart`
+    it('persist пишет в cart:<slug>, не в legacy cart', () => {
+      store.add(makeDish({ dishId: 'd-key' }))
+      // jsdom: window.location.hostname === 'localhost' → ключ cart:localhost
+      const tenantScoped = localStorage.getItem('cart:localhost')
+      const legacy = localStorage.getItem('cart')
+      expect(tenantScoped).not.toBeNull()
+      expect(legacy).toBeNull()
+    })
+
+    it('legacy ключ `cart` мигрируется в cart:<slug> и удаляется', () => {
+      // эмулируем юзера, который зашёл с дореализ-версией стора
+      localStorage.setItem('cart', JSON.stringify([makeDish({ dishId: 'legacy-d' })]))
+
+      setActivePinia(createPinia())
+      const store2 = useCartStore()
+      store2.restore()
+
+      expect(store2.items).toHaveLength(1)
+      expect((store2.items[0] as DishCartItem).dishId).toBe('legacy-d')
+      // legacy ключ удалён, новый создан
+      expect(localStorage.getItem('cart')).toBeNull()
+      expect(localStorage.getItem('cart:localhost')).not.toBeNull()
+    })
+
+    it('legacy migration не повторяется при следующем restore', () => {
+      localStorage.setItem('cart', JSON.stringify([makeDish({ dishId: 'migrate-once' })]))
+
+      setActivePinia(createPinia())
+      const s1 = useCartStore()
+      s1.restore()
+      // вручную портим новый ключ, чтобы убедиться что миграция legacy не перезапишет
+      const migrated = localStorage.getItem('cart:localhost')
+      expect(migrated).not.toBeNull()
+
+      setActivePinia(createPinia())
+      const s2 = useCartStore()
+      s2.restore()
+
+      // legacy не появился снова, и не перезаписал новый ключ
+      expect(localStorage.getItem('cart')).toBeNull()
+      expect(s2.items).toHaveLength(1)
+    })
+
+    it('две корзины с разными slug изолированы (через ?slug= override)', () => {
+      // Стартовый slug — localhost (по умолчанию в jsdom)
+      store.add(makeDish({ dishId: 'tenant-a' }))
+      expect(localStorage.getItem('cart:localhost')).not.toBeNull()
+
+      // Меняем slug через ?slug= query → корзина другого тенанта
+      const original = window.location.href
+      window.history.replaceState({}, '', '?slug=tenant-b')
+
+      try {
+        setActivePinia(createPinia())
+        const storeB = useCartStore()
+        storeB.restore()
+
+        expect(storeB.items).toHaveLength(0) // другая корзина — пустая
+        storeB.add(makeDish({ dishId: 'tenant-b' }))
+        expect(localStorage.getItem('cart:tenant-b')).not.toBeNull()
+
+        // первая корзина не задета
+        const aRaw = localStorage.getItem('cart:localhost')
+        expect(aRaw).not.toBeNull()
+        expect(aRaw!).toContain('tenant-a')
+        expect(aRaw!).not.toContain('tenant-b')
+      } finally {
+        window.history.replaceState({}, '', original)
+      }
     })
   })
 
