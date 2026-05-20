@@ -22,6 +22,14 @@ export default async function handler(req: Request): Promise<Response> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (secretToken) headers['x-telegram-bot-api-secret-token'] = secretToken
 
+  // PREPROD-212: defense-in-depth shared secret между relay и admin. Telegram
+  // secret_token Telegram'а отдельно проверяется в admin; relay-secret гарантирует
+  // что запрос прошёл именно через наш Vercel-проект, а не от подделанного клиента
+  // с подсмотренным Telegram-секретом. Если RELAY_SECRET не задан — не вешаем
+  // header (legacy-режим, admin тогда отвергнёт). Это secure-by-default на стороне admin.
+  const relaySecret = process.env.RELAY_SECRET
+  if (relaySecret) headers['x-relay-secret'] = relaySecret
+
   try {
     const res = await fetch(TARGET, { method: 'POST', headers, body })
     const text = await res.text()

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { withSentry } from '../_shared/sentry.ts'
+import { captureException, withSentry } from '../_shared/sentry.ts'
 
 // Унифицированный envelope ответа:
 //   success: { success: true, email, roleName, tenantName, userExists }
@@ -9,6 +9,24 @@ const json = (body: unknown, init?: ResponseInit) =>
 
 const err = (status: number, code: string, error: string) =>
   json({ success: false, error, code }, { status })
+
+// PREPROD-206: per-IP rate-limit 30/мин. Защищает от подбора `token` (UUID, но
+// безопасности это не помешает) и общего spam'а. Read-only endpoint — fail-open
+// при ошибке RPC (доступность важнее, иначе legit-юзер не примет инвайт).
+const IP_LIMIT = { max: 30, windowSeconds: 60 }
+
+function getClientIp(req: Request): string {
+  // Приоритет: cf-connecting-ip (Cloudflare, клиент подделать не может) →
+  // x-real-ip (Supabase Edge proxy) → x-forwarded-for[0]. Без них — 'unknown'
+  // (бакет общий, IP-лимит вырождается в глобальный — fail-open принцип).
+  const cf = req.headers.get('cf-connecting-ip')
+  if (cf) return cf
+  const real = req.headers.get('x-real-ip')
+  if (real) return real
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) return xff.split(',')[0]?.trim() ?? 'unknown'
+  return 'unknown'
+}
 
 Deno.serve(withSentry('get-invite', async (req) => {
   if (req.method !== 'POST') {
@@ -31,6 +49,24 @@ Deno.serve(withSentry('get-invite', async (req) => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
+
+  // Rate-limit ДО лукапа в БД. На rl_error — fail-open (read-endpoint:
+  // доступность важнее анти-абуза, legit-юзер должен иметь возможность
+  // открыть страницу приглашения).
+  const ip = getClientIp(req)
+  const { data: rlAllowed, error: rlError } = await adminSupabase.rpc('consume_rate_limit', {
+    _key: `get-invite:ip:${ip}`,
+    _max: IP_LIMIT.max,
+    _window_seconds: IP_LIMIT.windowSeconds,
+  })
+
+  if (rlError) {
+    // Fail-open + log+Sentry для алёрта — массовый rl_error = поломка RPC/БД.
+    console.error('[get-invite] consume_rate_limit failed:', rlError)
+    captureException(rlError, { fn: 'get-invite', stage: 'rate-limit' })
+  } else if (rlAllowed === false) {
+    return err(429, 'rate_limited', 'Слишком много запросов. Попробуйте позже.')
+  }
 
   const { data: invitation, error: inviteErr } = await adminSupabase
     .from('tenant_invitations')

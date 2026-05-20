@@ -22,6 +22,7 @@ vi.mock('../../../utils/telegramFetch', () => ({
 
 vi.mock('../../../utils/auth', () => ({
   requireTelegramWebhookSecret: vi.fn(),
+  requireRelaySecret: vi.fn(),
 }))
 
 let pendingRow: { nonce: string } | null = null
