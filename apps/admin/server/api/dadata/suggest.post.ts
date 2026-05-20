@@ -1,13 +1,27 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { useRuntimeConfig } from '#imports'
+import { LRUCache } from 'lru-cache'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireMemberOfTenant } from '../../utils/auth'
 import { reportError } from '@fastio/shared/observability'
 
-const tenantCoordsCache = new Map<string, { lat: number; lon: number } | null>()
+// PREPROD-213: TTL вместо unbounded Map. Раньше координаты филиала кэшировались
+// бессрочно — если админ менял адрес филиала, тот же nitro-инстанс продолжал
+// фильтровать DaData по СТАРЫМ координатам до рестарта деплоя. С LRU+TTL=1h
+// stale-данные исчезнут самостоятельно за час.
+//
+// max=1000 — реалистичный потолок «активных» тенантов на одном nitro-инстансе
+// (если их будет больше, LRU выкинет наименее недавно использованных). Малый
+// расход памяти: 1000 × ~64 байта = 64KB.
+const tenantCoordsCache = new LRUCache<string, { lat: number; lon: number }>({
+  max: 1000,
+  ttl: 60 * 60 * 1000, // 1 час
+})
 
 async function getTenantCoords(tenantId: string): Promise<{ lat: number; lon: number } | null> {
-  if (tenantCoordsCache.has(tenantId)) return tenantCoordsCache.get(tenantId)!
+  const cached = tenantCoordsCache.get(tenantId)
+
+  if (cached) return cached
 
   const supabase = getServerSupabase()
   const { data, error } = await supabase
@@ -30,9 +44,7 @@ async function getTenantCoords(tenantId: string): Promise<{ lat: number; lon: nu
 
   // null НЕ кэшируем: на онбординге первый ввод адреса дёргает getTenantCoords
   // когда филиала ещё нет (юзер его и создаёт через DaData). Если закэшировать
-  // null — после успешного создания филиала тот же nitro-инстанс будет помнить
-  // null до рестарта, и фильтр locations_geo не применится ни на этой сессии,
-  // ни на следующих юзерских запросах (например адрес доставки в заказе).
+  // null — даже с TTL юзер первые 60мин будет получать suggestions без гео-фильтра.
   if (coords) tenantCoordsCache.set(tenantId, coords)
 
   return coords

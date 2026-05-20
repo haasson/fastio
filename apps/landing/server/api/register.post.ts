@@ -49,7 +49,12 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<RegisterBody>(event)
 
-  if (body.website) {
+  // PREPROD-211: honeypot ловит ЛЮБОЕ присутствие поля в payload — даже пустую
+  // строку. Боты тупо заполняют все поля формы, включая скрытое `website` с
+  // дефолтным `value=""` → раньше пустая строка проходила (truthy check). Теперь
+  // если поле есть в body хотя бы как `''` — реджектим. Легитимный клиент поле
+  // вообще не отправляет (скрыто через display:none + не submit'ится JS).
+  if (body.website !== undefined) {
     throw createError({ statusCode: 400, message: 'Invalid request' })
   }
 

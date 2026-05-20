@@ -1,14 +1,15 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
+import { parseFiniteNumber } from '@fastio/shared'
 import { getTenantDb } from '../../utils/tenantDb'
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
 
   const query = getQuery(event)
-  const subtotal = Number(query.subtotal ?? 0)
+  const subtotal = parseFiniteNumber(query.subtotal ?? 0)
   const scheduledAt = typeof query.scheduledAt === 'string' && query.scheduledAt ? query.scheduledAt : null
 
-  if (!Number.isFinite(subtotal) || subtotal < 0) {
+  if (subtotal === null) {
     throw createError({ statusCode: 400, message: 'Некорректная сумма' })
   }
 

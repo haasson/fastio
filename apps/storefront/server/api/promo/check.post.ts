@@ -1,5 +1,6 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '@fastio/shared/server'
+import { parseFiniteNumber } from '@fastio/shared'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
 
 export default defineEventHandler(async (event) => {
@@ -13,11 +14,11 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event)
   const code = String(body.code ?? '').trim()
-  const subtotal = Number(body.subtotal ?? 0)
+  const subtotal = parseFiniteNumber(body.subtotal ?? 0)
   const scheduledAt = typeof body.scheduledAt === 'string' && body.scheduledAt ? body.scheduledAt : null
 
   if (!code) throw createError({ statusCode: 400, message: 'Промокод обязателен' })
-  if (!Number.isFinite(subtotal) || subtotal < 0) {
+  if (subtotal === null) {
     throw createError({ statusCode: 400, message: 'Некорректная сумма заказа' })
   }
 

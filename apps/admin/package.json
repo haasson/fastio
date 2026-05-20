@@ -38,6 +38,7 @@
     "dompurify": "^3.4.0",
     "driver.js": "^1.4.0",
     "jspdf": "^4.2.1",
+    "lru-cache": "^11.3.6",
     "lucide-vue-next": "^0.575.0",
     "marked": "^18.0.2",
     "naive-ui": "^2.42.0",

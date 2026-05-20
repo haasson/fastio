@@ -38,6 +38,9 @@ export default defineNuxtConfig({
       supabaseAnonKey: '',
       yandexMapsApiKey: '',
       telegramClientBotUsername: '',
+      // TECHDEBT.sentry-dsn: DSN из env (NUXT_PUBLIC_SENTRY_DSN), а не хардкод.
+      // Если пусто — Sentry не инициализируется.
+      sentryDsn: '',
     },
   },
 })

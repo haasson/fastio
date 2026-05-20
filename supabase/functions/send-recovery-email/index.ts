@@ -10,23 +10,80 @@ import nodemailer from 'nodemailer'
 // учётки. SMTP-сбой (нет коннекта / 5xx от relay) — единственное исключение:
 // отдаём 503 + code='smtp_failed' (PREPROD-116), чтобы клиент мог retry'ить и
 // отличить transient от рейт-лимита (429) / валидации (400).
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+
+// PREPROD-203: CORS whitelist вместо открытого `*`. Раньше любой третий сайт мог
+// через fetch() в браузере жертвы заслать наш send-recovery, превратив функцию
+// в email-bomb amplifier. Теперь — только наши origin'ы:
+// - https://*.fastio.ru (admin/storefront/help/landing/coolify subdomain)
+// - кастомные домены тенантов (cached lookup в tenants.custom_domain)
+const STATIC_ORIGIN_REGEX = /^https:\/\/([a-z0-9-]+\.)?fastio\.ru$/
+
+let customDomainCache: { domains: Set<string>; loadedAt: number } | null = null
+const CUSTOM_DOMAIN_TTL_MS = 5 * 60 * 1000
+
+async function loadCustomDomains(): Promise<Set<string>> {
+  if (customDomainCache && Date.now() - customDomainCache.loadedAt < CUSTOM_DOMAIN_TTL_MS) {
+    return customDomainCache.domains
+  }
+  const adminClient = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  )
+  const { data, error } = await adminClient
+    .from('tenants')
+    .select('custom_domain')
+    .not('custom_domain', 'is', null)
+  if (error) {
+    console.error('[send-recovery-email] loadCustomDomains failed:', error)
+    return customDomainCache?.domains ?? new Set()
+  }
+  const domains = new Set<string>()
+  for (const row of data ?? []) {
+    const cd = (row as { custom_domain?: string | null }).custom_domain
+    if (cd) domains.add(cd.toLowerCase())
+  }
+  customDomainCache = { domains, loadedAt: Date.now() }
+  return domains
 }
 
-const json = (body: unknown, init?: ResponseInit) =>
+async function resolveAllowedOrigin(origin: string | null): Promise<string | null> {
+  if (!origin) return null
+  try {
+    const url = new URL(origin)
+    if (url.protocol !== 'https:') return null
+    if (STATIC_ORIGIN_REGEX.test(origin)) return origin
+    const customDomains = await loadCustomDomains()
+    if (customDomains.has(url.hostname.toLowerCase())) return origin
+  } catch {
+    return null
+  }
+  return null
+}
+
+function buildCorsHeaders(allowedOrigin: string | null): Record<string, string> {
+  return {
+    // Если origin не в whitelist — отдаём null, браузер заблокирует ответ.
+    // Это безопаснее чем не отдавать заголовок вообще (некоторые browser-engine
+    // в этом случае показывают «opaque response» — атакующий не видит payload, но
+    // запрос всё равно ушёл и rate-limit жжётся).
+    'Access-Control-Allow-Origin': allowedOrigin ?? 'null',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
+  }
+}
+
+const json = (body: unknown, corsHeaders: Record<string, string>, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
     ...init,
     headers: { 'Content-Type': 'application/json', ...corsHeaders },
   })
 
-const ok = () =>
-  json({ success: true, message: 'Если такой email существует, на него отправлено письмо для сброса пароля.' }, { status: 200 })
+const ok = (corsHeaders: Record<string, string>) =>
+  json({ success: true, message: 'Если такой email существует, на него отправлено письмо для сброса пароля.' }, corsHeaders, { status: 200 })
 
-const err = (status: number, code: string, error: string) =>
-  json({ success: false, error, code }, { status })
+const err = (status: number, code: string, error: string, corsHeaders: Record<string, string>) =>
+  json({ success: false, error, code }, corsHeaders, { status })
 
 // Durable rate-limit чтобы закрыть email-bomb. Storefront-flow ходит через Nitro
 // (/api/auth/forgot-password — уже rate-limited там), но admin/login.vue зовёт
@@ -53,29 +110,44 @@ function getClientIp(req: Request): string {
 }
 
 Deno.serve(withSentry('send-recovery-email', async (req) => {
+  const requestOrigin = req.headers.get('origin')
+  const allowedOrigin = await resolveAllowedOrigin(requestOrigin)
+  const corsHeaders = buildCorsHeaders(allowedOrigin)
+
   if (req.method === 'OPTIONS') {
+    // Preflight: если origin не в whitelist — браузер увидит null и заблокирует запрос.
+    // Не отдаём 403, чтобы не делать timing-oracle для whitelist'а.
     return new Response('ok', { headers: corsHeaders })
   }
 
   if (req.method !== 'POST') {
-    return err(405, 'method_not_allowed', 'Method Not Allowed')
+    return err(405, 'method_not_allowed', 'Method Not Allowed', corsHeaders)
+  }
+
+  // Defense in depth: даже если кто-то дёрнет функцию напрямую без браузера
+  // (curl / serverside fetch), при наличии Origin мы его проверяем. Без Origin
+  // (server-to-server) — пропускаем, потому что rate-limit + email validation
+  // уже даёт основную защиту, а Supabase-инвокеры (admin-app server-side)
+  // часто не выставляют Origin.
+  if (requestOrigin && !allowedOrigin) {
+    return err(403, 'forbidden_origin', 'Origin not allowed', corsHeaders)
   }
 
   let body: { email?: unknown; redirectTo?: unknown }
   try {
     body = await req.json()
   } catch {
-    return err(400, 'invalid_body', 'Invalid JSON body')
+    return err(400, 'invalid_body', 'Invalid JSON body', corsHeaders)
   }
 
   if (!body.email || typeof body.email !== 'string') {
-    return err(400, 'missing_fields', 'email is required')
+    return err(400, 'missing_fields', 'email is required', corsHeaders)
   }
   const redirectTo = typeof body.redirectTo === 'string' ? body.redirectTo : undefined
 
   const normalizedEmail = body.email.trim().toLowerCase()
   if (normalizedEmail.length > 254 || !EMAIL_REGEX.test(normalizedEmail)) {
-    return err(400, 'invalid_email', 'Некорректный email')
+    return err(400, 'invalid_email', 'Некорректный email', corsHeaders)
   }
   const ip = getClientIp(req)
 
@@ -99,11 +171,11 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
 
   if (emailRl.error || ipRl.error) {
     console.error('consume_rate_limit error:', emailRl.error ?? ipRl.error)
-    return err(500, 'rate_limit_failed', 'Failed to check rate limit')
+    return err(500, 'rate_limit_failed', 'Failed to check rate limit', corsHeaders)
   }
 
   if (emailRl.data === false || ipRl.data === false) {
-    return err(429, 'rate_limited', 'Слишком много запросов. Попробуйте позже.')
+    return err(429, 'rate_limited', 'Слишком много запросов. Попробуйте позже.', corsHeaders)
   }
 
   // Генерируем ссылку восстановления через Admin API (без отправки письма)
@@ -116,7 +188,7 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
   if (linkError || !linkData?.properties?.action_link) {
     // Не раскрываем существует ли email — всегда возвращаем success
     console.error('generateLink error:', linkError?.message ?? 'no action_link')
-    return ok()
+    return ok(corsHeaders)
   }
 
   const recoveryUrl = linkData.properties.action_link
@@ -205,11 +277,11 @@ Deno.serve(withSentry('send-recovery-email', async (req) => {
         if (r.error) console.error('release_rate_limit error:', r.error)
       }
       await flushSentry()
-      return err(503, 'smtp_failed', 'Не удалось отправить письмо. Попробуйте ещё раз через минуту.')
+      return err(503, 'smtp_failed', 'Не удалось отправить письмо. Попробуйте ещё раз через минуту.', corsHeaders)
     }
   } else {
     console.log(`Recovery URL for ${normalizedEmail}: ${recoveryUrl}`)
   }
 
-  return ok()
+  return ok(corsHeaders)
 }))

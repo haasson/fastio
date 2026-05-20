@@ -99,6 +99,9 @@ export default defineNuxtConfig({
       telegramTenantBotUsername: '',
       helpUrl: 'https://help.fastio.ru',
       auditLogEnabled: false,
+      // TECHDEBT.sentry-dsn: DSN из env (NUXT_PUBLIC_SENTRY_DSN), а не хардкод.
+      // Если пусто — Sentry не инициализируется (отключается локально без секрета).
+      sentryDsn: '',
     },
   },
 })

@@ -1,4 +1,4 @@
-import { findDeliveryZone } from '@fastio/shared'
+import { findDeliveryZone, parseFiniteNumber } from '@fastio/shared'
 import type { DeliveryZone, Tenant } from '@fastio/shared'
 import { mapDeliveryZoneRow } from '../utils/supabase'
 import { getTenantDb } from '../utils/tenantDb'
@@ -22,11 +22,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const lat = Number(body.lat)
-  const lon = Number(body.lon)
-  const subtotal = Number(body.subtotal ?? 0)
+  const lat = parseFiniteNumber(body.lat, { min: -90, max: 90 })
+  const lon = parseFiniteNumber(body.lon, { min: -180, max: 180 })
+  const subtotal = parseFiniteNumber(body.subtotal ?? 0) ?? 0
 
-  if (Number.isNaN(lat) || Number.isNaN(lon)) {
+  if (lat === null || lon === null) {
     throw createError({ statusCode: 400, message: 'lat и lon обязательны' })
   }
 

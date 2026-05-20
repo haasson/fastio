@@ -16,6 +16,7 @@ vi.mock('@fastio/shared/observability', () => ({
 }))
 
 let currentPhone = ''
+let currentReferer: string | undefined = undefined
 let lastRedirect: { url: string; status: number } | null = null
 
 vi.mock('h3', async () => {
@@ -25,6 +26,7 @@ vi.mock('h3', async () => {
     ...actual,
     defineEventHandler: (fn: any) => fn,
     getRouterParam: vi.fn(() => currentPhone),
+    getRequestHeader: vi.fn(() => currentReferer),
     sendRedirect: vi.fn(async (_event: unknown, url: string, status: number) => {
       lastRedirect = { url, status }
 
@@ -32,6 +34,10 @@ vi.mock('h3', async () => {
     }),
   }
 })
+
+vi.mock('#imports', () => ({
+  useRuntimeConfig: () => ({ adminUrl: 'https://admin.fastio.ru' }),
+}))
 
 import handler from '../[phone].get'
 
@@ -42,6 +48,7 @@ function makeEvent() {
 beforeEach(() => {
   vi.clearAllMocks()
   currentPhone = ''
+  currentReferer = undefined // отсутствие Referer = OK (Telegram native client)
   lastRedirect = null
 })
 
@@ -120,5 +127,50 @@ describe('GET /api/tel/[phone]', () => {
     await handler(makeEvent())
 
     expect(lastRedirect).toEqual({ url: 'tel:+123456789012345', status: 302 })
+  })
+
+  describe('referer whitelist (PREPROD-200)', () => {
+    it('пропускает запрос без Referer (Telegram native client)', async () => {
+      currentPhone = '+79991234567'
+      currentReferer = undefined
+
+      await handler(makeEvent())
+
+      expect(lastRedirect).toEqual({ url: 'tel:+79991234567', status: 302 })
+    })
+
+    it('пропускает Referer от admin.fastio.ru', async () => {
+      currentPhone = '+79991234567'
+      currentReferer = 'https://admin.fastio.ru/orders/123'
+
+      await handler(makeEvent())
+
+      expect(lastRedirect).toEqual({ url: 'tel:+79991234567', status: 302 })
+    })
+
+    it('пропускает Referer от t.me (Telegram web/mobile)', async () => {
+      currentPhone = '+79991234567'
+      currentReferer = 'https://t.me/some_bot'
+
+      await handler(makeEvent())
+
+      expect(lastRedirect).toEqual({ url: 'tel:+79991234567', status: 302 })
+    })
+
+    it('403 при Referer от чужого origin (open-redirect защита)', () => {
+      currentPhone = '+79991234567'
+      currentReferer = 'https://evil.com/phishing'
+
+      expect(() => handler(makeEvent())).toThrow(expect.objectContaining({ statusCode: 403 }))
+      expect(mockReportError).toHaveBeenCalledTimes(1)
+      expect(lastRedirect).toBeNull()
+    })
+
+    it('403 при попытке подмены через prefix-collision (admin.fastio.ru.evil.com)', () => {
+      currentPhone = '+79991234567'
+      currentReferer = 'https://admin.fastio.ru.evil.com/redirect'
+
+      expect(() => handler(makeEvent())).toThrow(expect.objectContaining({ statusCode: 403 }))
+    })
   })
 })

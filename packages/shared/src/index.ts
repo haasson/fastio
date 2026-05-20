@@ -67,6 +67,7 @@ export * from './utils/branchAddress'
 export * from './utils/planResolve'
 export * from './utils/slugify'
 export * from './utils/csp'
+export * from './utils/parseFiniteNumber'
 
 export * from './utils/vocabulary'
 export * from './utils/telegramReminderOptions'

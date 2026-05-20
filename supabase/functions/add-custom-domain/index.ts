@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { captureException, flushSentry, withSentry } from '../_shared/sentry.ts'
+import { normalizeDomain } from './domain-validation.ts'
 
 // FNV-1a 64-bit hash → bigint-safe для pg_try_advisory_xact_lock(bigint).
 // Postgres bigint = signed 64-bit. JS number теряет точность после 2^53, поэтому
@@ -26,36 +27,6 @@ function hashStringToInt(input: string): number {
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
-
-// Hostname: label = LDH (letter/digit/hyphen, не в начале/конце), 1-63 символа;
-// общее имя 1-253 символа; минимум 2 label'а. TLD разрешает digits, чтобы пройти
-// punycode-IDN типа `.xn--p1ai` (.рф). Юзер сам конвертит IDN в punycode перед отправкой.
-const DOMAIN_REGEX = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
-
-type NormalizeResult =
-  | { ok: true; domain: string }
-  | { ok: false; error: string }
-
-function normalizeDomain(raw: unknown): NormalizeResult {
-  if (!raw || typeof raw !== 'string') return { ok: false, error: 'Некорректный домен' }
-  // Срезаем протокол / путь / query — юзер часто вставляет полный URL.
-  // `www.` НЕ режем: apex и www — разные записи в DNS, silent rewrite сюрпризит.
-  const stripped = raw.trim().toLowerCase()
-    .replace(/^https?:\/\//, '')
-    .split('/')[0]
-    .split('?')[0]
-    .split('#')[0]
-  if (!stripped) return { ok: false, error: 'Некорректный домен' }
-  if (stripped.startsWith('www.')) {
-    return { ok: false, error: 'Введите apex-домен без префикса www (например, example.com)' }
-  }
-  // localhost/IP/internal hostnames отсекаем явно.
-  if (stripped === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(stripped) || stripped.endsWith('.localhost')) {
-    return { ok: false, error: 'Некорректный домен' }
-  }
-  if (!DOMAIN_REGEX.test(stripped)) return { ok: false, error: 'Некорректный домен' }
-  return { ok: true, domain: stripped }
-}
 
 type DnsResult =
   | { ok: true }
