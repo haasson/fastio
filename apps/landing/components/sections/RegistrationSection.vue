@@ -200,15 +200,22 @@ async function onSubmit() {
   submitError.value = null
 
   try {
+    // PREPROD-211: honeypot теперь триггерится по любому ПРИСУТСТВИЮ поля в body
+    // (даже пустая строка). Бот тупо отправит всё, что есть в DOM. Легитимный клиент
+    // шлёт `website` ТОЛЬКО когда юзер реально что-то ввёл — иначе сервер реджектнет.
+    const payload: Record<string, unknown> = {
+      name: form.name,
+      slug: form.slug.toLowerCase(),
+      email: form.email,
+      initial_plan_key: landingPlanKey.value ?? undefined,
+    }
+    if (honeypot.value) {
+      payload.website = honeypot.value
+    }
+
     await $fetch('/api/register', {
       method: 'POST',
-      body: {
-        name: form.name,
-        slug: form.slug.toLowerCase(),
-        email: form.email,
-        website: honeypot.value,
-        initial_plan_key: landingPlanKey.value ?? undefined,
-      },
+      body: payload,
     })
     sessionStorage.removeItem('landing_plan_key')
     submitted.value = true

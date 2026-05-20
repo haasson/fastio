@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { formatPrice } from '@fastio/shared'
+import { formatPrice, parseFiniteNumber } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireMemberOfTenant } from '../../utils/auth'
 
@@ -7,11 +7,11 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const tenantId = String(body.tenantId ?? '').trim()
   const code = String(body.code ?? '').trim()
-  const subtotal = Number(body.subtotal ?? 0)
+  const subtotal = parseFiniteNumber(body.subtotal ?? 0)
   const scheduledAt = typeof body.scheduledAt === 'string' && body.scheduledAt ? body.scheduledAt : null
 
   if (!tenantId || !code) throw createError({ statusCode: 400, message: 'tenantId и code обязательны' })
-  if (!Number.isFinite(subtotal) || subtotal < 0) throw createError({ statusCode: 400 })
+  if (subtotal === null) throw createError({ statusCode: 400 })
 
   await requireMemberOfTenant(event, tenantId)
 

@@ -1,15 +1,16 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
+import { parseFiniteNumber } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireMemberOfTenant } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const tenantId = String(query.tenantId ?? '').trim()
-  const subtotal = Number(query.subtotal ?? 0)
+  const subtotal = parseFiniteNumber(query.subtotal ?? 0)
   const scheduledAt = typeof query.scheduledAt === 'string' && query.scheduledAt ? query.scheduledAt : null
 
   if (!tenantId) throw createError({ statusCode: 400, message: 'tenantId is required' })
-  if (!Number.isFinite(subtotal) || subtotal < 0) {
+  if (subtotal === null) {
     throw createError({ statusCode: 400, message: 'Некорректная сумма' })
   }
 

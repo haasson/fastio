@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DeliveryZone, DeliveryZoneRow, WorkingHoursSchedule } from '@fastio/shared'
-import { findDeliveryZone, mapDeliveryZoneRow, isOpenNow, formatPrice } from '@fastio/shared'
+import { findDeliveryZone, mapDeliveryZoneRow, isOpenNow, formatPrice, parseFiniteNumber } from '@fastio/shared'
 import type { DeliveryType, TenantOrderConfig } from './order-validation'
 import { calcDeliveryFee } from './order-calc'
 
@@ -81,10 +81,10 @@ export async function resolveDelivery(
   }
 
   if (hasZones && deliveryType === 'delivery') {
-    const geoLat = Number(body.geoLat)
-    const geoLon = Number(body.geoLon)
+    const geoLat = parseFiniteNumber(body.geoLat, { min: -90, max: 90 })
+    const geoLon = parseFiniteNumber(body.geoLon, { min: -180, max: 180 })
 
-    if (Number.isNaN(geoLat) || Number.isNaN(geoLon)) {
+    if (geoLat === null || geoLon === null) {
       throw createError({ statusCode: 400, message: 'Для доставки необходимо указать координаты адреса' })
     }
 
@@ -103,10 +103,10 @@ export async function resolveDelivery(
 
   // fixed-режим: зон нет, но координаты всё равно сохраняем
   if (!hasZones && deliveryType === 'delivery') {
-    const lat = Number(body.geoLat)
-    const lon = Number(body.geoLon)
+    const lat = parseFiniteNumber(body.geoLat, { min: -90, max: 90 })
+    const lon = parseFiniteNumber(body.geoLon, { min: -180, max: 180 })
 
-    if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
+    if (lat !== null && lon !== null) {
       deliveryLat = lat
       deliveryLon = lon
     }

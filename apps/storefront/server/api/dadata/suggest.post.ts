@@ -2,9 +2,16 @@ import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { reportError } from '@fastio/shared/observability'
+import { LRUCache } from 'lru-cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-const tenantCoordsCache = new Map<string, { lat: number; lon: number } | null>()
+// PREPROD-213: TTL вместо unbounded Map. Если админ обновляет адрес филиала
+// (через admin app), stale-координаты на этом nitro-инстансе протухнут за час
+// сами по себе — без realtime-подписки на branches.
+const tenantCoordsCache = new LRUCache<string, { lat: number; lon: number }>({
+  max: 1000,
+  ttl: 60 * 60 * 1000, // 1 час
+})
 
 async function getTenantCoords(
   tenantId: string,
@@ -12,7 +19,8 @@ async function getTenantCoords(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: SupabaseClient<any>,
 ): Promise<{ lat: number; lon: number } | null> {
-  if (tenantCoordsCache.has(tenantId)) return tenantCoordsCache.get(tenantId)!
+  const cached = tenantCoordsCache.get(tenantId)
+  if (cached) return cached
 
   const { data, error } = await supabase
     .from('branches')
@@ -32,11 +40,8 @@ async function getTenantCoords(
     ? { lat: data.latitude as number, lon: data.longitude as number }
     : null
 
-  // null НЕ кэшируем (тот же паттерн что admin после PREPROD-004). Если филиал
-  // тенанта появится / у него обновятся координаты — следующий запрос подтянет
-  // их вместо вечной null-записи в этом nitro-инстансе. Положительный coords
-  // кэшируется бессрочно — координаты филиалов меняются редко, рестарт деплоя
-  // сбросит кэш.
+  // null НЕ кэшируем (тот же паттерн что admin после PREPROD-004). Положительный
+  // coords кэшируется на 1 час — после смены адреса филиала stale исчезнет сам.
   if (coords) tenantCoordsCache.set(tenantId, coords)
 
   return coords
