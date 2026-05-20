@@ -1,6 +1,5 @@
 import { defineEventHandler, readBody, setCookie } from 'h3'
 import { useRuntimeConfig } from '#imports'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
 import { getClientIp } from '@fastio/shared/server'
 import { isSecureRequest } from '../../../utils/isSecureRequest'
@@ -10,6 +9,7 @@ import {
   issueSessionToken,
   TG_SESSION_COOKIE_NAME,
 } from '../../../utils/telegramAuth'
+import { findOrCreateCustomer } from '../../../utils/findOrCreateCustomer'
 import { reportError } from '@fastio/shared/observability'
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
@@ -84,59 +84,3 @@ export default defineEventHandler(async (event) => {
 
   return { ok: true }
 })
-
-type CustomerSeed = {
-  tenantId: string
-  telegramId: string
-  name: string | null
-  photoUrl: string | null
-}
-
-async function findOrCreateCustomer(
-  supabase: SupabaseClient,
-  seed: CustomerSeed,
-): Promise<string> {
-  const existing = await lookupCustomer(supabase, seed.tenantId, seed.telegramId)
-  if (existing) return existing
-
-  const { data: created, error } = await supabase
-    .from('customers')
-    .insert({
-      tenant_id: seed.tenantId,
-      telegram_id: seed.telegramId,
-      name: seed.name,
-      avatar_url: seed.photoUrl,
-    })
-    .select('id')
-    .single()
-
-  if (created) return created.id as string
-
-  // Concurrent insert won the race — re-read the row our peer just created.
-  if (error?.code === '23505') {
-    const concurrent = await lookupCustomer(supabase, seed.tenantId, seed.telegramId)
-    if (concurrent) return concurrent
-  }
-
-  reportError(error ?? new Error('customer insert returned no row'))
-  throw createError({ statusCode: 500, message: 'Ошибка создания профиля' })
-}
-
-async function lookupCustomer(
-  supabase: SupabaseClient,
-  tenantId: string,
-  telegramId: string,
-): Promise<string | null> {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .eq('telegram_id', telegramId)
-    .maybeSingle()
-
-  if (error) {
-    reportError(error)
-    throw createError({ statusCode: 500, message: 'Ошибка базы данных' })
-  }
-  return data ? (data.id as string) : null
-}
