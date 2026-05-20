@@ -18,6 +18,7 @@ WISHLIST.md
 docs/*
 !docs/secrets-rotation.md
 !docs/disaster-recovery.md
+!docs/backlog.md
 .worktrees
 
 # Playwright
