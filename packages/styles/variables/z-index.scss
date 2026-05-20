@@ -1,0 +1,44 @@
+// Z-index scale — единая шкала для всех приложений монорепо.
+// Шкала шагов по 100 — хватает запаса под локальные надстройки (calc(var(--z-foo) + 1)).
+//
+// Правила:
+// - Локальные stacking contexts (z-index: 0..10 внутри карточек/канвасов/таблиц)
+//   НЕ нужно выносить в токены — это локальное упорядочивание соседей.
+// - Любой fixed/sticky/absolute элемент, который должен быть над контентом страницы,
+//   обязан использовать токен.
+// - Naive UI и сторонние библиотеки используют свой внутренний z-index (~2000+).
+//   Для редких случаев, когда наш кастомный элемент должен быть ВЫШЕ Naive,
+//   используем --z-above-naive.
+
+:root {
+  --z-base: 1;
+
+  // Sticky bars внутри страницы (action bar, sticky toolbar, FAB).
+  --z-sticky: 100;
+
+  // Dropdown'ы, autocomplete, popover'ы, user-menu.
+  --z-dropdown: 200;
+
+  // Sticky/fixed заголовок приложения (SiteHeader, admin topbar, sidebar).
+  // Алиас --z-header = --z-overlay для обратной совместимости.
+  --z-header: 300;
+
+  // Mobile-menu drawer (storefront).
+  --z-mobile-menu: 300;
+
+  // Backdrop модалок/дроверов (для кастомных не-Naive оверлеев).
+  --z-overlay: 300;
+
+  // Контент модалки/дровера.
+  --z-modal: 400;
+
+  // Tooltip (поверх модалок).
+  --z-tooltip: 500;
+
+  // Toast/уведомления — самый верх в нашем UI.
+  --z-toast: 600;
+
+  // Кастомные оверлеи, которым нужно быть выше Naive UI modal/drawer (~2000).
+  // Используется в admin UiBottomSheet.
+  --z-above-naive: 2100;
+}

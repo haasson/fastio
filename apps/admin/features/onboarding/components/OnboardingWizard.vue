@@ -255,7 +255,8 @@ const finish = async () => {
 .wizard-root {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  // Полноэкранный wizard поверх контента (выше sidebar).
+  z-index: var(--z-modal);
   background: var(--color-bg-page);
   display: flex;
   align-items: center;

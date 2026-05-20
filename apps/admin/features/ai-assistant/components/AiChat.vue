@@ -171,7 +171,8 @@ watch(
   position: fixed;
   bottom: var(--space-24);
   right: var(--space-24);
-  z-index: 200;
+  // FAB поверх контента и sticky-баров.
+  z-index: var(--z-dropdown);
 }
 
 .fab {

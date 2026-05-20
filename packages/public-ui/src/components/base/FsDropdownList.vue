@@ -40,7 +40,7 @@ const emit = defineEmits<{
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  z-index: 50;
+  z-index: var(--z-dropdown);
   overflow: hidden;
 }
 

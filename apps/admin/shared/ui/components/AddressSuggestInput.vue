@@ -111,7 +111,7 @@ const allRules = computed<ValidationRule[]>(() => [...(props.rules ?? []), picke
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: var(--z-dropdown);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-8);

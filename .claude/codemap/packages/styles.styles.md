@@ -152,6 +152,20 @@ _Карта SCSS-токенов и миксинов проекта. Исполь
 - `--radius-default` — `var(--radius-8)`
 - `--radius-card` — `var(--radius-12)`
 
+## `variables/z-index.scss`
+
+**CSS-токены** (`var(--name)`):
+- `--z-base` — `1` — базовый stacking
+- `--z-sticky` — `100` — sticky bars внутри страницы (action bar, sticky toolbar, FAB)
+- `--z-dropdown` — `200` — dropdown'ы, autocomplete, popover'ы, user-menu
+- `--z-header` — `300` — sticky/fixed заголовок приложения
+- `--z-mobile-menu` — `300` — mobile-menu drawer (storefront)
+- `--z-overlay` — `300` — backdrop модалок/дроверов (для кастомных не-Naive оверлеев)
+- `--z-modal` — `400` — контент модалки/дровера
+- `--z-tooltip` — `500` — tooltip
+- `--z-toast` — `600` — toast/уведомления
+- `--z-above-naive` — `2100` — для кастомных оверлеев поверх Naive UI (admin UiBottomSheet)
+
 ## `variables/sizes.scss`
 
 **CSS-токены** (`var(--name)`):

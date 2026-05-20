@@ -59,7 +59,7 @@ const tenantName = computed(() => tenant.value?.name ?? '')
   background: var(--color-bg);
   position: sticky;
   top: 0;
-  z-index: 200;
+  z-index: var(--z-header);
 
   @include md {
     padding: 16px 24px;
@@ -95,7 +95,7 @@ const tenantName = computed(() => tenant.value?.name ?? '')
 .sticky-category-bar {
   position: sticky;
   top: var(--header-height);
-  z-index: 99;
+  z-index: var(--z-sticky);
 }
 
 .table-content {

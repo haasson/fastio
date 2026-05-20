@@ -45,7 +45,7 @@ withDefaults(defineProps<Props>(), {
   padding: 6px 10px;
   border-radius: 6px;
   max-width: 240px;
-  z-index: var(--z-toast, 500);
+  z-index: var(--z-tooltip, 500);
   line-height: 1.4;
   white-space: pre-line;
 
