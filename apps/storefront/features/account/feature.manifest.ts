@@ -31,6 +31,7 @@ export default defineFeature({
     'server.api.customer.profile',
     'server.api.customer.addresses',
     'server.api.customer.orders',
+    'server.api.auth.revoke-all-sessions',
     '@fastio/shared',                          // formatPrice, type CustomerAddress, Customer
   ],
 })

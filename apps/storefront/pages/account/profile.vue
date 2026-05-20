@@ -24,6 +24,22 @@
               {{ loading ? 'Сохранение...' : 'Сохранить' }}
             </FsButton>
           </FsForm>
+
+          <div class="security-block">
+            <div class="security-title">Безопасность</div>
+            <FsAlert v-if="revokeError" type="error">{{ revokeError }}</FsAlert>
+            <FsButton
+              variant="outline"
+              :disabled="revoking"
+              data-testid="revoke-all-sessions"
+              @click="onRevokeAll"
+            >
+              {{ revoking ? 'Выходим...' : 'Выйти со всех устройств' }}
+            </FsButton>
+            <p class="security-hint">
+              Завершит все ваши сессии в этом заведении, включая текущую. Полезно, если вы заходили с чужого устройства.
+            </p>
+          </div>
         </div>
       </StorePageLayout>
     </FsSection>
@@ -38,16 +54,22 @@ import { validationRules } from '@fastio/kit'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
 import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 import { useAuthStore } from '~/features/auth'
+import { useConfirm } from '~/shared/composables/useConfirm'
+import { reportError } from '~/shared/utils/reportError'
 import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
 const { isAuthenticated } = storeToRefs(authStore)
+const { confirm } = useConfirm()
 
 const name = ref('')
 const phone = ref('')
 const serverError = ref('')
 const loading = ref(false)
 const saved = ref(false)
+
+const revoking = ref(false)
+const revokeError = ref('')
 
 onMounted(async () => {
   await authStore.init()
@@ -74,15 +96,70 @@ async function onSave() {
     loading.value = false
   }
 }
+
+async function onRevokeAll() {
+  const ok = await confirm(
+    'Все ваши сессии в этом заведении будут завершены. Текущая тоже — придётся войти заново.',
+    {
+      title: 'Выйти со всех устройств?',
+      confirmLabel: 'Выйти отовсюду',
+      cancelLabel: 'Отмена',
+      danger: true,
+    },
+  )
+
+  if (!ok) return
+
+  revoking.value = true
+  revokeError.value = ''
+
+  try {
+    await $fetch('/api/auth/revoke-all-sessions', { method: 'POST' })
+    // Серверная кука стёрта эндпоинтом, но клиентский authStore про это
+    // не знает — чистим его явно. logout() также подметает Supabase legacy session.
+    await authStore.logout()
+    navigateTo('/')
+  } catch (err: unknown) {
+    const fetchErr = err as { data?: { message?: string } }
+    revokeError.value = fetchErr?.data?.message ?? 'Не удалось завершить сессии'
+    reportError(err)
+  } finally {
+    revoking.value = false
+  }
+}
 </script>
 
 <style scoped lang="scss">
 .profile-root {
   max-width: 400px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .form {
   // gap handled by FsForm
+}
+
+.security-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.security-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.security-hint {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  margin: 0;
 }
 </style>

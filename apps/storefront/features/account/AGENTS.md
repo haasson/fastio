@@ -8,7 +8,7 @@
 
 Страницы:
 - `/account` (index) — сводка: имя гостя + последние заказы + кнопки переходов
-- `/account/profile` — форма имя/телефон/email + удалить аккаунт
+- `/account/profile` — форма имя/телефон/email + кнопка «Выйти со всех устройств» (PREPROD-210) + удалить аккаунт
 - `/account/addresses` — CRUD адресов
 - `/account/orders` — список заказов с фильтрами + детали по клику
 - `/account/appointments` — **живёт в модуле `appointments`** (services), не здесь

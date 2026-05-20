@@ -28,6 +28,7 @@ Flow:
 - **Изменить логику hash-проверки telegram init_data:** правится в `apps/storefront/server/utils/telegramAuth.ts`, не здесь (клиент только UI).
 - **Поменять текст / consent-note** в логин-модалке — `AuthLoginModal.vue`.
 - **Поля профиля** редактируются на странице `/account/profile` через `PATCH /api/customer/profile`.
+- **«Выйти со всех устройств»** — `POST /api/auth/revoke-all-sessions` (DELETE customer_sessions WHERE customer_id=current+tenant_id=current). Кнопка в `/account/profile`. После запроса `authStore.logout()` подметает Supabase legacy session.
 
 ## Антипаттерны (не делай так)
 

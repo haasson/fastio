@@ -85,6 +85,35 @@ export default defineEventHandler(async (event) => {
 
     const telegramId = String(from.id)
 
+    // PREPROD-205: per-tg-id rate-limit для pending_telegram_auths.
+    // Per-IP limit на /api/auth/telegram/init ловит атакующего с одного IP, но
+    // юзер с динамическим IP (мобильный 4G, VPN-роутинг) обходит. Tg-id даёт
+    // identity-level cap независимо от network.
+    //
+    // Silent ignore при hit — НЕ отвечаем юзеру error'ом, иначе бот станет
+    // вектором DoS на legit-юзера (атакующий зная tg_id жертвы спамит /start
+    // КОД от его имени → жертва получает 11 error-сообщений и не может войти).
+    // reportError для метрики в Sentry — алерт по deviation.
+    const { data: rlAllowed, error: rlError } = await supabase.rpc('consume_rate_limit', {
+      _key: `tg-auth:tg-id:${telegramId}`,
+      _max: 10,
+      _window_seconds: 3600,
+    })
+
+    if (rlError) {
+      reportError(rlError, { context: 'tg-auth-webhook:rate-limit', telegramId })
+
+      return { ok: true }
+    }
+    if (!rlAllowed) {
+      reportError(new Error('[tg-auth] per-tg-id rate-limited'), {
+        context: 'tg-auth-webhook:rate-limit-hit',
+        telegramId,
+      })
+
+      return { ok: true }
+    }
+
     const { data: pending, error: pendingError } = await supabase
       .from('pending_telegram_auths')
       .select('nonce')
