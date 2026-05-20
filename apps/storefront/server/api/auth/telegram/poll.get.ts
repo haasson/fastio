@@ -1,8 +1,8 @@
 import { defineEventHandler, getQuery, setCookie } from 'h3'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTenantDb } from '../../../utils/tenantDb'
 import { isSecureRequest } from '../../../utils/isSecureRequest'
 import { issueSessionToken, TG_SESSION_COOKIE_NAME } from '../../../utils/telegramAuth'
+import { findOrCreateCustomer } from '../../../utils/findOrCreateCustomer'
 import { reportError } from '@fastio/shared/observability'
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
@@ -71,47 +71,3 @@ export default defineEventHandler(async (event) => {
 
   return { status: 'ok' }
 })
-
-type CustomerSeed = { tenantId: string; telegramId: string; name: string | null; phone: string | null }
-
-async function findOrCreateCustomer(
-  supabase: SupabaseClient,
-  seed: CustomerSeed,
-): Promise<string> {
-  const { data: existing } = await supabase
-    .from('customers')
-    .select('id, phone')
-    .eq('tenant_id', seed.tenantId)
-    .eq('telegram_id', seed.telegramId)
-    .maybeSingle()
-
-  if (existing) {
-    // Update phone if user just shared it and didn't have one before
-    if (seed.phone && !existing.phone) {
-      await supabase.from('customers').update({ phone: seed.phone }).eq('id', existing.id)
-    }
-    return existing.id as string
-  }
-
-  const { data: created, error } = await supabase
-    .from('customers')
-    .insert({ tenant_id: seed.tenantId, telegram_id: seed.telegramId, name: seed.name, phone: seed.phone })
-    .select('id')
-    .single()
-
-  if (created) return created.id as string
-
-  // Race condition: concurrent insert — re-read
-  if (error?.code === '23505') {
-    const { data: concurrent } = await supabase
-      .from('customers')
-      .select('id')
-      .eq('tenant_id', seed.tenantId)
-      .eq('telegram_id', seed.telegramId)
-      .maybeSingle()
-    if (concurrent) return concurrent.id as string
-  }
-
-  reportError(error ?? new Error('customer insert returned no row'))
-  throw createError({ statusCode: 500, message: 'Ошибка создания профиля' })
-}
