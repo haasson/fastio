@@ -32,6 +32,7 @@ export default defineConfig({
       'apps/admin/**/*.test.ts',
       'apps/storefront/**/*.test.ts',
       'apps/backoffice/**/*.test.ts',
+      'supabase/tests/**/*.test.ts',
     ],
     coverage: {
       provider: 'v8',

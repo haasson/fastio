@@ -92,6 +92,7 @@ export default defineNuxtConfig({
     telegramProxyUrl: '',
     reminderCronSecret: '',
     internalApiSecret: '',
+    relaySecret: '',
     adminUrl: '',
     dadataApiKey: '',
     public: {
