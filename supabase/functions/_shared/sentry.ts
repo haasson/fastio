@@ -18,13 +18,15 @@ const dsn = Deno.env.get('SENTRY_DSN')
 // и забудет SENTRY_ENVIRONMENT — события не засрут прод-проект ложными issue.
 const environment = Deno.env.get('SENTRY_ENVIRONMENT') ?? 'unknown'
 // tracesSampleRate тюнится без передеплоя функций — менять только env, рестарт runtime.
-const tracesSampleRate = Number(Deno.env.get('SENTRY_TRACES_SAMPLE_RATE') ?? '0.1')
+// PREPROD-228: default 0.01 (1%) — экономим квоту Sentry на high-traffic
+// функциях (webhook'и Telegram, cron). При необходимости поднимаем через env.
+const tracesSampleRate = Number(Deno.env.get('SENTRY_TRACES_SAMPLE_RATE') ?? '0.01')
 
 if (dsn) {
   Sentry.init({
     dsn,
     environment,
-    tracesSampleRate: Number.isFinite(tracesSampleRate) ? tracesSampleRate : 0.1,
+    tracesSampleRate: Number.isFinite(tracesSampleRate) ? tracesSampleRate : 0.01,
   })
 }
 

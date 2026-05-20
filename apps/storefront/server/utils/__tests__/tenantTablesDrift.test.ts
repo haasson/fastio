@@ -12,8 +12,9 @@
  *   pnpm vitest run apps/storefront/server/utils/__tests__/tenantTablesDrift.test.ts
  *
  * Без флага тест скипается, чтобы не блокировать обычный `pnpm test:run`
- * (где живая БД может быть недоступна). В CI стоит запускать на этапе с
- * поднятым supabase.
+ * (где живая БД может быть недоступна). В CI флаг включён (PREPROD-225),
+ * но без SUPABASE_URL/KEY тест тоже скипается — там нет живой БД. Реальная
+ * проверка проходит на nightly-job с поднятым supabase.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -21,14 +22,13 @@ import { createClient } from '@supabase/supabase-js'
 import { TENANT_TABLES } from '../tenantDb'
 
 const enabled = process.env.RUN_TENANT_TABLES_DRIFT_CHECK === '1'
+  && Boolean(process.env.SUPABASE_URL)
+  && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 describe.skipIf(!enabled)('TENANT_TABLES drift check (live DB)', () => {
   it('совпадает с information_schema.columns', async () => {
-    const url = process.env.SUPABASE_URL
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!url || !key) {
-      throw new Error('SUPABASE_URL и SUPABASE_SERVICE_ROLE_KEY должны быть заданы при RUN_TENANT_TABLES_DRIFT_CHECK=1')
-    }
+    const url = process.env.SUPABASE_URL!
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
     const sb = createClient(url, key)
     const { data, error } = await sb

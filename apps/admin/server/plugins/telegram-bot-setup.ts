@@ -1,6 +1,6 @@
 import { defineNitroPlugin } from 'nitropack/runtime'
 import { useRuntimeConfig } from '#imports'
-import { telegramFetch } from '../utils/telegramFetch'
+import { telegramApiUrl, telegramFetch } from '../utils/telegramFetch'
 
 type BotSpec = {
   label: string
@@ -18,7 +18,7 @@ async function setupBot({ label, token, webhookUrl, secret }: BotSpec) {
   if (secret) body.secret_token = secret
 
   try {
-    const res = await telegramFetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+    const res = await telegramFetch(telegramApiUrl(token, 'setWebhook'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

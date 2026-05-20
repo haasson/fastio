@@ -12,7 +12,9 @@ export const useQuery = <T>(
     loading.value = true
     error.value = null
     try { data.value = await fn() }
-    catch (e: any) { error.value = e.message }
+    catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : String(e)
+    }
     finally { loading.value = false }
   }
 

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { telegramFetch } from './telegramFetch'
+import { telegramApiUrl, telegramFetch } from './telegramFetch'
 
 type Subscriber = {
   id: string
@@ -68,7 +68,7 @@ export async function broadcastToTenantTelegram(
     }
 
     try {
-      const tgRes = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      const tgRes = await telegramFetch(telegramApiUrl(token, 'sendMessage'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

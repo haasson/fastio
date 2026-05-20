@@ -10,7 +10,10 @@ export const useMutation = <TArgs extends unknown[], TResult>(
     loading.value = true
     error.value = null
     try { return await fn(...args) }
-    catch (e: any) { error.value = e.message; return null }
+    catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : String(e)
+      return null
+    }
     finally { loading.value = false }
   }
 

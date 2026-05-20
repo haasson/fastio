@@ -11,7 +11,7 @@ import {
 } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
 import { requireTelegramWebhookSecret } from '../../utils/auth'
-import { telegramFetch } from '../../utils/telegramFetch'
+import { telegramApiUrl, telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '~/shared/utils/reportError'
 
 type TgUser = { id?: number; first_name?: string; last_name?: string; username?: string }
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
   if (!chatId) return { ok: true }
 
   const sendMessage = async (text: string, extra: Record<string, unknown> = {}) => {
-    const res = await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await telegramFetch(telegramApiUrl(token, 'sendMessage'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text, ...extra }),
@@ -306,7 +306,7 @@ async function handleCallbackQuery(query: TgCallbackQuery, token: string) {
 
   const answerCallback = async (text?: string) => {
     try {
-      await telegramFetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
+      await telegramFetch(telegramApiUrl(token, 'answerCallbackQuery'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ callback_query_id: query.id, text }),
@@ -318,7 +318,7 @@ async function handleCallbackQuery(query: TgCallbackQuery, token: string) {
 
   const sendReply = async (text: string) => {
     try {
-      await telegramFetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      await telegramFetch(telegramApiUrl(token, 'sendMessage'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: chatId, text }),

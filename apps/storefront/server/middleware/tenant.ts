@@ -7,6 +7,11 @@ import { lookupTenantByHost } from '../utils/tenantCache'
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   if (url.pathname.startsWith('/_nuxt') || url.pathname.startsWith('/__nuxt')) return
+  // PREPROD-221: liveness-probe Coolify/Traefik бьёт сюда раз в N секунд.
+  // Без skip каждый probe сходит в БД (`tenants` lookup) — мусорный трафик
+  // и зависимость health-check от внешней БД. /api/health сам по себе
+  // делает min-query к БД, дублировать tenant-lookup незачем.
+  if (url.pathname === '/api/health' || url.pathname.startsWith('/api/health/')) return
 
   const host = getRequestHeader(event, 'x-original-host') || getRequestHost(event)
   const domain = host.split(':')[0]
