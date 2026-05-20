@@ -1,10 +1,12 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { isSecureRequest } from '../../utils/isSecureRequest'
+import { reportError } from '~/shared/utils/reportError'
 
-// Сколько живёт cookie `fastio_table`. Гость может сидеть за столом часами,
-// но 24h — разумный потолок: следующий день QR могут отсканить другие гости,
-// а старый сессионный cookie не должен открывать /check у нового стола.
-const TABLE_COOKIE_TTL_SECONDS = 24 * 60 * 60
+// PREPROD-263: сократили TTL cookie `fastio_table` с 24h до 6h — середина
+// рабочей смены. Гость может сидеть за столом часами, но 6h — разумный потолок:
+// в течение одной смены QR сканируют новые гости, а старый cookie не должен
+// открывать /check у нового стола или ловиться на mismatch при пересадке.
+const TABLE_COOKIE_TTL_SECONDS = 6 * 60 * 60
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
@@ -45,7 +47,22 @@ export default defineEventHandler(async (event) => {
   // нельзя прочитать общий чек чужого стола, даже зная UUID.
   // Не выставляем Set-Cookie если значение уже совпадает — лишний header на каждый
   // poll-запрос меню/чека не нужен.
-  if (getCookie(event, 'fastio_table') !== tableId) {
+  const existingCookie = getCookie(event, 'fastio_table')
+
+  if (existingCookie !== tableId) {
+    // PREPROD-263: фиксируем аномалию пересадки гостя — старая cookie указывает
+    // на другой стол того же тенанта. Это не блокер: cookie перезаписывается
+    // ниже, юзер продолжает работу. Но факт mismatch'а полезен в Sentry для
+    // понимания паттернов (закрытие стола админом, второй QR-скан в смене).
+    if (existingCookie) {
+      reportError(new Error('table cookie session mismatch'), {
+        context: 'table.get:session-mismatch',
+        oldTableId: existingCookie,
+        newTableId: tableId,
+        tenantId: db.tenantId,
+      })
+    }
+
     setCookie(event, 'fastio_table', tableId, {
       httpOnly: true,
       sameSite: 'lax',

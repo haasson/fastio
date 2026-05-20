@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { reactive, ref, computed, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { useNuxtData } from 'nuxt/app'
-import type { Tenant } from '@fastio/shared'
+import type { Tenant, PaymentMethod } from '@fastio/shared'
 import { localDateTimeToUtcIso, addDaysToDateStr, DEFAULT_TIMEZONE, formatPrice } from '@fastio/shared'
 import { useCartStore, computeBranchCompat  } from '~/features/cart'
 import { useMenuStore } from '~/features/menu-catalog'
@@ -39,7 +39,7 @@ type CheckoutForm = {
   customerPhone: string
   customerEmail: string
   comment: string
-  paymentType: 'cash' | 'card' | 'online'
+  paymentType: PaymentMethod
   needsChange: boolean
   changeFrom: number | null
   address: string
@@ -78,7 +78,13 @@ const FORM_DEFAULTS: CheckoutForm = {
 }
 
 export const useCheckoutStore = defineStore('checkout', () => {
-  const form = reactive<CheckoutForm>({ ...FORM_DEFAULTS })
+  const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+  // PREPROD-262: дефолт `paymentType` берём из первого метода тенанта (а не хардкод 'card'),
+  // чтобы при `paymentMethods=['cash']` форма сразу стартовала с 'cash' и не мигала с 'card'.
+  // page-level watch ниже всё равно подстраховывает на случай поздней инициализации tenant.
+  const initialPaymentType: PaymentMethod = tenant.value?.paymentMethods?.[0] ?? 'cash'
+  const form = reactive<CheckoutForm>({ ...FORM_DEFAULTS, paymentType: initialPaymentType })
 
   const promoResult = ref<PromoResult | null>(null)
   const autoPromo = ref<AutoPromo | null>(null)
@@ -101,8 +107,6 @@ export const useCheckoutStore = defineStore('checkout', () => {
     deliveryZone.value = null
     outsideZones.value = false
   }
-
-  const { data: tenant } = useNuxtData<Tenant>('tenant')
 
   const scheduledAt = computed<string | null>(() => {
     if (form.schedulingMode !== 'scheduled' || !form.scheduledDate || !form.scheduledTime) return null
