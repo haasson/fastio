@@ -17,6 +17,7 @@ service-account.json
 WISHLIST.md
 docs/*
 !docs/secrets-rotation.md
+!docs/disaster-recovery.md
 .worktrees
 
 # Playwright
