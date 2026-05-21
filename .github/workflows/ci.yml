@@ -73,3 +73,36 @@ jobs:
       - name: edge-functions tests (Deno)
         working-directory: supabase/functions
         run: deno task test
+
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: check
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: build storefront
+        run: pnpm build --filter storefront
+
+      - name: check service_role not in public bundle
+        # SEC-02, D-04: сканируем только .output/public/ — серверный бандл
+        # легитимно содержит "service_role" в docstring @supabase/auth-js.
+        # Публичный бандл обязан быть чист.
+        run: |
+          if grep -r "service_role" apps/storefront/.output/public/ 2>/dev/null; then
+            echo "::error::SECURITY: service_role found in storefront public bundle"
+            exit 1
+          fi
+          echo "Security check passed: service_role not found in public bundle"
