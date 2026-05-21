@@ -28,6 +28,23 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt', '@sentry/nuxt/module'],
 
+  // Phase 02-observability: wire Sentry/GlitchTip server-side instrumentation.
+  // autoInjectServerSentry: 'experimental_dynamic-import' — wraps the Nitro
+  // server entrypoint with a dynamic import() so Sentry initialises before
+  // any app code runs (equivalent to --import flag). Required for OBS-01.
+  // sentryUrl: self-hosted GlitchTip instance (Sentry-API-compatible).
+  // org/project/authToken: read from SENTRY_ORG / SENTRY_PROJECT /
+  // SENTRY_AUTH_TOKEN env vars at build time (set in Coolify).
+  // telemetry: false — never phone home to sentry.io from a self-hosted setup.
+  sentry: {
+    autoInjectServerSentry: 'experimental_dynamic-import',
+    sentryUrl: 'https://errors.fastio.ru',
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    telemetry: false,
+  },
+
   runtimeConfig: {
     supabaseServiceRoleKey: '',
     dadataApiKey: '',

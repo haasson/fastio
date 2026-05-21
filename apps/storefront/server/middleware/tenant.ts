@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import type { Tenant } from '@fastio/shared'
+import * as Sentry from '@sentry/nuxt'
 import { reportError } from '@fastio/shared/observability'
 import { getServerSupabase, mapTenant } from '../utils/supabase'
 import { lookupTenantByHost } from '../utils/tenantCache'
@@ -32,6 +33,10 @@ export default defineEventHandler(async (event) => {
       ? await mergeFreshSubscription(supabase, result.tenant)
       : result.tenant
     applyTenantToContext(event, tenant)
+    // D-01: tag every subsequent server error in this request with the tenant
+    // slug so GlitchTip issues are filterable per tenant without per-catch-block
+    // instrumentation. slug is always present on a resolved Tenant.
+    if (tenant.slug) Sentry.setTag('tenant', tenant.slug)
     assertNotSuspended(tenant, url)
     return
   }
@@ -149,6 +154,7 @@ async function devFallbackOrThrow(
         const mapped = mapTenant(byDevSlug)
         await computeDeliveryAvailable(supabase, mapped)
         applyTenantToContext(event, mapped)
+        if (mapped.slug) Sentry.setTag('tenant', mapped.slug)
         // Применяем suspended-guard и в dev-пути тоже — иначе локально
         // suspended-тенант продолжал бы обслуживать API, что мешает
         // тестировать billing-флоу.
