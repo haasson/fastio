@@ -53,7 +53,17 @@ Plans:
   2. A Telegram message arrives in the team channel within 5 minutes when GlitchTip receives a new error event
   3. Every composable that calls `supabase.channel()` has a paired `removeChannel()` call in `onUnmounted`; a grep audit returns zero violations
 
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — OBS-01 deploy GlitchTip on Coolify (errors.fastio.ru) + admin bootstrap + deployment runbook
+- [ ] 02-04-PLAN.md — REL-01 realtime channel cleanup audit script (corrected grep formula) + CI gate
+
+**Wave 2**
+
+- [ ] 02-02-PLAN.md — OBS-01 wire @sentry/nuxt (autoInstrument + source-map upload) in admin & storefront + tenant slug tag
+- [ ] 02-03-PLAN.md — OBS-02 GlitchTip native Telegram alert config + runbook (zero code)
 
 ### Phase 3: E2E Testing
 
@@ -108,7 +118,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Security Foundation | 3/3 | Complete (SEC-04 → Phase 3) | 2026-05-21 |
-| 2. Observability | 0/? | Not started | - |
+| 2. Observability | 0/4 | Planned | - |
 | 3. E2E Testing | 0/? | Not started | - |
 | 4. Performance & SEO | 0/? | Not started | - |
 | 5. Operational Features | 0/? | Not started | - |
@@ -116,4 +126,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-05-21*
-*Last updated: 2026-05-21 — Phase 1 closed (3/3); SEC-04 staging plan deferred to Phase 3*
+*Last updated: 2026-05-21 — Phase 2 planned (4 plans, 2 waves)*
