@@ -114,3 +114,72 @@ jobs:
           echo "$BUNDLE" | $SSH "docker exec -i $DB_CT psql -U postgres -d postgres -v ON_ERROR_STOP=1"
 
           echo "All migrations applied."
+
+          # RLS audit (SEC-01, D-03): verify all TENANT_TABLES have rowsecurity=true after migrations apply.
+          # TECHDEBT: этот ARRAY дублирует TENANT_TABLES из tenantDb.ts; авто-генерация при сборке
+          # отложена (см. CONTEXT.md Deferred Ideas). Ручная синхронизация допустима для Phase 1,
+          # так как tenantTablesDrift.test.ts в CI отлавливает расхождение со schema.
+          TABLES_MISSING_RLS=$($SSH "docker exec -i $DB_CT psql -U postgres -d postgres -tA" <<'SQL'
+          SELECT relname
+          FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'public'
+            AND c.relkind = 'r'
+            AND c.relrowsecurity = false
+            AND relname = ANY(ARRAY[
+              'addon_presets',
+              'addons',
+              'appointment_events',
+              'appointment_groups',
+              'appointment_settings',
+              'appointments',
+              'audit_logs',
+              'banners',
+              'billing_transactions',
+              'branches',
+              'categories',
+              'combo_tag_assignments',
+              'combos',
+              'customer_sessions',
+              'customers',
+              'delivery_zones',
+              'dish_tag_assignments',
+              'dish_tags',
+              'dishes',
+              'galleries',
+              'gallery_photos',
+              'kitchen_queue',
+              'modifier_groups',
+              'order_events',
+              'order_items',
+              'order_notes',
+              'order_number_counters',
+              'order_statuses',
+              'orders',
+              'pending_telegram_auths',
+              'promo_codes',
+              'promotions',
+              'reservation_settings',
+              'reservations',
+              'resource_unavailability',
+              'resources',
+              'schedule_templates',
+              'services',
+              'support_tickets',
+              'table_call_types',
+              'table_calls',
+              'tables',
+              'telegram_link_codes',
+              'tenant_invitations',
+              'tenant_members',
+              'tenant_roles',
+              'tenants'
+            ])
+          ORDER BY relname;
+          SQL
+          )
+          if [ -n "$TABLES_MISSING_RLS" ]; then
+            echo "::error::RLS audit FAILED. TENANT_TABLES with rowsecurity=false: $TABLES_MISSING_RLS"
+            exit 1
+          fi
+          echo "RLS audit PASSED: all TENANT_TABLES have rowsecurity=true."
