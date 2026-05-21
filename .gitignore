@@ -19,6 +19,7 @@ docs/*
 !docs/secrets-rotation.md
 !docs/disaster-recovery.md
 !docs/backlog.md
+!docs/glitchtip-telegram-alerts.md
 .worktrees
 
 # Playwright
