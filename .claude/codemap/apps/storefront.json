@@ -1,8 +1,8 @@
 {
   "project": "apps/storefront",
   "submap": "main",
-  "purpose": null,
-  "generated_at": "2026-05-20T02:06:55.720Z",
+  "purpose": "Nuxt 3 SSR storefront — публичный сайт-витрина для заведений (меню, корзина, заказ, запись)",
+  "generated_at": "2026-05-21T05:59:59.810Z",
   "stats": {
     "files": 9,
     "pages": 0,
@@ -105,8 +105,8 @@
     },
     "layouts/table.vue": {
       "kind": "vue",
-      "hash": "0bd163059ff1",
-      "purpose": "Layout страниц /table/[id]: sticky header (logo + tableBadge + кнопка вызова официанта) и sticky CategoryBar",
+      "hash": "0f93d5e009e9",
+      "purpose": "Лэйаут для режима QR-стола: шапка с логотипом/именем тенанта, баджем стола и кнопкой вызова официанта",
       "symbols": [
         {
           "name": "component",
