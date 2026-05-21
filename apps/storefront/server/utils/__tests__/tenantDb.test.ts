@@ -91,7 +91,7 @@ describe('getTenantDb', () => {
     expect(() => getTenantDb(makeEvent(undefined))).toThrow()
   })
 
-  it('ошибка при отсутствующем tenantId имеет statusCode 400', () => {
+  it('ошибка при отсутствующем tenantId имеет statusCode 500', () => {
     let caught: any
     try {
       getTenantDb(makeEvent(undefined))
@@ -99,7 +99,7 @@ describe('getTenantDb', () => {
       caught = e
     }
     expect(caught).toBeDefined()
-    expect(caught.statusCode).toBe(400)
+    expect(caught.statusCode).toBe(500)
   })
 
   it('бросает ошибку если tenantId = пустая строка', () => {

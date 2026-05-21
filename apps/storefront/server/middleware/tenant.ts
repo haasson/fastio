@@ -15,6 +15,8 @@ export default defineEventHandler(async (event) => {
 
   const host = getRequestHeader(event, 'x-original-host') || getRequestHost(event)
   const domain = host.split(':')[0]
+  // SEC-03 / D-07: пустой домен → неверный Host header, не идём в БД
+  if (!domain) throw createError({ statusCode: 503, message: 'Missing or invalid Host header' })
   const supabase = getServerSupabase()
 
   // PREPROD-112: кэш стабильной части Tenant + защита от stampede.
@@ -156,7 +158,8 @@ async function devFallbackOrThrow(
     }
   }
 
-  throw createError({ statusCode: 404, message: 'Tenant not found' })
+  // SEC-03 / D-06: 503, not 404 — avoid tenant enumeration; signal retry-able to load balancer.
+  throw createError({ statusCode: 503, message: 'Tenant not found' })
 }
 
 async function computeDeliveryAvailable(

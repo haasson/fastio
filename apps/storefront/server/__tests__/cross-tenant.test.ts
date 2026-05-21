@@ -117,7 +117,7 @@ function makeEvent(tenantId: string, extra: Record<string, any> = {}) {
 describe('getTenantDb — cross-tenant isolation', () => {
   beforeEach(resetAll)
 
-  it('бросает 400 если tenantId отсутствует в event.context', async () => {
+  it('бросает 500 если tenantId отсутствует в event.context', async () => {
     const { getTenantDb } = await import('../utils/tenantDb')
     const event = { context: {} } as any
 
@@ -129,7 +129,7 @@ describe('getTenantDb — cross-tenant isolation', () => {
     }
 
     expect(caught).toBeDefined()
-    expect(caught.statusCode).toBe(400)
+    expect(caught.statusCode).toBe(500)
   })
 
   it('from() всегда применяет tenant_id фильтр', async () => {

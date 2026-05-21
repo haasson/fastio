@@ -72,7 +72,7 @@ export const TENANT_TABLES = new Set<string>([
 
 export function getTenantDb(event: H3Event) {
   const tenantId = event.context.tenantId as string | undefined
-  if (!tenantId) throw createError({ statusCode: 400, message: 'Missing tenant context' })
+  if (!tenantId) throw createError({ statusCode: 500, message: 'Missing tenant context' })
 
   const sb = getServerSupabase()
 
