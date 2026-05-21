@@ -75,6 +75,25 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@vueuse/nuxt', '@sentry/nuxt/module'],
 
+  // Phase 02-observability: wire Sentry/GlitchTip server-side instrumentation.
+  // autoInjectServerSentry: 'experimental_dynamic-import' — wraps the Nitro
+  // server entrypoint with a dynamic import() so Sentry initialises before
+  // any app code runs (equivalent to --import flag). Required for OBS-01.
+  // Admin is a client SPA in prod (ssr:false), but the module option is set
+  // for consistency and to cover the isDev SSR path.
+  // sentryUrl: self-hosted GlitchTip instance (Sentry-API-compatible).
+  // org/project/authToken: read from SENTRY_ORG / SENTRY_PROJECT /
+  // SENTRY_AUTH_TOKEN env vars at build time (set in Coolify).
+  // telemetry: false — never phone home to sentry.io from a self-hosted setup.
+  sentry: {
+    autoInjectServerSentry: 'experimental_dynamic-import',
+    sentryUrl: 'https://errors.fastio.ru',
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    telemetry: false,
+  },
+
   // vue-yandex-maps/css импортируется внутри features/settings/components/DeliveryZoneMap.vue,
   // чтобы CSS попадал в lazy-chunk вместе с компонентом, а не в main bundle.
   css: ['~/assets/css/ui.scss', 'driver.js/dist/driver.css', '~/assets/css/tour.scss'],
