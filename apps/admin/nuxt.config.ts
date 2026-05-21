@@ -108,6 +108,7 @@ export default defineNuxtConfig({
     telegramAuthWebhookUrl: '',
     telegramTenantWebhookUrl: '',
     telegramAlertChatId: '',
+    glitchtipWebhookSecret: '',
     telegramProxyUrl: '',
     reminderCronSecret: '',
     internalApiSecret: '',
