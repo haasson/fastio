@@ -49,6 +49,16 @@ jobs:
       - name: features:validate (storefront)
         run: pnpm storefront-features:validate
 
+      - name: realtime channel cleanup audit (REL-01)
+        # D-09: каждый файл с .channel() обязан содержать removeChannel.
+        # Размещено в check (не security) — REL-01 это code-correctness gate,
+        # должен блокировать PR, а не только main.
+        run: |
+          if ! bash scripts/audit/realtime-channel-audit.sh; then
+            echo "::error::REL-01: Realtime channel leak detected. Every supabase.channel() must be paired with removeChannel()."
+            exit 1
+          fi
+
   deno-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
