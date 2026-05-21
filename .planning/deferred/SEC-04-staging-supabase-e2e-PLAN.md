@@ -61,6 +61,8 @@ must_haves:
       pattern: "supabase db push"
 ---
 
+> **DEFERRED 2026-05-21:** Изначально это был план `01-04` (Phase 1 / Wave 2). Перенесён в `.planning/deferred/`, потому что по сути это инфраструктура под **Phase 3 (E2E Testing)** — objective ниже это подтверждает. Требование `SEC-04` и критерий «staging изолирован от prod» переехали в Phase 3 в ROADMAP. При планировании Phase 3 этот файл — готовая спека: перенумеровать под Phase 3 и исполнить. Первая задача — блокирующий human-action (создать Supabase Cloud проект + GitHub Secrets).
+
 <objective>
 Establish an isolated staging Supabase Cloud project, wire migrations to push to it automatically, create a minimal E2E seed, and rewrite the Playwright globalSetup so it can target staging via the service-role HTTP API (no docker dependency) while preserving the existing local-docker path unchanged.
 
