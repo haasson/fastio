@@ -110,7 +110,7 @@ Plans:
   3. Email-шаблоны доступны по https://ops.fastio.ru/email-templates/*.html — GoTrue env vars обновлены
   4. appointment_reminder_url в vault указывает на ops.fastio.ru
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -119,7 +119,7 @@ Plans:
 
 **Wave 2**
 
-- [ ] 04.1-02-PLAN.md — Implementation: copy 4 server utils, 6 Telegram handlers (notify-alert: Sentry → reportError), health endpoint, 3 email templates → public/
+- [x] 04.1-02-PLAN.md — Implementation: copy 4 server utils, 6 Telegram handlers (notify-alert: Sentry → reportError), health endpoint, 3 email templates → public/
 
 **Wave 3**
 
@@ -149,7 +149,7 @@ Plans:
 | 2. Observability | 4/4 | Complete   | 2026-05-21 |
 | 3. E2E Testing | 1/5 | Deferred (post-first-clients) | - |
 | 4. Performance & SEO | 0/? | Not started | - |
-| 04.1. Ops Server | 1/3 | In Progress|  |
+| 04.1. Ops Server | 2/3 | In Progress|  |
 | 5. Operational Features | 0/? | Not started | - |
 
 ---
