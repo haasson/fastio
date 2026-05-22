@@ -1,0 +1,27 @@
+{
+  "name": "@fastio/ops",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@fastio/shared": "workspace:*",
+    "@sentry/nuxt": "^10.47.0",
+    "@supabase/supabase-js": "^2.98.0",
+    "nuxt": "^3.21.6",
+    "undici": "^7.25.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "eslint": "^9.35.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
