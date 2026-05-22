@@ -1,21 +1,35 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-21T06:45:36.194Z",
-  "source": "auto-postool",
-  "partial": true,
-  "phase": null,
-  "phase_name": null,
-  "phase_dir": null,
-  "plan": null,
-  "task": null,
-  "total_tasks": null,
-  "status": "auto-checkpoint",
-  "completed_tasks": [],
+  "timestamp": "2026-05-22T13:08:30Z",
+  "source": "manual-pause",
+  "partial": false,
+  "phase": "04.1",
+  "phase_name": "ops-server-apps-ops-nitro-ui-email-telegram-cron-apps-admin-",
+  "phase_dir": ".planning/phases/04.1-ops-server-apps-ops-nitro-ui-email-telegram-cron-apps-admin-",
+  "plan": 3,
+  "task": 6,
+  "total_tasks": 6,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "DNS + Coolify deploy ops.fastio.ru", "status": "done"},
+    {"id": 2, "name": "vault.secrets обновлены на ops.fastio.ru", "status": "done"},
+    {"id": 3, "name": "GoTrue MAILER_TEMPLATES env vars обновлены", "status": "done"},
+    {"id": 4, "name": "Удалить 6 handlers из apps/admin/", "status": "done", "commit": "a6ecf4ac"},
+    {"id": 5, "name": "TECHDEBT.md — glitchtip-alert запись", "status": "done", "commit": "a6ecf4ac"},
+    {"id": 6, "name": "Final E2E smoke + cleanup telegramBroadcast.ts", "status": "done", "commit": "4904f1ae"}
+  ],
   "remaining_tasks": [],
   "blockers": [],
-  "human_actions_pending": [],
-  "decisions": [],
-  "uncommitted_files": [],
-  "next_action": null,
-  "context_notes": ""
+  "human_actions_pending": [
+    {"action": "Admin Coolify redeploy (auto-деплой по пушу)", "context": "handlers удалены в коде, admin контейнер ещё старый — но это не блокер, vault уже на ops", "blocking": false}
+  ],
+  "decisions": [
+    {"decision": "telegram_notify_appointment_group_url и telegram_notify_table_call_url не создавались в vault", "rationale": "Отсутствуют в production — работают через regexp_replace fallback. Обновлять нет смысла.", "phase": "04.1"},
+    {"decision": "Admin redeploy не блокирует завершение фазы", "rationale": "Vault уже на ops, старые handlers в admin-контейнере никогда не вызываются", "phase": "04.1"}
+  ],
+  "uncommitted_files": [
+    ".planning/phases/04.1-ops-server-apps-ops-nitro-ui-email-telegram-cron-apps-admin-/04.1-03-SUMMARY.md"
+  ],
+  "next_action": "Phase 04.1 COMPLETE — INFRA-01 закрыт. Запустить /gsd:plan-phase для следующей фазы: Phase 4 (Performance & SEO) или Phase 5 (Operational Features — email, legal pages)",
+  "context_notes": "ops.fastio.ru production-ready. telegramBroadcast.ts удалён из admin. TECHDEBT.md создан. STATE.md: next action plan-phase 4 или 5."
 }
