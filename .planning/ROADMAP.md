@@ -10,7 +10,7 @@
 ## Phases
 
 - [x] **Phase 1: Security Foundation** — Закрыть дыры в изоляции тенантов и утечке ключей до любой другой работы *(SEC-04/staging вынесен в Phase 3)*
-- [ ] **Phase 2: Observability** — Развернуть мониторинг ошибок и алертинг, чтобы сбои были видны
+- [x] **Phase 2: Observability** — Развернуть мониторинг ошибок и алертинг, чтобы сбои были видны (completed 2026-05-21)
 - [ ] **Phase 3: E2E Testing** — Покрыть критические флоу авто-тестами на стабильном staging-окружении
 - [ ] **Phase 4: Performance & SEO** — Довести витрину до приемлемых Core Web Vitals и корректных OG-превью
 - [ ] **Phase 5: Operational Features** — Добавить транзакционный email, страницу статуса заказа и легальные страницы
@@ -53,17 +53,17 @@ Plans:
   2. A Telegram message arrives in the team channel within 5 minutes when GlitchTip receives a new error event
   3. Every composable that calls `supabase.channel()` has a paired `removeChannel()` call in `onUnmounted`; a grep audit returns zero violations
 
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — OBS-01 deploy GlitchTip on Coolify (errors.fastio.ru) + admin bootstrap + deployment runbook
-- [ ] 02-04-PLAN.md — REL-01 realtime channel cleanup audit script (corrected grep formula) + CI gate
+- [x] 02-01-PLAN.md — OBS-01 deploy GlitchTip on Coolify (errors.fastio.ru) + admin bootstrap + deployment runbook
+- [x] 02-04-PLAN.md — REL-01 realtime channel cleanup audit script (corrected grep formula) + CI gate
 
 **Wave 2**
 
-- [ ] 02-02-PLAN.md — OBS-01 wire @sentry/nuxt (autoInstrument + source-map upload) in admin & storefront + tenant slug tag
-- [ ] 02-03-PLAN.md — OBS-02 GlitchTip native Telegram alert config + runbook (zero code)
+- [x] 02-02-PLAN.md — OBS-01 wire @sentry/nuxt (autoInstrument + source-map upload) in admin & storefront + tenant slug tag
+- [x] 02-03-PLAN.md — OBS-02 GlitchTip native Telegram alert config + runbook (zero code)
 
 ### Phase 3: E2E Testing
 
@@ -74,7 +74,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
 
   1. A Playwright test runs the full customer order flow (select items → submit order → order appears in the admin panel) against the staging environment and passes reliably on 5 consecutive CI runs
-  2. A Playwright test verifies that auth flows work: new tenant registration, existing user login, and staff invite link all complete without errors
+  2. A Playwright test verifies that auth flows work: existing user login and staff invite link complete without errors *(new tenant registration excluded — requires Inbucket email delivery, deferred to Phase 5 transactional email work)*
   3. A cross-tenant security test confirms that an authenticated session for tenant-A receives a 403 or empty result when requesting tenant-B data via any API endpoint
   4. A Playwright test steps through the owner onboarding flow (register → create venue → configure menu → publish storefront) and reaches the published storefront without manual intervention
   5. (SEC-04) Staging and production Supabase projects are separate; a developer cannot accidentally run E2E tests against the production database
@@ -118,7 +118,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Security Foundation | 3/3 | Complete (SEC-04 → Phase 3) | 2026-05-21 |
-| 2. Observability | 0/4 | Planned | - |
+| 2. Observability | 4/4 | Complete   | 2026-05-21 |
 | 3. E2E Testing | 0/? | Not started | - |
 | 4. Performance & SEO | 0/? | Not started | - |
 | 5. Operational Features | 0/? | Not started | - |
