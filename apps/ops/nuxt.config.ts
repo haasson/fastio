@@ -26,6 +26,7 @@ export default defineNuxtConfig({
     telegramAlertChatId: '',        // NUXT_TELEGRAM_ALERT_CHAT_ID — chat id для notify-alert
     telegramProxyUrl: '',           // NUXT_TELEGRAM_PROXY_URL — sing-box HTTP proxy для RKN bypass
     adminUrl: '',                   // NUXT_ADMIN_URL — для inline-кнопок "Позвонить" в notify хендлерах
+    relaySecret: '',                // NUXT_RELAY_SECRET — для requireRelaySecret() (PREPROD-212 defense-in-depth)
     public: {
       supabaseUrl: '',              // NUXT_PUBLIC_SUPABASE_URL — используется в utils/supabase.ts
     },
