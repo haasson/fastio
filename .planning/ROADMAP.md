@@ -11,7 +11,7 @@
 
 - [x] **Phase 1: Security Foundation** — Закрыть дыры в изоляции тенантов и утечке ключей до любой другой работы *(SEC-04/staging вынесен в Phase 3)*
 - [x] **Phase 2: Observability** — Развернуть мониторинг ошибок и алертинг, чтобы сбои были видны (completed 2026-05-21)
-- [ ] **Phase 3: E2E Testing** — Покрыть критические флоу авто-тестами на стабильном staging-окружении
+- [ ] **Phase 3: E2E Testing** — Покрыть критические флоу авто-тестами на стабильном staging-окружении *(отложено до появления первых клиентов; код-артефакты 03-01 уже влиты)*
 - [ ] **Phase 4: Performance & SEO** — Довести витрину до приемлемых Core Web Vitals и корректных OG-превью
 - [ ] **Phase 5: Operational Features** — Добавить транзакционный email, страницу статуса заказа и легальные страницы
 
@@ -97,6 +97,34 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 04.1: Ops Server
+
+**Goal**: Архитектурно выделить технические HTTP-эндпоинты в отдельный Nuxt/Nitro-сервис apps/ops/ без UI. Перенести Telegram notify-хендлеры, cron-триггеры и email-шаблоны из apps/admin и supabase/templates. Деплой на ops.fastio.ru через Coolify.
+**Mode:** mvp
+**Depends on**: Phase 2
+**Requirements**: INFRA-01
+**Success Criteria** (what must be TRUE):
+
+  1. `apps/ops/` деплоится на ops.fastio.ru и `GET /api/health` возвращает 200
+  2. Telegram notify-хендлеры (`notify-order`, `notify-reservation`, `notify-table-call`) отвечают на POST от pg_cron/edge functions на ops.fastio.ru — и удалены из apps/admin
+  3. Email-шаблоны доступны по https://ops.fastio.ru/email-templates/*.html — GoTrue env vars обновлены
+  4. appointment_reminder_url в vault указывает на ops.fastio.ru
+
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 04.1-01-PLAN.md — Foundation: apps/ops scaffold (package.json, nuxt.config.ts, tsconfig, eslint, .gitignore) + vitest.config.ts include для apps/ops/**/*.test.ts
+
+**Wave 2**
+
+- [ ] 04.1-02-PLAN.md — Implementation: copy 4 server utils, 6 Telegram handlers (notify-alert: Sentry → reportError), health endpoint, 3 email templates → public/
+
+**Wave 3**
+
+- [ ] 04.1-03-PLAN.md — Cutover runbook: DNS + Coolify deploy, vault.update_secret для 6 URL'ов, GoTrue env vars update, удаление 6 хендлеров из admin, TECHDEBT entry для glitchtip-alert
+
 ### Phase 5: Operational Features
 
 **Goal**: A customer who places a real order receives an email confirmation, can track their order status, and can find legal documents — making the first week of live orders manageable without manual support
@@ -119,11 +147,12 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Security Foundation | 3/3 | Complete (SEC-04 → Phase 3) | 2026-05-21 |
 | 2. Observability | 4/4 | Complete   | 2026-05-21 |
-| 3. E2E Testing | 1/5 | In Progress|  |
+| 3. E2E Testing | 1/5 | Deferred (post-first-clients) | - |
 | 4. Performance & SEO | 0/? | Not started | - |
+| 04.1. Ops Server | 0/3 | Planned (3 plans, 3 waves) | - |
 | 5. Operational Features | 0/? | Not started | - |
 
 ---
 
 *Roadmap created: 2026-05-21*
-*Last updated: 2026-05-21 — Phase 2 planned (4 plans, 2 waves)*
+*Last updated: 2026-05-22 — Phase 04.1 planned (3 plans: foundation → implementation → cutover runbook)*
