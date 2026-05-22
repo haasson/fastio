@@ -48,6 +48,9 @@ jobs:
           docker cp supabase/seed/demo.sql supabase_db_fastio:/tmp/seed.sql
           docker exec supabase_db_fastio psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/seed.sql
 
+      - name: install postgresql-client
+        run: sudo apt-get install -y postgresql-client
+
       - name: install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
@@ -55,6 +58,12 @@ jobs:
         id: e2e
         env:
           CI: 'true'
+          SUPABASE_STAGING_URL: ${{ secrets.SUPABASE_STAGING_URL }}
+          SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
+          SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+          SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_STAGING_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
         run: pnpm test:e2e
 
       - name: upload HTML report
