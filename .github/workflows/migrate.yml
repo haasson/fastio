@@ -183,3 +183,22 @@ jobs:
             exit 1
           fi
           echo "RLS audit PASSED: all TENANT_TABLES have rowsecurity=true."
+
+      # D-10: staging Supabase Cloud проект изолирован от продакшна — другой URL, другие ключи.
+      # Этот шаг — no-op, пока SUPABASE_STAGING_DB_URL не выставлен в GitHub Secrets (после Task 1).
+      # Если первый прогон упадёт с "unknown flag --db-url" — выполни `supabase db push --help`
+      # и адаптируй команду; миграционный набор стабилен, проблема только в синтаксисе CLI
+      # (Open Question #1 в .planning/phases/03-e2e-testing/03-RESEARCH.md, confidence MEDIUM).
+      - name: Setup Supabase CLI for staging push
+        if: ${{ secrets.SUPABASE_STAGING_DB_URL != '' }}
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.75.0
+
+      - name: Push migrations to staging
+        if: ${{ secrets.SUPABASE_STAGING_DB_URL != '' }}
+        env:
+          STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+        run: |
+          set -euo pipefail
+          supabase db push --db-url "$STAGING_DB_URL"
