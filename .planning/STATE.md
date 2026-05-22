@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-05-22T06:13:51.336Z"
+last_updated: "2026-05-22T06:22:35.208Z"
 progress:
   total_phases: 6
   completed_phases: 2
@@ -17,16 +17,17 @@ progress:
 ## Project Reference
 
 **Core Value:** Заказ клиента поступает в заведение без потерь и задержек
-**Current Focus:** Phase 04 — Performance & SEO (Phase 03 deferred)
+**Current Focus:** Phase 04.1 — ops-server-apps-ops-nitro-ui-email-telegram-cron-apps-admin-
 **Milestone:** Launch Readiness
 
 ---
 
 ## Current Position
 
-Phase: 03 (e2e-testing) — DEFERRED (post-first-clients)
+Phase: 04.1 (ops-server-apps-ops-nitro-ui-email-telegram-cron-apps-admin-) — EXECUTING
+Plan: 1 of 3
 **Phase:** 3 — E2E Testing
-**Status:** Ready to execute
+**Status:** Executing Phase 04.1
 
 **Progress:**
 

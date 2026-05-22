@@ -110,12 +110,12 @@ Plans:
   3. Email-шаблоны доступны по https://ops.fastio.ru/email-templates/*.html — GoTrue env vars обновлены
   4. appointment_reminder_url в vault указывает на ops.fastio.ru
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 04.1-01-PLAN.md — Foundation: apps/ops scaffold (package.json, nuxt.config.ts, tsconfig, eslint, .gitignore) + vitest.config.ts include для apps/ops/**/*.test.ts
+- [x] 04.1-01-PLAN.md — Foundation: apps/ops scaffold (package.json, nuxt.config.ts, tsconfig, eslint, .gitignore) + vitest.config.ts include для apps/ops/**/*.test.ts
 
 **Wave 2**
 
@@ -149,7 +149,7 @@ Plans:
 | 2. Observability | 4/4 | Complete   | 2026-05-21 |
 | 3. E2E Testing | 1/5 | Deferred (post-first-clients) | - |
 | 4. Performance & SEO | 0/? | Not started | - |
-| 04.1. Ops Server | 0/3 | Planned (3 plans, 3 waves) | - |
+| 04.1. Ops Server | 1/3 | In Progress|  |
 | 5. Operational Features | 0/? | Not started | - |
 
 ---
