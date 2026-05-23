@@ -8,7 +8,16 @@
   >
     <div class="compact-inner">
       <div class="compact-photo">
-        <img v-if="product.photos[0]" :src="product.photos[0]" :alt="product.name" loading="lazy" >
+        <NuxtImg
+          v-if="product.photos[0]"
+          :src="product.photos[0]"
+          :alt="product.name"
+          width="110"
+          height="110"
+          format="webp"
+          loading="lazy"
+          fit="cover"
+        />
         <div v-else class="product-placeholder compact-placeholder">
           <component :is="placeholderIcon" :size="24" />
         </div>
@@ -57,7 +66,17 @@
     @click="emit('cardClick')"
   >
     <template #image>
-      <img v-if="product.photos[0]" class="product-photo" :src="product.photos[0]" :alt="product.name" loading="lazy" >
+      <NuxtImg
+        v-if="product.photos[0]"
+        class="product-photo"
+        :src="product.photos[0]"
+        :alt="product.name"
+        width="400"
+        height="300"
+        format="webp"
+        loading="lazy"
+        fit="cover"
+      />
       <div v-else class="product-placeholder">
         <component :is="placeholderIcon" :size="32" />
       </div>
