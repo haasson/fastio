@@ -83,8 +83,11 @@
       <NuxtLink v-if="hasPrivacy" to="/privacy" target="_blank" class="doc-link">
         Политика конфиденциальности
       </NuxtLink>
-      <a v-if="offerUrl" :href="offerUrl" target="_blank" rel="noopener noreferrer" class="doc-link">
+      <NuxtLink v-if="hasTerms" to="/terms" target="_blank" class="doc-link">
         Оферта
+      </NuxtLink>
+      <a v-if="offerUrl" :href="offerUrl" target="_blank" rel="noopener noreferrer" class="doc-link">
+        Оферта (PDF)
       </a>
     </div>
 
@@ -119,8 +122,9 @@ const formattedHours = computed(() => formatWorkingHours(tenant.value?.workingHo
 const branches = ref<BranchPublic[]>([])
 
 const hasPrivacy = computed(() => isLegalInfoComplete(tenant.value?.legalInfo))
+const hasTerms = computed(() => isLegalInfoComplete(tenant.value?.legalInfo))
 const offerUrl = computed(() => tenant.value?.contacts?.offerUrl ?? null)
-const hasDocuments = computed(() => hasPrivacy.value || !!offerUrl.value)
+const hasDocuments = computed(() => hasPrivacy.value || hasTerms.value || !!offerUrl.value)
 
 onMounted(async () => {
   try {
