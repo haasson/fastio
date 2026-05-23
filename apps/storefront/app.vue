@@ -24,6 +24,7 @@ import { FsToastProvider } from '@fastio/public-ui'
 import ConfirmDialog from '~/shared/ui/ConfirmDialog.vue'
 import { useToast } from '~/shared/composables/useToast'
 import { useAnalytics } from '~/shared/composables/useAnalytics'
+import { buildHead } from '~/shared/composables/buildHead'
 import { useCartReconciler } from '~/features/cart'
 import { useSelectedBranchStore } from '~/features/branch'
 
@@ -97,26 +98,7 @@ const faviconLink = computed(() => {
 
 useAnalytics(() => tenant.value?.seo)
 
-useHead(computed(() => {
-  const t = tenant.value
-  const seo = t?.seo
-  const title = seo?.metaTitle || t?.name || ''
-  const description = seo?.metaDescription || ''
-  const ogImage = seo?.ogImage || t?.siteContent?.logo || ''
-
-  return {
-    titleTemplate: (pageTitle) => pageTitle ? `${pageTitle} — ${title}` : title,
-    meta: [
-      { name: 'description', content: description },
-      { name: 'robots', content: seo?.robots === 'noindex' ? 'noindex,nofollow' : 'index,follow' },
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      ...(ogImage ? [{ property: 'og:image', content: ogImage }] : []),
-      { property: 'og:type', content: 'website' },
-    ],
-    link: [...googleFontLink.value, ...faviconLink.value],
-  }
-}))
+useHead(computed(() => buildHead(tenant.value, googleFontLink.value, faviconLink.value)))
 
 const RADIUS_MAP: Record<string, string> = { square: '4px', rounded: '8px', pill: '9999px' }
 const SHADOW_MAP: Record<string, string> = {
