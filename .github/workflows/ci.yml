@@ -116,3 +116,37 @@ jobs:
             exit 1
           fi
           echo "Security check passed: service_role not found in public bundle"
+
+  # PERF-02: Lighthouse CI gate.
+  # Pinned to @lhci/cli@0.14.0 — 0.15.x ships lighthouse@12.6.1 which requires Node>=22.19;
+  # this pipeline uses Node 20. Mobile preset (5 runs) per ROADMAP success criterion #2.
+  # No `if: main` gate — must run on PRs so regressions block merge before hitting main.
+  lhci:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    needs: check
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: build storefront
+        run: pnpm build --filter storefront
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: run LHCI
+        run: npx @lhci/cli@0.14.0 autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

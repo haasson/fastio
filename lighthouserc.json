@@ -1,0 +1,28 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["https://demo.fastio.ru/"],
+      "numberOfRuns": 5,
+      "settings": {
+        "preset": "mobile",
+        "onlyCategories": ["performance"],
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
+      }
+    },
+    "assert": {
+      "preset": "lighthouse:no-pwa",
+      "assertions": {
+        "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "first-contentful-paint": ["warn", { "maxNumericValue": 1800 }],
+        "interactive": ["warn", { "maxNumericValue": 3800 }],
+        "uses-optimized-images": ["warn"],
+        "uses-webp-images": ["warn"],
+        "render-blocking-resources": ["warn"]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}
