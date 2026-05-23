@@ -571,27 +571,30 @@ npx @lhci/cli@0.14.0 autorun --config=../../lighthouserc.json
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **LHCI против чего тестировать?**
    - Что знаем: tenant middleware требует известный host; `/api/health` исключён из tenant lookup
    - Что неясно: есть ли staging tenant с стабильным URL для LHCI; нужно ли специальное исключение в middleware
    - Recommendation: Использовать `https://demo.fastio.ru/` если такой тенант существует; иначе создать его как часть PERF-02 плана
+   - **RESOLVED:** Plan 04-03 Task 1 использует `https://demo.fastio.ru/` как целевой URL LHCI.
 
 2. **Supabase Storage bucket visibility**
    - Что знаем: `proxy-image` — admin-only; IPX для storefront
    - Что неясно: все ли storage buckets с изображениями меню и тенантов — публичные?
    - Recommendation: grep миграций на `create bucket` + `policy` для подтверждения до написания PERF-03 плана
+   - **RESOLVED:** Plan 04-01 Task 2 добавляет defensive `.startsWith('http')` guard — безопасно для любых bucket permissions.
 
 3. **og:image absolute URL integrity**
    - Что знаем: `TenantSeo.ogImage: string | null`; tenant данные приходят из Supabase
    - Что неясно: есть ли legacy tenants с relative path в `seo.ogImage`?
    - Recommendation: Defensive проверка `.startsWith('http')` в app.vue — safe в любом случае
+   - **RESOLVED:** Plan 04-01 Task 2 реализует guard `rawOgImage?.startsWith('http') ? rawOgImage : ''`.
 
 4. **Phase 4 vs Phase 2 dependency**
    - Phase 2 (Observability) помечена как **complete (2026-05-21)** в ROADMAP.md
    - Phase 4 формально зависит от Phase 2
-   - **Вывод:** зависимость выполнена. Phase 4 может стартовать немедленно.
+   - **RESOLVED:** зависимость выполнена. Phase 4 стартует немедленно.
 
 ---
 
