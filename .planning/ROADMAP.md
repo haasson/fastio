@@ -120,7 +120,7 @@ Plans:
   3. Email-шаблоны доступны по https://ops.fastio.ru/email-templates/*.html — GoTrue env vars обновлены
   4. appointment_reminder_url в vault указывает на ops.fastio.ru
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -133,7 +133,7 @@ Plans:
 
 **Wave 3**
 
-- [ ] 04.1-03-PLAN.md — Cutover runbook: DNS + Coolify deploy, vault.update_secret для 6 URL'ов, GoTrue env vars update, удаление 6 хендлеров из admin, TECHDEBT entry для glitchtip-alert
+- [x] 04.1-03-PLAN.md — Cutover runbook: DNS + Coolify deploy, vault.update_secret для 6 URL'ов, GoTrue env vars update, удаление 6 хендлеров из admin, TECHDEBT entry для glitchtip-alert
 
 ### Phase 5: Operational Features
 
@@ -159,7 +159,7 @@ Plans:
 | 2. Observability | 4/4 | Complete   | 2026-05-21 |
 | 3. E2E Testing | 1/5 | Deferred (post-first-clients) | - |
 | 4. Performance & SEO | 2/3 | In Progress|  |
-| 04.1. Ops Server | 2/3 | In Progress|  |
+| 04.1. Ops Server | 3/3 | Complete    | 2026-05-23 |
 | 5. Operational Features | 0/? | Not started | - |
 
 ---
