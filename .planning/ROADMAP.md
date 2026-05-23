@@ -143,9 +143,11 @@ Plans:
 **Requirements**: OPS-01, OPS-02, OPS-03
 **Success Criteria** (what must be TRUE):
 
-  1. A customer who completes an order receives a transactional email within 2 minutes containing the order summary and a link to the order status page
+  1. A customer who completes an order receives a transactional email within 2 minutes containing the order summary and a link to the order status page (DEFERRED — see footnote)
   2. The order status link works without any login and shows the current order status, updating in real time when the venue changes the status
   3. Privacy Policy and Terms of Service pages are reachable from the storefront footer of every tenant and load as static pages without authentication
+
+> **Отложено 2026-05-23:** OPS-01 (транзакционный email) перенесён в backlog — `customer_email` не собирается на checkout, реализация невозможна без отдельной задачи. Готовая спека: `.planning/deferred/OPS-01-transactional-email-PLAN.md`. См. D-01 в `.planning/phases/05-operational-features/05-CONTEXT.md`.
 
 **Plans:** 3 plans
 
