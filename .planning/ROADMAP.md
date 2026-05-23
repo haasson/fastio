@@ -147,7 +147,14 @@ Plans:
   2. The order status link works without any login and shows the current order status, updating in real time when the venue changes the status
   3. Privacy Policy and Terms of Service pages are reachable from the storefront footer of every tenant and load as static pages without authentication
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — OPS-03 legal pages vertical slice: terms.vue + SiteFooter.vue (hasTerms + /terms link + label disambiguation) + terms.test.ts (Vitest gate test)
+- [ ] 05-02-PLAN.md — OPS-02 verification-only: produce 05-02-VERIFICATION.md with file:line citations + live trace (no code changes — implementation already shipped, per D-02–D-05)
+- [ ] 05-03-PLAN.md — OPS-01 deferral artifact: create .planning/deferred/OPS-01-transactional-email-PLAN.md + update REQUIREMENTS.md and ROADMAP.md footnote (blocker: customer_email not collected at checkout, per D-01)
 
 ---
 
