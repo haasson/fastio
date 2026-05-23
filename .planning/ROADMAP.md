@@ -94,7 +94,7 @@ Plans:
   3. Hero and menu item images are served as WebP with explicit width/height attributes; the LCP image has `fetchpriority="high"` and no `loading="lazy"`
   4. CDN-cached storefront routes include a `Vary: Host` response header; serving tenant-A's cached page to a tenant-B request is impossible by construction
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed
 Plans:
 **Wave 1**
 
@@ -104,7 +104,7 @@ Plans:
 - [x] 04-02-PLAN.md — PERF-03 + PERF-04: install @nuxt/image@2.0.0, register IPX provider with SSRF-safe domain whitelist, add routeRules (vary:Host, no-store on /api/**, immutable on /_ipx/**), migrate 4 components to NuxtImg with LCP-aware loading/fetchpriority
 **Wave 3**
 
-- [ ] 04-03-PLAN.md — PERF-02: lighthouserc.json with LCP<2500/CLS<0.1 error assertions + lhci job in CI pinned to Node 20 + @lhci/cli@0.14.0 + staging URL
+- [x] 04-03-PLAN.md — PERF-02: lighthouserc.json with LCP<2500/CLS<0.1 error assertions + lhci job in CI pinned to Node 20 + @lhci/cli@0.14.0 + staging URL
 **UI hint**: yes
 
 ### Phase 04.1: Ops Server
