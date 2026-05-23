@@ -2,7 +2,17 @@
   <FsSection as="header" class="header-root" style="--section-spacing: 12px">
     <div class="header-inner">
       <NuxtLink :to="{ path: '/', query: route.query }" class="logo-link">
-        <img v-if="tenant?.siteContent?.logo" class="logo" :src="tenant.siteContent.logo" :alt="tenant.name" >
+        <NuxtImg
+          v-if="tenant?.siteContent?.logo"
+          class="logo"
+          :src="tenant.siteContent.logo"
+          :alt="tenant.name"
+          width="160"
+          height="36"
+          format="webp"
+          loading="eager"
+          fetchpriority="high"
+        />
         <span v-else class="logo-fallback">{{ tenant?.name ?? '' }}</span>
       </NuxtLink>
 

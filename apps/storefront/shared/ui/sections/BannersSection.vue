@@ -13,7 +13,16 @@
             v-bind="bannerLinkProps(banner)"
             class="slide-inner"
           >
-            <img :src="banner.url" alt="" class="slide-img" loading="lazy" >
+            <NuxtImg
+              :src="banner.url"
+              alt=""
+              class="slide-img"
+              width="1200"
+              height="400"
+              format="webp"
+              loading="lazy"
+              fit="cover"
+            />
           </component>
         </div>
       </div>

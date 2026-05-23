@@ -26,7 +26,7 @@ export default defineNuxtConfig({
 
   components: false,
 
-  modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt', '@sentry/nuxt/module'],
+  modules: ['@pinia/nuxt', '@nuxt/eslint', '@vueuse/nuxt', '@sentry/nuxt/module', '@nuxt/image'],
 
   // Phase 02-observability: wire Sentry/GlitchTip server-side instrumentation.
   // autoInjectServerSentry: 'experimental_dynamic-import' — wraps the Nitro
@@ -43,6 +43,28 @@ export default defineNuxtConfig({
     project: process.env.SENTRY_PROJECT,
     authToken: process.env.SENTRY_AUTH_TOKEN,
     telemetry: false,
+  },
+
+  // Phase 04-02: IPX self-hosted image optimization.
+  // domains: берём конкретный субдомен Supabase Storage из NUXT_PUBLIC_SUPABASE_URL,
+  // НЕ wildcard *.supabase.co — SSRF-защита (T-4-04).
+  image: {
+    provider: 'ipx',
+    domains: [
+      process.env.NUXT_PUBLIC_SUPABASE_URL?.replace('https://', '') ?? '',
+    ],
+    screens: { xs: 320, sm: 640, md: 768, lg: 1024, xl: 1280 },
+    quality: 80,
+    format: ['webp'],
+  },
+
+  // Phase 04-02: SWR + Vary: Host для изоляции кэша по тенанту (T-4-05).
+  // /api/** — no-store, чтобы данные тенанта никогда не CDN-кэшировались (T-4-06).
+  // /_ipx/** — immutable, контент-хэш в URL гарантирует уникальность (1 год).
+  routeRules: {
+    '/**': { swr: 60, headers: { vary: 'Host' } },
+    '/_ipx/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    '/api/**': { headers: { 'cache-control': 'no-store' } },
   },
 
   runtimeConfig: {

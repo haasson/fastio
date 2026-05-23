@@ -1,6 +1,17 @@
 <template>
   <div class="hero-root" :class="`hero--${hero.size}`" :style="heroStyle">
-    <div v-if="hero.bgType === 'image' && heroContent?.bgUrl" class="bg" :style="bgStyle" />
+    <NuxtImg
+      v-if="hero.bgType === 'image' && heroContent?.bgUrl"
+      class="bg"
+      :src="heroContent.bgUrl"
+      alt=""
+      width="1280"
+      height="720"
+      format="webp"
+      loading="eager"
+      fetchpriority="high"
+      fit="cover"
+    />
     <div v-if="hero.bgType === 'image' && heroContent?.bgUrl" class="overlay" :style="overlayStyle" />
     <div v-if="hero.bgType === 'gradient'" class="gradient" :style="gradientStyle" />
     <div v-if="hero.bgType === 'gradient'" class="overlay" :style="overlayStyle" />
@@ -34,10 +45,6 @@ const heroStyle = computed(() => {
   return { minHeight: '320px' }
 })
 
-const bgStyle = computed(() => ({
-  backgroundImage: `url('${props.heroContent?.bgUrl}')`,
-}))
-
 const gradientStyle = computed(() => {
   const gradient = getHeroGradient(props.hero.gradientId ?? 'diag-bp')
   return { background: gradient?.css ?? '' }
@@ -66,8 +73,10 @@ const contentStyle = computed(() => ({
 .bg {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .gradient {

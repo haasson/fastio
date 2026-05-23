@@ -130,6 +130,7 @@ routeRules: {
 |------|-------------|--------|-------|
 | Task 1 | Install @nuxt/image, register module, add image config + routeRules | `bece4bc6` | package.json, nuxt.config.ts, pnpm-lock.yaml |
 | Task 2 | Replace 5x img/CSS-bg with NuxtImg across 4 components | `84a5e379` | SiteHeader.vue, HeroSection.vue, BannersSection.vue, SfProductCard.vue |
+<<<<<<< HEAD
 | Task 3 | Visual + Lighthouse verification | checkpoint approved | User confirmed: норм |
 
 ## Verification Status
