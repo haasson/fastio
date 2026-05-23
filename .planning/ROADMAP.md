@@ -94,14 +94,14 @@ Plans:
   3. Hero and menu item images are served as WebP with explicit width/height attributes; the LCP image has `fetchpriority="high"` and no `loading="lazy"`
   4. CDN-cached storefront routes include a `Vary: Host` response header; serving tenant-A's cached page to a tenant-B request is impossible by construction
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 **Wave 1**
 
 - [x] 04-01-PLAN.md — PERF-01 OG meta fix in app.vue (absolute og:image, og:url, canonical, twitter card) + buildHead helper + Vitest unit tests
 **Wave 2**
 
-- [ ] 04-02-PLAN.md — PERF-03 + PERF-04: install @nuxt/image@2.0.0, register IPX provider with SSRF-safe domain whitelist, add routeRules (vary:Host, no-store on /api/**, immutable on /_ipx/**), migrate 4 components to NuxtImg with LCP-aware loading/fetchpriority
+- [x] 04-02-PLAN.md — PERF-03 + PERF-04: install @nuxt/image@2.0.0, register IPX provider with SSRF-safe domain whitelist, add routeRules (vary:Host, no-store on /api/**, immutable on /_ipx/**), migrate 4 components to NuxtImg with LCP-aware loading/fetchpriority
 **Wave 3**
 
 - [ ] 04-03-PLAN.md — PERF-02: lighthouserc.json with LCP<2500/CLS<0.1 error assertions + lhci job in CI pinned to Node 20 + @lhci/cli@0.14.0 + staging URL
@@ -158,7 +158,7 @@ Plans:
 | 1. Security Foundation | 3/3 | Complete (SEC-04 → Phase 3) | 2026-05-21 |
 | 2. Observability | 4/4 | Complete   | 2026-05-21 |
 | 3. E2E Testing | 1/5 | Deferred (post-first-clients) | - |
-| 4. Performance & SEO | 1/3 | In Progress|  |
+| 4. Performance & SEO | 2/3 | In Progress|  |
 | 04.1. Ops Server | 2/3 | In Progress|  |
 | 5. Operational Features | 0/? | Not started | - |
 
