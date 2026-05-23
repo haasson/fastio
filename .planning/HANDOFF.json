@@ -1,30 +1,21 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-23T07:31:47.000Z",
-  "phase": "04",
-  "phase_name": "performance-seo",
-  "phase_dir": ".planning/phases/04-performance-seo",
-  "plan": 2,
-  "task": 1,
-  "total_tasks": 3,
-  "status": "paused",
-  "completed_tasks": [
-    {"id": "04-01-T1", "name": "Vitest tests for buildHead helper (RED)", "status": "done", "commit": "835a01c1"},
-    {"id": "04-01-T2", "name": "buildHead helper + app.vue rewire (GREEN)", "status": "done", "commit": "d3ca5499"},
-    {"id": "04-01-T3", "name": "Human verify OG tags in SSR — approved", "status": "done", "commit": "aa3df28d"}
-  ],
-  "remaining_tasks": [
-    {"id": "04-02", "name": "@nuxt/image + IPX + NuxtImg on above-fold components", "status": "not_started"},
-    {"id": "04-03", "name": "Lighthouse CI gate in GitHub Actions", "status": "not_started"}
-  ],
+  "timestamp": "2026-05-23T13:06:38.528Z",
+  "source": "auto-postool",
+  "partial": true,
+  "phase": null,
+  "phase_name": null,
+  "phase_dir": null,
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "auto-checkpoint",
+  "completed_tasks": [],
+  "remaining_tasks": [],
   "blockers": [],
   "human_actions_pending": [],
-  "decisions": [
-    {"decision": "buildHead extracted as pure helper (not inline in app.vue)", "rationale": "Testable with Vitest without rendering Vue component", "phase": "04"},
-    {"decision": "Conditional meta spread pattern for optional OG fields", "rationale": "Prevents undefined values in OG tags", "phase": "04"},
-    {"decision": "Human-verify checkpoint for 04-01 approved by user", "rationale": "7 unit tests GREEN, typecheck clean", "phase": "04"}
-  ],
+  "decisions": [],
   "uncommitted_files": [],
-  "next_action": "Execute plan 04-02: install @nuxt/image, configure IPX provider, replace img tags with NuxtImg in SiteHeader/HeroSection/BannersSection/SfProductCard",
-  "context_notes": "Wave 1 (04-01 OG meta) complete and merged. Plans 04-02 and 04-03 pending — both are checkpoints (autonomous: false). 04-02 modifies pnpm-lock.yaml so pnpm install must run. Execute with /gsd:execute-phase 4."
+  "next_action": null,
+  "context_notes": ""
 }

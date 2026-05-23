@@ -149,12 +149,12 @@ Plans:
 
 > **Отложено 2026-05-23:** OPS-01 (транзакционный email) перенесён в backlog — `customer_email` не собирается на checkout, реализация невозможна без отдельной задачи. Готовая спека: `.planning/deferred/OPS-01-transactional-email-PLAN.md`. См. D-01 в `.planning/phases/05-operational-features/05-CONTEXT.md`.
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — OPS-03 legal pages vertical slice: terms.vue + SiteFooter.vue (hasTerms + /terms link + label disambiguation) + terms.test.ts (Vitest gate test)
+- [x] 05-01-PLAN.md — OPS-03 legal pages vertical slice: terms.vue + SiteFooter.vue (hasTerms + /terms link + label disambiguation) + terms.test.ts (Vitest gate test)
 - [ ] 05-02-PLAN.md — OPS-02 verification-only: produce 05-02-VERIFICATION.md with file:line citations + live trace (no code changes — implementation already shipped, per D-02–D-05)
 - [x] 05-03-PLAN.md — OPS-01 deferral artifact: create .planning/deferred/OPS-01-transactional-email-PLAN.md + update REQUIREMENTS.md and ROADMAP.md footnote (blocker: customer_email not collected at checkout, per D-01)
 
@@ -169,7 +169,7 @@ Plans:
 | 3. E2E Testing | 1/5 | Deferred (post-first-clients) | - |
 | 4. Performance & SEO | 2/3 | In Progress|  |
 | 04.1. Ops Server | 3/3 | Complete    | 2026-05-23 |
-| 5. Operational Features | 1/3 | In Progress|  |
+| 5. Operational Features | 2/3 | In Progress|  |
 
 ---
 
