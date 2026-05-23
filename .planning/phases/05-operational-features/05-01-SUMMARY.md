@@ -23,7 +23,7 @@ decisions:
 metrics:
   duration: "5 minutes"
   completed: "2026-05-23"
-  tasks: 3
+  tasks: 4
   files: 3
 ---
 
@@ -121,6 +121,17 @@ No new security surface beyond what the threat model in the plan covers. All leg
 
 Both gates present and in correct order.
 
+### Task 4 — Human Verification Checkpoint (commit `86d9ada2`)
+
+Human verification checkpoint (type: human-verify, gate: blocking) — APPROVED 2026-05-23.
+
+The user confirmed:
+- `/terms` page renders correctly with complete `legalInfo` (6 §-sections + legalInfo header visible)
+- `/terms` page renders `SfEmptyState` when `legalInfo` is incomplete
+- Footer shows "Оферта" NuxtLink conditionally based on `isLegalInfoComplete`
+- Label disambiguation ("Оферта" vs "Оферта (PDF)") correct when both `/terms` and `offerUrl` coexist
+- No regression on `/privacy` page
+
 ## Self-Check: PASSED
 
 Files created:
@@ -132,3 +143,4 @@ Commits:
 - `078e78d2` — FOUND (test RED)
 - `7fc88bf9` — FOUND (feat GREEN)
 - `86ae509e` — FOUND (feat SiteFooter)
+- `86d9ada2` — FOUND (docs SUMMARY + state)
