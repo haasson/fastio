@@ -153,3 +153,8 @@ CREATE TRIGGER trg_notify_telegram_new_table_call
   AFTER INSERT ON table_calls
   FOR EACH ROW
   EXECUTE FUNCTION notify_new_table_call_telegram();
+
+-- Trigger-функции вызываются только через триггер (не напрямую из SQL),
+-- поэтому закрываем публичный EXECUTE — defense-in-depth.
+REVOKE EXECUTE ON FUNCTION notify_new_appointment_group_telegram() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION notify_new_table_call_telegram() FROM PUBLIC;
