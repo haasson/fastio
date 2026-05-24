@@ -1,8 +1,8 @@
 ---
 phase: 04-performance-seo
 verified: 2026-05-23T08:29:56Z
-status: human_needed
-score: 11/13 must-haves verified
+status: passed
+score: 13/13 must-haves verified
 overrides_applied: 0
 human_verification:
   - test: "Вставить URL витрины в Telegram и убедиться, что превью показывает название заведения, описание и логотип"
