@@ -62,7 +62,10 @@ export default defineNuxtConfig({
   // /api/** — no-store, чтобы данные тенанта никогда не CDN-кэшировались (T-4-06).
   // /_ipx/** — immutable, контент-хэш в URL гарантирует уникальность (1 год).
   routeRules: {
-    '/**': { swr: 60, headers: { vary: 'Host' } },
+    // SWR убран: per-request CSP nonce в middleware несовместим с SWR-кешем —
+    // кешированный HTML содержит старый nonce, новый nonce в CSP-хедере → все
+    // скрипты браузером блокируются (включая window.__NUXT__). Vary: Host оставлен.
+    '/**': { headers: { vary: 'Host' } },
     '/_ipx/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
     '/api/**': { headers: { 'cache-control': 'no-store' } },
   },
