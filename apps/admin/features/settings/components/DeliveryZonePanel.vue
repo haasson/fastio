@@ -47,12 +47,13 @@
 
       <div class="free-delivery-block">
         <div class="free-delivery-toggle">
-          <UiText size="small">Бесплатная доставка от суммы</UiText>
+          <UiText size="tiny">Бесплатная доставка от суммы</UiText>
           <UiSwitch v-model="enableFreeDelivery" />
         </div>
         <UiInputNumber
           v-if="enableFreeDelivery"
           v-model="form.freeDeliveryFrom"
+          name="freeDeliveryFrom"
           label="Сумма заказа"
           :min="1"
           :rules="freeDeliveryRules"
