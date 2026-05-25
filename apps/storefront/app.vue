@@ -40,6 +40,12 @@ const route = useRoute()
 const rfetch = useRequestFetch()
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 
+// SSR: useRequestFetch() не форвардит Host (getProxyRequestHeaders его исключает),
+// внутренний Nitro-fetch видит Host: localhost → тенант не резолвится → 503.
+// Передаём x-original-host явно — tenant middleware читает его первым (приоритет над Host).
+const ssrHost = import.meta.server ? (useRequestEvent()?.node.req.headers.host ?? '') : ''
+const hostHeader = ssrHost ? { headers: { 'x-original-host': ssrHost } } : {}
+
 const selectedBranch = useSelectedBranchStore()
 
 // Tenant грузим первым: его branchSelectionMode нужен computed'у catalogQuery,
@@ -75,13 +81,13 @@ const catalogQuery = computed<Record<string, string>>(() => {
 // в любом компоненте. Деструктуризация в await Promise.all выпрямляет семантику —
 // useAsyncData возвращает thenable, и мы явно ждём первый разрешённый AsyncData.
 const [{ data: menuData }] = await Promise.all([
-  useAsyncData('menu', () => rfetch('/api/menu', { query: catalogQuery.value }), {
+  useAsyncData('menu', () => rfetch('/api/menu', { query: catalogQuery.value, ...hostHeader }), {
     watch: [catalogQuery],
   }),
-  useAsyncData('services-catalog', () => rfetch('/api/services-catalog', { query: catalogQuery.value }), {
+  useAsyncData('services-catalog', () => rfetch('/api/services-catalog', { query: catalogQuery.value, ...hostHeader }), {
     watch: [catalogQuery],
   }),
-  useAsyncData<BranchPublic[]>('branches', () => rfetch('/api/branches', slugQuery)),
+  useAsyncData<BranchPublic[]>('branches', () => rfetch('/api/branches', { ...slugQuery, ...hostHeader })),
 ])
 
 useCartReconciler(menuData)
