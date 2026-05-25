@@ -37,12 +37,14 @@
 
             <div class="options-grid">
               <div v-for="sourceOpt in getGroupSourceOptions(attached.groupId)" :key="sourceOpt.id" class="option-row">
-                <UiCheckbox
-                  :model-value="isOptionAttached(gi, sourceOpt.id)"
-                  @update:model-value="toggleOption(gi, sourceOpt, $event)"
-                >
-                  {{ sourceOpt.name }}
-                </UiCheckbox>
+                <div class="option-name">
+                  <UiCheckbox
+                    :model-value="isOptionAttached(gi, sourceOpt.id)"
+                    @update:model-value="toggleOption(gi, sourceOpt, $event)"
+                  >
+                    {{ sourceOpt.name }}
+                  </UiCheckbox>
+                </div>
                 <template v-if="isOptionAttached(gi, sourceOpt.id)">
                   <UiInputNumber
                     :model-value="getAttachedOption(gi, sourceOpt.id)!.priceDelta"
@@ -65,12 +67,14 @@
                   >
                     <template #suffix>{{ weightUnit ?? 'г' }}</template>
                   </UiInputNumber>
-                  <UiCheckbox
-                    :model-value="getAttachedOption(gi, sourceOpt.id)!.isDefault"
-                    @update:model-value="setDefault(gi, sourceOpt.id, $event)"
+                  <UiButton
+                    size="tiny"
+                    :type="getAttachedOption(gi, sourceOpt.id)!.isDefault ? 'primary' : 'default'"
+                    class="default-btn"
+                    @click="setDefault(gi, sourceOpt.id, !getAttachedOption(gi, sourceOpt.id)!.isDefault)"
                   >
-                    <UiText size="tiny">По умолч.</UiText>
-                  </UiCheckbox>
+                    По умолч.
+                  </UiButton>
                 </template>
               </div>
             </div>
@@ -212,19 +216,30 @@ defineExpose({ getModifiers })
 .options-grid {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-4);
 }
 
 .option-row {
   display: flex;
   align-items: center;
   gap: var(--space-8);
+  min-height: 32px;
+}
+
+.option-name {
+  flex: 1;
+  min-width: 0;
 }
 
 .price-input,
 .weight-input {
   width: 80px;
   flex-shrink: 0;
+}
+
+.default-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .add-buttons {
