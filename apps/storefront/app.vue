@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed, watch, onMounted } from 'vue'
-import { useRoute, useAsyncData, useHead, useRequestFetch } from 'nuxt/app'
+import { useRoute, useAsyncData, useHead, useRequestFetch, useRequestEvent } from 'nuxt/app'
 import type { BranchPublic, Tenant } from '@fastio/shared'
 import { paletteToCssVars } from '@fastio/shared'
 import { useAuthStore } from '~/features/auth'
@@ -46,8 +46,18 @@ const selectedBranch = useSelectedBranchStore()
 // который дальше определяет query-параметры для /api/menu и /api/services-catalog.
 // Если запросить tenant параллельно с menu, на старте получим TDZ
 // «Cannot access 'tenant' before initialization».
-// @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
-const { data: tenant } = await useAsyncData<Tenant>('tenant', () => rfetch('/api/tenant', slugQuery))
+// SSR: tenant уже резолвлен middleware и лежит в event.context.tenant — читаем напрямую
+// чтобы избежать internal Nitro fetch (он создаёт новый event с Host: localhost и
+// тенант не находится, т.к. middleware не может резолвить по 'localhost').
+const { data: tenant } = await useAsyncData<Tenant>('tenant', () => {
+  if (import.meta.server) {
+    const ssrEvent = useRequestEvent()
+    const ctxTenant = ssrEvent?.context?.tenant as Tenant | undefined
+    if (ctxTenant) return Promise.resolve(ctxTenant)
+  }
+  // @ts-expect-error Nuxt router type causes excessive stack depth with useAsyncData options
+  return rfetch('/api/tenant', slugQuery)
+})
 
 // Реактивный query для /api/menu и /api/services-catalog: добавляет branchId,
 // если тенант в режиме per_branch и пользователь выбрал филиал. На SSR это поле
