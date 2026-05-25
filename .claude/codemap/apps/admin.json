@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-20T03:47:10.796Z",
+  "generated_at": "2026-05-25T02:46:25.598Z",
   "stats": {
-    "files": 83,
+    "files": 81,
     "pages": 0,
-    "symbols": 143,
+    "symbols": 141,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -294,19 +294,6 @@
         }
       ]
     },
-    "plugins/apexcharts.client.ts": {
-      "kind": "ts",
-      "hash": "1063c8719049",
-      "purpose": "Регистрирует vue3-apexcharts глобально для дашборда и аналитики",
-      "symbols": [
-        {
-          "name": "default",
-          "kind": "other",
-          "hash": "298d2322",
-          "purpose": "nuxtApp.vueApp.use(VueApexCharts)"
-        }
-      ]
-    },
     "plugins/supabase.client.ts": {
       "kind": "ts",
       "hash": "d3447e574680",
@@ -333,23 +320,10 @@
         }
       ]
     },
-    "plugins/yandex-maps.client.ts": {
-      "kind": "ts",
-      "hash": "432fd6385667",
-      "purpose": "Инициализация Yandex Maps API через vue-yandex-maps (createYmapsOptions с apikey из runtimeConfig)",
-      "symbols": [
-        {
-          "name": "default",
-          "kind": "other",
-          "hash": "a94cdf0e",
-          "purpose": "createYmapsOptions({ apikey })"
-        }
-      ]
-    },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "092376d487ca",
-      "purpose": "Default layout админки — sidebar + topbar + slot для страницы, collapsible навигация",
+      "hash": "7e098c25064b",
+      "purpose": "Default layout приложения — collapsible sidebar, slot для страницы, телепорт AppPageActionBar",
       "symbols": [
         {
           "name": "component",
@@ -897,8 +871,8 @@
     },
     "shared/ui/components/AddressSuggestInput.vue": {
       "kind": "vue",
-      "hash": "74817e23d755",
-      "purpose": "Адресный input с DaData-подсказками — VeeValidate-совместимый, с опциональным pickedRule (требовать выбор из списка)",
+      "hash": "b8ecd40592b8",
+      "purpose": "Input с автодополнением адреса через DaData — эмитит выбранный вариант с координатами",
       "symbols": [
         {
           "name": "props",
@@ -974,8 +948,8 @@
     },
     "shared/ui/components/AppPageActionBar.vue": {
       "kind": "vue",
-      "hash": "8e7ac30f197b",
-      "purpose": "Плавающий action-bar внизу страницы: появляется при dirty-форме, кнопки Отменить/Сохранить + Cmd/Ctrl+S, читает форму из usePageForm",
+      "hash": "3bcb8c09750e",
+      "purpose": "Floating save-bar внизу страницы — телепортируется в default layout, содержит кнопки Save/Cancel",
       "symbols": [
         {
           "name": "component",
@@ -1414,8 +1388,8 @@
     },
     "shared/utils/query.ts": {
       "kind": "ts",
-      "hash": "dfa67c7ff982",
-      "purpose": "Helper query() для Supabase-вызовов: маппит PostgREST-коды (23505/42501/...) в дружелюбные RU-сообщения, показывает toast, reportError в Sentry",
+      "hash": "dc8088c0dc4b",
+      "purpose": "Обёртка для Supabase-запросов: маппинг PG-кодов ошибок в читаемые сообщения, бросает Error с локализованным текстом",
       "symbols": [
         {
           "name": "query",

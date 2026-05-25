@@ -1,8 +1,4 @@
-import { createDiscreteApi } from 'naive-ui'
-
 import { reportError } from '@fastio/shared/observability'
-
-const { message } = createDiscreteApi(['message'])
 
 type SupabaseLikeError = {
   message: string
@@ -45,7 +41,6 @@ export const query = async <T>(
     })
     const userMessage = mapPgErrorToUserMessage(error)
 
-    message.error(userMessage)
     throw new Error(userMessage)
   }
 

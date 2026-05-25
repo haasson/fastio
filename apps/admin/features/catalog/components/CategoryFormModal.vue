@@ -288,7 +288,9 @@ const handleSave = async () => {
     emit('update:modelValue', false)
   } catch (e) {
     reportError(e)
-    showError('Не удалось сохранить категорию')
+    const isComboConflict = form.value.type === 'combo' && e instanceof Error && e.message === 'Запись с такими данными уже существует'
+
+    showError(isComboConflict ? 'Комбо-категория уже создана — у каждого заведения может быть только одна' : (e instanceof Error ? e.message : 'Не удалось сохранить категорию'))
 
     return false
   } finally {

@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiForm, UiInput, UiInputNumber } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, useMessage } from '@fastio/ui'
 import type { Addon } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '@fastio/shared/observability'
@@ -60,6 +60,7 @@ const emit = defineEmits<{
 }>()
 
 const api = useDatabase()
+const { error: showError } = useMessage()
 
 const formRef = ref()
 const saving = ref(false)
@@ -110,6 +111,7 @@ const handleSave = async () => {
     emit('update:modelValue', false)
   } catch (e) {
     reportError(e, { context: 'AddonFormModal:save', tenantId: props.tenantId, addonId: props.addon?.id ?? null })
+    showError(e instanceof Error ? e.message : 'Не удалось сохранить добавку')
 
     return false
   } finally {

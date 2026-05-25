@@ -88,6 +88,7 @@
       v-model="showAddonModal"
       :tenant-id="tenantId"
       :addon="editingAddon"
+      @saved="refresh"
     />
 
     <AddonPresetFormModal
@@ -131,7 +132,7 @@ const saveMaxAddons = useDebounceFn(() => {
   db.tenants.update(tenantId.value, { maxAddonsDefault: maxAddonsDefault.value })
 }, 300)
 const {
-  addons, loading, presets, presetsLoading, loadPresets,
+  addons, loading, refresh, presets, presetsLoading, loadPresets,
   remove, toggleActive, removePreset,
 } = useAddons(tenantId)
 

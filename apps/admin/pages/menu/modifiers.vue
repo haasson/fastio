@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiDataTable, UiEmpty, UiSkeleton } from '@fastio/ui'
+import { UiButton, UiDataTable, UiEmpty, UiSkeleton, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { ModifierGroup } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -54,6 +54,7 @@ const showModal = ref(false)
 const editingGroup = ref<ModifierGroup | null>(null)
 
 const { confirm } = useConfirm()
+const { error: showError } = useMessage()
 
 const openAdd = () => {
   editingGroup.value = null
@@ -66,12 +67,16 @@ const openEdit = (group: ModifierGroup) => {
 }
 
 const handleSave = async (data: Parameters<typeof add>[0]) => {
-  if (editingGroup.value) {
-    await update(editingGroup.value.id, data)
-  } else {
-    await add(data)
+  try {
+    if (editingGroup.value) {
+      await update(editingGroup.value.id, data)
+    } else {
+      await add(data)
+    }
+    showModal.value = false
+  } catch (e) {
+    showError(e instanceof Error ? e.message : 'Не удалось сохранить модификатор')
   }
-  showModal.value = false
 }
 
 const handleRemove = async (group: ModifierGroup) => {

@@ -8,7 +8,7 @@ import { reportError } from '@fastio/shared/observability'
 export function useAddons(tenantId: Ref<string>) {
   const api = useDatabase()
 
-  const { items: addons, loading } = useRealtimeList({
+  const { items: addons, loading, refresh } = useRealtimeList({
     channelKey: computed(() => tenantId.value ? `addons:${tenantId.value}` : null),
     table: 'addons',
     filter: computed(() => `tenant_id=eq.${tenantId.value}`),
@@ -89,6 +89,7 @@ export function useAddons(tenantId: Ref<string>) {
   return {
     addons,
     loading,
+    refresh,
     presets,
     presetsLoading,
     loadPresets,
