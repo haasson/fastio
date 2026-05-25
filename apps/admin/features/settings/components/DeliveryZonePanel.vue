@@ -44,14 +44,22 @@
       >
         <template #suffix>₽</template>
       </UiInputNumber>
-      <UiInputNumber
-        v-model="form.freeDeliveryFrom"
-        label="Бесплатная доставка от"
-        placeholder="нет"
-        :min="0"
-      >
-        <template #suffix>₽</template>
-      </UiInputNumber>
+
+      <div class="free-delivery-block">
+        <div class="free-delivery-toggle">
+          <UiText size="small">Бесплатная доставка от суммы</UiText>
+          <UiSwitch v-model="enableFreeDelivery" />
+        </div>
+        <UiInputNumber
+          v-if="enableFreeDelivery"
+          v-model="form.freeDeliveryFrom"
+          label="Сумма заказа"
+          :min="1"
+          :rules="freeDeliveryRules"
+        >
+          <template #suffix>₽</template>
+        </UiInputNumber>
+      </div>
 
       <UiSpace :size="10">
         <UiButton
@@ -75,11 +83,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { ValidationRule } from '@fastio/kit'
 import {
   UiText, UiButton, UiInput, UiInputNumber,
-  UiSpace, UiSelect, UiForm,
+  UiSpace, UiSelect, UiForm, UiSwitch,
 } from '@fastio/ui'
 import type { DeliveryZone } from '@fastio/shared'
 import UiColorPicker from '~/shared/ui/components/ColorPicker.vue'
@@ -111,6 +119,12 @@ const emit = defineEmits<{
 
 const formRef = ref()
 
+const enableFreeDelivery = ref((props.form.freeDeliveryFrom ?? 0) > 0)
+
+watch(enableFreeDelivery, (enabled) => {
+  if (!enabled) props.form.freeDeliveryFrom = null
+})
+
 const nameRules = computed<ValidationRule[]>(() => [
   { type: 'required', message: 'Введите название зоны' },
   {
@@ -126,6 +140,15 @@ const nameRules = computed<ValidationRule[]>(() => [
     message: 'Зона с таким названием уже существует',
   },
 ])
+
+const freeDeliveryRules: ValidationRule[] = [
+  { type: 'required', message: 'Введите сумму' },
+  {
+    type: 'custom',
+    validator: (value: number | null) => (value ?? 0) >= 1,
+    message: 'Сумма должна быть больше 0',
+  },
+]
 
 const onSave = () => {
   if (!formRef.value?.validate()) return
@@ -150,5 +173,20 @@ const onSave = () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-12);
+}
+
+.free-delivery-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.free-delivery-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-8) 0;
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
 }
 </style>
