@@ -67,6 +67,11 @@ export default defineNuxtConfig({
     '/team': { redirect: '/team/members' },
   },
 
+  experimental: {
+    // После деплоя старые чанки 404 — автоперезагрузка при ошибке навигации.
+    emitRouteChunkError: 'automatic',
+  },
+
   imports: {
     autoImport: false,
   },
