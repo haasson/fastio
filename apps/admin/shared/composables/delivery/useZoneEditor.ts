@@ -74,9 +74,9 @@ export const useZoneEditor = (
       branchId: branchId ?? '',
       name: '',
       color: '#FF5500',
-      deliveryFee: 0,
-      minOrder: 0,
-      freeDeliveryFrom: 0,
+      deliveryFee: null,
+      minOrder: null,
+      freeDeliveryFrom: null,
       coordinates,
     }
   }

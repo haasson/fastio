@@ -31,6 +31,7 @@
       <UiInputNumber
         v-model="form.deliveryFee"
         label="Стоимость доставки"
+        placeholder="0"
         :min="0"
       >
         <template #suffix>₽</template>
@@ -38,6 +39,7 @@
       <UiInputNumber
         v-model="form.minOrder"
         label="Минимальный заказ"
+        placeholder="0"
         :min="0"
       >
         <template #suffix>₽</template>
@@ -45,6 +47,7 @@
       <UiInputNumber
         v-model="form.freeDeliveryFrom"
         label="Бесплатная доставка от"
+        placeholder="нет"
         :min="0"
       >
         <template #suffix>₽</template>
