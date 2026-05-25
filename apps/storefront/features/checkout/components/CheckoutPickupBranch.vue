@@ -49,6 +49,9 @@
         <span v-if="branchCompat.get(branch.id) === 'yellow'" class="branch-partial-note">
           Соберут не всё
         </span>
+        <span v-if="branchCompat.get(branch.id) === 'red'" class="branch-unavailable-note">
+          Нет нужных позиций
+        </span>
       </button>
     </div>
 
@@ -147,13 +150,14 @@ const branchCompat = computed<Map<string, CompatStatus>>(() => {
   const map = new Map<string, CompatStatus>()
   if (!isUnified.value) return map
   if (branches.value.length === 0) return map
-  if (cart.dishItems.length === 0) {
+  const pureItems = cart.dishItems.filter((i) => i.dishId != null)
+  if (pureItems.length === 0) {
     for (const b of branches.value) map.set(b.id, 'green')
     return map
   }
   const dishesById = new Map(menu.allDishes.map((d) => [d.id, d]))
   const result = computeBranchCompat(
-    cart.dishItems,
+    pureItems,
     dishesById,
     branches.value,
     branches.value.length,
@@ -178,14 +182,18 @@ const visibleBranches = computed(() => {
   return branches.value.filter((b) => branchCompat.value.get(b.id) !== 'red')
 })
 
-// Сортировка: green → yellow → red, внутри группы порядок исходного fetch'а.
+// Сортировка: green → yellow → closed → red, внутри группы порядок исходного fetch'а.
 const sortedBranches = computed(() => {
   if (!isUnified.value) return visibleBranches.value
-  const order: Record<CompatStatus, number> = { green: 0, yellow: 1, red: 2 }
+  const compatOrder: Record<CompatStatus, number> = { green: 0, yellow: 1, red: 3 }
   return [...visibleBranches.value].sort((a, b) => {
-    const sa = branchCompat.value.get(a.id) ?? 'green'
-    const sb = branchCompat.value.get(b.id) ?? 'green'
-    return order[sa] - order[sb]
+    const closedA = branchStatusByID.value.get(a.id)?.open === false ? 2 : 0
+    const closedB = branchStatusByID.value.get(b.id)?.open === false ? 2 : 0
+    const sa = (branchCompat.value.get(a.id) ?? 'green')
+    const sb = (branchCompat.value.get(b.id) ?? 'green')
+    const orderA = sa === 'red' ? 3 : Math.max(compatOrder[sa], closedA)
+    const orderB = sb === 'red' ? 3 : Math.max(compatOrder[sb], closedB)
+    return orderA - orderB
   })
 })
 
@@ -376,6 +384,12 @@ defineExpose({ validate })
 .branch-partial-note {
   @include text-xs;
   color: var(--color-warning);
+  font-style: italic;
+}
+
+.branch-unavailable-note {
+  @include text-xs;
+  color: var(--color-error);
   font-style: italic;
 }
 

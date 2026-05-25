@@ -44,9 +44,11 @@ const statuses = computed(() => {
   if (cart.dishItems.length === 0) return []
   // Меньше 2 филиалов — индикатор бессмыслен.
   if (menu.branchesAll.length < 2) return []
+  const pureItems = cart.dishItems.filter((i) => i.dishId != null)
+  if (pureItems.length === 0) return []
   const dishesById = new Map(menu.allDishes.map((d) => [d.id, d]))
   return computeBranchCompat(
-    cart.dishItems,
+    pureItems,
     dishesById,
     menu.branchesAll,
     menu.branchesAll.length,
