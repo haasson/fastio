@@ -42,12 +42,20 @@ import {
   YandexMapDefaultSchemeLayer,
   YandexMapDefaultFeaturesLayer,
   YandexMapMarker,
+  createYmapsOptions,
 } from 'vue-yandex-maps'
+// @ts-expect-error — TS не знает про /css side-effect subpath библиотеки
+import 'vue-yandex-maps/css'
+import { useRuntimeConfig } from '#imports'
 import { UiText } from '@fastio/ui'
 import type { ValidationRule } from '@fastio/kit'
 import AddressSuggestInput from '~/shared/ui/components/AddressSuggestInput.vue'
 import type { DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'
 import type { BranchAddressData } from '@fastio/shared'
+
+const yandexApiKey = useRuntimeConfig().public.yandexMapsApiKey as string
+
+if (yandexApiKey) createYmapsOptions({ apikey: yandexApiKey })
 
 withDefaults(defineProps<{
   name?: string
