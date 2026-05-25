@@ -26,7 +26,7 @@
         :rules="nameRules"
       />
 
-      <UiColorPicker v-model="form.color" label="Цвет зоны" />
+      <UiColorPicker v-model="form.color" label="Цвет зоны" :presets="DELIVERY_ZONE_COLOR_PRESETS" />
 
       <UiInputNumber
         v-model="form.deliveryFee"
@@ -91,6 +91,7 @@ import {
   UiSpace, UiSelect, UiForm, UiSwitch,
 } from '@fastio/ui'
 import type { DeliveryZone } from '@fastio/shared'
+import { DELIVERY_ZONE_COLOR_PRESETS } from '@fastio/shared'
 import UiColorPicker from '~/shared/ui/components/ColorPicker.vue'
 
 type ZoneForm = {

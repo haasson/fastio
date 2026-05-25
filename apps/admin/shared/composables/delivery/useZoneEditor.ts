@@ -1,5 +1,6 @@
 import { ref, computed, type Ref } from 'vue'
 import type { DeliveryZone, Branch } from '@fastio/shared'
+import { DEFAULT_DELIVERY_ZONE_COLOR } from '@fastio/shared'
 
 export type ZoneForm = {
   branchId: string
@@ -73,7 +74,7 @@ export const useZoneEditor = (
     zoneForm.value = {
       branchId: branchId ?? '',
       name: '',
-      color: '#FF5500',
+      color: DEFAULT_DELIVERY_ZONE_COLOR,
       deliveryFee: null,
       minOrder: null,
       freeDeliveryFrom: null,
