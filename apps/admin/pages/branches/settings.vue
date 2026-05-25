@@ -6,7 +6,8 @@
       subtitle="Используются по умолчанию во всех филиалах. В каждом филиале можно переопределить."
     />
 
-    <UiCard v-if="branches.length > 1 && !tenantStore.isServices" size="large" class="branch-mode-card">
+    <!-- TODO: per_branch mode for food/retail — скрыто до готовности (нет per-branch цен, нет предупреждения при смене филиала с корзиной) -->
+    <UiCard v-if="false && branches.length > 1 && !tenantStore.isServices" size="large" class="branch-mode-card">
       <UiSectionHeader title="Как клиент попадает в филиал" />
       <p class="mode-hint">{{ modeTexts.hint }}</p>
       <div class="mode-options">
