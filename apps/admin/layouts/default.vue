@@ -51,6 +51,7 @@
     <div class="main">
       <PastDueBanner />
       <PartialInitBanner />
+      <OrderBlockersBanner />
 
       <header class="topbar">
         <div class="burger-wrap">
@@ -103,6 +104,7 @@ import OnboardingWizard from '~/features/onboarding/components/OnboardingWizard.
 import OnboardingChecklist from '~/features/onboarding/components/OnboardingChecklist.vue'
 import PastDueBanner from '~/shared/components/layout/PastDueBanner.vue'
 import PartialInitBanner from '~/shared/components/layout/PartialInitBanner.vue'
+import OrderBlockersBanner from '~/shared/components/layout/OrderBlockersBanner.vue'
 import UiAppBurger from '~/shared/ui/components/AppBurger.vue'
 import UiAppLogo from '~/shared/ui/components/AppLogo.vue'
 import AiChat from '~/features/ai-assistant/components/AiChat.vue'

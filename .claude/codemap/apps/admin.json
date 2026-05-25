@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-25T04:47:46.579Z",
+  "generated_at": "2026-05-25T11:54:18.454Z",
   "stats": {
-    "files": 81,
+    "files": 84,
     "pages": 0,
-    "symbols": 141,
+    "symbols": 145,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -320,10 +320,23 @@
         }
       ]
     },
+    "plugins/yandex-maps.client.ts": {
+      "kind": "ts",
+      "hash": "432fd6385667",
+      "purpose": "Nuxt client-plugin: регистрирует vue-yandex-maps с ключом из runtimeConfig",
+      "symbols": [
+        {
+          "name": "default",
+          "kind": "other",
+          "hash": "a94cdf0e",
+          "purpose": "defineNuxtPlugin: инициализирует YandexMaps с API-ключом"
+        }
+      ]
+    },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "7e098c25064b",
-      "purpose": "Default layout приложения — collapsible sidebar, slot для страницы, телепорт AppPageActionBar",
+      "hash": "eaaf31e34855",
+      "purpose": "Главный лейаут админки: sidebar, topbar, баннеры (billing/blockers), realtime-каналы, онбординг",
       "symbols": [
         {
           "name": "component",
@@ -400,6 +413,19 @@
           "kind": "component",
           "hash": "cbcf45d7",
           "purpose": "Скрывается, если филиал один; меняет branchStore.currentBranchId"
+        }
+      ]
+    },
+    "shared/components/layout/OrderBlockersBanner.vue": {
+      "kind": "vue",
+      "hash": "528b35d545eb",
+      "purpose": "Баннер-предупреждение: клиенты не могут оформить заказ — перечисляет блокеры со ссылками на фикс",
+      "symbols": [
+        {
+          "name": "component",
+          "kind": "component",
+          "hash": "cbcf45d7",
+          "purpose": "Красный inline-баннер в лейауте; скрыт для services-тенантов и showcase-плана"
         }
       ]
     },
@@ -490,6 +516,25 @@
           "kind": "function",
           "hash": "f17221e8",
           "purpose": "Возвращает variant: ComputedRef<ItemVariant> по businessType/menuStyle"
+        }
+      ]
+    },
+    "shared/composables/useOrderBlockers.ts": {
+      "kind": "ts",
+      "hash": "23d67820469a",
+      "purpose": "Вычисляет список причин, по которым клиенты не могут оформить заказ на витрине",
+      "symbols": [
+        {
+          "name": "OrderBlocker",
+          "kind": "type",
+          "hash": "7c00b664",
+          "purpose": "{ message, link, linkLabel } — одна причина блокировки с actionable-ссылкой"
+        },
+        {
+          "name": "useOrderBlockers",
+          "kind": "function",
+          "hash": "444da0fc",
+          "purpose": "Возвращает reactive blockers[]: нет метода доставки / нет зон / нет юрданных; пусто для services и showcase"
         }
       ]
     },
@@ -890,8 +935,8 @@
     },
     "shared/ui/components/AddressWithMap.vue": {
       "kind": "vue",
-      "hash": "fc2f13e77fd9",
-      "purpose": "AddressSuggestInput + Яндекс.Карта с маркером и координатами; v-model:address/addressData/latitude/longitude",
+      "hash": "323eb13f6f4e",
+      "purpose": "Поле ввода адреса с Dadata-подсказками и Яндекс-картой для визуальной проверки координат",
       "symbols": [
         {
           "name": "props",
