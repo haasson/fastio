@@ -141,14 +141,23 @@ const nameRules = computed<ValidationRule[]>(() => [
   },
 ])
 
-const freeDeliveryRules: ValidationRule[] = [
+const freeDeliveryRules = computed<ValidationRule[]>(() => [
   { type: 'required', message: 'Введите сумму' },
   {
     type: 'custom',
     validator: (value: number | null) => (value ?? 0) >= 1,
     message: 'Сумма должна быть больше 0',
   },
-]
+  {
+    type: 'custom',
+    validator: (value: number | null) => {
+      const min = props.form.minOrder ?? 0
+
+      return min === 0 || (value ?? 0) >= min
+    },
+    message: computed(() => `Должна быть не меньше минимального заказа (${props.form.minOrder ?? 0} ₽)`).value,
+  },
+])
 
 const onSave = () => {
   if (!formRef.value?.validate()) return
