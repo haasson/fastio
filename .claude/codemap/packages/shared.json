@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-05-20T02:06:55.728Z",
+  "generated_at": "2026-05-26T03:18:26.225Z",
   "stats": {
-    "files": 49,
+    "files": 50,
     "pages": 0,
-    "symbols": 200,
+    "symbols": 204,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -656,6 +656,25 @@
         }
       ]
     },
+    "src/utils/parseFiniteNumber.ts": {
+      "kind": "ts",
+      "hash": "43d37537b41a",
+      "purpose": "Безопасный парсер числа из user-input: защита от Infinity/NaN/overflow, min/max-границы, null при невалиде",
+      "symbols": [
+        {
+          "name": "parseFiniteNumber",
+          "kind": "function",
+          "hash": "ec70dde0",
+          "purpose": "(input, { min=0, max=MAX_SAFE/100 }) → number | null; отсекает Infinity/NaN/булеаны/выход за границы"
+        },
+        {
+          "name": "ParseFiniteNumberOptions",
+          "kind": "type",
+          "hash": "1ba6ae97",
+          "purpose": "{ min?, max? } — включительные границы допустимого значения"
+        }
+      ]
+    },
     "src/utils/paymentMethods.ts": {
       "kind": "ts",
       "hash": "a1b10e891d3f",
@@ -696,8 +715,8 @@
     },
     "src/utils/planConstants.ts": {
       "kind": "ts",
-      "hash": "d77d93f1a236",
-      "purpose": "Доменные константы тарифа и филиалов: длительность триала, палитра цветов филиала и дефолтный цвет",
+      "hash": "1d525ffca819",
+      "purpose": "Константы тарифа и палитры цветов по умолчанию (триал, цвета филиалов и зон доставки)",
       "symbols": [
         {
           "name": "DEFAULT_TRIAL_DAYS",
@@ -716,6 +735,18 @@
           "kind": "const",
           "hash": "7224af06",
           "purpose": "Дефолтный цвет нового филиала — первый из BRANCH_COLOR_PRESETS (#FF5500)"
+        },
+        {
+          "name": "DELIVERY_ZONE_COLOR_PRESETS",
+          "kind": "const",
+          "hash": "c0ac3ab1",
+          "purpose": "Палитра цветов зоны доставки для ColorSwatch; первый элемент — дефолт DEFAULT_DELIVERY_ZONE_COLOR"
+        },
+        {
+          "name": "DEFAULT_DELIVERY_ZONE_COLOR",
+          "kind": "const",
+          "hash": "a5e055d2",
+          "purpose": "Дефолтный цвет новой зоны доставки — первый из DELIVERY_ZONE_COLOR_PRESETS"
         }
       ]
     },

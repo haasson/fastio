@@ -71,7 +71,9 @@
     <BranchDrawer
       v-model="drawerOpen"
       :branch="editingBranch"
+      :color-presets="branchColorPresets"
       @save="handleSave"
+      @add-color="onAddBranchColor"
     />
   </UiCard>
 </template>
@@ -79,9 +81,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiButton, UiCard, UiIcon, UiText, UiTag, UiDivider, UiSectionHeader } from '@fastio/ui'
+import { UiButton, UiCard, UiIcon, UiText, UiTag, UiDivider, UiSectionHeader, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Branch, BranchFormData } from '@fastio/shared'
+import { BRANCH_COLOR_PRESETS } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
+import type { ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useBranchLimit } from '~/shared/plan/useBranchLimit'
@@ -94,6 +99,22 @@ import useDrawer from '~/shared/ui/composables/useDrawer'
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const api = useDatabase()
+const { error: showError } = useMessage()
+
+const branchColorPresets = computed<ColorOption[]>(() => [
+  ...BRANCH_COLOR_PRESETS.map((hex) => ({ value: hex, color: hex })),
+  ...(tenantStore.tenant.colorPalettes.branches ?? []).map((hex) => ({ value: hex, color: hex })),
+])
+
+const onAddBranchColor = async (hex: string) => {
+  try {
+    await api.tenants.addColorPreset(tenantStore.tenant.id, 'branches', hex)
+    await tenantStore.fetchTenant()
+  } catch (e) {
+    reportError(e)
+    showError('Не удалось сохранить цвет в палитру')
+  }
+}
 const { tenantId } = storeToRefs(tenantStore)
 const { branches, archivedBranches } = storeToRefs(branchStore)
 const { add, update, archive, restore } = branchStore

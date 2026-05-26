@@ -16,7 +16,13 @@
         :rules="[validationRules.name.required]"
       />
 
-      <UiColorPicker v-model="form.color" label="Цвет филиала" :presets="BRANCH_COLOR_PRESETS" />
+      <ColorSwatch
+        v-model="form.color"
+        label="Цвет филиала"
+        :presets="props.colorPresets"
+        allow-custom
+        @add-color="$emit('add-color', $event)"
+      />
 
       <AddressWithMap
         v-model:address="form.address"
@@ -78,11 +84,11 @@ import {
 import WorkingHoursEditor from './WorkingHoursEditor.vue'
 
 import type { Branch, BranchFormData } from '@fastio/shared'
-import { BRANCH_COLOR_PRESETS, DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
+import { DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { validationRules } from '@fastio/kit'
-import UiColorPicker from '~/shared/ui/components/ColorPicker.vue'
+import ColorSwatch, { type ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
 import AddressWithMap from '~/shared/ui/components/AddressWithMap.vue'
 import { defaultBranchFormData } from '~/features/branches'
 
@@ -94,11 +100,13 @@ const hasMultipleBranches = computed(() => branchStore.branches.length > 1)
 const props = defineProps<{
   modelValue: boolean
   branch: Branch | null
+  colorPresets: ColorOption[]
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'save': [data: BranchFormData]
+  'add-color': [hex: string]
 }>()
 
 const formRef = ref()

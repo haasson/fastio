@@ -30,3 +30,6 @@ tests/e2e/.fixtures.json
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Superpowers brainstorm/skill session artifacts
+.superpowers/

@@ -34,7 +34,7 @@ export default defineFeature({
     'shared.stores.branch',
     'shared.stores.tenant',
     'shared.ui.components.AddressWithMap',
-    'shared.ui.components.ColorPicker',
+    'shared.ui.components.ColorSwatch',
     'shared.ui.composables.useEditableForm',
     'shared.ui.composables.usePageForm',
     'shared.ui.composables.useUnsavedGuard',

@@ -78,6 +78,11 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
     paymentMethods: ((row.payment_methods as string[] | null) ?? [...DEFAULT_PAYMENT_METHODS]) as PaymentMethod[],
     branchSelectionMode: row.branch_selection_mode as Tenant['branchSelectionMode'],
+    colorPalettes: {
+      delivery_zones: ((row.color_palettes as { delivery_zones?: string[] } | null)?.delivery_zones) ?? [],
+      branches: ((row.color_palettes as { branches?: string[] } | null)?.branches) ?? [],
+      service_categories: ((row.color_palettes as { service_categories?: string[] } | null)?.service_categories) ?? [],
+    },
     createdAt: row.created_at as string,
   }
 }

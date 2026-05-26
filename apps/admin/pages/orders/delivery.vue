@@ -84,11 +84,13 @@
               :zone-id="selectedZoneId"
               :branch-options="branchOptions"
               :existing-zones="zones"
+              :color-presets="deliveryColorPresets"
               :saving="zoneSaving"
               :removing="zoneRemoving"
               @save="handleZoneSave"
               @remove="handleZoneRemove"
               @close="closePanel"
+              @add-color="onAddDeliveryColor"
             />
           </div>
         </Transition>
@@ -103,6 +105,10 @@ import { storeToRefs } from 'pinia'
 import { UiSkeleton, UiAlert, UiSegmentedControl, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { DeliveryMode } from '@fastio/shared'
+import { DELIVERY_ZONE_COLOR_PRESETS } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
+import type { ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useDeliveryZoneStore } from '~/features/orders'
@@ -119,6 +125,23 @@ const DeliveryZoneMap = defineAsyncComponent(
 )
 
 const tenantStore = useTenantStore()
+const api = useDatabase()
+
+const deliveryColorPresets = computed<ColorOption[]>(() => [
+  ...DELIVERY_ZONE_COLOR_PRESETS.map((hex) => ({ value: hex, color: hex })),
+  ...(tenantStore.tenant.colorPalettes.delivery_zones ?? []).map((hex) => ({ value: hex, color: hex })),
+])
+
+const onAddDeliveryColor = async (hex: string) => {
+  try {
+    await api.tenants.addColorPreset(tenantStore.tenant.id, 'delivery_zones', hex)
+    await tenantStore.fetchTenant()
+  } catch (e) {
+    reportError(e)
+    showError('Не удалось сохранить цвет в палитру')
+  }
+}
+
 const branchStore = useBranchStore()
 const deliveryZoneStore = useDeliveryZoneStore()
 const { zones, loading: zonesLoading } = storeToRefs(deliveryZoneStore)
@@ -133,7 +156,7 @@ const modeItems = [
 ]
 
 const { confirm } = useConfirm()
-const { success } = useMessage()
+const { success, error: showError } = useMessage()
 const deliveryMode = computed(() => tenantStore.tenant.deliveryMode ?? 'zones')
 
 const confirmMessages: Record<string, { title: string; message: string }> = {

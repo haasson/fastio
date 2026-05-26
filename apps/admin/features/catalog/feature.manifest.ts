@@ -31,7 +31,7 @@ export default defineFeature({
     'shared.data.useRealtimeList',
     'shared.plan.useGate',
     'shared.stores.tenant',
-    'shared.ui.components.ColorPicker',
+    'shared.ui.components.ColorSwatch',
     'shared.ui.components.ImageUploadTrigger',
     'shared.ui.composables.useItemManager',
     'shared.utils.query',

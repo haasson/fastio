@@ -35,18 +35,10 @@
 
       <div class="field" data-tour="tag-color">
         <UiText size="small" weight="medium" class="label">Цвет</UiText>
-        <div class="color-grid">
-          <UiPickerItem
-            v-for="c in TAG_COLOR_PRESETS"
-            :key="c.key"
-            :selected="form.color === c.key"
-            class="color-btn"
-            :style="{ '--dot-color': c.color, '--dot-bg': c.background }"
-            @click="form.color = c.key"
-          >
-            <span class="color-dot" :style="{ backgroundColor: c.color }" />
-          </UiPickerItem>
-        </div>
+        <ColorSwatch
+          v-model="form.color"
+          :presets="tagColorOptions"
+        />
       </div>
 
       <div class="field" data-tour="tag-preview">
@@ -62,7 +54,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiForm, UiInput, UiText, UiPickerItem } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiText } from '@fastio/ui'
+import ColorSwatch, { type ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
 import type { DishTagDefinition } from '@fastio/shared'
 import { TAG_COLOR_PRESETS, getTagColorPreset, getTagIconPresets, getTagNamePlaceholder } from '@fastio/shared'
 import * as icons from 'lucide-vue-next'
@@ -86,6 +79,8 @@ const tenantStore = useTenantStore()
 
 const iconPresets = computed(() => getTagIconPresets(tenantStore.tenant.businessType, tenantStore.tenant.menuStyle))
 const namePlaceholder = computed(() => getTagNamePlaceholder(tenantStore.tenant.businessType, tenantStore.tenant.menuStyle))
+const tagColorOptions = computed<ColorOption[]>(() => TAG_COLOR_PRESETS.map((p) => ({ value: p.key, color: p.color, bg: p.background })),
+)
 
 const formRef = ref()
 const saving = ref(false)
@@ -180,31 +175,6 @@ const handleSave = async () => {
     color: var(--color-primary);
     background: var(--color-primary-light);
   }
-}
-
-.color-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-}
-
-// UiPickerItem уже делает border + selected ring. Здесь — только размер/фон/colored shadow.
-.color-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--dot-bg);
-
-  &.ui-picker-item--selected {
-    box-shadow: 0 0 8px 2px var(--dot-color);
-  }
-}
-
-.color-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--dot-color);
 }
 
 .tag-preview {

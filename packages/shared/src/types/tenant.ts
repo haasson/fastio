@@ -271,6 +271,12 @@ export const emptyOnboardingState = (): OnboardingState => ({
   dismissedAt: null,
 })
 
+export type TenantColorPalettes = {
+  delivery_zones: string[]
+  branches: string[]
+  service_categories: string[]
+}
+
 export type Tenant = {
   id: string
   name: string
@@ -308,5 +314,6 @@ export type Tenant = {
   legalInfo: TenantLegalInfo | null
   paymentMethods: PaymentMethod[]
   branchSelectionMode: BranchSelectionMode
+  colorPalettes: TenantColorPalettes
   createdAt: string
 }

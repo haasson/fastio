@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Tenant, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle } from '@fastio/shared'
+import type { Tenant, TenantColorPalettes, KitchenConfig, OrderNumberConfig, WorkingHoursSchedule, DeliveryMode, MenuStyle } from '@fastio/shared'
 import { defaultSiteLayout, defaultSiteContent, defaultTheme, defaultSeo, deepMerge, parseSchedulingConfig, DEFAULT_PAYMENT_METHODS } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
 import type { TenantRow } from '../db-types'
@@ -66,6 +66,11 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
     paymentMethods: (row.payment_methods ?? [...DEFAULT_PAYMENT_METHODS]) as Tenant['paymentMethods'],
     branchSelectionMode: row.branch_selection_mode,
+    colorPalettes: {
+      delivery_zones: (row.color_palettes as TenantColorPalettes)?.delivery_zones ?? [],
+      branches: (row.color_palettes as TenantColorPalettes)?.branches ?? [],
+      service_categories: (row.color_palettes as TenantColorPalettes)?.service_categories ?? [],
+    },
     createdAt: row.created_at,
   }
 }
@@ -105,6 +110,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   legal_info: data.legalInfo,
   payment_methods: data.paymentMethods,
   branch_selection_mode: data.branchSelectionMode,
+  color_palettes: data.colorPalettes,
 }) as Partial<TenantRow>
 
 export const tenantsApi = {
@@ -116,6 +122,31 @@ export const tenantsApi = {
 
   async update(sb: SupabaseClient, id: string, data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>) {
     await query(sb.from('tenants').update(tenantToDb(data)).eq('id', id))
+  },
+
+  // Read-modify-write: атомарность не нужна — палитру правит один владелец из
+  // одной вкладки. query() на чтении обязателен, иначе тихий fail затрёт
+  // остальные контексты при записи (palettes={} → перезапись всей колонки).
+  async addColorPreset(
+    sb: SupabaseClient,
+    tenantId: string,
+    context: keyof TenantColorPalettes,
+    hex: string,
+  ): Promise<void> {
+    const row = await query(
+      sb.from('tenants').select('color_palettes').eq('id', tenantId).single(),
+    )
+
+    const palettes = (row?.color_palettes ?? {}) as Partial<TenantColorPalettes>
+    const current = palettes[context] ?? []
+
+    if (current.includes(hex)) return
+
+    await query(
+      sb.from('tenants')
+        .update({ color_palettes: { ...palettes, [context]: [...current, hex] } })
+        .eq('id', tenantId),
+    )
   },
 
   async updatePlan(sb: SupabaseClient, tenantId: string, planKey: string): Promise<'upgraded' | 'downgraded'> {

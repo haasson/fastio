@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-25T13:15:45.500Z",
+  "generated_at": "2026-05-26T03:18:26.038Z",
   "stats": {
     "files": 85,
     "pages": 0,
-    "symbols": 146,
+    "symbols": 147,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -502,8 +502,8 @@
     },
     "shared/composables/delivery/useZoneEditor.ts": {
       "kind": "ts",
-      "hash": "3d148776d653",
-      "purpose": "UI-стейт редактора зон доставки: выбор зоны, форма, режим рисования, привязка к филиалу",
+      "hash": "fc151882416e",
+      "purpose": "Composable редактора зон доставки: выбор/создание зоны, рисование полигона на карте, состояние формы и панели",
       "symbols": [
         {
           "name": "ZoneForm",
@@ -1030,22 +1030,28 @@
         }
       ]
     },
-    "shared/ui/components/ColorPicker.vue": {
+    "shared/ui/components/ColorSwatch.vue": {
       "kind": "vue",
-      "hash": "e08c36164219",
-      "purpose": "Color swatch picker (canonical 32×32 round, через UiPickerItem) с пресет-палитрой + кастомным <input type=color> + поддержкой usedColors (приглушение уже занятых).",
+      "hash": "81ac3bb3ba86",
+      "purpose": "Выбор цвета из круглых свотчей-пресетов + опциональный кастомный цвет через нативный input[type=color] (кнопка +); поддержка bg+dot для тегов и приглушения занятых цветов",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "9c837d39",
-          "purpose": "modelValue (hex), label, presets (массив hex), usedColors (приглушаемые занятые)"
+          "hash": "978f4f91",
+          "purpose": "{ modelValue, presets?: ColorOption[], label?, usedValues?, allowCustom? }"
         },
         {
           "name": "emits",
           "kind": "component-emits",
-          "hash": "2508c3d7",
-          "purpose": "update:modelValue"
+          "hash": "38cc865c",
+          "purpose": "update:modelValue (выбран цвет), add-color (выбран новый кастомный hex — для сохранения в палитру)"
+        },
+        {
+          "name": "ColorOption",
+          "kind": "type",
+          "hash": "528b7ad2",
+          "purpose": "{ value, color, bg? } — пресет свотча: value хранимое значение, color заливка, bg фон-обводка для tag-стиля"
         }
       ]
     },

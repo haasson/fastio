@@ -110,6 +110,7 @@ function makeTenant(overrides: Partial<Tenant> = {}): Tenant {
     legalInfo: null,
     paymentMethods: [],
     branchSelectionMode: 'unified',
+    colorPalettes: { delivery_zones: [], branches: [], service_categories: [] },
     createdAt: '2024-01-01T00:00:00Z',
     ...overrides,
   } as Tenant

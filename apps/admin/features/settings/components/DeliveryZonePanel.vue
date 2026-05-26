@@ -25,8 +25,14 @@
         placeholder="Центр города"
         :rules="nameRules"
       />
-
-      <UiColorPicker v-model="form.color" label="Цвет зоны" :presets="DELIVERY_ZONE_COLOR_PRESETS" />
+      <ColorSwatch
+        v-model="form.color"
+        label="Цвет зоны"
+        :presets="props.colorPresets"
+        :used-values="usedZoneColors"
+        allow-custom
+        @add-color="$emit('add-color', $event)"
+      />
 
       <UiInputNumber
         v-model="form.deliveryFee"
@@ -91,8 +97,7 @@ import {
   UiSpace, UiSelect, UiForm, UiSwitch,
 } from '@fastio/ui'
 import type { DeliveryZone } from '@fastio/shared'
-import { DELIVERY_ZONE_COLOR_PRESETS } from '@fastio/shared'
-import UiColorPicker from '~/shared/ui/components/ColorPicker.vue'
+import ColorSwatch, { type ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
 
 type ZoneForm = {
   branchId: string
@@ -109,17 +114,25 @@ const props = defineProps<{
   zoneId?: string
   branchOptions: { label: string; value: string }[]
   existingZones: DeliveryZone[]
+  colorPresets: ColorOption[]
   saving: boolean
   removing: boolean
 }>()
 
 const emit = defineEmits<{
-  close: []
-  save: []
-  remove: []
+  'close': []
+  'save': []
+  'remove': []
+  'add-color': [hex: string]
 }>()
 
 const formRef = ref()
+
+const usedZoneColors = computed(() => props.existingZones
+  .filter((z) => z.id !== props.zoneId)
+  .map((z) => z.color)
+  .filter(Boolean),
+)
 
 const enableFreeDelivery = ref((props.form.freeDeliveryFrom ?? 0) > 0)
 

@@ -71,12 +71,14 @@
       </div>
 
       <div v-if="props.kind === 'service'" class="field">
-        <ColorPicker
+        <ColorSwatch
           :model-value="form.color ?? CATEGORY_COLOR_PALETTE[0].hex"
           label="Цвет категории"
           :presets="colorPresets"
-          :used-colors="otherUsedHexColors"
+          :used-values="otherUsedHexColors"
+          allow-custom
           @update:model-value="form.color = $event"
+          @add-color="onAddCategoryColor"
         />
       </div>
 
@@ -96,9 +98,10 @@ import type { Category, CategoryKind, CategoryType, DishTagDefinition } from '@f
 import { slugify, CATEGORY_COLOR_PALETTE, getCategoryColorHex, getNextCategoryColor } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useGate } from '~/shared/plan/useGate'
+import { useTenantStore } from '~/shared/stores/tenant'
 import { reportError } from '@fastio/shared/observability'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
-import ColorPicker from '~/shared/ui/components/ColorPicker.vue'
+import ColorSwatch, { type ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
 
 type FormMode = 'regular' | 'virtual' | 'combo'
 
@@ -124,6 +127,7 @@ const emit = defineEmits<{
 const api = useDatabase()
 const { error: showError } = useMessage()
 const gate = useGate()
+const tenantStore = useTenantStore()
 
 const formRef = ref()
 const saving = ref(false)
@@ -150,7 +154,20 @@ const categoryToMode = (cat: Category): FormMode => {
   return 'regular'
 }
 
-const colorPresets = CATEGORY_COLOR_PALETTE.map((p) => p.hex)
+const colorPresets = computed<ColorOption[]>(() => [
+  ...CATEGORY_COLOR_PALETTE.map((p) => ({ value: p.hex, color: p.hex })),
+  ...(tenantStore.tenant.colorPalettes.service_categories ?? []).map((hex) => ({ value: hex, color: hex })),
+])
+
+const onAddCategoryColor = async (hex: string) => {
+  try {
+    await api.tenants.addColorPreset(props.tenantId, 'service_categories', hex)
+    await tenantStore.fetchTenant()
+  } catch (e) {
+    reportError(e)
+    showError('Не удалось сохранить цвет в палитру')
+  }
+}
 
 // Hex-значения цветов других категорий (без цвета текущей редактируемой),
 // чтобы её собственный цвет не подсвечивался как «занятый».

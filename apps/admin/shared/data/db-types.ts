@@ -17,6 +17,7 @@
 import type {
   RolePermissions,
   TenantTheme,
+  TenantColorPalettes,
   TenantContacts,
   TenantNotifications,
   TenantSubscription,
@@ -73,6 +74,7 @@ type TenantOverrides = {
   order_scheduling_config: Record<string, unknown>
   legal_info: Record<string, unknown> | null
   branch_selection_mode: 'unified' | 'per_branch'
+  color_palettes: Partial<TenantColorPalettes>
 }
 
 export type TenantRow = WithOverrides<Tables<'tenants'>, TenantOverrides>
