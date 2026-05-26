@@ -24,7 +24,10 @@ export function useRealtimeChannels(tenantId: Ref<string | null>) {
   const branchStore = useBranchStore()
   const { currentBranchId } = storeToRefs(branchStore)
 
-  useOrdersChannel(tenantId, currentBranchId)
+  // orders: всегда tenant-level (без branch filter) — иначе заказы других
+  // филиалов не долетают в алерты и счётчик. Клиентская фильтрация по
+  // филиалу — в shouldInclude (useOrders) и fetchCounts (useOrderCounts).
+  useOrdersChannel(tenantId)
   useOrderAlertHandler()
 
   useTableCallsChannel(tenantId)
