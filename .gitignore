@@ -33,3 +33,7 @@ tests/e2e/.fixtures.json
 
 # Superpowers brainstorm/skill session artifacts
 .superpowers/
+
+# Graphify knowledge-graph build output (regenerate via `graphify update .`)
+graphify-out/
+.planning/graphs/graph.json
