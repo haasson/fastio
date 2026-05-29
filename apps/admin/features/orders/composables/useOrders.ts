@@ -163,8 +163,8 @@ export function useOrders(
           _orders.value.unshift(order)
           total.value++
         }
-        realtimeVersion.value++
       }
+      realtimeVersion.value++
 
       return
     }
