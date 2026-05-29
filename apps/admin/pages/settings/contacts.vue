@@ -8,6 +8,11 @@
         placeholder="Пицца Васи"
         :rules="[{ type: 'required', message: 'Введите название' }]"
       />
+      <UiInput
+        v-model="form.phone"
+        label="Телефон"
+        placeholder="+7 (900) 000-00-00"
+      />
       <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
       <UiSelect
         v-model:value="form.timezone"
@@ -16,10 +21,18 @@
         filterable
         class="timezone-select"
       />
-      <UiText v-if="!branchesOptedOut" size="tiny" class="hint">
-        Телефон и часы работы заведения настраиваются в разделе
-        <NuxtLink to="/branches" class="hint-link">«{{ branchSectionLabel }}»</NuxtLink>.
-      </UiText>
+    </UiFormSection>
+
+    <UiFormSection title="Часы работы">
+      <UiAlert
+        v-if="!branchesOptedOut"
+        size="small"
+        type="info"
+      >
+        Это глобальное расписание. Филиал может перекрыть его своим — настрой в
+        <NuxtLink to="/branches" class="alert-link">разделе Филиалы</NuxtLink>.
+      </UiAlert>
+      <WorkingHoursEditor v-model="form.workingHoursSchedule" />
     </UiFormSection>
 
     <UiFormSection title="Соцсети и мессенджеры">
@@ -34,22 +47,22 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiForm, UiFormSection, UiInput, UiText, UiSelect } from '@fastio/ui'
+import { UiForm, UiFormSection, UiInput, UiSelect, UiAlert } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
-import { TIMEZONE_OPTIONS } from '@fastio/shared'
+import { TIMEZONE_OPTIONS, DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
+import type { WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
 import { isLockedBy } from '~/shared/plan/useGate.helpers'
 import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
 import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
 import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
+import WorkingHoursEditor from '~/features/settings/components/WorkingHoursEditor.vue'
 
 const tenantStore = useTenantStore()
 const gate = useGate()
 
-const isVenueMode = isLockedBy(gate.branches, 'locked')
 const branchesOptedOut = isLockedBy(gate.branches, 'opted-out')
-const branchSectionLabel = computed(() => isVenueMode.value ? 'Заведение' : 'Филиалы')
 
 const tenant = computed(() => tenantStore.tenant)
 
@@ -57,6 +70,7 @@ const page = useEditableForm({
   source: tenant,
   build: (t: Tenant) => ({
     name: t.name ?? '',
+    phone: t.contacts?.phone ?? '',
     email: t.contacts?.email ?? '',
     instagram: t.contacts?.instagram ?? '',
     vk: t.contacts?.vk ?? '',
@@ -64,12 +78,15 @@ const page = useEditableForm({
     whatsapp: t.contacts?.whatsapp ?? '',
     max: t.contacts?.max ?? '',
     timezone: t.timezone,
+    workingHoursSchedule: (t.workingHoursSchedule ?? { ...DEFAULT_WORKING_HOURS_SCHEDULE }) as WorkingHoursSchedule,
   }),
   save: (data) => tenantStore.update({
     name: data.name,
     timezone: data.timezone,
+    workingHoursSchedule: data.workingHoursSchedule,
     contacts: {
       ...tenantStore.tenant.contacts,
+      phone: data.phone,
       email: data.email,
       instagram: data.instagram || null,
       vk: data.vk || null,
@@ -98,13 +115,9 @@ useUnsavedGuard(page.isDirty)
   max-width: 320px;
 }
 
-.hint {
-  color: var(--color-text-hint);
-}
-
-.hint-link {
-  color: var(--color-primary);
-  text-decoration: none;
+.alert-link {
+  color: inherit;
+  font-weight: 600;
 
   &:hover { text-decoration: underline; }
 }

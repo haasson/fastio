@@ -34,43 +34,41 @@
         :map-height="200"
         :rules="[validationRules.address.required]"
       />
-      <template v-if="hasMultipleBranches">
-        <UiInput
-          v-model="form.phone"
-          label="Телефон"
-          placeholder="+7 (900) 000-00-00"
-          :rules="[validationRules.phone.format]"
+      <UiInput
+        v-model="form.phone"
+        label="Телефон"
+        placeholder="+7 (900) 000-00-00"
+        :rules="[validationRules.phone.format]"
+      />
+
+      <div class="override-block">
+        <UiSectionHeader title="Часы работы">
+          <template #right>
+            <div class="override-toggle">
+              <UiText size="tiny">Своё расписание</UiText>
+              <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
+            </div>
+          </template>
+        </UiSectionHeader>
+        <WorkingHoursEditor
+          v-if="useCustomHours && form.workingHoursSchedule"
+          v-model="form.workingHoursSchedule"
         />
+        <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
+      </div>
 
-        <div class="override-block">
-          <UiSectionHeader title="Часы работы">
-            <template #right>
-              <div class="override-toggle">
-                <UiText size="tiny">Своё расписание</UiText>
-                <UiSwitch :model-value="useCustomHours" @update:model-value="toggleCustomHours" />
-              </div>
-            </template>
-          </UiSectionHeader>
-          <WorkingHoursEditor
-            v-if="useCustomHours && form.workingHoursSchedule"
-            v-model="form.workingHoursSchedule"
-          />
-          <UiText v-else size="small" class="inherit-hint">Используются общие настройки</UiText>
-        </div>
+      <UiInput
+        v-model="form.orderNumberPrefix"
+        label="Префикс номера заказа"
+        placeholder="MSK"
+        :disabled="prefixLocked"
+        :hint="prefixLocked ? 'Включите нумерацию «По филиалам» в настройках' : undefined"
+      />
 
-        <UiInput
-          v-model="form.orderNumberPrefix"
-          label="Префикс номера заказа"
-          placeholder="MSK"
-          :disabled="prefixLocked"
-          :hint="prefixLocked ? 'Включите нумерацию «По филиалам» в настройках' : undefined"
-        />
-
-        <div class="active-row">
-          <UiText size="small">Филиал активен</UiText>
-          <UiSwitch v-model="form.isActive" />
-        </div>
-      </template>
+      <div class="active-row">
+        <UiText size="small">Филиал активен</UiText>
+        <UiSwitch v-model="form.isActive" />
+      </div>
     </UiForm>
   </UiDrawer>
 </template>
@@ -86,16 +84,13 @@ import WorkingHoursEditor from './WorkingHoursEditor.vue'
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { useBranchStore } from '~/shared/stores/branch'
 import { validationRules } from '@fastio/kit'
 import ColorSwatch, { type ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
 import AddressWithMap from '~/shared/ui/components/AddressWithMap.vue'
 import { defaultBranchFormData } from '~/features/branches'
 
 const tenantStore = useTenantStore()
-const branchStore = useBranchStore()
 const prefixLocked = computed(() => tenantStore.tenant.orderNumberConfig?.scope !== 'per_branch')
-const hasMultipleBranches = computed(() => branchStore.branches.length > 1)
 
 const props = defineProps<{
   modelValue: boolean
