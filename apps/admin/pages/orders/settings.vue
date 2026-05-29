@@ -170,6 +170,10 @@ const page = useEditableForm({
           error(`Нельзя выключить: есть запланированные заказы (${total}). Завершите или отмените их в разделе Заказы.`)
           throw cancelSubmit()
         }
+
+        await api.orderStatuses.remove(holdingStatusId)
+        await statusesStore.reload()
+        scheduling.holdingStatusId = null
       }
     }
 

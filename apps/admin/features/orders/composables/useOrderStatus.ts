@@ -23,7 +23,11 @@ export const useOrderStatus = (
   const { confirm } = useConfirm()
 
   const currentStatus = computed(() => statuses.value.find((s) => s.id === form.status) ?? null)
-  const statusGroup = computed(() => currentStatus.value?.groupType ?? 'new')
+  // Разрешённые переходы считаем от сохранённого статуса, а не от form.status:
+  // пока заказ не сохранён — юзер может передумать и выбрать другой статус.
+  const savedStatusId = computed(() => order.value?.status ?? form.status)
+  const savedStatus = computed(() => statuses.value.find((s) => s.id === savedStatusId.value) ?? null)
+  const statusGroup = computed(() => savedStatus.value?.groupType ?? 'new')
 
   const holdingStatusId = computed(() => tenantStore.tenant.orderSchedulingConfig?.holdingStatusId ?? null)
 
