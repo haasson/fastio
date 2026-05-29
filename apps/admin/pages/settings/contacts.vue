@@ -23,9 +23,9 @@
       />
     </UiFormSection>
 
-    <UiFormSection title="Часы работы">
+    <UiFormSection title="Часы работы" :columns="1">
       <UiAlert
-        v-if="!branchesOptedOut"
+        v-if="branchesEnabled"
         size="small"
         type="info"
       >
@@ -53,7 +53,6 @@ import { TIMEZONE_OPTIONS, DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared
 import type { WorkingHoursSchedule } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
-import { isLockedBy } from '~/shared/plan/useGate.helpers'
 import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
 import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
 import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
@@ -62,7 +61,7 @@ import WorkingHoursEditor from '~/features/settings/components/WorkingHoursEdito
 const tenantStore = useTenantStore()
 const gate = useGate()
 
-const branchesOptedOut = isLockedBy(gate.branches, 'opted-out')
+const branchesEnabled = computed(() => gate.branches.value.enabled)
 
 const tenant = computed(() => tenantStore.tenant)
 
