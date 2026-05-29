@@ -4,14 +4,14 @@
 
       <UiCollapseItem name="data" title="Заказ">
         <UiForm ref="formRef" class="form">
-          <div v-if="isEdit && statusMenuItems.length" class="status-row">
+          <div v-if="isEdit && currentStatus" class="status-row">
             <UiTag
-              v-if="currentStatus"
               size="medium"
               round
               :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
             >{{ currentStatus.name }}</UiTag>
             <UiMenuDropdown
+              v-if="statusMenuItems.length"
               :items="statusMenuItems"
               trigger="click"
               compact

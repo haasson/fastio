@@ -15,6 +15,10 @@ export const useOrderStatuses = (tenantId: Ref<string>) => {
     mapper: mapOrderStatus,
   })
 
+  const reload = async () => {
+    statuses.value = await api.orderStatuses.list(tenantId.value)
+  }
+
   const add = async (data: Required<Pick<OrderStatusData, 'name' | 'groupType'>> & OrderStatusData) => {
     if (!tenantId.value) return
     const status = await api.orderStatuses.add(tenantId.value, data)
@@ -42,5 +46,5 @@ export const useOrderStatuses = (tenantId: Ref<string>) => {
     await api.orderStatuses.reorder(reordered.map((s, i) => ({ id: s.id, position: i })))
   }
 
-  return { statuses, loading, add, update, remove, reorder }
+  return { statuses, loading, add, update, remove, reorder, reload }
 }

@@ -315,6 +315,9 @@ const scheduledLabel = computed(() => {
 .comment {
   color: var(--color-text-secondary);
   font-style: italic;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .footer {

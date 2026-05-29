@@ -107,7 +107,8 @@ const SLOT_STEP_OPTIONS = [
 ]
 
 const tenantStore = useTenantStore()
-const { statuses } = storeToRefs(useOrderStatusesStore())
+const statusesStore = useOrderStatusesStore()
+const { statuses } = storeToRefs(statusesStore)
 const api = useDatabase()
 const gate = useGate()
 const { error } = useMessage()
@@ -174,6 +175,7 @@ const page = useEditableForm({
 
     if (scheduling.enabled && !scheduling.holdingStatusId) {
       scheduling.holdingStatusId = await api.orders.ensureScheduledHoldingStatus(tenantId)
+      await statusesStore.reload()
     }
 
     await tenantStore.update({
