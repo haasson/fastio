@@ -65,7 +65,16 @@
           </div>
 
           <div class="panel-scroll">
-            <div v-if="myItems.length || cancelledOnBoard.length" class="work-grid">
+            <div v-if="myItems.length || cancelledOnBoard.length || pendingSubstitutionEntries.length" class="work-grid">
+              <KitchenSubstitutionCard
+                v-for="[cancelledId, match] in pendingSubstitutionEntries"
+                :key="`sub-${cancelledId}`"
+                :cancelled-item="match.cancelledItem"
+                :candidate="match.candidate"
+                :diff="match.diff"
+                @take="acceptSubstitution(cancelledId)"
+                @skip="skipSubstitution(cancelledId)"
+              />
               <KitchenWorkCard
                 v-for="item in cancelledOnBoard"
                 :key="item.id"
@@ -110,8 +119,8 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiSkeleton, UiEmpty, UiSectionHeader, UiAlert, UiSelect, UiButton } from '@fastio/ui'
-import type { KitchenQueueItem as KitchenQueueItemType, OrderEvent } from '@fastio/shared'
-import { isAutoCategory, getKitchenUrgencyLevel, formatKitchenElapsed } from '@fastio/shared'
+import type { KitchenQueueItem as KitchenQueueItemType, OrderEvent, SubstituteMatch } from '@fastio/shared'
+import { isAutoCategory, getKitchenUrgencyLevel, formatKitchenElapsed, findSubstitute } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
@@ -119,6 +128,7 @@ import { useGate } from '~/shared/plan/useGate'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import KitchenQueueItem from '~/features/kitchen/components/KitchenQueueItem.vue'
 import KitchenWorkCard from '~/features/kitchen/components/KitchenWorkCard.vue'
+import KitchenSubstitutionCard from '~/features/kitchen/components/KitchenSubstitutionCard.vue'
 import { reportError } from '@fastio/shared/observability'
 import { mergeRealtimeItem } from '~/features/kitchen'
 
@@ -159,12 +169,24 @@ const completedStatusMissing = computed(() => {
   return missing
 })
 
+// Pending substitution decisions: cancelledItemId → SubstituteMatch
+const pendingSubstitutions = ref<Map<string, SubstituteMatch>>(new Map())
+
+const pendingCandidateIds = computed(() => new Set([...pendingSubstitutions.value.values()].map((m) => m.candidate.id)))
+const pendingSubstitutionEntries = computed(() => [...pendingSubstitutions.value.entries()])
+
 const queueItems = computed(() => items.value.filter((i) => i.status === 'queued'))
 const myItems = computed(() => items.value.filter((i) => i.status === 'in_progress' && i.assignedTo === currentUserId.value))
-const cancelledOnBoard = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo === currentUserId.value))
+// Отменённые позиции у текущего повара (без тех, по которым идёт решение о подмене)
+const cancelledOnBoard = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo === currentUserId.value && !pendingSubstitutions.value.has(i.id)))
 // Отменённые позиции из очереди (не взятые никем или взятые другим поваром) — видны всем, можно убрать вручную
 const cancelledQueue = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo !== currentUserId.value))
-const hasContent = computed(() => queueItems.value.length > 0 || myItems.value.length > 0 || cancelledOnBoard.value.length > 0 || cancelledQueue.value.length > 0)
+const hasContent = computed(() => queueItems.value.length > 0
+  || myItems.value.length > 0
+  || cancelledOnBoard.value.length > 0
+  || cancelledQueue.value.length > 0
+  || pendingSubstitutions.value.size > 0,
+)
 
 // --- Category filter (persisted per user) ---
 
@@ -216,11 +238,12 @@ watch(() => tenantStore.tenant.id, () => {
 const categoryOptions = computed(() => allCategories.value.map((name) => ({ label: name, value: name })))
 
 const filteredQueueItems = computed(() => {
-  if (!selectedCategories.value.length) return queueItems.value
+  const base = selectedCategories.value.length
+    ? queueItems.value.filter((i) => i.categoryName && new Set(selectedCategories.value).has(i.categoryName))
+    : queueItems.value
 
-  const selected = new Set(selectedCategories.value)
-
-  return queueItems.value.filter((i) => i.categoryName && selected.has(i.categoryName))
+  // Кандидаты на подмену зарезервированы для повара, прячем из общей очереди
+  return base.filter((i) => !pendingCandidateIds.value.has(i.id))
 })
 
 // --- Helpers ---
@@ -305,6 +328,89 @@ const dismissCancelled = async (qItem: KitchenQueueItemType) => {
   await api.kitchenQueue.dismissCancelled(qItem.id)
 }
 
+// --- Substitution ---
+
+const autoSubstitute = async (cancelled: KitchenQueueItemType, match: SubstituteMatch) => {
+  if (!currentUserId.value) return
+
+  const queueItem = items.value.find((i) => i.id === match.candidate.id)
+
+  if (queueItem) {
+    queueItem.status = 'in_progress'
+    queueItem.assignedTo = currentUserId.value
+    queueItem.assignedAt = new Date().toISOString()
+  }
+  items.value = items.value.filter((i) => i.id !== cancelled.id)
+
+  try {
+    await Promise.all([
+      api.kitchenQueue.claim(match.candidate.id, currentUserId.value),
+      api.kitchenQueue.dismissCancelled(cancelled.id),
+    ])
+    logKitchenEvent(match.candidate.orderId, 'kitchen_claimed', {
+      dishName: match.candidate.dishName,
+      queueItemId: match.candidate.id,
+      autoSubstitutedFrom: cancelled.id,
+    })
+  } catch (e) {
+    reportError(e)
+    // Rollback optimistic updates
+    if (queueItem) {
+      queueItem.status = 'queued'
+      queueItem.assignedTo = null
+      queueItem.assignedAt = null
+    }
+    items.value.push(cancelled)
+  }
+}
+
+const acceptSubstitution = async (cancelledId: string) => {
+  if (!currentUserId.value) return
+
+  const match = pendingSubstitutions.value.get(cancelledId)
+
+  if (!match) return
+  const next = new Map(pendingSubstitutions.value)
+
+  next.delete(cancelledId)
+  pendingSubstitutions.value = next
+
+  const queueItem = items.value.find((i) => i.id === match.candidate.id)
+
+  if (queueItem) {
+    queueItem.status = 'in_progress'
+    queueItem.assignedTo = currentUserId.value
+    queueItem.assignedAt = new Date().toISOString()
+  }
+  items.value = items.value.filter((i) => i.id !== cancelledId)
+
+  await Promise.all([
+    api.kitchenQueue.claim(match.candidate.id, currentUserId.value),
+    api.kitchenQueue.dismissCancelled(cancelledId),
+  ])
+  logKitchenEvent(match.candidate.orderId, 'kitchen_claimed', {
+    dishName: match.candidate.dishName,
+    queueItemId: match.candidate.id,
+    substitutedFrom: cancelledId,
+  })
+}
+
+const skipSubstitution = async (cancelledId: string) => {
+  const match = pendingSubstitutions.value.get(cancelledId)
+  const next = new Map(pendingSubstitutions.value)
+
+  next.delete(cancelledId)
+  pendingSubstitutions.value = next
+  items.value = items.value.filter((i) => i.id !== cancelledId)
+  await api.kitchenQueue.dismissCancelled(cancelledId)
+  if (match) {
+    logKitchenEvent(match.cancelledItem.orderId, 'kitchen_substitution_skipped', {
+      dishName: match.cancelledItem.dishName,
+      candidateId: match.candidate.id,
+    })
+  }
+}
+
 // --- Realtime ---
 
 const offInsert = kitchenQueueEvents.onInsert((item) => {
@@ -321,6 +427,23 @@ const offUpdate = kitchenQueueEvents.onUpdate((item) => {
 
     if (idx !== -1) items.value[idx] = mergeRealtimeItem(item, items.value[idx])
     else items.value.push(item)
+
+    // Когда блюдо текущего повара отменили — ищем замену в очереди
+    if (item.status === 'cancelled' && item.assignedTo === currentUserId.value) {
+      const reserved = pendingCandidateIds.value
+      const match = findSubstitute(item, items.value.filter((i) => i.status === 'queued' && !reserved.has(i.id)))
+
+      if (match) {
+        if (match.type === 'exact') {
+          autoSubstitute(item, match)
+        } else {
+          const next = new Map(pendingSubstitutions.value)
+
+          next.set(item.id, match)
+          pendingSubstitutions.value = next
+        }
+      }
+    }
   } else {
     items.value = items.value.filter((i) => i.id !== item.id)
   }

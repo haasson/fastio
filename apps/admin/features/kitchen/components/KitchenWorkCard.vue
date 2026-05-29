@@ -135,7 +135,7 @@ const urgencyTagType = computed(() => {
   &.card--critical { border: 1.5px solid var(--color-error); }
   &.card--cancelled {
     border: 1.5px solid var(--color-error);
-    background: var(--color-error-bg);
+    background: var(--color-error-light);
     opacity: 0.85;
   }
 }
