@@ -1,8 +1,15 @@
 <template>
-  <UiCard size="small" class="queue-item-root" :class="[urgencyClass]">
+  <UiCard size="small" class="queue-item-root" :class="[cancelled ? 'card--cancelled' : urgencyClass]">
     <div class="row">
-      <span class="name">{{ item.dishName }}</span>
+      <span class="name" :class="{ 'name--cancelled': cancelled }">{{ item.dishName }}</span>
       <UiTag
+        v-if="cancelled"
+        size="small"
+        type="error"
+        round
+      >Отменён</UiTag>
+      <UiTag
+        v-else
         size="small"
         :type="urgencyTagType"
         :empty="urgencyLevel === 'normal'"
@@ -11,7 +18,19 @@
       >
         {{ elapsed }}
       </UiTag>
-      <UiButton size="small" type="primary" @click="$emit('claim')">Взять</UiButton>
+      <UiButton
+        v-if="cancelled"
+        size="small"
+        type="error"
+        ghost
+        @click="$emit('dismiss')"
+      >Убрать</UiButton>
+      <UiButton
+        v-else
+        size="small"
+        type="primary"
+        @click="$emit('claim')"
+      >Взять</UiButton>
     </div>
   </UiCard>
 </template>
@@ -25,9 +44,10 @@ const props = defineProps<{
   item: KitchenQueueItem
   elapsed: string
   urgencyLevel: 'normal' | 'warning' | 'critical'
+  cancelled?: boolean
 }>()
 
-defineEmits<{ claim: [] }>()
+defineEmits<{ claim: []; dismiss: [] }>()
 
 const urgencyClass = computed(() => {
   if (props.urgencyLevel === 'critical') return 'card--critical'
@@ -50,6 +70,12 @@ const urgencyTagType = computed(() => {
 
   &.card--warning { border: 1.5px solid var(--color-warning); }
   &.card--critical { border: 1.5px solid var(--color-error); }
+  &.card--cancelled { border: 1.5px solid var(--color-error); opacity: 0.7; }
+}
+
+.name--cancelled {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
 }
 
 .row {

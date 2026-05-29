@@ -34,7 +34,7 @@
           </div>
 
           <div class="panel-scroll">
-            <div v-if="filteredQueueItems.length" class="queue-list">
+            <div v-if="filteredQueueItems.length || cancelledQueue.length" class="queue-list">
               <KitchenQueueItem
                 v-for="item in filteredQueueItems"
                 :key="item.id"
@@ -43,6 +43,15 @@
                 :elapsed="formatKitchenTime(item.createdAt, now)"
                 :urgency-level="getUrgencyLevel(item.createdAt, now, urgencyMinutes)"
                 @claim="claimDish(item)"
+              />
+              <KitchenQueueItem
+                v-for="item in cancelledQueue"
+                :key="item.id"
+                :item="item"
+                :elapsed="formatKitchenTime(item.createdAt, now)"
+                :urgency-level="'normal'"
+                :cancelled="true"
+                @dismiss="dismissCancelled(item)"
               />
             </div>
             <UiEmpty v-else icon="check" text="Нет блюд в этой категории" />
@@ -153,7 +162,9 @@ const completedStatusMissing = computed(() => {
 const queueItems = computed(() => items.value.filter((i) => i.status === 'queued'))
 const myItems = computed(() => items.value.filter((i) => i.status === 'in_progress' && i.assignedTo === currentUserId.value))
 const cancelledOnBoard = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo === currentUserId.value))
-const hasContent = computed(() => queueItems.value.length > 0 || myItems.value.length > 0 || cancelledOnBoard.value.length > 0)
+// Отменённые позиции из очереди (не взятые никем или взятые другим поваром) — видны всем, можно убрать вручную
+const cancelledQueue = computed(() => items.value.filter((i) => i.status === 'cancelled' && i.assignedTo !== currentUserId.value))
+const hasContent = computed(() => queueItems.value.length > 0 || myItems.value.length > 0 || cancelledOnBoard.value.length > 0 || cancelledQueue.value.length > 0)
 
 // --- Category filter (persisted per user) ---
 
@@ -305,13 +316,6 @@ const offInsert = kitchenQueueEvents.onInsert((item) => {
 })
 
 const offUpdate = kitchenQueueEvents.onUpdate((item) => {
-  // Cancelled without assignee (was in queue) — just remove
-  if (item.status === 'cancelled' && !item.assignedTo) {
-    items.value = items.value.filter((i) => i.id !== item.id)
-
-    return
-  }
-
   if (item.status === 'queued' || item.status === 'in_progress' || item.status === 'cancelled') {
     const idx = items.value.findIndex((i) => i.id === item.id)
 
