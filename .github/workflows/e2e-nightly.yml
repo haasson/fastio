@@ -17,6 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: record start time
+        # Для длительности в fail-алерте (ловить аномалии/зависания).
+        run: echo "RUN_START=$(date +%s)" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
@@ -103,11 +107,20 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_OPS_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_OPS_CHAT_ID }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REF: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
         run: |
-          [ -z "$TELEGRAM_BOT_TOKEN" ] && exit 0
-          [ -z "$TELEGRAM_CHAT_ID" ] && exit 0
+          [ -z "${TELEGRAM_BOT_TOKEN:-}" ] && exit 0
+          [ -z "${TELEGRAM_CHAT_ID:-}" ] && exit 0
+          DUR=$(( $(date +%s) - ${RUN_START:-0} ))
+          DUR_FMT=$(printf '%dm%02ds' $(( DUR / 60 )) $(( DUR % 60 )))
+          TEXT="<b>FastIO E2E nightly: FAIL ❌</b>
+ветка <code>${REF}</code> · <code>${SHA:0:7}</code>
+⏱ ${DUR_FMT}
+${RUN_URL}"
           curl -sS --max-time 15 \
             -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
             --data-urlencode "parse_mode=HTML" \
-            --data-urlencode "text=<b>FastIO E2E nightly: FAIL</b>%0A${RUN_URL}" >/dev/null || true
+            --data-urlencode "disable_web_page_preview=true" \
+            --data-urlencode "text=${TEXT}" >/dev/null || true

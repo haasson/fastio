@@ -1,0 +1,88 @@
+name: E2E weekly digest
+
+# Еженедельная сводка по ночным e2e-прогонам (e2e-nightly.yml) в @FastioOpsBot:
+# сколько прогонов, сколько зелёных/красных, длительности (avg/min/max) для отлова
+# аномалий по времени, список провалов со ссылками. Шлёт всегда (в отличие от
+# fail-only алерта nightly). Требует секреты TELEGRAM_OPS_BOT_TOKEN / TELEGRAM_OPS_CHAT_ID.
+on:
+  schedule:
+    - cron: '0 5 * * 1' # понедельник 05:00 UTC = 08:00 MSK (после воскресной ночи)
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: e2e-weekly-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: build and send weekly digest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_OPS_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_OPS_CHAT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
+            echo "Telegram secrets не заданы — пропускаю дайджест."; exit 0
+          fi
+
+          since=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+
+          # Тянем ночные прогоны (event=schedule) за 7 дней, считаем сводку.
+          # dur = updated_at - run_started_at (сек). fails — список {дата, ссылка}.
+          summary=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/e2e-nightly.yml/runs?event=schedule&per_page=50" \
+            --jq "[.workflow_runs[]
+                    | select(.run_started_at >= \"${since}\")
+                    | {c:.conclusion, s:.run_started_at, u:.html_url,
+                       dur:((.updated_at|fromdateiso8601)-(.run_started_at|fromdateiso8601))}]
+                  | { total:length,
+                      ok:(map(select(.c==\"success\"))|length),
+                      fail:(map(select(.c!=\"success\" and .c!=null))|length),
+                      avg:(if length>0 then (map(.dur)|add/length|floor) else 0 end),
+                      min:(if length>0 then (map(.dur)|min) else 0 end),
+                      max:(if length>0 then (map(.dur)|max) else 0 end),
+                      fails:(map(select(.c!=\"success\" and .c!=null)|{d:(.s[0:10]), c:.c, u:.u})) }")
+
+          total=$(echo "$summary" | jq -r '.total')
+          ok=$(echo "$summary" | jq -r '.ok')
+          fail=$(echo "$summary" | jq -r '.fail')
+          avg=$(echo "$summary" | jq -r '.avg')
+          min=$(echo "$summary" | jq -r '.min')
+          max=$(echo "$summary" | jq -r '.max')
+
+          fmt() { printf '%dm%02ds' $(( $1 / 60 )) $(( $1 % 60 )); }
+
+          if [ "$total" -eq 0 ]; then
+            TEXT=$'📊 <b>FastIO E2E — недельный дайджест</b>\nЗа последние 7 дней ночных прогонов не было.'
+          else
+            # Аномалия по времени: max заметно выше среднего.
+            anomaly=""
+            if [ "$avg" -gt 0 ] && [ "$max" -gt $(( avg * 3 / 2 )) ]; then
+              anomaly=$'\n⚠️ разброс длительности: max существенно выше среднего — стоит глянуть.'
+            fi
+            verdict="🟢 стабильно"
+            [ "$fail" -gt 0 ] && verdict="🔴 есть провалы"
+
+            fails_list=$(echo "$summary" | jq -r '.fails[] | "  • \(.d) \(.c) — \(.u)"')
+            [ -n "$fails_list" ] && fails_block=$'\n<b>Провалы:</b>\n'"$fails_list" || fails_block=""
+
+            TEXT="📊 <b>FastIO E2E — недельный дайджест</b>
+Период: последние 7 дней (ночные прогоны)
+Прогонов: <b>${total}</b>  ✅ ${ok}  ❌ ${fail}  →  ${verdict}
+⏱ Длительность: avg $(fmt "$avg") · min $(fmt "$min") · max $(fmt "$max")${anomaly}${fails_block}"
+          fi
+
+          curl -sS --max-time 15 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "parse_mode=HTML" \
+            --data-urlencode "disable_web_page_preview=true" \
+            --data-urlencode "text=${TEXT}" >/dev/null
+          echo "Дайджест отправлен: total=$total ok=$ok fail=$fail"
