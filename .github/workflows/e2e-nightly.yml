@@ -55,6 +55,13 @@ jobs:
       - name: install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: map tenant subdomains to localhost
+        # Nuxt резолвит тенанта по Host (<slug>.localhost). На ubuntu-раннере *.localhost
+        # НЕ резолвится автоматически (RFC 6761 не обязывает резолвер; на macOS работает
+        # mDNSResponder, отсюда «локально зелено»). Без этого webServer health-check на
+        # demo.localhost:4711 висит до таймаута. Прописываем явно (демо + services + флоу-слаги).
+        run: echo "127.0.0.1 demo.localhost services-start.localhost e2e-retail.localhost e2e-services.localhost" | sudo tee -a /etc/hosts
+
       - name: run E2E suite
         id: e2e
         # Local-in-CI: dev-сервера (webServer в playwright.config) берут локальный Supabase
