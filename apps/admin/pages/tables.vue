@@ -24,6 +24,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted, provide } from 'vue'
 import { useMessage } from '@fastio/ui'
+import { useConfirm } from '@fastio/kit'
 import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
 import TableCheckoutModal from '~/features/tables/components/TableCheckoutModal.vue'
 import { usePageTitle } from '~/shared/composables/usePageTitle'
@@ -59,6 +60,7 @@ const orderStatusesStore = useOrderStatusesStore()
 const userId = computed(() => authStore.user?.id ?? null)
 const { statuses } = storeToRefs(orderStatusesStore)
 const { success, warning } = useMessage()
+const { confirm } = useConfirm()
 
 const tenantId = computed(() => tenantStore.currentTenantId)
 
@@ -384,10 +386,24 @@ const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
     return
   }
 
-  await api.orders.removeItem(item.id)
-  success(`${sessionItem.dishName} удалено`)
-  reloadTableSums(table.id)
-  reloadKitchenDishes()
+  const ok = await confirm({
+    title: `Удалить «${sessionItem.dishName}»?`,
+    message: 'Позиция будет удалена со стола без возможности восстановления.',
+    confirmText: 'Удалить',
+    confirmType: 'error',
+  })
+
+  if (!ok) return
+
+  try {
+    await api.orders.removeItem(item.id)
+    success(`${sessionItem.dishName} удалено`)
+    reloadTableSums(table.id)
+    reloadKitchenDishes()
+  } catch (e) {
+    reportError(e, { context: 'tables:onRemoveDish', tableId: table.id, itemId: item.id })
+    warning('Не удалось удалить блюдо')
+  }
 }
 
 const onConfirmItem = async (itemId: string, tableId: string) => {
