@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { KitchenQueueItem } from '@fastio/shared'
+import { isCancelledItemVisible } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
 import type { KitchenQueueRow } from '~/shared/data/db-types'
 
@@ -70,8 +71,9 @@ export const kitchenQueueApi = {
         .order('created_at', { ascending: true }),
     )
 
-    // Cancelled that were already dismissed — no need to show
-    return (data ?? []).map(mapKitchenQueueItem).filter((i) => !(i.status === 'cancelled' && i.dismissedAt))
+    // Отменённые показываем только если их взяли в работу и не убрали (см. isCancelledItemVisible).
+    // «Ничьи» queued-позиции при отмене просто исчезают — повар их даже не видел.
+    return (data ?? []).map(mapKitchenQueueItem).filter((i) => i.status !== 'cancelled' || isCancelledItemVisible(i))
   },
 
   async listForAssembly(sb: SupabaseClient, tenantId: string): Promise<KitchenQueueItem[]> {
@@ -140,11 +142,16 @@ export const kitchenQueueApi = {
   },
 
   async dismissCancelledOrder(sb: SupabaseClient, orderId: string): Promise<void> {
+    // Гасим только «ничьи» отменённые строки. Те, что повар взял в работу
+    // (assigned_to), не трогаем — их перечёркнутую карточку повар убирает сам
+    // на экране «Очередь». Иначе сборка сотрёт подтверждение повара до того,
+    // как он его увидел (повар отвлёкся → вернулся → карточки нет).
     await query(
       sb.from('kitchen_queue')
         .update({ dismissed_at: new Date().toISOString() })
         .eq('order_id', orderId)
-        .eq('status', 'cancelled'),
+        .eq('status', 'cancelled')
+        .is('assigned_to', null),
     )
   },
 
@@ -179,17 +186,6 @@ export const kitchenQueueApi = {
       sb.from('kitchen_queue')
         .update({ status: 'served', served_at: new Date().toISOString(), served_by: userId })
         .in('id', ids),
-    )
-  },
-
-  async cancelForOrders(sb: SupabaseClient, orderIds: string[]): Promise<void> {
-    if (!orderIds.length) return
-
-    await query(
-      sb.from('kitchen_queue')
-        .update({ status: 'cancelled' })
-        .in('order_id', orderIds)
-        .in('status', ['queued', 'in_progress']),
     )
   },
 

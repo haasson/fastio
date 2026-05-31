@@ -26,7 +26,13 @@ export const findSubstitute = (
 
   const cancelledModKey = normModifierKey(cancelled)
   const candidates = queued.filter(
-    (q) => q.status === 'queued' && q.dishId === cancelled.dishId && normModifierKey(q) === cancelledModKey,
+    (q) => q.status === 'queued'
+      // Близнецы из ТОГО ЖЕ заказа — не кандидаты: при отмене всего заказа
+      // cancelForOrders разом гасит все его строки, и подмена «сама на себя»
+      // унесла бы карточку повара в небытие (см. cancel-substitution-repro.test).
+      && q.orderId !== cancelled.orderId
+      && q.dishId === cancelled.dishId
+      && normModifierKey(q) === cancelledModKey,
   )
 
   if (!candidates.length) return null
@@ -58,7 +64,18 @@ export const findSubstitute = (
 export const isKitchenItemDone = (item: KitchenQueueItem): boolean =>
   item.status === 'done' || item.status === 'served'
 
-export const getOrderPhase = (items: KitchenQueueItem[]): 'cooking' | 'collecting' | 'ready' | 'cancelled' => {
+// Видна ли отменённая строка на экране повара (KDS «Очередь»).
+// Отменённое блюдо показываем перечёркнутым только если его кто-то ВЗЯЛ В РАБОТУ
+// (assignedTo) и ещё не убрал (dismissedAt) — чтобы повар заметил «не готовь это».
+// Отменённые «ничьи» позиции (никем не взятые) никого не волнуют — просто исчезают.
+// Активные (queued/in_progress) строки сюда не относятся — они видны всегда.
+export const isCancelledItemVisible = (
+  item: Pick<KitchenQueueItem, 'assignedTo' | 'dismissedAt'>,
+): boolean => !!item.assignedTo && !item.dismissedAt
+
+export type OrderPhase = 'cooking' | 'collecting' | 'ready' | 'cancelled'
+
+export const getOrderPhase = (items: KitchenQueueItem[]): OrderPhase => {
   const activeItems = items.filter((i) => i.status !== 'cancelled')
 
   if (activeItems.length === 0) return 'cancelled'
@@ -66,6 +83,18 @@ export const getOrderPhase = (items: KitchenQueueItem[]): 'cooking' | 'collectin
   if (activeItems.filter((i) => !i.skipKitchen).every(isKitchenItemDone)) return 'collecting'
 
   return 'cooking'
+}
+
+// Экран сборки = 2 рабочие колонки. «collecting» (кухня закончила, остались
+// некухонные позиции к сборке) и «ready» (всё собрано) схлопнуты в одну колонку
+// «Готово» — это два состояния одной карточки (collect-чекбоксы / кнопка «Собрано»).
+export type AssemblyColumn = 'cooking' | 'ready' | 'cancelled'
+
+export const getAssemblyColumn = (phase: OrderPhase): AssemblyColumn => {
+  if (phase === 'cooking') return 'cooking'
+  if (phase === 'cancelled') return 'cancelled'
+
+  return 'ready'
 }
 
 const WARNING_THRESHOLD_RATIO = 2 / 3

@@ -63,6 +63,7 @@ import {
   GraduationCap,
   Package,
   Briefcase,
+  ArrowLeftRight,
 } from 'lucide-vue-next'
 
 export const iconRegistry = {
@@ -132,6 +133,7 @@ export const iconRegistry = {
   graduationCap: GraduationCap,
   package: Package,
   briefcase: Briefcase,
+  swap: ArrowLeftRight,
 } as const
 
 export type IconName = keyof typeof iconRegistry

@@ -6,6 +6,7 @@ export * from './api/table-calls'
 
 // Composables
 export * from './composables/useTablesContext'
+export * from './composables/useTablesChannel'
 export * from './composables/useTableCallsChannel'
 export * from './composables/useTableCallAlertHandler'
 export * from './composables/useAddDishToTable'

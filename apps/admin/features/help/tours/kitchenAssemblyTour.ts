@@ -25,23 +25,13 @@ export const getKitchenAssemblyTourSteps = (): TourStep[] => [
   ),
   withEmptyHint(
     highlight({
-      target: 'kitchen-assembly-collecting',
-      title: 'Требует сборки',
-      description: 'Кухня приготовила всё — пора собирать. Счётчик оранжевый, требует внимания.<br><br>Карточка показывает позиции: что пришло с кухни и что нужно добавить самостоятельно (напитки, упаковка).',
-      side: 'bottom',
-      align: 'center',
-    }),
-    { checkSelector: '[data-tour="kitchen-assembly-collecting"] [data-tour="kitchen-assembly-card"]', hint: 'Здесь будут заказы у которых все блюда приготовлены и ждут сборки.' },
-  ),
-  withEmptyHint(
-    highlight({
       target: 'kitchen-assembly-ready',
       title: 'Готово',
-      description: 'Заказы собраны и ждут выдачи. Счётчик зелёный. После нажатия «Собрано» заказ автоматически переходит в следующий статус — курьер забирает или клиент получает.',
+      description: 'Кухня приготовила всё — пора собирать и выдавать. Карточка показывает позиции: что пришло с кухни и что нужно добавить самостоятельно (напитки, упаковка). Отметьте собранные позиции, затем нажмите «Собрано» — заказ автоматически уйдёт в следующий статус: курьер забирает или клиент получает.',
       side: 'left',
       align: 'start',
     }),
-    { checkSelector: '[data-tour="kitchen-assembly-ready"] [data-tour="kitchen-assembly-card"]', hint: 'Здесь появятся заказы после того как сборщик нажмёт «Собрано».' },
+    { checkSelector: '[data-tour="kitchen-assembly-ready"] [data-tour="kitchen-assembly-card"]', hint: 'Здесь будут заказы у которых все блюда приготовлены — их нужно собрать и выдать.' },
   ),
   withEmptyHint(
     highlight({

@@ -2,7 +2,7 @@
   "project": "packages/icons",
   "submap": "main",
   "purpose": "Универсальная иконка UiIcon на базе Lucide с реестром и адаптивными размерами",
-  "generated_at": "2026-05-20T01:40:07.301Z",
+  "generated_at": "2026-05-31T06:13:14.060Z",
   "stats": {
     "files": 3,
     "pages": 0,
@@ -27,8 +27,8 @@
     },
     "src/icons.ts": {
       "kind": "ts",
-      "hash": "c97107a88ffd",
-      "purpose": "Реестр Lucide-иконок, маппит kebab-case имена в Vue-компоненты lucide-vue-next и выводит тип IconName",
+      "hash": "4faedd89369c",
+      "purpose": "Реестр иконок (обёртка над lucide-vue-next): маппинг имя→компонент + тип IconName",
       "symbols": [
         {
           "name": "iconRegistry",

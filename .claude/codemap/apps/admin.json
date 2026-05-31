@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-05-29T10:45:37.011Z",
+  "generated_at": "2026-05-31T06:13:13.870Z",
   "stats": {
     "files": 85,
     "pages": 0,
@@ -566,8 +566,8 @@
     },
     "shared/composables/useRealtimeChannels.ts": {
       "kind": "ts",
-      "hash": "9255fd0c1991",
-      "purpose": "Управляет подпиской на Realtime-каналы Supabase для всех фич",
+      "hash": "1b22d458e814",
+      "purpose": "Инициализирует все realtime-каналы тенанта (orders/tables/kitchen/calls/reservations/...) один раз на app-уровне",
       "symbols": [
         {
           "name": "useRealtimeChannels",

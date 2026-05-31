@@ -228,9 +228,12 @@ export function useOrders(
 
     await api.orders.updateStatus(orderId, newStatusId)
 
-    // Clean up kitchen queue when order reaches a terminal state
+    // Clean up kitchen queue when order reaches a terminal state.
+    // Отмену кухни делает БД-триггер kitchen_queue_on_order_cancel (миграция 304) —
+    // единый исход для всех путей (inline-статус, drawer, RPC), поэтому клиентский
+    // cancelForOrders убран как избыточный. serveAllForOrders для completed триггера
+    // не имеет, поэтому остаётся здесь.
     if (newStatus?.groupType === 'cancelled') {
-      api.kitchenQueue.cancelForOrders([orderId]).catch(reportError)
       log({
         action: 'order.cancel',
         entityType: 'order',

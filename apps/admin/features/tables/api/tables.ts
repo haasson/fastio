@@ -23,7 +23,8 @@ export type TableSession = {
   items: TableSessionItem[]
 }
 
-const mapTable = (raw: Record<string, unknown>): Table => {
+// Экспортируется для realtime-канала (useTablesChannel) — маппит payload строки.
+export const mapTable = (raw: Record<string, unknown>): Table => {
   const row = raw as TableRow
 
   return {

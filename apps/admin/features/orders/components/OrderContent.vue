@@ -303,7 +303,13 @@ const save = async (): Promise<boolean | void> => {
   saving.value = true
   try {
     if (isEdit.value && props.order) {
-      const updated = await api.orders.update(props.order.id, formPayload.value)
+      // C4: позиции редактируемы только в группе 'new' (can.editItems). Для заказа
+      // уже на кухне не шлём items → update_order_with_items пропускает DELETE+reinsert
+      // order_items, и привязанные к ним строки kitchen_queue не уничтожаются физически.
+      const payload = can.value.editItems
+        ? formPayload.value
+        : { ...formPayload.value, items: undefined }
+      const updated = await api.orders.update(props.order.id, payload)
 
       if (updated) {
         logSaveEvents(form, props.order, statuses.value)

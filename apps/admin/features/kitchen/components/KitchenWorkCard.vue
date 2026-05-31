@@ -1,7 +1,6 @@
 <template>
   <UiCard class="work-card-root" :class="[urgencyClass]">
     <div class="header">
-      <span class="order-id">#{{ item.orderNumber }}</span>
       <UiTag
         v-if="showDeliveryType && !cancelled"
         size="small"
@@ -144,13 +143,11 @@ const urgencyTagType = computed(() => {
   display: flex;
   align-items: center;
   gap: var(--space-8);
-}
 
-.order-id {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-hint);
-  flex: 1;
+  // Тег статуса/таймера всегда прижат вправо (номер заказа убран — повару не нужен).
+  > :last-child {
+    margin-left: auto;
+  }
 }
 
 .timer--critical {

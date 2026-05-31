@@ -38,28 +38,6 @@
           />
         </div>
 
-        <div class="kanban-col kanban-col--collecting" data-tour="kitchen-assembly-collecting" :class="{ 'hidden-mobile': mobilePhase !== 'collecting' }">
-          <div class="kanban-header">
-            <span class="kanban-title">Требует сборки</span>
-            <span class="kanban-count kanban-count--orange">{{ collectingGroups.length }}</span>
-          </div>
-          <KitchenAssemblyCard
-            v-for="group in collectingGroups"
-            :key="group.orderId"
-            data-tour="kitchen-assembly-card"
-            :order-id="group.orderId"
-            :order-number="group.orderNumber"
-            :delivery-type="group.deliveryType"
-            :items="group.items"
-            @collect-item="onCollectItem"
-          />
-          <UiEmpty
-            v-if="!collectingGroups.length"
-            icon="check"
-            text="Нечего собирать"
-          />
-        </div>
-
         <div class="kanban-col kanban-col--ready" data-tour="kitchen-assembly-ready" :class="{ 'hidden-mobile': mobilePhase !== 'ready' }">
           <div class="kanban-header">
             <span class="kanban-title">Готово</span>
@@ -79,7 +57,7 @@
           <UiEmpty
             v-if="!readyGroups.length"
             icon="cart"
-            text="Нет собранных заказов"
+            text="Нет заказов к сборке"
           />
         </div>
 
@@ -109,7 +87,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiCard, UiSkeleton, UiEmpty, UiTabs } from '@fastio/ui'
-import { type KitchenQueueItem, getOrderPhase } from '@fastio/shared'
+import { type KitchenQueueItem, type OrderPhase, getOrderPhase, getAssemblyColumn } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
@@ -122,7 +100,7 @@ const api = useDatabase()
 const tenantStore = useTenantStore()
 const authStore = useAuthStore()
 
-const mobilePhase = ref<'cooking' | 'collecting' | 'ready' | 'cancelled'>('collecting')
+const mobilePhase = ref<'cooking' | 'ready' | 'cancelled'>('ready')
 
 const loading = ref(false)
 const items = ref<KitchenQueueItem[]>([])
@@ -132,7 +110,7 @@ type OrderGroup = {
   orderNumber: string | null
   deliveryType: string
   items: KitchenQueueItem[]
-  phase: 'cooking' | 'collecting' | 'ready' | 'cancelled'
+  phase: OrderPhase
 }
 
 const allOrderGroups = computed<OrderGroup[]>(() => {
@@ -158,15 +136,19 @@ const allOrderGroups = computed<OrderGroup[]>(() => {
   return groups
 })
 
-const cookingGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'cooking'))
-const collectingGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'collecting'))
-const readyGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'ready'))
-const cancelledGroups = computed(() => allOrderGroups.value.filter((g) => g.phase === 'cancelled'))
+const cookingGroups = computed(() => allOrderGroups.value.filter((g) => getAssemblyColumn(g.phase) === 'cooking'))
+// «Готово» = collecting + ready (см. getAssemblyColumn). Сначала те, где надо
+// ещё собрать некухонные позиции (collecting), потом полностью готовые к выдаче (ready).
+const readyGroups = computed(() => {
+  const inReady = allOrderGroups.value.filter((g) => getAssemblyColumn(g.phase) === 'ready')
+
+  return [...inReady.filter((g) => g.phase === 'collecting'), ...inReady.filter((g) => g.phase === 'ready')]
+})
+const cancelledGroups = computed(() => allOrderGroups.value.filter((g) => getAssemblyColumn(g.phase) === 'cancelled'))
 
 const mobilePhaseTabs = computed(() => {
   const tabs = [
-    { value: 'cooking', label: `Кухня (${cookingGroups.value.length})` },
-    { value: 'collecting', label: `Сборка (${collectingGroups.value.length})` },
+    { value: 'cooking', label: `Готовится (${cookingGroups.value.length})` },
     { value: 'ready', label: `Готово (${readyGroups.value.length})` },
   ]
 
@@ -181,6 +163,8 @@ const load = async () => {
   loading.value = true
   try {
     items.value = await api.kitchenQueue.listForAssembly(tenantStore.tenant.id)
+  } catch (e) {
+    reportError(e, { context: 'kitchen/assembly:load', tenantId: tenantStore.tenant.id })
   } finally {
     loading.value = false
   }
@@ -212,7 +196,12 @@ const onCollectItem = (itemId: string, collected: boolean) => {
 
 const onDismissed = async (orderId: string) => {
   items.value = items.value.filter((i) => i.orderId !== orderId)
-  await api.kitchenQueue.dismissCancelledOrder(orderId)
+  try {
+    await api.kitchenQueue.dismissCancelledOrder(orderId)
+  } catch (e) {
+    reportError(e, { context: 'kitchen/assembly:onDismissed', orderId })
+    await load() // ресинк: если в БД не записалось, убранная локально карточка вернётся
+  }
 }
 
 const onAssembled = async (orderId: string, deliveryType: string) => {
@@ -227,7 +216,12 @@ const onAssembled = async (orderId: string, deliveryType: string) => {
     promises.push(api.orders.updateStatus(orderId, targetStatusId))
   }
 
-  await Promise.all(promises)
+  try {
+    await Promise.all(promises)
+  } catch (e) {
+    reportError(e, { context: 'kitchen/assembly:onAssembled', orderId, deliveryType })
+    await load() // ресинк состояния доски с БД
+  }
 }
 
 // --- Realtime ---
@@ -243,7 +237,9 @@ const offInsert = kitchenQueueEvents.onInsert((item) => {
 
 const offUpdate = kitchenQueueEvents.onUpdate((item) => {
   if (item.deliveryType === 'dine_in') return
-  if (item.status === 'served') {
+  // served, либо отменённое и уже убранное (dismissed) → снять с экрана сборки.
+  // Без проверки dismissedAt realtime-эхо «возвращало» убранную карточку.
+  if (item.status === 'served' || (item.status === 'cancelled' && item.dismissedAt)) {
     items.value = items.value.filter((i) => i.id !== item.id)
   } else {
     const idx = items.value.findIndex((i) => i.id === item.id)
@@ -310,10 +306,6 @@ onUnmounted(() => {
   }
 }
 
-.kanban-col--collecting .kanban-header {
-  border-bottom-color: var(--color-warning);
-}
-
 .kanban-col--ready .kanban-header {
   border-bottom-color: var(--color-success);
 }
@@ -337,10 +329,6 @@ onUnmounted(() => {
   background: var(--color-bg-subtle);
   padding: var(--space-4) var(--space-8);
   border-radius: var(--radius-8);
-
-  &--orange {
-    color: var(--color-warning);
-  }
 
   &--green {
     color: var(--color-success);

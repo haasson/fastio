@@ -120,7 +120,7 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiSkeleton, UiEmpty, UiSectionHeader, UiAlert, UiSelect, UiButton } from '@fastio/ui'
 import type { KitchenQueueItem as KitchenQueueItemType, OrderEvent, SubstituteMatch } from '@fastio/shared'
-import { isAutoCategory, getKitchenUrgencyLevel, formatKitchenElapsed, findSubstitute } from '@fastio/shared'
+import { isAutoCategory, getKitchenUrgencyLevel, formatKitchenElapsed, findSubstitute, isCancelledItemVisible } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
@@ -422,7 +422,13 @@ const offInsert = kitchenQueueEvents.onInsert((item) => {
 })
 
 const offUpdate = kitchenQueueEvents.onUpdate((item) => {
-  if (item.status === 'queued' || item.status === 'in_progress' || item.status === 'cancelled') {
+  // На доске остаются активные (queued/in_progress) и отменённые, которые взяли
+  // в работу и ещё не убрали. Отменённые «ничьи» и уже убранные (dismissed) —
+  // снимаем с доски (иначе dismiss «возвращал» карточку через realtime-эхо).
+  const onBoard = (item.status === 'queued' || item.status === 'in_progress')
+    || (item.status === 'cancelled' && isCancelledItemVisible(item))
+
+  if (onBoard) {
     const idx = items.value.findIndex((i) => i.id === item.id)
 
     if (idx !== -1) items.value[idx] = mergeRealtimeItem(item, items.value[idx])

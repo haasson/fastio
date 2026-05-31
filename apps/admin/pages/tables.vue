@@ -36,7 +36,7 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useOrderStatusesStore } from '~/features/orders'
 import { orderEvents } from '~/features/orders'
-import { tableCallEvents } from '~/features/tables'
+import { tableCallEvents, tableEvents } from '~/features/tables'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import { TablesContextKey, TodayReservationsKey } from '~/features/tables'
 import type { TableSession, TableSessionItem } from '~/features/tables'
@@ -231,6 +231,28 @@ const unsubOrderUpdate = orderEvents.onUpdate((order) => {
   if (order.tableId) reloadTableSums(order.tableId)
 })
 
+// Realtime по самой таблице tables: create/activate/open/move с других вкладок.
+// Неактивный (is_active=false, soft-delete/деактивация) → убираем; активный →
+// заменяем или добавляем (мог быть только что создан/активирован).
+const upsertTableFromRealtime = (table: Table) => {
+  if (!table.isActive) {
+    tables.value = tables.value.filter((t) => t.id !== table.id)
+
+    return
+  }
+
+  const idx = tables.value.findIndex((t) => t.id === table.id)
+
+  if (idx !== -1) tables.value[idx] = table
+  else tables.value.push(table)
+}
+
+const unsubTableInsert = tableEvents.onInsert(upsertTableFromRealtime)
+const unsubTableUpdate = tableEvents.onUpdate(upsertTableFromRealtime)
+const unsubTableDelete = tableEvents.onDelete((id) => {
+  tables.value = tables.value.filter((t) => t.id !== id)
+})
+
 // PREPROD-110: после reconnect могли пропасть события (новые столы открыты,
 // вызовы появились/сняты и т.д.). Реалтайм-сокет общий, так что достаточно
 // подписаться на один bus — load() пересинхронизирует всё.
@@ -245,6 +267,9 @@ onUnmounted(() => {
   unsubKqUpdate()
   unsubOrderInsert()
   unsubOrderUpdate()
+  unsubTableInsert()
+  unsubTableUpdate()
+  unsubTableDelete()
   unsubCallsReconnect()
 })
 

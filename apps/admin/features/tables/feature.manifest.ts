@@ -23,6 +23,7 @@ export default defineFeature({
   },
 
   realtime: [
+    { table: 'tables', channelComposable: 'useTablesChannel', events: ['insert', 'update', 'delete'] },
     { table: 'table_calls', channelComposable: 'useTableCallsChannel', events: ['insert', 'update'] },
   ],
 

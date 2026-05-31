@@ -2,6 +2,7 @@ import { storeToRefs } from 'pinia'
 import { type Ref } from 'vue'
 import { useOrdersChannel } from '~/features/orders'
 import { useOrderAlertHandler } from '~/features/orders'
+import { useTablesChannel } from '~/features/tables'
 import { useTableCallsChannel } from '~/features/tables'
 import { useTableCallAlertHandler } from '~/features/tables'
 import { useKitchenQueueChannel } from '~/features/kitchen'
@@ -30,6 +31,7 @@ export function useRealtimeChannels(tenantId: Ref<string | null>) {
   useOrdersChannel(tenantId)
   useOrderAlertHandler()
 
+  useTablesChannel(tenantId)
   useTableCallsChannel(tenantId)
   useTableCallAlertHandler()
 

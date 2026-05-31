@@ -1,53 +1,46 @@
 <template>
   <UiCard class="sub-card-root">
     <div class="header">
-      <span class="order-id">#{{ cancelledItem.orderNumber }}</span>
-      <UiTag size="small" type="error" round>Заказ отменён</UiTag>
-    </div>
-
-    <div class="dish-name">{{ cancelledItem.dishName }}</div>
-
-    <div class="notice">
-      В очереди похожее блюдо из заказа #{{ candidate.orderNumber }} — отличия:
-    </div>
-
-    <div v-if="hasDiffs" class="diffs">
+      <span class="title">{{ candidate.dishName }}</span>
       <UiTag
-        v-for="addon in diff.addedAddons"
-        :key="`+a-${addon}`"
-        size="small"
-        type="primary"
-        round
-      >
-        + добавить {{ addon }}
-      </UiTag>
-      <UiTag
-        v-for="addon in diff.removedAddons"
-        :key="`-a-${addon}`"
-        size="small"
-        type="error"
-        round
-      >
-        − не добавлять {{ addon }}
-      </UiTag>
-      <UiTag
-        v-for="ing in diff.newlyRemovedIngredients"
-        :key="`-i-${ing}`"
-        size="small"
-        type="error"
-        round
-      >
-        убрать {{ ing }}
-      </UiTag>
-      <UiTag
-        v-for="ing in diff.restoredIngredients"
-        :key="`+i-${ing}`"
         size="small"
         type="warning"
         round
-      >
-        вернуть {{ ing }}
-      </UiTag>
+        icon="swap"
+      >замена</UiTag>
+    </div>
+
+    <p class="notice">
+      Это блюдо отменили, но в очереди есть похожее. Можно доготовить его вместо отменённого — отличия ниже.
+    </p>
+
+    <div class="compare">
+      <div class="line line--was">
+        <span class="label">Было</span>
+        <div class="chips">
+          <UiTag
+            v-for="(chip, idx) in was"
+            :key="`w-${idx}`"
+            size="small"
+            :type="chip.type"
+            round
+          >{{ chip.label }}</UiTag>
+          <span v-if="!was.length" class="muted">обычное</span>
+        </div>
+      </div>
+      <div class="line line--now">
+        <span class="label">Стало</span>
+        <div class="chips">
+          <UiTag
+            v-for="(chip, idx) in now"
+            :key="`n-${idx}`"
+            size="small"
+            :type="chip.type"
+            round
+          >{{ chip.label }}</UiTag>
+          <span v-if="!now.length" class="muted">обычное</span>
+        </div>
+      </div>
     </div>
 
     <div class="footer">
@@ -62,19 +55,32 @@ import { computed } from 'vue'
 import type { KitchenQueueItem, DishDiff } from '@fastio/shared'
 import { UiCard, UiTag, UiButton } from '@fastio/ui'
 
+type Chip = { label: string; type: 'primary' | 'success' | 'error' }
+
 const props = defineProps<{
   cancelledItem: KitchenQueueItem
   candidate: KitchenQueueItem
   diff: DishDiff
 }>()
 
-const hasDiffs = computed(() => props.diff.addedAddons.length > 0
-  || props.diff.removedAddons.length > 0
-  || props.diff.newlyRemovedIngredients.length > 0
-  || props.diff.restoredIngredients.length > 0,
-)
-
 defineEmits<{ take: []; skip: [] }>()
+
+// Чипы по семантике карточек кухни: `+ аддон` (primary),
+// `− ингредиент` (error — убран), `ингредиент` (success — присутствует).
+
+// Было — отличия со стороны отменённого блюда (что повар уже сделал).
+const was = computed<Chip[]>(() => [
+  ...props.diff.removedAddons.map((a) => ({ label: `+ ${a}`, type: 'primary' as const })),
+  ...props.diff.restoredIngredients.map((i) => ({ label: `− ${i}`, type: 'error' as const })),
+  ...props.diff.newlyRemovedIngredients.map((i) => ({ label: i, type: 'success' as const })),
+])
+
+// Стало — отличия со стороны кандидата (что нужно в новом блюде).
+const now = computed<Chip[]>(() => [
+  ...props.diff.addedAddons.map((a) => ({ label: `+ ${a}`, type: 'primary' as const })),
+  ...props.diff.restoredIngredients.map((i) => ({ label: i, type: 'success' as const })),
+  ...props.diff.newlyRemovedIngredients.map((i) => ({ label: `− ${i}`, type: 'error' as const })),
+])
 </script>
 
 <style scoped lang="scss">
@@ -90,30 +96,60 @@ defineEmits<{ take: []; skip: [] }>()
   gap: var(--space-8);
 }
 
-.order-id {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-hint);
+.title {
   flex: 1;
-}
-
-.dish-name {
+  min-width: 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-title);
-  text-decoration: line-through;
-  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notice {
+  margin: 0;
   font-size: var(--font-size-sm);
+  line-height: 1.4;
   color: var(--color-text-secondary);
 }
 
-.diffs {
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+}
+
+.label {
+  flex-shrink: 0;
+  width: 48px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-hint);
+}
+
+.chips {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
+}
+
+// «Было» приглушаем — это прошлое состояние, акцент на «Стало».
+.line--was .chips {
+  opacity: 0.6;
+}
+
+.muted {
+  font-size: var(--font-size-md);
+  color: var(--color-text-hint);
 }
 
 .footer {
