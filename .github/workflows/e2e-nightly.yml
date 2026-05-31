@@ -55,6 +55,11 @@ jobs:
       - name: install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: build apps for preview
+        # webServer в CI поднимает nuxt preview (не dev) — собираем заранее, отдельным
+        # шагом, чтобы сборка не упиралась в webServer-таймаут. --filter тянет и deps (^build).
+        run: pnpm exec turbo run build --filter=storefront --filter=admin
+
       - name: map tenant subdomains to localhost
         # Nuxt резолвит тенанта по Host (<slug>.localhost). На ubuntu-раннере *.localhost
         # НЕ резолвится автоматически (RFC 6761 не обязывает резолвер; на macOS работает
