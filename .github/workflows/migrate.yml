@@ -26,6 +26,11 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # secrets-контекст недоступен в step-level `if:` (ломает парсинг всего файла —
+    # "Unrecognized named-value: 'secrets'"). Пробрасываем в job-level env, где
+    # secrets разрешён, и ссылаемся на env.* в условиях staging-шагов ниже.
+    env:
+      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -190,15 +195,15 @@ jobs:
       # и адаптируй команду; миграционный набор стабилен, проблема только в синтаксисе CLI
       # (Open Question #1 в .planning/phases/03-e2e-testing/03-RESEARCH.md, confidence MEDIUM).
       - name: Setup Supabase CLI for staging push
-        if: ${{ secrets.SUPABASE_STAGING_DB_URL != '' }}
+        if: ${{ env.SUPABASE_STAGING_DB_URL != '' }}
         uses: supabase/setup-cli@v1
         with:
           version: 2.75.0
 
       - name: Push migrations to staging
-        if: ${{ secrets.SUPABASE_STAGING_DB_URL != '' }}
+        if: ${{ env.SUPABASE_STAGING_DB_URL != '' }}
         env:
-          STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          STAGING_DB_URL: ${{ env.SUPABASE_STAGING_DB_URL }}
         run: |
           set -euo pipefail
           supabase db push --db-url "$STAGING_DB_URL"
