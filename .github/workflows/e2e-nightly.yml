@@ -41,6 +41,19 @@ jobs:
         # seed грузим явно следующим шагом.
         run: supabase start
 
+      - name: export local Supabase env for apps
+        # apps/*/.env gitignored → в CI их нет. Берём РЕАЛЬНЫЕ ключи поднятого
+        # локального supabase и кладём в $GITHUB_ENV → их подхватят build (бейк в
+        # клиентский бандл) и preview-runtime (storefront SSR создаёт supabase-клиент
+        # на сервере). Version-proof: какие ключи сгенерил supabase start — те и берём.
+        run: |
+          ST=$(supabase status -o json)
+          {
+            echo "NUXT_PUBLIC_SUPABASE_URL=$(echo "$ST" | jq -r '.API_URL')"
+            echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=$(echo "$ST" | jq -r '.ANON_KEY')"
+            echo "NUXT_SUPABASE_SERVICE_ROLE_KEY=$(echo "$ST" | jq -r '.SERVICE_ROLE_KEY')"
+          } >> "$GITHUB_ENV"
+
       - name: apply E2E seed
         # Все flow-тесты и setup.mjs зависят от тенантов demo (retail) + services-start
         # (services) + owner demo@fastio.app + меню/услуги/мастера/расписания — всё это в
@@ -69,12 +82,9 @@ jobs:
 
       - name: run E2E suite
         id: e2e
-        # Local-in-CI: dev-сервера (webServer в playwright.config) берут локальный Supabase
-        # из закоммиченных apps/*/.env (URL 127.0.0.1:54321 + local anon/service-role).
-        # НЕ инжектим NUXT_PUBLIC_SUPABASE_* — у admin и storefront РАЗНЫЕ anon-ключи,
-        # единый override сломал бы один из них; пустой staging-секрет — тем более.
-        # SUPABASE_STAGING_URL не задан → globalSetup идёт локальным путём (setup.mjs).
-        # Staging dual-path в global-setup.mjs остаётся спящим (см. e2e-ci infra docs).
+        # Local-in-CI: webServer (playwright.config) поднимает nuxt preview, supabase-env
+        # приходит из $GITHUB_ENV (шаг export выше). SUPABASE_STAGING_URL не задан →
+        # globalSetup идёт локальным путём (setup.mjs). Staging dual-path остаётся спящим.
         env:
           CI: 'true'
         run: pnpm test:e2e
