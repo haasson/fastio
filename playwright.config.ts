@@ -50,8 +50,10 @@ export default defineConfig({
       // 200 на любом хосте и не гарантирует что host-based resolver готов.
       url: `http://demo.localhost:${STOREFRONT_PORT}/api/tenant`,
       reuseExistingServer: !process.env.CI,
-      timeout: 180_000,
-      stdout: 'ignore',
+      // CI: cold Nuxt dev двух приложений на 2-ядерном раннере медленный → 300s.
+      timeout: process.env.CI ? 300_000 : 180_000,
+      // CI: stdout видим для диагностики старта (локально — тихо).
+      stdout: process.env.CI ? 'pipe' : 'ignore',
       stderr: 'pipe',
     },
     {
@@ -61,8 +63,8 @@ export default defineConfig({
       // реальному use case.
       url: `http://localhost:${ADMIN_PORT}/login`,
       reuseExistingServer: !process.env.CI,
-      timeout: 180_000,
-      stdout: 'ignore',
+      timeout: process.env.CI ? 300_000 : 180_000,
+      stdout: process.env.CI ? 'pipe' : 'ignore',
       stderr: 'pipe',
     },
   ],
