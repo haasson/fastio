@@ -20,6 +20,20 @@ OUT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/supabase/seed/e2e-ci.sq
 
 PSQL_AT=(docker exec -i "$C" psql -U postgres -d postgres -At)
 
+# Локальный дрейф: колонки, существующие в живой локальной базе, но ОТСУТСТВУЮЩИЕ в
+# миграциях (а значит и на CI/проде). Мёртвые — не используются кодом. Исключаем,
+# иначе COPY падает на схеме, построенной из миграций.
+# Как найдено: прогон всех миграций в чистую scratch-базу через psql + дифф
+# information_schema.columns против живой (см. git-историю фикса).
+# Если миграция позже добавит колонку — убрать её из drift_cols() и перегенерировать.
+# (bash 3.2 на macOS — без ассоциативных массивов, через case.)
+drift_cols() {
+  case "$1" in
+    reservation_settings) echo "'resource_selection_enabled','conflict_mode','default_slot_duration'" ;;
+    *) echo "" ;;
+  esac
+}
+
 # Таблицы в топологическом (FK-безопасном) порядке: "schema.table|filter_expr".
 # auth.users/identities фильтруются по членам тенантов; tenants по id; остальное по tenant_id.
 MEMBER_FILTER="user_id IN (SELECT user_id FROM public.tenant_members WHERE tenant_id IN ('$DEMO','$SVC'))"
@@ -73,7 +87,10 @@ TABLES=(
     schema="${tbl%%.*}"
     name="${tbl#*.}"
 
-    cols=$("${PSQL_AT[@]}" -c "SELECT string_agg(quote_ident(column_name), ',' ORDER BY ordinal_position) FROM information_schema.columns WHERE table_schema='$schema' AND table_name='$name' AND is_generated <> 'ALWAYS';")
+    excl=""
+    drift=$(drift_cols "$name")
+    if [ -n "$drift" ]; then excl=" AND column_name NOT IN ($drift)"; fi
+    cols=$("${PSQL_AT[@]}" -c "SELECT string_agg(quote_ident(column_name), ',' ORDER BY ordinal_position) FROM information_schema.columns WHERE table_schema='$schema' AND table_name='$name' AND is_generated <> 'ALWAYS'$excl;")
 
     echo "-- $tbl"
     echo "COPY $tbl ($cols) FROM stdin;"

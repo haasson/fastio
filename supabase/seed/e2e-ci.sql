@@ -220,8 +220,8 @@ COPY public.appointment_settings (id,tenant_id,resource_label,staff_name_format,
 \.
 
 -- public.reservation_settings
-COPY public.reservation_settings (id,tenant_id,enabled,slot_step,max_advance_days,min_guests,max_guests,auto_confirm,created_at,updated_at,close_buffer_minutes,max_guests_auto,resource_selection_enabled,conflict_mode,default_slot_duration,allow_client_cancellation) FROM stdin;
-de43f54a-cdcb-4bc9-8cc2-f1d44ebf6c4a	00000000-0000-0000-0000-000000000002	t	60	10	1	6	f	2026-03-24 05:24:30.837629+00	2026-04-13 06:01:03.943981+00	180	f	f	block	60	t
+COPY public.reservation_settings (id,tenant_id,enabled,slot_step,max_advance_days,min_guests,max_guests,auto_confirm,created_at,updated_at,close_buffer_minutes,max_guests_auto,allow_client_cancellation) FROM stdin;
+de43f54a-cdcb-4bc9-8cc2-f1d44ebf6c4a	00000000-0000-0000-0000-000000000002	t	60	10	1	6	f	2026-03-24 05:24:30.837629+00	2026-04-13 06:01:03.943981+00	180	f	t
 \.
 
 -- public.order_statuses
