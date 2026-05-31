@@ -42,11 +42,13 @@ jobs:
         # seed грузим явно следующим шагом.
         run: supabase start
 
-      - name: apply demo seed
-        # demo тенант + Маргарита + Пицца + demo@fastio.app owner — этого хватит
-        # для smoke (открыть главную) и для e2e setup.mjs (admin password reset).
+      - name: apply E2E seed
+        # e2e-ci.sql — config-faithful дамп тенантов demo (retail) + services-start
+        # (services) + owner demo@fastio.app: тенанты/меню/услуги/мастера/расписания,
+        # на которых проходят tests/e2e/*. Затем globalSetup (setup.mjs) досоздаёт
+        # customer/session и ресетит пароль admin'а. Автогенерится scripts/e2e/gen-e2e-seed.sh.
         run: |
-          docker cp supabase/seed/demo.sql supabase_db_fastio:/tmp/seed.sql
+          docker cp supabase/seed/e2e-ci.sql supabase_db_fastio:/tmp/seed.sql
           docker exec supabase_db_fastio psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/seed.sql
 
       - name: install postgresql-client
@@ -56,14 +58,14 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: run smoke tests
+        # Local-in-CI: dev-сервера (webServer в playwright.config) берут локальный Supabase
+        # из закоммиченных apps/*/.env (URL 127.0.0.1:54321 + local anon/service-role).
+        # НЕ инжектим NUXT_PUBLIC_SUPABASE_* — у admin и storefront РАЗНЫЕ anon-ключи,
+        # единый override сломал бы один из них; пустой staging-секрет — тем более.
+        # SUPABASE_STAGING_URL не задан → globalSetup идёт локальным путём (setup.mjs).
+        # Staging dual-path в global-setup.mjs остаётся спящим (см. e2e-ci infra docs).
         env:
           CI: 'true'
-          SUPABASE_STAGING_URL: ${{ secrets.SUPABASE_STAGING_URL }}
-          SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
-          SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
-          SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_STAGING_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
         run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts
 
       - name: upload HTML report on failure
