@@ -1,7 +1,7 @@
 -- =============================================================================
 -- FASTIO DEMO SEED — 3 demo tenants for client presentations
 -- =============================================================================
--- Before running: replace 'YOUR_EMAIL_HERE' with your actual account email
+-- Owner demo@fastio.app создаётся автоматически если его нет в auth.users.
 -- Run via Supabase SQL Editor (with service role) or psql
 -- =============================================================================
 
@@ -272,15 +272,48 @@ BEGIN
 
 
   -- ============================================================
-  -- Get owner ID
+  -- Owner: demo@fastio.app
+  -- Создаём если нет — нужно для CI / чистой базы (auth.users пустой после
+  -- supabase start). Паттерн скопирован из e2e-staging.sql: password-логин
+  -- через GoTrue работает без строки в auth.identities. Пароль здесь дефолтный
+  -- для ручных демо-прогонов; e2e globalSetup (scripts/e2e/setup.mjs) ресетит
+  -- его на known-good значение.
   -- ============================================================
   SELECT id INTO _owner_id
   FROM auth.users
-  WHERE email = 'negativ881@gmail.com'
+  WHERE email = 'demo@fastio.app'
   LIMIT 1;
 
   IF _owner_id IS NULL THEN
-    RAISE EXCEPTION 'Пользователь не найден. Замени YOUR_EMAIL_HERE на свой email.';
+    -- Фиксированный UUID — согласован с e2e-ci.sql (demo@fastio.app = ...0001),
+    -- чтобы сиды не конфликтовали по unique email при совместном прогоне.
+    _owner_id := '00000000-0000-0000-0000-000000000001';
+
+    INSERT INTO auth.users (
+      id,
+      instance_id,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      aud,
+      role,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    ) VALUES (
+      _owner_id,
+      '00000000-0000-0000-0000-000000000000',
+      'demo@fastio.app',
+      crypt('demo-admin-pass-12345', gen_salt('bf')),
+      now(),
+      'authenticated',
+      'authenticated',
+      '{"provider": "email", "providers": ["email"]}',
+      '{}',
+      now(),
+      now()
+    );
   END IF;
 
 

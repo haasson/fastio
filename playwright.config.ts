@@ -42,27 +42,37 @@ export default defineConfig({
     },
   ],
 
+  // CI: build + preview (продакшн-сборка делается отдельным шагом workflow ДО запуска,
+  // preview стартует за секунды и детерминированно). turbo `dev` под webServer в CI не
+  // взлетал (persistent-task + cold-start → таймаут). Локально — обычный `pnpm dev:*`
+  // с reuseExistingServer. PORT прокидывается в preview (nitro слушает его).
   webServer: [
     {
-      command: 'pnpm dev:storefront',
+      command: process.env.CI
+        ? 'pnpm --filter storefront exec nuxt preview'
+        : 'pnpm dev:storefront',
+      env: process.env.CI ? { PORT: String(STOREFRONT_PORT) } : undefined,
       // Health-check ИМЕННО на subdomain-хосте — прогревает tenant middleware
       // на тот хост, через который ходят тесты. /api/tenant?slug=… отвечает
       // 200 на любом хосте и не гарантирует что host-based resolver готов.
       url: `http://demo.localhost:${STOREFRONT_PORT}/api/tenant`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
-      stdout: 'ignore',
+      stdout: process.env.CI ? 'pipe' : 'ignore',
       stderr: 'pipe',
     },
     {
-      command: 'pnpm dev:admin',
+      command: process.env.CI
+        ? 'pnpm --filter admin exec nuxt preview'
+        : 'pnpm dev:admin',
+      env: process.env.CI ? { PORT: String(ADMIN_PORT) } : undefined,
       // /login — admin страница в SPA-режиме (через routeRules /**: ssr:false),
       // отдаёт shell с 200. /favicon.ico тоже подходит, но /login ближе к
       // реальному use case.
       url: `http://localhost:${ADMIN_PORT}/login`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
-      stdout: 'ignore',
+      stdout: process.env.CI ? 'pipe' : 'ignore',
       stderr: 'pipe',
     },
   ],

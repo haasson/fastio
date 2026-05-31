@@ -17,6 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: record start time
+        # Для длительности в fail-алерте (ловить аномалии/зависания).
+        run: echo "RUN_START=$(date +%s)" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
@@ -41,11 +45,25 @@ jobs:
         # seed грузим явно следующим шагом.
         run: supabase start
 
-      - name: apply demo seed
-        # Все 6 flow тестов и setup.mjs зависят от demo + services-start +
-        # demo@fastio.app + Маргарита/Пицца — всё это в demo.sql.
+      - name: export local Supabase env for apps
+        # apps/*/.env gitignored → в CI их нет. Берём РЕАЛЬНЫЕ ключи поднятого
+        # локального supabase и кладём в $GITHUB_ENV → их подхватят build (бейк в
+        # клиентский бандл) и preview-runtime (storefront SSR создаёт supabase-клиент
+        # на сервере). Version-proof: какие ключи сгенерил supabase start — те и берём.
         run: |
-          docker cp supabase/seed/demo.sql supabase_db_fastio:/tmp/seed.sql
+          ST=$(supabase status -o json)
+          {
+            echo "NUXT_PUBLIC_SUPABASE_URL=$(echo "$ST" | jq -r '.API_URL')"
+            echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=$(echo "$ST" | jq -r '.ANON_KEY')"
+            echo "NUXT_SUPABASE_SERVICE_ROLE_KEY=$(echo "$ST" | jq -r '.SERVICE_ROLE_KEY')"
+          } >> "$GITHUB_ENV"
+
+      - name: apply E2E seed
+        # Все flow-тесты и setup.mjs зависят от тенантов demo (retail) + services-start
+        # (services) + owner demo@fastio.app + меню/услуги/мастера/расписания — всё это в
+        # e2e-ci.sql (config-faithful дамп, автогенерится scripts/e2e/gen-e2e-seed.sh).
+        run: |
+          docker cp supabase/seed/e2e-ci.sql supabase_db_fastio:/tmp/seed.sql
           docker exec supabase_db_fastio psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/seed.sql
 
       - name: install postgresql-client
@@ -54,16 +72,25 @@ jobs:
       - name: install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: build apps for preview
+        # webServer в CI поднимает nuxt preview (не dev) — собираем заранее, отдельным
+        # шагом, чтобы сборка не упиралась в webServer-таймаут. --filter тянет и deps (^build).
+        run: pnpm exec turbo run build --filter=storefront --filter=admin
+
+      - name: map tenant subdomains to localhost
+        # Nuxt резолвит тенанта по Host (<slug>.localhost). На ubuntu-раннере *.localhost
+        # НЕ резолвится автоматически (RFC 6761 не обязывает резолвер; на macOS работает
+        # mDNSResponder, отсюда «локально зелено»). Без этого webServer health-check на
+        # demo.localhost:4711 висит до таймаута. Прописываем явно (демо + services + флоу-слаги).
+        run: echo "127.0.0.1 demo.localhost services-start.localhost e2e-retail.localhost e2e-services.localhost" | sudo tee -a /etc/hosts
+
       - name: run E2E suite
         id: e2e
+        # Local-in-CI: webServer (playwright.config) поднимает nuxt preview, supabase-env
+        # приходит из $GITHUB_ENV (шаг export выше). SUPABASE_STAGING_URL не задан →
+        # globalSetup идёт локальным путём (setup.mjs). Staging dual-path остаётся спящим.
         env:
           CI: 'true'
-          SUPABASE_STAGING_URL: ${{ secrets.SUPABASE_STAGING_URL }}
-          SUPABASE_STAGING_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
-          SUPABASE_STAGING_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
-          SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_STAGING_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_STAGING_ANON_KEY }}
         run: pnpm test:e2e
 
       - name: upload HTML report
@@ -80,11 +107,20 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_OPS_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_OPS_CHAT_ID }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REF: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
         run: |
-          [ -z "$TELEGRAM_BOT_TOKEN" ] && exit 0
-          [ -z "$TELEGRAM_CHAT_ID" ] && exit 0
+          [ -z "${TELEGRAM_BOT_TOKEN:-}" ] && exit 0
+          [ -z "${TELEGRAM_CHAT_ID:-}" ] && exit 0
+          DUR=$(( $(date +%s) - ${RUN_START:-0} ))
+          DUR_FMT=$(printf '%dm%02ds' $(( DUR / 60 )) $(( DUR % 60 )))
+          TEXT="<b>FastIO E2E nightly: FAIL ❌</b>
+ветка <code>${REF}</code> · <code>${SHA:0:7}</code>
+⏱ ${DUR_FMT}
+${RUN_URL}"
           curl -sS --max-time 15 \
             -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
             --data-urlencode "parse_mode=HTML" \
-            --data-urlencode "text=<b>FastIO E2E nightly: FAIL</b>%0A${RUN_URL}" >/dev/null || true
+            --data-urlencode "disable_web_page_preview=true" \
+            --data-urlencode "text=${TEXT}" >/dev/null || true
