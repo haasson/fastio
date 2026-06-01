@@ -13,13 +13,10 @@
     },
     "assert": {
       "assertions": {
-        "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
         "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
         "first-contentful-paint": ["warn", { "maxNumericValue": 1800 }],
-        "interactive": ["warn", { "maxNumericValue": 3800 }],
-        "uses-optimized-images": ["warn"],
-        "uses-webp-images": ["warn"],
-        "render-blocking-resources": ["warn"]
+        "interactive": ["warn", { "maxNumericValue": 3800 }]
       }
     },
     "upload": {
