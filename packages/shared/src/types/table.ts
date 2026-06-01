@@ -21,6 +21,7 @@ export type TableCall = {
 export type Table = {
   id: string
   tenantId: string
+  branchId: string
   name: string
   isOpen: boolean
   isActive: boolean
@@ -40,6 +41,7 @@ export type Table = {
 
 export type TableFormData = {
   name: string
+  branchId?: string | null
   capacity?: number | null
   tags?: string[]
   notes?: string | null

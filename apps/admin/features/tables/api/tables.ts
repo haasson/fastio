@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Table, TableFormData, TableShape, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import { orderItemKey } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
 import { query } from '~/shared/utils/query'
 import type { TableRow } from '~/shared/data/db-types'
 
@@ -30,6 +31,7 @@ export const mapTable = (raw: Record<string, unknown>): Table => {
   return {
     id: row.id,
     tenantId: row.tenant_id,
+    branchId: row.branch_id,
     name: row.name,
     isOpen: row.is_open,
     isActive: row.is_active,
@@ -49,19 +51,39 @@ export const mapTable = (raw: Record<string, unknown>): Table => {
 }
 
 export const tablesApi = {
-  async list(sb: SupabaseClient, tenantId: string): Promise<Table[]> {
-    const data = await query(
-      sb.from('tables').select('*').eq('tenant_id', tenantId).eq('is_active', true).order('created_at'),
-    )
+  async list(sb: SupabaseClient, tenantId: string, branchId?: string | null): Promise<Table[]> {
+    let q = sb.from('tables')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .order('created_at')
+
+    if (branchId !== undefined && branchId !== null) {
+      q = q.eq('branch_id', branchId)
+    }
+
+    const data = await query(q)
 
     return (data ?? []).map(mapTable)
   },
 
   async add(sb: SupabaseClient, tenantId: string, data: TableFormData): Promise<Table | null> {
+    // Инвариант: стол всегда принадлежит филиалу (БД: tables.branch_id NOT NULL).
+    // Защита от создания «осиротевшего» стола до удара в constraint.
+    if (!data.branchId) {
+      reportError(new Error('tables.add: branch_id обязателен — стол не может быть без филиала'), {
+        context: 'tables.add',
+        tenantId,
+      })
+
+      return null
+    }
+
     const result = await query(
       sb.from('tables').insert({
         tenant_id: tenantId,
         name: data.name,
+        branch_id: data.branchId,
         capacity: data.capacity ?? null,
         tags: data.tags ?? [],
         notes: data.notes ?? null,

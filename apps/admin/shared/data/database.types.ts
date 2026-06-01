@@ -3380,6 +3380,7 @@ export type Database = {
       }
       tables: {
         Row: {
+          branch_id: string
           capacity: number | null
           color: string | null
           created_at: string
@@ -3399,6 +3400,7 @@ export type Database = {
           tenant_id: string
         }
         Insert: {
+          branch_id: string
           capacity?: number | null
           color?: string | null
           created_at?: string
@@ -3418,6 +3420,7 @@ export type Database = {
           tenant_id: string
         }
         Update: {
+          branch_id?: string
           capacity?: number | null
           color?: string | null
           created_at?: string
@@ -3437,6 +3440,13 @@ export type Database = {
           tenant_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: 'tables_branch_id_fkey'
+            columns: ['branch_id']
+            isOneToOne: false
+            referencedRelation: 'branches'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'tables_tenant_id_fkey'
             columns: ['tenant_id']
