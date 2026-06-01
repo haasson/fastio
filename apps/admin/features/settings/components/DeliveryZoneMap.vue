@@ -117,8 +117,7 @@ import {
 import type { YandexMapListenerSettings } from 'vue-yandex-maps'
 // CSS импортируется здесь (а не в nuxt.config.css), чтобы попасть в lazy-chunk
 // карты, а не в main bundle.
-// @ts-expect-error — TS не знает про /css side-effect subpath библиотеки, но
-// Vite его резолвит штатно.
+// /css side-effect subpath библиотеки — Vite резолвит штатно (vue-tsc 3.x типы тоже видит).
 import 'vue-yandex-maps/css'
 import { useRuntimeConfig } from '#imports'
 import { UiIcon } from '@fastio/ui'
