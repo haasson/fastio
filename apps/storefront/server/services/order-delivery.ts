@@ -1,12 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DeliveryZone, DeliveryZoneRow, WorkingHoursSchedule } from '@fastio/shared'
 import { findDeliveryZone, mapDeliveryZoneRow, isOpenNow, formatPrice, parseFiniteNumber } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
 import type { DeliveryType, TenantOrderConfig } from './order-validation'
 import { calcDeliveryFee } from './order-calc'
 
 export type TableRecord = {
   id: string
   name: string
+  branchId: string | null  // D-11: для маршрутизации dine_in на нужный филиал
 }
 
 export type DeliveryResult = {
@@ -27,18 +29,30 @@ export async function validateTable(
     throw createError({ statusCode: 400, message: 'Не указан стол' })
   }
 
-  const { data: tableData } = await supabase
+  const { data: tableData, error } = await supabase
     .from('tables')
-    .select('id, name, is_open')
+    .select('id, name, is_open, branch_id')
     .eq('id', tableId)
     .eq('tenant_id', tenantId)
     .eq('is_active', true)
     .single()
 
+  // PGRST116 = «нет строк» → это легитимный 404, не сбой. Любая другая ошибка
+  // (RLS-отказ, таймаут) — реальный failure-path: логируем и отдаём 500, а не
+  // маскируем под «стол не найден».
+  if (error && error.code !== 'PGRST116') {
+    reportError(error, { context: 'order-delivery.validateTable', tenantId, tableId })
+    throw createError({ statusCode: 500, message: 'Не удалось проверить стол' })
+  }
+
   if (!tableData) throw createError({ statusCode: 404, message: 'Стол не найден' })
   if (!tableData.is_open) throw createError({ statusCode: 400, message: 'Стол сейчас не обслуживается' })
 
-  return { id: tableData.id as string, name: tableData.name as string }
+  return {
+    id: tableData.id as string,
+    name: tableData.name as string,
+    branchId: tableData.branch_id as string | null,
+  }
 }
 
 export type TenantScheduleInfo = {
@@ -61,10 +75,23 @@ export async function resolveDelivery(
     tableRecord = await validateTable(supabase, tenantId, body.tableId as string | undefined)
   }
 
-  const [{ data: branchRows }, { data: zoneRows }] = await Promise.all([
+  const [{ data: branchRows, error: branchError }, { data: zoneRows, error: zoneError }] = await Promise.all([
     supabase.from('branches').select('id, working_hours_schedule').eq('tenant_id', tenantId).eq('is_active', true).is('archived_at', null),
     supabase.from('delivery_zones').select('*').eq('tenant_id', tenantId).eq('is_active', true).order('sort_order'),
   ])
+
+  // Сбой загрузки филиалов критичен — без него маршрутизация заказа невозможна.
+  // Без этого DB/RLS-ошибка тихо превращалась в «Не удалось определить филиал» (400)
+  // и не доходила до Sentry.
+  if (branchError) {
+    reportError(branchError, { context: 'order-delivery.resolveDelivery.branches', tenantId })
+    throw createError({ statusCode: 500, message: 'Не удалось загрузить филиалы' })
+  }
+
+  // Зоны не всегда обязательны (fixed-режим), поэтому не валим заказ, но логируем.
+  if (zoneError) {
+    reportError(zoneError, { context: 'order-delivery.resolveDelivery.zones', tenantId })
+  }
 
   const activeBranchIdSet = new Set((branchRows ?? []).map((b) => b.id as string))
 
@@ -112,7 +139,7 @@ export async function resolveDelivery(
     }
   }
 
-  // Привязка к филиалу: из body (pickup) или fallback к единственному
+  // Привязка к филиалу: из стола (dine_in), из body (pickup) или fallback к единственному
   if (!branchId) {
     if (deliveryType === 'pickup' && body.branchId) {
       const validBranch = branchRows?.find((b) => b.id === body.branchId)
@@ -121,12 +148,29 @@ export async function resolveDelivery(
       }
       branchId = body.branchId as string
     }
+    else if (deliveryType === 'dine_in' && tableRecord) {
+      // D-11: стол привязан к филиалу — используем его
+      if (tableRecord.branchId) {
+        branchId = tableRecord.branchId
+      }
+      else if (branchRows?.length === 1) {
+        // D-12 fallback: стол без branch_id на single-branch тенанте
+        branchId = branchRows[0].id as string
+      }
+      else if (branchRows && branchRows.length > 1) {
+        // D-12: мультибранч + стол без branch_id = конфиг-ошибка тенанта
+        throw createError({
+          statusCode: 400,
+          message: 'Стол не привязан к филиалу. Обратитесь к администратору заведения.',
+        })
+      }
+    }
     else if (branchRows?.length === 1) {
       branchId = branchRows[0].id as string
     }
   }
 
-  if (!branchId && deliveryType !== 'dine_in') {
+  if (!branchId) {
     throw createError({ statusCode: 400, message: 'Не удалось определить филиал для заказа' })
   }
 
