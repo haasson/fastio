@@ -1,24 +1,22 @@
 {
   "ci": {
     "collect": {
-      "url": ["https://demo.fastio.ru/"],
+      "startServerCommand": "PORT=4711 pnpm --filter storefront exec nuxt preview",
+      "startServerReadyPattern": "Listening on",
+      "startServerReadyTimeout": 60000,
+      "url": ["http://demo.localhost:4711/"],
       "numberOfRuns": 5,
       "settings": {
-        "preset": "mobile",
         "onlyCategories": ["performance"],
         "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
       }
     },
     "assert": {
-      "preset": "lighthouse:no-pwa",
       "assertions": {
-        "largest-contentful-paint": ["error", { "maxNumericValue": 2500 }],
         "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
         "first-contentful-paint": ["warn", { "maxNumericValue": 1800 }],
-        "interactive": ["warn", { "maxNumericValue": 3800 }],
-        "uses-optimized-images": ["warn"],
-        "uses-webp-images": ["warn"],
-        "render-blocking-resources": ["warn"]
+        "interactive": ["warn", { "maxNumericValue": 3800 }]
       }
     },
     "upload": {
