@@ -7,7 +7,6 @@
       "url": ["http://demo.localhost:4711/"],
       "numberOfRuns": 5,
       "settings": {
-        "preset": "mobile",
         "onlyCategories": ["performance"],
         "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
       }
