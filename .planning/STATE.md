@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-last_updated: "2026-05-24T03:18:38.598Z"
+last_updated: "2026-06-01T06:56:59.791Z"
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 5
-  total_plans: 21
+  total_plans: 25
   completed_plans: 17
-  percent: 81
+  percent: 68
 ---
 
 # STATE.md — Fastio Launch Readiness
@@ -60,6 +60,10 @@ Overall: 1 / 5 phases complete
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 7 added: Привязка столов dine-in к филиалу (tables.branch_id) — найдено при ручном тестировании 3.7 (2026-06-01). На мультифилиальном тенанте dine-in заказ получает `branch_id=null` → не виден ни в одной кухонной очереди (P0).
+
 ### Key Decisions
 
 - Security-first ordering: RLS audit and key leakage prevention must complete before observability tooling is deployed — a monitored system with tenant isolation holes is still dangerous
@@ -95,7 +99,7 @@ None at start.
 
 ## Session Continuity
 
-**Last session:** 2026-05-24T02:37:45.016Z
+**Last session:** 2026-06-01T06:56:59.784Z
 **Next action:** `/gsd:plan-phase 4` — план Phase 4 (Performance & SEO) или `/gsd:plan-phase 5` — Phase 5 (Operational Features)
 
 ---

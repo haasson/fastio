@@ -160,6 +160,24 @@ Plans:
 
 ---
 
+### Phase 7: Привязка столов dine-in к филиалу (tables.branch_id)
+
+**Goal:** Столы становятся branch-aware: dine-in заказ со стола маршрутизируется в филиал стола (кухня, уведомления, нумерация), а не теряется с `branch_id=null` на мультифилиальном тенанте. Включает схему `tables.branch_id` + бэкфилл + RLS, branch-scoped управление столами в админке (саммари «Все филиалы»), фикс `order-delivery.ts` и archive guard.
+**Requirements**: FIX-TABLE-BRANCH-* (post-roadmap finding из ручного тестирования 3.7; локальные теги)
+**Depends on:** Phase 6
+**Plans:** 4 plans
+
+Plans:
+**Wave 1**
+- [ ] 07-01-PLAN.md — Схема: миграция 307 (nullable FK branch_id + бэкфилл D-08) + shared-типы + реген database.types.ts + [BLOCKING] локальный накат
+**Wave 2**
+- [ ] 07-02-PLAN.md — Ядро P0: order-delivery.ts dine_in branch-маршрутизация (D-11/D-12) + Wave 0 unit-тесты
+- [ ] 07-03-PLAN.md — Admin tables branch-scoped: api (list/add branch_id) + TablesBranchSummary + реактивность tables.vue/list/layout (D-02..D-08)
+**Wave 3**
+- [ ] 07-04-PLAN.md — Archive guard hasTables (D-10) + verification пер-филиальной нумерации (D-11)
+
+---
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -170,6 +188,7 @@ Plans:
 | 4. Performance & SEO | 2/3 | In Progress|  |
 | 04.1. Ops Server | 3/3 | Complete    | 2026-05-23 |
 | 5. Operational Features | 3/3 | Complete   | 2026-05-24 |
+| 7. Tables branch_id (dine-in) | 0/4 | Planned | - |
 
 ---
 
