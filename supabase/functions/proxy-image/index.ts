@@ -138,7 +138,10 @@ Deno.serve(withSentry('proxy-image', async (req) => {
     const body = await readBodyWithLimit(response, MAX_IMAGE_BYTES)
     if (!body) return jsonError('Image too large', 413)
 
-    return new Response(body.buffer, {
+    // body — точноразмерный Uint8Array (рантайм-валидный BodyInit). Каст нужен из-за
+    // строгости TS 5.7+: BodyInit ждёт Uint8Array<ArrayBuffer>, а дефолтный тип —
+    // Uint8Array<ArrayBufferLike>. Байты корректны (свежий ArrayBuffer в readBodyWithLimit).
+    return new Response(body as BodyInit, {
       headers: {
         'Content-Type': contentType,
         ...CORS_ORIGIN_HEADER,
