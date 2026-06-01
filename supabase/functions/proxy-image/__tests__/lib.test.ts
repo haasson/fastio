@@ -156,7 +156,8 @@ Deno.test('isPrivateIPv6: public IPv6 (Google DNS) → false', () => {
 
 function makeResponse(body: Uint8Array | null): Response {
   if (body === null) return new Response(null)
-  return new Response(body)
+  // as BodyInit: Uint8Array<ArrayBufferLike> не assignable к строгому BodyInit (TS 5.7+).
+  return new Response(body as BodyInit)
 }
 
 Deno.test('readBodyWithLimit: empty body → empty Uint8Array', async () => {

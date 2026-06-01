@@ -90,7 +90,7 @@ function makeEvent() {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  for (const k of Object.keys(cookieJar)) delete cookieJar[k]
+  for (const k of Object.keys(cookieJar)) Reflect.deleteProperty(cookieJar, k)
   cookieJar.fastio_table = VALID_TABLE_ID
   ;(globalThis as any).getRouterParam = vi.fn(() => VALID_TABLE_ID)
   ;(globalThis as any).readBody = vi.fn().mockResolvedValue({})

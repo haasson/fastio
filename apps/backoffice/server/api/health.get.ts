@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   // 503. Liveness-probe в этом случае не отличит «приложение целое, БД лежит»
   // от «приложение упало совсем».
   const start = performance.now() // monotonic, не подвержено NTP-коррекциям
+
   try {
     const supabase = getAdminClient()
     // Если переименуем таблицу `tenants` — этот probe тоже даст 503 (false
