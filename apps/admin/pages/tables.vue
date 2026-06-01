@@ -1,6 +1,13 @@
 <template>
   <div>
-    <TabsLayout :tabs="tabs" base-path="/tables" />
+    <!-- Мультибранч + «Все филиалы»: самостоятельная read-only сводка вместо
+         табов/списка (D-06). Никаких табов, готовых блюд, переходов. -->
+    <TablesBranchSummary
+      v-if="showSummary"
+      :branches="branches"
+      :table-count-by-branch="tableCountByBranch"
+    />
+    <TabsLayout v-else :tabs="tabs" base-path="/tables" />
 
     <TableCheckoutModal
       v-model="checkoutModalOpen"
@@ -26,6 +33,7 @@ import { ref, computed, watch, onUnmounted, provide } from 'vue'
 import { useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
+import TablesBranchSummary from '~/features/tables/components/TablesBranchSummary.vue'
 import TableCheckoutModal from '~/features/tables/components/TableCheckoutModal.vue'
 import { usePageTitle } from '~/shared/composables/usePageTitle'
 import type { Table, TableCallType, TableCall, KitchenQueueItem } from '@fastio/shared'
@@ -35,6 +43,7 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useReservationsStore } from '~/features/reservations'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useOrderStatusesStore } from '~/features/orders'
 import { orderEvents } from '~/features/orders'
 import { tableCallEvents, tableEvents } from '~/features/tables'
@@ -54,15 +63,43 @@ const tabs = [
 // ── Stores ────────────────────────────────────────────────────
 const api = useDatabase()
 const tenantStore = useTenantStore()
+const branchStore = useBranchStore()
 const reservationsStore = useReservationsStore()
 const authStore = useAuthStore()
 const orderStatusesStore = useOrderStatusesStore()
 const userId = computed(() => authStore.user?.id ?? null)
 const { statuses } = storeToRefs(orderStatusesStore)
+const { branches } = storeToRefs(branchStore)
 const { success, warning } = useMessage()
 const { confirm } = useConfirm()
 
 const tenantId = computed(() => tenantStore.currentTenantId)
+
+// D-04: один/ноль филиалов → не фильтруем; D-05: конкретный → фильтруем;
+// D-06: null при мультибранче → саммари-режим (без фильтра)
+const effectiveBranchId = computed<string | undefined>(() => {
+  if (branchStore.branches.length <= 1) return undefined
+
+  return branchStore.currentBranchId ?? undefined
+})
+
+// D-06/D-07: показываем саммари вместо плана зала
+const showSummary = computed(() => branchStore.branches.length > 1 && branchStore.currentBranchId === null)
+
+// D-08: счётчики столов по филиалам для саммари
+const tableCountByBranch = computed(() => {
+  const map: Record<string, { total: number; open: number }> = {}
+
+  for (const t of tables.value) {
+    if (!t.branchId) continue
+    const entry = (map[t.branchId] ??= { total: 0, open: 0 })
+
+    entry.total++
+    if (t.isOpen) entry.open++
+  }
+
+  return map
+})
 
 const cancelledStatusIds = computed(() => statuses.value
   .filter((s) => s.groupType === 'cancelled')
@@ -159,7 +196,7 @@ const load = async (id: string) => {
   loading.value = true
   try {
     const [loadedTables, tags, types, calls] = await Promise.all([
-      api.tables.list(id),
+      api.tables.list(id, effectiveBranchId.value),
       api.tables.listTags(id),
       api.tableCallTypes.list(id),
       api.tableCalls.listActive(id),
@@ -176,8 +213,9 @@ const load = async (id: string) => {
   }
 }
 
-watch(tenantId, (id) => {
-  if (id) load(id)
+watch([tenantId, effectiveBranchId], ([id]) => {
+  if (!id) return
+  void load(id)
 }, { immediate: true })
 
 // ── Realtime ──────────────────────────────────────────────────
@@ -242,6 +280,11 @@ const upsertTableFromRealtime = (table: Table) => {
 
     return
   }
+
+  // Не подмешиваем столы чужого филиала в отфильтрованный список (D-05/T-07-A3).
+  // Незакреплённые столы (branchId=null) тоже исключаем при активном фильтре —
+  // серверный load их не отдаёт (.eq('branch_id', X)), иначе realtime даёт дрейф.
+  if (effectiveBranchId.value && table.branchId !== effectiveBranchId.value) return
 
   const idx = tables.value.findIndex((t) => t.id === table.id)
 
@@ -488,6 +531,7 @@ provide(TodayReservationsKey, todayReservations)
 provide(TablesContextKey, {
   tables, tableSums, loading, globalTags, callTypes, activeCalls, kitchenDishes, tenantId,
   openTables, closedTables, callsByTable, readyDishes, totalReadyCount,
+  branches,
   toggleOpen, checkout, onMarkServed, onRemoveDish, onConfirmItem, onRejectItem,
   onConfirmAllItems, onCallResolved, onTableAdded, onTableUpdated, onTableDeleted,
   onPositionUpdated, onCallTypeAdded, onCallTypeRemoved, onGlobalTagsUpdated,

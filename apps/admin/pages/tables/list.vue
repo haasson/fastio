@@ -1,7 +1,7 @@
 <template>
   <div class="list-root">
     <UiTag v-if="ctx.totalReadyCount > 0" type="success" round>
-      {{ ctx.totalReadyCount }} {{ ctx.totalReadyCount === 1 ? 'блюдо готово' : 'блюд готово' }} к подаче
+      {{ ctx.totalReadyCount }} {{ readyLabel }} к подаче
     </UiTag>
 
     <UiSkeleton v-if="ctx.loading" :repeat="6" />
@@ -90,11 +90,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag } from '@fastio/ui'
+import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag, useMessage } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
+import { pluralize } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTablesContext, useAddDishToTable } from '~/features/tables'
 import { useGate } from '~/shared/plan/useGate'
+import { useBranchStore } from '~/shared/stores/branch'
 import DishPickerModal from '~/features/menu/components/DishPickerModal.vue'
 import TableCard from '~/features/tables/components/TableCard.vue'
 import TableEditModal from '~/features/tables/components/TableEditModal.vue'
@@ -104,6 +106,8 @@ const ctx = useTablesContext()
 
 const api = useDatabase()
 const gate = useGate()
+const branchStore = useBranchStore()
+const { warning } = useMessage()
 const canManageTables = computed(() => gate.manageTables.value.enabled)
 
 const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId)
@@ -116,13 +120,32 @@ const qrModalOpen = ref(false)
 const qrModalTable = ref<Table | null>(null)
 const allTables = computed(() => [...ctx.openTables, ...ctx.closedTables])
 
+const readyLabel = computed(() => {
+  const n = ctx.totalReadyCount
+
+  return `${pluralize(n, 'блюдо', 'блюда', 'блюд')} ${pluralize(n, 'готово', 'готовы', 'готово')}`
+})
+
 const createTable = async () => {
   const tenantId = ctx.tenantId
 
   if (!tenantId) return
 
+  // D-04: один филиал → берём его id; мультибранч → берём текущий (при саммари кнопка скрыта)
+  const branchId = ctx.branches.length === 1
+    ? ctx.branches[0].id
+    : branchStore.currentBranchId
+
+  // Инвариант: стол всегда принадлежит филиалу. Без выбранного филиала
+  // (тенант без филиалов) — не создаём, чтобы не упереться в NOT NULL.
+  if (!branchId) {
+    warning('Сначала создайте филиал — стол не может существовать без него')
+
+    return
+  }
+
   const n = allTables.value.length + 1
-  const created = await api.tables.add(tenantId, { name: `Стол ${n}` })
+  const created = await api.tables.add(tenantId, { name: `Стол ${n}`, branchId })
 
   if (created) {
     ctx.onTableAdded(created)

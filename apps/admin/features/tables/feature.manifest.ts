@@ -37,6 +37,7 @@ export default defineFeature({
     'shared.data.useRealtimeWatch',
     'shared.plan.useGate',
     'shared.stores.auth',
+    'shared.stores.branch',
     'shared.stores.tenant',
     'shared.utils.alerts',
     'shared.utils.query',

@@ -1,6 +1,6 @@
 import { inject, reactive } from 'vue'
 import type { InjectionKey, Ref, ComputedRef } from 'vue'
-import type { Table, TableCallType, TableCall, KitchenQueueItem, Reservation } from '@fastio/shared'
+import type { Table, TableCallType, TableCall, KitchenQueueItem, Reservation, Branch } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
 
 export type TablesContext = {
@@ -20,6 +20,9 @@ export type TablesContext = {
   callsByTable: ComputedRef<Record<string, TableCall[]>>
   readyDishes: ComputedRef<Record<string, KitchenQueueItem[]>>
   totalReadyCount: ComputedRef<number>
+
+  // Branch-scope (D-04..D-07): создание стола берёт филиал из branches
+  branches: Ref<Branch[]>
 
   // Actions
   toggleOpen: (table: Table) => Promise<void>
