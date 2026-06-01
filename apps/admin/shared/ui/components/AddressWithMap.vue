@@ -44,7 +44,7 @@ import {
   YandexMapMarker,
   createYmapsOptions,
 } from 'vue-yandex-maps'
-// @ts-expect-error — TS не знает про /css side-effect subpath библиотеки
+// /css side-effect subpath библиотеки — Vite резолвит штатно (vue-tsc 3.x типы тоже видит).
 import 'vue-yandex-maps/css'
 import { useRuntimeConfig } from '#imports'
 import { UiText } from '@fastio/ui'

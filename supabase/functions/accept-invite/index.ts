@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { withSentry } from '../_shared/sentry.ts'
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), { ...init, headers: { 'Content-Type': 'application/json' } })
@@ -30,7 +30,7 @@ Deno.serve(withSentry('accept-invite', async (req) => {
     return json({ error: 'token is required' }, { status: 400 })
   }
 
-  const adminSupabase = createClient(
+  const adminSupabase: AdminClient = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
@@ -121,7 +121,12 @@ Deno.serve(withSentry('accept-invite', async (req) => {
   return result
 }))
 
-type AdminClient = ReturnType<typeof createClient>
+// Свободно типизованный клиент: createClient(url,key) без Database-дженерика в
+// supabase-js 2.x возвращает SupabaseClient<any,...>, а ReturnType<typeof createClient>
+// инстанцирует дефолтные дженерики иначе (never/unknown) → несовместимость + rpc
+// без типов. SupabaseClient<any,any,any> делает и присваивание, и .rpc() свободными.
+// deno-lint-ignore no-explicit-any
+type AdminClient = SupabaseClient<any, any, any>
 
 async function acceptForUser(
   adminSupabase: AdminClient,

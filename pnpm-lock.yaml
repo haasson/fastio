@@ -91,6 +91,9 @@ importers:
       vitest:
         specifier: ^4.1.2
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.3.3)(happy-dom@20.8.9)(jsdom@29.1.1)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))
+      vue-tsc:
+        specifier: 3.3.3
+        version: 3.3.3(typescript@5.9.3)
 
   apps/admin:
     dependencies:
@@ -123,7 +126,7 @@ importers:
         version: 0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))
       '@sentry/nuxt':
         specifier: ^10.47.0
-        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
+        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
       '@supabase/supabase-js':
         specifier: ^2.98.0
         version: 2.98.0
@@ -147,7 +150,7 @@ importers:
         version: 14.2.1(vue@3.5.34(typescript@5.9.3))
       '@vueuse/nuxt':
         specifier: ^14.2.1
-        version: 14.2.1(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
+        version: 14.2.1(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
       ai:
         specifier: ^6.0.141
         version: 6.0.141(zod@4.3.6)
@@ -180,7 +183,7 @@ importers:
         version: 2.43.2(vue@3.5.34(typescript@5.9.3))
       nuxt:
         specifier: ^3.21.6
-        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))
@@ -201,7 +204,7 @@ importers:
         version: 0.6.1(@types/sortablejs@1.15.9)
       vue-yandex-maps:
         specifier: ^3.0.3
-        version: 3.0.3(@yandex/ymaps3-cartesian-projection@0.0.6)(@yandex/ymaps3-clusterer@0.0.12)(@yandex/ymaps3-context-menu@0.0.2)(@yandex/ymaps3-default-ui-theme@0.0.24)(@yandex/ymaps3-drawer-control@0.0.2)(@yandex/ymaps3-hint@0.1.2)(@yandex/ymaps3-minimap@0.0.4)(@yandex/ymaps3-resizer@0.0.2)(@yandex/ymaps3-signpost@0.0.2)(@yandex/ymaps3-spinner@0.0.2)(@yandex/ymaps3-types@1.0.18856213(@vue/runtime-core@3.5.34))(@yandex/ymaps3-web-mercator-projection@0.0.5)(@yandex/ymaps3-world-utils@0.0.18856213)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
+        version: 3.0.3(@yandex/ymaps3-cartesian-projection@0.0.6)(@yandex/ymaps3-clusterer@0.0.12)(@yandex/ymaps3-context-menu@0.0.2)(@yandex/ymaps3-default-ui-theme@0.0.24)(@yandex/ymaps3-drawer-control@0.0.2)(@yandex/ymaps3-hint@0.1.2)(@yandex/ymaps3-minimap@0.0.4)(@yandex/ymaps3-resizer@0.0.2)(@yandex/ymaps3-signpost@0.0.2)(@yandex/ymaps3-spinner@0.0.2)(@yandex/ymaps3-types@1.0.18856213(@vue/runtime-core@3.5.34))(@yandex/ymaps3-web-mercator-projection@0.0.5)(@yandex/ymaps3-world-utils@0.0.18856213)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
       vue3-apexcharts:
         specifier: ^1.11.1
         version: 1.11.1(apexcharts@5.10.4)(vue@3.5.34(typescript@5.9.3))
@@ -241,7 +244,7 @@ importers:
         version: 2.43.2(vue@3.5.34(typescript@5.9.3))
       nuxt:
         specifier: ^3.21.6
-        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       vue:
         specifier: 3.5.34
         version: 3.5.34(typescript@5.9.3)
@@ -290,7 +293,7 @@ importers:
         version: 2.43.2(vue@3.5.34(typescript@5.9.3))
       nuxt:
         specifier: ^3.21.6
-        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       vue:
         specifier: 3.5.34
         version: 3.5.34(typescript@5.9.3)
@@ -327,7 +330,7 @@ importers:
         version: 0.575.0(vue@3.5.34(typescript@5.9.3))
       nuxt:
         specifier: ^3.21.6
-        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       vue:
         specifier: 3.5.34
         version: 3.5.34(typescript@5.9.3)
@@ -349,13 +352,13 @@ importers:
         version: link:../../packages/shared
       '@sentry/nuxt':
         specifier: ^10.47.0
-        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
+        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
       '@supabase/supabase-js':
         specifier: ^2.98.0
         version: 2.98.0
       nuxt:
         specifier: ^3.21.6
-        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       undici:
         specifier: ^7.25.0
         version: 7.25.0
@@ -392,7 +395,7 @@ importers:
         version: 0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))
       '@sentry/nuxt':
         specifier: ^10.47.0
-        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
+        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
       '@supabase/ssr':
         specifier: ^0.8.0
         version: 0.8.0(@supabase/supabase-js@2.98.0)
@@ -404,7 +407,7 @@ importers:
         version: 14.2.1(vue@3.5.34(typescript@5.9.3))
       '@vueuse/nuxt':
         specifier: ^14.2.1
-        version: 14.2.1(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
+        version: 14.2.1(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
       embla-carousel-autoplay:
         specifier: ^8.6.0
         version: 8.6.0(embla-carousel@8.6.0)
@@ -428,7 +431,7 @@ importers:
         version: 3.2.0
       nuxt:
         specifier: ^3.21.6
-        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+        version: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       photoswipe:
         specifier: ^5.4.4
         version: 5.4.4
@@ -449,7 +452,7 @@ importers:
         version: 3.5.34(typescript@5.9.3)
       vue-yandex-maps:
         specifier: ^3.0.3
-        version: 3.0.3(@yandex/ymaps3-cartesian-projection@0.0.6)(@yandex/ymaps3-clusterer@0.0.12)(@yandex/ymaps3-context-menu@0.0.2)(@yandex/ymaps3-default-ui-theme@0.0.24)(@yandex/ymaps3-drawer-control@0.0.2)(@yandex/ymaps3-hint@0.1.2)(@yandex/ymaps3-minimap@0.0.4)(@yandex/ymaps3-resizer@0.0.2)(@yandex/ymaps3-signpost@0.0.2)(@yandex/ymaps3-spinner@0.0.2)(@yandex/ymaps3-types@1.0.18856213(@vue/runtime-core@3.5.34))(@yandex/ymaps3-web-mercator-projection@0.0.5)(@yandex/ymaps3-world-utils@0.0.18856213)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
+        version: 3.0.3(@yandex/ymaps3-cartesian-projection@0.0.6)(@yandex/ymaps3-clusterer@0.0.12)(@yandex/ymaps3-context-menu@0.0.2)(@yandex/ymaps3-default-ui-theme@0.0.24)(@yandex/ymaps3-drawer-control@0.0.2)(@yandex/ymaps3-hint@0.1.2)(@yandex/ymaps3-minimap@0.0.4)(@yandex/ymaps3-resizer@0.0.2)(@yandex/ymaps3-signpost@0.0.2)(@yandex/ymaps3-spinner@0.0.2)(@yandex/ymaps3-types@1.0.18856213(@vue/runtime-core@3.5.34))(@yandex/ymaps3-web-mercator-projection@0.0.5)(@yandex/ymaps3-world-utils@0.0.18856213)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -535,7 +538,7 @@ importers:
         version: 9.39.3
       '@sentry/nuxt':
         specifier: ^10.47.0
-        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
+        version: 10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))
       '@stylistic/eslint-plugin':
         specifier: ^5.3.1
         version: 5.9.0(eslint@9.39.3(jiti@2.7.0))
@@ -3379,6 +3382,9 @@ packages:
   '@volar/source-map@2.4.28':
     resolution: {integrity: sha512-yX2BDBqJkRXfKw8my8VarTyjv48QwxdJtvRgUpNE5erCsgEUdI2DsLbpa+rOQVAJYshY99szEcRDmyHbF10ggQ==}
 
+  '@volar/typescript@2.4.28':
+    resolution: {integrity: sha512-Ja6yvWrbis2QtN4ClAKreeUZPVYMARDYZl9LMEv1iQ1QdepB6wn0jTRxA9MftYmYa4DQ4k/DaSZpFPUfxl8giw==}
+
   '@vue-macros/common@3.1.2':
     resolution: {integrity: sha512-h9t4ArDdniO9ekYHAD95t9AZcAbb19lEGK+26iAjUODOIJKmObDNBSe4+6ELQAA3vtYiFPPBtHh7+cQCKi3Dng==}
     engines: {node: '>=20.19.0'}
@@ -3444,6 +3450,9 @@ packages:
 
   '@vue/language-core@3.2.5':
     resolution: {integrity: sha512-d3OIxN/+KRedeM5wQ6H6NIpwS3P5gC9nmyaHgBk+rO6dIsjY+tOh4UlPpiZbAh3YtLdCGEX4M16RmsBqPmJV+g==}
+
+  '@vue/language-core@3.3.3':
+    resolution: {integrity: sha512-X6p+7nfY7vVT6dQwUJ+v0Jfq/lwIfhL2jMi91dQ3ln4hnlGXlxsDu/FNkeyHYgvYtyQy18ZX76IZy7X4diDbiQ==}
 
   '@vue/reactivity@3.5.34':
     resolution: {integrity: sha512-y9XDjCEuBp+98k+UL5dbYkh57AHU4o6cxZedOPXw3bmrZZYLQsVHguGurq7hVrPCSrQtrnz1f9dssyFr+dMXfQ==}
@@ -3592,6 +3601,9 @@ packages:
 
   alien-signals@3.1.2:
     resolution: {integrity: sha512-d9dYqZTS90WLiU0I5c6DHj/HcKkF8ZyGN3G5x8wSbslulz70KOxaqCT0hQCo9KOyhVqzqGojvNdJXoTumZOtcw==}
+
+  alien-signals@3.2.1:
+    resolution: {integrity: sha512-I8FjmltrfnDFoZedi5CG8DghVYNhzb/Ijluz7tCSJH0xpd0484Kowhbb1XDYOxfJpU1p5wnM2X54dA+IfGyD1g==}
 
   ansi-escapes@7.3.0:
     resolution: {integrity: sha512-BvU8nYgGQBxcmMuEeUEmNTvrMVjJNSH7RgW24vXexN4Ven6qCvy4TntnvlnwnMLTVlcRQQdbRY8NKnaIoeWDNg==}
@@ -7312,6 +7324,12 @@ packages:
     peerDependencies:
       vue: 3.5.34
 
+  vue-tsc@3.3.3:
+    resolution: {integrity: sha512-SWUEG7YRUeDJHT7Xsuhf02elYX2gxPzzAII7OxDAh4KNOr4QHQ0Lls0YfnaO5GNd560CwVa2HTfdqmA5MqvRqQ==}
+    hasBin: true
+    peerDependencies:
+      typescript: '>=5.0.0'
+
   vue-yandex-maps@3.0.3:
     resolution: {integrity: sha512-wo2axuy8H87ITtISYFii7vcEydCP8Uw98xFOeX0xccq1axQvPRqn8DfAO6b2/FZCZXrK5DXihjbvpTCinuu+xQ==}
     engines: {node: '>=20'}
@@ -8830,7 +8848,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@nuxt/nitro-server@3.21.6(db0@0.3.4)(ioredis@5.10.1)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(oxc-parser@0.131.0)(typescript@5.9.3)':
+  '@nuxt/nitro-server@3.21.6(db0@0.3.4)(ioredis@5.10.1)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(oxc-parser@0.131.0)(typescript@5.9.3)':
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/kit': 3.21.6(magicast@0.5.2)
@@ -8848,7 +8866,7 @@ snapshots:
       klona: 2.0.6
       mocked-exports: 0.1.1
       nitropack: 2.13.4(oxc-parser@0.131.0)
-      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       ohash: 2.0.11
       pathe: 2.0.3
       pkg-types: 2.3.1
@@ -8922,7 +8940,7 @@ snapshots:
       rc9: 3.0.1
       std-env: 4.1.0
 
-  '@nuxt/vite-builder@3.21.6(@types/node@25.3.3)(eslint@9.39.3(jiti@2.7.0))(magicast@0.5.2)(meow@14.1.0)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(yaml@2.9.0)':
+  '@nuxt/vite-builder@3.21.6(@types/node@25.3.3)(eslint@9.39.3(jiti@2.7.0))(magicast@0.5.2)(meow@14.1.0)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vue-tsc@3.3.3(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))(yaml@2.9.0)':
     dependencies:
       '@nuxt/kit': 3.21.6(magicast@0.5.2)
       '@rollup/plugin-replace': 6.0.3(rollup@4.60.3)
@@ -8941,7 +8959,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.2
       mocked-exports: 0.1.1
-      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       nypm: 0.6.6
       ohash: 2.0.11
       pathe: 2.0.3
@@ -8954,7 +8972,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       vite: 7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0)
       vite-node: 5.3.0(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0)
-      vite-plugin-checker: 0.13.0(eslint@9.39.3(jiti@2.7.0))(meow@14.1.0)(optionator@0.9.4)(stylelint@17.7.0(typescript@5.9.3))(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))
+      vite-plugin-checker: 0.13.0(eslint@9.39.3(jiti@2.7.0))(meow@14.1.0)(optionator@0.9.4)(stylelint@17.7.0(typescript@5.9.3))(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))
       vue: 3.5.34(typescript@5.9.3)
       vue-bundle-renderer: 2.2.0
     optionalDependencies:
@@ -9838,7 +9856,7 @@ snapshots:
       - '@opentelemetry/exporter-trace-otlp-http'
       - supports-color
 
-  '@sentry/nuxt@10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))':
+  '@sentry/nuxt@10.47.0(@opentelemetry/api@1.9.1)(@opentelemetry/context-async-hooks@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.40.0)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(rollup@4.60.3)(vue@3.5.34(typescript@5.9.3))':
     dependencies:
       '@nuxt/kit': 3.21.6(magicast@0.5.2)
       '@sentry/browser': 10.47.0
@@ -9850,7 +9868,7 @@ snapshots:
       '@sentry/vite-plugin': 5.1.1(rollup@4.60.3)
       '@sentry/vue': 10.47.0(pinia@3.0.4(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3)))(vue@3.5.34(typescript@5.9.3))
       local-pkg: 1.1.2
-      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
@@ -10535,6 +10553,12 @@ snapshots:
 
   '@volar/source-map@2.4.28': {}
 
+  '@volar/typescript@2.4.28':
+    dependencies:
+      '@volar/language-core': 2.4.28
+      path-browserify: 1.0.1
+      vscode-uri: 3.1.0
+
   '@vue-macros/common@3.1.2(vue@3.5.34(typescript@5.9.3))':
     dependencies:
       '@vue/compiler-sfc': 3.5.34
@@ -10661,6 +10685,16 @@ snapshots:
       path-browserify: 1.0.1
       picomatch: 4.0.4
 
+  '@vue/language-core@3.3.3':
+    dependencies:
+      '@volar/language-core': 2.4.28
+      '@vue/compiler-dom': 3.5.34
+      '@vue/shared': 3.5.34
+      alien-signals: 3.2.1
+      muggle-string: 0.4.1
+      path-browserify: 1.0.1
+      picomatch: 4.0.4
+
   '@vue/reactivity@3.5.34':
     dependencies:
       '@vue/shared': 3.5.34
@@ -10711,13 +10745,13 @@ snapshots:
 
   '@vueuse/metadata@14.2.1': {}
 
-  '@vueuse/nuxt@14.2.1(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))':
+  '@vueuse/nuxt@14.2.1(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))':
     dependencies:
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
       '@vueuse/core': 14.2.1(vue@3.5.34(typescript@5.9.3))
       '@vueuse/metadata': 14.2.1
       local-pkg: 1.1.2
-      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
       vue: 3.5.34(typescript@5.9.3)
     transitivePeerDependencies:
       - magicast
@@ -10812,6 +10846,8 @@ snapshots:
       require-from-string: 2.0.2
 
   alien-signals@3.1.2: {}
+
+  alien-signals@3.2.1: {}
 
   ansi-escapes@7.3.0:
     dependencies:
@@ -13033,16 +13069,16 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0):
+  nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0):
     dependencies:
       '@dxup/nuxt': 0.4.1(magicast@0.5.2)(typescript@5.9.3)
       '@nuxt/cli': 3.35.2(@nuxt/schema@3.21.6)(cac@6.7.14)(magicast@0.5.2)
       '@nuxt/devtools': 3.2.4(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3))
       '@nuxt/kit': 3.21.6(magicast@0.5.2)
-      '@nuxt/nitro-server': 3.21.6(db0@0.3.4)(ioredis@5.10.1)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(oxc-parser@0.131.0)(typescript@5.9.3)
+      '@nuxt/nitro-server': 3.21.6(db0@0.3.4)(ioredis@5.10.1)(magicast@0.5.2)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(oxc-parser@0.131.0)(typescript@5.9.3)
       '@nuxt/schema': 3.21.6
       '@nuxt/telemetry': 2.8.0(@nuxt/kit@3.21.6(magicast@0.5.2))
-      '@nuxt/vite-builder': 3.21.6(@types/node@25.3.3)(eslint@9.39.3(jiti@2.7.0))(magicast@0.5.2)(meow@14.1.0)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(yaml@2.9.0)
+      '@nuxt/vite-builder': 3.21.6(@types/node@25.3.3)(eslint@9.39.3(jiti@2.7.0))(magicast@0.5.2)(meow@14.1.0)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vue-tsc@3.3.3(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))(yaml@2.9.0)
       '@unhead/vue': 2.1.15(vue@3.5.34(typescript@5.9.3))
       '@vue/shared': 3.5.34
       c12: 3.3.4(magicast@0.5.2)
@@ -14853,7 +14889,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-checker@0.13.0(eslint@9.39.3(jiti@2.7.0))(meow@14.1.0)(optionator@0.9.4)(stylelint@17.7.0(typescript@5.9.3))(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0)):
+  vite-plugin-checker@0.13.0(eslint@9.39.3(jiti@2.7.0))(meow@14.1.0)(optionator@0.9.4)(stylelint@17.7.0(typescript@5.9.3))(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3)):
     dependencies:
       '@babel/code-frame': 7.29.0
       chokidar: 4.0.3
@@ -14871,6 +14907,7 @@ snapshots:
       optionator: 0.9.4
       stylelint: 17.7.0(typescript@5.9.3)
       typescript: 5.9.3
+      vue-tsc: 3.3.3(typescript@5.9.3)
 
   vite-plugin-inspect@11.3.3(@nuxt/kit@4.4.5(magicast@0.5.2))(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0)):
     dependencies:
@@ -15005,7 +15042,13 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.34(typescript@5.9.3)
 
-  vue-yandex-maps@3.0.3(@yandex/ymaps3-cartesian-projection@0.0.6)(@yandex/ymaps3-clusterer@0.0.12)(@yandex/ymaps3-context-menu@0.0.2)(@yandex/ymaps3-default-ui-theme@0.0.24)(@yandex/ymaps3-drawer-control@0.0.2)(@yandex/ymaps3-hint@0.1.2)(@yandex/ymaps3-minimap@0.0.4)(@yandex/ymaps3-resizer@0.0.2)(@yandex/ymaps3-signpost@0.0.2)(@yandex/ymaps3-spinner@0.0.2)(@yandex/ymaps3-types@1.0.18856213(@vue/runtime-core@3.5.34))(@yandex/ymaps3-web-mercator-projection@0.0.5)(@yandex/ymaps3-world-utils@0.0.18856213)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3)):
+  vue-tsc@3.3.3(typescript@5.9.3):
+    dependencies:
+      '@volar/typescript': 2.4.28
+      '@vue/language-core': 3.3.3
+      typescript: 5.9.3
+
+  vue-yandex-maps@3.0.3(@yandex/ymaps3-cartesian-projection@0.0.6)(@yandex/ymaps3-clusterer@0.0.12)(@yandex/ymaps3-context-menu@0.0.2)(@yandex/ymaps3-default-ui-theme@0.0.24)(@yandex/ymaps3-drawer-control@0.0.2)(@yandex/ymaps3-hint@0.1.2)(@yandex/ymaps3-minimap@0.0.4)(@yandex/ymaps3-resizer@0.0.2)(@yandex/ymaps3-signpost@0.0.2)(@yandex/ymaps3-spinner@0.0.2)(@yandex/ymaps3-types@1.0.18856213(@vue/runtime-core@3.5.34))(@yandex/ymaps3-web-mercator-projection@0.0.5)(@yandex/ymaps3-world-utils@0.0.18856213)(nuxt@3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0))(vue@3.5.34(typescript@5.9.3)):
     dependencies:
       '@yandex/ymaps3-cartesian-projection': 0.0.6
       '@yandex/ymaps3-clusterer': 0.0.12
@@ -15022,7 +15065,7 @@ snapshots:
       '@yandex/ymaps3-world-utils': 0.0.18856213
       vue: 3.5.34(typescript@5.9.3)
     optionalDependencies:
-      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(yaml@2.9.0)
+      nuxt: 3.21.6(@parcel/watcher@2.5.6)(@types/node@25.3.3)(@vue/compiler-sfc@3.5.34)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.3(jiti@2.7.0))(ioredis@5.10.1)(magicast@0.5.2)(meow@14.1.0)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.60.3))(rollup@4.60.3)(sass@1.97.3)(stylelint@17.7.0(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.3(@types/node@25.3.3)(jiti@2.7.0)(sass@1.97.3)(terser@5.46.0)(yaml@2.9.0))(vue-tsc@3.3.3(typescript@5.9.3))(yaml@2.9.0)
 
   vue3-apexcharts@1.11.1(apexcharts@5.10.4)(vue@3.5.34(typescript@5.9.3)):
     dependencies:

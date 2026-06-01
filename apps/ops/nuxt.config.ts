@@ -17,18 +17,18 @@ export default defineNuxtConfig({
   // если в Wave 2 кому-то понадобится.
 
   runtimeConfig: {
-    supabaseServiceRoleKey: '',     // NUXT_SUPABASE_SERVICE_ROLE_KEY
-    internalApiSecret: '',          // NUXT_INTERNAL_API_SECRET — для requireInternalSecret()
-    reminderCronSecret: '',         // NUXT_REMINDER_CRON_SECRET — для send-appointment-reminders
-    telegramTenantBotToken: '',     // NUXT_TELEGRAM_TENANT_BOT_TOKEN — notify, notify-reservation, notify-appointment-group, notify-table-call
-    telegramClientBotToken: '',     // NUXT_TELEGRAM_CLIENT_BOT_TOKEN — send-appointment-reminders
-    telegramOpsBotToken: '',        // NUXT_TELEGRAM_OPS_BOT_TOKEN — notify-alert
-    telegramAlertChatId: '',        // NUXT_TELEGRAM_ALERT_CHAT_ID — chat id для notify-alert
-    telegramProxyUrl: '',           // NUXT_TELEGRAM_PROXY_URL — sing-box HTTP proxy для RKN bypass
-    adminUrl: '',                   // NUXT_ADMIN_URL — для inline-кнопок "Позвонить" в notify хендлерах
-    relaySecret: '',                // NUXT_RELAY_SECRET — для requireRelaySecret() (PREPROD-212 defense-in-depth)
+    supabaseServiceRoleKey: '', // NUXT_SUPABASE_SERVICE_ROLE_KEY
+    internalApiSecret: '', // NUXT_INTERNAL_API_SECRET — для requireInternalSecret()
+    reminderCronSecret: '', // NUXT_REMINDER_CRON_SECRET — для send-appointment-reminders
+    telegramTenantBotToken: '', // NUXT_TELEGRAM_TENANT_BOT_TOKEN — notify, notify-reservation, notify-appointment-group, notify-table-call
+    telegramClientBotToken: '', // NUXT_TELEGRAM_CLIENT_BOT_TOKEN — send-appointment-reminders
+    telegramOpsBotToken: '', // NUXT_TELEGRAM_OPS_BOT_TOKEN — notify-alert
+    telegramAlertChatId: '', // NUXT_TELEGRAM_ALERT_CHAT_ID — chat id для notify-alert
+    telegramProxyUrl: '', // NUXT_TELEGRAM_PROXY_URL — sing-box HTTP proxy для RKN bypass
+    adminUrl: '', // NUXT_ADMIN_URL — для inline-кнопок "Позвонить" в notify хендлерах
+    relaySecret: '', // NUXT_RELAY_SECRET — для requireRelaySecret() (PREPROD-212 defense-in-depth)
     public: {
-      supabaseUrl: '',              // NUXT_PUBLIC_SUPABASE_URL — используется в utils/supabase.ts
+      supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL — используется в utils/supabase.ts
     },
   },
 })
