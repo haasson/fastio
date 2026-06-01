@@ -140,13 +140,41 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # lhci мерит ЛОКАЛЬНО собранный storefront (а не прод demo.fastio.ru, который
+      # к тому же отдавал 503) — это и есть PR-регресс-гейт. Поднимаем бэкенд как в
+      # e2e: supabase + seed + env + host-резолв, lighthouserc сам стартует nuxt preview.
+      - name: setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: start Supabase
+        run: supabase start
+
+      - name: export local Supabase env for storefront
+        run: |
+          ST=$(supabase status -o json)
+          {
+            echo "NUXT_PUBLIC_SUPABASE_URL=$(echo "$ST" | jq -r '.API_URL')"
+            echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=$(echo "$ST" | jq -r '.ANON_KEY')"
+            echo "NUXT_SUPABASE_SERVICE_ROLE_KEY=$(echo "$ST" | jq -r '.SERVICE_ROLE_KEY')"
+          } >> "$GITHUB_ENV"
+
+      - name: apply E2E seed
+        run: |
+          docker cp supabase/seed/e2e-ci.sql supabase_db_fastio:/tmp/seed.sql
+          docker exec supabase_db_fastio psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/seed.sql
+
+      - name: map tenant subdomain to localhost
+        # *.localhost не резолвится автоматически на ubuntu-раннере (см. e2e).
+        run: echo "127.0.0.1 demo.localhost" | sudo tee -a /etc/hosts
+
       - name: build storefront
         run: pnpm build --filter storefront
-        env:
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: run LHCI
+        # lighthouserc.json: startServerCommand поднимает nuxt preview собранного
+        # storefront на :4711, url = http://demo.localhost:4711/.
         run: npx @lhci/cli@0.14.0 autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

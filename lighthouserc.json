@@ -1,7 +1,10 @@
 {
   "ci": {
     "collect": {
-      "url": ["https://demo.fastio.ru/"],
+      "startServerCommand": "PORT=4711 pnpm --filter storefront exec nuxt preview",
+      "startServerReadyPattern": "Listening on",
+      "startServerReadyTimeout": 60000,
+      "url": ["http://demo.localhost:4711/"],
       "numberOfRuns": 5,
       "settings": {
         "preset": "mobile",
