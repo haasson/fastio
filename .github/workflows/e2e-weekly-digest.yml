@@ -73,10 +73,7 @@ jobs:
             fails_list=$(echo "$summary" | jq -r '.fails[] | "  • \(.d) \(.c) — \(.u)"')
             [ -n "$fails_list" ] && fails_block=$'\n<b>Провалы:</b>\n'"$fails_list" || fails_block=""
 
-            TEXT="📊 <b>FastIO E2E — недельный дайджест</b>
-Период: последние 7 дней (ночные прогоны)
-Прогонов: <b>${total}</b>  ✅ ${ok}  ❌ ${fail}  →  ${verdict}
-⏱ Длительность: avg $(fmt "$avg") · min $(fmt "$min") · max $(fmt "$max")${anomaly}${fails_block}"
+            TEXT="📊 <b>FastIO E2E — недельный дайджест</b>"$'\n'"Период: последние 7 дней (ночные прогоны)"$'\n'"Прогонов: <b>${total}</b>  ✅ ${ok}  ❌ ${fail}  →  ${verdict}"$'\n'"⏱ Длительность: avg $(fmt "$avg") · min $(fmt "$min") · max $(fmt "$max")${anomaly}${fails_block}"
           fi
 
           curl -sS --max-time 15 \

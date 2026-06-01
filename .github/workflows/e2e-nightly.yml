@@ -114,10 +114,7 @@ jobs:
           [ -z "${TELEGRAM_CHAT_ID:-}" ] && exit 0
           DUR=$(( $(date +%s) - ${RUN_START:-0} ))
           DUR_FMT=$(printf '%dm%02ds' $(( DUR / 60 )) $(( DUR % 60 )))
-          TEXT="<b>FastIO E2E nightly: FAIL ❌</b>
-ветка <code>${REF}</code> · <code>${SHA:0:7}</code>
-⏱ ${DUR_FMT}
-${RUN_URL}"
+          TEXT="<b>FastIO E2E nightly: FAIL ❌</b>"$'\n'"ветка <code>${REF}</code> · <code>${SHA:0:7}</code>"$'\n'"⏱ ${DUR_FMT}"$'\n'"${RUN_URL}"
           curl -sS --max-time 15 \
             -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
