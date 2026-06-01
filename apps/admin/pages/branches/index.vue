@@ -146,10 +146,11 @@ const handleArchive = async (branch: Branch) => {
   // Любая активная сущность блокирует архивацию с понятным сообщением — иначе
   // запись «исчезает» из админ-фильтров (where archived_at IS NULL), клиент
   // придёт, его не ждут. См. PREPROD-020.
-  const [hasOrders, hasReservations, hasAppointments] = await Promise.all([
+  const [hasOrders, hasReservations, hasAppointments, hasTables] = await Promise.all([
     api.branches.hasActiveOrders(branch.id, tenantId.value),
     api.branches.hasActiveReservations(branch.id, tenantId.value),
     api.branches.hasActiveAppointments(branch.id, tenantId.value),
+    api.branches.hasTables(branch.id),
   ])
 
   if (hasOrders) {
@@ -178,6 +179,17 @@ const handleArchive = async (branch: Branch) => {
     await confirm({
       title: 'Нельзя архивировать филиал',
       message: `У филиала «${branch.name}» есть активные записи на услуги. Перенесите их в другой филиал или отмените, а затем попробуйте снова.`,
+      confirmText: false,
+      cancelText: 'Понятно',
+    })
+
+    return
+  }
+
+  if (hasTables) {
+    await confirm({
+      title: 'Нельзя архивировать филиал',
+      message: `У филиала «${branch.name}» есть столы. Перенесите или удалите их, а затем попробуйте снова.`,
       confirmText: false,
       cancelText: 'Понятно',
     })

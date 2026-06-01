@@ -237,6 +237,38 @@ describe('branchesApi.hasActiveAppointments', () => {
   })
 })
 
+describe('branchesApi.hasTables', () => {
+  beforeEach(() => {
+    reportErrorMock.mockReset()
+  })
+
+  it('count > 0 → true (есть активные столы у филиала)', async () => {
+    const sb = makeSb({ count: 3, error: null }, {})
+    const result = await branchesApi.hasTables(sb, 'branch-1')
+
+    expect(result).toBe(true)
+  })
+
+  it('count = 0 → false (активных столов нет)', async () => {
+    const sb = makeSb({ count: 0, error: null }, {})
+    const result = await branchesApi.hasTables(sb, 'branch-1')
+
+    expect(result).toBe(false)
+  })
+
+  it('error от Supabase → reportError + fail-safe true (блокируем архивацию)', async () => {
+    const sb = makeSb({ count: null, error: { message: 'rls violation' } }, {})
+    const result = await branchesApi.hasTables(sb, 'branch-1')
+
+    expect(result).toBe(true) // fail-safe — блокируем архивацию при ошибке
+    expect(reportErrorMock).toHaveBeenCalledOnce()
+    expect(reportErrorMock.mock.calls[0][1]).toMatchObject({
+      context: 'branches.hasTables',
+      branchId: 'branch-1',
+    })
+  })
+})
+
 describe('branchesApi.hasActiveOrders', () => {
   beforeEach(() => {
     reportErrorMock.mockReset()

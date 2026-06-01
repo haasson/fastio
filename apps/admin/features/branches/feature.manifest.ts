@@ -17,13 +17,7 @@ export default defineFeature({
   ],
 
   db: {
-    tables: [
-      'branches',
-      'order_statuses',
-      'orders',
-      'reservations',
-      'appointments',
-    ],
+    tables: ['appointments', 'branches', 'order_statuses', 'orders', 'reservations', 'tables'],
     // useBranches/useBranch также читают `orders` и `order_statuses` для счётчиков по филиалу.
     // `reservations`/`appointments` читаются в hasActiveReservations/hasActiveAppointments
     // — guard от архивации филиала с активными бронями/записями (PREPROD-020).

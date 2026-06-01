@@ -233,4 +233,32 @@ export const branchesApi = {
 
     return (count ?? 0) > 0
   },
+
+  /**
+   * Есть ли активные столы у этого филиала. Используется как guard при архивации:
+   * архивация — это soft-update (archived_at = now()), который скрывает филиал из
+   * активного набора (resolveDelivery фильтрует is_active + archived_at IS NULL).
+   * Стол сохранит branch_id, но укажет на «исчезнувший» из рантайма филиал, и
+   * dine-in заказы перестанут маршрутизироваться. FK ON DELETE RESTRICT защищает от
+   * hard-delete; этот guard — от soft-archive.
+   *
+   * Fail-safe: при ошибке возвращаем true — блокируем архивацию (парность с
+   * hasActiveReservations/hasActiveAppointments, см. PREPROD-020).
+   */
+  async hasTables(sb: SupabaseClient, branchId: string): Promise<boolean> {
+    const { count, error } = await sb
+      .from('tables')
+      .select('id', { count: 'exact', head: true })
+      .eq('branch_id', branchId)
+      .eq('is_active', true)
+
+    if (error) {
+      reportError(error, { context: 'branches.hasTables', branchId })
+
+      // Fail-safe: блокируем архивацию при ошибке (парность с hasActiveReservations).
+      return true
+    }
+
+    return (count ?? 0) > 0
+  },
 }
