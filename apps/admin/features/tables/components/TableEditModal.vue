@@ -1,12 +1,12 @@
 <template>
   <UiModal
     :model-value="modelValue"
-    :title="table?.name ?? 'Стол'"
+    :title="isNew ? 'Новый стол' : (table?.name ?? 'Стол')"
     :width="480"
     :loading="saving"
     :actions="[
       { text: 'Отмена', type: 'default', actionType: 'decline' },
-      { text: 'Сохранить', type: 'primary', actionType: 'confirm', loading: saving },
+      { text: isNew ? 'Создать' : 'Сохранить', type: 'primary', actionType: 'confirm', loading: saving },
     ]"
     :on-confirm="handleSave"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -65,33 +65,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { NSwitch } from 'naive-ui'
-import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiText, UiSegmentedControl, useMessage } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiText, UiSegmentedControl } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Table, TableShape } from '@fastio/shared'
-import { useDatabase } from '~/shared/data/useDatabase'
-import { useAuditLog } from '~/features/audit-log'
+
+// Полезная нагрузка формы стола. Модалка — тупая: собирает значения и эмитит
+// их наверх, сама в БД/audit не лезет. Создание/обновление/удаление и тосты —
+// на родителе (list.vue). Так «Отмена» гарантированно ничего не пишет.
+export type TableFormPayload = {
+  name: string
+  capacity: number | null
+  notes: string | null
+  shape: TableShape
+  isActive: boolean
+}
 
 const props = defineProps<{
   modelValue: boolean
   table: Table | null
   isNew?: boolean
+  defaultName?: string
+  saving?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'updated': [table: Table]
-  'deleted': [id: string]
+  'submit': [payload: TableFormPayload]
+  'delete': [id: string]
 }>()
 
-const api = useDatabase()
 const formRef = ref<InstanceType<typeof UiForm> | null>(null)
-const { success } = useMessage()
 const { confirm } = useConfirm()
-const { log } = useAuditLog()
-
-const saving = ref(false)
 
 const shapeOptions = [
   { label: 'Прямоугольный', value: 'rectangle' },
@@ -109,45 +115,40 @@ const form = reactive({
 watch(
   () => props.modelValue,
   (open) => {
-    if (open && props.table) {
+    if (!open) return
+
+    if (props.table) {
       form.name = props.table.name
       form.capacity = props.table.capacity
       form.notes = props.table.notes ?? ''
       form.shape = props.table.shape
       form.isActive = props.table.isActive
+    } else {
+      // create-mode: чистый драфт, ничего не персистится до «Создать»
+      form.name = props.defaultName ?? ''
+      form.capacity = null
+      form.notes = ''
+      form.shape = 'rectangle'
+      form.isActive = true
     }
   },
 )
 
-const handleSave = async () => {
-  if (!props.table) return
-  if (!formRef.value?.validate()) return
+// Возвращаем false → UiModal остаётся открытой. Закрывает родитель после
+// успешной персистентности (editModalOpen = false), поэтому при ошибке create
+// форма не схлопывается и введённое не теряется.
+const handleSave = (): boolean => {
+  if (!formRef.value?.validate()) return false
 
-  const trimmedName = form.name.trim()
+  emit('submit', {
+    name: form.name.trim(),
+    capacity: form.capacity,
+    notes: form.notes || null,
+    shape: form.shape,
+    isActive: form.isActive,
+  })
 
-  saving.value = true
-  try {
-    const [updated] = await Promise.all([
-      api.tables.updateMeta(props.table.id, {
-        name: trimmedName,
-        capacity: form.capacity,
-        notes: form.notes || null,
-        shape: form.shape,
-      }),
-      form.isActive !== props.table.isActive
-        ? api.tables.setActive(props.table.id, form.isActive)
-        : null,
-    ])
-
-    if (updated) {
-      emit('updated', { ...updated, isActive: form.isActive })
-      success('Стол обновлён')
-    }
-
-    emit('update:modelValue', false)
-  } finally {
-    saving.value = false
-  }
+  return false
 }
 
 const handleDelete = async () => {
@@ -162,17 +163,7 @@ const handleDelete = async () => {
 
   if (!ok) return
 
-  await api.tables.archive(props.table.id)
-  log({
-    action: 'table.delete',
-    entityType: 'table',
-    entityId: props.table.id,
-    entityName: props.table.name,
-    payload: { capacity: props.table.capacity, shape: props.table.shape },
-  })
-  emit('deleted', props.table.id)
-  emit('update:modelValue', false)
-  success('Стол удалён')
+  emit('delete', props.table.id)
 }
 
 </script>

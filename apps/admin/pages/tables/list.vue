@@ -76,8 +76,10 @@
       v-model="editModalOpen"
       :table="editModalTable"
       :is-new="editModalIsNew"
-      @updated="ctx.onTableUpdated"
-      @deleted="ctx.onTableDeleted"
+      :default-name="editDefaultName"
+      :saving="modalSaving"
+      @submit="onModalSubmit"
+      @delete="onModalDelete"
     />
 
     <TableQrModal
@@ -93,13 +95,15 @@ import { ref, computed } from 'vue'
 import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag, useMessage } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTablesContext, useAddDishToTable } from '~/features/tables'
 import { useGate } from '~/shared/plan/useGate'
 import { useBranchStore } from '~/shared/stores/branch'
+import { useAuditLog } from '~/features/audit-log'
 import DishPickerModal from '~/features/menu/components/DishPickerModal.vue'
 import TableCard from '~/features/tables/components/TableCard.vue'
-import TableEditModal from '~/features/tables/components/TableEditModal.vue'
+import TableEditModal, { type TableFormPayload } from '~/features/tables/components/TableEditModal.vue'
 import TableQrModal from '~/features/tables/components/TableQrModal.vue'
 
 const ctx = useTablesContext()
@@ -107,7 +111,8 @@ const ctx = useTablesContext()
 const api = useDatabase()
 const gate = useGate()
 const branchStore = useBranchStore()
-const { warning } = useMessage()
+const { success, warning } = useMessage()
+const { log } = useAuditLog()
 const canManageTables = computed(() => gate.manageTables.value.enabled)
 
 const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId)
@@ -115,6 +120,8 @@ const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx
 const editModalOpen = ref(false)
 const editModalTable = ref<Table | null>(null)
 const editModalIsNew = ref(false)
+const editModalBranchId = ref<string | null>(null)
+const modalSaving = ref(false)
 
 const qrModalOpen = ref(false)
 const qrModalTable = ref<Table | null>(null)
@@ -126,7 +133,11 @@ const readyLabel = computed(() => {
   return `${pluralize(n, 'блюдо', 'блюда', 'блюд')} ${pluralize(n, 'готово', 'готовы', 'готово')}`
 })
 
-const createTable = async () => {
+const editDefaultName = computed(() => `Стол ${allTables.value.length + 1}`)
+
+// Открываем модалку в режиме создания БЕЗ записи в БД. Реальный insert — только
+// по «Создать» (onModalSubmit). «Отмена» ничего не персистит.
+const createTable = () => {
   const tenantId = ctx.tenantId
 
   if (!tenantId) return
@@ -144,14 +155,93 @@ const createTable = async () => {
     return
   }
 
-  const n = allTables.value.length + 1
-  const created = await api.tables.add(tenantId, { name: `Стол ${n}`, branchId })
+  editModalTable.value = null
+  editModalIsNew.value = true
+  editModalBranchId.value = branchId
+  editModalOpen.value = true
+}
 
-  if (created) {
-    ctx.onTableAdded(created)
-    editModalTable.value = created
-    editModalIsNew.value = true
-    editModalOpen.value = true
+const onModalSubmit = async (payload: TableFormPayload) => {
+  const tenantId = ctx.tenantId
+
+  if (!tenantId) return
+
+  modalSaving.value = true
+  try {
+    if (editModalIsNew.value) {
+      const branchId = editModalBranchId.value
+
+      if (!branchId) {
+        warning('Сначала создайте филиал — стол не может существовать без него')
+
+        return
+      }
+
+      const created = await api.tables.add(tenantId, {
+        name: payload.name,
+        branchId,
+        capacity: payload.capacity,
+        notes: payload.notes,
+        shape: payload.shape,
+      })
+
+      if (created) {
+        ctx.onTableAdded(created)
+        success('Стол создан')
+        editModalOpen.value = false
+      }
+    } else {
+      const table = editModalTable.value
+
+      if (!table) return
+
+      const [updated] = await Promise.all([
+        api.tables.updateMeta(table.id, {
+          name: payload.name,
+          capacity: payload.capacity,
+          notes: payload.notes,
+          shape: payload.shape,
+        }),
+        payload.isActive !== table.isActive
+          ? api.tables.setActive(table.id, payload.isActive)
+          : null,
+      ])
+
+      if (updated) {
+        ctx.onTableUpdated({ ...updated, isActive: payload.isActive })
+        success('Стол обновлён')
+        editModalOpen.value = false
+      }
+    }
+  } catch (error) {
+    reportError(error, { context: 'tables.list.onModalSubmit', tenantId })
+    warning('Не удалось сохранить стол')
+  } finally {
+    modalSaving.value = false
+  }
+}
+
+const onModalDelete = async (id: string) => {
+  const table = editModalTable.value
+
+  modalSaving.value = true
+  try {
+    await api.tables.archive(id)
+    log({
+      action: 'table.delete',
+      entityType: 'table',
+      entityId: id,
+      entityName: table?.name ?? '',
+      payload: { capacity: table?.capacity, shape: table?.shape },
+    })
+    ctx.onTableDeleted(id)
+    success('Стол удалён')
+    editModalOpen.value = false
+  } catch (error) {
+    reportError(error, { context: 'tables.list.onModalDelete' })
+    warning('Не удалось удалить стол')
+  } finally {
+    modalSaving.value = false
   }
 }
 
