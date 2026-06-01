@@ -11,7 +11,6 @@
       <ClientOnly>
         <div v-if="tableStore.tableId" class="table-header-actions">
           <CallWaiterButton :table-id="tableStore.tableId" />
-          <span v-if="tableStore.tableName" class="table-badge">{{ tableStore.tableName }}</span>
         </div>
       </ClientOnly>
     </header>
@@ -54,7 +53,9 @@ const tenantName = computed(() => tenant.value?.name ?? '')
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  height: var(--header-height);
+  padding: 0 16px;
+  box-sizing: border-box;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg);
   position: sticky;
@@ -62,34 +63,32 @@ const tenantName = computed(() => tenant.value?.name ?? '')
   z-index: var(--z-header);
 
   @include md {
-    padding: 16px 24px;
+    padding: 0 24px;
   }
 }
 
 .logo {
   height: 32px;
   width: auto;
+  flex-shrink: 0;
   object-fit: contain;
 }
 
 .tenant-name {
   @include text-body(600);
+
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .table-header-actions {
   margin-left: auto;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.table-badge {
-  padding: 4px 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  @include text-body-sm(600);
-  white-space: nowrap;
 }
 
 .sticky-category-bar {
