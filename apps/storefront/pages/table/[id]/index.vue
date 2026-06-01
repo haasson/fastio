@@ -17,94 +17,89 @@
 
     <MenuSection default-view="dishes" :table-mode="true" @table-order="onTableOrder" />
 
-    <SfFab
-      :visible="fabVisible"
-      :count="fabCount"
-      label="Заказ"
-      :price="formatPrice(fabTotal)"
-      @click="checkOpen = true"
-    >
-      <template #icon>
-        <ClipboardList :size="24" />
-      </template>
-    </SfFab>
+    <TableOrderBar
+      :check-count="tableStore.checkItems.length"
+      :check-total="tableStore.checkTotal"
+      :draft-count="tableStore.draftCount"
+      :draft-total="tableStore.draftTotal"
+      @open-check="checkOpen = true"
+      @open-draft="draftOpen = true"
+    />
+
+    <!-- Резерв под фиксированную нижнюю полосу, чтобы не перекрывала последние блюда -->
+    <div v-if="barVisible" class="bar-spacer" aria-hidden="true" />
   </template>
 
-  <!-- Bottom sheet: новый заказ (драфт) + уже отправленный чек -->
-  <FsDrawer v-model="checkOpen" title="Ваш заказ">
-    <div v-if="!tableStore.draftItems.length && !tableStore.checkItems.length" class="check-empty">
-      <FsText color="secondary">Вы пока ничего не выбрали</FsText>
+  <!-- Шторка «Заказ»: редактируемый драфт + подтверждение -->
+  <FsDrawer v-model="draftOpen" title="Заказ">
+    <div v-if="!tableStore.draftItems.length" class="check-empty">
+      <FsText color="secondary">Корзина пуста — выберите блюда в меню</FsText>
     </div>
 
-    <div v-else class="check-sections">
-      <!-- Новый заказ: редактируемый драфт, ещё не отправлен на кухню -->
-      <div v-if="tableStore.draftItems.length" class="check-section">
-        <FsText variant="body-sm" color="secondary" class="section-label">Новый заказ</FsText>
-        <div class="items-list">
-          <TableDraftItem
-            v-for="item in tableStore.draftItems"
-            :key="item._key"
-            :item="item"
-            @inc="tableStore.updateDraftQty(item._key, item.quantity + 1)"
-            @dec="tableStore.updateDraftQty(item._key, item.quantity - 1)"
-            @remove="tableStore.removeDraftItem(item._key)"
-          />
-        </div>
-      </div>
-
-      <!-- Уже заказано: read-only, по статусам с кухни -->
-      <template v-if="tableStore.checkItems.length">
-        <FsText
-          v-if="tableStore.draftItems.length"
-          variant="body-sm"
-          color="secondary"
-          class="section-label section-label-group"
-        >
-          Уже заказано
-        </FsText>
-
-        <div v-if="pendingItems.length" class="check-section">
-          <FsText variant="caption" color="secondary" class="section-label">Ожидают подтверждения</FsText>
-          <div class="items-list">
-            <TableCheckItem v-for="item in pendingItems" :key="item.id" :item="item" status-color="warning" />
-          </div>
-        </div>
-
-        <div v-if="cookingItems.length" class="check-section">
-          <FsText variant="caption" color="secondary" class="section-label">Готовится</FsText>
-          <div class="items-list">
-            <TableCheckItem v-for="item in cookingItems" :key="item.id" :item="item" status-color="info" />
-          </div>
-        </div>
-
-        <div v-if="readyItems.length" class="check-section">
-          <FsText variant="caption" color="secondary" class="section-label">Готово</FsText>
-          <div class="items-list">
-            <TableCheckItem v-for="item in readyItems" :key="item.id" :item="item" status-color="success" />
-          </div>
-        </div>
-      </template>
+    <div v-else class="items-list">
+      <TableDraftItem
+        v-for="item in tableStore.draftItems"
+        :key="item._key"
+        :item="item"
+        @inc="tableStore.updateDraftQty(item._key, item.quantity + 1)"
+        @dec="tableStore.updateDraftQty(item._key, item.quantity - 1)"
+        @remove="tableStore.removeDraftItem(item._key)"
+      />
     </div>
 
-    <template v-if="tableStore.draftItems.length || tableStore.checkItems.length" #footer>
+    <template v-if="tableStore.draftItems.length" #footer>
       <div class="check-footer">
-        <div v-if="tableStore.draftItems.length" class="check-total">
-          <FsText variant="body" :weight="600">К отправке</FsText>
+        <div class="check-total">
+          <FsText variant="body" :weight="600">Итого</FsText>
           <FsText variant="body" :weight="600">{{ formatPrice(tableStore.draftTotal) }}</FsText>
         </div>
-        <div v-else class="check-total">
-          <FsText variant="body" :weight="600">Итого заказано</FsText>
-          <FsText variant="body" :weight="600">{{ formatPrice(tableStore.checkTotal) }}</FsText>
-        </div>
         <FsButton
-          v-if="tableStore.draftItems.length"
           variant="primary"
           :loading="sending"
           responsive
           @click="submitDraft"
         >
-          Отправить заказ
+          Подтвердить заказ
         </FsButton>
+      </div>
+    </template>
+  </FsDrawer>
+
+  <!-- Шторка «Счёт»: отправленное по статусам, read-only -->
+  <FsDrawer v-model="checkOpen" title="Счёт">
+    <div v-if="!tableStore.checkItems.length" class="check-empty">
+      <FsText color="secondary">Вы пока ничего не заказали</FsText>
+    </div>
+
+    <div v-else class="check-sections">
+      <div v-if="pendingItems.length" class="check-section">
+        <FsText variant="caption" color="secondary" class="section-label">Ожидают подтверждения</FsText>
+        <div class="items-list">
+          <TableCheckItem v-for="item in pendingItems" :key="item.id" :item="item" status-color="warning" />
+        </div>
+      </div>
+
+      <div v-if="cookingItems.length" class="check-section">
+        <FsText variant="caption" color="secondary" class="section-label">Готовится</FsText>
+        <div class="items-list">
+          <TableCheckItem v-for="item in cookingItems" :key="item.id" :item="item" status-color="info" />
+        </div>
+      </div>
+
+      <div v-if="readyItems.length" class="check-section">
+        <FsText variant="caption" color="secondary" class="section-label">Готово</FsText>
+        <div class="items-list">
+          <TableCheckItem v-for="item in readyItems" :key="item.id" :item="item" status-color="success" />
+        </div>
+      </div>
+    </div>
+
+    <template v-if="tableStore.checkItems.length" #footer>
+      <div class="check-footer">
+        <div class="check-total">
+          <FsText variant="body" :weight="600">Итого заказано</FsText>
+          <FsText variant="body" :weight="600">{{ formatPrice(tableStore.checkTotal) }}</FsText>
+        </div>
       </div>
     </template>
   </FsDrawer>
@@ -121,8 +116,7 @@ import { useTableStore, useTableRealtime, type CheckItem } from '~/features/tabl
 import { useToast } from '~/shared/composables/useToast'
 import { isDishItem, type CartItem, type DishCartItem } from '~/features/cart'
 import { reportError } from '@fastio/shared/observability'
-import { ClipboardList } from 'lucide-vue-next'
-import SfFab from '~/shared/ui/sf/domain/SfFab.vue'
+import TableOrderBar from '~/features/table-mode/components/TableOrderBar.vue'
 import TableCheckItem from '~/features/table-mode/components/TableCheckItem.vue'
 import TableDraftItem from '~/features/table-mode/components/TableDraftItem.vue'
 import MenuSection from '~/features/menu-catalog/components/MenuSection.vue'
@@ -141,6 +135,7 @@ const tableId = route.params.id as string
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
 
 const checkOpen = ref(false)
+const draftOpen = ref(false)
 const sending = ref(false)
 
 // Idempotency ключ заказа. Один ключ на «логическую» отправку: при ретрае ПОСЛЕ
@@ -193,6 +188,9 @@ const readyItems = computed(() =>
   ),
 )
 
+// Нижняя полоса заказа фиксирована — резервируем место, чтобы не перекрывала меню.
+const barVisible = computed(() => tableStore.checkItems.length > 0 || tableStore.draftCount > 0)
+
 // Загружаем текущий чек
 const removedItems = ref<CheckItem[]>([])
 
@@ -221,25 +219,14 @@ onMounted(() => loadCheck())
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 useTableRealtime(tenant.value?.id ?? '', loadCheck)
 
-// FAB виден когда есть что показать (драфт ИЛИ отправленный чек).
-// Счётчик/сумма показывают то, что гость сейчас собирает (драфт); если драфт
-// пуст — fallback на отправленный чек.
-const fabVisible = computed(() => tableStore.draftCount > 0 || tableStore.itemCount > 0)
-const fabCount = computed(() =>
-  tableStore.draftCount > 0 ? tableStore.draftCount : tableStore.itemCount,
-)
-const fabTotal = computed(() =>
-  tableStore.draftCount > 0 ? tableStore.draftTotal : tableStore.checkTotal,
-)
-
 // Тап блюда → копим в локальном драфте (без POST). Отправка — batch'ем по кнопке.
+// Тост на каждый тап не нужен: нижняя полоса заказа сама растёт — это и есть фидбек.
 function onTableOrder(item: CartItem) {
   if (!isDishItem(item)) {
     reportError(new Error(`[table/[id]] expected dish item, got kind=${item.kind}`))
     return
   }
   tableStore.addDraftItem(item)
-  showSuccess(`${item.dishName} — добавлено в заказ`)
 }
 
 // Любое изменение состава драфта = новая «логическая» отправка → сбрасываем ключ.
@@ -350,12 +337,12 @@ async function submitDraft() {
   letter-spacing: 0.05em;
 }
 
-.section-label-group {
-  margin-top: 4px;
-}
-
 .items-list {
   @include flex-col(4px);
+}
+
+.bar-spacer {
+  height: calc(72px + env(safe-area-inset-bottom));
 }
 
 .check-footer {
