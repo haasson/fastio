@@ -45,8 +45,7 @@
                 :key="combo.id"
                 variant="dish"
                 :product="productById[combo.id]"
-                :cart-count="cartCountByItem[combo.id] ?? 0"
-                :hide-stepper="tableMode"
+                :cart-count="countFor(combo.id)"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
@@ -62,9 +61,8 @@
                 :key="dish.id"
                 variant="dish"
                 :product="productById[dish.id]"
-                :cart-count="cartCountByItem[dish.id] ?? 0"
+                :cart-count="countFor(dish.id)"
                 :has-modifiers="hasModifiers(dish)"
-                :hide-stepper="tableMode"
                 :ordering-enabled="effectiveOrderingEnabled"
                 :overlay="props.dishDescriptionMode === 'overlay'"
                 :mobile-compact="props.mobileDishCard === 'horizontal'"
@@ -119,11 +117,20 @@ const props = defineProps<{
   tableMode?: boolean
   dishDescriptionMode?: 'below' | 'overlay'
   mobileDishCard?: 'vertical' | 'horizontal'
+  // table-mode: кол-во в локальном драфте по dishId/comboId — для каунтера на карточке.
+  orderCounts?: Record<string, number>
 }>()
 
 const emit = defineEmits<{
   tableOrder: [item: CartItem]
+  tableInc: [key: string]
+  tableDec: [key: string]
 }>()
+
+// Счётчик на карточке: в table-mode из драфта, иначе из корзины доставки.
+const countFor = (id: string) => props.tableMode
+  ? (props.orderCounts?.[id] ?? 0)
+  : (cartCountByItem.value[id] ?? 0)
 
 const { placeholderIcon } = useItemPlaceholder()
 const { menu } = useStorefrontTerms()
@@ -207,11 +214,21 @@ const firstIndexByItem = computed<Record<string, number>>(() => {
 })
 
 function incrementByItem(key: string) {
+  if (props.tableMode) {
+    emit('tableInc', key)
+
+    return
+  }
   const idx = firstIndexByItem.value[key]
   if (idx !== undefined) cart.increment(idx)
 }
 
 function decrementByItem(key: string) {
+  if (props.tableMode) {
+    emit('tableDec', key)
+
+    return
+  }
   const idx = firstIndexByItem.value[key]
   if (idx !== undefined) cart.decrement(idx)
 }

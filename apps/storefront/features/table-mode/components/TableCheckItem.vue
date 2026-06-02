@@ -1,16 +1,13 @@
 <template>
-  <div class="check-item-root">
-    <div class="item-main">
-      <div class="item-info">
-        <FsText variant="body-sm" :weight="500">
-          {{ item.dishName }}
-          <span v-if="item.quantity > 1" class="qty">&times;{{ item.quantity }}</span>
-        </FsText>
-        <FsText v-if="summary" variant="caption" color="secondary">{{ summary }}</FsText>
-      </div>
-      <FsText variant="body-sm" :weight="500">{{ formatPrice(itemTotal) }}</FsText>
+  <div class="check-item-root" :class="tone">
+    <div class="item-info">
+      <FsText variant="body-sm" :weight="500">
+        {{ item.dishName }}
+        <span v-if="item.quantity > 1" class="qty">&times;{{ item.quantity }}</span>
+      </FsText>
+      <FsText v-if="summary" variant="caption" color="secondary">{{ summary }}</FsText>
     </div>
-    <div class="status-bar" :class="statusColor" />
+    <FsText variant="body-sm" :weight="600">{{ formatPrice(itemTotal) }}</FsText>
   </div>
 </template>
 
@@ -22,7 +19,7 @@ import type { CheckItem } from '../stores/table'
 
 const props = defineProps<{
   item: CheckItem
-  statusColor: 'warning' | 'info' | 'success'
+  tone: 'ready' | 'progress'
 }>()
 
 const itemTotal = computed(() => getItemUnitPrice(props.item) * props.item.quantity)
@@ -34,17 +31,22 @@ const summary = computed(() => getItemSummary(props.item))
 @use '~/assets/styles/mixins' as *;
 
 .check-item-root {
-  @include flex-row(8px);
-  align-items: stretch;
-  padding: 10px 12px;
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-}
-
-.item-main {
   @include flex-between(8px);
   align-items: flex-start;
-  flex: 1;
+  padding: 10px 12px;
+  border-radius: var(--radius-card);
+  border-left: 3px solid transparent;
+
+  &.ready {
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+    border-left-color: var(--color-success);
+  }
+
+  // Внутри блока «Готовится» — плоские строки, фон/рамку даёт сам блок.
+  &.progress {
+    padding: 6px 4px;
+    border-left: none;
+  }
 }
 
 .item-info {
@@ -54,15 +56,5 @@ const summary = computed(() => getItemSummary(props.item))
 
 .qty {
   color: var(--color-text-secondary);
-}
-
-.status-bar {
-  width: 4px;
-  border-radius: 2px;
-  flex-shrink: 0;
-
-  &.warning { background: var(--color-warning); }
-  &.info { background: var(--color-info); }
-  &.success { background: var(--color-success); }
 }
 </style>

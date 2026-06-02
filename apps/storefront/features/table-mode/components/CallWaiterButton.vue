@@ -1,6 +1,9 @@
 <template>
   <ClientOnly>
+    <!-- Показываем кнопку только после загрузки конфига — без дефолтного фолбэка,
+         чтобы не было мигания «Официант» → настроенный текст/иконка. -->
     <button
+      v-if="loaded"
       class="call-waiter-btn"
       type="button"
       :disabled="loading"
@@ -15,7 +18,6 @@
     <FsDrawer
       v-if="types.length > 1"
       v-model="pickerOpen"
-      title="Что нужно?"
       side="bottom"
       size="sm"
     >
@@ -67,6 +69,7 @@ const types = ref<CallType[]>([])
 const label = ref(DEFAULT_LABEL)
 const iconName = ref<string | null>(null)
 const loading = ref(false)
+const loaded = ref(false)
 const pickerOpen = ref(false)
 
 const iconComponent = computed<Component>(() => (iconName.value && ICON_MAP[iconName.value]) || BellRing)
@@ -79,9 +82,10 @@ async function loadConfig() {
     types.value = result.types
     if (result.callButtonLabel) label.value = result.callButtonLabel
     iconName.value = result.callButtonIcon ?? null
+    loaded.value = true
   } catch (err) {
     // 403 при отсутствии cookie ожидаем (гость ещё не загрузил /api/table/[id]).
-    // Не шумим в Sentry — UI просто покажет дефолтную кнопку без выбора.
+    // Не шумим в Sentry. loaded остаётся false → кнопка не показывается (фолбэка нет).
     const status = (err as { statusCode?: number })?.statusCode
     if (status !== 403 && status !== 404) {
       reportError(err instanceof Error ? err : new Error('[CallWaiterButton] failed to load config'))

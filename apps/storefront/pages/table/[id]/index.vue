@@ -15,7 +15,14 @@
       <FsButton variant="secondary" size="small" @click="dismissRemoved">Ок</FsButton>
     </FsAlert>
 
-    <MenuSection default-view="dishes" :table-mode="true" @table-order="onTableOrder" />
+    <MenuSection
+      default-view="dishes"
+      :table-mode="true"
+      :order-counts="draftCountByItem"
+      @table-order="onTableOrder"
+      @table-inc="onTableInc"
+      @table-dec="onTableDec"
+    />
 
     <TableOrderBar
       :check-count="tableStore.checkItems.length"
@@ -72,24 +79,16 @@
     </div>
 
     <div v-else class="check-sections">
-      <div v-if="pendingItems.length" class="check-section">
-        <FsText variant="caption" color="secondary" class="section-label">Ожидают подтверждения</FsText>
-        <div class="items-list">
-          <TableCheckItem v-for="item in pendingItems" :key="item.id" :item="item" status-color="warning" />
-        </div>
+      <!-- Заказанные блюда — сам чек, без подзаголовков -->
+      <div v-if="readyItems.length" class="items-list">
+        <TableCheckItem v-for="item in readyItems" :key="item.id" :item="item" tone="ready" />
       </div>
 
-      <div v-if="cookingItems.length" class="check-section">
-        <FsText variant="caption" color="secondary" class="section-label">Готовится</FsText>
+      <!-- Ещё не готово — выделенный блок -->
+      <div v-if="progressItems.length" class="cooking-block">
+        <FsText variant="caption" :weight="600" class="cooking-label">Готовится</FsText>
         <div class="items-list">
-          <TableCheckItem v-for="item in cookingItems" :key="item.id" :item="item" status-color="info" />
-        </div>
-      </div>
-
-      <div v-if="readyItems.length" class="check-section">
-        <FsText variant="caption" color="secondary" class="section-label">Готово</FsText>
-        <div class="items-list">
-          <TableCheckItem v-for="item in readyItems" :key="item.id" :item="item" status-color="success" />
+          <TableCheckItem v-for="item in progressItems" :key="item.id" :item="item" tone="progress" />
         </div>
       </div>
     </div>
@@ -187,6 +186,8 @@ const readyItems = computed(() =>
     i.status === 'confirmed' && (i.kitchenStatus === 'done' || i.kitchenStatus === 'served' || !i.kitchenStatus),
   ),
 )
+// «Готовится» = всё, что ещё не готово: ждёт подтверждения официантом + на кухне.
+const progressItems = computed(() => [...pendingItems.value, ...cookingItems.value])
 
 // Нижняя полоса заказа фиксирована — резервируем место, чтобы не перекрывала меню.
 const barVisible = computed(() => tableStore.checkItems.length > 0 || tableStore.draftCount > 0)
@@ -227,6 +228,40 @@ function onTableOrder(item: CartItem) {
     return
   }
   tableStore.addDraftItem(item)
+}
+
+// Каунтер на карточке блюда: кол-во в драфте по dishId/comboId + первый _key
+// для +/- (как в корзине доставки — стрелки двигают первую найденную позицию).
+const draftCountByItem = computed<Record<string, number>>(() => {
+  const map: Record<string, number> = {}
+  for (const i of tableStore.draftItems) {
+    const key = i.comboId ?? i.dishId
+    if (!key) continue
+    map[key] = (map[key] ?? 0) + i.quantity
+  }
+  return map
+})
+
+const firstDraftKeyByItem = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {}
+  for (const i of tableStore.draftItems) {
+    const key = i.comboId ?? i.dishId
+    if (!key || key in map) continue
+    map[key] = i._key
+  }
+  return map
+})
+
+function onTableInc(key: string) {
+  const draftKey = firstDraftKeyByItem.value[key]
+  const item = tableStore.draftItems.find(i => i._key === draftKey)
+  if (item) tableStore.updateDraftQty(item._key, item.quantity + 1)
+}
+
+function onTableDec(key: string) {
+  const draftKey = firstDraftKeyByItem.value[key]
+  const item = tableStore.draftItems.find(i => i._key === draftKey)
+  if (item) tableStore.updateDraftQty(item._key, item.quantity - 1)
 }
 
 // Любое изменение состава драфта = новая «логическая» отправка → сбрасываем ключ.
@@ -325,20 +360,25 @@ async function submitDraft() {
 }
 
 .check-sections {
-  @include flex-col(20px);
-}
-
-.check-section {
-  @include flex-col(8px);
-}
-
-.section-label {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  @include flex-col(16px);
 }
 
 .items-list {
-  @include flex-col(4px);
+  @include flex-col(6px);
+}
+
+.cooking-block {
+  @include flex-col(6px);
+  padding: 12px;
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+}
+
+.cooking-label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-warning);
 }
 
 .bar-spacer {
