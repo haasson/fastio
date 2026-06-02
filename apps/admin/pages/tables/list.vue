@@ -1,8 +1,17 @@
 <template>
   <div class="list-root">
-    <UiTag v-if="ctx.totalReadyCount > 0" type="success" round>
-      {{ ctx.totalReadyCount }} {{ readyLabel }} к подаче
-    </UiTag>
+    <div v-if="ctx.totalReadyCount > 0 || callTables.length" class="status-chips">
+      <UiTag v-if="ctx.totalReadyCount > 0" type="success" round>
+        {{ ctx.totalReadyCount }} {{ readyLabel }} к подаче
+      </UiTag>
+      <UiButton
+        v-if="callTables.length"
+        size="small"
+        :type="hasEscalatedCall ? 'error' : 'warning'"
+        icon="bellRing"
+        @click="scrollToNextCall"
+      >{{ callTables.length }} {{ pluralize(callTables.length, 'стол зовёт', 'стола зовут', 'столов зовут') }}</UiButton>
+    </div>
 
     <UiSkeleton v-if="ctx.loading" :repeat="6" />
 
@@ -24,11 +33,14 @@
             <TableCard
               v-for="table in ctx.openTables"
               :key="table.id"
+              :data-table-id="table.id"
               :table="table"
               :session="ctx.tableSums[table.id]"
               :calls="ctx.callsByTable[table.id] ?? []"
               :kitchen-dishes="ctx.kitchenDishes[table.id] ?? []"
               :ready-dishes="ctx.readyDishes[table.id] ?? []"
+              :escalation-minutes="escalationMinutes"
+              :show-category="showCategory"
               @edit="openEdit(table)"
               @show-qr="openQr(table)"
               @add-dish="openPicker(table)"
@@ -92,9 +104,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useNow } from '@vueuse/core'
 import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag, useMessage } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
-import { pluralize } from '@fastio/shared'
+import { pluralize, DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTablesContext, useAddDishToTable } from '~/features/tables'
@@ -114,6 +127,42 @@ const branchStore = useBranchStore()
 const { success, warning } = useMessage()
 const { log } = useAuditLog()
 const canManageTables = computed(() => gate.manageTables.value.enabled)
+
+const now = useNow({ interval: 30_000 })
+
+const escalationMinutes = computed(() => ctx.tableSettings?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes)
+const showCategory = computed(() => ctx.tableSettings?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory)
+
+// Открытые столы с активными вызовами, самые «старые» (срочные) — первыми.
+const oldestCallAgeMs = (table: Table) => {
+  const calls = ctx.callsByTable[table.id] ?? []
+
+  if (!calls.length) return 0
+
+  return Math.max(...calls.map((c) => now.value.getTime() - new Date(c.createdAt).getTime()))
+}
+
+const callTables = computed(() => ctx.openTables
+  .filter((t) => (ctx.callsByTable[t.id]?.length ?? 0) > 0)
+  .sort((a, b) => oldestCallAgeMs(b) - oldestCallAgeMs(a)),
+)
+
+const hasEscalatedCall = computed(() => callTables.value.some((t) => oldestCallAgeMs(t) >= escalationMinutes.value * 60_000))
+
+// Скролл к столам с вызовом по кругу: самый срочный → следующий → ...
+const callScrollIndex = ref(0)
+
+const scrollToNextCall = () => {
+  const list = callTables.value
+
+  if (!list.length) return
+
+  const idx = callScrollIndex.value % list.length
+  const target = document.querySelector(`[data-table-id="${list[idx].id}"]`)
+
+  callScrollIndex.value = (idx + 1) % list.length
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
 
 const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId)
 
@@ -263,6 +312,13 @@ const openQr = (table: Table) => {
 
 .list-root {
   @include flex-col(var(--space-20));
+}
+
+.status-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
 }
 
 .list-header {

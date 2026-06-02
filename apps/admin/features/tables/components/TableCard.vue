@@ -1,5 +1,5 @@
 <template>
-  <UiCard size="small" class="table-card" :class="{ 'table-card--open': table.isOpen, 'table-card--calling': calls.length > 0, 'table-card--ready': readyDishes?.length }">
+  <UiCard size="small" class="table-card" :class="{ 'table-card--open': table.isOpen, 'table-card--calling': calls.length > 0, 'table-card--escalated': hasEscalated, 'table-card--ready': readyDishes?.length }">
     <div class="card-header">
       <div class="card-title">
         <UiIcon name="tableIcon" :size="18" class="card-icon" />
@@ -20,9 +20,14 @@
     </div>
 
     <!-- Calls indicator -->
-    <div v-if="calls.length" class="calls">
-      <div v-for="call in calls" :key="call.id" class="call-item">
-        <UiIcon name="messageCircle" :size="14" class="call-icon" />
+    <div v-if="calls.length" class="calls" :class="{ 'calls--escalated': hasEscalated }">
+      <div
+        v-for="call in calls"
+        :key="call.id"
+        class="call-item"
+        :class="{ 'call-item--escalated': isEscalated(call) }"
+      >
+        <UiIcon :name="isEscalated(call) ? 'bellRing' : 'messageCircle'" :size="14" class="call-icon" />
         <span class="call-name">{{ call.callTypeName }}</span>
         <span class="call-time">{{ formatRelativeTime(call.createdAt, now) }}</span>
         <UiButton
@@ -45,6 +50,7 @@
         :kitchen-dishes="kitchenDishes"
         :ready-dishes="readyDishes"
         compact
+        :show-category="showCategory"
         :preview-count="PREVIEW"
         @remove-dish="$emit('remove-dish', $event)"
         @confirm-item="$emit('confirm-item', $event)"
@@ -77,7 +83,7 @@ import { useNow } from '@vueuse/core'
 import { UiCard, UiButton, UiIcon, UiText, UiTag, UiMenuDropdown } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { Table, TableCall, KitchenQueueItem } from '@fastio/shared'
-import { formatRelativeTime } from '@fastio/shared'
+import { formatRelativeTime, DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
 import TableSessionItems from './TableSessionItems.vue'
 import { useGate } from '~/shared/plan/useGate'
@@ -88,6 +94,8 @@ const props = defineProps<{
   calls: TableCall[]
   kitchenDishes?: KitchenQueueItem[]
   readyDishes?: KitchenQueueItem[]
+  escalationMinutes?: number
+  showCategory?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -128,6 +136,11 @@ const now = useNow({ interval: 30_000 })
 const openedAgo = computed(() => props.table.openedAt ? formatRelativeTime(props.table.openedAt, now.value) : '')
 
 const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i.status === 'pending').length)
+
+// Эскалация: вызов старше escalation_minutes → красный (срочный).
+const escalationMs = computed(() => (props.escalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes) * 60_000)
+const isEscalated = (call: TableCall) => now.value.getTime() - new Date(call.createdAt).getTime() >= escalationMs.value
+const hasEscalated = computed(() => props.calls.some(isEscalated))
 </script>
 
 <style scoped lang="scss">
@@ -142,6 +155,10 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 
   &--calling {
     border-color: var(--color-warning);
+  }
+
+  &--escalated {
+    border-color: var(--color-error);
   }
 }
 
@@ -194,6 +211,11 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
   background: var(--color-warning-light);
   border-radius: var(--radius-8);
   border: 1px solid var(--color-warning);
+
+  &--escalated {
+    background: var(--color-error-light);
+    border-color: var(--color-error);
+  }
 }
 
 .call-item {
@@ -205,6 +227,10 @@ const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i
 .call-icon {
   color: var(--color-warning);
   flex-shrink: 0;
+}
+
+.call-item--escalated .call-icon {
+  color: var(--color-error);
 }
 
 .call-name {

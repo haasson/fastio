@@ -482,9 +482,14 @@ const onConfirmAllItems = async (tableId: string) => {
 }
 
 const onCallResolved = async (id: string) => {
-  await api.tableCalls.resolve(id)
-  activeCalls.value = activeCalls.value.filter((c) => c.id !== id)
-  success('Вызов закрыт')
+  try {
+    await api.tableCalls.resolve(id)
+    activeCalls.value = activeCalls.value.filter((c) => c.id !== id)
+    success('Вызов закрыт')
+  } catch (e) {
+    reportError(e, { context: 'tables:onCallResolved', callId: id })
+    warning('Не удалось закрыть вызов')
+  }
 }
 
 const onTableAdded = (table: Table) => {

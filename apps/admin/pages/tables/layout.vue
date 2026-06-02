@@ -3,12 +3,17 @@
     <TablesCanvas
       :tables="ctx.tables"
       :today-reservations="todayReservations"
+      :calls-by-table="ctx.callsByTable"
+      :ready-dishes="ctx.readyDishes"
+      :escalation-minutes="escalationMinutes"
+      :tile-size="tileSize"
       @update="ctx.onTableUpdated"
       @update-position="ctx.onPositionUpdated"
       @open-detail="openDetail"
       @open-table="ctx.toggleOpen"
       @book-table="bookTable"
       @open-reservation="openReservation"
+      @resolve-call="ctx.onCallResolved"
     />
 
     <TableDetailDrawer
@@ -18,6 +23,7 @@
       :calls="detailDrawerTable ? (ctx.callsByTable[detailDrawerTable.id] ?? []) : []"
       :kitchen-dishes="detailDrawerTable ? (ctx.kitchenDishes[detailDrawerTable.id] ?? []) : []"
       :ready-dishes="detailDrawerTable ? (ctx.readyDishes[detailDrawerTable.id] ?? []) : []"
+      :show-category="showCategory"
       @add-dish="addDishFromDrawer"
       @checkout="checkoutFromDrawer"
       @resolve-call="ctx.onCallResolved"
@@ -51,6 +57,7 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import type { Table, Reservation } from '@fastio/shared'
+import { DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import { useTablesContext, TodayReservationsKey, useAddDishToTable } from '~/features/tables'
 import { useReservationsStore } from '~/features/reservations'
 import { useGate } from '~/shared/plan/useGate'
@@ -61,6 +68,10 @@ import DishPickerModal from '~/features/menu/components/DishPickerModal.vue'
 
 const ctx = useTablesContext()
 const todayReservations = inject(TodayReservationsKey, computed(() => []))
+
+const escalationMinutes = computed(() => ctx.tableSettings?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes)
+const tileSize = computed(() => ctx.tableSettings?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize)
+const showCategory = computed(() => ctx.tableSettings?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory)
 
 const reservationsStore = useReservationsStore()
 

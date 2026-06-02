@@ -61,6 +61,7 @@
             />
           </template>
         </div>
+        <div v-if="showCategory && item.categoryName" class="item-category">{{ item.categoryName }}</div>
         <div v-if="hasCustomizations(item)" class="item-extras">
           <span v-for="mod in item.modifiers" :key="mod.optionName" class="extra">{{ mod.optionName }}</span>
           <span v-for="addon in item.addons" :key="addon.addonName" class="extra extra--addon">+ {{ addon.addonName }}</span>
@@ -134,6 +135,7 @@ type Props = {
   showStats?: boolean
   noAdd?: boolean
   checkoutMode?: boolean
+  showCategory?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -141,6 +143,7 @@ const props = withDefaults(defineProps<Props>(), {
   showStats: true,
   noAdd: false,
   checkoutMode: false,
+  showCategory: false,
 })
 
 const emit = defineEmits<{
@@ -285,6 +288,12 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 .session-items-root--compact .item-total {
   font-size: var(--font-size-sm);
   min-width: 50px;
+}
+
+.item-category {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-hint);
+  padding-left: var(--space-4);
 }
 
 .item-extras {

@@ -25,10 +25,11 @@
     </div>
 
     <!-- Canvas -->
-    <div class="canvas-scroll" @click.self="deselectAll">
+    <div ref="scrollRef" class="canvas-scroll" @click.self="deselectAll">
       <div
         ref="canvasRef"
         class="canvas"
+        :style="canvasStyle"
         @pointermove="onCanvasPointerMove"
         @pointerup="onCanvasPointerUp"
         @click.self="deselectAll"
@@ -51,6 +52,26 @@
           <span class="ct-name">{{ table.name }}</span>
           <span v-if="tableReservations[table.id]" class="ct-reservation">
             {{ tableReservations[table.id] }}
+          </span>
+
+          <!-- Бейдж вызова: тап → resolve (один) / поповер (несколько) -->
+          <button
+            v-if="tableCalls(table).length"
+            type="button"
+            class="ct-badge ct-badge--call"
+            :class="{ 'ct-badge--escalated': isTableEscalated(table) }"
+            :style="badgeStyle(table)"
+            :aria-label="`Вызовов: ${tableCalls(table).length}`"
+            @pointerdown.stop
+            @click.stop="onCallBadgeClick($event, table)"
+          >
+            <UiIcon :name="isTableEscalated(table) ? 'bellRing' : 'messageCircle'" :size="12" />
+            <span v-if="tableCalls(table).length > 1" class="ct-badge-count">{{ tableCalls(table).length }}</span>
+          </button>
+
+          <!-- Бейдж готовых блюд -->
+          <span v-if="tableReadyCount(table)" class="ct-badge ct-badge--ready" :style="badgeStyle(table)">
+            <span class="ct-badge-dot" />{{ tableReadyCount(table) }}
           </span>
 
           <!-- Resize handles: visible on all tables in edit mode -->
@@ -97,20 +118,80 @@
         @item-click="onContextMenuClick"
       />
     </UiPopover>
+
+    <!-- Выбор вызова для закрытия (если на столе >1 вызова) -->
+    <UiPopover
+      trigger="manual"
+      placement="bottom-start"
+      :show="!!callPopover && popoverCalls.length > 0"
+      :x="callPopover?.x"
+      :y="callPopover?.y"
+      :show-arrow="false"
+      no-sheet
+      @clickoutside="callPopover = null"
+    >
+      <template #trigger>
+        <span />
+      </template>
+      <div class="call-popover">
+        <div v-for="call in popoverCalls" :key="call.id" class="call-popover-row">
+          <UiIcon name="messageCircle" :size="14" class="call-popover-icon" />
+          <UiText size="small" class="call-popover-name">{{ call.callTypeName }}</UiText>
+          <UiText size="tiny" class="call-popover-time">{{ formatRelativeTime(call.createdAt, now) }}</UiText>
+          <UiButton
+            size="small"
+            type="success"
+            circle
+            icon="check"
+            aria-label="Закрыть вызов"
+            @click="resolveFromPopover(call.id)"
+          />
+        </div>
+      </div>
+    </UiPopover>
+
+    <!-- Панель внимания: вызовы / готовые блюда + панорама к ближайшему -->
+    <div v-if="totalCalls > 0 || totalReady > 0" class="attention-panel">
+      <button
+        v-if="totalCalls > 0"
+        type="button"
+        class="attention-chip attention-chip--call"
+        :class="{ 'attention-chip--escalated': placedWithCalls.some(isTableEscalated) }"
+        @click="panNextCall"
+      >
+        <UiIcon name="bellRing" :size="14" />
+        {{ totalCalls }}
+      </button>
+      <button
+        v-if="totalReady > 0"
+        type="button"
+        class="attention-chip attention-chip--ready"
+        @click="panNextReady"
+      >
+        <span class="attention-dot" />
+        {{ totalReady }}
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiMenuDropdown, UiPopover } from '@fastio/ui'
+import { useNow } from '@vueuse/core'
+import { UiButton, UiMenuDropdown, UiPopover, UiIcon, UiText } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
-import type { Table, Reservation } from '@fastio/shared'
+import type { Table, Reservation, TableCall, KitchenQueueItem, CanvasTileSize } from '@fastio/shared'
+import { formatRelativeTime } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useGate } from '~/shared/plan/useGate'
 
 type Props = {
   tables: Table[]
   todayReservations: Reservation[]
+  callsByTable: Record<string, TableCall[]>
+  readyDishes: Record<string, KitchenQueueItem[]>
+  escalationMinutes: number
+  tileSize: CanvasTileSize
 }
 
 type Emits = {
@@ -120,6 +201,7 @@ type Emits = {
   openTable: [table: Table]
   bookTable: [table: Table]
   openReservation: [id: string]
+  resolveCall: [id: string]
 }
 
 const props = defineProps<Props>()
@@ -129,10 +211,19 @@ const api = useDatabase()
 const gate = useGate()
 const canManageTables = computed(() => gate.manageTables.value.enabled)
 
+const now = useNow({ interval: 30_000 })
+
 // ── Canvas state ──────────────────────────────────────────
 const canvasRef = ref<HTMLElement | null>(null)
+const scrollRef = ref<HTMLElement | null>(null)
 const selectedId = ref<string | null>(null)
 const editing = ref(false)
+
+// ── Размер плитки (пресет из настроек) ───────────────────
+// Масштаб применяется ТОЛЬКО в режиме просмотра. В edit-режиме scale=1, чтобы
+// drag/resize/rotate-математика (в screen-px) работала без пересчёта.
+const TILE_SCALE: Record<CanvasTileSize, number> = { s: 1, m: 1.3, l: 1.6 }
+const viewScale = computed(() => editing.value ? 1 : (TILE_SCALE[props.tileSize] ?? 1))
 
 const placedTables = computed(() => props.tables.filter((t) => t.positionX !== null && t.positionY !== null))
 const unplacedTables = computed(() => props.tables.filter((t) => t.positionX === null || t.positionY === null))
@@ -150,6 +241,77 @@ const tableReservations = computed(() => {
 
   return map
 })
+
+// ── Calls / ready badges ─────────────────────────────────
+const tableCalls = (table: Table) => props.callsByTable[table.id] ?? []
+const tableReadyCount = (table: Table) => (props.readyDishes[table.id] ?? []).length
+// Контр-вращение: бейдж остаётся вертикальным на повёрнутых плитках.
+const badgeStyle = (table: Table) => (table.rotation ? { transform: `rotate(${-table.rotation}deg)` } : undefined)
+const isTableEscalated = (table: Table) => tableCalls(table)
+  .some((c) => now.value.getTime() - new Date(c.createdAt).getTime() >= props.escalationMinutes * 60_000)
+
+// Поповер выбора вызова при >1 активном вызове на столе.
+const callPopover = ref<{ table: Table; x: number; y: number } | null>(null)
+const popoverCalls = computed(() => callPopover.value ? tableCalls(callPopover.value.table) : [])
+
+const onCallBadgeClick = (event: MouseEvent, table: Table) => {
+  const calls = tableCalls(table)
+
+  if (!calls.length) return
+  if (calls.length === 1) {
+    emit('resolveCall', calls[0].id)
+
+    return
+  }
+  callPopover.value = { table, x: event.clientX, y: event.clientY + 4 }
+}
+
+const resolveFromPopover = (id: string) => {
+  emit('resolveCall', id)
+  // Закрываем поповер, если это был последний вызов на столе.
+  if (popoverCalls.value.length <= 1) callPopover.value = null
+}
+
+// ── Панель внимания (панорама к столам с вызовом/готовностью) ──
+const placedWithCalls = computed(() => placedTables.value
+  .filter((t) => tableCalls(t).length > 0)
+  .sort((a, b) => isTableEscalated(b) === isTableEscalated(a) ? 0 : isTableEscalated(b) ? 1 : -1),
+)
+const placedWithReady = computed(() => placedTables.value.filter((t) => tableReadyCount(t) > 0))
+
+// Считаем только размещённые столы — панель панорамирует именно к ним,
+// иначе счётчик показывал бы вызовы со столов вне схемы (недостижимы кликом).
+const totalCalls = computed(() => placedWithCalls.value.reduce((s, t) => s + tableCalls(t).length, 0))
+const totalReady = computed(() => placedWithReady.value.reduce((s, t) => s + tableReadyCount(t), 0))
+
+const callPanIndex = ref(0)
+const readyPanIndex = ref(0)
+
+const panToTable = (table: Table) => {
+  if (!scrollRef.value || table.positionX === null || table.positionY === null) return
+
+  const s = viewScale.value
+  const cx = (table.positionX + table.tableWidth / 2) * s
+  const cy = (table.positionY + table.tableHeight / 2) * s
+
+  scrollRef.value.scrollTo({
+    left: cx - scrollRef.value.clientWidth / 2,
+    top: cy - scrollRef.value.clientHeight / 2,
+    behavior: 'smooth',
+  })
+}
+
+const panNext = (list: Table[], indexRef: { value: number }) => {
+  if (!list.length) return
+
+  const idx = indexRef.value % list.length
+
+  panToTable(list[idx])
+  indexRef.value = (idx + 1) % list.length
+}
+
+const panNextCall = () => panNext(placedWithCalls.value, callPanIndex)
+const panNextReady = () => panNext(placedWithReady.value, readyPanIndex)
 
 // ── Context menu ────────────────────────────────────────
 const contextMenu = ref<{ table: Table; x: number; y: number } | null>(null)
@@ -190,13 +352,24 @@ const onContextMenuClick = (name: string) => {
 }
 
 // ── Table style ──────────────────────────────────────────
-const tableStyle = (table: Table) => ({
-  left: `${table.positionX ?? 0}px`,
-  top: `${table.positionY ?? 0}px`,
-  width: `${table.tableWidth}px`,
-  height: `${table.tableHeight}px`,
-  transform: table.rotation ? `rotate(${table.rotation}deg)` : undefined,
-})
+const BASE_W = 1400
+const BASE_H = 900
+const canvasStyle = computed(() => ({
+  width: `${BASE_W * viewScale.value}px`,
+  height: `${BASE_H * viewScale.value}px`,
+}))
+
+const tableStyle = (table: Table) => {
+  const s = viewScale.value
+
+  return {
+    left: `${(table.positionX ?? 0) * s}px`,
+    top: `${(table.positionY ?? 0) * s}px`,
+    width: `${table.tableWidth * s}px`,
+    height: `${table.tableHeight * s}px`,
+    transform: table.rotation ? `rotate(${table.rotation}deg)` : undefined,
+  }
+}
 
 // ── Selection ────────────────────────────────────────────
 const onTableClick = (event: MouseEvent, table: Table) => {
@@ -728,6 +901,127 @@ const placeTable = (table: Table) => {
   &:active {
     cursor: grabbing;
   }
+}
+// ── Tile badges (calls / ready) ─────────────────────────
+.ct-badge {
+  position: absolute;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  box-shadow: 0 1px 4px color-mix(in srgb, #000 20%, transparent);
+}
+
+.ct-badge--call {
+  top: -8px;
+  left: -8px;
+  border: none;
+  background: var(--color-warning);
+  cursor: pointer;
+  transition: transform 0.1s;
+
+  &:hover { transform: scale(1.1); }
+
+  &.ct-badge--escalated {
+    background: var(--color-error);
+    animation: badge-pulse 1.2s ease-in-out infinite;
+  }
+}
+
+.ct-badge-count { padding-right: 2px; }
+
+.ct-badge--ready {
+  bottom: -8px;
+  right: -8px;
+  background: var(--color-success);
+}
+
+.ct-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+// ── Call popover (multi-call resolve) ───────────────────
+.call-popover {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+  padding: 4px;
+}
+
+.call-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+}
+
+.call-popover-icon { color: var(--color-warning); flex-shrink: 0; }
+.call-popover-name { flex: 1; min-width: 0; }
+.call-popover-time { color: var(--color-text-hint); flex-shrink: 0; }
+
+// ── Attention panel ─────────────────────────────────────
+.attention-panel {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-bg-card) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px color-mix(in srgb, #000 10%, transparent);
+}
+
+.attention-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.15s;
+
+  &:hover { transform: translateY(-1px); }
+  &:active { opacity: 0.85; }
+}
+
+.attention-chip--call {
+  background: var(--color-warning);
+
+  &.attention-chip--escalated { background: var(--color-error); }
+}
+
+.attention-chip--ready { background: var(--color-success); }
+
+.attention-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
 }
 /* stylelint-enable scale-unlimited/declaration-strict-value, color-no-hex */
 

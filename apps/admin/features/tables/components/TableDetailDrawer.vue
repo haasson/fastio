@@ -29,6 +29,7 @@
         :session="session"
         :kitchen-dishes="kitchenDishes"
         :ready-dishes="readyDishes"
+        :show-category="showCategory"
         @remove-dish="$emit('remove-dish', $event)"
         @repeat-item="$emit('repeat-item', $event)"
         @confirm-item="$emit('confirm-item', $event)"
@@ -61,6 +62,7 @@ type Props = {
   calls: TableCall[]
   kitchenDishes?: KitchenQueueItem[]
   readyDishes?: KitchenQueueItem[]
+  showCategory?: boolean
 }
 
 const props = defineProps<Props>()
