@@ -36,7 +36,7 @@ import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
 import TablesBranchSummary from '~/features/tables/components/TablesBranchSummary.vue'
 import TableCheckoutModal from '~/features/tables/components/TableCheckoutModal.vue'
 import { usePageTitle } from '~/shared/composables/usePageTitle'
-import type { Table, TableCallType, TableCall, KitchenQueueItem } from '@fastio/shared'
+import type { Table, TableCallType, TableCall, TableSettings, KitchenQueueItem } from '@fastio/shared'
 import { todayInTz } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/shared/data/useDatabase'
@@ -54,12 +54,6 @@ import { reportError } from '@fastio/shared/observability'
 
 usePageTitle('Столы')
 
-const tabs = [
-  { value: 'list', label: 'Столы' },
-  { value: 'layout', label: 'Схема' },
-  { value: 'calls', label: 'Вызовы' },
-]
-
 // ── Stores ────────────────────────────────────────────────────
 const api = useDatabase()
 const tenantStore = useTenantStore()
@@ -74,6 +68,22 @@ const { success, warning } = useMessage()
 const { confirm } = useConfirm()
 
 const tenantId = computed(() => tenantStore.currentTenantId)
+
+// Настройки столов правит только tables.manage (owner/admin/manager) —
+// совпадает с RLS на table_settings. View-only staff таб не видит.
+const canManageTables = computed(() => tenantStore.isOwner || tenantStore.currentPermissions?.['tables.manage'] === true)
+
+const tabs = computed(() => {
+  const items = [
+    { value: 'list', label: 'Столы' },
+    { value: 'layout', label: 'Схема' },
+    { value: 'calls', label: 'Вызовы' },
+  ]
+
+  if (canManageTables.value) items.push({ value: 'settings', label: 'Настройки' })
+
+  return items
+})
 
 // D-04: один/ноль филиалов → не фильтруем; D-05: конкретный → фильтруем;
 // D-06: null при мультибранче → саммари-режим (без фильтра)
@@ -118,6 +128,7 @@ const loading = ref(false)
 const globalTags = ref<string[]>([])
 const callTypes = ref<TableCallType[]>([])
 const activeCalls = ref<TableCall[]>([])
+const tableSettings = ref<TableSettings | null>(null)
 const kitchenDishes = ref<Record<string, KitchenQueueItem[]>>({})
 
 // ── Computed ──────────────────────────────────────────────────
@@ -195,17 +206,19 @@ const reloadKitchenDishes = async () => {
 const load = async (id: string) => {
   loading.value = true
   try {
-    const [loadedTables, tags, types, calls] = await Promise.all([
+    const [loadedTables, tags, types, calls, settings] = await Promise.all([
       api.tables.list(id, effectiveBranchId.value),
       api.tables.listTags(id),
       api.tableCallTypes.list(id),
       api.tableCalls.listActive(id),
+      api.tableSettings.get(id),
     ])
 
     tables.value = loadedTables
     globalTags.value = tags
     callTypes.value = types
     activeCalls.value = calls
+    tableSettings.value = settings
     tableSums.value = await api.tables.loadSums(loadedTables, cancelledStatusIds.value)
     await loadKitchenDishes(id, loadedTables)
   } finally {
@@ -516,6 +529,10 @@ const onGlobalTagsUpdated = (tags: string[]) => {
   globalTags.value = tags
 }
 
+const onSettingsSaved = (settings: TableSettings) => {
+  tableSettings.value = settings
+}
+
 // ── Today's reservations ─────────────────────────────────────
 const todayReservations = computed(() => {
   const today = todayInTz(tenantStore.timezone)
@@ -529,12 +546,12 @@ provide(TodayReservationsKey, todayReservations)
 
 // ── Provide context ───────────────────────────────────────────
 provide(TablesContextKey, {
-  tables, tableSums, loading, globalTags, callTypes, activeCalls, kitchenDishes, tenantId,
+  tables, tableSums, loading, globalTags, callTypes, activeCalls, tableSettings, kitchenDishes, tenantId,
   openTables, closedTables, callsByTable, readyDishes, totalReadyCount,
   branches,
   toggleOpen, checkout, onMarkServed, onRemoveDish, onConfirmItem, onRejectItem,
   onConfirmAllItems, onCallResolved, onTableAdded, onTableUpdated, onTableDeleted,
-  onPositionUpdated, onCallTypeAdded, onCallTypeRemoved, onGlobalTagsUpdated,
+  onPositionUpdated, onCallTypeAdded, onCallTypeRemoved, onGlobalTagsUpdated, onSettingsSaved,
 })
 </script>
 

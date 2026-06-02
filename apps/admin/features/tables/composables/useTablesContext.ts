@@ -1,6 +1,6 @@
 import { inject, reactive } from 'vue'
 import type { InjectionKey, Ref, ComputedRef } from 'vue'
-import type { Table, TableCallType, TableCall, KitchenQueueItem, Reservation, Branch } from '@fastio/shared'
+import type { Table, TableCallType, TableCall, TableSettings, KitchenQueueItem, Reservation, Branch } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
 
 export type TablesContext = {
@@ -11,6 +11,7 @@ export type TablesContext = {
   globalTags: Ref<string[]>
   callTypes: Ref<TableCallType[]>
   activeCalls: Ref<TableCall[]>
+  tableSettings: Ref<TableSettings | null>
   kitchenDishes: Ref<Record<string, KitchenQueueItem[]>>
   tenantId: ComputedRef<string | null>
 
@@ -40,6 +41,7 @@ export type TablesContext = {
   onCallTypeAdded: (name: string) => Promise<void>
   onCallTypeRemoved: (id: string) => Promise<void>
   onGlobalTagsUpdated: (tags: string[]) => void
+  onSettingsSaved: (settings: TableSettings) => void
 }
 
 export const TablesContextKey: InjectionKey<TablesContext> = Symbol('tables:context')

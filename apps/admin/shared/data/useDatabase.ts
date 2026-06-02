@@ -45,6 +45,7 @@ import { telegramLinkApi } from '~/features/settings/api/telegram-link'
 import { supportApi } from '~/features/support/api/support'
 import { tableCallsApi, tableCallTypesApi } from '~/features/tables/api/table-calls'
 import { tablesApi } from '~/features/tables/api/tables'
+import { tableSettingsApi } from '~/features/tables/api/table-settings'
 import { invitationsApi } from '~/features/team/api/invitations'
 import { membersApi } from '~/features/team/api/members'
 import { rolesApi } from '~/features/team/api/roles'
@@ -90,6 +91,7 @@ export const useDatabase = () => {
     tables: bindAll(tablesApi, sb),
     tableCallTypes: bindAll(tableCallTypesApi, sb),
     tableCalls: bindAll(tableCallsApi, sb),
+    tableSettings: bindAll(tableSettingsApi, sb),
     plans: bindAll(plansApi, sb),
     billing: bindAll(billingApi, sb),
     moduleConfigs: bindAll(moduleConfigsApi, sb),

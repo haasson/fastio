@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-06-02T03:51:21.829Z",
+  "generated_at": "2026-06-02T04:13:12.524Z",
   "stats": {
-    "files": 50,
+    "files": 51,
     "pages": 0,
-    "symbols": 204,
+    "symbols": 206,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1126,6 +1126,25 @@
           "kind": "function",
           "hash": "26c055ec",
           "purpose": "Превращает строку в URL-slug с транслитом русского: 'Пицца Маргарита' → 'picca-margarita'"
+        }
+      ]
+    },
+    "src/utils/table.ts": {
+      "kind": "ts",
+      "hash": "724259f7fe6c",
+      "purpose": "Дефолты и маппер настроек столов (table_settings) — единая правда для admin/storefront",
+      "symbols": [
+        {
+          "name": "DEFAULT_TABLE_SETTINGS",
+          "kind": "const",
+          "hash": "be42b4f7",
+          "purpose": "Дефолтные значения TableSettings (совпадают с DEFAULT'ами миграции 308)"
+        },
+        {
+          "name": "mapTableSettings",
+          "kind": "function",
+          "hash": "bfaf295b",
+          "purpose": "Маппит сырую строку table_settings (snake_case) в доменный TableSettings с fallback на дефолты"
         }
       ]
     },

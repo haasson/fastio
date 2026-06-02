@@ -9,7 +9,8 @@ export default defineFeature({
   routes: [
     { path: '/tables/list', purpose: 'Список столов с QR-кодами и зонами' },
     { path: '/tables/layout', purpose: 'Визуальный layout зала (расстановка столов)' },
-    { path: '/tables/calls', purpose: 'История и активные вызовы официанта' },
+    { path: '/tables/calls', purpose: 'Лента активных вызовов официанта' },
+    { path: '/tables/settings', purpose: 'Настройки столов: вызов официанта, отображение зала, типы вызовов (tables.manage)' },
   ],
 
   permissions: [
@@ -18,7 +19,7 @@ export default defineFeature({
   ],
 
   db: {
-    tables: ['orders', 'table_call_types', 'table_calls', 'tables'],
+    tables: ['orders', 'table_call_types', 'table_calls', 'table_settings', 'tables'],
     rpc: ['apply_table_discount'],
   },
 

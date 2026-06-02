@@ -43,6 +43,7 @@ import type {
   BookingMode,
   ScheduleTemplateType,
   AppointmentEventType,
+  CanvasTileSize,
 } from '@fastio/shared'
 
 import type { Tables } from './database.types'
@@ -158,6 +159,10 @@ export type OrderEventRow = WithOverrides<Tables<'order_events'>, {
 export type TableCallTypeRow = Tables<'table_call_types'>
 
 export type TableCallRow = Tables<'table_calls'>
+
+export type TableSettingsRow = WithOverrides<Tables<'table_settings'>, {
+  canvas_tile_size: CanvasTileSize
+}>
 
 // ─── Kitchen ──────────────────────────────────────────────────────────────────
 
