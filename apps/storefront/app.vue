@@ -169,6 +169,9 @@ useHead(computed(() => ({
 // (импортируется через assets/styles/_tokens.scss).
 :root {
   --header-height: 56px;
+  // Высота прибитого снизу UI (FAB / нижний бар). Пишется из useBottomInset,
+  // читается резерв-паддингами контента и плавающими уведомлениями.
+  --app-bottom-inset: 0px;
 
   @media (min-width: 768px) {
     --header-height: 64px;

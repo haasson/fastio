@@ -20,12 +20,7 @@
       <slot :sticky-total-height="stickyTotalHeight" :layout="layout" />
     </div>
 
-    <SiteFooter
-      :class="{
-        'has-fab': (showCartFab && hasCartItems) || showBookingFab,
-        'has-fab-tall': showCartFab && hasCartItems && cartFabHasAddress,
-      }"
-    />
+    <SiteFooter class="page-footer" />
     <SfCartFab v-if="showCartFab" @click="navigateTo('/cart')" />
     <SfBookingFab v-else-if="showBookingFab" @click="navigateTo('/booking')" />
   </div>
@@ -34,7 +29,7 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
 import { useNuxtData, navigateTo, useRoute } from 'nuxt/app'
-import { useElementSize } from '@vueuse/core'
+import { useElementSize, useMediaQuery } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import type { BranchPublic, Tenant } from '@fastio/shared'
 import { defaultSiteLayout, deepMerge, formatBranchAddressShort } from '@fastio/shared'
@@ -46,6 +41,7 @@ import { useSelectedBranchStore } from '~/features/branch'
 import SfCartFab from '~/shared/ui/sf/domain/SfCartFab.vue'
 import SfBookingFab from '~/shared/ui/sf/domain/SfBookingFab.vue'
 import useLegalCompliance from '~/shared/composables/useLegalCompliance'
+import { useBottomInset } from '~/shared/composables/useBottomInset'
 
 withDefaults(defineProps<{
   showCategoryBar?: boolean
@@ -92,6 +88,20 @@ const showCartFab = computed(() => {
 })
 const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.modules?.reservations && legalInfoComplete.value && route.path !== '/booking')
 
+// Резерв снизу под FAB. Вариант «с адресом» выше — но caption виден только на
+// мобилке (на десктопе скрыт), поэтому повышенный отступ гейтим по ширине.
+const isMobile = useMediaQuery('(max-width: 767px)')
+const { register: registerBottomInset } = useBottomInset()
+registerBottomInset('page-shell-fab', () => {
+  const hasFab = (showCartFab.value && hasCartItems.value) || showBookingFab.value
+  if (!hasFab) return null
+  if (showCartFab.value && hasCartItems.value && cartFabHasAddress.value && isMobile.value) {
+    return 'max(132px, calc(112px + env(safe-area-inset-bottom)))'
+  }
+
+  return 'max(100px, calc(80px + env(safe-area-inset-bottom)))'
+})
+
 const headerRef = useTemplateRef('headerRef')
 const { height: headerHeight } = useElementSize(headerRef)
 const categoryBarRef = useTemplateRef('categoryBarRef')
@@ -123,15 +133,8 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
   flex: 1;
 }
 
-.has-fab {
-  padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom)));
-}
-
-// FAB корзины с адресом второй строкой → нужен запас побольше.
-// Только на мобилке: на десктопе caption скрыт.
-.has-fab-tall {
-  @media (max-width: 767px) {
-    padding-bottom: max(132px, calc(112px + env(safe-area-inset-bottom)));
-  }
+// Резерв под прибитый снизу UI — единый для всех сценариев (см. useBottomInset).
+.page-footer {
+  padding-bottom: var(--app-bottom-inset, 0px);
 }
 </style>

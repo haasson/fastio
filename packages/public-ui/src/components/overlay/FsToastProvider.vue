@@ -39,7 +39,9 @@ defineProps<Props>()
 
 .fs-toast-viewport {
   position: fixed;
-  bottom: max(16px, env(safe-area-inset-bottom));
+  // Поднимаемся над прибитым снизу UI (FAB / нижний бар), если он есть,
+  // иначе обычный отступ от низа. --app-bottom-inset выставляет useBottomInset.
+  bottom: max(16px, env(safe-area-inset-bottom), calc(var(--app-bottom-inset, 0px) + 8px));
   right: max(16px, env(safe-area-inset-right));
   left: 16px;
   z-index: var(--z-toast, 500);

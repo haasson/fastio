@@ -2,7 +2,7 @@
   "project": "packages/public-ui",
   "submap": "main",
   "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
-  "generated_at": "2026-05-20T01:40:07.241Z",
+  "generated_at": "2026-06-02T11:13:52.316Z",
   "stats": {
     "files": 35,
     "pages": 0,
@@ -66,8 +66,8 @@
     },
     "src/components/base/FsDropdownList.vue": {
       "kind": "vue",
-      "hash": "aa771d740c5b",
-      "purpose": "Абсолютно-позиционируемый список выпадашки под триггером с эмитом select при клике",
+      "hash": "1da3e65b18f7",
+      "purpose": "Список-дропдаун витрины: рендерит items {value,label} кнопками, эмитит select по выбору (mousedown.prevent — для использования внутри инпутов)",
       "symbols": [
         {
           "name": "props",
@@ -367,8 +367,8 @@
     },
     "src/components/nav/FsScrollNav.vue": {
       "kind": "vue",
-      "hash": "bcb1c7e1883c",
-      "purpose": "Горизонтальная навигация с прокруткой и счётчиками — для вкладок категорий меню и т.п.",
+      "hash": "2d8522e31dc6",
+      "purpose": "Горизонтальная навигация-табы витрины: items {id,label,count?}, активный по modelValue, режим scroll (с fade-краями) или wrap",
       "symbols": [
         {
           "name": "props",
@@ -462,8 +462,8 @@
     },
     "src/components/overlay/FsToastProvider.vue": {
       "kind": "vue",
-      "hash": "1410086226f4",
-      "purpose": "Провайдер очереди тостов: рендерит список FsToast в фиксированный viewport (правый-низ с safe-area)",
+      "hash": "28bc9ae8d5b1",
+      "purpose": "Контейнер тостов витрины (reka-ui ToastProvider/Viewport); фиксирован снизу, поднимается над FAB/баром через --app-bottom-inset",
       "symbols": [
         {
           "name": "props",
@@ -475,8 +475,8 @@
     },
     "src/components/overlay/FsTooltip.vue": {
       "kind": "vue",
-      "hash": "13ebe725de7b",
-      "purpose": "Tooltip на Reka UI с анимацией, max-width 240px и сохранением переносов строк (white-space: pre-line)",
+      "hash": "f4a35306df09",
+      "purpose": "Тултип витрины: всплывающая подсказка по hover/focus с настройкой стороны, задержки и отключения",
       "symbols": [
         {
           "name": "props",

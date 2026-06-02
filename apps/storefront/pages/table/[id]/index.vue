@@ -113,6 +113,7 @@ import type { Tenant } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import { useTableStore, useTableRealtime, type CheckItem } from '~/features/table-mode'
 import { useToast } from '~/shared/composables/useToast'
+import { useBottomInset } from '~/shared/composables/useBottomInset'
 import { isDishItem, type CartItem, type DishCartItem } from '~/features/cart'
 import { reportError } from '@fastio/shared/observability'
 import TableOrderBar from '~/features/table-mode/components/TableOrderBar.vue'
@@ -191,6 +192,12 @@ const progressItems = computed(() => [...pendingItems.value, ...cookingItems.val
 
 // Нижняя полоса заказа фиксирована — резервируем место, чтобы не перекрывала меню.
 const barVisible = computed(() => tableStore.checkItems.length > 0 || tableStore.draftCount > 0)
+
+// Высота полосы → в общий bottom-inset: резерв контента, тосты и алерт встают над ней.
+const { register: registerBottomInset } = useBottomInset()
+registerBottomInset('table-order-bar', () =>
+  barVisible.value ? 'calc(72px + env(safe-area-inset-bottom))' : null,
+)
 
 // Загружаем текущий чек
 const removedItems = ref<CheckItem[]>([])
@@ -323,7 +330,8 @@ async function submitDraft() {
 
 .removed-alert {
   position: fixed;
-  bottom: 80px;
+  // Над нижней полосой заказа (единый bottom-inset), с запасом 8px.
+  bottom: max(16px, calc(var(--app-bottom-inset, 0px) + 8px));
   left: 16px;
   right: 16px;
   // Тост-стиль уведомление: над контентом и sticky-header.
@@ -400,7 +408,7 @@ async function submitDraft() {
 }
 
 .bar-spacer {
-  height: calc(72px + env(safe-area-inset-bottom));
+  height: var(--app-bottom-inset, 0px);
 }
 
 .check-footer {
