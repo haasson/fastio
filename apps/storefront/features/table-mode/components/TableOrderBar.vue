@@ -87,18 +87,20 @@ $ease: cubic-bezier(0.4, 0, 0.2, 1);
   flex: 0 0 auto;
   width: 100%;
   height: 56px;
-  border: 1px solid color-mix(in srgb, var(--color-success) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
   border-radius: 16px;
-  background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
-  color: var(--color-success);
+  background: color-mix(in srgb, var(--primary) 12%, var(--color-surface));
+  color: var(--primary);
   overflow: hidden;
   cursor: pointer;
   pointer-events: auto;
-  transition: width 0.28s $ease, border-radius 0.28s $ease;
+  transition: width 0.28s $ease, border-radius 0.28s $ease, background 0.28s $ease;
 
+  // Когда справа появляется solid-кнопка «К заказу» — высветляем чек, чтобы CTA вёл.
   &.compact {
     width: 76px;
     border-radius: 28px;
+    background: color-mix(in srgb, var(--primary) 5%, var(--color-surface));
   }
 
   &:active {
