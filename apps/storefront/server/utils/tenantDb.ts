@@ -58,6 +58,7 @@ export const TENANT_TABLES = new Set<string>([
   'support_tickets',
   'table_call_types',
   'table_calls',
+  'table_settings',
   'tables',
   'telegram_link_codes',
   'tenant_invitations',

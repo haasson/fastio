@@ -3,13 +3,13 @@
     <button
       class="call-waiter-btn"
       type="button"
-      :disabled="loading || cooldown"
-      :aria-label="cooldown ? 'Официант уже идёт' : 'Вызвать официанта'"
+      :disabled="loading"
+      aria-label="Вызвать официанта"
       data-testid="call-waiter"
       @click="onClick"
     >
-      <BellRing :size="18" />
-      <span class="call-waiter-btn-label">{{ cooldown ? 'Официант идёт' : 'Официант' }}</span>
+      <component :is="iconComponent" :size="18" />
+      <span class="call-waiter-btn-label">{{ label }}</span>
     </button>
 
     <FsDrawer
@@ -36,9 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { FsDrawer } from '@fastio/public-ui'
-import { BellRing } from 'lucide-vue-next'
+import { BellRing, MessageCircle, ChefHat, UtensilsCrossed, CreditCard, Users, CircleHelp, Clock } from 'lucide-vue-next'
+import type { Component } from 'vue'
 import { useToast } from '~/shared/composables/useToast'
 import { reportError } from '@fastio/shared/observability'
 
@@ -46,34 +47,50 @@ const props = defineProps<{ tableId: string }>()
 
 const { success: showSuccess, error: showError } = useToast()
 
-// Fallback на случай если сервер не вернул значение (старый API / network glitch).
-// Реальное значение приходит с сервера в `cooldownSeconds` (200) или `retryAfter` (429).
-const FALLBACK_COOLDOWN_SECONDS = 30
+// Иконки кнопки вызова. Имя приходит с сервера (имя из @fastio/icons), рендерим
+// соответствующий lucide-компонент. null / неизвестное → колокольчик (дефолт).
+const ICON_MAP: Record<string, Component> = {
+  bellRing: BellRing,
+  messageCircle: MessageCircle,
+  chefHat: ChefHat,
+  dishes: UtensilsCrossed,
+  creditCard: CreditCard,
+  users: Users,
+  help: CircleHelp,
+  clock: Clock,
+}
+const DEFAULT_LABEL = 'Официант'
 
 type CallType = { id: string; name: string }
 
 const types = ref<CallType[]>([])
+const label = ref(DEFAULT_LABEL)
+const iconName = ref<string | null>(null)
 const loading = ref(false)
-const cooldown = ref(false)
 const pickerOpen = ref(false)
-let cooldownTimer: ReturnType<typeof setTimeout> | null = null
 
-async function loadTypes() {
+const iconComponent = computed<Component>(() => (iconName.value && ICON_MAP[iconName.value]) || BellRing)
+
+async function loadConfig() {
   try {
-    const result = await $fetch<{ types: CallType[] }>(`/api/table/${props.tableId}/call-types`)
+    const result = await $fetch<{ types: CallType[]; callButtonLabel?: string; callButtonIcon?: string | null }>(
+      `/api/table/${props.tableId}/call-types`,
+    )
     types.value = result.types
+    if (result.callButtonLabel) label.value = result.callButtonLabel
+    iconName.value = result.callButtonIcon ?? null
   } catch (err) {
     // 403 при отсутствии cookie ожидаем (гость ещё не загрузил /api/table/[id]).
     // Не шумим в Sentry — UI просто покажет дефолтную кнопку без выбора.
     const status = (err as { statusCode?: number })?.statusCode
     if (status !== 403 && status !== 404) {
-      reportError(err instanceof Error ? err : new Error('[CallWaiterButton] failed to load types'))
+      reportError(err instanceof Error ? err : new Error('[CallWaiterButton] failed to load config'))
     }
   }
 }
 
 function onClick() {
-  if (loading.value || cooldown.value || pickerOpen.value) return
+  if (loading.value || pickerOpen.value) return
   if (types.value.length > 1) {
     pickerOpen.value = true
     return
@@ -84,30 +101,30 @@ function onClick() {
 }
 
 async function sendCall(callTypeId: string | null) {
-  if (loading.value || cooldown.value) return
+  if (loading.value) return
   loading.value = true
   try {
-    const result = await $fetch<{ call: unknown; cooldownSeconds?: number }>(
-      `/api/table/${props.tableId}/call`,
-      {
-        method: 'POST',
-        body: callTypeId ? { callTypeId } : {},
-      },
-    )
+    await $fetch(`/api/table/${props.tableId}/call`, {
+      method: 'POST',
+      body: callTypeId ? { callTypeId } : {},
+    })
     pickerOpen.value = false
     showSuccess('Официант идёт', 'Скоро подойдёт к вашему столу')
-    startCooldown(result.cooldownSeconds ?? FALLBACK_COOLDOWN_SECONDS)
   } catch (err) {
+    const status = (err as { statusCode?: number })?.statusCode
+    // Кнопка НЕ блокируется кулдауном — частоту валидирует сервер. На 429 просто
+    // показываем тост со сколько ещё ждать (retryAfter с сервера).
+    if (status === 429) {
+      const retryAfter = (err as { data?: { retryAfter?: number } })?.data?.retryAfter
+      const wait = typeof retryAfter === 'number' ? ` Подождите ${retryAfter} с.` : ''
+      showError('Официант уже идёт.' + wait)
+      return
+    }
     const message = (err as { data?: { message?: string }; statusMessage?: string })?.data?.message
       ?? (err as { statusMessage?: string })?.statusMessage
       ?? 'Не получилось вызвать. Попробуйте ещё раз.'
     showError(message)
-    const status = (err as { statusCode?: number })?.statusCode
-    if (status === 429) {
-      // Сервер знает сколько ещё ждать — синхронизируем клиентский cooldown.
-      const retryAfter = (err as { data?: { retryAfter?: number } })?.data?.retryAfter
-      startCooldown(typeof retryAfter === 'number' ? retryAfter : FALLBACK_COOLDOWN_SECONDS)
-    } else if (status !== 400 && status !== 403) {
+    if (status !== 400 && status !== 403) {
       reportError(err instanceof Error ? err : new Error('[CallWaiterButton] failed to send call'))
     }
   } finally {
@@ -115,16 +132,7 @@ async function sendCall(callTypeId: string | null) {
   }
 }
 
-function startCooldown(seconds: number) {
-  cooldown.value = true
-  if (cooldownTimer) clearTimeout(cooldownTimer)
-  cooldownTimer = setTimeout(() => {
-    cooldown.value = false
-    cooldownTimer = null
-  }, Math.max(1, seconds) * 1000)
-}
-
-onMounted(loadTypes)
+onMounted(loadConfig)
 </script>
 
 <style scoped lang="scss">

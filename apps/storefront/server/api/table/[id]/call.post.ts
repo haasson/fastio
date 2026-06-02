@@ -1,8 +1,8 @@
 import { reportError } from '@fastio/shared/observability'
+import { DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import { getTenantDb } from '../../../utils/tenantDb'
 
 const DEFAULT_CALL_TYPE_NAME = 'Вызвать официанта'
-const TABLE_CALL_COOLDOWN_SECONDS = 30
 
 // Простая uuid v1-v5 валидация — отсекаем мусор до DB-запроса, чтобы PG не
 // возвращал invalid_text_representation (22P02) и не триггерил Sentry-spam.
@@ -22,13 +22,25 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Сначала отсканируйте QR-код стола' })
   }
 
-  // Rate-limit первым делом после cookie-guard: 1 вызов в 30 сек на стол.
+  // Кулдаун берём из настроек тенанта (table_settings). Чтение через service-role
+  // (getTenantDb авто-инжектит tenant_id) — RLS public_read на таблице нет.
+  const { data: settings, error: settingsError } = await db
+    .from('table_settings')
+    .select('call_cooldown_seconds')
+    .maybeSingle()
+  if (settingsError) {
+    reportError(settingsError)
+    throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки столов' })
+  }
+  const cooldownSeconds = settings?.call_cooldown_seconds ?? DEFAULT_TABLE_SETTINGS.callCooldownSeconds
+
+  // Rate-limit первым делом после cookie-guard: 1 вызов в `cooldownSeconds` на стол.
   // Inline-вызов (вместо enforceRateLimit), чтобы передать клиенту retryAfter
   // и не дать ему сбиться с серверной длительностью cooldown.
   const { data: limitOk, error: limitError } = await db.crossTenant.rpc('consume_rate_limit', {
     _key: `table-call:${tableId}`,
     _max: 1,
-    _window_seconds: TABLE_CALL_COOLDOWN_SECONDS,
+    _window_seconds: cooldownSeconds,
   })
   if (limitError) {
     reportError(limitError)
@@ -37,8 +49,8 @@ export default defineEventHandler(async (event) => {
   if (limitOk === false) {
     throw createError({
       statusCode: 429,
-      message: `Подождите ${TABLE_CALL_COOLDOWN_SECONDS} секунд перед следующим вызовом`,
-      data: { retryAfter: TABLE_CALL_COOLDOWN_SECONDS },
+      message: `Подождите ${cooldownSeconds} секунд перед следующим вызовом`,
+      data: { retryAfter: cooldownSeconds },
     })
   }
 
@@ -107,5 +119,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Не удалось создать вызов' })
   }
 
-  return { call, cooldownSeconds: TABLE_CALL_COOLDOWN_SECONDS }
+  return { call, cooldownSeconds }
 })

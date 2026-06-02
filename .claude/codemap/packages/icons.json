@@ -2,7 +2,7 @@
   "project": "packages/icons",
   "submap": "main",
   "purpose": "Универсальная иконка UiIcon на базе Lucide с реестром и адаптивными размерами",
-  "generated_at": "2026-05-31T06:13:14.060Z",
+  "generated_at": "2026-06-02T05:34:04.314Z",
   "stats": {
     "files": 3,
     "pages": 0,
@@ -27,8 +27,8 @@
     },
     "src/icons.ts": {
       "kind": "ts",
-      "hash": "4faedd89369c",
-      "purpose": "Реестр иконок (обёртка над lucide-vue-next): маппинг имя→компонент + тип IconName",
+      "hash": "fadd0c400fa3",
+      "purpose": "Реестр иконок @fastio/icons: словарь camelCase-имя → Lucide-компонент + тип IconName",
       "symbols": [
         {
           "name": "iconRegistry",

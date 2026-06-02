@@ -1,10 +1,11 @@
 import { reportError } from '@fastio/shared/observability'
+import { DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import { getTenantDb } from '../../../utils/tenantDb'
 
 /**
- * Список настроенных типов вызова официанта (счёт / дозаказ / помощь и т.д.) для тенанта.
- * Возвращает [] если тенант не настроил ни одного — UI тогда показывает кнопку
- * с дефолтным «Вызвать официанта».
+ * Конфиг кнопки вызова официанта для витрины: типы вызова + текст/иконка кнопки
+ * (из table_settings). Возвращает types=[] если тенант не настроил ни одного типа
+ * (UI покажет одиночную кнопку), и дефолтные label/icon если нет строки настроек.
  *
  * IDOR guard как и в check.get.ts: гость должен иметь cookie от QR-сканирования.
  */
@@ -18,20 +19,32 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Сначала отсканируйте QR-код стола' })
   }
 
-  const { data, error } = await db
-    .from('table_call_types')
-    .select('id, name, sort_order')
-    .order('sort_order', { ascending: true })
+  const [typesRes, settingsRes] = await Promise.all([
+    db
+      .from('table_call_types')
+      .select('id, name, sort_order')
+      .order('sort_order', { ascending: true }),
+    db
+      .from('table_settings')
+      .select('call_button_label, call_button_icon')
+      .maybeSingle(),
+  ])
 
-  if (error) {
-    reportError(error)
+  if (typesRes.error) {
+    reportError(typesRes.error)
     throw createError({ statusCode: 500, message: 'Не удалось загрузить типы вызова' })
+  }
+  if (settingsRes.error) {
+    reportError(settingsRes.error)
+    throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки вызова' })
   }
 
   return {
-    types: (data ?? []).map((row) => ({
+    types: (typesRes.data ?? []).map((row) => ({
       id: row.id as string,
       name: row.name as string,
     })),
+    callButtonLabel: (settingsRes.data?.call_button_label as string | null) ?? DEFAULT_TABLE_SETTINGS.callButtonLabel,
+    callButtonIcon: (settingsRes.data?.call_button_icon as string | null) ?? DEFAULT_TABLE_SETTINGS.callButtonIcon,
   }
 })

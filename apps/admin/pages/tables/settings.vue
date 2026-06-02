@@ -107,11 +107,14 @@ const ctx = useTablesContext()
 const tenantStore = useTenantStore()
 const api = useDatabase()
 
+// callButtonIcon = null → дефолт «колокольчик» (bellRing) и в превью, и на витрине.
+const DEFAULT_CALL_ICON: IconName = 'bellRing'
+
 const CALL_ICONS: { name: IconName; label: string }[] = [
+  { name: 'bellRing', label: 'Колокольчик' },
   { name: 'messageCircle', label: 'Сообщение' },
   { name: 'chefHat', label: 'Повар' },
   { name: 'dishes', label: 'Блюда' },
-  { name: 'cart', label: 'Заказ' },
   { name: 'creditCard', label: 'Счёт' },
   { name: 'users', label: 'Гости' },
   { name: 'help', label: 'Помощь' },
@@ -168,10 +171,10 @@ const page = useEditableForm({
 const { form } = page
 
 // Превью отражает только иконки из набора; «левое» значение из БД → дефолт.
-const previewIcon = computed<IconName>(() => CALL_ICONS.find((i) => i.name === form.callButtonIcon)?.name ?? 'messageCircle')
+const previewIcon = computed<IconName>(() => CALL_ICONS.find((i) => i.name === form.callButtonIcon)?.name ?? DEFAULT_CALL_ICON)
 
 const selectIcon = (name: IconName) => {
-  // Повторный клик по выбранной иконке сбрасывает на дефолт (messageCircle на витрине).
+  // Повторный клик по выбранной иконке сбрасывает на дефолт (колокольчик/bellRing на витрине).
   form.callButtonIcon = form.callButtonIcon === name ? null : name
 }
 

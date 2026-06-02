@@ -119,6 +119,32 @@ describe('POST /api/table/[id]/call', () => {
     })
   })
 
+  it('берёт кулдаун из table_settings (окно rate-limit + cooldownSeconds)', async () => {
+    happyPath({
+      'from:table_settings': { data: { call_cooldown_seconds: 60 }, error: null },
+    })
+    const { default: handler } = await import('../[id]/call.post')
+
+    const result = await handler(makeEvent())
+
+    expect(result.cooldownSeconds).toBe(60)
+    expect(mockRpc).toHaveBeenCalledWith('consume_rate_limit', {
+      _key: `table-call:${VALID_TABLE_ID}`,
+      _max: 1,
+      _window_seconds: 60,
+    })
+  })
+
+  it('500 + reportError при ошибке чтения table_settings', async () => {
+    happyPath({
+      'from:table_settings': { data: null, error: { message: 'settings down' } },
+    })
+    const { default: handler } = await import('../[id]/call.post')
+
+    await expect(handler(makeEvent())).rejects.toMatchObject({ statusCode: 500 })
+    expect(mockReportError).toHaveBeenCalled()
+  })
+
   it('успешно создаёт вызов с явным callTypeId (берёт name из БД)', async () => {
     happyPath({
       'from:table_call_types': { data: { id: VALID_TYPE_ID, name: 'Принесите счёт' }, error: null },
@@ -172,7 +198,7 @@ describe('POST /api/table/[id]/call', () => {
     await expect(handler(makeEvent())).rejects.toMatchObject({ statusCode: 403 })
   })
 
-  it('429 с retryAfter при срабатывании rate-limit (rate-limit идёт ДО select-ов)', async () => {
+  it('429 с retryAfter при срабатывании rate-limit', async () => {
     happyPath()
     mockRpc.mockResolvedValueOnce({ data: false, error: null })
     const { default: handler } = await import('../[id]/call.post')
