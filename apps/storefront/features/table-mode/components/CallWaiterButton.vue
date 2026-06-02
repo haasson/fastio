@@ -72,6 +72,20 @@ const loading = ref(false)
 const loaded = ref(false)
 const pickerOpen = ref(false)
 
+// Клиентский кулдаун: НЕ дизейблим кнопку, но клик во время кулдауна не открывает
+// пикер и не шлёт запрос (сервер всё равно отклонит 429) — сразу показываем тост.
+const cooldownUntil = ref(0)
+const cooldownLeft = () => Math.max(0, Math.ceil((cooldownUntil.value - Date.now()) / 1000))
+const FALLBACK_COOLDOWN = 30
+
+function startCooldown(seconds: number) {
+  cooldownUntil.value = Date.now() + Math.max(1, seconds) * 1000
+}
+
+function showCooldownToast(left: number) {
+  showError('Уже спешим к вам', `Можно повторить через ${left} с`)
+}
+
 const iconComponent = computed<Component>(() => (iconName.value && ICON_MAP[iconName.value]) || BellRing)
 
 async function loadConfig() {
@@ -95,6 +109,12 @@ async function loadConfig() {
 
 function onClick() {
   if (loading.value || pickerOpen.value) return
+  const left = cooldownLeft()
+  if (left > 0) {
+    showCooldownToast(left)
+
+    return
+  }
   if (types.value.length > 1) {
     pickerOpen.value = true
     return
@@ -106,22 +126,35 @@ function onClick() {
 
 async function sendCall(callTypeId: string | null) {
   if (loading.value) return
+  const left = cooldownLeft()
+  if (left > 0) {
+    pickerOpen.value = false
+    showCooldownToast(left)
+
+    return
+  }
   loading.value = true
   try {
-    await $fetch(`/api/table/${props.tableId}/call`, {
+    const result = await $fetch<{ cooldownSeconds?: number }>(`/api/table/${props.tableId}/call`, {
       method: 'POST',
       body: callTypeId ? { callTypeId } : {},
     })
     pickerOpen.value = false
+    startCooldown(result.cooldownSeconds ?? FALLBACK_COOLDOWN)
     showSuccess('Уже спешим к вам', 'Скоро будем у вашего стола')
   } catch (err) {
     const status = (err as { statusCode?: number })?.statusCode
-    // Кнопка НЕ блокируется кулдауном — частоту валидирует сервер. На 429 показываем
-    // нейтральный тост со сколько ещё ждать (retryAfter с сервера).
+    // Кнопка НЕ блокируется кулдауном — частоту валидирует сервер. На 429 запускаем
+    // клиентский кулдаун (чтобы следующий клик не слал заведомо отвергнутый запрос)
+    // и показываем нейтральный тост со сколько ещё ждать.
     if (status === 429) {
       const retryAfter = (err as { data?: { retryAfter?: number } })?.data?.retryAfter
-      const wait = typeof retryAfter === 'number' ? `Можно повторить через ${retryAfter} с` : 'Вызов уже отправлен'
-      showError('Уже спешим к вам', wait)
+      const secs = typeof retryAfter === 'number' ? retryAfter : FALLBACK_COOLDOWN
+
+      startCooldown(secs)
+      pickerOpen.value = false
+      showCooldownToast(secs)
+
       return
     }
     const message = (err as { data?: { message?: string }; statusMessage?: string })?.data?.message
