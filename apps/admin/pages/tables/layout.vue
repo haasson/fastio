@@ -6,7 +6,6 @@
       :calls-by-table="ctx.callsByTable"
       :ready-dishes="ctx.readyDishes"
       :escalation-minutes="escalationMinutes"
-      :tile-size="tileSize"
       @update="ctx.onTableUpdated"
       @update-position="ctx.onPositionUpdated"
       @open-detail="openDetail"
@@ -70,7 +69,6 @@ const ctx = useTablesContext()
 const todayReservations = inject(TodayReservationsKey, computed(() => []))
 
 const escalationMinutes = computed(() => ctx.tableSettings?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes)
-const tileSize = computed(() => ctx.tableSettings?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize)
 const showCategory = computed(() => ctx.tableSettings?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory)
 
 const reservationsStore = useReservationsStore()

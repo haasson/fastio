@@ -8,13 +8,7 @@
         <UiSectionHeader title="Вызов официанта" />
 
         <div class="icon-picker">
-          <div class="picker-head">
-            <UiText size="small" class="picker-label">Иконка и текст кнопки</UiText>
-            <div class="preview-btn" :style="previewBtnStyle">
-              <UiIcon :name="previewIcon" :size="16" />
-              <span class="preview-btn-label">{{ form.callButtonLabel.trim() || 'Официант' }}</span>
-            </div>
-          </div>
+          <UiText size="small" class="picker-label">Иконка и текст кнопки</UiText>
           <div class="picker-body">
             <div class="icon-grid">
               <button
@@ -38,6 +32,18 @@
           </div>
         </div>
 
+        <!-- Превью: реальный хедер витрины в теме тенанта на мобильной ширине -->
+        <div class="preview">
+          <UiText size="tiny" class="picker-label">Превью хедера витрины (мобильный)</UiText>
+          <div class="header-preview" :style="headerVars">
+            <span class="hp-name">{{ tenantName }}</span>
+            <div class="hp-btn">
+              <UiIcon :name="previewIcon" :size="16" />
+              <span class="hp-btn-label">{{ form.callButtonLabel.trim() || 'Официант' }}</span>
+            </div>
+          </div>
+        </div>
+
         <div class="row">
           <UiInputNumber
             v-model="form.callCooldownSeconds"
@@ -57,15 +63,15 @@
           />
         </div>
 
-        <!-- ── Отображение зала ─────────────────────────────── -->
-        <UiSectionHeader title="Отображение зала" />
+        <!-- ── Отображение столов ───────────────────────────── -->
+        <UiSectionHeader title="Отображение столов" />
 
         <div class="row">
           <UiSelect
             v-model:value="form.canvasTileSize"
-            label="Размер плитки стола"
+            label="Размер карточек"
             :options="TILE_SIZE_OPTIONS"
-            message="Размер столов на схеме зала"
+            message="Ширина карточек столов в списке (вкладка «Столы»)"
           />
           <UiSwitch
             v-model="form.showDishCategory"
@@ -89,8 +95,8 @@
 import { computed } from 'vue'
 import { UiForm, UiInput, UiInputNumber, UiSelect, UiSectionHeader, UiSkeleton, UiSwitch, UiText, UiIcon } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
-import type { CanvasTileSize } from '@fastio/shared'
-import { DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
+import type { CanvasTileSize, ThemePalette } from '@fastio/shared'
+import { DEFAULT_TABLE_SETTINGS, paletteToCssVars, getPresetPalette, THEME_PRESETS } from '@fastio/shared'
 import { useTablesContext } from '~/features/tables'
 import TableCallTypes from '~/features/tables/components/TableCallTypes.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -186,13 +192,23 @@ const hexToOnColor = (hex: string): string => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.35 ? '#000000' : '#ffffff'
 }
 
-// Превью в реальных цветах темы витрины (бренд-primary тенанта + контрастный текст).
-const previewBtnStyle = computed(() => {
-  const primary = tenantStore.maybeTenant?.theme?.primaryColor
+const tenantName = computed(() => tenantStore.maybeTenant?.name ?? 'Заведение')
 
-  if (!primary) return undefined
+// Активная палитра витрины: кастомная тема → своя палитра тенанта → пресет.
+const effectivePalette = computed<ThemePalette>(() => {
+  const t = tenantStore.maybeTenant?.theme
+  const custom = t?.activeCustomId ? t.customThemes?.find((c) => c.id === t.activeCustomId)?.palette : null
 
-  return { background: primary, color: hexToOnColor(primary) }
+  return custom ?? t?.palette ?? (t ? getPresetPalette(t.preset) : null) ?? THEME_PRESETS[0].palette
+})
+
+// CSS-vars темы витрины для превью-хедера (+ on-primary как на витрине).
+const headerVars = computed(() => {
+  const vars = paletteToCssVars(effectivePalette.value)
+
+  vars['--on-primary'] = hexToOnColor(effectivePalette.value.primary)
+
+  return vars
 })
 
 useRegisterPageForm(page)
@@ -219,32 +235,54 @@ useUnsavedGuard(page.isDirty)
   align-items: start;
 }
 
-.preview-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-8) var(--space-16);
-  border-radius: var(--radius-pill);
-  background: var(--color-primary);
-  color: var(--color-white);
-  width: fit-content;
-  font-weight: var(--font-weight-semibold);
+.preview {
+  @include flex-col(var(--space-8));
 }
 
-.preview-btn-label {
+// Мок мобильного хедера витрины — цвета из темы тенанта (headerVars inline).
+.header-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+  max-width: 390px;
+  padding: 0 var(--space-16);
+  height: 56px;
+  box-sizing: border-box;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-12);
+}
+
+.hp-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.hp-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.hp-btn-label {
   font-size: var(--font-size-sm);
 }
 
 .icon-picker {
   @include flex-col(var(--space-8));
-}
-
-.picker-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
-  flex-wrap: wrap;
 }
 
 .picker-body {

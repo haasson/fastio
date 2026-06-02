@@ -1,5 +1,5 @@
 <template>
-  <div class="list-root">
+  <div class="list-root" :style="gridVars">
     <div v-if="ctx.totalReadyCount > 0 || callTables.length" class="status-chips">
       <UiTag v-if="ctx.totalReadyCount > 0" type="success" round>
         {{ ctx.totalReadyCount }} {{ readyLabel }} к подаче
@@ -106,7 +106,7 @@
 import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag, useMessage } from '@fastio/ui'
-import type { Table } from '@fastio/shared'
+import type { Table, CanvasTileSize } from '@fastio/shared'
 import { pluralize, DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
 import { useDatabase } from '~/shared/data/useDatabase'
@@ -132,6 +132,19 @@ const now = useNow({ interval: 30_000 })
 
 const escalationMinutes = computed(() => ctx.tableSettings?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes)
 const showCategory = computed(() => ctx.tableSettings?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory)
+
+// Размер карточек столов из настроек: S (компактные) / M / L (крупные).
+const CARD_SIZES: Record<CanvasTileSize, [string, string]> = {
+  s: ['260px', '320px'],
+  m: ['320px', '400px'],
+  l: ['400px', '500px'],
+}
+const tileSize = computed(() => ctx.tableSettings?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize)
+const gridVars = computed(() => {
+  const [min, max] = CARD_SIZES[tileSize.value] ?? CARD_SIZES.s
+
+  return { '--card-min': min, '--card-max': max }
+})
 
 // Открытые столы с активными вызовами, самые «старые» (срочные) — первыми.
 const oldestCallAgeMs = (table: Table) => {
@@ -328,7 +341,7 @@ const openQr = (table: Table) => {
 
 .table-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 340px));
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min, 280px), var(--card-max, 340px)));
   gap: var(--space-12);
 }
 </style>

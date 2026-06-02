@@ -5,43 +5,37 @@
       Гость выбирает тип при вызове официанта. Если тип один — выбор не показывается.
     </UiText>
 
-    <div v-if="callTypes.length" class="type-list">
-      <div v-for="type in callTypes" :key="type.id" class="type-item">
-        <UiText size="small" class="type-name">{{ type.name }}</UiText>
-        <UiButton
-          size="small"
-          type="text"
-          icon="trash"
-          aria-label="Удалить тип"
-          @click="$emit('remove-type', type.id)"
+    <div class="tags">
+      <span v-for="type in callTypes" :key="type.id" class="tag">
+        {{ type.name }}
+        <UiChipRemove :size="12" title="Удалить тип" @click="$emit('remove-type', type.id)" />
+      </span>
+
+      <div class="tag-add">
+        <input
+          v-model="newTypeName"
+          class="tag-add-input"
+          placeholder="Новый тип"
+          maxlength="40"
+          @keydown.enter="submitNewType"
         />
+        <button
+          type="button"
+          class="tag-add-btn"
+          :disabled="!newTypeName.trim()"
+          aria-label="Добавить тип"
+          @click="submitNewType"
+        >
+          <UiIcon name="plus" :size="14" />
+        </button>
       </div>
-    </div>
-
-    <UiDivider v-if="callTypes.length" />
-
-    <div class="type-add">
-      <UiInput
-        v-model:value="newTypeName"
-        placeholder="Название типа вызова"
-        class="type-input"
-        @keydown.enter="submitNewType"
-      />
-      <UiButton
-        type="primary"
-        icon="plus"
-        :disabled="!newTypeName.trim()"
-        @click="submitNewType"
-      >
-        Добавить
-      </UiButton>
     </div>
   </UiCard>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { UiCard, UiButton, UiInput, UiText, UiTitle, UiDivider } from '@fastio/ui'
+import { UiCard, UiText, UiTitle, UiIcon, UiChipRemove } from '@fastio/ui'
 import type { TableCallType } from '@fastio/shared'
 
 defineProps<{
@@ -75,31 +69,71 @@ const submitNewType = () => {
   margin-bottom: var(--space-12);
 }
 
-.type-list {
+.tags {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin-bottom: var(--space-8);
-}
-
-.type-item {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-8);
-  padding: var(--space-8) 0;
 }
 
-.type-name {
-  flex: 1;
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  color: var(--color-title);
 }
 
-.type-add {
-  display: flex;
-  gap: var(--space-8);
-  align-items: flex-start;
+.tag-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-left: var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 1px dashed var(--color-border);
 }
 
-.type-input {
-  flex: 1;
+.tag-add-input {
+  width: 120px;
+  border: none;
+  background: transparent;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  padding: var(--space-4) 0;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--color-text-hint);
+  }
+}
+
+.tag-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-soft);
+  }
+
+  &:disabled {
+    color: var(--color-text-hint);
+    cursor: default;
+  }
 }
 </style>

@@ -29,7 +29,6 @@
       <div
         ref="canvasRef"
         class="canvas"
-        :style="canvasStyle"
         @pointermove="onCanvasPointerMove"
         @pointerup="onCanvasPointerUp"
         @click.self="deselectAll"
@@ -180,7 +179,7 @@ import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiButton, UiMenuDropdown, UiPopover, UiIcon, UiText } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
-import type { Table, Reservation, TableCall, KitchenQueueItem, CanvasTileSize } from '@fastio/shared'
+import type { Table, Reservation, TableCall, KitchenQueueItem } from '@fastio/shared'
 import { formatRelativeTime } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useGate } from '~/shared/plan/useGate'
@@ -191,7 +190,6 @@ type Props = {
   callsByTable: Record<string, TableCall[]>
   readyDishes: Record<string, KitchenQueueItem[]>
   escalationMinutes: number
-  tileSize: CanvasTileSize
 }
 
 type Emits = {
@@ -218,12 +216,6 @@ const canvasRef = ref<HTMLElement | null>(null)
 const scrollRef = ref<HTMLElement | null>(null)
 const selectedId = ref<string | null>(null)
 const editing = ref(false)
-
-// ── Размер плитки (пресет из настроек) ───────────────────
-// Масштаб применяется ТОЛЬКО в режиме просмотра. В edit-режиме scale=1, чтобы
-// drag/resize/rotate-математика (в screen-px) работала без пересчёта.
-const TILE_SCALE: Record<CanvasTileSize, number> = { s: 1, m: 1.3, l: 1.6 }
-const viewScale = computed(() => editing.value ? 1 : (TILE_SCALE[props.tileSize] ?? 1))
 
 const placedTables = computed(() => props.tables.filter((t) => t.positionX !== null && t.positionY !== null))
 const unplacedTables = computed(() => props.tables.filter((t) => t.positionX === null || t.positionY === null))
@@ -290,9 +282,8 @@ const readyPanIndex = ref(0)
 const panToTable = (table: Table) => {
   if (!scrollRef.value || table.positionX === null || table.positionY === null) return
 
-  const s = viewScale.value
-  const cx = (table.positionX + table.tableWidth / 2) * s
-  const cy = (table.positionY + table.tableHeight / 2) * s
+  const cx = table.positionX + table.tableWidth / 2
+  const cy = table.positionY + table.tableHeight / 2
 
   scrollRef.value.scrollTo({
     left: cx - scrollRef.value.clientWidth / 2,
@@ -352,24 +343,13 @@ const onContextMenuClick = (name: string) => {
 }
 
 // ── Table style ──────────────────────────────────────────
-const BASE_W = 1400
-const BASE_H = 900
-const canvasStyle = computed(() => ({
-  width: `${BASE_W * viewScale.value}px`,
-  height: `${BASE_H * viewScale.value}px`,
-}))
-
-const tableStyle = (table: Table) => {
-  const s = viewScale.value
-
-  return {
-    left: `${(table.positionX ?? 0) * s}px`,
-    top: `${(table.positionY ?? 0) * s}px`,
-    width: `${table.tableWidth * s}px`,
-    height: `${table.tableHeight * s}px`,
-    transform: table.rotation ? `rotate(${table.rotation}deg)` : undefined,
-  }
-}
+const tableStyle = (table: Table) => ({
+  left: `${table.positionX ?? 0}px`,
+  top: `${table.positionY ?? 0}px`,
+  width: `${table.tableWidth}px`,
+  height: `${table.tableHeight}px`,
+  transform: table.rotation ? `rotate(${table.rotation}deg)` : undefined,
+})
 
 // ── Selection ────────────────────────────────────────────
 const onTableClick = (event: MouseEvent, table: Table) => {

@@ -77,7 +77,6 @@ const tabs = computed(() => {
   const items = [
     { value: 'list', label: 'Столы' },
     { value: 'layout', label: 'Схема' },
-    { value: 'calls', label: 'Вызовы' },
   ]
 
   if (canManageTables.value) items.push({ value: 'settings', label: 'Настройки' })
