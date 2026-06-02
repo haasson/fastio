@@ -7,37 +7,34 @@
         <!-- ── Вызов официанта ──────────────────────────────── -->
         <UiSectionHeader title="Вызов официанта" />
 
-        <div class="row">
-          <UiInput
-            v-model="form.callButtonLabel"
-            label="Текст кнопки"
-            placeholder="Официант"
-            message="Что увидит гость на витрине стола"
-          />
-          <div class="preview">
-            <UiText size="tiny" class="preview-label">Превью кнопки</UiText>
-            <div class="preview-btn">
+        <div class="icon-picker">
+          <div class="picker-head">
+            <UiText size="small" class="picker-label">Иконка и текст кнопки</UiText>
+            <div class="preview-btn" :style="previewBtnStyle">
               <UiIcon :name="previewIcon" :size="16" />
-              <UiText size="small">{{ form.callButtonLabel.trim() || 'Официант' }}</UiText>
+              <span class="preview-btn-label">{{ form.callButtonLabel.trim() || 'Официант' }}</span>
             </div>
           </div>
-        </div>
-
-        <div class="icon-picker">
-          <UiText size="small" class="picker-label">Иконка кнопки</UiText>
-          <div class="icon-grid">
-            <button
-              v-for="icon in CALL_ICONS"
-              :key="icon.name"
-              type="button"
-              class="icon-cell"
-              :class="{ active: form.callButtonIcon === icon.name }"
-              :title="icon.label"
-              :aria-label="icon.label"
-              @click="selectIcon(icon.name)"
-            >
-              <UiIcon :name="icon.name" :size="20" />
-            </button>
+          <div class="picker-body">
+            <div class="icon-grid">
+              <button
+                v-for="icon in CALL_ICONS"
+                :key="icon.name"
+                type="button"
+                class="icon-cell"
+                :class="{ active: form.callButtonIcon === icon.name }"
+                :title="icon.label"
+                :aria-label="icon.label"
+                @click="selectIcon(icon.name)"
+              >
+                <UiIcon :name="icon.name" :size="20" />
+              </button>
+            </div>
+            <UiInput
+              v-model="form.callButtonLabel"
+              placeholder="Официант"
+              class="label-input"
+            />
           </div>
         </div>
 
@@ -48,7 +45,7 @@
             :min="0"
             :max="600"
             :show-button="true"
-            message="Минимум между вызовами с одного стола. Кнопка не блокируется — сервер отклонит частый повтор."
+            message="Минимум между вызовами с одного стола; сервер отклонит частый повтор (кнопка не блокируется)."
           />
           <UiInputNumber
             v-model="form.callEscalationMinutes"
@@ -70,13 +67,12 @@
             :options="TILE_SIZE_OPTIONS"
             message="Размер столов на схеме зала"
           />
+          <UiSwitch
+            v-model="form.showDishCategory"
+            label="Категория блюда на столах"
+            message="Показывать категорию рядом с позицией (список и схема)"
+          />
         </div>
-
-        <UiSwitch
-          v-model="form.showDishCategory"
-          label="Показывать категорию блюда"
-          message="Категория рядом с позицией на столах (список и схема)"
-        />
       </UiForm>
 
       <!-- ── Типы вызовов (сохраняются сразу) ───────────────── -->
@@ -178,6 +174,27 @@ const selectIcon = (name: IconName) => {
   form.callButtonIcon = form.callButtonIcon === name ? null : name
 }
 
+// Контрастный текст на бренд-цвете (WCAG luminance) — как на витрине (useTheme).
+const hexToOnColor = (hex: string): string => {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const s = c / 255
+
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  })
+
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.35 ? '#000000' : '#ffffff'
+}
+
+// Превью в реальных цветах темы витрины (бренд-primary тенанта + контрастный текст).
+const previewBtnStyle = computed(() => {
+  const primary = tenantStore.maybeTenant?.theme?.primaryColor
+
+  if (!primary) return undefined
+
+  return { background: primary, color: hexToOnColor(primary) }
+})
+
 useRegisterPageForm(page)
 useUnsavedGuard(page.isDirty)
 </script>
@@ -199,15 +216,7 @@ useUnsavedGuard(page.isDirty)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-12);
-  align-items: end;
-}
-
-.preview {
-  @include flex-col(var(--space-4));
-}
-
-.preview-label {
-  color: var(--color-text-hint);
+  align-items: start;
 }
 
 .preview-btn {
@@ -215,14 +224,35 @@ useUnsavedGuard(page.isDirty)
   align-items: center;
   gap: var(--space-8);
   padding: var(--space-8) var(--space-16);
-  border-radius: var(--radius-8);
+  border-radius: var(--radius-pill);
   background: var(--color-primary);
   color: var(--color-white);
   width: fit-content;
+  font-weight: var(--font-weight-semibold);
+}
+
+.preview-btn-label {
+  font-size: var(--font-size-sm);
 }
 
 .icon-picker {
   @include flex-col(var(--space-8));
+}
+
+.picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  flex-wrap: wrap;
+}
+
+.picker-body {
+  @include flex-col(var(--space-8));
+}
+
+.label-input {
+  max-width: 320px;
 }
 
 .picker-label {
