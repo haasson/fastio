@@ -39,6 +39,27 @@ export type Table = {
   notes: string | null
 }
 
+export type CanvasTileSize = 's' | 'm' | 'l'
+
+export type TableSettings = {
+  tenantId: string
+  callButtonLabel: string
+  callButtonIcon: string | null
+  callCooldownSeconds: number
+  callEscalationMinutes: number
+  canvasTileSize: CanvasTileSize
+  showDishCategory: boolean
+}
+
+export type TableSettingsFormData = {
+  callButtonLabel: string
+  callButtonIcon?: string | null
+  callCooldownSeconds: number
+  callEscalationMinutes: number
+  canvasTileSize: CanvasTileSize
+  showDishCategory: boolean
+}
+
 export type TableFormData = {
   name: string
   branchId?: string | null

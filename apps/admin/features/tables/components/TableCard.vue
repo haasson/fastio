@@ -27,8 +27,10 @@
         <span class="call-time">{{ formatRelativeTime(call.createdAt, now) }}</span>
         <UiButton
           size="small"
-          type="text"
+          type="success"
+          circle
           icon="check"
+          aria-label="Закрыть вызов"
           @click="$emit('resolve-call', call.id)"
         />
       </div>

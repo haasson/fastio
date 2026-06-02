@@ -3378,6 +3378,53 @@ export type Database = {
           },
         ]
       }
+      table_settings: {
+        Row: {
+          call_button_icon: string | null
+          call_button_label: string
+          call_cooldown_seconds: number
+          call_escalation_minutes: number
+          canvas_tile_size: string
+          created_at: string
+          id: string
+          show_dish_category: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          call_button_icon?: string | null
+          call_button_label?: string
+          call_cooldown_seconds?: number
+          call_escalation_minutes?: number
+          canvas_tile_size?: string
+          created_at?: string
+          id?: string
+          show_dish_category?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          call_button_icon?: string | null
+          call_button_label?: string
+          call_cooldown_seconds?: number
+          call_escalation_minutes?: number
+          canvas_tile_size?: string
+          created_at?: string
+          id?: string
+          show_dish_category?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'table_settings_tenant_id_fkey'
+            columns: ['tenant_id']
+            isOneToOne: true
+            referencedRelation: 'tenants'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       tables: {
         Row: {
           branch_id: string
