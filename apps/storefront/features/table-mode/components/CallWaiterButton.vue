@@ -113,15 +113,15 @@ async function sendCall(callTypeId: string | null) {
       body: callTypeId ? { callTypeId } : {},
     })
     pickerOpen.value = false
-    showSuccess('Официант идёт', 'Скоро подойдёт к вашему столу')
+    showSuccess('Уже спешим к вам', 'Скоро будем у вашего стола')
   } catch (err) {
     const status = (err as { statusCode?: number })?.statusCode
-    // Кнопка НЕ блокируется кулдауном — частоту валидирует сервер. На 429 просто
-    // показываем тост со сколько ещё ждать (retryAfter с сервера).
+    // Кнопка НЕ блокируется кулдауном — частоту валидирует сервер. На 429 показываем
+    // нейтральный тост со сколько ещё ждать (retryAfter с сервера).
     if (status === 429) {
       const retryAfter = (err as { data?: { retryAfter?: number } })?.data?.retryAfter
-      const wait = typeof retryAfter === 'number' ? ` Подождите ${retryAfter} с.` : ''
-      showError('Официант уже идёт.' + wait)
+      const wait = typeof retryAfter === 'number' ? `Можно повторить через ${retryAfter} с` : 'Вызов уже отправлен'
+      showError('Уже спешим к вам', wait)
       return
     }
     const message = (err as { data?: { message?: string }; statusMessage?: string })?.data?.message

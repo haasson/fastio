@@ -79,16 +79,16 @@
     </div>
 
     <div v-else class="check-sections">
-      <!-- Заказанные блюда — сам чек, без подзаголовков -->
-      <div v-if="readyItems.length" class="items-list">
-        <TableCheckItem v-for="item in readyItems" :key="item.id" :item="item" tone="ready" />
+      <!-- Заказанные блюда — сам чек, простой список -->
+      <div v-if="readyItems.length" class="check-card">
+        <TableCheckItem v-for="item in readyItems" :key="item.id" :item="item" />
       </div>
 
       <!-- Ещё не готово — выделенный блок -->
       <div v-if="progressItems.length" class="cooking-block">
         <FsText variant="caption" :weight="600" class="cooking-label">Готовится</FsText>
-        <div class="items-list">
-          <TableCheckItem v-for="item in progressItems" :key="item.id" :item="item" tone="progress" />
+        <div class="cooking-items">
+          <TableCheckItem v-for="item in progressItems" :key="item.id" :item="item" />
         </div>
       </div>
     </div>
@@ -305,6 +305,7 @@ async function submitDraft() {
     })
     tableStore.removeDraftByKeys(sentKeys)
     pendingOrderKey.value = null
+    draftOpen.value = false
     await loadCheck()
     showSuccess('Заказ отправлен')
   } catch (err: unknown) {
@@ -367,12 +368,29 @@ async function submitDraft() {
   @include flex-col(6px);
 }
 
+// Чек — нейтральная карточка, строки разделены тонкой линией.
+.check-card {
+  padding: 2px 14px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  > * + * {
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+// Блок «Готовится» — слегка выделен амбер-тинтом.
 .cooking-block {
-  @include flex-col(6px);
-  padding: 12px;
+  @include flex-col(4px);
+  padding: 10px 14px 6px;
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
   border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+}
+
+.cooking-items > * + * {
+  border-top: 1px solid color-mix(in srgb, var(--color-warning) 20%, transparent);
 }
 
 .cooking-label {

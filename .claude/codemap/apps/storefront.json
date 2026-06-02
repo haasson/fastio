@@ -2,7 +2,7 @@
   "project": "apps/storefront",
   "submap": "main",
   "purpose": "Nuxt 3 SSR storefront — публичный сайт-витрина для заведений (меню, корзина, заказ, запись)",
-  "generated_at": "2026-06-02T09:21:21.331Z",
+  "generated_at": "2026-06-02T09:56:19.196Z",
   "stats": {
     "files": 9,
     "pages": 0,
