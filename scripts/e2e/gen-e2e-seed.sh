@@ -37,6 +37,10 @@ drift_cols() {
 # Таблицы в топологическом (FK-безопасном) порядке: "schema.table|filter_expr".
 # auth.users/identities фильтруются по членам тенантов; tenants по id; остальное по tenant_id.
 MEMBER_FILTER="user_id IN (SELECT user_id FROM public.tenant_members WHERE tenant_id IN ('$DEMO','$SVC'))"
+# Appointment-таблицы привязки/расписаний ключуются по resource_id (нет tenant_id) —
+# фильтруем через ресурсы тенантов. Без них слот-движок не видит часов мастеров и
+# связь услуга↔мастер → ноль слотов на витрине (см. appointment-flow.spec.ts).
+RES_FILTER="resource_id IN (SELECT id FROM public.resources WHERE tenant_id IN ('$DEMO','$SVC'))"
 TABLES=(
   "auth.users|id IN (SELECT user_id FROM public.tenant_members WHERE tenant_id IN ('$DEMO','$SVC'))"
   "auth.identities|$MEMBER_FILTER"
@@ -57,6 +61,10 @@ TABLES=(
   "public.combos|tenant_id IN ('$DEMO','$SVC')"
   "public.services|tenant_id IN ('$DEMO','$SVC')"
   "public.resources|tenant_id IN ('$DEMO','$SVC')"
+  "public.resource_branches|$RES_FILTER"
+  "public.resource_categories|$RES_FILTER"
+  "public.resource_schedules|$RES_FILTER"
+  "public.service_resources|$RES_FILTER"
   "public.resource_unavailability|tenant_id IN ('$DEMO','$SVC')"
   "public.appointment_settings|tenant_id IN ('$DEMO','$SVC')"
   "public.reservation_settings|tenant_id IN ('$DEMO','$SVC')"

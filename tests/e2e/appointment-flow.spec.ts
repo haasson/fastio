@@ -35,15 +35,28 @@ test('appointment flow: service → schedule → contact → success', async ({ 
   await page.getByTestId('cart-services-checkout-btn').click()
   await expect(page).toHaveURL(/\/appointments\/checkout$/)
 
-  // Выбираем первую доступную дату.
-  const firstDate = page.getByTestId('appointment-dates').locator('button:not([disabled])').first()
-  await firstDate.waitFor({ state: 'visible', timeout: 15_000 })
-  await firstDate.click()
+  // Берём первую дату недели, у которой РЕАЛЬНО есть свободный слот, а не первую
+  // кликабельную. «Сегодня» может быть уже закрыто (nightly идёт поздно вечером по
+  // TZ тенанта) — date-стрип всё равно показывает сегодня кликабельным, но окон нет.
+  const dateButtons = page.getByTestId('appointment-dates').locator('button:not([disabled])')
+  await dateButtons.first().waitFor({ state: 'visible', timeout: 15_000 })
+  const dateCount = await dateButtons.count()
 
-  // Затем первый доступный слот.
-  const firstSlot = page.getByTestId('appointment-slots').locator('button:not([disabled])').first()
-  await firstSlot.waitFor({ state: 'visible', timeout: 20_000 })
-  await firstSlot.click()
+  let slotPicked = false
+  for (let i = 0; i < dateCount; i++) {
+    await dateButtons.nth(i).click()
+    const slot = page.getByTestId('appointment-slots').locator('button:not([disabled])').first()
+    try {
+      await slot.waitFor({ state: 'visible', timeout: 4_000 })
+      slotPicked = true
+      break
+    } catch {
+      // У этой даты нет свободных окон — пробуем следующую.
+    }
+  }
+  expect(slotPicked, 'ни одна дата недели не имеет свободных слотов — проверь seed расписаний ресурсов (resource_schedules)').toBe(true)
+
+  await page.getByTestId('appointment-slots').locator('button:not([disabled])').first().click()
 
   await page.getByTestId('appointment-slots-confirm').click()
 
