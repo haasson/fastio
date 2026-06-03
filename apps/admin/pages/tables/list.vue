@@ -41,6 +41,7 @@
               :ready-dishes="ctx.readyDishes[table.id] ?? []"
               :escalation-minutes="escalationMinutes"
               :show-category="showCategory"
+              :preview-rows="previewRows"
               @edit="openEdit(table)"
               @show-qr="openQr(table)"
               @add-dish="openPicker(table)"
@@ -132,6 +133,7 @@ const now = useNow({ interval: 30_000 })
 
 const escalationMinutes = computed(() => ctx.tableSettings?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes)
 const showCategory = computed(() => ctx.tableSettings?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory)
+const previewRows = computed(() => ctx.tableSettings?.listPreviewRows ?? DEFAULT_TABLE_SETTINGS.listPreviewRows)
 
 // Размер карточек столов из настроек: S (компактные) / M / L (крупные).
 // Только min-ширина — карточки тянутся (1fr), как в списке заказов.

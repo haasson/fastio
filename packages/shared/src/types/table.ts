@@ -54,6 +54,7 @@ export type TableSettings = {
   callEscalationMinutes: number
   canvasTileSize: CanvasTileSize
   showDishCategory: boolean
+  listPreviewRows: number
 }
 
 export type TableSettingsFormData = {
@@ -63,6 +64,7 @@ export type TableSettingsFormData = {
   callEscalationMinutes: number
   canvasTileSize: CanvasTileSize
   showDishCategory: boolean
+  listPreviewRows: number
 }
 
 export type TableFormData = {

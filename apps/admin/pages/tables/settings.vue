@@ -51,6 +51,7 @@
             :min="0"
             :max="600"
             :show-button="true"
+            :clearable="false"
             message="Минимум между вызовами с одного стола; сервер отклонит частый повтор (кнопка не блокируется)."
           />
           <UiInputNumber
@@ -59,6 +60,7 @@
             :min="1"
             :max="120"
             :show-button="true"
+            :clearable="false"
             message="Через сколько минут вызов станет красным (срочным)"
           />
         </div>
@@ -77,6 +79,15 @@
             v-model="form.showDishCategory"
             label="Категория блюда на столах"
             message="Показывать категорию рядом с позицией (список и схема)"
+          />
+          <UiInputNumber
+            v-model="form.listPreviewRows"
+            label="Строк позиций на карточке"
+            :min="1"
+            :max="50"
+            :show-button="true"
+            :clearable="false"
+            message="Сколько позиций показывать на карточке стола в списке, остальные — под «ещё»"
           />
         </div>
       </UiForm>
@@ -130,6 +141,7 @@ type Form = {
   callEscalationMinutes: number
   canvasTileSize: CanvasTileSize
   showDishCategory: boolean
+  listPreviewRows: number
 }
 
 const settingsSource = computed(() => ctx.tableSettings)
@@ -143,6 +155,7 @@ const page = useEditableForm({
     callEscalationMinutes: s?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes,
     canvasTileSize: s?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize,
     showDishCategory: s?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory,
+    listPreviewRows: s?.listPreviewRows ?? DEFAULT_TABLE_SETTINGS.listPreviewRows,
   }),
   errorMessage: 'Не удалось сохранить настройки',
   save: async (data) => {
@@ -157,6 +170,7 @@ const page = useEditableForm({
       callEscalationMinutes: data.callEscalationMinutes,
       canvasTileSize: data.canvasTileSize,
       showDishCategory: data.showDishCategory,
+      listPreviewRows: data.listPreviewRows,
     })
 
     ctx.onSettingsSaved(saved)

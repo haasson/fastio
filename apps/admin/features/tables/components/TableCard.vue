@@ -51,7 +51,7 @@
         :ready-dishes="readyDishes"
         compact
         :show-category="showCategory"
-        :preview-count="PREVIEW"
+        :preview-count="previewRows ?? DEFAULT_TABLE_SETTINGS.listPreviewRows"
         @remove-dish="$emit('remove-dish', $event)"
         @confirm-item="$emit('confirm-item', $event)"
         @reject-item="$emit('reject-item', $event)"
@@ -96,6 +96,7 @@ const props = defineProps<{
   readyDishes?: KitchenQueueItem[]
   escalationMinutes?: number
   showCategory?: boolean
+  previewRows?: number
 }>()
 
 const emit = defineEmits<{
@@ -128,8 +129,6 @@ const onMenuClick = (name: string) => {
   if (name === 'edit') emit('edit')
   else if (name === 'qr') emit('show-qr')
 }
-
-const PREVIEW = 3
 
 const now = useNow({ interval: 30_000 })
 

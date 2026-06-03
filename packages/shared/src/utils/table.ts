@@ -10,6 +10,7 @@ export const DEFAULT_TABLE_SETTINGS: Omit<TableSettings, 'tenantId'> = {
   callEscalationMinutes: 10,
   canvasTileSize: 's',
   showDishCategory: false,
+  listPreviewRows: 3,
 }
 
 export const mapTableSettings = (raw: Record<string, unknown>): TableSettings => ({
@@ -20,4 +21,5 @@ export const mapTableSettings = (raw: Record<string, unknown>): TableSettings =>
   callEscalationMinutes: (raw.call_escalation_minutes as number | null) ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes,
   canvasTileSize: (raw.canvas_tile_size as CanvasTileSize | null) ?? DEFAULT_TABLE_SETTINGS.canvasTileSize,
   showDishCategory: (raw.show_dish_category as boolean | null) ?? DEFAULT_TABLE_SETTINGS.showDishCategory,
+  listPreviewRows: (raw.list_preview_rows as number | null) ?? DEFAULT_TABLE_SETTINGS.listPreviewRows,
 })
