@@ -202,12 +202,16 @@ const rightSizeStyle = computed(() => {
   cursor: grab;
   touch-action: none;
 
-  // hitarea-спан внутри DrawerHandle — расширяем зону захвата, чтобы за «таблетку»
-  // было удобно браться пальцем (сам визуальный pill остаётся 36×4).
-  :deep([data-vaul-handle-hitarea]) {
+  // pointer-хендлеры DrawerHandle висят на этом элементе → расширяем кликабельную/
+  // таскабельную зону невидимым псевдоэлементом во всю ширину шторки и в высоту
+  // (визуальная таблетка остаётся 36×4 по центру). -50vw клипается overflow:hidden.
+  &::after {
+    content: '';
     position: absolute;
-    inset: -16px -24px;
-    display: block;
+    top: -28px;
+    bottom: -28px;
+    left: -50vw;
+    right: -50vw;
   }
 }
 
