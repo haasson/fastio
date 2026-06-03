@@ -103,6 +103,7 @@ const makeTenant = (overrides: Partial<Tenant> = {}): Tenant => ({
   },
   legalInfo: null,
   paymentMethods: [...DEFAULT_PAYMENT_METHODS],
+  ordersTileSize: 'm',
   branchSelectionMode: 'unified',
   colorPalettes: { delivery_zones: [], branches: [], service_categories: [] },
   createdAt: new Date().toISOString(),

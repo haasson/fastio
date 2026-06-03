@@ -106,8 +106,8 @@
 import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag, useMessage } from '@fastio/ui'
-import type { Table, CanvasTileSize } from '@fastio/shared'
-import { pluralize, DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
+import type { Table } from '@fastio/shared'
+import { pluralize, DEFAULT_TABLE_SETTINGS, TILE_SIZE_MIN } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTablesContext, useAddDishToTable } from '~/features/tables'
@@ -134,17 +134,9 @@ const escalationMinutes = computed(() => ctx.tableSettings?.callEscalationMinute
 const showCategory = computed(() => ctx.tableSettings?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory)
 
 // Размер карточек столов из настроек: S (компактные) / M / L (крупные).
-const CARD_SIZES: Record<CanvasTileSize, [string, string]> = {
-  s: ['260px', '320px'],
-  m: ['320px', '400px'],
-  l: ['400px', '500px'],
-}
+// Только min-ширина — карточки тянутся (1fr), как в списке заказов.
 const tileSize = computed(() => ctx.tableSettings?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize)
-const gridVars = computed(() => {
-  const [min, max] = CARD_SIZES[tileSize.value] ?? CARD_SIZES.s
-
-  return { '--card-min': min, '--card-max': max }
-})
+const gridVars = computed(() => ({ '--card-min': TILE_SIZE_MIN[tileSize.value] }))
 
 // Открытые столы с активными вызовами, самые «старые» (срочные) — первыми.
 const oldestCallAgeMs = (table: Table) => {
@@ -322,6 +314,7 @@ const openQr = (table: Table) => {
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/layout' as *;
+@use '@fastio/styles/mixins/grid' as grid;
 
 .list-root {
   @include flex-col(var(--space-20));
@@ -340,8 +333,6 @@ const openQr = (table: Table) => {
 }
 
 .table-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--card-min, 280px), var(--card-max, 340px)));
-  gap: var(--space-12);
+  @include grid.card-grid;
 }
 </style>

@@ -1,5 +1,15 @@
 <template>
   <UiForm class="form" @submit.prevent="page.submit">
+    <UiSectionHeader title="Отображение заказов" />
+    <div class="row row-half">
+      <UiSelect
+        v-model:value="form.ordersTileSize"
+        label="Размер карточек заказов"
+        :options="TILE_SIZE_OPTIONS"
+        message="Ширина карточек заказов в списке (вкладка «Заказы»)"
+      />
+    </div>
+
     <UiSectionHeader title="Методы оплаты" />
     <div class="checkboxes">
       <UiCheckbox v-model="form.cash">Наличные</UiCheckbox>
@@ -88,8 +98,8 @@
 <script setup lang="ts">
 import { watch, computed } from 'vue'
 import { UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiCheckbox, useMessage } from '@fastio/ui'
-import type { OrderSchedulingConfig, PaymentMethod } from '@fastio/shared'
-import { buildMinuteOptions } from '@fastio/shared'
+import type { OrderSchedulingConfig, PaymentMethod, TileSize } from '@fastio/shared'
+import { buildMinuteOptions, TILE_SIZE_OPTIONS } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useOrderStatusesStore } from '~/features/orders'
@@ -136,6 +146,7 @@ type Form = {
   card: boolean
   online: boolean
   scheduling: OrderSchedulingConfig
+  ordersTileSize: TileSize
 }
 
 const page = useEditableForm({
@@ -145,6 +156,7 @@ const page = useEditableForm({
     card: t.paymentMethods.includes('card'),
     online: t.paymentMethods.includes('online'),
     scheduling: { ...defaultScheduling(), ...t.orderSchedulingConfig },
+    ordersTileSize: t.ordersTileSize ?? 'm',
   }),
   // errorMessage='' — у нас собственная бизнес-валидация ниже с конкретными сообщениями;
   // дефолтный «Не удалось сохранить» тут только мешал бы.
@@ -185,6 +197,7 @@ const page = useEditableForm({
     await tenantStore.update({
       paymentMethods: methods as PaymentMethod[],
       orderSchedulingConfig: scheduling,
+      ordersTileSize: data.ordersTileSize,
     })
   },
 })

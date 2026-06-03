@@ -39,7 +39,12 @@ export type Table = {
   notes: string | null
 }
 
-export type CanvasTileSize = 's' | 'm' | 'l'
+// Размер карточек: 's' (компактные) / 'm' / 'l' (крупные). Общий тип для сеток
+// карточек столов и заказов — оба используют один пресет ширины (TILE_SIZE_MIN).
+export type TileSize = 's' | 'm' | 'l'
+
+// Псевдоним сохраняем для обратной совместимости — используется в table_settings.
+export type CanvasTileSize = TileSize
 
 export type TableSettings = {
   tenantId: string

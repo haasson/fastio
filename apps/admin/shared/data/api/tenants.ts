@@ -65,6 +65,7 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config ?? {}),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
     paymentMethods: (row.payment_methods ?? [...DEFAULT_PAYMENT_METHODS]) as Tenant['paymentMethods'],
+    ordersTileSize: (row.orders_tile_size as Tenant['ordersTileSize'] | null) ?? 'm',
     branchSelectionMode: row.branch_selection_mode,
     colorPalettes: {
       delivery_zones: (row.color_palettes as TenantColorPalettes)?.delivery_zones ?? [],
@@ -109,6 +110,7 @@ const tenantToDb = (data: Partial<Omit<Tenant, 'id' | 'ownerId' | 'createdAt'>>)
   order_scheduling_config: data.orderSchedulingConfig as Record<string, unknown> | undefined,
   legal_info: data.legalInfo,
   payment_methods: data.paymentMethods,
+  orders_tile_size: data.ordersTileSize,
   branch_selection_mode: data.branchSelectionMode,
   color_palettes: data.colorPalettes,
 }) as Partial<TenantRow>

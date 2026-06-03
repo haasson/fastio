@@ -1,5 +1,6 @@
 import type { SectionKey, NavPageKey } from '../utils/siteFeatures'
 import type { KitchenConfig } from './kitchen'
+import type { TileSize } from './table'
 
 export type TenantThemePreset =
   | 'fresh' | 'dark' | 'forest' | 'sakura' | 'slate' | 'cream' | 'neon' | 'sunset' | 'ocean' | 'lemon' | 'ember' | 'garden' | 'midnight' | 'berry' | 'fiesta'
@@ -313,6 +314,8 @@ export type Tenant = {
   orderSchedulingConfig: OrderSchedulingConfig
   legalInfo: TenantLegalInfo | null
   paymentMethods: PaymentMethod[]
+  // Размер карточек заказов в списке (вкладка «Заказы»). Колонка orders_tile_size.
+  ordersTileSize: TileSize
   branchSelectionMode: BranchSelectionMode
   colorPalettes: TenantColorPalettes
   createdAt: string

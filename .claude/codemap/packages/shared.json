@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-06-02T04:13:12.524Z",
+  "generated_at": "2026-06-03T03:07:47.898Z",
   "stats": {
-    "files": 51,
+    "files": 52,
     "pages": 0,
-    "symbols": 206,
+    "symbols": 208,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1298,6 +1298,25 @@
           "kind": "function",
           "hash": "0e68c7f5",
           "purpose": "Превращает палитру в объект CSS-переменных (--primary, --color-bg, --color-surface, ...)"
+        }
+      ]
+    },
+    "src/utils/tileSize.ts": {
+      "kind": "ts",
+      "hash": "708c2c1408fa",
+      "purpose": "Общий пресет размеров плитки-сетки (карточки заказов и столов): тип TileSize и соответствие s/m/l → минимальная ширина колонки + опции для UiSelect",
+      "symbols": [
+        {
+          "name": "TILE_SIZE_MIN",
+          "kind": "const",
+          "hash": "a9b91b2c",
+          "purpose": "Record<TileSize,string>: s=260px / m=320px / l=400px — минимум для minmax(min,1fr)"
+        },
+        {
+          "name": "TILE_SIZE_OPTIONS",
+          "kind": "const",
+          "hash": "0789e94c",
+          "purpose": "Опции селекта размера: Компактные/Средние/Крупные → s/m/l"
         }
       ]
     },

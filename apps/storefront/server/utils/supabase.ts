@@ -77,6 +77,7 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     orderSchedulingConfig: parseSchedulingConfig(row.order_scheduling_config as Record<string, unknown> | null),
     legalInfo: (row.legal_info as Tenant['legalInfo']) ?? null,
     paymentMethods: ((row.payment_methods as string[] | null) ?? [...DEFAULT_PAYMENT_METHODS]) as PaymentMethod[],
+    ordersTileSize: (row.orders_tile_size as Tenant['ordersTileSize'] | null) ?? 'm',
     branchSelectionMode: row.branch_selection_mode as Tenant['branchSelectionMode'],
     colorPalettes: {
       delivery_zones: ((row.color_palettes as { delivery_zones?: string[] } | null)?.delivery_zones) ?? [],

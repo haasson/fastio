@@ -64,7 +64,7 @@
 
     <template v-else>
       <!-- Карточки -->
-      <div v-if="orderView === 'cards'" class="grid">
+      <div v-if="orderView === 'cards'" class="grid" :style="gridVars">
         <OrderCard
           v-for="order in orders"
           :key="order.id"
@@ -119,7 +119,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { UiButton, UiDataTable, UiEmpty, UiPagination, UiSectionHeader, UiSegmentedControl, UiSelect, UiSkeleton } from '@fastio/ui'
 import AppTableToolbar from '~/shared/components/AppTableToolbar.vue'
 import type { Order } from '@fastio/shared'
-import { formatPhone, getAllowedStatuses, getKitchenAutoStatuses } from '@fastio/shared'
+import { formatPhone, getAllowedStatuses, getKitchenAutoStatuses, TILE_SIZE_MIN } from '@fastio/shared'
 import OrderCard from './OrderCard.vue'
 import OrderDrawer from './OrderDrawer.vue'
 import { useOrders } from '../composables/useOrders'
@@ -147,6 +147,9 @@ const { tenantId: tenantIdRef, statusId: statusIdRef, branchId: branchIdRef } = 
 const branchStore = useBranchStore()
 const tenantStore = useTenantStore()
 const { statuses } = storeToRefs(useOrderStatusesStore())
+
+// Ширина карточек заказов из настроек тенанта (вкладка «Заказы»). Карточки тянутся (1fr).
+const gridVars = computed(() => ({ '--card-min': TILE_SIZE_MIN[tenantStore.tenant.ordersTileSize ?? 'm'] }))
 
 const searchInput = ref('')
 const orderView = useLocalStorage<'cards' | 'list'>('orders:view', 'cards')
@@ -345,7 +348,7 @@ const { columns } = useOrderTable({
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/media-queries' as *;
+@use '@fastio/styles/mixins/grid' as *;
 
 .order-list-root {
   display: flex;
@@ -390,14 +393,7 @@ const { columns } = useOrderTable({
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-12);
-  align-items: start;
-
-  @include mq-m {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  }
+  @include card-grid;
 }
 
 :deep(.customer-name) {

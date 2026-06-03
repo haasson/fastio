@@ -3734,6 +3734,7 @@ export type Database = {
           onboarding_state: Json
           order_number_config: Json | null
           order_scheduling_config: Json
+          orders_tile_size: string
           owner_id: string | null
           payment_methods: string[]
           self_registered: boolean
@@ -3773,6 +3774,7 @@ export type Database = {
           onboarding_state?: Json
           order_number_config?: Json | null
           order_scheduling_config?: Json
+          orders_tile_size?: string
           owner_id?: string | null
           payment_methods?: string[]
           self_registered?: boolean
@@ -3812,6 +3814,7 @@ export type Database = {
           onboarding_state?: Json
           order_number_config?: Json | null
           order_scheduling_config?: Json
+          orders_tile_size?: string
           owner_id?: string | null
           payment_methods?: string[]
           self_registered?: boolean

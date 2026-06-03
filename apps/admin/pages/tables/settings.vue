@@ -96,7 +96,7 @@ import { computed } from 'vue'
 import { UiForm, UiInput, UiInputNumber, UiSelect, UiSectionHeader, UiSkeleton, UiSwitch, UiText, UiIcon } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import type { CanvasTileSize, ThemePalette } from '@fastio/shared'
-import { DEFAULT_TABLE_SETTINGS, paletteToCssVars, getPresetPalette, THEME_PRESETS } from '@fastio/shared'
+import { DEFAULT_TABLE_SETTINGS, paletteToCssVars, getPresetPalette, THEME_PRESETS, TILE_SIZE_OPTIONS } from '@fastio/shared'
 import { useTablesContext } from '~/features/tables'
 import TableCallTypes from '~/features/tables/components/TableCallTypes.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -121,12 +121,6 @@ const CALL_ICONS: { name: IconName; label: string }[] = [
   { name: 'users', label: 'Гости' },
   { name: 'help', label: 'Помощь' },
   { name: 'clock', label: 'Время' },
-]
-
-const TILE_SIZE_OPTIONS: { label: string; value: CanvasTileSize }[] = [
-  { label: 'Компактные', value: 's' },
-  { label: 'Средние', value: 'm' },
-  { label: 'Крупные', value: 'l' },
 ]
 
 type Form = {
