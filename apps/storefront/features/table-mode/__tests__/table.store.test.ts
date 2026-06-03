@@ -171,3 +171,78 @@ describe('aggregateCheckItems', () => {
     expect(input[1].quantity).toBe(2)
   })
 })
+
+describe('useTableStore — персист драфта (sessionStorage)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    sessionStorage.clear()
+  })
+
+  it('persist (в экшене) + restore round-trip для того же стола', () => {
+    const a = useTableStore()
+    a.setTable('t1', 'Стол 1')
+    a.addDraftItem(makeDish({ dishId: 'd1', quantity: 2 }))
+
+    // новый стор (как после рефреша), тот же стол
+    setActivePinia(createPinia())
+    const b = useTableStore()
+    b.setTable('t1', 'Стол 1')
+    b.restoreDraft()
+
+    expect(b.draftItems).toHaveLength(1)
+    expect(b.draftCount).toBe(2)
+  })
+
+  it('не воскрешает драфт другого стола', () => {
+    const a = useTableStore()
+    a.setTable('t1', 'Стол 1')
+    a.addDraftItem(makeDish())
+
+    setActivePinia(createPinia())
+    const b = useTableStore()
+    b.setTable('t2', 'Стол 2')
+    b.restoreDraft()
+
+    expect(b.draftItems).toHaveLength(0)
+  })
+
+  it('restore устойчив к битому payload', () => {
+    sessionStorage.setItem('table-draft', '{not json')
+    const s = useTableStore()
+    s.setTable('t1', 'Стол 1')
+    s.restoreDraft()
+
+    expect(s.draftItems).toHaveLength(0)
+  })
+
+  it('регресс: гидрация setup-стора не затирает сохранённый драфт', () => {
+    const a = useTableStore()
+    a.setTable('t1', 'Стол 1')
+    a.addDraftItem(makeDish())
+
+    // эмулируем SSR-гидрацию: новый pinia с серверным состоянием (драфт пуст)
+    const pinia = createPinia()
+    pinia.state.value.table = { tableId: 't1', tableName: 'Стол 1', checkItems: [], draftItems: [] }
+    setActivePinia(pinia)
+    const b = useTableStore()
+    b.setTable('t1', 'Стол 1')
+    b.restoreDraft()
+
+    // драфт пережил инстанцирование стора (персист только в экшенах, не на гидрации)
+    expect(b.draftItems).toHaveLength(1)
+  })
+
+  it('clearDraft чистит и персист', () => {
+    const a = useTableStore()
+    a.setTable('t1', 'Стол 1')
+    a.addDraftItem(makeDish())
+    a.clearDraft()
+
+    setActivePinia(createPinia())
+    const b = useTableStore()
+    b.setTable('t1', 'Стол 1')
+    b.restoreDraft()
+
+    expect(b.draftItems).toHaveLength(0)
+  })
+})

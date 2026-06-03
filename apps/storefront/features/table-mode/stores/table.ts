@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { getItemUnitPrice } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
 import type { DishCartItem } from '~/features/cart'
@@ -98,7 +98,7 @@ export const useTableStore = defineStore('table', () => {
   const DRAFT_KEY = 'table-draft'
 
   const persistDraft = () => {
-    if (!import.meta.client || !tableId.value) return
+    if (typeof sessionStorage === 'undefined' || !tableId.value) return
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ tableId: tableId.value, items: draftItems.value }))
     } catch (e) {
@@ -109,7 +109,7 @@ export const useTableStore = defineStore('table', () => {
   // Восстановление драфта для текущего стола. Зовётся из page в onMounted (client-only),
   // чтобы не словить hydration mismatch (на SSR sessionStorage недоступен).
   function restoreDraft() {
-    if (!import.meta.client || !tableId.value) return
+    if (typeof sessionStorage === 'undefined' || !tableId.value) return
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY)
       if (!raw) return
@@ -122,7 +122,10 @@ export const useTableStore = defineStore('table', () => {
     }
   }
 
-  watch(draftItems, persistDraft, { deep: true })
+  // Персистим в самих экшенах, а НЕ через watch(draftItems): Pinia для setup-стора
+  // применяет SSR-состояние после регистрации watch'ей, поэтому deep-watch срабатывал
+  // на гидрации и затирал сохранённый драфт пустым серверным [] до restoreDraft.
+  // Экшены вызываются только пользователем — гидрация их не триггерит.
 
   function setTable(id: string, name: string) {
     tableId.value = id
@@ -141,6 +144,7 @@ export const useTableStore = defineStore('table', () => {
     } else {
       draftItems.value.push({ ...item, _key: crypto.randomUUID() })
     }
+    persistDraft()
   }
 
   function updateDraftQty(key: string, quantity: number) {
@@ -152,11 +156,13 @@ export const useTableStore = defineStore('table', () => {
       return
     }
     target.quantity = quantity
+    persistDraft()
   }
 
   function removeDraftItem(key: string) {
     const index = draftItems.value.findIndex(i => i._key === key)
     if (index !== -1) draftItems.value.splice(index, 1)
+    persistDraft()
   }
 
   // Удаляет ровно отправленные позиции по snapshot их `_key`. Нужен после успешной
@@ -164,15 +170,17 @@ export const useTableStore = defineStore('table', () => {
   // вместе с отправленными (иначе тихая потеря позиции). Используется вместо clearDraft.
   function removeDraftByKeys(keys: Set<string>) {
     draftItems.value = draftItems.value.filter(i => !keys.has(i._key))
+    persistDraft()
   }
 
   function clearDraft() {
     draftItems.value = []
+    persistDraft()
   }
 
   function clear() {
     // Стол закрыт — чистим и персист драфта.
-    if (import.meta.client) {
+    if (typeof sessionStorage !== 'undefined') {
       try {
         sessionStorage.removeItem(DRAFT_KEY)
       } catch (e) {
