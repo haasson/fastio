@@ -5,6 +5,7 @@
       :today-reservations="todayReservations"
       :calls-by-table="ctx.callsByTable"
       :ready-dishes="ctx.readyDishes"
+      :pending-by-table="pendingByTable"
       :escalation-minutes="escalationMinutes"
       @update="ctx.onTableUpdated"
       @update-position="ctx.onPositionUpdated"
@@ -70,6 +71,20 @@ const todayReservations = inject(TodayReservationsKey, computed(() => []))
 
 const escalationMinutes = computed(() => ctx.tableSettings?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes)
 const showCategory = computed(() => ctx.tableSettings?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory)
+
+// Кол-во новых позиций (status === 'pending') на стол — та же логика, что в TableCard
+// («N ожидают»), чтобы список и схема показывали одинаковое число.
+const pendingByTable = computed<Record<string, number>>(() => {
+  const map: Record<string, number> = {}
+
+  for (const [tableId, session] of Object.entries(ctx.tableSums)) {
+    const count = (session?.items ?? []).filter((i) => i.status === 'pending').length
+
+    if (count > 0) map[tableId] = count
+  }
+
+  return map
+})
 
 const reservationsStore = useReservationsStore()
 

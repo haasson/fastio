@@ -68,9 +68,18 @@
             <span v-if="tableCalls(table).length > 1" class="ct-badge-count">{{ tableCalls(table).length }}</span>
           </button>
 
-          <!-- Бейдж готовых блюд -->
-          <span v-if="tableReadyCount(table)" class="ct-badge ct-badge--ready" :style="badgeStyle(table)">
-            <span class="ct-badge-dot" />{{ tableReadyCount(table) }}
+          <!-- Кухонный бейдж: оранжевый счётчик новых позиций + зелёный счётчик готовых блюд -->
+          <span
+            v-if="tablePendingCount(table) || tableReadyCount(table)"
+            class="ct-kitchen"
+            :style="badgeStyle(table)"
+          >
+            <span v-if="tablePendingCount(table)" class="ct-badge ct-badge--pending">
+              <span class="ct-badge-dot" />{{ tablePendingCount(table) }}
+            </span>
+            <span v-if="tableReadyCount(table)" class="ct-badge ct-badge--ready">
+              <span class="ct-badge-dot" />{{ tableReadyCount(table) }}
+            </span>
           </span>
 
           <!-- Resize handles: visible on all tables in edit mode -->
@@ -189,6 +198,7 @@ type Props = {
   todayReservations: Reservation[]
   callsByTable: Record<string, TableCall[]>
   readyDishes: Record<string, KitchenQueueItem[]>
+  pendingByTable: Record<string, number>
   escalationMinutes: number
 }
 
@@ -237,6 +247,7 @@ const tableReservations = computed(() => {
 // ── Calls / ready badges ─────────────────────────────────
 const tableCalls = (table: Table) => props.callsByTable[table.id] ?? []
 const tableReadyCount = (table: Table) => (props.readyDishes[table.id] ?? []).length
+const tablePendingCount = (table: Table) => props.pendingByTable[table.id] ?? 0
 // Контр-вращение: бейдж остаётся вертикальным на повёрнутых плитках.
 const badgeStyle = (table: Table) => (table.rotation ? { transform: `rotate(${-table.rotation}deg)` } : undefined)
 const isTableEscalated = (table: Table) => tableCalls(table)
@@ -918,9 +929,25 @@ const placeTable = (table: Table) => {
 
 .ct-badge-count { padding-right: 2px; }
 
-.ct-badge--ready {
+// Кухонный бейдж: группа из счётчиков «новые» (оранжевый) + «готовы» (зелёный)
+// в правом нижнем углу плитки, где раньше был одиночный бейдж готовности.
+.ct-kitchen {
+  position: absolute;
   bottom: -8px;
   right: -8px;
+  z-index: 4;
+  display: inline-flex;
+  gap: 3px;
+}
+
+.ct-badge--pending {
+  position: static;
+  // Оранжевый (бренд), а НЕ --color-warning — иначе сливался бы с жёлтым бейджем вызова.
+  background: var(--orange-500);
+}
+
+.ct-badge--ready {
+  position: static;
   background: var(--color-success);
 }
 
