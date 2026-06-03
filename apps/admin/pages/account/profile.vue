@@ -1,9 +1,9 @@
 <template>
   <div class="profile-root">
     <div class="profile-grid">
-      <div><UiText size="small" class="label">Имя</UiText><UiText>{{ userName }}</UiText></div>
-      <div><UiText size="small" class="label">Email</UiText><UiText>{{ userEmail }}</UiText></div>
-      <div><UiText size="small" class="label">Роль</UiText><UiText>{{ roleName }}</UiText></div>
+      <UiKeyValue align="stacked" label="Имя" :value="userName" />
+      <UiKeyValue align="stacked" label="Email" :value="userEmail" />
+      <UiKeyValue align="stacked" label="Роль" :value="roleName" />
     </div>
 
     <div class="logout-section">
@@ -23,7 +23,7 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { navigateTo } from '#imports'
-import { UiText, UiButton } from '@fastio/ui'
+import { UiButton, UiKeyValue } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -64,6 +64,7 @@ const handleLogout = async () => {
 
 .profile-root {
   @include flex-col(var(--space-24));
+  max-width: 720px;
 }
 
 .profile-grid {
@@ -74,12 +75,6 @@ const handleLogout = async () => {
   @include mq-m {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-.label {
-  color: var(--color-text-hint);
-  margin-bottom: var(--space-4);
-  display: block;
 }
 
 .logout-section {

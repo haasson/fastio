@@ -1,11 +1,11 @@
 <template>
   <UiCollapseItem name="addons" title="Добавки">
     <template #header-extra>
-      <HintPopover>
+      <UiInfoTip>
         <UiText size="tiny">
           {{ `Дополнения к ${item.dat} за отдельную цену. Добавки общие на весь ${menu.nom} — создаются в разделе ${menu.label} → Добавки. Количество можно ограничить — по умолчанию для всех ${item.plural.gen} или индивидуально.` }}
         </UiText>
-      </HintPopover>
+      </UiInfoTip>
     </template>
 
     <div class="content">
@@ -106,13 +106,12 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect, UiInputNumber, UiEditButton, UiAlert, useMessage } from '@fastio/ui'
+import { UiCollapseItem, UiButton, UiSkeleton, UiEmpty, UiTag, UiText, UiSelect, UiInputNumber, UiEditButton, UiAlert, UiInfoTip, useMessage } from '@fastio/ui'
 import type { Addon, AddonPreset } from '@fastio/shared'
 import { pluralize, formatPrice } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
 import { useDatabase } from '~/shared/data/useDatabase'
 import AddonPickerModal from './AddonPickerModal.vue'
-import HintPopover from '~/shared/ui/components/HintPopover.vue'
 import { useTerms } from '~/features/legal'
 
 const props = defineProps<{

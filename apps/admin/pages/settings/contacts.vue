@@ -19,7 +19,6 @@
         label="Часовой пояс"
         :options="TIMEZONE_OPTIONS"
         filterable
-        class="timezone-select"
       />
     </UiFormSection>
 
@@ -107,16 +106,12 @@ useUnsavedGuard(page.isDirty)
 
 .form {
   @include flex-col(var(--space-12));
-  max-width: 680px;
-}
-
-.timezone-select {
-  max-width: 320px;
+  max-width: 720px;
 }
 
 .alert-link {
   color: inherit;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 
   &:hover { text-decoration: underline; }
 }

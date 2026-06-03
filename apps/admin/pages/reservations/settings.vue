@@ -8,8 +8,7 @@
     </UiAlert>
 
     <UiForm class="form" @submit.prevent="page.submit">
-      <UiSectionHeader title="Слоты и доступность" />
-      <div class="row">
+      <UiFormSection title="Слоты и доступность">
         <UiSelect
           v-model:value="form.slotStep"
           label="Шаг слотов"
@@ -22,21 +21,18 @@
           :max="365"
           :show-button="true"
         />
-      </div>
+      </UiFormSection>
 
-      <UiSectionHeader
-        title="Последнее бронирование"
-        description="За сколько минут до закрытия принимается последняя бронь"
-      />
-      <UiSelect
-        v-model:value="form.closeBufferMinutes"
-        label="Буфер до закрытия"
-        :options="BUFFER_OPTIONS"
-        class="buffer-select"
-      />
+      <UiFormSection title="Последнее бронирование">
+        <UiSelect
+          v-model:value="form.closeBufferMinutes"
+          label="Буфер до закрытия"
+          :options="BUFFER_OPTIONS"
+          help="За сколько минут до закрытия принимается последняя бронь"
+        />
+      </UiFormSection>
 
-      <UiSectionHeader title="Количество гостей" />
-      <div class="guests-row">
+      <UiFormSection title="Количество гостей" :columns="1">
         <UiInputNumber
           v-model:value="form.maxGuests"
           label="Максимум гостей"
@@ -45,28 +41,29 @@
           :show-button="true"
           :disabled="form.maxGuestsAuto && hasDineIn"
         />
-        <UiSwitch
+        <UiSettingRow
           v-if="hasDineIn"
-          v-model:value="form.maxGuestsAuto"
           label="Авто: брать вместимость самого большого стола"
-        />
-      </div>
+        >
+          <UiSwitch v-model:value="form.maxGuestsAuto" />
+        </UiSettingRow>
+      </UiFormSection>
 
-      <UiSectionHeader
-        title="Отмена клиентом"
-        description="Может ли клиент отменить свою бронь в личном кабинете на сайте"
-      />
-      <UiSwitch
-        v-model:value="form.allowClientCancellation"
-        label="Разрешить клиенту отменять бронь"
-      />
+      <UiFormSection
+        title="Отмена брони клиентом"
+        help="Может ли клиент отменить свою бронь в личном кабинете на сайте"
+      >
+        <template #header-right>
+          <UiSwitch v-model:value="form.allowClientCancellation" />
+        </template>
+      </UiFormSection>
     </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { UiAlert, UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiSwitch } from '@fastio/ui'
+import { UiAlert, UiForm, UiFormSection, UiInputNumber, UiSelect, UiSettingRow, UiSwitch } from '@fastio/ui'
 import type { ReservationSettings } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -133,30 +130,14 @@ const hasDineIn = computed(() => gate.dineIn.value.enabled)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 
 .settings-root {
-  @include flex-col(var(--space-24));
-  max-width: 680px;
+  @include flex-col(var(--space-12));
+  max-width: 720px;
 }
 
 .form {
-  @include modal-form;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-12);
-}
-
-.buffer-select {
-  max-width: 260px;
-}
-
-.guests-row {
-  @include flex-row(var(--space-20));
-  align-items: flex-end;
+  @include flex-col(var(--space-12));
 }
 </style>

@@ -48,6 +48,10 @@ const baseOverrides = {
     // heightLarge: '48px',
     // fontWeight: '700',
   },
+  Popover: {
+    // тултипы/поповеры по всей админке — компактный читаемый размер вместо крупного дефолта Naive
+    fontSize: '13px',
+  },
   Tabs: {
     colorSegment: COLORS.BLUE_50,
   },

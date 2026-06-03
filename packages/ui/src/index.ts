@@ -67,6 +67,8 @@ export { default as UiPageHeader } from './components/UiPageHeader.vue'
 export { default as UiFormSection } from './components/UiFormSection.vue'
 export { default as UiKeyValue } from './components/UiKeyValue.vue'
 export { default as UiStatBlock } from './components/UiStatBlock.vue'
+export { default as UiSettingRow } from './components/UiSettingRow.vue'
+export { default as UiInfoTip } from './components/UiInfoTip.vue'
 
 // List primitives
 export { default as UiListRow } from './components/UiListRow.vue'

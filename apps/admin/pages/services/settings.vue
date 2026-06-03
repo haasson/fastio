@@ -3,45 +3,49 @@
     <UiSkeleton v-if="loading" :repeat="4" />
 
     <UiForm v-else class="form" @submit.prevent="page.submit">
-      <UiAlert type="info">
-        Эти настройки применяются автоматически при создании новой услуги. Для каждой услуги их можно изменить отдельно в её настройках.
-      </UiAlert>
+      <UiFormSection
+        title="Дефолты новых услуг"
+        help="Эти настройки применяются автоматически при создании новой услуги. Для каждой услуги их можно изменить отдельно в её настройках."
+        :columns="1"
+      >
+        <UiSettingRow
+          label="Запись онлайн"
+          help="Если включено — новые услуги сразу появляются в форме записи на витрине. Если выключено — услуга создаётся как «только по звонку»."
+        >
+          <UiSwitch v-model="form.defaultIsBookable" />
+        </UiSettingRow>
 
-      <UiSwitch
-        v-model="form.defaultIsBookable"
-        label="Запись онлайн"
-        message="Если включено — новые услуги сразу появляются в форме записи на витрине. Если выключено — услуга создаётся как «только по звонку»."
-      />
+        <UiSettingRow
+          label="Клиент выбирает исполнителя"
+          help="Если включено — клиент сам выбирает мастера при записи. Если выключено — исполнитель подбирается автоматически по расписанию."
+        >
+          <UiSwitch v-model="form.defaultAllowResourceChoice" />
+        </UiSettingRow>
 
-      <UiSwitch
-        v-model="form.defaultAllowResourceChoice"
-        label="Клиент выбирает исполнителя"
-        message="Если включено — клиент сам выбирает мастера при записи. Если выключено — исполнитель подбирается автоматически по расписанию."
-      />
+        <UiSelect
+          v-model:value="form.defaultBookingMode"
+          label="Тип записи"
+          :options="bookingModeOptions"
+          help="Фикс. длительность — если услуга занимает известное время: массаж 60 мин, стрижка 45 мин. Произвольная — клиент выбирает длительность сам: аренда оборудования, корта, кабинета."
+        />
 
-      <UiSelect
-        v-model:value="form.defaultBookingMode"
-        label="Тип записи"
-        :options="bookingModeOptions"
-        message="Фикс. длительность — если услуга занимает известное время: массаж 60 мин, стрижка 45 мин. Произвольная — клиент выбирает длительность сам: аренда оборудования, корта, кабинета."
-      />
-
-      <UiInputNumber
-        v-if="form.defaultBookingMode === 'variable'"
-        v-model="form.defaultMaxDuration"
-        label="Максимальная длительность по умолчанию, мин"
-        :min="30"
-        :max="1440"
-        :show-button="true"
-        message="Применяется ко всем услугам с произвольной длительностью, у которых не задан индивидуальный максимум"
-      />
+        <UiInputNumber
+          v-if="form.defaultBookingMode === 'variable'"
+          v-model="form.defaultMaxDuration"
+          label="Максимальная длительность по умолчанию, мин"
+          :min="30"
+          :max="1440"
+          :show-button="true"
+          help="Применяется ко всем услугам с произвольной длительностью, у которых не задан индивидуальный максимум"
+        />
+      </UiFormSection>
     </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { UiAlert, UiForm, UiInputNumber, UiSelect, UiSkeleton, UiSwitch, useConfirm } from '@fastio/ui'
+import { UiForm, UiFormSection, UiInputNumber, UiSelect, UiSettingRow, UiSkeleton, UiSwitch, useConfirm } from '@fastio/ui'
 import type { BookingMode } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -122,15 +126,13 @@ useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 
 .settings-root {
-  @include flex-col(var(--space-24));
-  max-width: 680px;
+  max-width: 720px;
 }
 
 .form {
-  @include modal-form;
+  @include flex-col(var(--space-12));
 }
 </style>

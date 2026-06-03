@@ -8,6 +8,7 @@
     :model-value="modelValue"
     :status="status"
     :feedback="feedback"
+    :help="help"
     v-slot="{ hasError }"
   >
     <n-input-number
@@ -65,6 +66,7 @@ type Props = {
   message?: string
   status?: 'success' | 'warning' | 'error'
   feedback?: string
+  help?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {

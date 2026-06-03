@@ -2,30 +2,32 @@
   <div class="settings-root">
     <UiSkeleton v-if="ctx.loading" :repeat="4" />
 
-    <template v-else>
-      <UiForm class="form" @submit.prevent="page.submit">
-        <!-- ── Режим стола (QR) ──────────────────────────────── -->
-        <UiSectionHeader title="Режим стола (QR)" />
+    <UiForm v-else class="form" @submit.prevent="page.submit">
+      <!-- ── Заказ со стола (QR) ───────────────────────────── -->
+      <UiFormSection
+        title="Заказ со стола (QR)"
+        help="Гость заказывает блюда прямо со страницы стола по QR. Выключено — меню только для просмотра."
+        :columns="1"
+      >
+        <template #header-right>
+          <UiSwitch v-model="form.dineInOrderingEnabled" />
+        </template>
+      </UiFormSection>
 
-        <div class="row">
-          <UiSwitch
-            v-model="form.dineInOrderingEnabled"
-            label="Заказ со стола (QR)"
-            message="Гость может заказывать блюда прямо со страницы стола. Выключено — меню только для просмотра."
-          />
-          <UiSwitch
-            v-model="form.waiterCallEnabled"
-            label="Вызов официанта (QR)"
-            message="Кнопка вызова официанта на странице стола. Выключено — кнопка скрыта."
-          />
-        </div>
+      <!-- ── Вызов официанта (тумблер в хедере, тело прячется при off) ── -->
+      <UiFormSection
+        title="Вызов официанта"
+        help="Кнопка вызова официанта на странице стола по QR. Выключено — кнопка скрыта."
+        :columns="1"
+      >
+        <template #header-right>
+          <UiSwitch v-model="form.waiterCallEnabled" />
+        </template>
 
-        <!-- ── Вызов официанта ──────────────────────────────── -->
-        <UiSectionHeader title="Вызов официанта" />
-
-        <div class="icon-picker">
-          <UiText size="small" class="picker-label">Иконка и текст кнопки</UiText>
-          <div class="picker-body">
+        <template v-if="form.waiterCallEnabled">
+          <!-- иконка + текст кнопки -->
+          <div class="field">
+            <span class="field-caption">Иконка и текст кнопки</span>
             <div class="icon-grid">
               <button
                 v-for="icon in CALL_ICONS"
@@ -40,61 +42,60 @@
                 <UiIcon :name="icon.name" :size="20" />
               </button>
             </div>
-            <UiInput
-              v-model="form.callButtonLabel"
-              placeholder="Официант"
-              class="label-input"
-            />
+            <UiInput v-model="form.callButtonLabel" placeholder="Официант" />
           </div>
-        </div>
 
-        <!-- Превью: реальный хедер витрины в теме тенанта на мобильной ширине -->
-        <div class="preview">
-          <UiText size="tiny" class="picker-label">Превью хедера витрины (мобильный)</UiText>
-          <div class="header-preview" :style="headerVars">
-            <span class="hp-name">{{ tenantName }}</span>
-            <div class="hp-btn">
-              <UiIcon :name="previewIcon" :size="16" />
-              <span class="hp-btn-label">{{ form.callButtonLabel.trim() || 'Официант' }}</span>
+          <!-- превью: реальный хедер витрины в теме тенанта на мобильной ширине -->
+          <div class="field">
+            <span class="field-caption">Превью хедера витрины (мобильный)</span>
+            <div class="header-preview" :style="headerVars">
+              <span class="hp-name">{{ tenantName }}</span>
+              <div class="hp-btn">
+                <UiIcon :name="previewIcon" :size="16" />
+                <span class="hp-btn-label">{{ form.callButtonLabel.trim() || 'Официант' }}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="row">
-          <UiInputNumber
-            v-model="form.callCooldownSeconds"
-            label="Кулдаун (секунд)"
-            :min="0"
-            :max="600"
-            :show-button="true"
-            :clearable="false"
-            message="Минимум между вызовами с одного стола; сервер отклонит частый повтор (кнопка не блокируется)."
+          <!-- кулдаун / эскалация -->
+          <div class="row">
+            <UiInputNumber
+              v-model="form.callCooldownSeconds"
+              label="Кулдаун (секунд)"
+              :min="0"
+              :max="600"
+              :show-button="true"
+              :clearable="false"
+              help="Минимум между вызовами с одного стола; сервер отклонит частый повтор (кнопка не блокируется)."
+            />
+            <UiInputNumber
+              v-model="form.callEscalationMinutes"
+              label="Эскалация (минут)"
+              :min="1"
+              :max="120"
+              :show-button="true"
+              :clearable="false"
+              help="Через сколько минут вызов станет красным (срочным)"
+            />
+          </div>
+
+          <!-- типы вызовов (сохраняются сразу) -->
+          <TableCallTypes
+            :call-types="ctx.callTypes"
+            @add-type="ctx.onCallTypeAdded"
+            @remove-type="ctx.onCallTypeRemoved"
           />
-          <UiInputNumber
-            v-model="form.callEscalationMinutes"
-            label="Эскалация (минут)"
-            :min="1"
-            :max="120"
-            :show-button="true"
-            :clearable="false"
-            message="Через сколько минут вызов станет красным (срочным)"
-          />
-        </div>
+        </template>
+      </UiFormSection>
 
-        <!-- ── Отображение столов ───────────────────────────── -->
-        <UiSectionHeader title="Отображение столов" />
-
+      <!-- ── Отображение столов ───────────────────────────── -->
+      <UiFormSection title="Отображение столов" :columns="1">
         <div class="row">
           <UiSelect
             v-model:value="form.canvasTileSize"
             label="Размер карточек"
             :options="TILE_SIZE_OPTIONS"
-            message="Ширина карточек столов в списке (вкладка «Столы»)"
-          />
-          <UiSwitch
-            v-model="form.showDishCategory"
-            label="Категория блюда на столах"
-            message="Показывать категорию рядом с позицией (список и схема)"
+            help="Ширина карточек столов в списке (вкладка «Столы»)"
           />
           <UiInputNumber
             v-model="form.listPreviewRows"
@@ -103,24 +104,23 @@
             :max="50"
             :show-button="true"
             :clearable="false"
-            message="Сколько позиций показывать на карточке стола в списке, остальные — под «ещё»"
+            help="Сколько позиций показывать на карточке стола в списке, остальные — под «ещё»"
           />
         </div>
-      </UiForm>
-
-      <!-- ── Типы вызовов (сохраняются сразу) ───────────────── -->
-      <TableCallTypes
-        :call-types="ctx.callTypes"
-        @add-type="ctx.onCallTypeAdded"
-        @remove-type="ctx.onCallTypeRemoved"
-      />
-    </template>
+        <UiSettingRow
+          label="Категория блюда на столах"
+          help="Показывать категорию рядом с позицией (список и схема)"
+        >
+          <UiSwitch v-model="form.showDishCategory" />
+        </UiSettingRow>
+      </UiFormSection>
+    </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiForm, UiInput, UiInputNumber, UiSelect, UiSectionHeader, UiSkeleton, UiSwitch, UiText, UiIcon } from '@fastio/ui'
+import { UiForm, UiFormSection, UiSettingRow, UiInput, UiInputNumber, UiSelect, UiSkeleton, UiSwitch, UiIcon } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 import type { CanvasTileSize, ThemePalette } from '@fastio/shared'
 import { DEFAULT_TABLE_SETTINGS, paletteToCssVars, getPresetPalette, THEME_PRESETS, TILE_SIZE_OPTIONS } from '@fastio/shared'
@@ -246,27 +246,33 @@ useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 
 .settings-root {
-  @include flex-col(var(--space-24));
-  max-width: 680px;
+  max-width: 720px;
 }
 
 .form {
-  @include modal-form;
+  @include flex-col(var(--space-12));
 }
 
+.field {
+  @include flex-col(var(--space-8));
+}
+
+// Лейбл поля-группы — как у обычных полей формы (12px), а не подзаголовок.
+.field-caption {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+// Пара контролов в ряд; ширину самого контрола внутри ячейки капит проп width.
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-12);
   align-items: start;
-}
-
-.preview {
-  @include flex-col(var(--space-8));
 }
 
 // Мок мобильного хедера витрины — цвета из темы тенанта (headerVars inline).
@@ -309,22 +315,6 @@ useUnsavedGuard(page.isDirty)
 
 .hp-btn-label {
   font-size: var(--font-size-sm);
-}
-
-.icon-picker {
-  @include flex-col(var(--space-8));
-}
-
-.picker-body {
-  @include flex-col(var(--space-8));
-}
-
-.label-input {
-  max-width: 320px;
-}
-
-.picker-label {
-  color: var(--color-text-secondary);
 }
 
 .icon-grid {

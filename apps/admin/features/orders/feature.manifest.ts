@@ -53,7 +53,6 @@ export default defineFeature({
     'shared.stores.tenant',
     'shared.ui.components.AppStorefrontAlert',
     'shared.ui.components.DishItemRow',
-    'shared.ui.components.SettingToggle',
     'shared.ui.components.TabsLayout',
     'shared.ui.composables.useDrawer',
     'shared.ui.composables.useEditableForm',

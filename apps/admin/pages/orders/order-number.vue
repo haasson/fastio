@@ -1,74 +1,74 @@
 <template>
   <UiForm class="form" @submit.prevent="page.submit">
-    <UiSectionHeader title="Нумерация заказов" />
-
-    <div data-tour="order-format">
-      <UiRadioGroup
-        v-model="form.format"
-        label="Формат номера"
-        :options="formatOptions"
-        vertical
-        :space="6"
-      />
-    </div>
-
-    <div data-tour="order-scope">
-      <UiRadioGroup
-        v-model="form.scope"
-        label="Нумерация"
-        :options="scopeOptions"
-        vertical
-        :space="6"
-      />
-
-      <template v-if="showPrefix">
-        <UiAlert v-if="form.scope === 'per_branch'" type="info">
-          Префиксы задаются в настройках каждого филиала
-        </UiAlert>
-        <UiInput
-          v-else
-          v-model="form.prefix"
-          label="Префикс"
-          placeholder="ORD"
+    <UiFormSection title="Нумерация заказов" :columns="1">
+      <div data-tour="order-format">
+        <UiRadioGroup
+          v-model="form.format"
+          label="Формат номера"
+          :options="formatOptions"
+          vertical
+          :space="6"
         />
-      </template>
-    </div>
+      </div>
 
-    <div v-if="showDateFormat" data-tour="order-date-format">
-      <UiRadioGroup
-        v-model="form.dateFormat"
-        label="Формат даты"
-        :options="dateFormatOptions"
-        :space="6"
-      />
-    </div>
+      <div data-tour="order-scope">
+        <UiRadioGroup
+          v-model="form.scope"
+          label="Нумерация"
+          :options="scopeOptions"
+          vertical
+          :space="6"
+        />
 
-    <div data-tour="order-reset">
-      <UiRadioGroup
-        v-model="form.resetPeriod"
-        label="Сброс счётчика"
-        :options="resetPeriodOptions"
-        :space="6"
-      />
-    </div>
+        <template v-if="showPrefix">
+          <UiAlert v-if="form.scope === 'per_branch'" size="small" type="info">
+            Префиксы задаются в настройках каждого филиала
+          </UiAlert>
+          <UiInput
+            v-else
+            v-model="form.prefix"
+            label="Префикс"
+            placeholder="ORD"
+          />
+        </template>
+      </div>
 
-    <div data-tour="order-pad" class="row">
+      <div v-if="showDateFormat" data-tour="order-date-format">
+        <UiRadioGroup
+          v-model="form.dateFormat"
+          label="Формат даты"
+          :options="dateFormatOptions"
+          :space="6"
+        />
+      </div>
+
+      <div data-tour="order-reset">
+        <UiRadioGroup
+          v-model="form.resetPeriod"
+          label="Сброс счётчика"
+          :options="resetPeriodOptions"
+          :space="6"
+        />
+      </div>
+    </UiFormSection>
+
+    <UiFormSection title="Счётчик">
       <UiInputNumber
         v-model="form.padLength"
+        data-tour="order-pad"
         label="Нули слева"
         :min="0"
         :max="6"
         :show-button="true"
-        hint="0 — без нулей, 3 → «042»"
+        help="Длина номера с ведущими нулями. 0 — без нулей, 3 → «042»."
       />
       <UiInputNumber
         v-model="form.startFrom"
         label="Начать с"
         :min="1"
         :show-button="true"
-        hint="Стартовое значение счётчика"
       />
-    </div>
+    </UiFormSection>
 
     <div class="preview">
       <span class="preview-label">Пример номера:</span>
@@ -79,7 +79,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UiForm, UiInput, UiInputNumber, UiRadioGroup, UiSectionHeader, UiAlert } from '@fastio/ui'
+import { UiForm, UiFormSection, UiInput, UiInputNumber, UiRadioGroup, UiAlert } from '@fastio/ui'
 import type { OrderNumberConfig } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
@@ -177,22 +177,15 @@ const preview = computed(() => {
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 
 .form {
-  @include flex-col(var(--space-20));
-  max-width: 680px;
+  @include flex-col(var(--space-12));
+  max-width: 720px;
 }
 
 [data-tour="order-scope"] {
   @include flex-col(var(--space-12));
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-12);
 }
 
 .preview {

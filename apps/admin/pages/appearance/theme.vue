@@ -1,9 +1,7 @@
 <template>
   <div class="form">
-    <UiSectionHeader title="Оформление" />
-
-    <!-- Пресеты -->
-    <div class="group">
+    <!-- ── Тема (пресеты) ────────────────────────────────── -->
+    <UiFormSection title="Тема" :columns="1">
       <div class="presets-header">
         <UiSegmentedControl v-model="category" :items="categoryOptions" />
         <div v-if="showNav" class="page-nav">
@@ -56,59 +54,63 @@
           <span class="card-name">{{ preset.label }}</span>
         </UiPickerItem>
       </div>
-    </div>
+    </UiFormSection>
 
-    <div class="divider" />
-
-    <div class="field">
-      <UiSelect
-        v-model:value="themeForm.fontFamily"
-        :options="fontOptions"
-        :render-label="renderFontLabel"
-        label="Шрифт текста"
-        filterable
-      />
-      <div v-if="fontPreviewStyle" class="font-preview" :style="fontPreviewStyle">
-        Быстрая лиса прыгает — The quick brown fox
+    <!-- ── Шрифты ────────────────────────────────────────── -->
+    <UiFormSection title="Шрифты" :columns="1">
+      <div class="field">
+        <UiSelect
+          v-model:value="themeForm.fontFamily"
+          :options="fontOptions"
+          :render-label="renderFontLabel"
+          label="Шрифт текста"
+          filterable
+        />
+        <div v-if="fontPreviewStyle" class="font-preview" :style="fontPreviewStyle">
+          Быстрая лиса прыгает — The quick brown fox
+        </div>
       </div>
-    </div>
 
-    <div class="field">
-      <UiSelect
-        v-model:value="themeForm.headingFontFamily"
-        :options="fontOptions"
-        :render-label="renderFontLabel"
-        label="Шрифт заголовков"
-        filterable
-      />
-      <div v-if="headingFontPreviewStyle" class="font-preview font-preview--heading" :style="headingFontPreviewStyle">
-        Быстрая лиса прыгает — The quick brown fox
+      <div class="field">
+        <UiSelect
+          v-model:value="themeForm.headingFontFamily"
+          :options="fontOptions"
+          :render-label="renderFontLabel"
+          label="Шрифт заголовков"
+          filterable
+        />
+        <div v-if="headingFontPreviewStyle" class="font-preview font-preview--heading" :style="headingFontPreviewStyle">
+          Быстрая лиса прыгает — The quick brown fox
+        </div>
       </div>
-    </div>
+    </UiFormSection>
 
-    <div class="field">
-      <label class="label">Стиль кнопок</label>
-      <UiSegmentedControl v-model="themeForm.buttonRadius" :items="buttonRadiusOptions" />
-    </div>
+    <!-- ── Стиль элементов ───────────────────────────────── -->
+    <UiFormSection title="Стиль элементов" :columns="1">
+      <div class="field">
+        <span class="field-caption">Стиль кнопок</span>
+        <UiSegmentedControl v-model="themeForm.buttonRadius" :items="buttonRadiusOptions" />
+      </div>
 
-    <UiInputNumber
-      v-model="themeForm.cardRadius"
-      label="Радиус карточек (px)"
-      :min="8"
-      :max="24"
-      :show-button="true"
-    />
+      <UiInputNumber
+        v-model="themeForm.cardRadius"
+        label="Радиус карточек (px)"
+        :min="8"
+        :max="24"
+        :show-button="true"
+      />
 
-    <div class="field">
-      <label class="label">Тени карточек</label>
-      <UiRadioGroup v-model="themeForm.cardShadow" :options="cardShadowOptions" />
-    </div>
+      <div class="field">
+        <span class="field-caption">Тени карточек</span>
+        <UiRadioGroup v-model="themeForm.cardShadow" :options="cardShadowOptions" />
+      </div>
+    </UiFormSection>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, h, inject, onMounted, onUnmounted, ref, watch } from 'vue'
-import { UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiIcon, UiSectionHeader, UiButton, UiPickerItem } from '@fastio/ui'
+import { UiFormSection, UiSelect, UiInputNumber, UiRadioGroup, UiSegmentedControl, UiButton, UiPickerItem } from '@fastio/ui'
 import type { SelectOption } from 'naive-ui'
 import { themePresets, fontOptions } from '~/config/theme-presets'
 import { GOOGLE_FONTS, isGoogleFontValue, fontFamilyCSS, googleFontsBatchUrl } from '~/config/google-fonts'
@@ -242,11 +244,19 @@ const cardShadowOptions = [
 @use '@fastio/styles/mixins/media-queries' as *;
 
 .form {
-  @include flex-col(var(--space-20));
+  @include flex-col(var(--space-12));
+  max-width: 720px;
 }
 
-.group {
-  @include flex-col;
+.field {
+  @include flex-col(var(--space-8));
+}
+
+// Лейбл поля-группы — как у обычных полей формы (12px), а не подзаголовок.
+.field-caption {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
 }
 
 .presets-header {
@@ -392,20 +402,5 @@ const cardShadowOptions = [
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
   }
-}
-
-.divider {
-  height: 1px;
-  background: var(--color-border);
-}
-
-.field {
-  @include flex-col;
-}
-
-.label {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-hint);
 }
 </style>

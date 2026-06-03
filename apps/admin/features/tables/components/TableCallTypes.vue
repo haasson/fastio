@@ -1,15 +1,19 @@
 <template>
-  <UiCard>
-    <UiTitle size="h4" class="section-title">Типы вызовов</UiTitle>
-    <UiText size="small" class="section-hint">
-      Гость выбирает тип при вызове официанта. Если тип один — выбор не показывается.
-    </UiText>
+  <div class="call-types">
+    <div class="ct-head">
+      <span class="field-caption">Типы вызовов</span>
+      <UiInfoTip content="Гость выбирает тип при вызове официанта. Если тип один — выбор не показывается." />
+    </div>
 
     <div class="tags">
-      <span v-for="type in callTypes" :key="type.id" class="tag">
+      <UiTag
+        v-for="type in callTypes"
+        :key="type.id"
+        closable
+        @close="$emit('remove-type', type.id)"
+      >
         {{ type.name }}
-        <UiChipRemove :size="12" title="Удалить тип" @click="$emit('remove-type', type.id)" />
-      </span>
+      </UiTag>
 
       <div class="tag-add">
         <input
@@ -30,12 +34,12 @@
         </button>
       </div>
     </div>
-  </UiCard>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { UiCard, UiText, UiTitle, UiIcon, UiChipRemove } from '@fastio/ui'
+import { UiIcon, UiTag, UiInfoTip } from '@fastio/ui'
 import type { TableCallType } from '@fastio/shared'
 
 defineProps<{
@@ -59,14 +63,23 @@ const submitNewType = () => {
 </script>
 
 <style scoped lang="scss">
-.section-title {
-  margin-bottom: var(--space-4);
+@use '@fastio/styles/mixins/layout' as *;
+
+.call-types {
+  @include flex-col(var(--space-8));
 }
 
-.section-hint {
-  display: block;
-  color: var(--color-text-hint);
-  margin-bottom: var(--space-12);
+.ct-head {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+// Лейбл поля-группы — как у остальных полей формы (12px).
+.field-caption {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
 }
 
 .tags {
@@ -74,18 +87,6 @@ const submitNewType = () => {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-8);
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
-  border-radius: var(--radius-pill);
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-border);
-  font-size: var(--font-size-sm);
-  color: var(--color-title);
 }
 
 .tag-add {

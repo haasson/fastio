@@ -1,30 +1,27 @@
 <template>
   <div class="root">
-    <UiFormSection title="Браузерные уведомления" :columns="1">
-      <div class="prefs">
-        <div class="pref">
-          <div>
-            <UiText size="small" class="pref-label">Мигающий счётчик в меню</UiText>
-            <span class="hint">Счётчик новых заказов будет мигать в боковом меню</span>
-          </div>
-          <UiSwitch v-model="blinkingCounter" />
-        </div>
-      </div>
+    <UiFormSection
+      title="Мигающий счётчик в меню"
+      help="Счётчик новых заказов будет мигать в боковом меню"
+    >
+      <template #header-right>
+        <UiSwitch v-model="blinkingCounter" />
+      </template>
     </UiFormSection>
 
-    <UiFormSection v-if="gate.telegramNotifications.value.enabled" title="Telegram" :columns="1">
-      <UiText size="small" class="tg-intro">
-        Подключи личный чат или группу — бот будет писать туда о каждом новом заказе и бронировании.
-        Можно подключить несколько чатов: сообщения улетят во все сразу.
-      </UiText>
-
+    <UiFormSection
+      v-if="gate.telegramNotifications.value.enabled"
+      title="Telegram"
+      help="Подключи личный чат или группу — бот будет писать туда о каждом новом заказе и бронировании. Можно подключить несколько чатов: сообщения улетят во все сразу."
+      :columns="1"
+    >
       <div v-if="subscribers.length" class="subs">
         <div v-for="sub in subscribers" :key="sub.id" class="sub">
           <span class="sub-icon">
             <UiIcon :name="sub.chatType === 'private' ? 'smartphone' : 'users'" :size="20" />
           </span>
           <div class="sub-info">
-            <UiText size="small" class="sub-label">{{ sub.label ?? 'Telegram-чат' }}</UiText>
+            <UiText size="tiny" class="sub-label">{{ sub.label ?? 'Telegram-чат' }}</UiText>
             <UiText size="tiny" class="sub-meta">
               {{ chatTypeLabel(sub.chatType) }} · подключён {{ formatDate(sub.addedAt) }}
             </UiText>
@@ -226,32 +223,7 @@ const disconnect = async (sub: TenantTelegramSubscriber) => {
 
 .root {
   @include flex-col(var(--space-12));
-  max-width: 680px;
-}
-
-.hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-loose);
-}
-
-.prefs {
-  @include flex-col(var(--space-12));
-}
-
-.pref {
-  @include flex-between(var(--space-16));
-}
-
-.pref-label {
-  font-weight: var(--font-weight-medium);
-  margin-bottom: var(--space-4);
-  display: block;
-}
-
-.tg-intro {
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-8);
+  max-width: 720px;
 }
 
 .subs {

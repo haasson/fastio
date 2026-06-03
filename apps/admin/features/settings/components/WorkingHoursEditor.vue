@@ -1,9 +1,8 @@
 <template>
   <div class="hours-editor-root">
-    <label class="toggle-row">
+    <UiSettingRow label="Круглосуточно" align="start">
       <UiSwitch v-model="state.allDay" size="small" />
-      <UiText size="small">Круглосуточно</UiText>
-    </label>
+    </UiSettingRow>
 
     <template v-if="!state.allDay">
       <div class="hours-default">
@@ -11,10 +10,9 @@
         <UiTimepicker v-model="state.close" label="Закрытие" />
       </div>
 
-      <label class="toggle-row">
+      <UiSettingRow label="Разное время по дням" align="start">
         <UiSwitch v-model="state.useCustomDays" size="small" />
-        <UiText size="small">Разное время по дням</UiText>
-      </label>
+      </UiSettingRow>
 
       <div v-if="state.useCustomDays" class="days-grid">
         <div v-for="day in DAYS" :key="day.key" class="day-row">
@@ -30,24 +28,22 @@
 
       <!-- Особые дни -->
       <div class="exceptions-section">
-        <UiText size="small" secondary>Особые даты</UiText>
+        <UiSectionHeader title="Особые даты" />
 
         <div class="add-form">
           <div class="date-wrap">
             <UiDatepicker v-model="newEntry.timestamp" label="Дата" />
           </div>
-          <label class="toggle-row">
+          <UiSettingRow label="Весь день выходной" align="start">
             <UiSwitch v-model="newEntry.dayOff" size="small" />
-            <UiText size="small">Весь день выходной</UiText>
-          </label>
+          </UiSettingRow>
           <div v-if="!newEntry.dayOff" class="hours-default">
             <UiTimepicker v-model="newEntry.open" label="Открытие" />
             <UiTimepicker v-model="newEntry.close" label="Закрытие" />
           </div>
-          <label class="toggle-row">
+          <UiSettingRow label="Повторять ежегодно" align="start">
             <UiSwitch v-model="newEntry.recurring" size="small" />
-            <UiText size="small">Повторять ежегодно</UiText>
-          </label>
+          </UiSettingRow>
           <UiButton
             size="small"
             type="primary"
@@ -78,7 +74,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue'
-import { UiTimepicker, UiSwitch, UiText, UiButton, UiDatepicker, UiChipRemove } from '@fastio/ui'
+import { UiTimepicker, UiSwitch, UiButton, UiDatepicker, UiChipRemove, UiSettingRow, UiSectionHeader } from '@fastio/ui'
 import type { WorkingHoursSchedule, ScheduleException } from '@fastio/shared'
 
 const DAYS = [
@@ -309,14 +305,6 @@ watch(state, () => emitValue(), { deep: true, flush: 'sync' })
   gap: var(--space-12);
 }
 
-.toggle-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  cursor: pointer;
-  width: fit-content;
-}
-
 .hours-default {
   display: flex;
   align-items: flex-end;
@@ -363,9 +351,6 @@ watch(state, () => emitValue(), { deep: true, flush: 'sync' })
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-12);
-  padding: var(--space-12);
-  background: var(--color-bg-subtle);
-  border-radius: var(--radius-8);
 }
 
 .date-wrap {

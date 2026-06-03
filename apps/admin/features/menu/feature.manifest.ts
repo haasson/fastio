@@ -44,7 +44,6 @@ export default defineFeature({
     'shared.stores.branch',
     'shared.stores.tenant',
     'shared.ui.components.DishItemRow',
-    'shared.ui.components.HintPopover',
     'shared.ui.composables.useItemManager',
     'shared.utils.filterDefined',
     'shared.utils.imageOptimize',

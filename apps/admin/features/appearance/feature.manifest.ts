@@ -31,7 +31,6 @@ export default defineFeature({
     'shared.stores.tenant',
     'shared.ui.components.ImageUploadTrigger',
     'shared.ui.components.RichTextEditor',
-    'shared.ui.components.SettingToggle',
     '@fastio/shared',
   ],
 })

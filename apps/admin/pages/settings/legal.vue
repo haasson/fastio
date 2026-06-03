@@ -4,106 +4,101 @@
       Заполните юридические данные — без них приём заказов и бронирование на витрине недоступны
     </UiAlert>
 
-    <UiCard size="large" class="section">
-      <UiSectionHeader title="Юридические данные" />
-
-      <div class="grid">
-        <UiInput
-          v-model="form.legalName"
-          label="Юридическое наименование *"
-          placeholder="ИП Иванов Иван Иванович"
-          name="legalName"
-          :rules="[{ type: 'required', message: 'Введите наименование' }]"
-        />
-        <UiInput
-          v-model="form.privacyEmail"
-          label="Email для обращений по персданным *"
-          placeholder="privacy@vasya-pizza.ru"
-          name="privacyEmail"
-          :rules="[
-            { type: 'required', message: 'Введите email' },
-            { type: 'email', message: 'Некорректный email' },
-          ]"
-        />
-        <UiInput
-          v-model="form.inn"
-          label="ИНН *"
-          placeholder="1234567890"
-          name="inn"
-          inputmode="numeric"
-          :rules="[
-            { type: 'required', message: 'Введите ИНН' },
-            { type: 'pattern', pattern: /^\d{10}$|^\d{12}$/, message: 'ИНН — 10 цифр (ООО) или 12 цифр (ИП)' },
-          ]"
-        />
-        <UiInput
-          v-model="form.ogrn"
-          label="ОГРН / ОГРНИП *"
-          placeholder="1234567890123"
-          name="ogrn"
-          inputmode="numeric"
-          :rules="[
-            { type: 'required', message: 'Введите ОГРН или ОГРНИП' },
-            { type: 'pattern', pattern: /^\d{13}$|^\d{15}$/, message: 'ОГРН — 13 цифр, ОГРНИП — 15 цифр' },
-          ]"
-        />
-      </div>
-
+    <UiFormSection title="Юридические данные" :columns="2">
+      <UiInput
+        v-model="form.legalName"
+        label="Юридическое наименование *"
+        placeholder="ИП Иванов Иван Иванович"
+        name="legalName"
+        :rules="[{ type: 'required', message: 'Введите наименование' }]"
+      />
+      <UiInput
+        v-model="form.privacyEmail"
+        label="Email для обращений по персданным *"
+        placeholder="privacy@vasya-pizza.ru"
+        name="privacyEmail"
+        :rules="[
+          { type: 'required', message: 'Введите email' },
+          { type: 'email', message: 'Некорректный email' },
+        ]"
+      />
+      <UiInput
+        v-model="form.inn"
+        label="ИНН *"
+        placeholder="1234567890"
+        name="inn"
+        inputmode="numeric"
+        :rules="[
+          { type: 'required', message: 'Введите ИНН' },
+          { type: 'pattern', pattern: /^\d{10}$|^\d{12}$/, message: 'ИНН — 10 цифр (ООО) или 12 цифр (ИП)' },
+        ]"
+      />
+      <UiInput
+        v-model="form.ogrn"
+        label="ОГРН / ОГРНИП *"
+        placeholder="1234567890123"
+        name="ogrn"
+        inputmode="numeric"
+        :rules="[
+          { type: 'required', message: 'Введите ОГРН или ОГРНИП' },
+          { type: 'pattern', pattern: /^\d{13}$|^\d{15}$/, message: 'ОГРН — 13 цифр, ОГРНИП — 15 цифр' },
+        ]"
+      />
       <UiInput
         v-model="form.legalAddress"
+        class="span-2"
         label="Юридический адрес *"
         placeholder="117546, г. Москва, ул. Примерная, д. 1"
         name="legalAddress"
         :rules="[{ type: 'required', message: 'Введите адрес' }]"
       />
-    </UiCard>
+    </UiFormSection>
 
-    <UiCard size="large" class="section">
-      <UiSectionHeader title="Документы" />
-
-      <div class="docs">
-        <div class="doc-row">
-          <span class="doc-label">Оферта для клиентов</span>
-          <a
-            v-if="form.offerUrl"
-            :href="form.offerUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="doc-link"
-          >
-            <UiIcon name="fileText" :size="14" />
-            PDF прикреплён
-          </a>
-          <label class="doc-upload">
-            <UiButton
-              type="default"
-              size="small"
-              :loading="uploading"
-              tag="span"
+    <UiFormSection title="Документы" :columns="1">
+      <UiSettingRow label="Оферта для клиентов">
+        <template #control>
+          <div class="doc-actions">
+            <a
+              v-if="form.offerUrl"
+              :href="form.offerUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="doc-link"
             >
-              {{ form.offerUrl ? 'Заменить' : 'Загрузить PDF' }}
-            </UiButton>
-            <input
-              type="file"
-              accept="application/pdf"
-              class="file-input"
-              @change="uploadOffer"
+              <UiIcon name="fileText" :size="14" />
+              PDF прикреплён
+            </a>
+            <label class="doc-upload">
+              <UiButton
+                type="default"
+                size="small"
+                :loading="uploading"
+                tag="span"
+              >
+                {{ form.offerUrl ? 'Заменить' : 'Загрузить PDF' }}
+              </UiButton>
+              <input
+                type="file"
+                accept="application/pdf"
+                class="file-input"
+                @change="uploadOffer"
+              />
+            </label>
+            <UiChipRemove
+              v-if="form.offerUrl"
+              :size="14"
+              @click="form.offerUrl = null"
             />
-          </label>
-          <UiChipRemove
-            v-if="form.offerUrl"
-            :size="14"
-            @click="form.offerUrl = null"
-          />
-        </div>
-      </div>
-    </UiCard>
+          </div>
+        </template>
+      </UiSettingRow>
+    </UiFormSection>
   </UiForm>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiCard, UiForm, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiSectionHeader, UiChipRemove } from '@fastio/ui'
+import { UiForm, UiFormSection, UiSettingRow, UiInput, UiButton, UiIcon, UiAlert, useMessage, UiChipRemove } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { isLegalInfoComplete } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -182,36 +177,19 @@ const uploadOffer = async (event: Event) => {
 
 .form {
   @include flex-col(var(--space-12));
-  max-width: 680px;
+  max-width: 720px;
 }
 
-.section {
-  gap: var(--space-16);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-12);
-
+.span-2 {
   @include mq-m {
-    grid-template-columns: 1fr 1fr;
+    grid-column: 1 / -1;
   }
 }
 
-.docs {
-  @include flex-col;
-}
-
-.doc-row {
-  @include flex-row;
+.doc-actions {
+  @include flex-row(var(--space-12));
   flex-wrap: wrap;
-}
-
-.doc-label {
-  font-size: var(--font-size-md);
-  color: var(--color-text);
-  min-width: 220px;
+  align-items: center;
 }
 
 .doc-link {

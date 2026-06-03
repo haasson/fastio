@@ -7,9 +7,12 @@
     />
 
     <!-- TODO: per_branch mode for food/retail — скрыто до готовности (нет per-branch цен, нет предупреждения при смене филиала с корзиной) -->
-    <UiCard v-if="false && branches.length > 1 && !tenantStore.isServices" size="large" class="branch-mode-card">
-      <UiSectionHeader title="Как клиент попадает в филиал" />
-      <p class="mode-hint">{{ modeTexts.hint }}</p>
+    <UiFormSection
+      v-if="false && branches.length > 1 && !tenantStore.isServices"
+      title="Как клиент попадает в филиал"
+      :help="modeTexts.hint"
+      :columns="1"
+    >
       <div class="mode-options">
         <label class="mode-option" :class="{ active: branchMode === 'unified' }">
           <input
@@ -47,14 +50,14 @@
           </span>
         </label>
       </div>
-    </UiCard>
+    </UiFormSection>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiCard, UiSectionHeader } from '@fastio/ui'
+import { UiFormSection } from '@fastio/ui'
 import type { BranchSelectionMode } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
@@ -171,18 +174,8 @@ useUnsavedGuard(pageHandle.isDirty)
 @use '@fastio/styles/mixins/layout' as *;
 
 .settings-root {
-  @include flex-col(var(--space-16));
-}
-
-.branch-mode-card {
-  gap: var(--space-12);
-}
-
-.mode-hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-  line-height: var(--line-height-loose);
-  margin: 0;
+  @include flex-col(var(--space-12));
+  max-width: 720px;
 }
 
 .mode-options {
@@ -225,7 +218,7 @@ useUnsavedGuard(pageHandle.isDirty)
 .mode-tag {
   display: inline-block;
   margin-left: var(--space-8);
-  padding: 2px var(--space-8);
+  padding: var(--space-4) var(--space-8);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--color-primary);

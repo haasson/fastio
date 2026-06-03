@@ -8,6 +8,7 @@
     :model-value="value"
     :status="status"
     :feedback="feedback"
+    :help="help"
   >
     <template v-if="callable && cleanPhone" #label-suffix>
       <a :href="`tel:${cleanPhone}`" class="callable-link">Позвонить</a>
@@ -100,6 +101,7 @@ type Props = {
   inputmode?: 'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url'
   maxlength?: number
   callable?: boolean
+  help?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {

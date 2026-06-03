@@ -4,11 +4,11 @@
     title="Модификаторы"
   >
     <template #header-extra>
-      <HintPopover>
+      <UiInfoTip>
         <UiText size="tiny">
           {{ `Группы вариантов ${item.gen}. Например, размер пиццы или вид теста. Гость выбирает один вариант из каждой группы.` }}
         </UiText>
-      </HintPopover>
+      </UiInfoTip>
     </template>
 
     <div class="content">
@@ -140,9 +140,8 @@
 
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, UiAlert, useMessage } from '@fastio/ui'
+import { UiCollapseItem, UiButton, UiText, UiSkeleton, UiInputNumber, UiCheckbox, UiSelect, UiAlert, UiInfoTip, useMessage } from '@fastio/ui'
 import { useDishModifiersEditor } from '../../composables/useDishModifiersEditor'
-import HintPopover from '~/shared/ui/components/HintPopover.vue'
 import { useTerms } from '~/features/legal'
 
 const props = defineProps<{

@@ -26,12 +26,12 @@
       <div v-if="form.affectsWeight" class="weight-mode-block" data-tour="modifier-weight-mode">
         <div class="weight-mode-label">
           <UiText size="tiny" color="secondary">Вес задаётся</UiText>
-          <HintPopover>
+          <UiInfoTip>
             <UiText size="tiny">
               <b>На уровне модификатора</b> — вес одинаковый для всех блюд, которые используют эту группу. Укажи его прямо здесь, рядом с каждой опцией.<br/><br/>
               <b>Каждое блюдо своё</b> — вес задаётся отдельно для каждого блюда в форме редактирования блюда.
             </UiText>
-          </HintPopover>
+          </UiInfoTip>
         </div>
         <UiSegmentedControl
           v-model:model-value="form.weightMode"
@@ -93,9 +93,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiSwitch, UiText, UiIcon, UiAlert, UiSegmentedControl } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiSwitch, UiText, UiIcon, UiAlert, UiSegmentedControl, UiInfoTip } from '@fastio/ui'
 import type { ModifierGroup, ModifierGroupFormData } from '@fastio/shared'
-import HintPopover from '~/shared/ui/components/HintPopover.vue'
 
 const props = defineProps<{
   modelValue: boolean

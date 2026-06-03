@@ -1,5 +1,5 @@
 <template>
-  <client-only>
+  <client-only :class="{ 'popover-inline-trigger': inlineTrigger }">
     <template v-if="showSheet">
       <span @click="!disabled && (isSheetOpen = true)">
         <slot name="trigger" />
@@ -51,6 +51,9 @@ type Props = {
   disabled?: boolean
   noSheet?: boolean
   accent?: boolean
+  // Обёртку (ClientOnly-div) делает inline-flex с центрированием — чтобы инлайновый
+  // триггер («?» у лейбла/заголовка) не растягивался блоком и не прибивался к верху.
+  inlineTrigger?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -85,3 +88,10 @@ const popoverStyle = computed(() => {
   return styles
 })
 </script>
+
+<style scoped lang="scss">
+.popover-inline-trigger {
+  display: inline-flex;
+  align-items: center;
+}
+</style>

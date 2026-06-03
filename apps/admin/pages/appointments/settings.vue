@@ -3,33 +3,33 @@
     <UiSkeleton v-if="loading" :repeat="4" />
 
     <UiForm v-else class="form" @submit.prevent="page.submit">
-      <UiSectionHeader title="Тип ресурсов" />
-      <UiSelect
-        v-model:value="form.resourceMode"
-        label="Что записываем"
-        :options="resourceModeOptions"
-        message="Сотрудники — мастер, тренер, инструктор. Объекты — солярий, корт, кабинет."
-      />
+      <UiFormSection title="Тип ресурсов" :columns="1">
+        <UiSelect
+          v-model:value="form.resourceMode"
+          label="Что записываем"
+          :options="resourceModeOptions"
+          help="Сотрудники — мастер, тренер, инструктор. Объекты — солярий, корт, кабинет."
+        />
+      </UiFormSection>
 
-      <template v-if="form.resourceMode !== 'objects'">
-        <UiSectionHeader title="Лейбл и формат имени" />
-        <div class="row">
-          <UiInput
-            v-model="form.resourceLabel"
-            label="Название исполнителя"
-            placeholder="мастер"
-            message="Отображается в форме записи на витрине"
-          />
-          <UiSelect
-            v-model:value="form.staffNameFormat"
-            label="Формат имени"
-            :options="nameFormatOptions"
-          />
-        </div>
-      </template>
+      <UiFormSection
+        v-if="form.resourceMode !== 'objects'"
+        title="Лейбл и формат имени"
+      >
+        <UiInput
+          v-model="form.resourceLabel"
+          label="Название исполнителя"
+          placeholder="мастер"
+          help="Отображается в форме записи на витрине"
+        />
+        <UiSelect
+          v-model:value="form.staffNameFormat"
+          label="Формат имени"
+          :options="nameFormatOptions"
+        />
+      </UiFormSection>
 
-      <UiSectionHeader title="Слоты и горизонт" />
-      <div class="row">
+      <UiFormSection title="Слоты и горизонт">
         <UiSelect
           v-model:value="form.slotStepMinutes"
           label="Шаг слота"
@@ -42,45 +42,46 @@
           :max="365"
           :show-button="true"
         />
-      </div>
+      </UiFormSection>
 
-      <UiSectionHeader title="Подтверждение и отмена" />
+      <UiFormSection title="Подтверждение и отмена" :columns="1">
+        <UiSettingRow
+          label="Автоподтверждение"
+          help="Запись подтверждается сразу без ручного одобрения"
+        >
+          <UiSwitch v-model="form.autoConfirm" />
+        </UiSettingRow>
 
-      <UiSwitch
-        v-model="form.autoConfirm"
-        label="Автоподтверждение"
-        message="Запись подтверждается сразу без ручного одобрения"
-      />
-
-      <div class="row">
-        <UiSwitch
-          v-model="form.allowClientCancellation"
+        <UiSettingRow
           label="Клиент может отменить"
-          message="Отмена через личный кабинет"
-        />
-        <UiSwitch
-          v-model="form.allowClientReschedule"
-          label="Клиент может перенести"
-          message="Изменение даты или времени через личный кабинет"
-        />
-      </div>
+          help="Отмена через личный кабинет"
+        >
+          <UiSwitch v-model="form.allowClientCancellation" />
+        </UiSettingRow>
 
-      <UiInputNumber
-        v-if="form.allowClientCancellation || form.allowClientReschedule"
-        v-model="form.cancellationDeadlineHours"
-        label="Дедлайн (часов до записи)"
-        :min="0"
-        :max="72"
-        :show-button="true"
-        class="deadline-input"
-      />
+        <UiSettingRow
+          label="Клиент может перенести"
+          help="Изменение даты или времени через личный кабинет"
+        >
+          <UiSwitch v-model="form.allowClientReschedule" />
+        </UiSettingRow>
+
+        <UiInputNumber
+          v-if="form.allowClientCancellation || form.allowClientReschedule"
+          v-model="form.cancellationDeadlineHours"
+          label="Дедлайн (часов до записи)"
+          :min="0"
+          :max="72"
+          :show-button="true"
+        />
+      </UiFormSection>
     </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { UiForm, UiInput, UiInputNumber, UiSelect, UiSectionHeader, UiSkeleton, UiSwitch, useConfirm } from '@fastio/ui'
+import { UiForm, UiFormSection, UiInput, UiInputNumber, UiSelect, UiSettingRow, UiSkeleton, UiSwitch, useConfirm } from '@fastio/ui'
 import { navigateTo } from '#imports'
 import type { AppointmentResourceMode, StaffNameFormat } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -180,25 +181,13 @@ useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 
 .settings-root {
-  @include flex-col(var(--space-24));
-  max-width: 680px;
+  max-width: 720px;
 }
 
 .form {
-  @include modal-form;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-12);
-}
-
-.deadline-input {
-  max-width: 260px;
+  @include flex-col(var(--space-12));
 }
 </style>

@@ -1,76 +1,75 @@
 <template>
-  <UiCard size="large">
-    <UiForm @submit.prevent="page.submit">
-      <div class="form">
-        <div class="row">
-          <div class="field" data-tour="kitchen-setting-source-status">
-            <UiSelect
-              :value="form.sourceStatusId ?? ''"
-              :options="statusOptions"
-              label="Статус для отправки на кухню"
-              message="Когда заказ переходит в этот статус, блюда появляются в очереди"
-              placeholder="Выберите статус"
-              @update:value="form.sourceStatusId = String($event) || null"
-            />
-          </div>
+  <UiForm class="form" @submit.prevent="page.submit">
+    <UiFormSection title="Статусы кухни" :columns="2">
+      <UiSelect
+        :value="form.sourceStatusId ?? ''"
+        data-tour="kitchen-setting-source-status"
+        :options="statusOptions"
+        label="Статус для отправки на кухню"
+        help="Когда заказ переходит в этот статус, блюда появляются в очереди"
+        placeholder="Выберите статус"
+        @update:value="form.sourceStatusId = String($event) || null"
+      />
 
-          <div class="field" data-tour="kitchen-setting-cooking-status">
-            <UiSelect
-              :value="form.cookingStatusId ?? ''"
-              :options="statusOptions"
-              label="Статус при начале готовки или сборки"
-              message="Когда повар берёт первое блюдо или сборщик собирает позицию"
-              placeholder="Не менять"
-              clearable
-              @update:value="form.cookingStatusId = ($event as string) ?? null"
-            />
-          </div>
-        </div>
+      <UiSelect
+        :value="form.cookingStatusId ?? ''"
+        data-tour="kitchen-setting-cooking-status"
+        :options="statusOptions"
+        label="Статус при начале готовки или сборки"
+        help="Когда повар берёт первое блюдо или сборщик собирает позицию"
+        placeholder="Не менять"
+        clearable
+        @update:value="form.cookingStatusId = ($event as string) ?? null"
+      />
+    </UiFormSection>
 
-        <div class="row" data-tour="kitchen-setting-completed-map">
-          <div v-if="deliveryActive" class="field">
-            <UiSelect
-              :value="form.completedStatusMap.delivery ?? ''"
-              :options="statusOptions"
-              label="Собрано: доставка"
-              message="Когда сборщик нажмёт «Собрано», заказ перейдёт в этот статус"
-              placeholder="Не менять"
-              clearable
-              @update:value="form.completedStatusMap.delivery = ($event as string) ?? null"
-            />
-          </div>
+    <UiFormSection
+      v-if="deliveryActive || pickupActive"
+      title="Статус после сборки"
+      data-tour="kitchen-setting-completed-map"
+      :columns="2"
+    >
+      <UiSelect
+        v-if="deliveryActive"
+        :value="form.completedStatusMap.delivery ?? ''"
+        :options="statusOptions"
+        label="Собрано: доставка"
+        help="Когда сборщик нажмёт «Собрано», заказ перейдёт в этот статус"
+        placeholder="Не менять"
+        clearable
+        @update:value="form.completedStatusMap.delivery = ($event as string) ?? null"
+      />
 
-          <div v-if="pickupActive" class="field">
-            <UiSelect
-              :value="form.completedStatusMap.pickup ?? ''"
-              :options="statusOptions"
-              label="Собрано: самовывоз"
-              message="Когда сборщик нажмёт «Собрано», заказ перейдёт в этот статус"
-              placeholder="Не менять"
-              clearable
-              @update:value="form.completedStatusMap.pickup = ($event as string) ?? null"
-            />
-          </div>
-        </div>
+      <UiSelect
+        v-if="pickupActive"
+        :value="form.completedStatusMap.pickup ?? ''"
+        :options="statusOptions"
+        label="Собрано: самовывоз"
+        help="Когда сборщик нажмёт «Собрано», заказ перейдёт в этот статус"
+        placeholder="Не менять"
+        clearable
+        @update:value="form.completedStatusMap.pickup = ($event as string) ?? null"
+      />
+    </UiFormSection>
 
-        <UiInputNumber
-          v-model="form.urgencyMinutes"
-          label="Порог срочности (минуты)"
-          message="Карточки блюд начнут подсвечиваться жёлтым на&nbsp;66% и&nbsp;красным на&nbsp;100% этого времени"
-          :min="1"
-          :max="120"
-          :show-button="true"
-          data-tour="kitchen-setting-urgency"
-        />
-      </div>
-    </UiForm>
-  </UiCard>
+    <UiFormSection title="Срочность">
+      <UiInputNumber
+        v-model="form.urgencyMinutes"
+        data-tour="kitchen-setting-urgency"
+        label="Порог срочности (минуты)"
+        help="Карточки блюд начнут подсвечиваться жёлтым на 66% и красным на 100% этого времени"
+        :min="1"
+        :max="120"
+        :show-button="true"
+      />
+    </UiFormSection>
+  </UiForm>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UiCard, UiForm, UiSelect, UiInputNumber } from '@fastio/ui'
+import { UiForm, UiFormSection, UiSelect, UiInputNumber } from '@fastio/ui'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useOrderStatusesStore } from '~/features/orders'
 import { useGate } from '~/shared/plan/useGate'
@@ -118,20 +117,10 @@ useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
+@use '@fastio/styles/mixins/layout' as *;
 
 .form {
-  @include modal-form;
-}
-
-.row {
-  display: flex;
-  gap: var(--space-16);
-  flex-wrap: wrap;
-
-  .field {
-    flex: 1;
-    min-width: 200px;
-  }
+  @include flex-col(var(--space-12));
+  max-width: 720px;
 }
 </style>

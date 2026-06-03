@@ -2,14 +2,14 @@
   "project": "packages/ui",
   "submap": "main",
   "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-  "generated_at": "2026-05-20T01:40:07.165Z",
+  "generated_at": "2026-06-03T14:30:39.905Z",
   "stats": {
-    "files": 62,
+    "files": 64,
     "pages": 0,
-    "symbols": 175,
-    "undescribed_files": 3,
+    "symbols": 179,
+    "undescribed_files": 0,
     "undescribed_pages": 0,
-    "undescribed_symbols": 6
+    "undescribed_symbols": 0
   },
   "files": {
     "src/components/UiAlert.vue": {
@@ -40,8 +40,8 @@
     },
     "src/components/UiBottomSheet.vue": {
       "kind": "vue",
-      "hash": "8b0b93a3086e",
-      "purpose": "Нижний шит на vaul-vue с управлением z-index через layerManager и блокировкой скролла body — для мобильных диалогов",
+      "hash": "bbeac805bdef",
+      "purpose": "Шторка снизу (bottom sheet) на vaul-vue — модальный оверлей, выезжающий снизу; на мобиле подменяет поповеры/модалки",
       "symbols": [
         {
           "name": "props",
@@ -130,19 +130,19 @@
     "src/components/UiChipRemove.vue": {
       "kind": "vue",
       "hash": "6b2b3dd64d8f",
-      "purpose": null,
+      "purpose": "Кнопка-крестик удаления для чипов/тегов (×) с hover-состоянием",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
           "hash": "2a4b513f",
-          "purpose": null
+          "purpose": "Пропсы UiChipRemove: size, title"
         },
         {
           "name": "emits",
           "kind": "component-emits",
           "hash": "4838fa2f",
-          "purpose": null
+          "purpose": "Эмиты UiChipRemove: click"
         }
       ]
     },
@@ -372,14 +372,14 @@
     },
     "src/components/UiFormSection.vue": {
       "kind": "vue",
-      "hash": "0bee4d7398f6",
-      "purpose": "Карточка-секция формы: title + опц. description + responsive grid полей. Заменяет паттерн UiCard+UiSectionHeader+div.grid в settings и form-drawers",
+      "hash": "48a0e157d3a4",
+      "purpose": "Секция-карта формы настроек: заголовок (+ «?» help) + опц. описание + сетка полей; бордер; авто-скрытие пустого тела",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "6ef73e4d",
-          "purpose": "Пропсы UiFormSection: title, description, size (small/medium/large), columns (1/2/3)"
+          "hash": "6aa1ccb5",
+          "purpose": "Пропсы UiFormSection: title, description, help, size, columns"
         }
       ]
     },
@@ -402,10 +402,23 @@
         }
       ]
     },
+    "src/components/UiInfoTip.vue": {
+      "kind": "vue",
+      "hash": "a22bcb78ce7b",
+      "purpose": "«?»-подсказка у лейбла/заголовка: иконка help + поповер с текстом по клику (inline-trigger центрирование)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "eb521185",
+          "purpose": "Пропсы UiInfoTip: content, width"
+        }
+      ]
+    },
     "src/components/UiInput.vue": {
       "kind": "vue",
-      "hash": "524b1e5ccf71",
-      "purpose": "Текстовое поле (обёртка n-input) внутри FormItem: маска телефона, password-toggle, callable-кнопка 'Позвонить', статус-иконки и кастомные плейсхолдеры",
+      "hash": "2bae27f95b17",
+      "purpose": "Текстовое поле ввода (обёртка n-input) внутри FormItem: label, валидация, маски, статусы, help-«?»",
       "symbols": [
         {
           "name": "props",
@@ -417,8 +430,8 @@
     },
     "src/components/UiInputNumber.vue": {
       "kind": "vue",
-      "hash": "481b079a7600",
-      "purpose": "Числовое поле (обёртка n-input-number) с фильтрацией клавиш, отключёнными ArrowUp/Down, кастомной clear-иконкой и валидацией",
+      "hash": "80876ef44a46",
+      "purpose": "Числовое поле (обёртка n-input-number) внутри FormItem: min/max/step, степпер, help-«?»",
       "symbols": [
         {
           "name": "props",
@@ -512,8 +525,8 @@
     },
     "src/components/UiModal.vue": {
       "kind": "vue",
-      "hash": "cacd575a999d",
-      "purpose": "Модальное окно (обёртка n-modal) с заголовком, hint-поповером, actions, лоадер-оверлеем и интеграцией с modalManager/layerManager",
+      "hash": "a65ead0f5cc7",
+      "purpose": "Модальное окно (обёртка n-modal) с заголовком, экшен-кнопками и адаптивными размерами",
       "symbols": [
         {
           "name": "props",
@@ -583,19 +596,19 @@
     "src/components/UiPickerItem.vue": {
       "kind": "vue",
       "hash": "c1d4cc3aee98",
-      "purpose": null,
+      "purpose": "Плитка-элемент выбора (пресет/опция) с активным состоянием — для гридов выбора темы/шрифта",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
           "hash": "c0f98052",
-          "purpose": null
+          "purpose": "Пропсы UiPickerItem: плитка выбора (selected/active, label, disabled)"
         },
         {
           "name": "emits",
           "kind": "component-emits",
           "hash": "4838fa2f",
-          "purpose": null
+          "purpose": "Эмиты UiPickerItem: click/select"
         }
       ]
     },
@@ -620,14 +633,14 @@
     },
     "src/components/UiPopover.vue": {
       "kind": "vue",
-      "hash": "34d97509337a",
-      "purpose": "Поповер (обёртка n-popover) с автоматическим переключением в UiBottomSheet ниже sheetUntil-брейкпоинта; dark/accent варианты",
+      "hash": "9b061b80f098",
+      "purpose": "Поповер/тултип-обёртка над n-popover: триггеры hover/click, авто-шторка на мобиле, inline-trigger центрирование",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "e77f7d06",
-          "purpose": "Пропсы UiPopover: dark, offset, padding, sheetUntil, width, disabled, noSheet, accent"
+          "hash": "2bfcf158",
+          "purpose": "Пропсы UiPopover: dark, offset, padding, sheetUntil, width, disabled, noSheet, accent, inlineTrigger"
         }
       ]
     },
@@ -703,20 +716,33 @@
     },
     "src/components/UiSelect.vue": {
       "kind": "vue",
-      "hash": "1a29736316ed",
-      "purpose": "Селект (обёртка n-select) внутри FormItem с фильтруемым поиском в шапке выпадающего списка, кастомной стрелкой и поддержкой групп",
+      "hash": "1b56bed483c9",
+      "purpose": "Выпадающий список (обёртка n-select) внутри FormItem: опции, фильтрация, мультивыбор, help-«?»",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "3b8efedd",
-          "purpose": "Пропсы UiSelect: label, message, size, responsive, name, rules, filterable"
+          "hash": "3ff4e739",
+          "purpose": "Пропсы UiSelect: label, message, help, size, responsive, filterable, rules"
         },
         {
           "name": "UiSelectProps",
           "kind": "type",
-          "hash": "c733dfec",
+          "hash": "2ad561f1",
           "purpose": "Тип пропсов UiSelect"
+        }
+      ]
+    },
+    "src/components/UiSettingRow.vue": {
+      "kind": "vue",
+      "hash": "5ae74bda2b42",
+      "purpose": "Строка настройки: лейбл+hint+«?» с одной стороны, контрол (свитч) — с другой; align=end (расход) / start (компакт, свитч слева)",
+      "symbols": [
+        {
+          "name": "props",
+          "kind": "component-props",
+          "hash": "c7b14581",
+          "purpose": "Пропсы UiSettingRow: label, hint, help, align (start/end)"
         }
       ]
     },
@@ -953,14 +979,14 @@
     },
     "src/components/internal/FormItem.vue": {
       "kind": "vue",
-      "hash": "e82cda3e184a",
-      "purpose": "Внутренняя обёртка поля формы: label, control-слот, валидация по rules, error/feedback/message — регистрируется в formContext",
+      "hash": "594655ad133e",
+      "purpose": "Внутр. обёртка поля формы: лейбл (+«?» help), контрол-слот, сообщение/ошибка/валидация; компактная высота строк подписей",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "502b3ba7",
-          "purpose": "Пропсы FormItem: label, size, name, rules, modelValue, status, feedback, message"
+          "hash": "413d4f37",
+          "purpose": "Пропсы FormItem: label, size, name, rules, message, help, status, feedback"
         }
       ]
     },
@@ -998,8 +1024,8 @@
     },
     "src/config/naive-ui-theme-overrides.ts": {
       "kind": "ts",
-      "hash": "c05a3192acc6",
-      "purpose": "Темовые оверрайды Naive UI — base + light/dark наборы для UiConfigProvider; используют COLORS из @fastio/kit",
+      "hash": "4a7152e6c140",
+      "purpose": "Оверрайды глобальной темы Naive UI: цвета, шрифты, радиусы, размеры, Popover/Tabs/Tag (light/dark)",
       "symbols": [
         {
           "name": "lightThemeOverrides",
@@ -1023,8 +1049,8 @@
     },
     "src/index.ts": {
       "kind": "ts",
-      "hash": "d899509378ee",
-      "purpose": null,
+      "hash": "61b46b90fa76",
+      "purpose": "Барель-экспорт @fastio/ui: все Ui-компоненты, типы, композаблы и конфиг темы Naive",
       "symbols": [
         {
           "name": "*",
@@ -1078,13 +1104,13 @@
           "name": "UiChipRemove",
           "kind": "re-export",
           "hash": "a9980cf6",
-          "purpose": null
+          "purpose": "Экспорт UiChipRemove"
         },
         {
           "name": "UiPickerItem",
           "kind": "re-export",
           "hash": "c7f61ee2",
-          "purpose": null
+          "purpose": "Экспорт UiPickerItem"
         },
         {
           "name": "UiFilterReset",
@@ -1367,6 +1393,18 @@
           "kind": "re-export",
           "hash": "efd7cc69",
           "purpose": "Реэкспорт UiStatBlock"
+        },
+        {
+          "name": "UiSettingRow",
+          "kind": "re-export",
+          "hash": "e91c237b",
+          "purpose": "Экспорт UiSettingRow"
+        },
+        {
+          "name": "UiInfoTip",
+          "kind": "re-export",
+          "hash": "e7910463",
+          "purpose": "Экспорт UiInfoTip"
         },
         {
           "name": "UiListRow",

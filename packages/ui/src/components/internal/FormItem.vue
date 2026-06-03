@@ -1,7 +1,8 @@
 <template>
   <div class="form-item" :class="formItemClasses">
-    <div v-if="computedLabel || $slots['label-suffix']" class="label">
+    <div v-if="computedLabel || $slots['label-suffix'] || help" class="label">
       <span v-if="computedLabel" v-html="computedLabel" />
+      <UiInfoTip v-if="help" :content="help" />
       <slot name="label-suffix" />
     </div>
     <div class="control">
@@ -15,6 +16,7 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, onBeforeUnmount, useAttrs, ref, watch } from 'vue'
+import UiInfoTip from '../UiInfoTip.vue'
 import { validateValue } from '@fastio/kit'
 import type { Size } from '@fastio/kit'
 import type { FormContext, ValidationRule } from '@fastio/kit'
@@ -28,6 +30,7 @@ type Props = {
   status?: 'success' | 'warning' | 'error'
   feedback?: string
   message?: string
+  help?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -95,6 +98,7 @@ $form-item-sizes: (
   .label {
     display: flex;
     align-items: center;
+    gap: var(--space-4);
     margin-bottom: var(--space-8);
     color: var(--color-text);
   }
@@ -123,6 +127,7 @@ $form-item-sizes: (
       .error, .feedback, .message {
         margin-top: map.get($props, 'error-margin');
         font-size: map.get($props, 'error-size');
+        line-height: var(--line-height-tight);
       }
     }
   }

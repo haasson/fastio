@@ -3,7 +3,6 @@
     <TabsLayout
       :tabs="tabs"
       base-path="/appearance"
-      card
       full-height
     >
       <template #extra>

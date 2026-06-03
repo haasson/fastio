@@ -7,6 +7,7 @@
       :rules="rules"
       :message="message"
       :model-value="selectedValues"
+      :help="help"
       v-slot="{ hasError }"
     >
       <n-select
@@ -71,6 +72,7 @@ export type UiSelectProps = {
   name?: string
   rules?: ValidationRule[]
   filterable?: boolean
+  help?: string
 }
 
 const props = withDefaults(defineProps<UiSelectProps>(), {

@@ -1,103 +1,91 @@
 <template>
   <UiForm class="form" @submit.prevent="page.submit">
-    <UiSectionHeader title="Отображение заказов" />
-    <div class="row row-half">
+    <UiFormSection title="Отображение заказов">
       <UiSelect
         v-model:value="form.ordersTileSize"
         label="Размер карточек заказов"
         :options="TILE_SIZE_OPTIONS"
-        message="Ширина карточек заказов в списке (вкладка «Заказы»)"
+        help="Ширина карточек заказов в списке (вкладка «Заказы»)"
       />
-    </div>
+    </UiFormSection>
 
-    <UiSectionHeader title="Методы оплаты" />
-    <div class="checkboxes">
-      <UiCheckbox v-model="form.cash">Наличные</UiCheckbox>
-      <UiCheckbox v-model="form.card">Карта при получении</UiCheckbox>
-      <!-- Онлайн-оплата временно недоступна: провайдер (YooKassa) не интегрирован.
-           Чекбокс заблокирован — даже если включить, заказы с paymentType=online
-           отклонятся на сервере. Снимать блокировку после доделанной интеграции. -->
-      <UiCheckbox v-model="form.online" disabled>Онлайн <span class="online-soon">(скоро)</span></UiCheckbox>
-    </div>
+    <UiFormSection title="Методы оплаты" :columns="1">
+      <div class="checkboxes">
+        <UiCheckbox v-model="form.cash">Наличные</UiCheckbox>
+        <UiCheckbox v-model="form.card">Карта при получении</UiCheckbox>
+        <!-- Онлайн-оплата временно недоступна: провайдер (YooKassa) не интегрирован.
+             Чекбокс заблокирован — даже если включить, заказы с paymentType=online
+             отклонятся на сервере. Снимать блокировку после доделанной интеграции. -->
+        <UiCheckbox v-model="form.online" disabled>Онлайн <span class="online-soon">(скоро)</span></UiCheckbox>
+      </div>
+    </UiFormSection>
 
-    <UiSectionHeader title="Предзаказ" />
+    <UiFormSection
+      title="Предзаказ"
+      help="Клиент сможет выбрать — «как можно скорее» или к конкретному времени. Если выключено, заказ всегда оформляется как можно скорее."
+      :columns="1"
+    >
+      <template #header-right>
+        <div data-tour="preorder-toggle">
+          <UiSwitch v-model="form.scheduling.enabled" />
+        </div>
+      </template>
 
-    <div data-tour="preorder-toggle">
-      <SettingToggle
-        v-model="form.scheduling.enabled"
-        label="Разрешить заказ ко времени"
-        hint="Клиент сможет выбрать — «как можно скорее» или к конкретному времени. Если выключено, заказ всегда оформляется как можно скорее."
-      />
-    </div>
-
-    <template v-if="form.scheduling.enabled">
-      <UiSectionHeader title="Статусы" />
-      <div class="row row-half">
+      <template v-if="form.scheduling.enabled">
         <UiSelect
           v-model:value="form.scheduling.nextStatusId"
           label="Статус после срабатывания"
           :options="statusOptions"
           clearable
           placeholder="Не выбран"
+          help="В этот статус система автоматически переведёт заказ, когда настанет время начала готовки. Обычно это первый рабочий статус, например «Принят» или «На кухне». Система сама создаёт статус «Запланировано» (в группе «Новые»), куда оператор переводит входящие заказы ко времени; когда время наступит, заказ перейдёт в выбранный статус."
         />
-      </div>
-      <p class="section-hint">
-        <strong>Статус после срабатывания</strong> — в этот статус система автоматически переведёт заказ, когда настанет время начала готовки.
-        Обычно это первый рабочий статус, например «Принят» или «На кухне».
-        <br /><br />
-        Система автоматически создаёт статус <strong>«Запланировано»</strong> (в группе «Новые»), куда оператор переводит входящие заказы ко времени. Когда время наступит, заказ сам перейдёт в выбранный статус выше.
-      </p>
 
-      <UiSectionHeader title="Доступные даты" />
-      <div data-tour="preorder-slots" class="row row-half">
-        <UiInputNumber
-          v-model:value="form.scheduling.daysAhead"
-          label="Дней вперёд"
-          :min="1"
-          :max="30"
-          :show-button="true"
-        />
-        <UiSelect
-          v-model:value="form.scheduling.slotStep"
-          label="Шаг слотов"
-          :options="SLOT_STEP_OPTIONS"
-        />
-      </div>
+        <div data-tour="preorder-slots" class="row">
+          <UiInputNumber
+            v-model:value="form.scheduling.daysAhead"
+            label="Дней вперёд"
+            :min="1"
+            :max="30"
+            :show-button="true"
+          />
+          <UiSelect
+            v-model:value="form.scheduling.slotStep"
+            label="Шаг слотов"
+            :options="SLOT_STEP_OPTIONS"
+          />
+        </div>
 
-      <UiSectionHeader title="Буферы" />
-      <div data-tour="preorder-buffers" class="row row-three">
-        <UiSelect
-          v-model:value="form.scheduling.closeBufferMinutes"
-          label="Буфер при закрытии"
-          :options="bufferOptions"
-        />
-        <UiSelect
-          v-if="gate.delivery.value.enabled"
-          v-model:value="form.scheduling.deliveryLeadMinutes"
-          label="Буфер при открытии — доставка"
-          :options="leadOptions"
-        />
-        <UiSelect
-          v-if="gate.pickup.value.enabled"
-          v-model:value="form.scheduling.pickupLeadMinutes"
-          label="Буфер при открытии — самовывоз"
-          :options="leadOptions"
-        />
-      </div>
-      <p class="section-hint">
-        <strong>Буфер при закрытии</strong> — за сколько минут до конца дня исчезает опция «как можно скорее» и обрезаются последние слоты.
-        Например, заведение работает до&nbsp;22:00, буфер 30&nbsp;мин — с&nbsp;21:30 опция «сейчас» недоступна и&nbsp;последний доступный слот тоже 21:30.
-        <br /><br />
-        <strong>Буфер при открытии</strong> — минимальный интервал от текущего момента до ближайшего доступного слота.
-        Например, буфер 60 мин — клиент не увидит слоты раньше чем через час от текущего времени.
-      </p>
-    </template>
+        <div data-tour="preorder-buffers" class="row row-three">
+          <UiSelect
+            v-model:value="form.scheduling.closeBufferMinutes"
+            label="Буфер при закрытии"
+            :options="bufferOptions"
+            help="За сколько минут до конца дня исчезает опция «как можно скорее» и обрезаются последние слоты. Например, заведение работает до 22:00, буфер 30 мин — с 21:30 опция «сейчас» недоступна и последний слот тоже 21:30."
+          />
+          <UiSelect
+            v-if="gate.delivery.value.enabled"
+            v-model:value="form.scheduling.deliveryLeadMinutes"
+            label="Буфер при открытии — доставка"
+            :options="leadOptions"
+            help="Минимальный интервал от текущего момента до ближайшего доступного слота. Например, буфер 60 мин — клиент не увидит слоты раньше чем через час."
+          />
+          <UiSelect
+            v-if="gate.pickup.value.enabled"
+            v-model:value="form.scheduling.pickupLeadMinutes"
+            label="Буфер при открытии — самовывоз"
+            :options="leadOptions"
+            help="Минимальный интервал от текущего момента до ближайшего доступного слота. Например, буфер 60 мин — клиент не увидит слоты раньше чем через час."
+          />
+        </div>
+      </template>
+    </UiFormSection>
   </UiForm>
 </template>
 
 <script setup lang="ts">
 import { watch, computed } from 'vue'
-import { UiForm, UiInputNumber, UiSectionHeader, UiSelect, UiCheckbox, useMessage } from '@fastio/ui'
+import { UiForm, UiFormSection, UiInputNumber, UiSelect, UiCheckbox, UiSwitch, useMessage } from '@fastio/ui'
 import type { OrderSchedulingConfig, PaymentMethod, TileSize } from '@fastio/shared'
 import { buildMinuteOptions, TILE_SIZE_OPTIONS } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
@@ -108,7 +96,6 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useEditableForm, cancelSubmit } from '~/shared/ui/composables/useEditableForm'
 import { useRegisterPageForm } from '~/shared/ui/composables/usePageForm'
 import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
-import SettingToggle from '~/shared/ui/components/SettingToggle.vue'
 
 const SLOT_STEP_OPTIONS = [
   { label: '15 мин', value: 15 },
@@ -221,12 +208,11 @@ useUnsavedGuard(page.isDirty)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/form' as *;
 @use '@fastio/styles/mixins/layout' as *;
 
 .form {
-  @include modal-form;
-  max-width: 680px;
+  @include flex-col(var(--space-12));
+  max-width: 720px;
 }
 
 .checkboxes {
@@ -242,21 +228,12 @@ useUnsavedGuard(page.isDirty)
 
 .row {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-12);
-
-  &.row-half {
-    grid-template-columns: 1fr 1fr;
-  }
+  align-items: start;
 
   &.row-three {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-.section-hint {
-  margin-top: calc(-1 * var(--space-8));
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-loose);
 }
 </style>

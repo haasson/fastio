@@ -1,11 +1,11 @@
 <template>
   <UiCollapseItem name="ingredients" title="Ингредиенты">
     <template #header-extra>
-      <HintPopover>
+      <UiInfoTip>
         <UiText size="tiny">
           Состав блюда. Гость может убрать любой ингредиент при заказе. Удобно скопировать с похожего блюда и подправить.
         </UiText>
-      </HintPopover>
+      </UiInfoTip>
     </template>
 
     <div class="ingredients-section-root">
@@ -52,11 +52,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { UiCollapseItem, UiInput, UiButton, UiText, UiSelect, useMessage } from '@fastio/ui'
+import { UiCollapseItem, UiInput, UiButton, UiText, UiSelect, UiInfoTip, useMessage } from '@fastio/ui'
 import type { DishIngredient } from '@fastio/shared'
 import { pluralize } from '@fastio/shared'
 import { useConfirm } from '@fastio/kit'
-import HintPopover from '~/shared/ui/components/HintPopover.vue'
 
 const props = defineProps<{
   categoryDishes: Array<{ id: string; name: string; ingredients: DishIngredient[] }>
