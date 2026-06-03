@@ -152,17 +152,21 @@ case "$MODE" in
     find "$BACKUP_DIR" -name "postgres-*.sql.gz" -mtime "+${DB_RETAIN_LOCAL_DAYS}" -delete
 
     log "Pruning S3 backups older than ${DB_RETAIN_S3_DAYS}d"
+    # --max-depth 1: дампы лежат плоско в корне бакета, а рядом — wal-g WAL-архив
+    # (новый объект каждые 60с, десятки тысяч). Без max-depth rclone обходит весь
+    # бакет рекурсивно ради --include → prune рос 6→18 мин. С флагом — ~секунда.
     rclone delete "${S3_REMOTE}/" \
       --include "postgres-*.sql.gz" \
-      --min-age "${DB_RETAIN_S3_DAYS}d"
+      --min-age "${DB_RETAIN_S3_DAYS}d" \
+      --max-depth 1
 
     log "Backup OK: ${FILENAME}"
     notify_success "$(printf '✅ <b>Ежедневный бэкап БД</b>\nФайл: <code>%s</code>\nРазмер: %s\nДлительность: %s\nВсего на S3: %s файлов, %s\nВремя: %s Барнаул\nСледующий: завтра в 10:00' \
       "$FILENAME" \
       "$(du -h "$LOCAL_PATH" | cut -f1)" \
       "$(fmt_duration)" \
-      "$(s3_count "${S3_REMOTE}/" --include 'postgres-*.sql.gz')" \
-      "$(s3_size_human "${S3_REMOTE}/" --include 'postgres-*.sql.gz')" \
+      "$(s3_count "${S3_REMOTE}/" --include 'postgres-*.sql.gz' --max-depth 1)" \
+      "$(s3_size_human "${S3_REMOTE}/" --include 'postgres-*.sql.gz' --max-depth 1)" \
       "$(local_now)")"
     ;;
 
