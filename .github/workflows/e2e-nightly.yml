@@ -5,7 +5,11 @@ name: E2E (nightly)
 # Можно запустить руками через workflow_dispatch перед релизом.
 on:
   schedule:
-    - cron: '0 3 * * *' # 03:00 UTC = 06:00 MSK
+    # 20:19 UTC ≈ 03:19 ночи по UTC+7 (Новосибирск). Cron в GitHub Actions —
+    # всегда UTC. Минута НЕ круглая осознанно: round-hour кроны (0 X) стоят в
+    # пиковой очереди GitHub и дрейфят на часы (отсюда прошлый «прогон в 15:00»);
+    # смещение на :19 заметно снижает занос. Точность всё равно best-effort.
+    - cron: '19 20 * * *'
   workflow_dispatch:
 
 concurrency:

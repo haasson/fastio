@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-06-03T03:07:47.898Z",
+  "generated_at": "2026-06-03T08:59:58.721Z",
   "stats": {
     "files": 52,
     "pages": 0,
@@ -345,8 +345,8 @@
     },
     "src/utils/csp.ts": {
       "kind": "ts",
-      "hash": "71cee60c2c8c",
-      "purpose": "Строит Content-Security-Policy для storefront и admin (CSP3 nonce + strict-dynamic при наличии nonce, host-whitelist fallback без него) и регекс-инжектор nonce для render:html.",
+      "hash": "e4449b3937c2",
+      "purpose": "Сборка Content-Security-Policy и базовых security-заголовков; connect-src берёт Supabase-origin из конфига",
       "symbols": [
         {
           "name": "buildCsp",
@@ -1131,8 +1131,8 @@
     },
     "src/utils/table.ts": {
       "kind": "ts",
-      "hash": "724259f7fe6c",
-      "purpose": "Дефолты и маппер настроек столов (table_settings) — единая правда для admin/storefront",
+      "hash": "f9b2e899c3a8",
+      "purpose": "Дефолты TableSettings (единая правда admin/storefront) + маппер snake_case-строки БД в TableSettings",
       "symbols": [
         {
           "name": "DEFAULT_TABLE_SETTINGS",

@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-03T03:07:47.707Z",
+  "generated_at": "2026-06-03T08:59:58.503Z",
   "stats": {
-    "files": 85,
+    "files": 83,
     "pages": 0,
-    "symbols": 147,
+    "symbols": 144,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -1068,19 +1068,6 @@
         }
       ]
     },
-    "shared/ui/components/HintPopover.vue": {
-      "kind": "vue",
-      "hash": "2c678e3895ef",
-      "purpose": "Мини-подсказка по hover на иконке help: UiPopover trigger=hover, width 260px, delay 500ms",
-      "symbols": [
-        {
-          "name": "component",
-          "kind": "component",
-          "hash": "cbcf45d7",
-          "purpose": "Wrapper над UiPopover с иконкой help"
-        }
-      ]
-    },
     "shared/ui/components/ImageUploadModal.vue": {
       "kind": "vue",
       "hash": "7038c87dac7f",
@@ -1140,25 +1127,6 @@
           "name": "emits",
           "kind": "component-emits",
           "hash": "5f03b126",
-          "purpose": "update:modelValue"
-        }
-      ]
-    },
-    "shared/ui/components/SettingToggle.vue": {
-      "kind": "vue",
-      "hash": "0c94372df523",
-      "purpose": "Строка настройки: UiSwitch + label + опциональная подсказка hint, выравнивание start/end",
-      "symbols": [
-        {
-          "name": "props",
-          "kind": "component-props",
-          "hash": "cecfeeef",
-          "purpose": "{ modelValue, label, hint?, disabled?, align? }"
-        },
-        {
-          "name": "emits",
-          "kind": "component-emits",
-          "hash": "145442e8",
           "purpose": "update:modelValue"
         }
       ]

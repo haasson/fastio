@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { defineEventHandler, setResponseHeaders } from 'h3'
+import { useRuntimeConfig } from '#imports'
 import { BASE_SECURITY_HEADERS, buildCsp } from '@fastio/shared'
 
 // Админка позволяет вставлять картинки по произвольному URL (RichTextEditor, image upload), отсюда широкий `https:`.
@@ -17,8 +18,13 @@ export default defineEventHandler((event) => {
 
   const isApi = event.path?.startsWith('/api/') ?? false
 
+  // Admin — SPA: браузер ходит в Supabase напрямую (anon key + RLS). connect-src
+  // должен пускать на актуальный Supabase, а не только на прод-домен (иначе
+  // preview/CI/staging получают «Refused to connect» на auth/realtime).
+  const supabaseUrl = useRuntimeConfig().public.supabaseUrl as string
+
   setResponseHeaders(event, {
-    'Content-Security-Policy': buildCsp({ imgSrc: IMG_SRC, nonce, reportUri: REPORT_URI }),
+    'Content-Security-Policy': buildCsp({ imgSrc: IMG_SRC, nonce, reportUri: REPORT_URI, supabaseUrl }),
     ...BASE_SECURITY_HEADERS,
     ...(isApi ? {} : { 'Cache-Control': 'private, no-store' }),
   })

@@ -7,6 +7,25 @@ export type CspOptions = {
    */
   nonce?: string
   reportUri?: string
+  /**
+   * URL Supabase (из runtimeConfig). Его origin + ws-вариант добавляются в
+   * connect-src — иначе SPA-клиент не сможет ходить в Supabase (auth/realtime).
+   * Захардкоженный db.fastio.ru — прод-дефолт; без этого параметра CSP режет
+   * любой не-prod Supabase (локальный 127.0.0.1:54321, staging).
+   */
+  supabaseUrl?: string
+}
+
+// origin + websocket-вариант для connect-src. https→wss, http→ws.
+function supabaseConnectSources(url: string): string[] {
+  try {
+    const u = new URL(url)
+    const wsScheme = u.protocol === 'https:' ? 'wss:' : 'ws:'
+
+    return [u.origin, `${wsScheme}//${u.host}`]
+  } catch {
+    return []
+  }
 }
 
 export function buildCsp(opts: CspOptions): string {
@@ -25,13 +44,22 @@ export function buildCsp(opts: CspOptions): string {
     ? `script-src 'self' 'unsafe-inline' 'nonce-${opts.nonce}' 'strict-dynamic' https:`
     : `script-src 'self' 'unsafe-inline' https://oauth.telegram.org https://telegram.org https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://yastatic.net`
 
+  const connectSrc = [
+    `'self'`, 'blob:',
+    'https://db.fastio.ru', 'wss://db.fastio.ru',
+    ...(opts.supabaseUrl ? supabaseConnectSources(opts.supabaseUrl) : []),
+    'https://*.ingest.de.sentry.io',
+    'https://api-maps.yandex.ru', 'https://*.yandex.ru', 'https://*.yandex.net', 'https://yastatic.net',
+    'https://suggestions.dadata.ru', 'https://oauth.telegram.org',
+  ].join(' ')
+
   const directives = [
     `default-src 'self'`,
     scriptSrc,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src ${opts.imgSrc}`,
     `font-src 'self' https://fonts.gstatic.com data:`,
-    `connect-src 'self' blob: https://db.fastio.ru wss://db.fastio.ru https://*.ingest.de.sentry.io https://api-maps.yandex.ru https://*.yandex.ru https://*.yandex.net https://yastatic.net https://suggestions.dadata.ru https://oauth.telegram.org`,
+    `connect-src ${connectSrc}`,
     `frame-src 'self' https://oauth.telegram.org https://*.yandex.ru https://*.yandex.net`,
     // data: нужен для Yandex Maps v3 — vector renderer создаёт web-worker из inline data:application/javascript.
     `worker-src 'self' blob: data:`,

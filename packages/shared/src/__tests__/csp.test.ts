@@ -51,6 +51,36 @@ describe('buildCsp', () => {
     })
   })
 
+  describe('connect-src + supabaseUrl', () => {
+    it('всегда содержит прод-дефолт db.fastio.ru', () => {
+      const csp = buildCsp({ imgSrc: `'self'` })
+
+      expect(csp).toMatch(/connect-src [^;]*https:\/\/db\.fastio\.ru/)
+      expect(csp).toMatch(/connect-src [^;]*wss:\/\/db\.fastio\.ru/)
+    })
+
+    it('добавляет локальный http-Supabase + ws-вариант в connect-src', () => {
+      const csp = buildCsp({ imgSrc: `'self'`, supabaseUrl: 'http://127.0.0.1:54321' })
+
+      expect(csp).toMatch(/connect-src [^;]*http:\/\/127\.0\.0\.1:54321(\s|;)/)
+      expect(csp).toMatch(/connect-src [^;]*ws:\/\/127\.0\.0\.1:54321(\s|;)/)
+    })
+
+    it('https-Supabase даёт wss-вариант', () => {
+      const csp = buildCsp({ imgSrc: `'self'`, supabaseUrl: 'https://staging.example.com' })
+
+      expect(csp).toMatch(/connect-src [^;]*https:\/\/staging\.example\.com(\s|;)/)
+      expect(csp).toMatch(/connect-src [^;]*wss:\/\/staging\.example\.com(\s|;)/)
+    })
+
+    it('игнорирует пустой / невалидный supabaseUrl без падения', () => {
+      expect(() => buildCsp({ imgSrc: `'self'`, supabaseUrl: '' })).not.toThrow()
+      expect(() => buildCsp({ imgSrc: `'self'`, supabaseUrl: 'not a url' })).not.toThrow()
+      // прод-дефолт остаётся на месте
+      expect(buildCsp({ imgSrc: `'self'`, supabaseUrl: 'not a url' })).toMatch(/connect-src [^;]*https:\/\/db\.fastio\.ru/)
+    })
+  })
+
   it('добавляет report-uri если задан', () => {
     const csp = buildCsp({ imgSrc: `'self'`, reportUri: 'https://sentry.example/report' })
 
