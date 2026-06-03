@@ -6,7 +6,11 @@ name: E2E weekly digest
 # fail-only алерта nightly). Требует секреты TELEGRAM_OPS_BOT_TOKEN / TELEGRAM_OPS_CHAT_ID.
 on:
   schedule:
-    - cron: '0 5 * * 1' # понедельник 05:00 UTC = 08:00 MSK (после воскресной ночи)
+    # Понедельник 02:13 UTC ≈ 09:13 утра по UTC+7 (Барнаул) — после воскресной ночи
+    # (nightly идёт вс 20:19 UTC, успевает войти в 7-дневное окно). Cron в GitHub
+    # Actions — всегда UTC. Минута некруглая осознанно: round-hour кроны стоят в
+    # пиковой очереди и дрейфят на часы (см. тот же фикс в e2e-nightly.yml).
+    - cron: '13 2 * * 1'
   workflow_dispatch:
 
 permissions:
