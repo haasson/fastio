@@ -2,7 +2,7 @@
   "project": "packages/public-ui",
   "submap": "main",
   "purpose": "Публичная UI-библиотека витрины (Fs*) на Reka UI/vaul-vue с адаптивным поведением, mobile-first и токенами темы",
-  "generated_at": "2026-06-02T11:13:52.316Z",
+  "generated_at": "2026-06-03T03:05:56.764Z",
   "stats": {
     "files": 35,
     "pages": 0,
@@ -443,27 +443,27 @@
     },
     "src/components/overlay/FsToast.vue": {
       "kind": "vue",
-      "hash": "c3d028d3524a",
-      "purpose": "Toast-уведомление на reka-ui Toast с вариантами success/error/warning, иконкой, swipe-to-dismiss и авто-закрытием",
+      "hash": "9d14a2929e6f",
+      "purpose": "Одиночный тост витрины (reka-ui ToastRoot): иконка по variant, заголовок/описание, опциональная action-кнопка и крестик; при persist duration=0 (без авто-закрытия)",
       "symbols": [
         {
           "name": "props",
           "kind": "component-props",
-          "hash": "466ffee9",
-          "purpose": "open, title, description, variant (default/success/error/warning), duration (ms)"
+          "hash": "9d51e868",
+          "purpose": "open, title?, description?, variant (default/success/error/warning), duration?, persist?, action?: { label }"
         },
         {
           "name": "emits",
           "kind": "component-emits",
-          "hash": "2cd8b1ac",
-          "purpose": "update:open(value)"
+          "hash": "05f86df6",
+          "purpose": "update:open(value), action() — клик по action-кнопке"
         }
       ]
     },
     "src/components/overlay/FsToastProvider.vue": {
       "kind": "vue",
-      "hash": "28bc9ae8d5b1",
-      "purpose": "Контейнер тостов витрины (reka-ui ToastProvider/Viewport); фиксирован снизу, поднимается над FAB/баром через --app-bottom-inset",
+      "hash": "ba60e9ae4254",
+      "purpose": "Провайдер/вьюпорт тостов витрины: рендерит FsToast по списку, прокидывает persist/action, @action → onClick+dismiss; вьюпорт фиксирован снизу над FAB/баром (--app-bottom-inset)",
       "symbols": [
         {
           "name": "props",

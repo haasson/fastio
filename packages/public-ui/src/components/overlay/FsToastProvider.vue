@@ -8,7 +8,10 @@
       :description="toast.description"
       :variant="toast.variant"
       :duration="toast.duration"
+      :persist="toast.persist"
+      :action="toast.action"
       @update:open="(val) => !val && onDismiss?.(toast.id)"
+      @action="() => { toast.action?.onClick?.(); onDismiss?.(toast.id) }"
     />
 
     <ToastViewport class="fs-toast-viewport" />
@@ -25,6 +28,8 @@ type ToastItem = {
   description?: string
   variant?: 'default' | 'success' | 'error' | 'warning'
   duration?: number
+  persist?: boolean
+  action?: { label: string; onClick?: () => void }
 }
 
 type Props = {

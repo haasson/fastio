@@ -2,7 +2,7 @@
   <ToastRoot
     class="fs-toast-root"
     :open="open"
-    :duration="duration"
+    :duration="rootDuration"
     @update:open="emit('update:open', $event)"
   >
     <component
@@ -16,6 +16,16 @@
     <div class="fs-toast-body">
       <ToastTitle v-if="title" class="fs-toast-title">{{ title }}</ToastTitle>
       <ToastDescription v-if="description" class="fs-toast-desc">{{ description }}</ToastDescription>
+
+      <FsButton
+        v-if="action"
+        class="fs-toast-action"
+        variant="secondary"
+        size="small"
+        @click="emit('action')"
+      >
+        {{ action.label }}
+      </FsButton>
     </div>
 
     <ToastClose class="fs-toast-close" aria-label="Закрыть">
@@ -27,6 +37,7 @@
 import { computed } from 'vue'
 import { ToastRoot, ToastTitle, ToastDescription, ToastClose } from 'reka-ui'
 import { X, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-vue-next'
+import FsButton from '../base/FsButton.vue'
 
 type Props = {
   open: boolean
@@ -34,6 +45,9 @@ type Props = {
   description?: string
   variant?: 'default' | 'success' | 'error' | 'warning'
   duration?: number
+  // persist: 0 для ToastRoot отключает авто-закрытие в reka.
+  persist?: boolean
+  action?: { label: string }
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -43,7 +57,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
+  action: []
 }>()
+
+const rootDuration = computed(() => (props.persist ? 0 : props.duration))
 
 const icon = computed(() => {
   switch (props.variant) {
@@ -119,6 +136,10 @@ const iconColor = computed(() => {
   font-size: 13px;
   color: var(--color-text-secondary);
   margin: 2px 0 0;
+}
+
+.fs-toast-action {
+  margin-top: 10px;
 }
 
 .fs-toast-close {

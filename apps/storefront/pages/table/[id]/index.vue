@@ -6,15 +6,6 @@
   </div>
 
   <template v-else-if="tableData">
-    <!-- Уведомление об отклонённых позициях -->
-    <FsAlert v-if="removedItems.length" type="error" class="removed-alert">
-      <div class="removed-info">
-        <span class="removed-title">Отклонено: {{ removedItems.map(i => i.dishName).join(', ') }}</span>
-        <span class="removed-hint">Подробности у официанта</span>
-      </div>
-      <FsButton variant="secondary" size="small" @click="dismissRemoved">Ок</FsButton>
-    </FsAlert>
-
     <MenuSection
       default-view="dishes"
       :table-mode="true"
@@ -108,7 +99,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useAsyncData, useRequestFetch, useNuxtData, useCookie } from 'nuxt/app'
-import { FsHeading, FsText, FsDrawer, FsButton, FsAlert } from '@fastio/public-ui'
+import { FsHeading, FsText, FsDrawer, FsButton } from '@fastio/public-ui'
 import type { Tenant } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import { useTableStore, useTableRealtime, type CheckItem } from '~/features/table-mode'
@@ -129,7 +120,7 @@ definePageMeta({ layout: 'table' })
 const route = useRoute()
 const rfetch = useRequestFetch()
 const tableStore = useTableStore()
-const { success: showSuccess, error: showError } = useToast()
+const { success: showSuccess, error: showError, show: showToast } = useToast()
 
 const tableId = route.params.id as string
 const slugQuery = route.query.slug ? { query: { slug: route.query.slug } } : {}
@@ -200,8 +191,6 @@ registerBottomInset('table-order-bar', () =>
 )
 
 // Загружаем текущий чек
-const removedItems = ref<CheckItem[]>([])
-
 async function loadCheck() {
   try {
     const result = await $fetch(`/api/table/${tableId}/check`, slugQuery) as { items: CheckItem[] }
@@ -210,17 +199,21 @@ async function loadCheck() {
       const newIds = new Set(result.items.map(i => i.id))
       const gone = oldItems.filter(i => !newIds.has(i.id))
       if (gone.length) {
-        removedItems.value = [...removedItems.value, ...gone]
+        // Каждая пачка отклонений — отдельный persist-тост; viewport их стекает.
+        // Снимается кнопкой «Ок» (provider авто-дисмиссит на action).
+        showToast({
+          variant: 'error',
+          persist: true,
+          title: `Отклонено: ${gone.map(i => i.dishName).join(', ')}`,
+          description: 'Подробности у официанта',
+          action: { label: 'Ок' },
+        })
       }
     }
     tableStore.setCheckItems(result.items)
   } catch (e) {
     reportError(e instanceof Error ? e : new Error('[table/[id]] failed to load check'))
   }
-}
-
-function dismissRemoved() {
-  removedItems.value = []
 }
 
 onMounted(() => loadCheck())
@@ -327,32 +320,6 @@ async function submitDraft() {
 
 <style scoped lang="scss">
 @use '~/assets/styles/mixins' as *;
-
-.removed-alert {
-  position: fixed;
-  // Над нижней полосой заказа (единый bottom-inset), с запасом 8px.
-  bottom: max(16px, calc(var(--app-bottom-inset, 0px) + 8px));
-  left: 16px;
-  right: 16px;
-  // Тост-стиль уведомление: над контентом и sticky-header.
-  z-index: var(--z-toast);
-  justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.removed-info {
-  @include flex-col(2px);
-  min-width: 0;
-}
-
-.removed-title {
-  @include text-caption(600);
-}
-
-.removed-hint {
-  @include text-xs;
-  opacity: 0.7;
-}
 
 .table-error-root {
   @include flex-col(8px);
