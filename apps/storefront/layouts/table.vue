@@ -1,6 +1,6 @@
 <template>
   <div class="table-layout-root">
-    <header class="table-header">
+    <header ref="headerRef" class="table-header">
       <img
         v-if="logo"
         :src="logo"
@@ -17,8 +17,8 @@
     </header>
 
     <ClientOnly>
-      <div class="sticky-category-bar">
-        <CategoryBar overflow="scroll" />
+      <div ref="categoryBarRef" class="sticky-category-bar">
+        <CategoryBar overflow="scroll" :sticky-offset="stickyTotalHeight" />
       </div>
     </ClientOnly>
 
@@ -29,8 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { useNuxtData } from 'nuxt/app'
+import { useElementSize } from '@vueuse/core'
 import type { Tenant } from '@fastio/shared'
 import { useTableStore, CallWaiterButton } from '~/features/table-mode'
 import CategoryBar from '~/shared/ui/sections/CategoryBar.vue'
@@ -39,6 +40,12 @@ const { data: tenant } = useNuxtData<Tenant>('tenant')
 const tableStore = useTableStore()
 const logo = computed(() => tenant.value?.siteContent?.logo ?? null)
 const tenantName = computed(() => tenant.value?.name ?? '')
+
+const headerRef = useTemplateRef('headerRef')
+const { height: headerHeight } = useElementSize(headerRef)
+const categoryBarRef = useTemplateRef('categoryBarRef')
+const { height: categoryBarHeight } = useElementSize(categoryBarRef)
+const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.value)
 </script>
 
 <style scoped lang="scss">
