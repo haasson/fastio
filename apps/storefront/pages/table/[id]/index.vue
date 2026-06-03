@@ -9,25 +9,30 @@
     <MenuSection
       default-view="dishes"
       :table-mode="true"
+      :ordering-enabled="orderingEnabled"
       :order-counts="draftCountByItem"
       @table-order="onTableOrder"
       @table-inc="onTableInc"
       @table-dec="onTableDec"
     />
 
-    <TableOrderBar
-      :check-count="tableStore.checkItems.length"
-      :check-total="tableStore.checkTotal"
-      :draft-count="tableStore.draftCount"
-      :draft-total="tableStore.draftTotal"
-      @open-check="checkOpen = true"
-      @open-draft="draftOpen = true"
-    />
+    <!-- Заказ со стола выключен тенантом → showcase-only: ни полосы заказа, ни драфта. -->
+    <template v-if="orderingEnabled">
+      <TableOrderBar
+        :check-count="tableStore.checkItems.length"
+        :check-total="tableStore.checkTotal"
+        :draft-count="tableStore.draftCount"
+        :draft-total="tableStore.draftTotal"
+        @open-check="checkOpen = true"
+        @open-draft="draftOpen = true"
+      />
 
-    <!-- Резерв под фиксированную нижнюю полосу, чтобы не перекрывала последние блюда -->
-    <div v-if="barVisible" class="bar-spacer" aria-hidden="true" />
+      <!-- Резерв под фиксированную нижнюю полосу, чтобы не перекрывала последние блюда -->
+      <div v-if="barVisible" class="bar-spacer" aria-hidden="true" />
+    </template>
   </template>
 
+  <template v-if="orderingEnabled">
   <!-- Шторка «Заказ»: редактируемый драфт + подтверждение -->
   <FsDrawer v-model="draftOpen" title="Заказ">
     <div v-if="!tableStore.draftItems.length" class="check-empty">
@@ -93,6 +98,7 @@
       </div>
     </template>
   </FsDrawer>
+  </template>
   </div>
 </template>
 
@@ -136,8 +142,13 @@ const sending = ref(false)
 const pendingOrderKey = ref<string | null>(null)
 
 // Валидация стола
-const tableData = ref<{ id: string; name: string } | null>(null)
+type TableResponse = { id: string; name: string; dineInOrderingEnabled: boolean; waiterCallEnabled: boolean }
+const tableData = ref<TableResponse | null>(null)
 const tableError = ref<string | null>(null)
+
+// Заказ со стола гейтится toggle'ом тенанта (dineInOrderingEnabled). Выключено →
+// showcase-only: read-only меню, без полосы заказа, драфта и шторок (см. template).
+const orderingEnabled = computed(() => tableData.value?.dineInOrderingEnabled ?? true)
 
 const { data, error } = await useAsyncData(`table-${tableId}`, () =>
   rfetch(`/api/table/${tableId}`, slugQuery),
@@ -146,8 +157,11 @@ const { data, error } = await useAsyncData(`table-${tableId}`, () =>
 if (error.value) {
   tableError.value = (error.value as { data?: { message?: string } }).data?.message ?? 'Стол не найден'
 } else if (data.value) {
-  tableData.value = data.value as { id: string; name: string }
-  tableStore.setTable(tableData.value.id, tableData.value.name)
+  tableData.value = data.value as TableResponse
+  tableStore.setTable(tableData.value.id, tableData.value.name, {
+    dineInOrderingEnabled: tableData.value.dineInOrderingEnabled,
+    waiterCallEnabled: tableData.value.waiterCallEnabled,
+  })
 
   // Single source of truth для cookie `fastio_table`. setCookie внутри
   // GET /api/table/[id] на SSR — это под-запрос, его Set-Cookie НЕ долетает до
@@ -220,12 +234,16 @@ async function loadCheck() {
 }
 
 onMounted(() => {
+  // Showcase-only (заказ выключен) — нет ни драфта, ни чека: пропускаем.
+  if (!orderingEnabled.value) return
+
   // Восстанавливаем несобранный драфт после рефреша (client-only, см. стор).
   tableStore.restoreDraft()
   loadCheck()
 })
 const { data: tenant } = useNuxtData<Tenant>('tenant')
-useTableRealtime(tenant.value?.id ?? '', loadCheck)
+// Realtime чека нужен только при включённом заказе со стола.
+useTableRealtime(orderingEnabled.value ? (tenant.value?.id ?? '') : '', loadCheck)
 
 // Тап блюда → копим в локальном драфте (без POST). Отправка — batch'ем по кнопке.
 // Тост на каждый тап не нужен: нижняя полоса заказа сама растёт — это и есть фидбек.

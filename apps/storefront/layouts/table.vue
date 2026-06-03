@@ -9,7 +9,8 @@
       >
       <span v-else class="tenant-name">{{ tenantName }}</span>
       <ClientOnly>
-        <div v-if="tableStore.tableId" class="table-header-actions">
+        <!-- Кнопка вызова официанта — только если тенант включил toggle (table_settings). -->
+        <div v-if="tableStore.tableId && tableStore.waiterCallEnabled" class="table-header-actions">
           <CallWaiterButton :table-id="tableStore.tableId" />
         </div>
       </ClientOnly>

@@ -27,6 +27,8 @@ export const tableSettingsApi = {
     if (form.canvasTileSize !== undefined) payload.canvas_tile_size = form.canvasTileSize
     if (form.showDishCategory !== undefined) payload.show_dish_category = form.showDishCategory
     if (form.listPreviewRows !== undefined) payload.list_preview_rows = form.listPreviewRows
+    if (form.dineInOrderingEnabled !== undefined) payload.dine_in_ordering_enabled = form.dineInOrderingEnabled
+    if (form.waiterCallEnabled !== undefined) payload.waiter_call_enabled = form.waiterCallEnabled
 
     const result = await query(
       sb.from('table_settings')

@@ -115,6 +115,9 @@ const props = defineProps<{
   defaultView: 'categories' | 'dishes'
   categoryId?: string | null
   tableMode?: boolean
+  // table-mode: гейт заказа со стола (toggle тенанта). false → меню read-only
+  // showcase (без тапа-в-заказ, без каунтеров). Дефолт true сохраняет поведение.
+  orderingEnabled?: boolean
   dishDescriptionMode?: 'below' | 'overlay'
   mobileDishCard?: 'vertical' | 'horizontal'
   // table-mode: кол-во в локальном драфте по dishId/comboId — для каунтера на карточке.
@@ -139,9 +142,17 @@ const cart = useCartStore()
 const router = useRouter()
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const { legalInfoComplete } = useLegalCompliance()
-const orderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
-const effectiveOrderingEnabled = computed(() => orderingEnabled.value && legalInfoComplete.value)
-const viewOnly = computed(() => !effectiveOrderingEnabled.value && !props.tableMode)
+// В table-mode заказ гейтится toggle'ом тенанта (props.orderingEnabled, дефолт true),
+// а не tenant.orderingEnabled/legalInfoComplete (это про обычную доставку/самовывоз).
+const tableOrderingEnabled = computed(() => props.orderingEnabled ?? true)
+const tenantOrderingEnabled = computed(() => !!tenant.value?.orderingEnabled)
+const effectiveOrderingEnabled = computed(() =>
+  props.tableMode
+    ? tableOrderingEnabled.value
+    : tenantOrderingEnabled.value && legalInfoComplete.value,
+)
+// Read-only showcase: обычная витрина без заказа ИЛИ стол с выключенным заказом.
+const viewOnly = computed(() => !effectiveOrderingEnabled.value)
 
 const emptyStateProps = computed(() => ({
   title: menu.value.emptyTitle,

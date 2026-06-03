@@ -26,12 +26,25 @@ export default defineEventHandler(async (event) => {
   // (getTenantDb авто-инжектит tenant_id) — RLS public_read на таблице нет.
   const { data: settings, error: settingsError } = await db
     .from('table_settings')
-    .select('call_cooldown_seconds')
+    .select('call_cooldown_seconds, waiter_call_enabled')
     .maybeSingle()
   if (settingsError) {
     reportError(settingsError)
     throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки столов' })
   }
+
+  // Server-side enforcement: тенант мог выключить вызов официанта (toggle в admin).
+  // UI прячет кнопку, но это обходится прямым POST — гейтим и здесь. Дефолт true.
+  const waiterCallEnabled = settings?.waiter_call_enabled ?? DEFAULT_TABLE_SETTINGS.waiterCallEnabled
+  if (!waiterCallEnabled) {
+    reportError(new Error('[table/call] waiter call disabled by tenant'), {
+      context: 'table.call:disabled',
+      tableId,
+      tenantId: db.tenantId,
+    })
+    throw createError({ statusCode: 403, message: 'Вызов официанта недоступен' })
+  }
+
   const cooldownSeconds = settings?.call_cooldown_seconds ?? DEFAULT_TABLE_SETTINGS.callCooldownSeconds
 
   // Rate-limit первым делом после cookie-guard: 1 вызов в `cooldownSeconds` на стол.

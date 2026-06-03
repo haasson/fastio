@@ -4,6 +4,22 @@
 
     <template v-else>
       <UiForm class="form" @submit.prevent="page.submit">
+        <!-- ── Режим стола (QR) ──────────────────────────────── -->
+        <UiSectionHeader title="Режим стола (QR)" />
+
+        <div class="row">
+          <UiSwitch
+            v-model="form.dineInOrderingEnabled"
+            label="Заказ со стола (QR)"
+            message="Гость может заказывать блюда прямо со страницы стола. Выключено — меню только для просмотра."
+          />
+          <UiSwitch
+            v-model="form.waiterCallEnabled"
+            label="Вызов официанта (QR)"
+            message="Кнопка вызова официанта на странице стола. Выключено — кнопка скрыта."
+          />
+        </div>
+
         <!-- ── Вызов официанта ──────────────────────────────── -->
         <UiSectionHeader title="Вызов официанта" />
 
@@ -142,6 +158,8 @@ type Form = {
   canvasTileSize: CanvasTileSize
   showDishCategory: boolean
   listPreviewRows: number
+  dineInOrderingEnabled: boolean
+  waiterCallEnabled: boolean
 }
 
 const settingsSource = computed(() => ctx.tableSettings)
@@ -156,6 +174,8 @@ const page = useEditableForm({
     canvasTileSize: s?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize,
     showDishCategory: s?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory,
     listPreviewRows: s?.listPreviewRows ?? DEFAULT_TABLE_SETTINGS.listPreviewRows,
+    dineInOrderingEnabled: s?.dineInOrderingEnabled ?? DEFAULT_TABLE_SETTINGS.dineInOrderingEnabled,
+    waiterCallEnabled: s?.waiterCallEnabled ?? DEFAULT_TABLE_SETTINGS.waiterCallEnabled,
   }),
   errorMessage: 'Не удалось сохранить настройки',
   save: async (data) => {
@@ -171,6 +191,8 @@ const page = useEditableForm({
       canvasTileSize: data.canvasTileSize,
       showDishCategory: data.showDishCategory,
       listPreviewRows: data.listPreviewRows,
+      dineInOrderingEnabled: data.dineInOrderingEnabled,
+      waiterCallEnabled: data.waiterCallEnabled,
     })
 
     ctx.onSettingsSaved(saved)

@@ -162,7 +162,11 @@ export type TableCallRow = Tables<'table_calls'>
 
 export type TableSettingsRow = WithOverrides<Tables<'table_settings'>, {
   canvas_tile_size: CanvasTileSize
-}>
+}> & {
+  // Миграция 313 — добавлено вручную (db:gen-types недоступен локально, см. MEMORY).
+  dine_in_ordering_enabled: boolean
+  waiter_call_enabled: boolean
+}
 
 // ─── Kitchen ──────────────────────────────────────────────────────────────────
 

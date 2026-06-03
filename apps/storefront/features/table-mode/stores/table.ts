@@ -63,6 +63,10 @@ const draftSignature = (i: DishCartItem) =>
 export const useTableStore = defineStore('table', () => {
   const tableId = ref<string | null>(null)
   const tableName = ref<string | null>(null)
+  // Тогглы режима стола (table_settings, через GET /api/table/[id]): гейтят UI
+  // заказа и кнопки вызова. Дефолт true — поведение «всё включено» до ответа сервера.
+  const dineInOrderingEnabled = ref(true)
+  const waiterCallEnabled = ref(true)
   const checkItems = ref<CheckItem[]>([])
   // Локальный драфт нового заказа: гость накапливает позиции, отправляет всё разом
   // одним POST /api/orders. НЕ путать с checkItems (уже отправлено на кухню).
@@ -127,9 +131,11 @@ export const useTableStore = defineStore('table', () => {
   // на гидрации и затирал сохранённый драфт пустым серверным [] до restoreDraft.
   // Экшены вызываются только пользователем — гидрация их не триггерит.
 
-  function setTable(id: string, name: string) {
+  function setTable(id: string, name: string, toggles?: { dineInOrderingEnabled?: boolean; waiterCallEnabled?: boolean }) {
     tableId.value = id
     tableName.value = name
+    if (toggles?.dineInOrderingEnabled !== undefined) dineInOrderingEnabled.value = toggles.dineInOrderingEnabled
+    if (toggles?.waiterCallEnabled !== undefined) waiterCallEnabled.value = toggles.waiterCallEnabled
   }
 
   function setCheckItems(items: CheckItem[]) {
@@ -189,12 +195,14 @@ export const useTableStore = defineStore('table', () => {
     }
     tableId.value = null
     tableName.value = null
+    dineInOrderingEnabled.value = true
+    waiterCallEnabled.value = true
     checkItems.value = []
     draftItems.value = []
   }
 
   return {
-    tableId, tableName, checkItems, draftItems,
+    tableId, tableName, dineInOrderingEnabled, waiterCallEnabled, checkItems, draftItems,
     isTableMode, checkTotal, itemCount, draftCount, draftTotal,
     setTable, setCheckItems, addDraftItem, updateDraftQty, removeDraftItem, removeDraftByKeys, clearDraft, restoreDraft, clear,
   }

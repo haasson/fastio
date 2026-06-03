@@ -11,6 +11,8 @@ export const DEFAULT_TABLE_SETTINGS: Omit<TableSettings, 'tenantId'> = {
   canvasTileSize: 's',
   showDishCategory: false,
   listPreviewRows: 3,
+  dineInOrderingEnabled: true,
+  waiterCallEnabled: true,
 }
 
 export const mapTableSettings = (raw: Record<string, unknown>): TableSettings => ({
@@ -22,4 +24,6 @@ export const mapTableSettings = (raw: Record<string, unknown>): TableSettings =>
   canvasTileSize: (raw.canvas_tile_size as CanvasTileSize | null) ?? DEFAULT_TABLE_SETTINGS.canvasTileSize,
   showDishCategory: (raw.show_dish_category as boolean | null) ?? DEFAULT_TABLE_SETTINGS.showDishCategory,
   listPreviewRows: (raw.list_preview_rows as number | null) ?? DEFAULT_TABLE_SETTINGS.listPreviewRows,
+  dineInOrderingEnabled: (raw.dine_in_ordering_enabled as boolean | null) ?? true,
+  waiterCallEnabled: (raw.waiter_call_enabled as boolean | null) ?? true,
 })

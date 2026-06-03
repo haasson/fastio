@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { validateAndNormalizeRussianPhone } from '@fastio/shared'
+import { validateAndNormalizeRussianPhone, DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import type { Tenant } from '@fastio/shared'
 import { getTenantDb } from '../utils/tenantDb'
 import { getClientIp } from '@fastio/shared/server'
@@ -56,6 +56,28 @@ export default defineEventHandler(async (event) => {
 
   validateModulesForDeliveryType(deliveryType, tenantConfig.modules)
   validatePaymentMethod(paymentType, tenantConfig.paymentMethods)
+
+  // Server-side enforcement тоггла «заказ со стола» (table_settings). Модуль dineIn
+  // включён (проверен выше), но тенант мог выключить именно QR-заказ — витрина
+  // рендерит стол как read-only showcase, однако прямой POST это обходит. Дефолт true.
+  if (deliveryType === 'dine_in') {
+    const { data: tableSettings, error: tableSettingsError } = await db
+      .from('table_settings')
+      .select('dine_in_ordering_enabled')
+      .maybeSingle()
+    if (tableSettingsError) {
+      reportError(tableSettingsError)
+      throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки стола' })
+    }
+    const dineInOrderingEnabled = tableSettings?.dine_in_ordering_enabled ?? DEFAULT_TABLE_SETTINGS.dineInOrderingEnabled
+    if (!dineInOrderingEnabled) {
+      reportError(new Error('[orders.post] dine-in ordering disabled by tenant'), {
+        context: 'orders.post:dine-in-disabled',
+        tenantId,
+      })
+      throw createError({ statusCode: 403, message: 'Заказ со стола недоступен' })
+    }
+  }
 
   // 3. Валидация блюд, модификаторов, пересчёт цен
   const { serverItems, subtotal, comboItemsMap } = await validateAndBuildItems(supabase, tenantId, body.items)

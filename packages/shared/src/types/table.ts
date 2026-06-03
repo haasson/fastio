@@ -55,6 +55,9 @@ export type TableSettings = {
   canvasTileSize: CanvasTileSize
   showDishCategory: boolean
   listPreviewRows: number
+  // Тогглы режима стола (QR): заказ со стола / вызов официанта — каждый опционален.
+  dineInOrderingEnabled: boolean
+  waiterCallEnabled: boolean
 }
 
 export type TableSettingsFormData = {
@@ -65,6 +68,8 @@ export type TableSettingsFormData = {
   canvasTileSize: CanvasTileSize
   showDishCategory: boolean
   listPreviewRows: number
+  dineInOrderingEnabled: boolean
+  waiterCallEnabled: boolean
 }
 
 export type TableFormData = {

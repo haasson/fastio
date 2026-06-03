@@ -2,6 +2,27 @@
 
 QR-меню в заведении: гость сканит QR на столе, видит свой чек (позиции, статусы из кухни), вызывает официанта и при желании догоняет заказ.
 
+## Тогглы режима стола (table_settings, миграция 313)
+
+Два per-tenant флага, оба DEFAULT true (текущее поведение = «всё включено»):
+
+- `dine_in_ordering_enabled` → `dineInOrderingEnabled` — заказ со стола (QR).
+- `waiter_call_enabled` → `waiterCallEnabled` — вызов официанта.
+
+Комбинации: showcase-only (оба false, read-only меню), call-only, ordering-only, both.
+
+**Как доезжают до витрины:** `GET /api/table/[id]` читает `table_settings` (service-role) и возвращает оба флага в payload (`{ id, name, dineInOrderingEnabled, waiterCallEnabled }`). Страница `pages/table/[id]/index.vue` кладёт их в стор через `setTable(id, name, { dineInOrderingEnabled, waiterCallEnabled })`. Дефолт true до ответа.
+
+**Гейт заказа (ordering):** при `dineInOrderingEnabled=false` страница рендерит `MenuSection :ordering-enabled="false"` (в table-mode это включает `viewOnly` → read-only showcase, без тапа-в-заказ и каунтеров), и НЕ рендерит `TableOrderBar`, шторки драфта/чека, `restoreDraft`/`loadCheck`/realtime.
+
+**Гейт вызова (call):** при `waiterCallEnabled=false` `layouts/table.vue` прячет `CallWaiterButton` (`v-if="tableStore.waiterCallEnabled"`).
+
+**Server-side enforcement (UI-hiding обходится прямым POST):**
+- `server/api/orders.post.ts` — при `deliveryType=dine_in` читает `dine_in_ordering_enabled`, false → 403 «Заказ со стола недоступен» (+ reportError).
+- `server/api/table/[id]/call.post.ts` — читает `waiter_call_enabled` (в том же select, что и cooldown), false → 403 «Вызов официанта недоступен» (+ reportError).
+
+Настройки тенанта правятся в admin (Столы → Настройки, секция «Режим стола (QR)»).
+
 ## Что модуль делает
 
 Хранит `tableId`/`tableName` + список `checkItems` (позиции, заказанные за этим столом) + локальный `draftItems` (что гость собирает прямо сейчас, ещё не отправлено) в Pinia-сторе. Realtime-композабл слушает события в таблицах `order_items` и `kitchen_queue`, дёргает `onChange` при изменении — страница перезапрашивает чек. Параллельно poll каждые 30s как fallback.

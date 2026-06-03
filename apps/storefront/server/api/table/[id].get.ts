@@ -1,5 +1,6 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { reportError } from '@fastio/shared/observability'
+import { DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
   const db = getTenantDb(event)
@@ -35,6 +36,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Заказ со стола недоступен' })
   }
 
+  // Тогглы режима стола (table_settings): заказ со стола / вызов официанта —
+  // каждый опционален. Отдаём клиенту, чтобы витрина-стол гейтила UI (read-only
+  // showcase / call-only / ordering-only / both). DEFAULT true сохраняет текущее
+  // поведение тенанта без строки настроек. Чтение через service-role (getTenantDb).
+  const { data: settings, error: settingsError } = await db
+    .from('table_settings')
+    .select('dine_in_ordering_enabled, waiter_call_enabled')
+    .maybeSingle()
+
+  if (settingsError) {
+    reportError(settingsError)
+    throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки стола' })
+  }
+
+  const dineInOrderingEnabled = settings?.dine_in_ordering_enabled ?? DEFAULT_TABLE_SETTINGS.dineInOrderingEnabled
+  const waiterCallEnabled = settings?.waiter_call_enabled ?? DEFAULT_TABLE_SETTINGS.waiterCallEnabled
+
   // IDOR guard для /api/table/[id]/check|call: «принадлежность» гостя столу =
   // наличие cookie `fastio_table`. Сама cookie выставляется СТРАНИЦЕЙ
   // `pages/table/[id]/index.vue` через `useCookie` (SSR-aware, долетает до браузера
@@ -56,5 +74,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { id: data.id, name: data.name }
+  return { id: data.id, name: data.name, dineInOrderingEnabled, waiterCallEnabled }
 })
