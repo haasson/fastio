@@ -1,125 +1,157 @@
 <template>
   <div class="session-items-root" :class="{ 'session-items-root--compact': compact }">
-    <!-- Pending confirm all -->
-    <UiButton
-      v-if="pendingCount > 0"
-      :size="compact ? 'small' : 'medium'"
-      type="warning"
-      full-width
-      @click="$emit('confirm-all')"
-    >
-      Подтвердить все ({{ pendingCount }})
-    </UiButton>
+    <!-- Заказ со стола: новые позиции, ждут подтверждения официантом.
+         Всегда виден целиком (не сворачивается превью) — это hot-path действия. -->
+    <div v-if="pendingItems.length" class="block block--pending">
+      <div class="block-head">
+        <span class="block-title">Заказ со стола</span>
+        <UiButton
+          :size="compact ? 'small' : 'medium'"
+          type="warning"
+          @click="$emit('confirm-all')"
+        >
+          Подтвердить все ({{ pendingItems.length }})
+        </UiButton>
+      </div>
+      <div class="block-rows">
+        <div v-for="item in pendingItems" :key="item.id!" class="action-row">
+          <div class="action-main">
+            <span class="row-name">{{ item.dishName }}</span>
+            <div v-if="showCategory && item.categoryName" class="row-category">{{ item.categoryName }}</div>
+            <div v-if="hasCustomizations(item)" class="row-extras">
+              <span v-for="mod in item.modifiers" :key="mod.optionName" class="extra">{{ mod.optionName }}</span>
+              <span v-for="addon in item.addons" :key="addon.addonName" class="extra extra--addon">+ {{ addon.addonName }}</span>
+              <span v-for="ing in item.removedIngredients" :key="ing" class="extra extra--removed">− {{ ing }}</span>
+            </div>
+          </div>
+          <span class="row-qty">×{{ item.quantity }}</span>
+          <UiButton
+            size="small"
+            type="text"
+            icon="check"
+            class="act-confirm"
+            @click="$emit('confirm-item', item.id!)"
+          />
+          <UiButton
+            size="small"
+            type="text"
+            icon="close"
+            class="act-reject"
+            @click="$emit('reject-item', item.id!)"
+          />
+        </div>
+      </div>
+    </div>
 
-    <!-- Items list -->
-    <div v-if="visibleItems.length" class="items">
-      <div
-        v-for="item in visibleItems"
-        :key="item.id ?? `${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`"
-        class="item-wrap"
-        :class="{ 'item-wrap--pending': item.status === 'pending' }"
-      >
-        <div class="item-row">
-          <span class="item-name">{{ item.dishName }}</span>
-          <template v-if="item.status === 'pending'">
-            <UiTag type="warning" size="small">Ожидает</UiTag>
-            <UiButton
-              size="small"
-              type="text"
-              icon="check"
-              class="item-confirm"
-              @click="$emit('confirm-item', item.id!)"
-            />
-            <UiButton
-              size="small"
-              type="text"
-              icon="close"
-              class="item-reject"
-              @click="$emit('reject-item', item.id!)"
-            />
-          </template>
-          <template v-else-if="compact">
-            <span class="item-price">{{ item.price }} × {{ item.quantity }}</span>
-            <span class="item-total">{{ formatPrice(item.price * item.quantity) }}</span>
-            <UiButton
-              size="small"
-              type="text"
-              icon="close"
-              class="item-remove"
-              @click="$emit('remove-dish', item)"
-            />
-          </template>
-          <template v-else>
-            <span class="item-price">{{ formatPrice(item.price) }}</span>
-            <span class="item-total">{{ formatPrice(item.price * item.quantity) }}</span>
+    <!-- Готовка на кухне: queued / in_progress. Bulk-действия тут нет —
+         нельзя «доготовить всё» одной кнопкой. -->
+    <div v-if="cookingRows.length" class="block block--cooking">
+      <div class="block-head">
+        <span class="block-title">Готовка на кухне</span>
+      </div>
+      <div class="block-rows">
+        <div v-for="row in cookingRows" :key="row.key" class="cooking-row">
+          <span class="cooking-dot" :class="row.dotClass" />
+          <span class="row-name">{{ row.dishName }}</span>
+          <span class="row-qty">×{{ row.count }}</span>
+          <span class="row-price">{{ formatPrice(row.totalPrice) }}</span>
+          <UiMenuDropdown
+            v-if="checkoutMode"
+            :items="kitchenMenuItems(row)"
+            compact
+            trigger="click"
+            @item-click="onKitchenMenuClick($event, row)"
+          >
+            <template #trigger>
+              <UiButton
+                size="small"
+                type="text"
+                icon="moreVertical"
+                class="cooking-menu"
+              />
+            </template>
+          </UiMenuDropdown>
+        </div>
+      </div>
+    </div>
+
+    <!-- Готовые — забрать: done. Per-item «Забрал» + bulk «Забрал все». -->
+    <div v-if="!checkoutMode && readyRows.length" class="block block--ready">
+      <div class="block-head">
+        <span class="block-title">Готовые — забрать</span>
+        <UiButton
+          v-if="readyIds.length > 1"
+          :size="compact ? 'small' : 'medium'"
+          type="success"
+          @click="$emit('mark-served-all', readyIds)"
+        >
+          Забрал все ({{ readyIds.length }})
+        </UiButton>
+      </div>
+      <div class="block-rows">
+        <div v-for="row in readyRows" :key="row.key" class="action-row">
+          <span class="cooking-dot dot--ready" />
+          <span class="row-name">{{ row.dishName }}</span>
+          <span class="row-qty">×{{ row.count }}</span>
+          <UiButton size="small" type="success" @click="$emit('mark-served-all', row.ids)">Забрал</UiButton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Чек: только поданные позиции (confirmed минус всё, что ещё в кухонном
+         пайплайне). Превью (listPreviewRows) сворачивает именно этот список. -->
+    <div v-if="servedItems.length || showStats" class="check">
+      <div v-if="servedItems.length" class="check-rows">
+        <div
+          v-for="item in visibleServed"
+          :key="item.id ?? `${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`"
+          class="check-row"
+        >
+          <div class="check-main">
+            <span class="row-name">{{ item.dishName }}</span>
+            <div v-if="showCategory && item.categoryName" class="row-category">{{ item.categoryName }}</div>
+            <div v-if="hasCustomizations(item)" class="row-extras">
+              <span v-for="mod in item.modifiers" :key="mod.optionName" class="extra">{{ mod.optionName }}</span>
+              <span v-for="addon in item.addons" :key="addon.addonName" class="extra extra--addon">+ {{ addon.addonName }}</span>
+              <span v-for="ing in item.removedIngredients" :key="ing" class="extra extra--removed">− {{ ing }}</span>
+            </div>
+          </div>
+          <span class="row-price">{{ formatPrice(item.price) }} × {{ item.quantity }}</span>
+          <span class="row-total">{{ formatPrice(item.price * item.quantity) }}</span>
+          <template v-if="!compact && !noAdd">
             <UiStepper
               :model-value="item.quantity"
               :min="0"
-              :max="noAdd ? item.quantity : undefined"
               size="small"
               @update:model-value="val => val > item.quantity ? $emit('repeat-item', item) : $emit('remove-dish', item)"
             />
           </template>
+          <UiButton
+            v-else-if="!noAdd"
+            size="small"
+            type="text"
+            icon="close"
+            class="act-remove"
+            @click="$emit('remove-dish', item)"
+          />
         </div>
-        <div v-if="showCategory && item.categoryName" class="item-category">{{ item.categoryName }}</div>
-        <div v-if="hasCustomizations(item)" class="item-extras">
-          <span v-for="mod in item.modifiers" :key="mod.optionName" class="extra">{{ mod.optionName }}</span>
-          <span v-for="addon in item.addons" :key="addon.addonName" class="extra extra--addon">+ {{ addon.addonName }}</span>
-          <span v-for="ing in item.removedIngredients" :key="ing" class="extra extra--removed">− {{ ing }}</span>
-        </div>
+
+        <button v-if="hasMore" class="expand-btn" @click="expanded = !expanded">
+          {{ expanded ? 'Свернуть' : `+${servedItems.length - previewCount!} ещё` }}
+        </button>
       </div>
 
-      <button v-if="hasMore" class="expand-btn" @click="expanded = !expanded">
-        {{ expanded ? 'Свернуть' : `+${session!.items.length - previewCount!} ещё` }}
-      </button>
-    </div>
-
-    <!-- Kitchen progress -->
-    <div v-if="kitchenProgress.length" class="cooking-block">
-      <div class="cooking-header">На кухне</div>
-      <div v-for="item in kitchenProgress" :key="item.key" class="cooking-row">
-        <span class="cooking-dot" :class="item.dotClass" />
-        <span class="cooking-name">{{ item.dishName }}</span>
-        <span class="cooking-qty">×{{ item.count }}</span>
-        <span class="cooking-price">{{ formatPrice(item.totalPrice) }}</span>
-        <UiMenuDropdown
-          v-if="checkoutMode"
-          :items="kitchenMenuItems(item)"
-          compact
-          trigger="click"
-          @item-click="onKitchenMenuClick($event, item)"
-        >
-          <template #trigger>
-            <UiButton
-              size="small"
-              type="text"
-              icon="moreVertical"
-              class="cooking-menu"
-            />
-          </template>
-        </UiMenuDropdown>
+      <div v-if="showStats" class="stats">
+        <span class="stat-orders">{{ session?.count ?? 0 }} {{ pluralize(session?.count ?? 0, 'заказ', 'заказа', 'заказов') }}</span>
+        <span class="stat-sum">{{ formatPrice(session?.sum ?? 0) }}</span>
       </div>
-    </div>
-
-    <!-- Ready dishes -->
-    <div v-if="!checkoutMode && readyDishes?.length" class="ready-dishes">
-      <div v-for="dish in readyDishes" :key="dish.id" class="ready-item">
-        <span class="ready-name">{{ dish.dishName }}</span>
-        <UiButton size="small" type="success" @click="$emit('mark-served', dish.id)">Забрал</UiButton>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div v-if="showStats" class="stats">
-      <span class="stat-orders">{{ session?.count ?? 0 }} {{ pluralize(session?.count ?? 0, 'заказ', 'заказа', 'заказов') }}</span>
-      <span class="stat-sum">{{ formatPrice(session?.sum ?? 0) }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiTag, UiStepper, UiMenuDropdown } from '@fastio/ui'
+import { UiButton, UiStepper, UiMenuDropdown } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
 import { orderItemKey, pluralize, formatPrice } from '@fastio/shared'
@@ -152,32 +184,72 @@ const emit = defineEmits<{
   'confirm-item': [itemId: string]
   'reject-item': [itemId: string]
   'confirm-all': []
-  'mark-served': [dishId: string]
+  'mark-served-all': [dishIds: string[]]
   'cancel-kitchen': [ids: string[], amount: number, charged: boolean]
   'serve-kitchen': [ids: string[]]
 }>()
 
 const expanded = ref(false)
 
-const hasMore = computed(() => props.previewCount != null && (props.session?.items.length ?? 0) > props.previewCount)
-
-const visibleItems = computed(() => {
-  const items = props.session?.items ?? []
-
-  if (props.previewCount != null && !expanded.value) return items.slice(0, props.previewCount)
-
-  return items
-})
-
-const pendingCount = computed(() => (props.session?.items ?? []).filter((i) => i.status === 'pending').length)
+const pendingItems = computed(() => (props.session?.items ?? []).filter((i) => i.status === 'pending'))
 
 const hasCustomizations = (item: TableSessionItem) => item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
 
 const { kitchenProgress } = useKitchenProgress(
   () => props.kitchenDishes,
   () => props.session,
-  { includeDone: props.checkoutMode },
+  { includeDone: true },
 )
+
+// Кухонный пайплайн делим на «готовится» и «готово». В checkoutMode done-позиции
+// показываются среди готовки (includeDone), вне его — отдельным блоком «Готовые».
+const cookingRows = computed(() => kitchenProgress.value.filter((r) => r.status === 'queued' || r.status === 'in_progress'
+  || (props.checkoutMode && r.status === 'done')),
+)
+const readyRows = computed(() => kitchenProgress.value.filter((r) => r.status === 'done'))
+const readyIds = computed(() => readyRows.value.flatMap((r) => r.ids))
+
+// Чек = подтверждённые позиции, которых уже нет в кухонном пайплайне (поданы /
+// skip_kitchen). Активные кухонные единицы вычитаем по ключу dishName+фингерпринт,
+// чтобы частично поданное блюдо (3 заказано, 1 ещё готовится) считалось верно.
+const servedItems = computed<TableSessionItem[]>(() => {
+  const confirmed = (props.session?.items ?? []).filter((i) => i.status === 'confirmed')
+
+  const activeByKey = new Map<string, number>()
+
+  for (const item of props.kitchenDishes ?? []) {
+    if (item.status !== 'queued' && item.status !== 'in_progress' && item.status !== 'done') continue
+    const key = `${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`
+
+    activeByKey.set(key, (activeByKey.get(key) ?? 0) + 1)
+  }
+
+  const result: TableSessionItem[] = []
+
+  for (const item of confirmed) {
+    const key = `${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`
+    const active = activeByKey.get(key) ?? 0
+    const servedQty = item.quantity - active
+
+    if (servedQty <= 0) {
+      activeByKey.set(key, active - item.quantity)
+      continue
+    }
+
+    activeByKey.set(key, 0)
+    result.push(servedQty === item.quantity ? item : { ...item, quantity: servedQty })
+  }
+
+  return result
+})
+
+const hasMore = computed(() => props.previewCount != null && servedItems.value.length > props.previewCount)
+
+const visibleServed = computed(() => {
+  if (props.previewCount != null && !expanded.value) return servedItems.value.slice(0, props.previewCount)
+
+  return servedItems.value
+})
 
 const kitchenMenuItems = (item: KitchenProgressRow): UiMenuDropdownItem[] => {
   const items: UiMenuDropdownItem[] = []
@@ -212,98 +284,93 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
   gap: var(--space-8);
 }
 
-.items {
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-8);
+}
+
+.session-items-root--compact .block {
+  gap: var(--space-4);
+  padding: var(--space-8);
+}
+
+.block--pending {
+  background: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
+}
+
+.block--cooking {
+  background: var(--color-bg-subtle);
+}
+
+.block--ready {
+  background: var(--color-success-light);
+  border: 1px solid var(--color-success);
+}
+
+.block-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.block-title {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-hint);
+}
+
+.block-rows {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
-.item-wrap + .item-wrap {
-  border-top: 1px dashed var(--color-border);
-  padding-top: var(--space-4);
-}
-
-.session-items-root--compact .item-wrap + .item-wrap {
-  padding-top: var(--space-4);
-}
-
-.item-wrap--pending {
-  background: var(--color-warning-light);
-  border-radius: var(--radius-8);
-  padding: var(--space-4) var(--space-8);
-}
-
-.session-items-root--compact .item-wrap--pending {
-  border-radius: var(--radius-4);
-  padding: var(--space-4);
-}
-
-.item-row {
+.action-row,
+.cooking-row,
+.check-row {
   display: flex;
   align-items: center;
   gap: var(--space-8);
-
-  .item-confirm { flex-shrink: 0; color: var(--color-success); }
-  .item-reject  { flex-shrink: 0; color: var(--color-error); }
-  .item-remove  { flex-shrink: 0; color: var(--color-text-hint); }
 }
 
-.session-items-root--compact .item-row {
-  gap: var(--space-8);
-}
-
-.item-name {
+.action-main,
+.check-main {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.row-name {
+  flex: 1;
+  min-width: 0;
   font-size: var(--font-size-base);
-  color: var(--color-text);
+  color: var(--color-title);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.session-items-root--compact .item-name {
+.session-items-root--compact .row-name {
   font-size: var(--font-size-sm);
 }
 
-.item-price {
-  font-size: var(--font-size-base);
-  color: var(--color-text-hint);
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.session-items-root--compact .item-price {
-  font-size: var(--font-size-sm);
-}
-
-.item-total {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-title);
-  flex-shrink: 0;
-  min-width: 60px;
-  text-align: right;
-}
-
-.session-items-root--compact .item-total {
-  font-size: var(--font-size-sm);
-  min-width: 50px;
-}
-
-.item-category {
+.row-category {
   font-size: var(--font-size-xs);
   color: var(--color-text-hint);
-  padding-left: var(--space-4);
 }
 
-.item-extras {
+.row-extras {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
-  padding-left: var(--space-4);
-}
-
-.session-items-root--compact .item-extras {
   gap: var(--space-4);
 }
 
@@ -315,46 +382,44 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
   &--removed { color: var(--color-error); }
 }
 
-.session-items-root--compact .extra {
-  font-size: var(--font-size-xs);
-}
-
-.cooking-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-8) var(--space-12);
-  background: var(--color-bg-subtle);
-  border-radius: var(--radius-8);
-}
-
-.session-items-root--compact .cooking-block {
-  gap: var(--space-4);
-  padding: var(--space-8);
-  border-radius: var(--radius-8);
-}
-
-.cooking-header {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.row-qty {
+  font-size: var(--font-size-base);
   color: var(--color-text-hint);
+  flex-shrink: 0;
 }
 
-.session-items-root--compact .cooking-header {
-  font-size: var(--font-size-xs);
+.session-items-root--compact .row-qty {
+  font-size: var(--font-size-sm);
 }
 
-.cooking-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
+.row-price {
+  font-size: var(--font-size-base);
+  color: var(--color-text-hint);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.session-items-root--compact .cooking-row {
-  gap: var(--space-8);
+.session-items-root--compact .row-price {
+  font-size: var(--font-size-sm);
 }
+
+.row-total {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-title);
+  flex-shrink: 0;
+  min-width: 60px;
+  text-align: right;
+}
+
+.session-items-root--compact .row-total {
+  font-size: var(--font-size-sm);
+  min-width: 50px;
+}
+
+.act-confirm { flex-shrink: 0; color: var(--color-success); }
+.act-reject  { flex-shrink: 0; color: var(--color-error); }
+.act-remove  { flex-shrink: 0; color: var(--color-text-hint); }
 
 .cooking-dot {
   width: 6px;
@@ -367,63 +432,23 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
   &.dot--ready   { background: var(--color-success); }
 }
 
-.cooking-name {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cooking-qty    { font-size: var(--font-size-base); color: var(--color-text-hint); flex-shrink: 0; }
-.cooking-price  { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--color-title); flex-shrink: 0; }
 .cooking-menu { flex-shrink: 0; color: var(--color-text-hint); }
 
-.session-items-root--compact .cooking-name  { font-size: var(--font-size-sm); }
-.session-items-root--compact .cooking-qty   { font-size: var(--font-size-sm); }
-.session-items-root--compact .cooking-price { font-size: var(--font-size-sm); }
-
-.ready-dishes {
+.check {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
-  padding: var(--space-8) var(--space-12);
-  background: var(--color-success-light);
-  border-radius: var(--radius-8);
-  border: 1px solid var(--color-success);
-}
-
-.session-items-root--compact .ready-dishes {
   gap: var(--space-4);
-  padding: var(--space-8);
-  border-radius: var(--radius-8);
 }
 
-.ready-item {
+.check-rows {
   display: flex;
-  align-items: center;
-  gap: var(--space-8);
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.session-items-root--compact .ready-item {
-  gap: var(--space-8);
-}
-
-.ready-name {
-  flex: 1;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.session-items-root--compact .ready-name {
-  font-size: var(--font-size-sm);
+.check-row + .check-row {
+  border-top: 1px dashed var(--color-border);
+  padding-top: var(--space-4);
 }
 
 .stats {
@@ -443,7 +468,6 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
 }
 
 .session-items-root--compact .stat-orders { font-size: var(--font-size-sm); }
-.session-items-root--compact .stat-sum    { font-size: var(--font-size-lg); }
 
 .expand-btn {
   font-size: var(--font-size-xs);

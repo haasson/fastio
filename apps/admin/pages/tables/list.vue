@@ -47,7 +47,7 @@
               @add-dish="openPicker(table)"
               @checkout="ctx.checkout(table)"
               @resolve-call="ctx.onCallResolved"
-              @mark-served="ctx.onMarkServed"
+              @mark-served-all="ctx.onMarkServedAll"
               @remove-dish="(item) => ctx.onRemoveDish(table, item)"
               @confirm-item="(itemId) => ctx.onConfirmItem(itemId, table.id)"
               @reject-item="(itemId) => ctx.onRejectItem(itemId, table.id)"

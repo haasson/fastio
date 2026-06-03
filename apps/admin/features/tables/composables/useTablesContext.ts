@@ -28,7 +28,7 @@ export type TablesContext = {
   // Actions
   toggleOpen: (table: Table) => Promise<void>
   checkout: (table: Table) => void
-  onMarkServed: (dishId: string) => Promise<void>
+  onMarkServedAll: (dishIds: string[]) => Promise<void>
   onRemoveDish: (table: Table, item: TableSessionItem) => Promise<void>
   onConfirmItem: (itemId: string, tableId: string) => Promise<void>
   onRejectItem: (itemId: string, tableId: string) => Promise<void>

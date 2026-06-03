@@ -35,7 +35,7 @@
         @confirm-item="$emit('confirm-item', $event)"
         @reject-item="$emit('reject-item', $event)"
         @confirm-all="$emit('confirm-all')"
-        @mark-served="$emit('mark-served', $event)"
+        @mark-served-all="$emit('mark-served-all', $event)"
       />
     </div>
 
@@ -72,7 +72,7 @@ defineEmits<{
   'add-dish': []
   'checkout': []
   'resolve-call': [id: string]
-  'mark-served': [dishId: string]
+  'mark-served-all': [dishIds: string[]]
   'remove-dish': [item: TableSessionItem]
   'repeat-item': [item: TableSessionItem]
   'confirm-item': [itemId: string]

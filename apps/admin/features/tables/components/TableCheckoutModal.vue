@@ -18,7 +18,6 @@
         @confirm-item="$emit('confirm-item', $event)"
         @reject-item="$emit('reject-item', $event)"
         @confirm-all="$emit('confirm-all')"
-        @mark-served="$emit('mark-served', $event)"
         @cancel-kitchen="onCancelKitchen"
         @serve-kitchen="$emit('serve-kitchen', $event)"
       />
@@ -102,7 +101,6 @@ const emit = defineEmits<{
   'confirm-item': [itemId: string]
   'reject-item': [itemId: string]
   'confirm-all': []
-  'mark-served': [dishId: string]
   'cancel-kitchen': [ids: string[], charged: boolean]
   'serve-kitchen': [ids: string[]]
 }>()

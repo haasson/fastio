@@ -21,7 +21,6 @@
       @confirm-item="(itemId) => checkoutTable && onConfirmItem(itemId, checkoutTable.id)"
       @reject-item="(itemId) => checkoutTable && onRejectItem(itemId, checkoutTable.id)"
       @confirm-all="checkoutTable && onConfirmAllItems(checkoutTable.id)"
-      @mark-served="onMarkServed"
       @cancel-kitchen="onCancelKitchen"
       @serve-kitchen="onServeKitchen"
     />
@@ -381,17 +380,32 @@ const onCheckoutConfirmed = async (discountAmount: number) => {
   }
 }
 
-const onMarkServed = async (dishId: string) => {
-  for (const [tableId, items] of Object.entries(kitchenDishes.value)) {
-    const idx = items.findIndex((i) => i.id === dishId)
+// Одна точка для «Забрал» (одно блюдо → row.ids) и «Забрал все» (readyIds всего
+// стола). Batch-апдейт одним запросом (serveItems .in('id', ids)) + оптимистичное
+// удаление готовых строк с откатом при ошибке.
+const onMarkServedAll = async (ids: string[]) => {
+  if (!ids.length || !userId.value) return
 
-    if (idx !== -1) {
-      items.splice(idx, 1)
-      if (!items.length) delete kitchenDishes.value[tableId]
-      break
-    }
+  const idSet = new Set(ids)
+  const prev = kitchenDishes.value
+
+  const next: Record<string, KitchenQueueItem[]> = {}
+
+  for (const [tableId, items] of Object.entries(prev)) {
+    const kept = items.filter((i) => !idSet.has(i.id))
+
+    if (kept.length) next[tableId] = kept
   }
-  await api.kitchenQueue.markServed(dishId, userId.value!)
+  kitchenDishes.value = next
+
+  try {
+    await api.kitchenQueue.serveItems(ids, userId.value)
+    reloadKitchenDishes()
+  } catch (e) {
+    reportError(e, { context: 'tables:onMarkServedAll', dishIds: ids })
+    kitchenDishes.value = prev
+    warning('Не удалось отметить как поданное')
+  }
 }
 
 const onCancelKitchen = async (ids: string[], charged: boolean) => {
@@ -553,7 +567,7 @@ provide(TablesContextKey, {
   tables, tableSums, loading, globalTags, callTypes, activeCalls, tableSettings, kitchenDishes, tenantId,
   openTables, closedTables, callsByTable, readyDishes, totalReadyCount,
   branches,
-  toggleOpen, checkout, onMarkServed, onRemoveDish, onConfirmItem, onRejectItem,
+  toggleOpen, checkout, onMarkServedAll, onRemoveDish, onConfirmItem, onRejectItem,
   onConfirmAllItems, onCallResolved, onTableAdded, onTableUpdated, onTableDeleted,
   onPositionUpdated, onCallTypeAdded, onCallTypeRemoved, onGlobalTagsUpdated, onSettingsSaved,
 })

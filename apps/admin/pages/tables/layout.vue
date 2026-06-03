@@ -27,7 +27,7 @@
       @add-dish="addDishFromDrawer"
       @checkout="checkoutFromDrawer"
       @resolve-call="ctx.onCallResolved"
-      @mark-served="ctx.onMarkServed"
+      @mark-served-all="ctx.onMarkServedAll"
       @remove-dish="(item) => detailDrawerTable && ctx.onRemoveDish(detailDrawerTable, item)"
       @repeat-item="(item) => detailDrawerTable && repeatItem(item, detailDrawerTable)"
       @confirm-item="(itemId) => detailDrawerTable && ctx.onConfirmItem(itemId, detailDrawerTable.id)"
