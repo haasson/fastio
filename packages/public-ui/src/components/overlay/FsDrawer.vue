@@ -1,11 +1,11 @@
 <template>
   <!-- Bottom: vaul-vue со свайпом -->
   <template v-if="effectiveSide === 'bottom'">
-    <DrawerRoot :open="modelValue" @update:open="emit('update:modelValue', $event)">
+    <DrawerRoot :open="modelValue" handle-only @update:open="emit('update:modelValue', $event)">
       <DrawerPortal>
         <DrawerOverlay class="drawer-overlay" />
         <DrawerContent class="drawer-bottom" :style="bottomSizeStyle">
-          <div class="handle" />
+          <DrawerHandle class="handle" />
 
           <div v-if="title || $slots['header-action']" class="header">
             <DrawerTitle v-if="title" class="title">{{ title }}</DrawerTitle>
@@ -57,8 +57,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { DrawerRoot, DrawerPortal, DrawerOverlay, DrawerContent, DrawerTitle } from 'vaul-vue'
+import { computed, watch } from 'vue'
+import { DrawerRoot, DrawerPortal, DrawerOverlay, DrawerContent, DrawerTitle, DrawerHandle } from 'vaul-vue'
 import {
   DialogRoot,
   DialogPortal,
@@ -96,6 +96,25 @@ const effectiveSide = computed(() => props.side ?? 'bottom')
 useModalHistory(
   () => effectiveSide.value === 'bottom' && props.modelValue,
   () => emit('update:modelValue', false),
+)
+
+// reka-ui (под vaul-vue) на время открытия модального слоя ставит
+// document.body.style.pointerEvents = 'none' (DismissableLayer) и снимает только при
+// размонтировании слоя. Размонтирование gating'ится закрывающей анимацией, а на мобилке
+// transitionend ненадёжен → блокировка «залипает» на пару секунд, и первый тап по странице
+// глохнет. Принудительно снимаем блокировку при закрытии (если шторка не открылась заново).
+const releaseBodyPointerLock = () => {
+  if (typeof document === 'undefined' || props.modelValue) return
+  if (document.body.style.pointerEvents === 'none') document.body.style.pointerEvents = ''
+}
+
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) return
+    requestAnimationFrame(releaseBodyPointerLock)
+    window.setTimeout(releaseBodyPointerLock, 550)
+  },
 )
 
 const bottomSizeStyle = computed(() => {
@@ -173,12 +192,23 @@ const rightSizeStyle = computed(() => {
 }
 
 .handle {
+  position: relative;
   width: 36px;
   height: 4px;
   background: var(--color-border);
   border-radius: 2px;
   margin: 12px auto 16px;
   flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+
+  // hitarea-спан внутри DrawerHandle — расширяем зону захвата, чтобы за «таблетку»
+  // было удобно браться пальцем (сам визуальный pill остаётся 36×4).
+  :deep([data-vaul-handle-hitarea]) {
+    position: absolute;
+    inset: -16px -24px;
+    display: block;
+  }
 }
 
 .header {
