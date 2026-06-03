@@ -142,7 +142,7 @@
       </div>
 
       <div v-if="showStats" class="stats">
-        <span class="stat-orders">{{ session?.count ?? 0 }} {{ pluralize(session?.count ?? 0, 'заказ', 'заказа', 'заказов') }}</span>
+        <span class="stat-orders">{{ positionsCount }} {{ pluralize(positionsCount, 'позиция', 'позиции', 'позиций') }}</span>
         <span class="stat-sum">{{ formatPrice(session?.sum ?? 0) }}</span>
       </div>
     </div>
@@ -192,6 +192,12 @@ const emit = defineEmits<{
 const expanded = ref(false)
 
 const pendingItems = computed(() => (props.session?.items ?? []).filter((i) => i.status === 'pending'))
+
+// Кол-во позиций на столе = сумма количеств всех блюд (pending + confirmed).
+// Раньше показывали session.count — число строк orders, которое не сходится ни с
+// чем: админский «+Блюдо» плодит по заказу на блюдо, а корзина гостя кладёт N блюд
+// в один заказ. Сумма quantity сходится с тем, что видит официант в блоках/чеке.
+const positionsCount = computed(() => (props.session?.items ?? []).reduce((sum, i) => sum + i.quantity, 0))
 
 const hasCustomizations = (item: TableSessionItem) => item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
 

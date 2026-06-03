@@ -1,9 +1,13 @@
 <template>
   <div class="list-root" :style="gridVars">
     <div v-if="ctx.totalReadyCount > 0 || callTables.length" class="status-chips">
-      <UiTag v-if="ctx.totalReadyCount > 0" type="success" round>
-        {{ ctx.totalReadyCount }} {{ readyLabel }} к подаче
-      </UiTag>
+      <UiButton
+        v-if="ctx.totalReadyCount > 0"
+        size="small"
+        type="success"
+        icon="check"
+        @click="scrollToNextReady"
+      >{{ ctx.totalReadyCount }} {{ readyLabel }} к подаче</UiButton>
       <UiButton
         v-if="callTables.length"
         size="small"
@@ -106,7 +110,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, UiTag, useMessage } from '@fastio/ui'
+import { UiButton, UiEmpty, UiSkeleton, UiSectionHeader, useMessage } from '@fastio/ui'
 import type { Table } from '@fastio/shared'
 import { pluralize, DEFAULT_TABLE_SETTINGS, TILE_SIZE_MIN } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
@@ -156,8 +160,21 @@ const callTables = computed(() => ctx.openTables
 
 const hasEscalatedCall = computed(() => callTables.value.some((t) => oldestCallAgeMs(t) >= escalationMinutes.value * 60_000))
 
-// Скролл к столам с вызовом по кругу: самый срочный → следующий → ...
+// Открытые столы с готовыми блюдами — в порядке отрисовки (как openTables),
+// чтобы цикл «следующий» совпадал с визуальным порядком карточек.
+const readyTables = computed(() => ctx.openTables.filter((t) => (ctx.readyDishes[t.id]?.length ?? 0) > 0))
+
+// Плавный скролл к карточке стола. block: 'start' + scroll-margin-top на карточке
+// (см. стили) учитывают высоту липкого топбара — иначе цель прячется под ним.
+const scrollToTableCard = (tableId: string) => {
+  const target = document.querySelector(`[data-table-id="${tableId}"]`)
+
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+// Скролл по кругу: текущий стол → следующий → ... (официант обходит столы).
 const callScrollIndex = ref(0)
+const readyScrollIndex = ref(0)
 
 const scrollToNextCall = () => {
   const list = callTables.value
@@ -165,10 +182,20 @@ const scrollToNextCall = () => {
   if (!list.length) return
 
   const idx = callScrollIndex.value % list.length
-  const target = document.querySelector(`[data-table-id="${list[idx].id}"]`)
 
+  scrollToTableCard(list[idx].id)
   callScrollIndex.value = (idx + 1) % list.length
-  target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+const scrollToNextReady = () => {
+  const list = readyTables.value
+
+  if (!list.length) return
+
+  const idx = readyScrollIndex.value % list.length
+
+  scrollToTableCard(list[idx].id)
+  readyScrollIndex.value = (idx + 1) % list.length
 }
 
 const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId)
@@ -336,5 +363,11 @@ const openQr = (table: Table) => {
 
 .table-grid {
   @include grid.card-grid;
+}
+
+// Запас под липкий топбар (--topbar-height) при scrollIntoView(block:'start'):
+// карточка не прячется под шапкой, плюс небольшой отступ сверху.
+[data-table-id] {
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-16));
 }
 </style>
