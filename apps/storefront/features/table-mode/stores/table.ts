@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { getItemUnitPrice } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
 import type { DishCartItem } from '~/features/cart'
 
 export type CheckItem = {
@@ -13,6 +14,37 @@ export type CheckItem = {
   removedIngredients: string[]
   status: 'pending' | 'confirmed'
   kitchenStatus: 'queued' | 'in_progress' | 'done' | 'served' | null
+}
+
+// Дедуп позиций чека для отображения — как в админке (tablesApi.loadSums): одинаковые
+// блюда схлопываются в одну строку с суммарным количеством. Ключ — имя + модификаторы
+// + аддоны + убранные ингредиенты (отсортированы), как orderItemKey. Применять
+// ПО-ГРУППно (внутри «готовится»/«готово»): статус/kitchenStatus у группы общий.
+export const aggregateCheckItems = (items: CheckItem[]): CheckItem[] => {
+  // Цену включаем в ключ (в отличие от админки): если цена блюда менялась в ходе
+  // сессии, разноценовые отправки останутся разными строками — суммы строк всегда
+  // сходятся с футером «Итого». Обычный кейс (та же цена) мёрджится как и раньше.
+  const sig = (i: CheckItem) =>
+    [
+      i.dishName,
+      i.price,
+      i.modifiers.map((m) => m.optionName).sort().join(','),
+      i.addons.map((a) => a.addonName).sort().join(','),
+      [...i.removedIngredients].sort().join(','),
+    ].join('|')
+
+  const map = new Map<string, CheckItem>()
+  for (const item of items) {
+    const key = sig(item)
+    const existing = map.get(key)
+    if (existing) {
+      existing.quantity += item.quantity
+    } else {
+      map.set(key, { ...item })
+    }
+  }
+
+  return [...map.values()]
 }
 
 // Сигнатура позиции для дедупа в драфте: одинаковое блюдо с теми же модификаторами/
@@ -57,6 +89,40 @@ export const useTableStore = defineStore('table', () => {
   const draftTotal = computed(() =>
     draftItems.value.reduce((sum, i) => sum + getItemUnitPrice(i) * i.quantity, 0),
   )
+
+  // Драфт (несобранный заказ) переживает рефреш: кладём в sessionStorage. Один ключ
+  // на вкладку, tableId — внутри payload: при смене QR-стола в той же вкладке restore
+  // сверяет id и НЕ воскрешает драфт другого стола. sessionStorage (не local) живёт в
+  // пределах вкладки — рефреш сохраняет, закрытие чистит. checkItems НЕ кешируем
+  // (live-state, см. AGENTS.md) — только локальный драфт гостя.
+  const DRAFT_KEY = 'table-draft'
+
+  const persistDraft = () => {
+    if (!import.meta.client || !tableId.value) return
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ tableId: tableId.value, items: draftItems.value }))
+    } catch (e) {
+      reportError(e instanceof Error ? e : new Error('[table store] persistDraft failed'))
+    }
+  }
+
+  // Восстановление драфта для текущего стола. Зовётся из page в onMounted (client-only),
+  // чтобы не словить hydration mismatch (на SSR sessionStorage недоступен).
+  function restoreDraft() {
+    if (!import.meta.client || !tableId.value) return
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw) as { tableId?: string; items?: unknown }
+      // Драфт другого стола (сменили QR в той же вкладке) — игнорируем, не воскрешаем.
+      if (parsed.tableId !== tableId.value) return
+      if (Array.isArray(parsed.items)) draftItems.value = parsed.items as DishCartItem[]
+    } catch (e) {
+      reportError(e instanceof Error ? e : new Error('[table store] restoreDraft failed'))
+    }
+  }
+
+  watch(draftItems, persistDraft, { deep: true })
 
   function setTable(id: string, name: string) {
     tableId.value = id
@@ -105,6 +171,14 @@ export const useTableStore = defineStore('table', () => {
   }
 
   function clear() {
+    // Стол закрыт — чистим и персист драфта.
+    if (import.meta.client) {
+      try {
+        sessionStorage.removeItem(DRAFT_KEY)
+      } catch (e) {
+        reportError(e instanceof Error ? e : new Error('[table store] clear draft storage failed'))
+      }
+    }
     tableId.value = null
     tableName.value = null
     checkItems.value = []
@@ -114,6 +188,6 @@ export const useTableStore = defineStore('table', () => {
   return {
     tableId, tableName, checkItems, draftItems,
     isTableMode, checkTotal, itemCount, draftCount, draftTotal,
-    setTable, setCheckItems, addDraftItem, updateDraftQty, removeDraftItem, removeDraftByKeys, clearDraft, clear,
+    setTable, setCheckItems, addDraftItem, updateDraftQty, removeDraftItem, removeDraftByKeys, clearDraft, restoreDraft, clear,
   }
 })

@@ -102,7 +102,7 @@ import { useRoute, useAsyncData, useRequestFetch, useNuxtData, useCookie } from 
 import { FsHeading, FsText, FsDrawer, FsButton } from '@fastio/public-ui'
 import type { Tenant } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
-import { useTableStore, useTableRealtime, type CheckItem } from '~/features/table-mode'
+import { useTableStore, useTableRealtime, aggregateCheckItems, type CheckItem } from '~/features/table-mode'
 import { useToast } from '~/shared/composables/useToast'
 import { useBottomInset } from '~/shared/composables/useBottomInset'
 import { isDishItem, type CartItem, type DishCartItem } from '~/features/cart'
@@ -174,12 +174,15 @@ const cookingItems = computed(() =>
   ),
 )
 const readyItems = computed(() =>
-  tableStore.checkItems.filter(i =>
-    i.status === 'confirmed' && (i.kitchenStatus === 'done' || i.kitchenStatus === 'served' || !i.kitchenStatus),
+  aggregateCheckItems(
+    tableStore.checkItems.filter(i =>
+      i.status === 'confirmed' && (i.kitchenStatus === 'done' || i.kitchenStatus === 'served' || !i.kitchenStatus),
+    ),
   ),
 )
 // «Готовится» = всё, что ещё не готово: ждёт подтверждения официантом + на кухне.
-const progressItems = computed(() => [...pendingItems.value, ...cookingItems.value])
+// Дедупим внутри группы — одинаковые блюда одной строкой с суммой (как в админке).
+const progressItems = computed(() => aggregateCheckItems([...pendingItems.value, ...cookingItems.value]))
 
 // Нижняя полоса заказа фиксирована — резервируем место, чтобы не перекрывала меню.
 const barVisible = computed(() => tableStore.checkItems.length > 0 || tableStore.draftCount > 0)
@@ -216,7 +219,11 @@ async function loadCheck() {
   }
 }
 
-onMounted(() => loadCheck())
+onMounted(() => {
+  // Восстанавливаем несобранный драфт после рефреша (client-only, см. стор).
+  tableStore.restoreDraft()
+  loadCheck()
+})
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 useTableRealtime(tenant.value?.id ?? '', loadCheck)
 
