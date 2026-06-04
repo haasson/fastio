@@ -1,0 +1,31 @@
+name: ghcr-cleanup
+# Retention для GHCR: держим последние N версий каждого образа, старые :sha удаляем.
+# :latest всегда указывает на свежайшую версию → всегда попадает в keep-set.
+on:
+  schedule:
+    - cron: '17 3 * * 1'   # еженедельно, пн 03:17 UTC
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: 'Сколько последних версий хранить на пакет'
+        default: '15'
+
+permissions:
+  packages: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg: [fastio-admin, fastio-storefront, fastio-help, fastio-landing, fastio-backoffice, fastio-ops]
+    steps:
+      - name: delete old versions of ${{ matrix.pkg }}
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.pkg }}
+          package-type: container
+          min-versions-to-keep: ${{ github.event.inputs.keep || '15' }}
+          # belt-and-suspenders: никогда не трогаем плавающий тег latest
+          ignore-versions: '^latest$'
