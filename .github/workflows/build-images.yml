@@ -1,0 +1,150 @@
+name: build-images
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: 'CSV аппов для форс-сборки (admin,storefront,…) или all'
+        default: all
+
+concurrency:
+  group: build-images-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.set.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared: ['packages/**', 'pnpm-lock.yaml', 'turbo.json', 'Dockerfile', 'pnpm-workspace.yaml']
+            admin: ['apps/admin/**']
+            storefront: ['apps/storefront/**']
+            help: ['apps/help/**']
+            landing: ['apps/landing/**']
+            backoffice: ['apps/backoffice/**']
+            ops: ['apps/ops/**']
+      - id: set
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_APPS: ${{ inputs.apps }}
+          SHARED: ${{ steps.filter.outputs.shared }}
+          F_ADMIN: ${{ steps.filter.outputs.admin }}
+          F_STOREFRONT: ${{ steps.filter.outputs.storefront }}
+          F_HELP: ${{ steps.filter.outputs.help }}
+          F_LANDING: ${{ steps.filter.outputs.landing }}
+          F_BACKOFFICE: ${{ steps.filter.outputs.backoffice }}
+          F_OPS: ${{ steps.filter.outputs.ops }}
+        run: |
+          # shared change → все аппы; иначе только изменённые; workflow_dispatch → по входу
+          ALL='["admin","storefront","help","landing","backoffice","ops"]'
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$INPUT_APPS" != "all" ]; then
+            echo "apps=$(echo "$INPUT_APPS" | jq -Rc 'split(",")')" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$SHARED" = "true" ] || [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "apps=$ALL" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          sel='[]'
+          for a in admin storefront help landing backoffice ops; do
+            var="F_$(echo "$a" | tr '[:lower:]' '[:upper:]')"
+            if [ "${!var}" = "true" ]; then sel=$(echo "$sel" | jq -c ". + [\"$a\"]"); fi
+          done
+          echo "apps=$sel" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: changes
+    if: needs.changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false      # storefront не должен убивать admin-сборку
+      matrix:
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: map app → pkg/dir
+        id: map
+        run: |
+          case "${{ matrix.app }}" in
+            admin) echo "pkg=admin" >> $GITHUB_OUTPUT; echo "dir=admin" >> $GITHUB_OUTPUT;;
+            storefront) echo "pkg=storefront" >> $GITHUB_OUTPUT; echo "dir=storefront" >> $GITHUB_OUTPUT;;
+            help) echo "pkg=@fastio/help" >> $GITHUB_OUTPUT; echo "dir=help" >> $GITHUB_OUTPUT;;
+            landing) echo "pkg=@fastio/landing" >> $GITHUB_OUTPUT; echo "dir=landing" >> $GITHUB_OUTPUT;;
+            backoffice) echo "pkg=@fastio/backoffice" >> $GITHUB_OUTPUT; echo "dir=backoffice" >> $GITHUB_OUTPUT;;
+            ops) echo "pkg=@fastio/ops" >> $GITHUB_OUTPUT; echo "dir=ops" >> $GITHUB_OUTPUT;;
+          esac
+      - name: build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/haasson/fastio-${{ matrix.app }}:${{ github.sha }}
+            ghcr.io/haasson/fastio-${{ matrix.app }}:latest
+          build-args: |
+            APP_PKG=${{ steps.map.outputs.pkg }}
+            APP_DIR=${{ steps.map.outputs.dir }}
+            SOURCE_COMMIT=${{ github.sha }}
+            NUXT_PUBLIC_SUPABASE_URL=${{ vars.NUXT_PUBLIC_SUPABASE_URL }}
+            NUXT_PUBLIC_SUPABASE_ANON_KEY=${{ vars.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
+            NUXT_PUBLIC_YANDEX_MAPS_API_KEY=${{ vars.NUXT_PUBLIC_YANDEX_MAPS_API_KEY }}
+            NUXT_PUBLIC_YANDEX_METRIKA_ID=${{ vars.NUXT_PUBLIC_YANDEX_METRIKA_ID }}
+            NUXT_PUBLIC_TELEGRAM_TENANT_BOT_USERNAME=${{ vars.NUXT_PUBLIC_TELEGRAM_TENANT_BOT_USERNAME }}
+            NUXT_PUBLIC_TELEGRAM_CLIENT_BOT_USERNAME=${{ vars.NUXT_PUBLIC_TELEGRAM_CLIENT_BOT_USERNAME }}
+            NUXT_PUBLIC_HELP_URL=${{ vars.NUXT_PUBLIC_HELP_URL }}
+            NUXT_PUBLIC_ADMIN_URL=${{ vars.NUXT_PUBLIC_ADMIN_URL }}
+            NUXT_PUBLIC_SITE_URL=${{ vars.NUXT_PUBLIC_SITE_URL }}
+            NUXT_PUBLIC_AUDIT_LOG_ENABLED=${{ vars.NUXT_PUBLIC_AUDIT_LOG_ENABLED }}
+            NUXT_PUBLIC_SENTRY_DSN=${{ vars.NUXT_PUBLIC_SENTRY_DSN }}
+          secrets: |
+            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+  deploy:
+    needs: [changes, build]
+    if: needs.changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger Coolify deploy (синхронно для всех собранных аппов)
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          APPS: ${{ needs.changes.outputs.apps }}
+          UUID_ADMIN: ${{ vars.COOLIFY_UUID_ADMIN }}
+          UUID_STOREFRONT: ${{ vars.COOLIFY_UUID_STOREFRONT }}
+          UUID_HELP: ${{ vars.COOLIFY_UUID_HELP }}
+          UUID_LANDING: ${{ vars.COOLIFY_UUID_LANDING }}
+          UUID_BACKOFFICE: ${{ vars.COOLIFY_UUID_BACKOFFICE }}
+          UUID_OPS: ${{ vars.COOLIFY_UUID_OPS }}
+        run: |
+          # маппинг app → Coolify resource UUID (GH Variables COOLIFY_UUID_*, заполняются в Task 7-9)
+          declare -A UUID=(
+            [admin]="$UUID_ADMIN"
+            [storefront]="$UUID_STOREFRONT"
+            [help]="$UUID_HELP"
+            [landing]="$UUID_LANDING"
+            [backoffice]="$UUID_BACKOFFICE"
+            [ops]="$UUID_OPS"
+          )
+          for a in $(echo "$APPS" | jq -r '.[]'); do
+            u="${UUID[$a]}"
+            [ -z "$u" ] && { echo "skip $a (no uuid)"; continue; }
+            echo "deploy $a → $u"
+            curl -fsS -X GET "https://coolify.fastio.ru/api/v1/deploy?uuid=$u&force=false" \
+              -H "Authorization: Bearer $COOLIFY_TOKEN" || echo "::warning::deploy trigger failed for $a"
+          done
