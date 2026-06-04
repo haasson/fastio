@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+**/.output
+**/.nuxt
+**/dist
+.git
+.github
+**/.turbo
+test-results
+playwright-report
+*.log
+.planning
+docs
+supabase/.branches
+supabase/.temp
