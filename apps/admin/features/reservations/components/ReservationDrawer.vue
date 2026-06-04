@@ -40,20 +40,23 @@
           />
         </div>
         <div class="row">
-          <UiDatepicker
-            v-model="reservedDateTs"
+          <UiSelect
+            v-model:value="form.reservedDate"
             label="Дата"
             name="reservedDate"
+            :options="dateOptions"
             :disabled="formDisabled"
             :rules="[{ type: 'required', message: 'Укажите дату' }]"
-            :is-date-disabled="isDateDisabled"
+            placeholder="Выберите дату"
           />
-          <UiTimepicker
-            v-model="reservedTimeVal"
+          <UiSelect
+            v-model:value="form.reservedTime"
             label="Время"
             name="reservedTime"
-            :disabled="formDisabled"
+            :options="timeOptions"
+            :disabled="formDisabled || !form.reservedDate"
             :rules="[{ type: 'required', message: 'Укажите время' }]"
+            placeholder="Выберите время"
           />
         </div>
         <div class="row">
@@ -66,13 +69,14 @@
             :disabled="formDisabled"
           />
           <UiSelect
-            v-if="reservation && dineInEnabled"
+            v-if="dineInEnabled"
             v-model:value="selectedTableId"
             label="Стол"
+            name="tableId"
             :options="tableOptions"
             :disabled="formDisabled"
-            clearable
-            placeholder="Без стола"
+            :rules="[{ type: 'required', message: 'Выберите стол' }]"
+            placeholder="Выберите стол"
           />
         </div>
         <UiInput
@@ -135,16 +139,21 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiButton, UiDatepicker, UiDivider, UiDrawer, UiForm, UiInput, UiInputNumber, UiSelect, UiTag, UiText, UiTimepicker, useMessage } from '@fastio/ui'
+import { UiButton, UiDivider, UiDrawer, UiForm, UiInput, UiInputNumber, UiSelect, UiTag, UiText, useMessage } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
-import type { Reservation, Table } from '@fastio/shared'
+import type { Reservation, ReservationSettings, Table } from '@fastio/shared'
 import { validationRules, useConfirm } from '@fastio/kit'
 import { useReservationsStore } from '../stores/reservations'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
+import { useBranchStore } from '~/shared/stores/branch'
 import { useGate } from '~/shared/plan/useGate'
-import { formatDateStr, todayInTz, nowTimeInTz } from '@fastio/shared'
+import {
+  todayInTz, nowTimeInTz, addDaysToDateStr,
+  generateTimeSlots, timeToMinutes,
+  getScheduleForDate,
+} from '@fastio/shared'
 import {
   RESERVATION_STATUS_LABELS as STATUS_LABELS,
   RESERVATION_STATUS_TYPES as STATUS_TYPES,
@@ -165,6 +174,7 @@ const emit = defineEmits<{
 const reservationsStore = useReservationsStore()
 const tenantStore = useTenantStore()
 const authStore = useAuthStore()
+const branchStore = useBranchStore()
 const api = useDatabase()
 const { success, error } = useMessage()
 const { confirm } = useConfirm()
@@ -197,20 +207,137 @@ const formDisabled = computed(() => {
 
 const tables = ref<Table[]>([])
 
-const tableOptions = computed(() => [
-  { label: 'Без стола', value: null },
-  ...tables.value.map((t) => ({ label: t.name, value: t.id })),
-])
+const tableOptions = computed(() => {
+  const suitable = tables.value.filter((t) => t.isActive && (t.capacity === null || t.capacity >= form.guestCount),
+  )
 
-// Load tables for tenant (only when dine-in module is active)
-watch([() => tenantStore.currentTenantId, dineInEnabled], async ([id, enabled]) => {
+  if (!suitable.length) {
+    return [{ label: 'Нет подходящих столов', value: null, disabled: true }]
+  }
+
+  return suitable.map((t) => ({
+    label: t.capacity ? `${t.name} (до ${t.capacity} чел.)` : t.name,
+    value: t.id,
+  }))
+})
+
+// Load tables and reservation settings
+watch([() => tenantStore.currentTenantId, dineInEnabled, () => branchStore.currentBranchId], async ([id, enabled]) => {
   if (!id || !enabled) {
     tables.value = []
 
     return
   }
-  tables.value = await api.tables.list(id)
+  tables.value = await api.tables.list(id, branchStore.currentBranchId)
 }, { immediate: true })
+
+const reservationSettings = ref<ReservationSettings | null>(null)
+
+watch(() => tenantStore.currentTenantId, async (id) => {
+  if (!id) return
+  reservationSettings.value = await api.reservationSettings.get(id)
+}, { immediate: true })
+
+const activeSchedule = computed(() => branchStore.currentBranch?.workingHoursSchedule ?? tenantStore.tenant?.workingHoursSchedule ?? null,
+)
+
+const formatDateLabel = (dateStr: string): string => {
+  const d = new Date(dateStr + 'T12:00:00')
+
+  return d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })
+}
+
+const dateOptions = computed(() => {
+  const tz = tenantStore.timezone
+  const today = todayInTz(tz)
+  const maxDays = reservationSettings.value?.maxAdvanceDays ?? 30
+  const schedule = activeSchedule.value
+  const options: { label: string; value: string }[] = []
+
+  for (let i = 0; i <= maxDays; i++) {
+    const date = addDaysToDateStr(today, i)
+
+    if (schedule) {
+      const wh = getScheduleForDate(schedule, date)
+
+      if (wh.dayOff) continue
+    }
+    options.push({ label: formatDateLabel(date), value: date })
+  }
+
+  // При редактировании прошедшая дата может не попасть в список — добавляем её
+  if (props.reservation && form.reservedDate && !options.some((o) => o.value === form.reservedDate)) {
+    options.unshift({ label: formatDateLabel(form.reservedDate), value: form.reservedDate })
+  }
+
+  return options
+})
+
+const timeOptions = computed(() => {
+  if (!form.reservedDate) return []
+
+  const tz = tenantStore.timezone
+  const today = todayInTz(tz)
+  const schedule = activeSchedule.value
+  const step = reservationSettings.value?.slotStep ?? 30
+  const closeBuffer = reservationSettings.value?.closeBufferMinutes ?? 60
+
+  let open = '10:00'
+  let close = '22:00'
+
+  if (schedule) {
+    const wh = getScheduleForDate(schedule, form.reservedDate)
+
+    if (wh.dayOff) return [{ label: 'Нет доступных слотов', value: null, disabled: true }]
+    if (wh.allDay) {
+      open = '00:00'
+      close = '23:59'
+    } else {
+      open = wh.open
+      close = wh.close
+    }
+  }
+
+  const rawSlots = generateTimeSlots(open, close, step, closeBuffer)
+  const nowMin = form.reservedDate === today ? timeToMinutes(nowTimeInTz(tz)) : null
+
+  const options = rawSlots
+    .filter(({ timeStr, nextDay }) => {
+      if (nowMin === null) return true
+
+      return timeToMinutes(timeStr) + (nextDay ? 1440 : 0) > nowMin
+    })
+    .map(({ timeStr }) => ({ label: timeStr, value: timeStr }))
+
+  // При редактировании текущее время может не быть в списке — добавляем его
+  if (props.reservation && form.reservedTime && !options.some((o) => o.value === form.reservedTime)) {
+    options.unshift({ label: form.reservedTime, value: form.reservedTime })
+  }
+
+  if (!options.length) {
+    return [{ label: 'Нет доступных слотов', value: null, disabled: true }]
+  }
+
+  return options
+})
+
+// Сбрасываем стол если при смене количества гостей он перестаёт подходить
+watch(() => form.guestCount, () => {
+  if (selectedTableId.value) {
+    const table = tables.value.find((t) => t.id === selectedTableId.value)
+
+    if (table && table.capacity !== null && table.capacity < form.guestCount) {
+      selectedTableId.value = null
+    }
+  }
+})
+
+// Сбрасываем время если после смены даты выбранный слот недоступен
+watch(() => form.reservedDate, () => {
+  if (form.reservedTime && !timeOptions.value.some((o) => o.value === form.reservedTime)) {
+    form.reservedTime = ''
+  }
+})
 
 // Sync form with reservation prop
 watch(() => props.reservation, (r) => {
@@ -235,25 +362,6 @@ watch(() => props.reservation, (r) => {
   showCancelReason.value = false
   isEditing.value = false
 }, { immediate: true })
-
-const isDateDisabled = (ts: number) => {
-  const today = todayInTz(tenantStore.timezone) // "YYYY-MM-DD"
-  const dateStr = formatDateStr(ts) // "YYYY-MM-DD"
-
-  return dateStr < today
-}
-
-// Bridge: "YYYY-MM-DD" string ↔ timestamp (UiDatepicker)
-const reservedDateTs = computed<number | null>({
-  get: () => form.reservedDate ? new Date(form.reservedDate + 'T12:00:00').getTime() : null,
-  set: (val) => { form.reservedDate = val ? formatDateStr(val) : '' },
-})
-
-// Bridge: string ↔ string | null (UiTimepicker)
-const reservedTimeVal = computed<string | null>({
-  get: () => form.reservedTime || null,
-  set: (val) => { form.reservedTime = val ?? '' },
-})
 
 // Брони на выбранную дату (без текущей, только активные) — для ReservationTablePicker
 const dayReservations = computed(() => {
@@ -317,6 +425,10 @@ const onSave = async () => {
     const r = props.reservation
 
     if (!r) {
+      const newTable = selectedTableId.value
+        ? tables.value.find((t) => t.id === selectedTableId.value) ?? null
+        : null
+
       await reservationsStore.create({
         guestName: form.guestName,
         guestPhone: form.guestPhone,
@@ -324,6 +436,13 @@ const onSave = async () => {
         reservedDate: form.reservedDate,
         reservedTime: form.reservedTime,
         comment: form.comment || null,
+        // Передаём текущий филиал, чтобы бронь попала в список при активном
+        // branch_id-фильтре. Без этого INSERT пишет branch_id = null, а list()
+        // с eq('branch_id', X) такую запись не вернёт — бронь исчезает сразу
+        // после refresh() по событию @saved.
+        branchId: branchStore.currentBranchId,
+        tableId: newTable?.id ?? null,
+        tableName: newTable?.name ?? null,
       })
       success('Бронь создана')
       emit('update:modelValue', false)

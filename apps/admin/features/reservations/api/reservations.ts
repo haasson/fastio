@@ -67,6 +67,8 @@ export const reservationsApi = {
         reserved_time: data.reservedTime,
         comment: data.comment ?? null,
         branch_id: data.branchId ?? null,
+        table_id: data.tableId ?? null,
+        table_name: data.tableName ?? null,
       }).select(SELECT_FIELDS).single(),
     )
 

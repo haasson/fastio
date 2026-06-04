@@ -36,6 +36,8 @@ export type ReservationFormData = {
   reservedTime: string
   comment?: string | null
   branchId?: string | null
+  tableId?: string | null
+  tableName?: string | null
 }
 
 export type ReservationSettings = {
