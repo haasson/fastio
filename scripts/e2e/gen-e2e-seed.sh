@@ -109,6 +109,12 @@ TABLES=(
 
   echo "COMMIT;"
   echo "SET session_replication_role = origin;"
+  echo
+  echo "-- Post-seed override: demo-тенант круглосуточно (allDay). order-flow.spec.ts не должен"
+  echo "-- зависеть от времени суток: крон ночнушки 22:33 UTC = 05:33 Asia/Krasnoyarsk попадает"
+  echo "-- в закрытое окно 03:00–12:00 → branches.working_hours фолбэчатся на tenant.working_hours"
+  echo "-- (branches.get.ts) → pickup-карточки disabled → 15s timeout. allDay снимает зависимость."
+  echo "UPDATE public.tenants SET working_hours_schedule = '{\"days\": {}, \"default\": {\"open\": \"00:00\", \"close\": \"00:00\", \"allDay\": true}}' WHERE id = '$DEMO';"
 } > "$OUT"
 
 echo "WROTE $OUT"

@@ -299,3 +299,9 @@ d8dca9a0-7a9b-43c2-9b49-c1b302ebc55c	00000000-0000-0000-0000-000000000002	6ee36e
 
 COMMIT;
 SET session_replication_role = origin;
+
+-- Post-seed override: demo-тенант круглосуточно (allDay). order-flow.spec.ts не должен
+-- зависеть от времени суток: крон ночнушки 22:33 UTC = 05:33 Asia/Krasnoyarsk попадает
+-- в закрытое окно 03:00–12:00 → branches.working_hours фолбэчатся на tenant.working_hours
+-- (branches.get.ts) → pickup-карточки disabled → 15s timeout. allDay снимает зависимость.
+UPDATE public.tenants SET working_hours_schedule = '{"days": {}, "default": {"open": "00:00", "close": "00:00", "allDay": true}}' WHERE id = '00000000-0000-0000-0000-000000000002';
