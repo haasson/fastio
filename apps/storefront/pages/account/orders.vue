@@ -97,13 +97,19 @@ onMounted(async () => {
   await fetchOrders()
 })
 
-async function fetchOrders() {
+// tg-клиент авторизован httpOnly cookie tg_session (без supabase-сессии) — эндпоинт
+// cookie-first (getAuthenticatedContext). Bearer добавляем только для supabase-режима,
+// но НЕ бейлимся без сессии (как было) — иначе у tg-клиента «Мои заказы» всегда пусто.
+async function authHeaders(): Promise<Record<string, string>> {
   const supabase = useSupabaseClient()
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return
 
+  return session ? { Authorization: `Bearer ${session.access_token}` } : {}
+}
+
+async function fetchOrders() {
   const result = await $fetch<{ orders: Order[]; total: number }>('/api/customer/orders', {
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    headers: await authHeaders(),
     params: { page: page.value, limit },
   })
   orders.value = result.orders
@@ -115,12 +121,8 @@ async function loadMore() {
   loadingMore.value = true
   page.value++
 
-  const supabase = useSupabaseClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return
-
   const result = await $fetch<{ orders: Order[]; total: number }>('/api/customer/orders', {
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    headers: await authHeaders(),
     params: { page: page.value, limit },
   })
   orders.value.push(...result.orders)

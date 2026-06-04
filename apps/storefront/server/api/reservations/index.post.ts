@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { getAuthSupabase, resolveMaxGuests } from '../../utils/supabase'
+import { resolveMaxGuests } from '../../utils/supabase'
+import { resolveCustomer } from '../../services/order-customer'
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
@@ -144,40 +145,10 @@ export default defineEventHandler(async (event) => {
   // СЛЕДУЮЩЕМУ календарному дню. Клиент шлёт исходную дату — сервер сдвигает.
   const reservedDate = pickedSlot.nextDay ? addDaysToDateStr(body.reservedDate, 1) : body.reservedDate
 
-  // Try to identify authenticated customer.
-  // Logic: разделяем «нет user / невалидный JWT» (by-design guest-fallback,
-  // не шумим в Sentry) от «Supabase upstream-ошибка» (реальный инцидент,
-  // логируем). Без этого Supabase-инцидент маскировался как guest и заказ
-  // создавался под customerId=null молча.
-  let customerId: string | null = null
-  const authHeader = getRequestHeader(event, 'authorization')
-
-  if (authHeader) {
-    try {
-      const authClient = getAuthSupabase(authHeader)
-      const { data: { user }, error: userError } = await authClient.auth.getUser()
-
-      // userError == invalid/expired JWT — нормальный guest-fallback.
-      if (!userError && user) {
-        const { data: customerData, error: customerError } = await db
-          .from('customers')
-          .select('id')
-          .eq('auth_user_id', user.id)
-          .maybeSingle()
-
-        if (customerError) {
-          // Реальная DB-ошибка — заказ создастся под customerId=null, но
-          // мы хотя бы увидим инцидент в Sentry.
-          reportError(customerError, { context: 'reservations.post:lookup-customer', userId: user.id })
-        } else if (customerData) {
-          customerId = customerData.id
-        }
-      }
-    } catch (e) {
-      // Инфра-ошибка (network / Supabase init / JWKS) — реально надо знать.
-      reportError(e, { context: 'reservations.post:optional-auth' })
-    }
-  }
+  // Резолв клиента — cookie-first (tg_session) + Bearer, общий с заказами
+  // (order-customer.ts). Раньше Bearer-only → брони tg-клиентов создавались
+  // гостевыми (customer_id=null), не привязывались к аккаунту (PREPROD-099).
+  const { customerId } = await resolveCustomer(event, db.raw, tenantId)
 
   const status = autoConfirm ? 'confirmed' : 'pending'
 

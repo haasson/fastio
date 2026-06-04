@@ -47,11 +47,11 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // 2. Данные тенанта + начальный статус + резолв клиента (параллельно)
-  const authHeader = getRequestHeader(event, 'authorization')
+  // 2. Данные тенанта + начальный статус + резолв клиента (параллельно).
+  // resolveCustomer теперь cookie-first (tg_session) + Bearer — см. order-customer.ts.
   const [{ tenantConfig, initialStatusId }, { customerId, authUserId }] = await Promise.all([
     fetchOrderInitialData(supabase, tenantId),
-    resolveCustomer(supabase, tenantId, authHeader),
+    resolveCustomer(event, supabase, tenantId),
   ])
 
   validateModulesForDeliveryType(deliveryType, tenantConfig.modules)
