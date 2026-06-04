@@ -82,7 +82,7 @@
 
     <DishModal
       v-if="modalItem"
-      :key="modalItem.id"
+      :key="modalKey"
       v-model="modalOpen"
       :item="modalItem"
       :modifiers="modalModifiers"
@@ -90,6 +90,7 @@
       :max-addons="modalMaxAddons"
       :view-only="viewOnly"
       :mode="tableMode ? 'order' : 'add'"
+      :initial-quantity="modalInitialQuantity"
       @add="handleModalAdd"
     />
   </FsSection>
@@ -184,6 +185,8 @@ const categoryPhotos = computed<Record<string, string | null>>(() =>
 // Modal state
 const modalOpen = ref(false)
 const modalItem = ref<ModalItem | null>(null)
+const modalKey = ref(0)
+const modalInitialQuantity = ref(1)
 
 function hasModifiers(dish: Dish): boolean {
   return (menuStore.dishModifiers[dish.id]?.length ?? 0) > 0
@@ -244,8 +247,10 @@ function decrementByItem(key: string) {
   if (idx !== undefined) cart.decrement(idx)
 }
 
-function openModal(item: ModalItem) {
+function openModal(item: ModalItem, initialQuantity = 1) {
   modalItem.value = item
+  modalInitialQuantity.value = initialQuantity
+  modalKey.value++
   modalOpen.value = true
 }
 
@@ -271,7 +276,7 @@ function openDishModal(dish: Dish) {
     ingredients: dish.ingredients,
     nutrition: dish.nutrition,
     weightUnit: dish.weightUnit,
-  })
+  }, props.tableMode ? (props.orderCounts?.[dish.id] ?? 1) : 1)
 }
 
 function openComboModal(combo: Combo) {
