@@ -5,6 +5,7 @@
         :model-value="checkout.form.address"
         placeholder="Начните вводить адрес..."
         :error="!!addressError"
+        data-testid="checkout-address-input"
         @update:model-value="onAddressInput"
         @focus="showSuggestions = true"
         @blur="hideSuggestionsDelayed(); addressTouched = true"

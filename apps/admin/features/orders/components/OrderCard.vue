@@ -2,6 +2,7 @@
   <UiCard
     clickable
     class="card-root"
+    data-testid="admin-order-card"
     :style="currentStatus ? { outline: `1px solid ${STATUS_GROUP_COLORS[currentStatus.groupType]}` } : undefined"
     @click="emit('open-edit', order)"
   >
@@ -13,6 +14,7 @@
           v-if="currentStatus"
           size="small"
           round
+          data-testid="admin-order-status"
           :type="STATUS_GROUP_TAG_TYPES[currentStatus.groupType]"
         >{{ currentStatus.name }}</UiTag>
         <span class="time" :title="absoluteTime">{{ relativeTime }}</span>
@@ -110,6 +112,8 @@
         v-for="target in quickActionStatuses"
         :key="target.id"
         class="action-btn"
+        data-testid="admin-order-quick-action"
+        :data-status-name="target.name"
         :type="STATUS_GROUP_TAG_TYPES[target.groupType]"
         ghost
         size="small"

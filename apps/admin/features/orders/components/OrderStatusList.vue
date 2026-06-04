@@ -34,6 +34,7 @@ const statusTabs = computed(() => statuses.value.map((s) => ({
   label: s.name,
   type: STATUS_GROUP_TAG_TYPES[s.groupType],
   count: props.orderCounts[s.id] ?? 0,
+  attrs: { 'data-testid': 'admin-order-status-tab', 'data-status-name': s.name },
 })))
 </script>
 

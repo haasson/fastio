@@ -26,6 +26,12 @@ const TOKEN_HASH_SERVICES = createHash('sha256').update(SESSION_TOKEN_SERVICES).
 const RETAIL_TENANT_SLUG = 'demo'
 const SERVICES_TENANT_SLUG = 'services-start'
 
+// Тестовый промокод для checkout-флоу (retail demo): 10% без min_order и без дат →
+// валиден для любой непустой корзины. Идемпотентный DELETE+INSERT (UNIQUE по
+// tenant_id+code), чтобы повторные прогоны не падали.
+const PROMO_CODE = 'E2E10'
+const PROMO_DISCOUNT_PERCENT = 10
+
 // Admin login для E2E. Переиспользуем существующего owner-юзера demo-тенанта
 // (demo@fastio.app) — пересоздавать в auth.users + auth.identities дорого,
 // проще зарезетить пароль на известное значение. Локально безопасно: prod
@@ -132,7 +138,12 @@ BEGIN
 END $$;
 
 -- Cleanup: удаляем данные с marker phone из прошлых прогонов.
-DELETE FROM orders WHERE customer_phone = '${PHONE_MARKER}';
+-- Заказы: и гостевые (customer_phone хранится нормализованным '7…' без '+', поэтому
+-- матчим оба формата), и привязанные к тестовому customer (теперь tg-заказы линкуются
+-- к customer_id — FK orders_customer_id_fkey иначе блокирует DELETE customers ниже).
+DELETE FROM orders
+WHERE customer_phone IN ('${PHONE_MARKER}', '${PHONE_MARKER.replace(/\D/g, '')}')
+   OR customer_id IN (SELECT id FROM customers WHERE telegram_id = '${TELEGRAM_ID}');
 DELETE FROM reservations WHERE guest_phone = '${PHONE_MARKER}';
 DELETE FROM appointments WHERE customer_id IN (
   SELECT id FROM customers WHERE phone = '${PHONE_MARKER}'
@@ -167,6 +178,17 @@ SELECT '${TOKEN_HASH_SERVICES}',
 FROM customers c
 JOIN tenants t ON t.id = c.tenant_id
 WHERE c.telegram_id = '${TELEGRAM_ID}' AND t.slug = '${SERVICES_TENANT_SLUG}';
+
+-- Тестовый промокод для checkout-флоу (retail demo). Percent-скидка без
+-- min_order_amount и без active_from/active_to → check_promo_code() считает его
+-- валидным для любой непустой корзины. UNIQUE(tenant_id, code) → DELETE+INSERT.
+DELETE FROM promo_codes
+WHERE code = '${PROMO_CODE}'
+  AND tenant_id = (SELECT id FROM tenants WHERE slug = '${RETAIL_TENANT_SLUG}');
+
+INSERT INTO promo_codes (tenant_id, code, discount_type, discount_value, active)
+SELECT id, '${PROMO_CODE}', 'percent', ${PROMO_DISCOUNT_PERCENT}, true
+FROM tenants WHERE slug = '${RETAIL_TENANT_SLUG}';
 
 -- Admin password reset: тест админки логинится по email/password через Supabase Auth.
 -- Юзер уже существует (см. seed.sql), просто фиксируем пароль на известное значение.

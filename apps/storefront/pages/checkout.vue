@@ -77,6 +77,7 @@
                 <button
                   type="button"
                   class="delivery-tab"
+                  data-testid="checkout-tab-delivery"
                   :class="{ active: checkout.form.deliveryType === 'delivery' }"
                   @click="setDeliveryType('delivery')"
                 >
