@@ -13,6 +13,16 @@ const updateHandlers = new Set<Handler<Table>>()
 const deleteHandlers = new Set<Handler<string>>()
 const reconnectHandlers = new Set<VoidHandler>()
 
+// tableId → branchId — сидируется при load() и обновляется RT-событиями.
+// Используется в useTableCallAlertHandler для branch-фильтра звука.
+const tableBranchMap = new Map<string, string | null>()
+
+export const getTableBranchId = (tableId: string): string | null | undefined => tableBranchMap.get(tableId)
+
+export const seedTableBranches = (tables: Table[]) => {
+  for (const t of tables) tableBranchMap.set(t.id, t.branchId ?? null)
+}
+
 export const tableEvents = {
   onInsert(handler: Handler<Table>) {
     insertHandlers.add(handler)
@@ -47,11 +57,13 @@ export function useTablesChannel(tenantId: Ref<string | null>) {
     onInsert: (row) => {
       const table = mapTable(row as TableRow)
 
+      tableBranchMap.set(table.id, table.branchId ?? null)
       insertHandlers.forEach((h) => h(table))
     },
     onUpdate: (row) => {
       const table = mapTable(row as TableRow)
 
+      tableBranchMap.set(table.id, table.branchId ?? null)
       updateHandlers.forEach((h) => h(table))
     },
     // DELETE отдаёт только old (primary key) — нам нужен лишь id.

@@ -45,7 +45,7 @@ import { useAuthStore } from '~/shared/stores/auth'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useOrderStatusesStore } from '~/features/orders'
 import { orderEvents } from '~/features/orders'
-import { tableCallEvents, tableEvents } from '~/features/tables'
+import { tableCallEvents, tableEvents, seedTableBranches } from '~/features/tables'
 import { kitchenQueueEvents } from '~/features/kitchen'
 import { TablesContextKey, TodayReservationsKey } from '~/features/tables'
 import type { TableSession, TableSessionItem } from '~/features/tables'
@@ -213,6 +213,7 @@ const load = async (id: string) => {
     ])
 
     tables.value = loadedTables
+    seedTableBranches(loadedTables)
     globalTags.value = tags
     callTypes.value = types
     activeCalls.value = calls
