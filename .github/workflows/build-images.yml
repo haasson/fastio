@@ -1,7 +1,7 @@
 name: build-images
 on:
   push:
-    branches: [main]
+    branches: [main, build/off-box-gh-actions]
   workflow_dispatch:
     inputs:
       apps:
