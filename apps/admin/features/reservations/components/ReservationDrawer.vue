@@ -373,6 +373,9 @@ const dayReservations = computed(() => {
   )
 })
 
+const selectedTableIsBooked = computed(() => !!selectedTableId.value && dayReservations.value.some((r) => r.tableId === selectedTableId.value),
+)
+
 const isReadOnly = computed(() => {
   if (!props.reservation) return false
 
@@ -419,6 +422,17 @@ const drawerActions = computed<DrawerAction[]>(() => {
 
 const onSave = async () => {
   if (!formRef.value?.validate()) return false
+
+  if (selectedTableIsBooked.value) {
+    const ok = await confirm({
+      title: 'Стол уже забронирован',
+      message: 'На это время есть другая бронь на выбранный стол. Всё равно сохранить?',
+      confirmText: 'Да, сохранить',
+      confirmType: 'warning',
+    })
+
+    if (!ok) return false
+  }
 
   saving.value = true
   try {
