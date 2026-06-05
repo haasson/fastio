@@ -91,12 +91,12 @@
       <div class="block-head">
         <span class="block-title">Готовые — забрать</span>
         <UiButton
-          v-if="readyIds.length > 1"
+          v-if="readyUnits > 1"
           :size="compact ? 'small' : 'medium'"
           type="success"
           @click="$emit('mark-served-all', readyIds)"
         >
-          Забрал все ({{ readyIds.length }})
+          Забрал все ({{ readyUnits }})
         </UiButton>
       </div>
       <div class="block-rows">
@@ -233,6 +233,9 @@ const cookingRows = computed(() => kitchenProgress.value.filter((r) => r.status 
 )
 const readyRows = computed(() => kitchenProgress.value.filter((r) => r.status === 'done'))
 const readyIds = computed(() => readyRows.value.flatMap((r) => r.ids))
+// Счёт «Забрал все» — по логическим единицам (комбо = 1), а не по кухонным строкам:
+// одно комбо из 2 блюд = 1 готовая позиция, bulk-кнопка для неё не нужна.
+const readyUnits = computed(() => readyRows.value.reduce((sum, r) => sum + r.count, 0))
 
 // Чек = подтверждённые позиции, которых уже нет в кухонном пайплайне (поданы /
 // skip_kitchen). Логика в чистом хелпере — обычные блюда по dishName+фингерпринт,
