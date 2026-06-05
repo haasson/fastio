@@ -96,21 +96,47 @@ describe('checkModuleDisable — другие модули не зовут appoi
 
     expect(appointmentsCalled).toBe(false)
   })
+})
 
-  it('module="reservations" не дёргает appointments API', async () => {
-    let appointmentsCalled = false
+describe('checkModuleDisable — module="dineIn" (брони — часть модуля «Столы»)', () => {
+  it('нет открытых столов и активных броней → пустой массив', async () => {
+    const api = makeApi()
+
+    const issues = await checkModuleDisable('dineIn', 'tenant-A', emptyLayout, api)
+
+    expect(issues).toEqual([])
+  })
+
+  it('есть открытые столы → blocker', async () => {
+    const api = makeApi({ tables: { list: async () => [{ isOpen: true }, { isOpen: false }] } })
+
+    const issues = await checkModuleDisable('dineIn', 'tenant-A', emptyLayout, api)
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({ severity: 'blocker' })
+    expect(issues[0].message).toMatch(/открытые столы/i)
+  })
+
+  it('есть активные брони → blocker с количеством', async () => {
+    const api = makeApi({ reservations: { list: async () => [{}, {}, {}] } })
+
+    const issues = await checkModuleDisable('dineIn', 'tenant-A', emptyLayout, api)
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({ severity: 'blocker' })
+    expect(issues[0].message).toContain('3')
+    expect(issues[0].message).toMatch(/бронирован/i)
+  })
+
+  it('открытые столы + активные брони → два блокера', async () => {
     const api = makeApi({
-      appointments: {
-        countActiveFuture: async () => {
-          appointmentsCalled = true
-
-          return 99
-        },
-      },
+      tables: { list: async () => [{ isOpen: true }] },
+      reservations: { list: async () => [{}, {}] },
     })
 
-    await checkModuleDisable('reservations', 'tenant-A', emptyLayout, api)
+    const issues = await checkModuleDisable('dineIn', 'tenant-A', emptyLayout, api)
 
-    expect(appointmentsCalled).toBe(false)
+    expect(issues).toHaveLength(2)
+    expect(issues.every((i: any) => i.severity === 'blocker')).toBe(true)
   })
 })

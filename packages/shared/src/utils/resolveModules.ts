@@ -1,7 +1,7 @@
 import type { BusinessType, TenantModules } from '../types/tenant'
 
 const DISABLED_FOR_BUSINESS_TYPE: Partial<Record<BusinessType, (keyof TenantModules)[]>> = {
-  services: ['delivery', 'pickup', 'dineIn', 'kitchen', 'combos', 'promotions', 'reservations', 'modifiers', 'addons'],
+  services: ['delivery', 'pickup', 'dineIn', 'kitchen', 'combos', 'promotions', 'modifiers', 'addons'],
 }
 
 export function resolveModules(modules: TenantModules, businessType: BusinessType | null): TenantModules {

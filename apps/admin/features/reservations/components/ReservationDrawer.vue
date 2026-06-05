@@ -37,6 +37,7 @@
             name="guestPhone"
             :disabled="formDisabled"
             :rules="[validationRules.phone.required, validationRules.phone.format]"
+            callable
           />
         </div>
         <div class="row">

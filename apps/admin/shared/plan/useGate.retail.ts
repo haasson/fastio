@@ -35,7 +35,10 @@ export const useGateRetail = (): RetailGateRegistry => {
   const pickup = moduleGate('pickup')
   const dineIn = moduleGate('dineIn')
   const kitchen = moduleGate('kitchen')
-  const reservations = moduleGate('reservations')
+  // reservations — теперь часть модуля «Столы» (dineIn), не отдельный тоггл.
+  // Один тоггл включает и зал, и бронирование. viewReservations/manageReservations
+  // ниже бэкуются этим же гейтом, но проверяют свой permission.
+  const reservations = dineIn
   const promotions = moduleGate('promotions')
   const modifiers = moduleGate('modifiers')
   const addons = moduleGate('addons')
@@ -101,8 +104,9 @@ export const useGateRetail = (): RetailGateRegistry => {
   const viewTables = permissionGate(dineIn, 'tables.view')
   const manageTables = permissionGate(dineIn, 'tables.manage')
 
-  const viewReservations = permissionGate(reservations, 'reservations.view')
-  const manageReservations = permissionGate(reservations, 'reservations.manage')
+  // Брони — часть модуля «Столы»: отдельных прав нет, бэкуются tables.view/tables.manage.
+  const viewReservations = permissionGate(reservations, 'tables.view')
+  const manageReservations = permissionGate(reservations, 'tables.manage')
 
   const viewPromotions = permissionGate(promotions, 'promos.view')
   const managePromotions = permissionGate(promotions, 'promos.manage')

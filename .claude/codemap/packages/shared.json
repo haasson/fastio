@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-06-04T07:46:25.912Z",
+  "generated_at": "2026-06-05T15:28:17.564Z",
   "stats": {
     "files": 52,
     "pages": 0,
@@ -931,8 +931,8 @@
     },
     "src/utils/resolveModules.ts": {
       "kind": "ts",
-      "hash": "c2195a39a259",
-      "purpose": "Принудительно гасит модули, неприменимые к businessType (для services убирает delivery/kitchen/комбо/брони и т.д.)",
+      "hash": "66c3a1110e45",
+      "purpose": "Гасит модули, недоступные для businessType (напр. для services)",
       "symbols": [
         {
           "name": "resolveModules",
@@ -1045,8 +1045,8 @@
     },
     "src/utils/siteFeatures.ts": {
       "kind": "ts",
-      "hash": "e76807d3a679",
-      "purpose": "Реестр фич публичного сайта (секция/страница/нав, нужный модуль, лейбл с учётом businessType=services)",
+      "hash": "a3b62382e787",
+      "purpose": "Реестр фич витрины SITE_FEATURES (страница/секция/нав/модуль) + isFeatureAvailable",
       "symbols": [
         {
           "name": "SITE_FEATURES",
@@ -1131,8 +1131,8 @@
     },
     "src/utils/table.ts": {
       "kind": "ts",
-      "hash": "f9b2e899c3a8",
-      "purpose": "Дефолты TableSettings (единая правда admin/storefront) + маппер snake_case-строки БД в TableSettings",
+      "hash": "37b3289270d6",
+      "purpose": "Дефолты TableSettings (DEFAULT_TABLE_SETTINGS) + маппер строки БД (mapTableSettings)",
       "symbols": [
         {
           "name": "DEFAULT_TABLE_SETTINGS",

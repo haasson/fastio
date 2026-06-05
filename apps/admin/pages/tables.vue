@@ -39,7 +39,8 @@ import type { Table, TableCallType, TableCall, TableSettings, KitchenQueueItem }
 import { todayInTz } from '@fastio/shared'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { useReservationsStore } from '~/features/reservations'
+import { useReservationsStore, useNewReservationCounter } from '~/features/reservations'
+import { useGate } from '~/shared/plan/useGate'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useBranchStore } from '~/shared/stores/branch'
@@ -58,6 +59,8 @@ const api = useDatabase()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const reservationsStore = useReservationsStore()
+const gate = useGate()
+const { count: newReservationCount } = useNewReservationCounter()
 const authStore = useAuthStore()
 const orderStatusesStore = useOrderStatusesStore()
 const userId = computed(() => authStore.user?.id ?? null)
@@ -68,17 +71,19 @@ const { confirm } = useConfirm()
 
 const tenantId = computed(() => tenantStore.currentTenantId)
 
-// Настройки столов правит только tables.manage (owner/admin/manager) —
-// совпадает с RLS на table_settings. View-only staff таб не видит.
-const canManageTables = computed(() => tenantStore.isOwner || tenantStore.currentPermissions?.['tables.manage'] === true)
-
 const tabs = computed(() => {
-  const items = [
+  const items: { value: string; label: string; count?: number }[] = [
     { value: 'list', label: 'Столы' },
     { value: 'layout', label: 'Схема' },
   ]
 
-  if (canManageTables.value) items.push({ value: 'settings', label: 'Настройки' })
+  // Брони — часть модуля «Столы». Таб виден при tables.view (бэкуется dineIn).
+  if (gate.viewReservations.value.enabled) {
+    items.push({ value: 'reservations', label: 'Бронирование', count: newReservationCount.value || undefined })
+  }
+
+  // Настройки (столы + брони) — под settings.edit, как все остальные настройки.
+  if (gate.editSettings.value.enabled) items.push({ value: 'settings', label: 'Настройки' })
 
   return items
 })

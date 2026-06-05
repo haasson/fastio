@@ -14,7 +14,8 @@ export type PlanModuleFeatures = {
   combos?: boolean
   kitchen?: boolean
   dineIn?: boolean
-  reservations?: boolean
+  // reservations — НЕ plan-фича и НЕ тенант-модуль: брони часть модуля «Столы» (dineIn).
+  // Приём онлайн-броней (вкл/выкл) — под-флаг table_settings.booking_enabled.
   services?: boolean
   branches?: boolean
   customRoles?: boolean
@@ -49,7 +50,7 @@ export const EMPTY_RESOLVED_FEATURES: ResolvedFeatures = {
     dashboard: false,
     delivery: false, pickup: false, modifiers: false, addons: false,
     promotions: false, combos: false, kitchen: false, dineIn: false,
-    reservations: false, services: false, branches: false,
+    services: false, branches: false,
     customRoles: false, customers: false, team: false,
   },
   menu: { virtualCategories: false, ingredients: false },

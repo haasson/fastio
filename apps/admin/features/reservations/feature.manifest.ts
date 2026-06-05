@@ -3,18 +3,21 @@ import { defineFeature } from '../_manifest'
 export default defineFeature({
   key: 'reservations',
   vertical: 'retail',
-  purpose: 'Бронирования столов: создание, подтверждение, рассадка, архив, настройки',
-  tenantModule: true,
+  purpose: 'Бронирования столов: создание, подтверждение, рассадка, архив. Часть модуля «Столы» (dineIn) — собственных страниц нет, UI живёт под /tables/reservations и /tables/settings',
+  // Не отдельный тенант-модуль: брони включаются модулем «Столы» (dineIn).
+  // Приём онлайн-броней — под-флаг table_settings.booking_enabled.
+  tenantModule: false,
 
-  routes: [
-    { path: '/reservations/list', purpose: 'Активные брони с фильтрами и пагинацией' },
-    { path: '/reservations/archive', purpose: 'Архив завершённых/отменённых' },
-    { path: '/reservations/settings', purpose: 'Слоты, буфер, авто-подтверждение, лимиты гостей' },
-  ],
+  // Страниц больше нет — фича-библиотека (api/composables/store/components),
+  // её потребляют страницы под pages/tables/.
+  routes: [],
 
+  // Своих прав нет: брони под правами модуля «Столы». Просмотр/управление —
+  // tables.view/tables.manage; настройки броней — settings.edit.
   permissions: [
-    'reservations.view',
-    'reservations.manage',
+    'tables.view',
+    'tables.manage',
+    'settings.edit',
   ],
 
   db: {

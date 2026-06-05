@@ -22,6 +22,10 @@ export const RETAIL_ROUTE_SUBS: Array<[string, RetailGateKey]> = [
   ['/kitchen/queue', 'viewKitchenQueue'],
   ['/kitchen/assembly', 'viewKitchenQueue'],
   ['/kitchen/overview', 'viewKitchenOverview'],
+
+  // Брони — часть модуля «Столы»; viewReservations бэкуется tables.view.
+  // Должен идти как sub (проверяется до корневого /tables → viewTables).
+  ['/tables/reservations', 'viewReservations'],
 ]
 
 export const RETAIL_ROUTE_ROOTS: Array<[string, RetailGateKey]> = [
@@ -29,6 +33,5 @@ export const RETAIL_ROUTE_ROOTS: Array<[string, RetailGateKey]> = [
   ['/orders', 'viewOrders'],
   ['/kitchen', 'viewKitchen'],
   ['/tables', 'viewTables'],
-  ['/reservations', 'viewReservations'],
   ['/promotions', 'managePromotions'],
 ]

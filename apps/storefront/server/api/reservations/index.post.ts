@@ -5,7 +5,7 @@ import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
 import { reportError } from '@fastio/shared/observability'
-import { todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { todayInTz, nowTimeInTz, addDaysToDateStr, getIsoDayForDate, generateTimeSlots, timeToMinutes, validateAndNormalizeRussianPhone, DEFAULT_TIMEZONE, DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule, ReservationStatus } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
@@ -52,7 +52,20 @@ export default defineEventHandler(async (event) => {
     reportError(tenantError, { context: 'reservations.post:tenant-lookup' })
     throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки' })
   }
-  if (!tenantData?.modules?.reservations) {
+
+  // Бронь доступна = модуль «Столы» (dineIn) включён И приём броней не выключен
+  // (table_settings.booking_enabled). Server-side enforcement тоггла, как у заказа со стола.
+  const { data: tableData, error: tableError } = await db
+    .from('table_settings')
+    .select('booking_enabled')
+    .maybeSingle()
+
+  if (tableError) {
+    reportError(tableError, { context: 'reservations.post:table-settings-lookup' })
+    throw createError({ statusCode: 500, message: 'Не удалось загрузить настройки' })
+  }
+  const bookingEnabled = (tableData?.booking_enabled as boolean | null) ?? DEFAULT_TABLE_SETTINGS.bookingEnabled
+  if (!tenantData?.modules?.dineIn || !bookingEnabled) {
     throw createError({ statusCode: 400, message: 'Бронирование недоступно' })
   }
 

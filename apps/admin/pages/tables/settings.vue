@@ -1,6 +1,6 @@
 <template>
   <div class="settings-root">
-    <UiSkeleton v-if="ctx.loading" :repeat="4" />
+    <UiSkeleton v-if="ctx.loading || reservationLoading" :repeat="4" />
 
     <UiForm v-else class="form" @submit.prevent="page.submit">
       <!-- ── Заказ со стола (QR) ───────────────────────────── -->
@@ -114,18 +114,68 @@
           <UiSwitch v-model="form.showDishCategory" />
         </UiSettingRow>
       </UiFormSection>
+
+      <!-- ── Онлайн-бронирование (паттерн «Вызов официанта»: одна карточка, свитч в шапке) ── -->
+      <UiFormSection
+        title="Онлайн-бронирование"
+        help="Гости бронируют столик с сайта-витрины. Лимит гостей в брони — по вместимости самого большого стола."
+        :columns="1"
+      >
+        <template #header-right>
+          <UiSwitch v-model="form.reservationEnabled" />
+        </template>
+
+        <template v-if="form.reservationEnabled">
+          <AppStorefrontAlert feature-key="booking" />
+
+          <UiAlert v-if="!hasSchedule" type="warning">
+            Расписание работы не настроено — перейди в
+            <a href="/branches">«Заведение»</a>
+            и заполни часы работы по дням.
+          </UiAlert>
+
+          <div class="row-3">
+            <UiSelect
+              v-model:value="form.slotStep"
+              label="Шаг слотов"
+              :options="SLOT_STEP_OPTIONS"
+            />
+            <UiSelect
+              v-model:value="form.closeBufferMinutes"
+              label="Буфер до закрытия"
+              :options="BUFFER_OPTIONS"
+              help="Последняя бронь — за это время до закрытия"
+            />
+            <UiInputNumber
+              v-model="form.maxAdvanceDays"
+              label="Дней вперёд (макс.)"
+              :min="1"
+              :max="365"
+              :show-button="true"
+            />
+          </div>
+
+          <UiSettingRow
+            label="Разрешить клиенту отменять бронь"
+            help="Кнопка отмены в личном кабинете гостя на сайте"
+          >
+            <UiSwitch v-model="form.allowClientCancellation" />
+          </UiSettingRow>
+        </template>
+      </UiFormSection>
     </UiForm>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { UiForm, UiFormSection, UiSettingRow, UiInput, UiInputNumber, UiSelect, UiSkeleton, UiSwitch, UiIcon } from '@fastio/ui'
+import { computed, ref, onMounted } from 'vue'
+import { UiForm, UiFormSection, UiSettingRow, UiInput, UiInputNumber, UiSelect, UiSkeleton, UiSwitch, UiIcon, UiAlert } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
-import type { CanvasTileSize, ThemePalette } from '@fastio/shared'
+import type { CanvasTileSize, ThemePalette, ReservationSettings } from '@fastio/shared'
 import { DEFAULT_TABLE_SETTINGS, paletteToCssVars, getPresetPalette, THEME_PRESETS, TILE_SIZE_OPTIONS } from '@fastio/shared'
 import { useTablesContext } from '~/features/tables'
 import TableCallTypes from '~/features/tables/components/TableCallTypes.vue'
+import AppStorefrontAlert from '~/shared/ui/components/AppStorefrontAlert.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useEditableForm } from '~/shared/ui/composables/useEditableForm'
@@ -135,6 +185,39 @@ import { useUnsavedGuard } from '~/shared/ui/composables/useUnsavedGuard'
 const ctx = useTablesContext()
 const tenantStore = useTenantStore()
 const api = useDatabase()
+
+// ── Бронирование (часть модуля «Столы») ───────────────────
+const SLOT_STEP_OPTIONS = [
+  { label: '15 мин', value: 15 },
+  { label: '30 мин', value: 30 },
+  { label: '60 мин', value: 60 },
+]
+
+const BUFFER_OPTIONS = [
+  { label: '30 минут', value: 30 },
+  { label: '1 час', value: 60 },
+  { label: '1.5 часа', value: 90 },
+  { label: '2 часа', value: 120 },
+  { label: '3 часа', value: 180 },
+]
+
+// Расписание нужно для генерации слотов брони на витрине.
+const hasSchedule = computed(() => !!tenantStore.tenant.workingHoursSchedule)
+
+const reservationSource = ref<ReservationSettings | null>(null)
+const reservationLoading = ref(true)
+
+onMounted(async () => {
+  const id = tenantStore.currentTenantId
+
+  if (!id) {
+    reservationLoading.value = false
+
+    return
+  }
+  reservationSource.value = await api.reservationSettings.get(id)
+  reservationLoading.value = false
+})
 
 // callButtonIcon = null → дефолт «колокольчик» (bellRing) и в превью, и на витрине.
 const DEFAULT_CALL_ICON: IconName = 'bellRing'
@@ -160,23 +243,53 @@ type Form = {
   listPreviewRows: number
   dineInOrderingEnabled: boolean
   waiterCallEnabled: boolean
+  // ── Бронирование ──
+  reservationEnabled: boolean
+  slotStep: number
+  maxAdvanceDays: number
+  closeBufferMinutes: number
+  allowClientCancellation: boolean
 }
 
-const settingsSource = computed(() => ctx.tableSettings)
+type Source = {
+  table: typeof ctx.tableSettings
+  reservation: ReservationSettings | null
+  bookingEnabled: boolean
+}
+
+// Свич приёма онлайн-броней — table_settings.booking_enabled (как «заказ со стола»
+// и «вызов официанта»); его читает витрина (гейт = dineIn AND booking_enabled).
+// Поля слотов/гостей — reservation_settings. Все наборы + настройки столов живут
+// в одной форме и сохраняются одной кнопкой.
+const settingsSource = computed<Source>(() => ({
+  table: ctx.tableSettings,
+  reservation: reservationSource.value,
+  bookingEnabled: ctx.tableSettings?.bookingEnabled ?? DEFAULT_TABLE_SETTINGS.bookingEnabled,
+}))
 
 const page = useEditableForm({
   source: settingsSource,
-  build: (s): Form => ({
-    callButtonLabel: s?.callButtonLabel ?? DEFAULT_TABLE_SETTINGS.callButtonLabel,
-    callButtonIcon: s?.callButtonIcon ?? DEFAULT_TABLE_SETTINGS.callButtonIcon,
-    callCooldownSeconds: s?.callCooldownSeconds ?? DEFAULT_TABLE_SETTINGS.callCooldownSeconds,
-    callEscalationMinutes: s?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes,
-    canvasTileSize: s?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize,
-    showDishCategory: s?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory,
-    listPreviewRows: s?.listPreviewRows ?? DEFAULT_TABLE_SETTINGS.listPreviewRows,
-    dineInOrderingEnabled: s?.dineInOrderingEnabled ?? DEFAULT_TABLE_SETTINGS.dineInOrderingEnabled,
-    waiterCallEnabled: s?.waiterCallEnabled ?? DEFAULT_TABLE_SETTINGS.waiterCallEnabled,
-  }),
+  build: (s): Form => {
+    const t = s.table
+    const r = s.reservation
+
+    return {
+      callButtonLabel: t?.callButtonLabel ?? DEFAULT_TABLE_SETTINGS.callButtonLabel,
+      callButtonIcon: t?.callButtonIcon ?? DEFAULT_TABLE_SETTINGS.callButtonIcon,
+      callCooldownSeconds: t?.callCooldownSeconds ?? DEFAULT_TABLE_SETTINGS.callCooldownSeconds,
+      callEscalationMinutes: t?.callEscalationMinutes ?? DEFAULT_TABLE_SETTINGS.callEscalationMinutes,
+      canvasTileSize: t?.canvasTileSize ?? DEFAULT_TABLE_SETTINGS.canvasTileSize,
+      showDishCategory: t?.showDishCategory ?? DEFAULT_TABLE_SETTINGS.showDishCategory,
+      listPreviewRows: t?.listPreviewRows ?? DEFAULT_TABLE_SETTINGS.listPreviewRows,
+      dineInOrderingEnabled: t?.dineInOrderingEnabled ?? DEFAULT_TABLE_SETTINGS.dineInOrderingEnabled,
+      waiterCallEnabled: t?.waiterCallEnabled ?? DEFAULT_TABLE_SETTINGS.waiterCallEnabled,
+      reservationEnabled: s.bookingEnabled,
+      slotStep: r?.slotStep ?? 30,
+      maxAdvanceDays: r?.maxAdvanceDays ?? 30,
+      closeBufferMinutes: r?.closeBufferMinutes ?? 60,
+      allowClientCancellation: r?.allowClientCancellation ?? true,
+    }
+  },
   errorMessage: 'Не удалось сохранить настройки',
   save: async (data) => {
     const tid = tenantStore.currentTenantId
@@ -193,9 +306,20 @@ const page = useEditableForm({
       listPreviewRows: data.listPreviewRows,
       dineInOrderingEnabled: data.dineInOrderingEnabled,
       waiterCallEnabled: data.waiterCallEnabled,
+      // Приём онлайн-броней — под-флаг модуля «Столы», хранится в table_settings.
+      bookingEnabled: data.reservationEnabled,
     })
 
     ctx.onSettingsSaved(saved)
+
+    // maxGuests/maxGuestsAuto не редактируются: лимит брони всегда по самому
+    // большому столу (max_guests_auto = true по умолчанию, см. миграцию 315).
+    reservationSource.value = await api.reservationSettings.upsert(tid, {
+      slotStep: data.slotStep,
+      maxAdvanceDays: data.maxAdvanceDays,
+      closeBufferMinutes: data.closeBufferMinutes,
+      allowClientCancellation: data.allowClientCancellation,
+    })
   },
   successMessage: 'Настройки сохранены',
 })
@@ -247,6 +371,7 @@ useUnsavedGuard(page.isDirty)
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/layout' as *;
+@use '@fastio/styles/mixins/media-queries' as mq;
 
 .settings-root {
   max-width: 720px;
@@ -273,6 +398,18 @@ useUnsavedGuard(page.isDirty)
   grid-template-columns: 1fr 1fr;
   gap: var(--space-12);
   align-items: start;
+}
+
+// Тройка контролов: на мобиле в столбик, с планшета — три в ряд.
+.row-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-12);
+  align-items: start;
+
+  @include mq.mq-m {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 // Мок мобильного хедера витрины — цвета из темы тенанта (headerVars inline).

@@ -58,6 +58,8 @@ export const useModules = (): Record<ModuleKey, ComputedRef<ModuleState>> => {
       const wrongMenuStyle = cfg.menuStyles !== null && !cfg.menuStyles.includes(tenantMenuStyle)
       const absent = wrongBusinessType || wrongMenuStyle
       const active = tenant.modules?.[key] ?? false
+      // resolved.modules — план-фичи (PlanModuleFeatures); ключ отсутствует/false →
+      // модуль закрыт тарифом (locked).
       const locked = !absent && !resolved.value.modules[key]
 
       return { active, locked, absent, enabled: active && !locked && !absent }

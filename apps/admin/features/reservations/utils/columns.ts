@@ -4,6 +4,7 @@ import { UiButton, UiTag } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
 import type { Ref } from 'vue'
 import type { Reservation } from '@fastio/shared'
+import { formatPhone } from '@fastio/shared'
 import {
   RESERVATION_STATUS_LABELS as STATUS_LABELS,
   RESERVATION_STATUS_TYPES as STATUS_TYPES,
@@ -59,6 +60,7 @@ export const buildReservationColumns = ({
     title: 'Телефон',
     key: 'guestPhone',
     width: 160,
+    render: (row) => formatPhone(row.guestPhone),
   },
   {
     title: 'Гостей',
@@ -129,7 +131,9 @@ export const buildReservationColumns = ({
     key: 'status',
     width: 150,
     filterOptions: statusFilterOptions,
-    filter: (value: string | number, row: Reservation) => row.status === value,
+    // filter: true — фильтрация по статусу серверная (fetch в tables/reservations.vue
+    // тянет нужные statuses). Дропдаун остаётся, но NDataTable не дублирует фильтр на клиенте.
+    filter: true,
     render: (row) => h(UiTag, {
       type: STATUS_TYPES[row.status],
       round: true,

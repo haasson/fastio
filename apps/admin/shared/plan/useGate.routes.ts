@@ -25,8 +25,9 @@ const ROUTE_GATES: Array<[string, GateKey]> = [
   ['/orders/statuses', 'editSettings'],
   ['/orders/order-number', 'editSettings'],
   ['/kitchen/settings', 'editSettings'],
-  ['/reservations/settings', 'editSettings'],
   ['/appointments/settings', 'editSettings'],
+  // Настройки столов+броней — под settings.edit (идёт ДО корневого /tables → viewTables).
+  ['/tables/settings', 'editSettings'],
   ['/team/roles', 'manageRoles'],
 
   // ───── Корни секций (соответствуют AppNav) ─────
@@ -77,7 +78,6 @@ export const REDIRECT_FALLBACKS = [
   '/services/items',
   '/kitchen',
   '/tables',
-  '/reservations',
   // `/appointments/timeline` идёт ДО `/appointments` — у мастера с `view_own`
   // сводный список (`/appointments/list`) закрыт `viewAllAppointments`-гейтом,
   // а routeRule `/appointments → /appointments/list` приведёт обратно в гейт

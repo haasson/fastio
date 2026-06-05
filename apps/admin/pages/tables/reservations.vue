@@ -1,12 +1,13 @@
 <template>
-  <div class="archive-root">
+  <!-- @click сбрасывает счётчик новых броней при любом взаимодействии со страницей -->
+  <div class="reservations-root" @click="resetCount">
     <AppTableToolbar
       v-model:search="search"
       v-model:visible-columns="visibleColumns"
       search-placeholder="Поиск по гостю или телефону"
       :filter-count="activeFilterCount"
       :column-options="RESERVATION_COLUMN_OPTIONS"
-      storage-key="reservations-archive:columns"
+      storage-key="tables-reservations:columns"
       @reset="clearFilters"
     >
       <template #filters>
@@ -24,7 +25,7 @@
 
     <UiSkeleton v-if="loading" :repeat="5" />
 
-    <UiEmpty v-else-if="!rows.length" icon="calendar" text="Архив пуст" />
+    <UiEmpty v-else-if="!rows.length" icon="calendar" text="Броней нет" />
 
     <template v-else>
       <UiDataTable
@@ -55,28 +56,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { UiButton, UiDataTable, UiDatepicker, UiEmpty, UiPagination, UiSkeleton } from '@fastio/ui'
 import type { Reservation, ReservationStatus } from '@fastio/shared'
+import { RESERVATION_STATUS_LABELS } from '@fastio/shared'
 import AppTableToolbar from '~/shared/components/AppTableToolbar.vue'
 import ReservationDrawer from '~/features/reservations/components/ReservationDrawer.vue'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useReservationTable, RESERVATION_COLUMN_OPTIONS } from '~/features/reservations'
-import {
-  RESERVATION_ARCHIVE_STATUSES,
-  RESERVATION_ARCHIVE_STATUS_OPTIONS,
-} from '~/features/reservations'
+import { useNewReservationCounter, reservationEvents } from '~/features/reservations'
 
 const PAGE_SIZE = 20
+
+// Все статусы — единая таблица броней (активные + архив) с фильтром по статусу.
+const ALL_STATUSES: ReservationStatus[] = ['pending', 'confirmed', 'seated', 'completed', 'cancelled', 'no_show']
+const ALL_STATUS_OPTIONS = ALL_STATUSES.map((s) => ({ label: RESERVATION_STATUS_LABELS[s], value: s }))
 
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const api = useDatabase()
+const { reset: resetCount } = useNewReservationCounter()
 
-// Архив держит локальный state — данные пагинируются server-side и не нужны в глобальном сторе.
-// ReservationsActive использует useReservationsStore (realtime) — разные паттерны намеренны.
+// Server-side пагинация: данные не нужны в глобальном сторе, тащим страницами.
 const rows = ref<Reservation[]>([])
 const total = ref(0)
 const loading = ref(false)
@@ -93,7 +96,7 @@ const {
   search, visibleColumns, filterDateTs, guestMin, guestMax, tableFilters, activeFilterCount,
   clearFilters, visibleColumnDefs, onFiltersUpdate,
   modalOpen, selectedReservation, openCreate, openEdit,
-} = useReservationTable(rows, tableNames, filterDate, RESERVATION_ARCHIVE_STATUS_OPTIONS)
+} = useReservationTable(rows, tableNames, filterDate, ALL_STATUS_OPTIONS)
 
 const filterStatus = computed<ReservationStatus | null>(() => (tableFilters.value.status as ReservationStatus | null) ?? null,
 )
@@ -106,7 +109,7 @@ const fetch = async () => {
   loading.value = true
   try {
     const result = await api.reservations.listPaginated(tenantId, {
-      statuses: filterStatus.value ? [filterStatus.value] : RESERVATION_ARCHIVE_STATUSES,
+      statuses: filterStatus.value ? [filterStatus.value] : ALL_STATUSES,
       branchId: branchStore.currentBranchId ?? undefined,
       date: filterDate.value ?? undefined,
       search: search.value.trim() || undefined,
@@ -146,13 +149,30 @@ watch([guestMin, guestMax], () => {
 watch(page, fetch)
 watch(() => branchStore.currentBranchId, resetAndFetch)
 
+// Realtime: брони могут создаваться/меняться с витрины и других вкладок —
+// при любом событии пересинхронизируем текущую страницу с сервером.
+const unsubInsert = reservationEvents.onInsert(fetch)
+const unsubUpdate = reservationEvents.onUpdate(fetch)
+const unsubDelete = reservationEvents.onDelete(fetch)
+const unsubReconnect = reservationEvents.onReconnect(fetch)
+
+onUnmounted(() => {
+  unsubInsert()
+  unsubUpdate()
+  unsubDelete()
+  unsubReconnect()
+})
+
+// Сбрасываем счётчик при входе — считаем, что пользователь уже видит брони.
+onMounted(resetCount)
+
 fetch()
 </script>
 
 <style scoped lang="scss">
 @use '@fastio/styles/mixins/layout' as *;
 
-.archive-root {
+.reservations-root {
   @include flex-col(var(--space-16));
 }
 

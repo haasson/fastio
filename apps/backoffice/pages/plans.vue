@@ -141,8 +141,7 @@
               <NCheckbox v-model:checked="form.features.modules.promotions" :disabled="isInherited('modules.promotions')">Акции</NCheckbox>
               <NCheckbox v-model:checked="form.features.modules.combos" :disabled="isInherited('modules.combos')">Комбо</NCheckbox>
               <NCheckbox v-model:checked="form.features.modules.kitchen" :disabled="isInherited('modules.kitchen')">Кухонный экран (KDS)</NCheckbox>
-              <NCheckbox v-model:checked="form.features.modules.dineIn" :disabled="isInherited('modules.dineIn')">QR-столы и зал</NCheckbox>
-              <NCheckbox v-model:checked="form.features.modules.reservations" :disabled="isInherited('modules.reservations')">Бронирования</NCheckbox>
+              <NCheckbox v-model:checked="form.features.modules.dineIn" :disabled="isInherited('modules.dineIn')">QR-столы, зал и бронирования</NCheckbox>
               <NCheckbox v-model:checked="form.features.modules.customers" :disabled="isInherited('modules.customers')">CRM клиентов</NCheckbox>
               <NCheckbox v-model:checked="form.features.modules.branches" :disabled="isInherited('modules.branches')">Несколько филиалов</NCheckbox>
               <NCheckbox v-model:checked="form.features.modules.customRoles" :disabled="isInherited('modules.customRoles')">Кастомные роли</NCheckbox>
@@ -219,7 +218,6 @@ type PlanModules = {
   combos: boolean
   kitchen: boolean
   dineIn: boolean
-  reservations: boolean
   services: boolean
   branches: boolean
   customRoles: boolean
@@ -300,7 +298,7 @@ const formRef = ref<FormInst | null>(null)
 const emptyModules = (): PlanModules => ({
   delivery: false, pickup: false, modifiers: false, addons: false,
   promotions: false, combos: false, kitchen: false, dineIn: false,
-  reservations: false, services: false, branches: false,
+  services: false, branches: false,
   customRoles: false, customers: false, team: false,
 })
 
@@ -374,8 +372,8 @@ const isInherited = (path: string) => {
 
 const MODULE_LABELS: Record<string, string> = {
   delivery: 'Доставка', pickup: 'Самовывоз', modifiers: 'Модификаторы', addons: 'Добавки',
-  promotions: 'Акции', combos: 'Комбо', kitchen: 'KDS', dineIn: 'QR-столы',
-  reservations: 'Бронирования', services: 'Онлайн-запись', branches: 'Филиалы',
+  promotions: 'Акции', combos: 'Комбо', kitchen: 'KDS', dineIn: 'QR-столы и брони',
+  services: 'Онлайн-запись', branches: 'Филиалы',
   customRoles: 'Кастомные роли', customers: 'CRM', team: 'Команда',
 }
 

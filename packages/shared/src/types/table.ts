@@ -58,6 +58,8 @@ export type TableSettings = {
   // Тогглы режима стола (QR): заказ со стола / вызов официанта — каждый опционален.
   dineInOrderingEnabled: boolean
   waiterCallEnabled: boolean
+  // Приём онлайн-броней (часть модуля «Столы»). Гейт витрины = modules.dineIn AND это.
+  bookingEnabled: boolean
 }
 
 export type TableSettingsFormData = {
@@ -70,6 +72,7 @@ export type TableSettingsFormData = {
   listPreviewRows: number
   dineInOrderingEnabled: boolean
   waiterCallEnabled: boolean
+  bookingEnabled: boolean
 }
 
 export type TableFormData = {

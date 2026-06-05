@@ -29,6 +29,7 @@ export const tableSettingsApi = {
     if (form.listPreviewRows !== undefined) payload.list_preview_rows = form.listPreviewRows
     if (form.dineInOrderingEnabled !== undefined) payload.dine_in_ordering_enabled = form.dineInOrderingEnabled
     if (form.waiterCallEnabled !== undefined) payload.waiter_call_enabled = form.waiterCallEnabled
+    if (form.bookingEnabled !== undefined) payload.booking_enabled = form.bookingEnabled
 
     const result = await query(
       sb.from('table_settings')

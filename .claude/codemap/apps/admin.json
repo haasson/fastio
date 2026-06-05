@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-05T13:58:05.750Z",
+  "generated_at": "2026-06-05T15:28:17.373Z",
   "stats": {
     "files": 83,
     "pages": 0,
@@ -175,8 +175,8 @@
     },
     "config/team-roles.ts": {
       "kind": "ts",
-      "hash": "04ebce558936",
-      "purpose": "Конфиг permissionGroups для UI редактора ролей: getPermissionGroups({auditLogEnabled}) возвращает группы PermissionKey по разделам (audit_log.view добавляется по runtime-флагу)",
+      "hash": "d4f48e0ef0fc",
+      "purpose": "Каталог прав и групп для редактора кастомных ролей (getPermissionGroups)",
       "symbols": [
         {
           "name": "PermissionGroup",
@@ -650,8 +650,8 @@
     },
     "shared/plan/useGate.retail.routes.ts": {
       "kind": "ts",
-      "hash": "f442c7e3b30a",
-      "purpose": "Карта роут→retail-гейт (sub-роуты и корни) для маршрутного гейтинга в общем реестре",
+      "hash": "7303ec3adc36",
+      "purpose": "Карта роутов retail-вертикали → gate-ключи (под-роуты и корни секций)",
       "symbols": [
         {
           "name": "RETAIL_ROUTE_SUBS",
@@ -669,8 +669,8 @@
     },
     "shared/plan/useGate.retail.ts": {
       "kind": "ts",
-      "hash": "41ded56812d2",
-      "purpose": "Гейты retail-вертикали: модули и permission-гейты (меню, заказы, столы/брони, кухня, акции)",
+      "hash": "8ae518a103cb",
+      "purpose": "Реестр retail-гейтов (модуль + permission) для фич retail-вертикали",
       "symbols": [
         {
           "name": "RetailGateKey",
@@ -694,8 +694,8 @@
     },
     "shared/plan/useGate.routes.ts": {
       "kind": "ts",
-      "hash": "e52e16b492ea",
-      "purpose": "Карта роут→ключ гейта для middleware прямого доступа по URL + список fallback-редиректов когда страница недоступна",
+      "hash": "108629fd8ed1",
+      "purpose": "Резолвер путь → gate-ключ (resolveRouteGate) + redirect-фоллбэки и ungated-префиксы",
       "symbols": [
         {
           "name": "isUngatedRoute",
@@ -788,8 +788,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "50e02783a588",
-      "purpose": "Агрегатор всех гейтов админки (retail+services): единая точка проверки доступа к фичам с причиной отказа",
+      "hash": "a58451d31b27",
+      "purpose": "Центральный реестр гейтов доступа (план + модуль + permission + suspension)",
       "symbols": [
         {
           "name": "useGate",
@@ -832,8 +832,8 @@
     },
     "shared/plan/useModules.ts": {
       "kind": "ts",
-      "hash": "6e571bd3ad43",
-      "purpose": "Реактивное состояние модулей тенанта (active/locked/absent/enabled) из тариф-фич + module_configs + tenant.modules; ленивый Proxy по ключу",
+      "hash": "d31277d186b3",
+      "purpose": "Состояние модулей тенанта: active/locked/absent/enabled по плану и businessType",
       "symbols": [
         {
           "name": "useModuleConfigs",

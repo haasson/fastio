@@ -9,16 +9,18 @@ export default defineFeature({
   routes: [
     { path: '/tables/list', purpose: 'Список столов с QR-кодами и зонами' },
     { path: '/tables/layout', purpose: 'Визуальный layout зала (расстановка столов)' },
-    { path: '/tables/settings', purpose: 'Настройки столов: вызов официанта, отображение, типы вызовов (tables.manage)' },
+    { path: '/tables/reservations', purpose: 'Брони столов: все статусы, фильтр, пагинация (tables.view)' },
+    { path: '/tables/settings', purpose: 'Настройки столов и онлайн-брони: вызов официанта, отображение, слоты/гости (settings.edit)' },
   ],
 
   permissions: [
     'tables.view',
     'tables.manage',
+    'settings.edit',
   ],
 
   db: {
-    tables: ['orders', 'table_call_types', 'table_calls', 'table_settings', 'tables'],
+    tables: ['orders', 'reservation_settings', 'reservations', 'table_call_types', 'table_calls', 'table_settings', 'tables'],
     rpc: ['apply_table_discount'],
   },
 

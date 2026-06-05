@@ -20,7 +20,6 @@ const allModules: TenantModules = {
   kitchen: true,
   branches: true,
   customRoles: true,
-  reservations: true,
 }
 
 describe('featureLabel', () => {
@@ -56,7 +55,7 @@ describe('featureLabel', () => {
 describe('isFeatureAvailable', () => {
   describe('фичи без обязательного модуля', () => {
     it('gallery — всегда доступна', () => {
-      const noModules = { ...allModules, delivery: false, reservations: false }
+      const noModules = { ...allModules, delivery: false, dineIn: false }
       expect(isFeatureAvailable('gallery', noModules)).toBe(true)
     })
 
@@ -78,12 +77,12 @@ describe('isFeatureAvailable', () => {
       expect(isFeatureAvailable('delivery', { ...allModules, delivery: false })).toBe(false)
     })
 
-    it('booking: reservations включены → доступна', () => {
-      expect(isFeatureAvailable('booking', { ...allModules, reservations: true })).toBe(true)
+    it('booking: dineIn включён → доступна (брони — часть модуля «Столы»)', () => {
+      expect(isFeatureAvailable('booking', { ...allModules, dineIn: true })).toBe(true)
     })
 
-    it('booking: reservations выключены → недоступна', () => {
-      expect(isFeatureAvailable('booking', { ...allModules, reservations: false })).toBe(false)
+    it('booking: dineIn выключен → недоступна', () => {
+      expect(isFeatureAvailable('booking', { ...allModules, dineIn: false })).toBe(false)
     })
   })
 

@@ -166,6 +166,8 @@ export type TableSettingsRow = WithOverrides<Tables<'table_settings'>, {
   // Миграция 313 — добавлено вручную (db:gen-types недоступен локально, см. MEMORY).
   dine_in_ordering_enabled: boolean
   waiter_call_enabled: boolean
+  // Миграция 315 — приём онлайн-броней (под-флаг модуля «Столы»).
+  booking_enabled: boolean
 }
 
 // ─── Kitchen ──────────────────────────────────────────────────────────────────

@@ -1,10 +1,12 @@
 # reservations — заметка для агента
 
-Бронирования столов (retail). Полная мета — в `feature.manifest.ts` рядом.
+Бронирования столов (retail). **Часть модуля «Столы» (dineIn)** — собственного тоггла и собственных страниц нет. UI живёт под `pages/tables/`: вкладка «Бронирование» (`/tables/reservations`) и блок «Бронирование» в `/tables/settings`. Это фича-библиотека: api/composables/store/components, которые потребляют страницы столов. Полная мета — в `feature.manifest.ts` рядом.
+
+`modules.reservations` — под-флаг «онлайн-брони вкл/выкл» (его читает витрина), управляется мастер-свитчем в `pages/tables/settings.vue`, НЕ из каталога модулей.
 
 ## Что модуль делает
 
-Список активных броней с realtime-обновлениями, архив, настройки слотов/буфера/лимитов. Поток статусов: `pending → confirmed → seated → completed` (или `cancelled` на любом этапе).
+Все брони в одной таблице (`/tables/reservations`, server-пагинация, фильтр по статусу) + realtime, настройки слотов/буфера/лимитов в `/tables/settings`. Поток статусов: `pending → confirmed → seated → completed` (или `cancelled` на любом этапе).
 
 ## Карта модуля
 
@@ -33,7 +35,7 @@
 
 - **Новый переход статуса:** добавь метод в `reservationsApi` (паттерн как `seat`/`complete`), потом обёртку в `useReservations`, потом кнопку в `Drawer`.
 
-- **Новая страница раздела:** клади в `apps/admin/pages/reservations/<name>.vue`, **НЕ** в `features/reservations/components/`.
+- **Новая страница раздела:** клади в `apps/admin/pages/tables/` (брони — часть модуля «Столы»), **НЕ** в `features/reservations/components/`. Не забудь объявить роут в `features/tables/feature.manifest.ts`.
 
 ## Антипаттерны (не делай так)
 

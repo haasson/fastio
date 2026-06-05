@@ -7,7 +7,7 @@ const mockResolved = ref<ResolvedFeatures>({
   modules: {
     dashboard: false, delivery: false, pickup: false, modifiers: false, addons: false,
     promotions: false, combos: false, kitchen: false, dineIn: false,
-    reservations: false, services: false, branches: false,
+    services: false, branches: false,
     customRoles: false, customers: false, team: false,
   },
   menu: { virtualCategories: false, ingredients: false },

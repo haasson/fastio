@@ -30,7 +30,7 @@ import { useRoute, useRouter } from '#imports'
 import { UiTabs, UiCard } from '@fastio/ui'
 import type { IconName } from '@fastio/icons'
 
-type Tab = { value: string; label: string; icon?: IconName; attrs?: Record<string, string> }
+type Tab = { value: string; label: string; icon?: IconName; count?: number; attrs?: Record<string, string> }
 
 const props = defineProps<{
   tabs: Tab[]

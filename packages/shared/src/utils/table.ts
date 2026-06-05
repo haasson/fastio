@@ -13,6 +13,7 @@ export const DEFAULT_TABLE_SETTINGS: Omit<TableSettings, 'tenantId'> = {
   listPreviewRows: 3,
   dineInOrderingEnabled: true,
   waiterCallEnabled: true,
+  bookingEnabled: true,
 }
 
 export const mapTableSettings = (raw: Record<string, unknown>): TableSettings => ({
@@ -26,4 +27,5 @@ export const mapTableSettings = (raw: Record<string, unknown>): TableSettings =>
   listPreviewRows: (raw.list_preview_rows as number | null) ?? DEFAULT_TABLE_SETTINGS.listPreviewRows,
   dineInOrderingEnabled: (raw.dine_in_ordering_enabled as boolean | null) ?? true,
   waiterCallEnabled: (raw.waiter_call_enabled as boolean | null) ?? true,
+  bookingEnabled: (raw.booking_enabled as boolean | null) ?? true,
 })

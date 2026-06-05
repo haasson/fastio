@@ -80,7 +80,7 @@
 
 **Важно:**
 - На шаге `type` в wizard'е юзер уже залогинен и в его тенанте, `name + slug + email` уже заполнены с лендинга. На шаге `info` `name` можно переписать (он pre-fill), а slug там не меняется.
-- Прочие модули (`modifiers`, `addons`, `promotions`, `combos`, `kitchen`, `reservations`, `customers`, `customRoles`, `branches`, `services` для retail) **в онбординге не настраиваются**. Их включаешь после, в `/settings/modules`. Это нужно держать в голове на каждом T*.
+- Прочие модули (`modifiers`, `addons`, `promotions`, `combos`, `kitchen`, `customers`, `customRoles`, `branches`, `services` для retail) **в онбординге не настраиваются**. Их включаешь после, в `/settings/modules`. Это нужно держать в голове на каждом T*. (Отдельного модуля `reservations` нет — онлайн-брони входят в `dineIn`.)
 
 ### 0.4 Условные обозначения
 
@@ -101,8 +101,7 @@
 | `services` | start | services | — |
 | `combos` | pro | retail | menuStyle = food |
 | `kitchen` | pro | retail | menuStyle = food |
-| `dineIn` | pro | retail | menuStyle = food |
-| `reservations` | pro | retail | menuStyle = food |
+| `dineIn` | pro | retail | menuStyle = food → зал, QR-заказ **и онлайн-брони** (отдельного модуля `reservations` больше нет) |
 | `customRoles` | pro | retail + services | — |
 | `branches` | pro | retail + services | — |
 
@@ -129,8 +128,8 @@
 
 | ID | Условное имя | businessType | menuStyle | стартовый план | филиалов | Что покрывает |
 |---|---|---|---|---|---|---|
-| **T1** | «Кафе Луна» | retail | food | pro | 2 | вся retail-механика: меню (dishes/categories/modifiers/addons/combos/tags), kitchen, dineIn+QR, reservations, promotions, customers, scheduled orders, multi-branch pricing, custom roles, delivery zones, realtime |
-| **T2** | «Магазин Зерно» | retail | catalog | start | 1 | retail-каталог (не еда): delivery fixed-fee, pickup, addons, promotions, customers; проверка гейтинга `menuStyle=catalog` (kitchen/dineIn/combos/reservations недоступны); тест upgrade start→pro |
+| **T1** | «Кафе Луна» | retail | food | pro | 2 | вся retail-механика: меню (dishes/categories/modifiers/addons/combos/tags), kitchen, dineIn+QR+онлайн-брони, promotions, customers, scheduled orders, multi-branch pricing, custom roles, delivery zones, realtime |
+| **T2** | «Магазин Зерно» | retail | catalog | start | 1 | retail-каталог (не еда): delivery fixed-fee, pickup, addons, promotions, customers; проверка гейтинга `menuStyle=catalog` (kitchen/dineIn/combos недоступны → значит и брони); тест upgrade start→pro |
 | **T3** | «Студия Локон» | services | — | pro | 2 | appointments: services-catalog, resources (staff + manual staff без аккаунта), schedule templates, resource unavailability, inbox, timeline, group visits, appointment reminders, customers, multi-branch, customRoles |
 | **T4** | «Витрина Один» | retail | food | showcase | 1 | гейтинг планом: ничего нельзя заказать; тест перехода showcase → start → pro и обратно; биллинг trial / past_due / grace / suspended; payment webhook |
 | **Поверх T1, T3** | — | — | — | — | — | RBAC matrix, кастомные роли, branch-scoped permissions |
@@ -246,17 +245,17 @@
 
 - [x] **Шаг 1 (type)**: выбери **«Заведение питания» (retail)**. После следующего шага этот выбор больше нельзя поменять.
 - [x] **Шаг 2 (menuStyle)**: выбери **«Меню» (food)**. Залочено навсегда.
-- [x] **Шаг 3 (plan)**: дефолт после регистрации — `start` на триале. Выбери **«Про»** (2490 ₽) — это вызовет `billing_change_plan` RPC. В featureLabels должны быть перечислены: kitchen, dineIn, combos, reservations, customRoles, branches. После выбора плана модули автоматически проставятся (`delivery=true, pickup=true` если план их открывает).
+- [x] **Шаг 3 (plan)**: дефолт после регистрации — `start` на триале. Выбери **«Про»** (2490 ₽) — это вызовет `billing_change_plan` RPC. В featureLabels должны быть перечислены: kitchen, dineIn, combos, customRoles, branches (отдельной `reservations` НЕТ — брони входят в dineIn). После выбора плана модули автоматически проставятся (`delivery=true, pickup=true` если план их открывает).
 - [x] **Шаг 4 (info)**: name pre-fill `TEST T1 Кафе Луна` (можно оставить или укоротить). Введи **телефон** (реальный, твой) и **часовой пояс**. Slug/email тут не показываются — они уже зафиксированы с лендинга.
 - [x] **Шаг 5 (branch)**: создай первый филиал «Центр», адрес — выбери через Dadata (реальный московский), рабочие часы по шаблону.
   > Примечание: на showcase шаг 5 = только город, без адреса; на остальных планах — обязательный первый филиал.
-- [x] **Шаг 6 (modules)**: тут только три тоггла — Доставка / Самовывоз / За столиком. Включи **все три**. Остальные модули (modifiers/addons/combos/promotions/kitchen/reservations/customers) тут НЕ показываются — их включишь после.
+- [x] **Шаг 6 (modules)**: тут только три тоггла — Доставка / Самовывоз / За столиком. Включи **все три**. Остальные модули (modifiers/addons/combos/promotions/kitchen/customers) тут НЕ показываются — их включишь после. (Брони отдельным тогглом не настраиваются — они часть «За столиком»/dineIn.)
 - [x] **Шаг 7 (complete)**: финальный экран → готово.
 
 #### 3.1.3 Сразу после онбординга — что должно быть
 
 - [x] [HP] Дашборд (`/`) показывает приветствие/заглушку для пустого тенанта
-- [x] [HP] В навигации видны разделы: Меню, Заказы, Кухня, Столы, Бронирования, Акции, Внешний вид, Контент, Настройки, Команда, Аккаунт. (Поддержка/Помощь — могут быть отдельно.)
+- [x] [HP] В навигации видны разделы: Меню, Заказы, Кухня, Столы, Акции, Внешний вид, Контент, Настройки, Команда, Аккаунт. (Поддержка/Помощь — могут быть отдельно.) **Отдельного раздела «Бронирования» в навигации НЕТ** — брони это таб внутри «Столы».
 - [x] [HP] Открой `https://<slug_t1>.fastio.ru` — витрина загрузилась, дефолтная тема
 - [x] [EC] [P0] Перейди в `/settings/contacts` или `/settings/modules` — **нет** поля смены `businessType` / `menuStyle` (они залочены)
 
@@ -267,8 +266,7 @@
 - [x] `modifiers`
 - [x] `addons`
 - [x] `combos`
-- [x] `kitchen`
-- [x] `reservations`
+- [x] `kitchen` *(брони включаются вместе с `dineIn` — отдельного тоггла `reservations` в `/settings/modules` нет)*
 - [x] `promotions`
 - [x] `customers`
 - [ ] `customRoles` — пока выключен, включим в разделе 3.14
@@ -485,21 +483,24 @@
 
 - [x] [CROSS] [P1] Заказы из Центра видны только при выбранном Центре; из Парка — при выбранном Парке (прод: Центр=2905-5+комбо С-3105-10, Парк=2905-6; переключение селектора фильтрует без протечки)
 
-### 3.7 Столы, QR и режим стола (модуль `dineIn`, `/tables/{list,layout,settings}`)
+### 3.7 Столы, QR, режим стола и брони (модуль `dineIn`, `/tables/{list,layout,reservations,settings}`)
 
 > ⚠️ Раздел переписан 2026-06-03 после Phase 06/07 + волны table-mode правок.
 > Старый `/tables/calls` удалён (таб «Вызовы» убран, `914307de`), номер стола из шапки
 > витрины убран, заказ со стола теперь через **локальную корзину** + «Отправить заказ».
 > `✅` = подтверждено на проде (см. TESTING_NOTES 3.7); `[ ]` = тестить.
 
-#### 3.7.1 Настройки столов (`/tables/settings`) — новый таб
+#### 3.7.1 Настройки столов (`/tables/settings`) — таб (столы + брони)
 
 - [x] `Заказ со стола (QR)`: тумблер `dineInOrderingEnabled` вкл/выкл
 - [x] `Вызов официанта`: тумблер `waiterCallEnabled`; при вкл — иконка (8 вариантов), текст кнопки, превью хедера витрины в теме тенанта
 - [x] Кулдаун между вызовами (`callCooldownSeconds`, 0–600), эскалация (`callEscalationMinutes`, 1–120 — когда вызов краснеет)
 - [x] **Типы вызовов** (`TableCallTypes`): добавить/удалить; 1 тип → гость не видит выбор, >1 → селект на витрине
 - [x] `Отображение`: размер карточек S/M/L (`canvasTileSize`), строк позиций (`listPreviewRows`, 1–50), тумблер «показывать категорию» (`showDishCategory`)
-- [ ] [HP] Таб `tables.manage`-only — повар / без права не видит «Настройки» *(отложено до 3.14)*
+- [ ] [HP] **`Онлайн-бронирование`**: тумблер приёма броней (`table_settings.booking_enabled`, паттерн как у «Вызов официанта» — свитч в шапке карточки). При вкл — поля: шаг слотов (`slotStep`), буфер до закрытия (`closeBufferMinutes`), дней вперёд макс. (`maxAdvanceDays`), «разрешить клиенту отменять» (`allowClientCancellation`). **Ручного «Максимум гостей» НЕТ** — лимит всегда по вместимости самого большого стола.
+- [ ] [HP] При вкл онлайн-броней, если страница «Бронирование» скрыта на витрине → показывается `AppStorefrontAlert feature-key="booking"` со ссылкой настроить.
+- [ ] [NEG] [P0] Выключил тумблер онлайн-броней → витрина (`/booking`, FAB, `slots.get`, `reservations.post`) отдаёт «Бронирование недоступно». Управление бронями в админке (таб «Бронирование») при этом ОСТАЁТСЯ.
+- [ ] [HP] Таб **`settings.edit`-only** (не `tables.manage`!) — роль с `tables.manage` но без `settings.edit` видит таб «Бронирование», но НЕ видит «Настройки»; прямой переход на `/tables/settings` тоже закрыт *(проверяется в 3.14)*
 
 #### 3.7.2 CRUD стола + Зал (`/tables/list`, `/tables/layout`)
 
@@ -566,20 +567,27 @@
 
 > **Открытые дизайн-вопросы (не тест-пункты):** Q1 удаление готовящегося блюда без waste-учёта (A/B/C); Q2 «−1» на столе (нужна фича + RPC `decrement_order_item`); ❓ овнер имеет кухонные claim/cook права.
 
-### 3.8 Бронирования (модуль `reservations`, `/reservations/{list,archive,settings}`)
+### 3.8 Бронирования (часть модуля «Столы» / `dineIn`, таб `/tables/reservations` + настройки в `/tables/settings`)
 
-- [x] `/reservations/settings`: `maxGuests=8`, `maxAdvanceDays=30`, `closeBufferMinutes=60`, `slotStep=30` (minGuests и autoConfirm в UI отсутствуют)
+> ⚠️ Раздел переписан после merge броней в «Столы». Отдельного модуля/раздела `reservations` нет:
+> управление — таб «Бронирование» (`/tables/reservations`, все статусы + фильтр, без отдельной страницы архива),
+> настройки слотов и приём онлайн-броней — в `/tables/settings` (см. 3.7.1). Ручной «Максимум гостей» убран —
+> лимит всегда по вместимости самого большого стола (`max_guests_auto`).
+
+- [x] Настройки слотов в `/tables/settings`: `maxAdvanceDays=30`, `closeBufferMinutes=60`, `slotStep=30` (ручного `maxGuests`, minGuests и autoConfirm в UI нет)
 - [ ] [HP] [P0] С витрины (страница `/booking`): забронируй стол на завтра 19:00 на 4 гостей → бронь в статусе `pending`
-- [ ] [HP] [RT] В `/reservations/list` появляется мгновенно
-- [ ] [HP] Подтверди бронь вручную → `confirmed`; отметь гостя seated → completed → уходит в `/reservations/archive`
-- [ ] [HP] Создай ещё — отмени (cancelled), no_show
+- [ ] [HP] [RT] В табе `/tables/reservations` бронь появляется мгновенно
+- [ ] [HP] Подтверди бронь вручную → `confirmed`; отметь гостя seated → completed (в том же списке, фильтр по статусу)
+- [ ] [HP] Создай ещё — отмени (cancelled), no_show; проверь фильтр по статусу в табе
 - [ ] [EC] Дата через 31 день → недоступна (maxAdvanceDays=30)
-- [ ] [EC] Гостей 9 → ошибка
+- [ ] [EC] Гостей больше вместимости самого большого стола → ошибка (лимит авто, не ручной)
 - [ ] [EC] Слот в последний час перед закрытием — отсутствует (closeBufferMinutes)
 - [ ] [EC] [P1] Нерабочий день → слотов нет
-- [ ] [EC] [P1] Telegram-уведомление по брони включает ссылку (миграция 265)
+- [ ] [EC] [P1] Telegram-уведомление по брони включает ссылку (миграция 265) ← отложено
 - [ ] [HP] [P1] Idempotency брони: двойная отправка формы бронирования → создаётся одна бронь (fix(reservations-idempotency): UNIQUE key)
-- [ ] [NEG] Выключить `reservations` при активных бронях (pending/confirmed/seated) → блокер
+- [ ] [NEG] Выключить модуль **«Столы» (`dineIn`)** при активных бронях (pending/confirmed/seated) → блокер (`moduleToggleChecks`: открытые столы И активные брони)
+- [ ] [NEG] [P0] Выключить тумблер **онлайн-броней** (`/tables/settings`) → витрина `/booking` недоступна, но таб «Бронирование» в админке работает (см. 3.7.1)
+- [ ] [HP] **Право**: создание/подтверждение/отмена брони требует `tables.manage` (RLS на `reservations`); просмотр — `tables.view`. Отдельных прав `reservations.*` нет.
 
 ### 3.9 Промо (модуль `promotions`, `/promotions/{list,promo-codes}`)
 
@@ -657,7 +665,7 @@
 
 #### Мои брони (feat(account-reservations))
 
-- [ ] [HP] `/account/reservations` — список броней авторизованного клиента
+- [ ] [HP] `/account/reservations` — список броней авторизованного клиента (карточка/раздел виден только при `tenant.bookingEnabled` = dineIn + приём броней вкл)
 - [ ] [HP] Будущая бронь → кнопка «Отменить» → статус → cancelled
 - [ ] [NEG] Прошедшая бронь → кнопка отмены недоступна (date+time guard)
 
@@ -720,15 +728,16 @@
 ### 3.14 Команда и роли (модуль `customRoles`, `/team/{members,roles}`)
 
 - [ ] Включи `customRoles` в `/settings/modules`
-- [ ] `/team/roles` — 3 кастомные роли:
-  - **«Менеджер»**: orders.view+edit, kitchen.view, reservations.view+edit, **БЕЗ** settings.edit
+- [ ] `/team/roles` — 3 кастомные роли (отдельных прав `reservations.*` в каталоге НЕТ — брони под `tables.*`):
+  - **«Менеджер»**: orders.view+edit, kitchen.view, tables.view+manage (= ведёт и столы, и брони), **БЕЗ** settings.edit
   - **«Бариста»**: orders.view, kitchen.view+edit
-  - **«Хостес»**: reservations.view+edit, tables.view+edit
+  - **«Хостес»**: tables.view+manage, orders.view (ведёт брони/рассадку; настройки столов НЕ трогает — нет settings.edit)
 - [ ] `/team/members` — пригласить 3 (по email с +): `manager+t1@`, `barista+t1@`, `hostess+t1@`
 - [ ] Приглашения уходят через Edge Function `invite-member`. В Inbucket должно быть письмо со ссылкой
 - [ ] [HP] Перейди по ссылке в incognito #2 → `/invite` страница → принять → участник в команде
 - [ ] [HP] Войди как бариста → в навигации **только** «Кухня». Settings/Menu/Team — нет.
-- [ ] [HP] Менеджер: видит /orders, /kitchen, /reservations. Не видит /settings/contacts.
+- [ ] [HP] Менеджер: видит /orders, /kitchen, Столы (+ таб «Бронирование» `/tables/reservations`). Не видит /settings/contacts.
+- [ ] [HP] [P0] **settings.edit vs tables.manage split**: Хостес/Менеджер (`tables.manage` без `settings.edit`) → в разделе «Столы» видит табы «Столы/Схема/Бронирование», но **НЕ** «Настройки»; прямой переход на `/tables/settings` → no-access/редирект. Создание брони в табе «Бронирование» при этом работает.
 - [ ] [NEG] [P0] Бариста через прямой URL `/menu` → редирект / no-access
 - [ ] [NEG] [P0] Через DevTools → fetch admin API без permission → RLS / `has_permission()` блокирует
 - [ ] **Branch-scoped role**: создай роль «Менеджер Парка» с `branchIds = [Парк]`
@@ -1119,9 +1128,9 @@ SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'telegram_noti
 
 ### 5.17 Что НЕ должно работать на T3
 
-- [ ] В навигации нет /menu, /orders, /kitchen, /tables, /reservations, /promotions
+- [ ] В навигации нет /menu, /orders, /kitchen, /tables, /promotions (отдельного /reservations не существует — брони в /tables)
 - [ ] Прямой URL `/menu` → no-access / redirect
-- [ ] В `/settings/modules` нет опций delivery/pickup/kitchen/dineIn/reservations/combos/modifiers/addons
+- [ ] В `/settings/modules` нет опций delivery/pickup/kitchen/dineIn/combos/modifiers/addons (тоггла `reservations` нет в принципе)
 - [ ] На витрине нет CTA «Заказать», только «Записаться»
 
 ---
@@ -1175,7 +1184,7 @@ SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'telegram_noti
 
 ### 6.5 Downgrade pro → start → showcase
 
-- [ ] Pro → Start: kitchen/dineIn/reservations/combos/customRoles/branches → locked
+- [ ] Pro → Start: kitchen/dineIn/combos/customRoles/branches → locked (dineIn гасит и брони — отдельного `reservations` нет)
 - [ ] Существующие данные должны мягко скрываться, не удаляться
 - [ ] Start → Showcase: все модули заказов → locked, CTA пропадает
 
@@ -1508,7 +1517,7 @@ SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'telegram_noti
 
 ### 8.5 Бронирования (retail T1) и столы
 
-- [ ] [P0] **Race на последний слот**. На T1 в `/reservations/settings` — настрой slotStep=30, maxGuests=4. На завтра 19:00 — единственный свободный слот. Из 2 incognito-вкладок (или 2 устройств) одновременно нажми «Забронировать»:
+- [ ] [P0] **Race на последний слот**. На T1 в `/tables/settings` — настрой slotStep=30 (лимит гостей авто по большому столу). На завтра 19:00 — единственный свободный слот. Из 2 incognito-вкладок (или 2 устройств) одновременно нажми «Забронировать»:
   - [ ] Один проходит, второй → отказ «Слот занят»
 - [ ] [P1] **Удалить стол, на который есть бронь**.
   Бронь на стол №1 завтра 19:00. SQL DELETE стола №1. FK `tables.id` в reservations:
@@ -1519,7 +1528,7 @@ SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'telegram_noti
   - [ ] Бронь не удаляется, остаётся в БД
   - [ ] Витрина не предлагает этот слот новым гостям
   - [ ] Клиент с подтверждённой бронью приезжает → ресторан закрыт. UI/admin должен показать конфликтные брони — есть ли warning?
-- [ ] [P1] **Бронь на стол capacity=4, гостей=6 / `maxGuests=8`**. Если capacity табл не учитывается — это пропускает бронь, которую физически не накормить.
+- [ ] [P1] **Лимит гостей = вместимость самого большого стола (авто)**. Самый большой стол capacity=6 → бронь на 7 гостей отклоняется, на 6 — проходит. Ручного `maxGuests` нет; capacity конкретного стола на витрине не проверяется (бронируется стол, не «N мест») — отдельный риск, если столов с нужной вместимостью нет.
 - [ ] [P2] **closeBufferMinutes > рабочий день**. Поставь closeBufferMinutes=1440 (24h):
   - [ ] Слотов 0, бронь невозможна
 - [ ] [P2] **AutoConfirm: переключение после создания pending**. Создал 2 pending брони с autoConfirm=OFF. Включил autoConfirm:

@@ -189,7 +189,6 @@ export type TenantModules = {
   customRoles: boolean
   dineIn: boolean
   kitchen: boolean
-  reservations: boolean
   customers: boolean
   services: boolean
   branches: boolean
@@ -302,6 +301,9 @@ export type Tenant = {
   deliveryMode: DeliveryMode
   deliveryAvailable: boolean
   orderingEnabled: boolean
+  // Приём онлайн-броней на витрине: вычисляется server-side = modules.dineIn AND
+  // table_settings.booking_enabled (как deliveryAvailable/orderingEnabled).
+  bookingEnabled: boolean
   currency: string
   timezone: string
   seo: TenantSeo

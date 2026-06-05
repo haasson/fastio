@@ -86,7 +86,7 @@
   <!-- TODO: vacancies settings — скрыто до реализации функционала -->
   <!-- <span v-else-if="pageKey === 'vacancies'" class="coming-soon">Настройки страницы вакансий появятся в ближайшее время</span> -->
   <span v-else-if="pageKey === 'booking'" class="hint">
-    Настройки бронирования — в разделе <NuxtLink to="/reservations/settings" class="link">Бронирования → Настройки</NuxtLink>
+    Настройки бронирования — в разделе <NuxtLink to="/tables/settings" class="link">Столы → Настройки</NuxtLink>
   </span>
 </template>
 

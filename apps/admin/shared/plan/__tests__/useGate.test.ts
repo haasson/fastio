@@ -24,7 +24,7 @@ const resolved = ref<ResolvedFeatures>({
   modules: {
     dashboard: false, delivery: false, pickup: false, modifiers: false, addons: false,
     promotions: false, combos: false, kitchen: false, dineIn: false,
-    reservations: false, services: false, branches: false,
+    services: false, branches: false,
     customRoles: false, customers: false, team: false,
   },
   menu: { virtualCategories: false, ingredients: false },
@@ -57,7 +57,6 @@ const moduleConfigs = ref<ModuleConfig[]>([
   { key: 'delivery', name: 'Доставка', description: '', icon: 'bike', requiredPlan: 'start', sortOrder: 1, businessTypes: ['retail'], menuStyles: null },
   { key: 'pickup', name: 'Самовывоз', description: '', icon: 'orders', requiredPlan: 'start', sortOrder: 2, businessTypes: ['retail'], menuStyles: null },
   { key: 'dineIn', name: 'Столы', description: '', icon: 'tableIcon', requiredPlan: 'pro', sortOrder: 5, businessTypes: ['retail'], menuStyles: null },
-  { key: 'reservations', name: 'Бронирования', description: '', icon: 'calendar', requiredPlan: 'pro', sortOrder: 6, businessTypes: ['retail'], menuStyles: null },
   { key: 'services', name: 'Услуги', description: '', icon: 'layoutGrid', requiredPlan: 'start', sortOrder: 7, businessTypes: ['services'], menuStyles: null },
   { key: 'promotions', name: 'Акции', description: '', icon: 'promotions', requiredPlan: 'start', sortOrder: 8, businessTypes: ['retail'], menuStyles: null },
   { key: 'combos', name: 'Комбо', description: '', icon: 'puzzle', requiredPlan: 'pro', sortOrder: 9, businessTypes: ['retail'], menuStyles: null },
@@ -103,7 +102,7 @@ const reset = () => {
     modules: {
       dashboard: false, delivery: false, pickup: false, modifiers: false, addons: false,
       promotions: false, combos: false, kitchen: false, dineIn: false,
-      reservations: false, services: false, branches: false,
+      services: false, branches: false,
       customRoles: false, customers: false, team: false,
     },
     menu: { virtualCategories: false, ingredients: false },
@@ -507,12 +506,12 @@ describe('useGate', () => {
   })
 
   describe('reservations vs appointments — отдельные ключи', () => {
-    it('viewReservations для retail использует модуль reservations + reservations.view', async () => {
+    it('viewReservations для retail бэкуется модулем dineIn + tables.view', async () => {
       const useGate = await importGate()
 
       tenantStore.tenant.businessType = 'retail'
-      allEnabled('reservations')
-      tenantStore.currentPermissions = { 'reservations.view': true }
+      allEnabled('dineIn') // брони теперь часть модуля «Столы»
+      tenantStore.currentPermissions = { 'tables.view': true }
 
       const gate = useGate()
 
@@ -521,16 +520,16 @@ describe('useGate', () => {
       expect(gate.viewAppointments.value.enabled).toBe(false)
     })
 
-    it('viewAppointments для services требует appointments.view, не reservations.view', async () => {
+    it('viewAppointments для services требует appointments.view, не tables.view', async () => {
       const useGate = await importGate()
 
       tenantStore.tenant.businessType = 'services'
       allEnabled('services')
-      tenantStore.currentPermissions = { 'reservations.view': true }
+      tenantStore.currentPermissions = { 'tables.view': true }
 
       const gate = useGate()
 
-      // reservations.view сам по себе не открывает Appointments.
+      // tables.view (брони) сам по себе не открывает Appointments.
       expect(gate.viewAppointments.value.enabled).toBe(false)
 
       tenantStore.currentPermissions = { 'appointments.view': true }
@@ -596,12 +595,12 @@ describe('useGate', () => {
       expect(gate.manageAppointments.value.enabled).toBe(true)
     })
 
-    it('manager (только reservations.manage, без appointments.*) → forbidden', async () => {
+    it('manager (только tables.manage, без appointments.*) → forbidden', async () => {
       const useGate = await importGate()
 
       tenantStore.tenant.businessType = 'services'
       allEnabled('services')
-      tenantStore.currentPermissions = { 'reservations.manage': true }
+      tenantStore.currentPermissions = { 'tables.manage': true }
 
       const gate = useGate()
 
@@ -728,7 +727,7 @@ describe('useGate', () => {
       { key: 'kitchen', setup: () => allEnabled('kitchen') },
       { key: 'orders', setup: () => allEnabled('delivery', 'pickup') },
       { key: 'dineIn', setup: () => allEnabled('dineIn') },
-      { key: 'reservations', setup: () => allEnabled('reservations') },
+      { key: 'reservations', setup: () => allEnabled('dineIn') }, // === dineIn
       { key: 'services', setup: () => allEnabled('services') },
       { key: 'promotions', setup: () => allEnabled('promotions') },
       { key: 'modifiers', setup: () => allEnabled('modifiers') },
@@ -743,8 +742,8 @@ describe('useGate', () => {
       { key: 'viewOrders', setup: () => allEnabled('delivery') },
       { key: 'viewTables', setup: () => allEnabled('dineIn') },
       { key: 'manageTables', setup: () => allEnabled('dineIn') },
-      { key: 'viewReservations', setup: () => allEnabled('reservations') },
-      { key: 'manageReservations', setup: () => allEnabled('reservations') },
+      { key: 'viewReservations', setup: () => allEnabled('dineIn') },
+      { key: 'manageReservations', setup: () => allEnabled('dineIn') },
       { key: 'viewAppointments', setup: (s) => {
         s.tenant.businessType = 'services'
         allEnabled('services')
@@ -786,7 +785,6 @@ describe('useGate', () => {
         'orders.view': true,
         'kitchen.view': true,
         'tables.view': true, 'tables.manage': true,
-        'reservations.view': true, 'reservations.manage': true,
         'appointments.view': true, 'appointments.manage': true,
         'promos.view': true, 'promos.manage': true,
         'branches.view': true,

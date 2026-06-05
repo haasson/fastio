@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import type { Tenant } from '@fastio/shared'
+import { DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import * as Sentry from '@sentry/nuxt'
 import { reportError } from '@fastio/shared/observability'
 import { getServerSupabase, mapTenant } from '../utils/supabase'
@@ -61,6 +62,7 @@ async function doDbLookup(
   if (tenant) {
     const mapped = mapTenant(tenant)
     await computeDeliveryAvailable(supabase, mapped)
+    await computeBookingEnabled(supabase, mapped)
     return mapped
   }
 
@@ -153,6 +155,7 @@ async function devFallbackOrThrow(
       if (byDevSlug) {
         const mapped = mapTenant(byDevSlug)
         await computeDeliveryAvailable(supabase, mapped)
+        await computeBookingEnabled(supabase, mapped)
         applyTenantToContext(event, mapped)
         if (mapped.slug) Sentry.setTag('tenant', mapped.slug)
         // Применяем suspended-guard и в dev-пути тоже — иначе локально
@@ -188,4 +191,25 @@ async function computeDeliveryAvailable(
     }
   }
   tenant.orderingEnabled = tenant.deliveryAvailable || tenant.modules.pickup
+}
+
+// Приём онлайн-броней = модуль «Столы» (dineIn) включён И под-флаг booking_enabled
+// в table_settings. Нет строки table_settings → дефолт DEFAULT_TABLE_SETTINGS.
+// Кэшируется вместе с tenant (как deliveryAvailable); серверный энфорсмент в
+// reservations-эндпоинтах читает table_settings свежим.
+async function computeBookingEnabled(
+  supabase: ReturnType<typeof getServerSupabase>,
+  tenant: Tenant,
+): Promise<void> {
+  if (!tenant.modules.dineIn) {
+    tenant.bookingEnabled = false
+
+    return
+  }
+  const { data } = await supabase
+    .from('table_settings')
+    .select('booking_enabled')
+    .eq('tenant_id', tenant.id)
+    .maybeSingle()
+  tenant.bookingEnabled = data?.booking_enabled ?? DEFAULT_TABLE_SETTINGS.bookingEnabled
 }

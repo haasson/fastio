@@ -100,7 +100,7 @@ const { step, form, slots, loading, result, wasAuthenticated, error, fetchSlots,
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 
 const { legalInfoComplete } = useLegalCompliance()
-const reservationsEnabled = computed(() => tenant.value?.modules?.reservations === true && legalInfoComplete.value)
+const reservationsEnabled = computed(() => tenant.value?.bookingEnabled === true && legalInfoComplete.value)
 
 const { data: branches } = await useAsyncData<BookingBranch[]>(
   'booking-branches',

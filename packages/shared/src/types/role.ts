@@ -3,7 +3,6 @@ export type PermissionKey =
   | 'orders.view' | 'orders.create' | 'orders.edit' | 'orders.status' | 'orders.cancel'
   | 'kitchen.view' | 'kitchen.overview'
   | 'tables.view' | 'tables.manage'
-  | 'reservations.view' | 'reservations.manage'
   | 'appointments.view' | 'appointments.manage'
   | 'appointments.view_all' | 'appointments.view_own'
   | 'promos.view' | 'promos.manage'

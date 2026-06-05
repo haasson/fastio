@@ -61,6 +61,8 @@ export function mapTenant(row: Record<string, unknown>): Tenant {
     deliveryMode: ((row.delivery_mode as string) ?? 'zones') as DeliveryMode,
     deliveryAvailable: false,
     orderingEnabled: false,
+    // Дефолт; реальное значение проставляет computeBookingEnabled в middleware/tenant.ts.
+    bookingEnabled: false,
     currency: row.currency as string,
     timezone: row.timezone as string,
     seo: { ...defaultSeo(), ...(row.seo as object ?? {}) },

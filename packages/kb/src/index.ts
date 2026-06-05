@@ -39,6 +39,8 @@ export const KB_ROUTES: KbRoute[] = [
   { route: '/menu',      kbSection: 'menu',         kbFilePrefix: '02-menu',         aiSections: ['menu'] },
   { route: '/orders',    kbSection: 'orders',       kbFilePrefix: '03-orders',       aiSections: ['orders'] },
   { route: '/kitchen',   kbSection: 'kitchen',      kbFilePrefix: '04-kitchen',      aiSections: ['kitchen'] },
+  // /tables/reservations ДО /tables — find(startsWith) иначе отдаст tables-секцию.
+  { route: '/tables/reservations', kbSection: 'reservations', kbFilePrefix: '06-reservations', aiSections: ['reservations'] },
   { route: '/tables',    kbSection: 'tables',       kbFilePrefix: '05-tables',       aiSections: ['tables'] },
   { route: '/reservations', kbSection: 'reservations', kbFilePrefix: '06-reservations', aiSections: ['reservations'] },
   { route: '/promotions', kbSection: 'promotions',  kbFilePrefix: '07-promotions',   aiSections: ['promotions'] },

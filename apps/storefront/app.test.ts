@@ -68,7 +68,6 @@ function makeTenant(overrides: Partial<Tenant> = {}): Tenant {
       customRoles: false,
       dineIn: false,
       kitchen: false,
-      reservations: false,
       customers: false,
       services: false,
       branches: false,
@@ -80,6 +79,7 @@ function makeTenant(overrides: Partial<Tenant> = {}): Tenant {
     deliveryMode: 'fixed',
     deliveryAvailable: false,
     orderingEnabled: true,
+    bookingEnabled: false,
     currency: 'RUB',
     timezone: 'Europe/Moscow',
     seo: {

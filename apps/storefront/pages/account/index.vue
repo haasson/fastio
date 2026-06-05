@@ -55,10 +55,10 @@ const { isAuthenticated } = storeToRefs(authStore)
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 const isServices = computed(() => tenant.value?.businessType === 'services')
 const isRetail = computed(() => tenant.value?.businessType === 'retail')
-// Брони показываем для retail-тенантов с активным modules.reservations.
-// Сервер всё равно вернёт 403 если попытаться отменить чужую/чужого тенанта,
-// но карточку прячем чтобы не вводить юзера в заблуждение.
-const showReservations = computed(() => isRetail.value && !!tenant.value?.modules?.reservations)
+// Брони показываем для retail-тенантов с включённым приёмом броней (bookingEnabled
+// = dineIn AND table_settings.booking_enabled). Сервер всё равно вернёт 403 при
+// попытке отменить чужую/чужого тенанта, но карточку прячем чтобы не путать юзера.
+const showReservations = computed(() => isRetail.value && !!tenant.value?.bookingEnabled)
 
 onMounted(async () => {
   await authStore.init()

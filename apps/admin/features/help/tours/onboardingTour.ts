@@ -36,11 +36,12 @@ const buildNavSteps = (): NavStep[] => {
       description: 'Схема зала, статусы столов и вызовы официанта.',
     },
     {
-      selector: 'a[href="/reservations"]',
+      // Услуги — отдельный пункт «Запись» (/appointments); общепит — брони внутри «Столы».
+      selector: isServices ? 'a[href="/appointments"]' : 'a[href="/tables"]',
       title: reservationsLabel,
       description: isServices
         ? 'Список записей, подтверждение и управление временными слотами.'
-        : 'Список броней, подтверждение и управление временными слотами.',
+        : 'Брони столов — на вкладке «Бронирование»: подтверждение, рассадка, статусы.',
     },
     {
       selector: 'a[href="/promotions"]',

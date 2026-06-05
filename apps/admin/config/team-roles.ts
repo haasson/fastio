@@ -38,15 +38,8 @@ export const getPermissionGroups = ({ auditLogEnabled }: PermissionGroupOptions)
   {
     label: 'Столы',
     permissions: [
-      { key: 'tables.view', label: 'Просмотр столов и вызовов' },
-      { key: 'tables.manage', label: 'Управление столами' },
-    ],
-  },
-  {
-    label: 'Бронирования',
-    permissions: [
-      { key: 'reservations.view', label: 'Просмотр бронирований' },
-      { key: 'reservations.manage', label: 'Управление бронированиями' },
+      { key: 'tables.view', label: 'Просмотр столов, вызовов и броней' },
+      { key: 'tables.manage', label: 'Управление столами и бронями' },
     ],
   },
   {

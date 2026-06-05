@@ -86,7 +86,7 @@ const showCartFab = computed(() => {
   if (isServices.value) return servicesModuleEnabled.value && legalInfoComplete.value
   return effectiveOrderingEnabled.value
 })
-const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.modules?.reservations && legalInfoComplete.value && route.path !== '/booking')
+const showBookingFab = computed(() => !isServices.value && !orderingEnabled.value && !!tenant.value?.bookingEnabled && legalInfoComplete.value && route.path !== '/booking')
 
 // Резерв снизу под FAB. Вариант «с адресом» выше — но caption виден только на
 // мобилке (на десктопе скрыт), поэтому повышенный отступ гейтим по ширине.

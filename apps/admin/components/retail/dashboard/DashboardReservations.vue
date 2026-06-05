@@ -2,7 +2,7 @@
   <UiCard class="reservations-root">
     <div class="header">
       <UiText size="small" class="label">Брони на сегодня</UiText>
-      <UiButton type="text" size="small" @click="$router.push('/reservations')">Все брони</UiButton>
+      <UiButton type="text" size="small" @click="$router.push('/tables/reservations')">Все брони</UiButton>
     </div>
 
     <div v-if="loading" class="grid">

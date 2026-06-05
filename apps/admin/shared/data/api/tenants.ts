@@ -49,6 +49,9 @@ const mapTenant = (raw: Record<string, unknown>): Tenant => {
     deliveryMode: (row.delivery_mode ?? 'zones') as DeliveryMode,
     deliveryAvailable: false,
     orderingEnabled: false,
+    // Админка не использует (брони-флаг читается из table_settings напрямую);
+    // поле обязательно по типу Tenant — ставим дефолт.
+    bookingEnabled: false,
     currency: row.currency,
     timezone: row.timezone,
     seo: { ...defaultSeo(), ...row.seo },

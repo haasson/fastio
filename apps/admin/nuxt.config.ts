@@ -60,7 +60,11 @@ export default defineNuxtConfig({
     '/services': { redirect: '/services/items' },
     '/appointments': { redirect: '/appointments/list' },
     '/tables': { redirect: '/tables/list' },
-    '/reservations': { redirect: '/reservations/list' },
+    // Брони переехали под модуль «Столы» — старые маршруты редиректим.
+    '/reservations': { redirect: '/tables/reservations' },
+    '/reservations/list': { redirect: '/tables/reservations' },
+    '/reservations/archive': { redirect: '/tables/reservations' },
+    '/reservations/settings': { redirect: '/tables/settings' },
     '/appearance': { redirect: '/appearance/sections' },
     '/settings': { redirect: '/settings/contacts' },
     '/account': { redirect: '/account/profile' },

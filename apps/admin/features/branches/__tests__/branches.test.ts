@@ -92,9 +92,9 @@ describe('mapBranch', () => {
 
 // ─── hasActiveOrders / hasActiveReservations / hasActiveAppointments (PREPROD-020) ──
 //
-// Fluent-мок строителя PostgREST. Любой chainable метод (.select/.eq/.in/.gte/.or)
+// Fluent-мок строителя PostgREST. Любой chainable метод (.select/.eq/.in/.gte/.or/.neq)
 // возвращает сам builder; await на builder → resolved result. Передаём
-// `chainSpy`, чтобы тест мог проверить какие eq/in/gte/or вызывались.
+// `chainSpy`, чтобы тест мог проверить какие eq/in/gte/or/neq вызывались.
 type QueryResult = {
   count?: number | null
   data?: Array<Record<string, unknown>> | null
@@ -106,7 +106,7 @@ const makeBuilder = (result: QueryResult, chainSpy: Record<string, unknown[][]>)
     then: (resolve: (r: QueryResult) => unknown) => resolve(result),
   }
 
-  for (const m of ['select', 'eq', 'in', 'gte', 'or'] as const) {
+  for (const m of ['select', 'eq', 'in', 'gte', 'or', 'neq'] as const) {
     chainSpy[m] = []
     builder[m] = (...args: unknown[]) => {
       chainSpy[m].push(args)

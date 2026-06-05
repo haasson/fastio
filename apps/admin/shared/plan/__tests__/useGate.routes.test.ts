@@ -62,7 +62,6 @@ describe('resolveRouteGate', () => {
       ['/orders', 'viewOrders'],
       ['/kitchen', 'viewKitchen'],
       ['/tables', 'viewTables'],
-      ['/reservations', 'viewReservations'],
       ['/appointments', 'viewAppointments'],
       ['/promotions', 'managePromotions'],
       ['/team', 'manageTeam'],
@@ -179,12 +178,8 @@ describe('resolveRouteGate', () => {
       expect(resolveRouteGate('/team/roles')).toBe('manageRoles')
     })
 
-    it('/reservations/settings → editSettings', () => {
-      expect(resolveRouteGate('/reservations/settings')).toBe('editSettings')
-    })
-
-    it('/reservations/list → viewReservations', () => {
-      expect(resolveRouteGate('/reservations/list')).toBe('viewReservations')
+    it('/tables/reservations → viewReservations (брони под модулем «Столы»)', () => {
+      expect(resolveRouteGate('/tables/reservations')).toBe('viewReservations')
     })
   })
 

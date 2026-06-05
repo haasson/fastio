@@ -35,7 +35,6 @@ import { toEnabled } from '~/shared/plan/useGate.helpers'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useNotificationPrefs } from '~/features/settings'
 import { useNewOrderCounter } from '~/features/orders'
-import { useNewReservationCounter } from '~/features/reservations'
 import { useUnreadSupportCounter } from '~/features/support'
 import { useAppointmentInboxCounter } from '~/features/appointments'
 
@@ -55,7 +54,6 @@ const terms = useTerms()
 const tenantStore = useTenantStore()
 const { blinkingCounter } = useNotificationPrefs()
 const { count: newOrderCount } = useNewOrderCounter()
-const { count: newReservationCount } = useNewReservationCounter()
 const { count: unreadSupportCount } = useUnreadSupportCounter()
 const { count: appointmentInboxCount } = useAppointmentInboxCounter()
 
@@ -72,7 +70,6 @@ const navItems = computed(() => {
     { to: '/orders', icon: 'orders', label: 'Заказы', visible: toEnabled(gate.viewOrders), counter: orderCounter, blink: orderBlink },
     { to: '/kitchen', icon: 'chefHat', label: 'Кухня', visible: toEnabled(gate.viewKitchen) },
     { to: '/tables', icon: 'tableIcon', label: 'Столы', visible: toEnabled(gate.viewTables) },
-    { to: '/reservations', icon: 'calendar', label: terms.reservationsLabel, visible: toEnabled(gate.viewReservations), counter: newReservationCount },
     { to: '/appointments', icon: 'calendarCheck', label: 'Запись', visible: toEnabled(gate.viewAppointments), counter: appointmentInboxCount },
     { to: '/promotions', icon: 'promotions', label: 'Акции и промокоды', visible: toEnabled(gate.managePromotions) },
     { to: '/team/members', icon: 'users', label: 'Команда', visible: toEnabled(gate.manageTeam) },

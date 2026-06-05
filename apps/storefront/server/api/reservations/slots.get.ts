@@ -1,7 +1,7 @@
 import { getTenantDb } from '../../utils/tenantDb'
 import { getClientIp } from '@fastio/shared/server'
 import { enforceRateLimit } from '../../utils/enforceRateLimit'
-import { getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE } from '@fastio/shared'
+import { getIsoDayForDate, todayInTz, nowTimeInTz, generateTimeSlots, timeToMinutes, DEFAULT_TIMEZONE, DEFAULT_TABLE_SETTINGS } from '@fastio/shared'
 import type { WorkingHours, WorkingHoursSchedule } from '@fastio/shared'
 
 export default defineEventHandler(async (event) => {
@@ -21,15 +21,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Параметр date обязателен (YYYY-MM-DD)' })
   }
 
-  const [{ data: tenantData }, { data: settingsData }, { data: branchData }] = await Promise.all([
+  const [{ data: tenantData }, { data: settingsData }, { data: tableData }, { data: branchData }] = await Promise.all([
     db.from('tenants').select('modules, working_hours_schedule, timezone').single(),
     db.from('reservation_settings').select('slot_step, close_buffer_minutes, enabled').maybeSingle(),
+    db.from('table_settings').select('booking_enabled').maybeSingle(),
     branchId
       ? db.from('branches').select('working_hours_schedule').eq('id', branchId).maybeSingle()
       : Promise.resolve({ data: null }),
   ])
 
-  if (!tenantData?.modules?.reservations) {
+  // Бронь доступна = модуль «Столы» (dineIn) включён И приём броней не выключен.
+  const bookingEnabled = (tableData?.booking_enabled as boolean | null) ?? DEFAULT_TABLE_SETTINGS.bookingEnabled
+  if (!tenantData?.modules?.dineIn || !bookingEnabled) {
     throw createError({ statusCode: 400, message: 'Бронирование недоступно' })
   }
   if (settingsData && !settingsData.enabled) {

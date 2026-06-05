@@ -29,7 +29,9 @@ export const useGate = (): GateRegistry => {
   const pickup = moduleGate('pickup')
   const dineIn = moduleGate('dineIn')
   const kitchen = moduleGate('kitchen')
-  const reservations = moduleGate('reservations')
+  // reservations — часть модуля «Столы» (dineIn), не отдельный тоггл.
+  // viewReservations/manageReservations бэкуются этим гейтом + свой permission.
+  const reservations = dineIn
   const services = moduleGate('services')
   const promotions = moduleGate('promotions')
   const modifiers = moduleGate('modifiers')
@@ -140,12 +142,13 @@ export const useGate = (): GateRegistry => {
   const viewTables = permissionGate(dineIn, 'tables.view')
   const manageTables = permissionGate(dineIn, 'tables.manage')
 
-  // Reservations — только для retail (бронирование столиков).
-  const viewReservations = permissionGate(reservations, 'reservations.view')
-  const manageReservations = permissionGate(reservations, 'reservations.manage')
+  // Reservations — только для retail (бронирование столиков). Брони — часть модуля
+  // «Столы»: отдельных прав нет, просмотр/управление бэкуются tables.view/tables.manage.
+  const viewReservations = permissionGate(reservations, 'tables.view')
+  const manageReservations = permissionGate(reservations, 'tables.manage')
 
   // Appointments — только для services (запись на услуги).
-  // Отдельные ключи `appointments.*` — чтобы хостес со `reservations.manage`
+  // Отдельные ключи `appointments.*` — чтобы хостес с `tables.manage`
   // не получал доступ к Appointments автоматически.
   const viewAppointments = permissionGate(services, 'appointments.view')
   const manageAppointments = permissionGate(services, 'appointments.manage')

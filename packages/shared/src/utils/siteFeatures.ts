@@ -22,7 +22,7 @@ export const SITE_FEATURES = {
   delivery:    { label: 'Доставка',         index: true,  page: true,  nav: true,  module: 'delivery' },
   // TODO: vacancies page — скрыто до реализации функционала
   vacancies:   { label: 'Вакансии',         index: false, page: false, nav: false },
-  booking:     { label: 'Бронирование',     index: false, page: true,  nav: true,  module: 'reservations' },
+  booking:     { label: 'Бронирование',     index: false, page: true,  nav: true,  module: 'dineIn' },
   about:       { label: 'О нас',            index: false, page: true,  nav: true  },
 } as const satisfies Record<string, SiteFeatureDef>
 

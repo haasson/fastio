@@ -94,19 +94,6 @@ export const checkModuleDisable = async (
     }
   }
 
-  if (moduleKey === 'reservations') {
-    const reservations = await api.reservations.list(tenantId, {
-      statuses: RESERVATION_ACTIVE_STATUSES,
-    })
-
-    if (reservations.length > 0) {
-      issues.push({
-        severity: 'blocker',
-        message: `Нельзя выключить: есть активные бронирования (${reservations.length}). Завершите или отмените их в разделе Бронирования.`,
-      })
-    }
-  }
-
   if (moduleKey === 'dineIn') {
     const tables = await api.tables.list(tenantId)
     const openCount = tables.filter((t) => t.isOpen).length
@@ -115,6 +102,18 @@ export const checkModuleDisable = async (
       issues.push({
         severity: 'blocker',
         message: `Нельзя выключить: есть открытые столы (${openCount}). Закройте их в разделе Столы.`,
+      })
+    }
+
+    // Брони теперь часть модуля «Столы» — выключение dineIn гасит и их.
+    const activeReservations = await api.reservations.list(tenantId, {
+      statuses: RESERVATION_ACTIVE_STATUSES,
+    })
+
+    if (activeReservations.length > 0) {
+      issues.push({
+        severity: 'blocker',
+        message: `Нельзя выключить: есть активные бронирования (${activeReservations.length}). Завершите или отмените их во вкладке «Столы → Бронирование».`,
       })
     }
   }

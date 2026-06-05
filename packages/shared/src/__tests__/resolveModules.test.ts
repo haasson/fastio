@@ -13,7 +13,6 @@ const allEnabled: TenantModules = {
   kitchen: true,
   branches: true,
   customRoles: true,
-  reservations: true,
   customers: true,
   services: true,
 }
@@ -34,7 +33,7 @@ describe('resolveModules', () => {
   })
 
   describe('businessType "services"', () => {
-    it('выключает delivery, pickup, dineIn, kitchen, combos, promotions, reservations, modifiers, addons', () => {
+    it('выключает delivery, pickup, dineIn, kitchen, combos, promotions, modifiers, addons', () => {
       const result = resolveModules(allEnabled, 'services')
       expect(result.delivery).toBe(false)
       expect(result.pickup).toBe(false)
@@ -42,7 +41,6 @@ describe('resolveModules', () => {
       expect(result.kitchen).toBe(false)
       expect(result.combos).toBe(false)
       expect(result.promotions).toBe(false)
-      expect(result.reservations).toBe(false)
       expect(result.modifiers).toBe(false)
       expect(result.addons).toBe(false)
     })
