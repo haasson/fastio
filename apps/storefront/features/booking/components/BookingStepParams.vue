@@ -1,6 +1,6 @@
 <template>
   <div class="params-root">
-    <FsField v-if="branches.length > 1" label="Филиал">
+    <FsField v-if="branches.length > 1" label="Филиал" :error="branchError">
       <div class="branch-cards" data-testid="booking-branches">
         <FsButton
           v-for="branch in branches"
@@ -8,7 +8,7 @@
           data-testid="booking-branch"
           :variant="form.branchId === branch.id ? 'primary' : 'secondary'"
           size="medium"
-          @click="form.branchId = branch.id"
+          @click="form.branchId = branch.id; branchError = ''"
         >
           {{ branch.name }}
           <template #sub>{{ formatBranchAddressShort(branch) }}</template>
@@ -78,6 +78,7 @@ const props = defineProps<{
 const emit = defineEmits<{ next: [] }>()
 
 const dateError = ref('')
+const branchError = ref('')
 
 const days = computed(() => {
   const result = []
@@ -106,7 +107,10 @@ const onDateClick = (value: string) => {
 }
 
 const onNext = () => {
-  if (props.branches.length > 1 && !form.value?.branchId) return
+  if (props.branches.length > 1 && !form.value?.branchId) {
+    branchError.value = 'Выберите филиал'
+    return
+  }
   if (!form.value?.date) {
     dateError.value = 'Выберите дату'
     return
