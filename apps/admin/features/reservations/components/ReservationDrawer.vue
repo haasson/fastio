@@ -88,8 +88,8 @@
         />
       </UiForm>
 
-      <!-- Table availability (pending or confirmed in edit mode) -->
-      <template v-if="(reservation?.status === 'pending' || (reservation?.status === 'confirmed' && isEditing)) && tables.length">
+      <!-- Table availability (create mode or pending or confirmed in edit mode) -->
+      <template v-if="tables.length && form.reservedDate && (!reservation || reservation.status === 'pending' || (reservation.status === 'confirmed' && isEditing))">
         <UiDivider />
         <ReservationTablePicker
           v-model="selectedTableId"
@@ -365,10 +365,10 @@ watch(() => props.reservation, (r) => {
 
 // Брони на выбранную дату (без текущей, только активные) — для ReservationTablePicker
 const dayReservations = computed(() => {
-  if (!props.reservation) return []
+  if (!form.reservedDate) return []
 
   return reservationsStore.reservations.filter((r) => r.reservedDate === form.reservedDate
-    && r.id !== props.reservation!.id
+    && r.id !== props.reservation?.id
     && ['pending', 'confirmed', 'seated'].includes(r.status),
   )
 })
