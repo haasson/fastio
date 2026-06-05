@@ -11,7 +11,11 @@ import { submitPickupOrder, adminLogin, ADMIN_URL } from './helpers'
 // Почему так устойчиво: OrderList фильтрует заказы по выбранной вкладке статуса,
 // поэтому позитивная проверка «заказ появился во вкладке-цели» не зависит от
 // тайминга оптимистичного удаления карточки из исходной вкладки.
-test.use({ baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711` })
+// Свой x-real-ip → отдельный rate-limit-бакет заказов (см. account-order-authed).
+test.use({
+  baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711`,
+  extraHTTPHeaders: { 'x-real-ip': '203.0.113.5' },
+})
 
 test('заказ переводится из «Новый» в «Принят» через quick-action', async ({ page }) => {
   const orderCode = await submitPickupOrder(page)

@@ -5,7 +5,11 @@ import { fixtures } from './fixtures'
 // Гостевой submit (без auth) — guard-валидация формы строже, лучше отлавливает регрессии.
 // Pickup, а не delivery: address validation требует Dadata fetch который мы не
 // мокаем; pickup-ветка детерминирована и не зависит от внешних API.
-test.use({ baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711` })
+// Свой x-real-ip → отдельный rate-limit-бакет заказов (см. account-order-authed).
+test.use({
+  baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711`,
+  extraHTTPHeaders: { 'x-real-ip': '203.0.113.4' },
+})
 
 test('order flow: add dish → checkout → submit → order page', async ({ page }) => {
   // Главная demo-тенанта — там MenuSection с активными dishes.

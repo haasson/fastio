@@ -8,7 +8,11 @@ import { fixtures } from './fixtures'
 // Промокод E2E10 сидится в scripts/e2e/setup.mjs (globalSetup): percent=10, без
 // min_order и без дат → валиден для любой непустой корзины. Маргарита = 590,
 // скидка = 59.
-test.use({ baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711` })
+// Свой x-real-ip → отдельный rate-limit-бакет заказов (см. account-order-authed).
+test.use({
+  baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711`,
+  extraHTTPHeaders: { 'x-real-ip': '203.0.113.6' },
+})
 
 test('promo flow: apply promo code in checkout → discount applied', async ({ page }) => {
   await page.goto('/')

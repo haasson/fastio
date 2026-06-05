@@ -51,7 +51,14 @@ export default defineConfig({
       command: process.env.CI
         ? 'pnpm --filter storefront exec nuxt preview'
         : 'pnpm dev:storefront',
-      env: process.env.CI ? { PORT: String(STOREFRONT_PORT) } : undefined,
+      // TRUST_PROXY+TRUSTED_IP_HEADER: включаем чтение x-real-ip из proxy-заголовка,
+      // чтобы каждый заказ-сабмитящий спек (test.use extraHTTPHeaders) получал свой
+      // rate-limit-бакет. Без этого 1-worker + один socket-IP = заказы в demo копятся
+      // в окне orders:tenant-ip 5/60s → 6-й (promo-flow) ловит 429. env мёржится с
+      // process.env (preview берёт supabase-ключи из окружения).
+      env: process.env.CI
+        ? { PORT: String(STOREFRONT_PORT), TRUST_PROXY: '1', TRUSTED_IP_HEADER: 'x-real-ip' }
+        : undefined,
       // Health-check ИМЕННО на subdomain-хосте — прогревает tenant middleware
       // на тот хост, через который ходят тесты. /api/tenant?slug=… отвечает
       // 200 на любом хосте и не гарантирует что host-based resolver готов.

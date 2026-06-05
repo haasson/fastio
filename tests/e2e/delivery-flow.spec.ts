@@ -9,7 +9,11 @@ import { fixtures } from './fixtures'
 // Dadata. Мокаем только /api/dadata/suggest — координаты в подсказке реальные
 // (центроид зоны «Гаражи» demo), поэтому /api/check-address НЕ мокаем: серверный
 // point-in-polygon по seeded delivery_zones отрабатывает по-настоящему.
-test.use({ baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711` })
+// Свой x-real-ip → отдельный rate-limit-бакет заказов (см. account-order-authed).
+test.use({
+  baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711`,
+  extraHTTPHeaders: { 'x-real-ip': '203.0.113.3' },
+})
 
 // Координаты — центроид seeded-зоны «Гаражи» (demo, филиал «Первый», активен,
 // не архивирован). Точка попадает в «Гаражи» (fee 99, min_order 300) и

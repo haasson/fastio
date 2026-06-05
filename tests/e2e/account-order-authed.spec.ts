@@ -8,7 +8,13 @@ import { submitPickupOrder } from './helpers'
 //
 // Регрессия PREPROD-099: tg-клиент не имеет supabase-сессии, и (1) orders.post.ts
 // привязывал customer только по Bearer, (2) orders.vue бейлился без supabase-сессии.
-test.use({ baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711` })
+// Свой x-real-ip → отдельный rate-limit-бакет (orders:tenant-ip 5/60s в orders.post).
+// Без этого 1-worker + один socket-IP копит заказы в demo и 6-й сабмит ловит 429.
+// В CI заголовок читается (TRUST_PROXY в playwright.config), локально игнорируется.
+test.use({
+  baseURL: `http://${fixtures.retailTenantSlug}.localhost:4711`,
+  extraHTTPHeaders: { 'x-real-ip': '203.0.113.1' },
+})
 
 test('авторизованный клиент: заказ привязывается и виден в истории кабинета', async ({ page, context }) => {
   await context.addCookies([tgSessionCookie('retail')])
