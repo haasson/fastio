@@ -154,10 +154,10 @@ const handleArchive = async (branch: Branch) => {
 
   const blockers: string[] = []
 
-  if (hasOrders) blockers.push('— активные заказы (переведите в «Выполнен» или «Отменён»)')
+  if (hasOrders) blockers.push('— незавершённые заказы на доставку или самовывоз (переведите в «Выполнен» или «Отменён»)')
   if (hasReservations) blockers.push('— активные брони (отмените или подождите их завершения)')
   if (hasAppointments) blockers.push('— активные записи на услуги (отмените или подождите)')
-  if (hasTables) blockers.push('— столы (удалите их в /tables/list)')
+  if (hasTables) blockers.push('— открытые столы (закройте их в разделе Столы)')
 
   if (blockers.length) {
     await confirm({

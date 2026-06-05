@@ -107,14 +107,9 @@ const onDateClick = (value: string) => {
 }
 
 const onNext = () => {
-  if (props.branches.length > 1 && !form.value?.branchId) {
-    branchError.value = 'Выберите филиал'
-    return
-  }
-  if (!form.value?.date) {
-    dateError.value = 'Выберите дату'
-    return
-  }
+  branchError.value = (props.branches.length > 1 && !form.value?.branchId) ? 'Выберите филиал' : ''
+  dateError.value = !form.value?.date ? 'Выберите дату' : ''
+  if (branchError.value || dateError.value) return
   emit('next')
 }
 </script>

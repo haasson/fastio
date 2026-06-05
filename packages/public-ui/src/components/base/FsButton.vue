@@ -80,6 +80,7 @@ withDefaults(defineProps<Props>(), {
 .btn-primary {
   background: var(--primary);
   color: var(--on-primary);
+  border: 1px solid transparent;
 
   &:hover:not(.is-disabled) {
     background: var(--primary-hover);

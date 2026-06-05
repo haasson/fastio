@@ -166,6 +166,7 @@ export const branchesApi = {
       .select('id', { count: 'exact', head: true })
       .eq('branch_id', branchId)
       .in('status', statusIds)
+      .neq('delivery_type', 'dine_in')
 
     if (ordersError) {
       reportError(ordersError, { context: 'branches.hasActiveOrders.orders', branchId, tenantId })
@@ -250,7 +251,7 @@ export const branchesApi = {
       .from('tables')
       .select('id', { count: 'exact', head: true })
       .eq('branch_id', branchId)
-      .eq('is_active', true)
+      .eq('is_open', true)
 
     if (error) {
       reportError(error, { context: 'branches.hasTables', branchId })
