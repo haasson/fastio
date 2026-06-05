@@ -16,6 +16,8 @@ export type TableSessionItem = {
   addons: OrderItemAddon[]
   removedIngredients: string[]
   status: 'pending' | 'confirmed'
+  // Состав комбо (имена блюд внутри) — для «?» в чеке. null у обычных блюд.
+  comboItems: { dishName: string }[] | null
 }
 
 export type TableSession = {
@@ -155,7 +157,7 @@ export const tablesApi = {
     const earliestOpenedAt = openTables.map((t) => t.openedAt!).sort()[0]
 
     let q = sb.from('orders')
-      .select('table_id, total, created_at, order_items(id, dish_id, dish_name, category_name, quantity, price, modifiers, addons, removed_ingredients, status)')
+      .select('table_id, total, created_at, order_items(id, dish_id, dish_name, category_name, quantity, price, modifiers, addons, removed_ingredients, status, combo_items)')
       .in('table_id', tableIds)
       .gte('created_at', earliestOpenedAt)
 
@@ -174,6 +176,7 @@ export const tablesApi = {
       addons: OrderItemAddon[]
       removed_ingredients: string[]
       status: 'pending' | 'confirmed'
+      combo_items: { dishName: string }[] | null
     }
 
     type OrderWithItems = {
@@ -216,6 +219,7 @@ export const tablesApi = {
             addons: item.addons ?? [],
             removedIngredients: item.removed_ingredients ?? [],
             status: 'pending',
+            comboItems: item.combo_items ?? null,
           }
 
           result[order.table_id].items.push(pendingItem)
@@ -237,6 +241,7 @@ export const tablesApi = {
               addons: item.addons ?? [],
               removedIngredients: item.removed_ingredients ?? [],
               status: 'confirmed',
+              comboItems: item.combo_items ?? null,
             }
 
             keyMap.set(key, newItem)

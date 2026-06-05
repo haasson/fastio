@@ -51,8 +51,19 @@
       </div>
       <div class="block-rows">
         <div v-for="row in cookingRows" :key="row.key" class="cooking-row">
-          <span class="cooking-dot" :class="row.dotClass" />
-          <span class="row-name">{{ row.dishName }}</span>
+          <div class="cooking-main">
+            <span class="cooking-dot" :class="row.dotClass" />
+            <span class="row-name">{{ row.dishName }}</span>
+            <UiTag
+              v-if="row.isCombo && row.status !== 'done'"
+              size="small"
+              round
+              class="combo-progress"
+            >
+              {{ row.readyCount }}/{{ row.total }} готово
+            </UiTag>
+            <ComboBreakdownPopover v-if="row.isCombo" :children="row.children" />
+          </div>
           <span class="row-qty">×{{ row.count }}</span>
           <span class="row-price">{{ formatPrice(row.totalPrice) }}</span>
           <UiMenuDropdown
@@ -92,6 +103,7 @@
         <div v-for="row in readyRows" :key="row.key" class="action-row">
           <span class="cooking-dot dot--ready" />
           <span class="row-name">{{ row.dishName }}</span>
+          <ComboBreakdownPopover v-if="row.isCombo" :children="row.children" />
           <span class="row-qty">×{{ row.count }}</span>
           <UiButton size="small" type="success" @click="$emit('mark-served-all', row.ids)">Забрал</UiButton>
         </div>
@@ -116,6 +128,7 @@
               <span v-for="ing in item.removedIngredients" :key="ing" class="extra extra--removed">− {{ ing }}</span>
             </div>
           </div>
+          <ComboBreakdownPopover v-if="item.comboItems?.length" :children="checkComboChildren(item)" />
           <span class="row-price">{{ formatPrice(item.price) }} × {{ item.quantity }}</span>
           <span class="row-total">{{ formatPrice(item.price * item.quantity) }}</span>
           <template v-if="!compact && !noAdd">
@@ -151,12 +164,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UiButton, UiStepper, UiMenuDropdown } from '@fastio/ui'
+import { UiButton, UiStepper, UiMenuDropdown, UiTag } from '@fastio/ui'
 import type { UiMenuDropdownItem } from '@fastio/ui'
 import type { KitchenQueueItem } from '@fastio/shared'
 import { orderItemKey, pluralize, formatPrice } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
-import { useKitchenProgress, type KitchenProgressRow } from '~/features/kitchen'
+import { computeServedCheckItems } from '../utils/computeServedCheckItems'
+import ComboBreakdownPopover from './ComboBreakdownPopover.vue'
+import { useKitchenProgress, type KitchenProgressRow, type KitchenProgressChild } from '~/features/kitchen'
 
 type Props = {
   session?: TableSession
@@ -201,6 +216,10 @@ const positionsCount = computed(() => (props.session?.items ?? []).reduce((sum, 
 
 const hasCustomizations = (item: TableSessionItem) => item.modifiers.length > 0 || item.addons.length > 0 || item.removedIngredients.length > 0
 
+// В чеке комбо уже подано — состав показываем статично (все блюда done) тем же
+// поповером, что и в готовке.
+const checkComboChildren = (item: TableSessionItem): KitchenProgressChild[] => (item.comboItems ?? []).map((child) => ({ dishName: child.dishName, total: 1, readyCount: 1, status: 'done' }))
+
 const { kitchenProgress } = useKitchenProgress(
   () => props.kitchenDishes,
   () => props.session,
@@ -216,38 +235,10 @@ const readyRows = computed(() => kitchenProgress.value.filter((r) => r.status ==
 const readyIds = computed(() => readyRows.value.flatMap((r) => r.ids))
 
 // Чек = подтверждённые позиции, которых уже нет в кухонном пайплайне (поданы /
-// skip_kitchen). Активные кухонные единицы вычитаем по ключу dishName+фингерпринт,
-// чтобы частично поданное блюдо (3 заказано, 1 ещё готовится) считалось верно.
-const servedItems = computed<TableSessionItem[]>(() => {
-  const confirmed = (props.session?.items ?? []).filter((i) => i.status === 'confirmed')
-
-  const activeByKey = new Map<string, number>()
-
-  for (const item of props.kitchenDishes ?? []) {
-    if (item.status !== 'queued' && item.status !== 'in_progress' && item.status !== 'done') continue
-    const key = `${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`
-
-    activeByKey.set(key, (activeByKey.get(key) ?? 0) + 1)
-  }
-
-  const result: TableSessionItem[] = []
-
-  for (const item of confirmed) {
-    const key = `${item.dishName}::${orderItemKey(item.modifiers, item.addons, item.removedIngredients)}`
-    const active = activeByKey.get(key) ?? 0
-    const servedQty = item.quantity - active
-
-    if (servedQty <= 0) {
-      activeByKey.set(key, active - item.quantity)
-      continue
-    }
-
-    activeByKey.set(key, 0)
-    result.push(servedQty === item.quantity ? item : { ...item, quantity: servedQty })
-  }
-
-  return result
-})
+// skip_kitchen). Логика в чистом хелпере — обычные блюда по dishName+фингерпринт,
+// комбо атомарно по comboName (см. computeServedCheckItems).
+const servedItems = computed<TableSessionItem[]>(() => computeServedCheckItems(props.session?.items ?? [], props.kitchenDishes ?? []),
+)
 
 const hasMore = computed(() => props.previewCount != null && servedItems.value.length > props.previewCount)
 
@@ -260,7 +251,11 @@ const visibleServed = computed(() => {
 const kitchenMenuItems = (item: KitchenProgressRow): UiMenuDropdownItem[] => {
   const items: UiMenuDropdownItem[] = []
 
-  if (item.status !== 'queued') {
+  // Комбо подаётся атомарно и только когда готовы ВСЕ блюда. Обычное блюдо —
+  // можно подать как только взято в работу (не queued).
+  const canServe = item.isCombo ? item.status === 'done' : item.status !== 'queued'
+
+  if (canServe) {
     items.push({ name: 'served', label: 'Подано', icon: 'check' })
   }
 
@@ -437,6 +432,16 @@ const onKitchenMenuClick = (name: string, item: KitchenProgressRow) => {
   &.dot--cooking { background: var(--color-warning); }
   &.dot--ready   { background: var(--color-success); }
 }
+
+.cooking-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.combo-progress { flex-shrink: 0; }
 
 .cooking-menu { flex-shrink: 0; color: var(--color-text-hint); }
 
