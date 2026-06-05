@@ -38,8 +38,10 @@ export default defineEventHandler(async (event) => {
 
   const branchSchedule = branchData?.working_hours_schedule as WorkingHoursSchedule | null
   const schedule = branchSchedule ?? (tenantData.working_hours_schedule as WorkingHoursSchedule | null)
+  if (!schedule) return []
   const isoDay = getIsoDayForDate(date)
-  const dayHours: WorkingHours = schedule ? (schedule.days[isoDay] ?? schedule.default) : { open: '10:00', close: '22:00' }
+  const exception = schedule.exceptions?.[date] as WorkingHours | undefined
+  const dayHours: WorkingHours = exception ?? (schedule.days[isoDay] ?? schedule.default)
 
   if (dayHours.dayOff) return []
 

@@ -111,10 +111,10 @@ export default defineEventHandler(async (event) => {
   // и заявки без table_id распределяет админ через ReservationTablePicker.
   const branchSchedule = (branchData?.working_hours_schedule as WorkingHoursSchedule | null) ?? null
   const schedule = branchSchedule ?? (tenantData.working_hours_schedule as WorkingHoursSchedule | null)
+  if (!schedule) throw createError({ statusCode: 400, message: 'В этот день бронирование недоступно' })
   const isoDay = getIsoDayForDate(body.reservedDate)
-  const dayHours: WorkingHours = schedule
-    ? (schedule.days[isoDay] ?? schedule.default)
-    : { open: '10:00', close: '22:00' }
+  const exception = schedule.exceptions?.[body.reservedDate] as WorkingHours | undefined
+  const dayHours: WorkingHours = exception ?? (schedule.days[isoDay] ?? schedule.default)
 
   if (dayHours.dayOff) {
     throw createError({ statusCode: 400, message: 'В этот день бронирование недоступно' })
