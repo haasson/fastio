@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-05T08:13:51.521Z",
+  "generated_at": "2026-06-05T13:58:05.750Z",
   "stats": {
     "files": 83,
     "pages": 0,
@@ -393,8 +393,8 @@
     },
     "shared/components/layout/AppNav.vue": {
       "kind": "vue",
-      "hash": "a4d63b34176d",
-      "purpose": "Левая навигация админки: пункты меню по модулям/вертикалям с фильтрацией по permission/module-gate, collapsed-режим для узкого экрана.",
+      "hash": "7a8839bb72ee",
+      "purpose": "Левый сайдбар-навигация админки: пункты меню по гейтам + счётчики (заказы, поддержка, записи)",
       "symbols": [
         {
           "name": "props",
@@ -650,8 +650,8 @@
     },
     "shared/plan/useGate.retail.routes.ts": {
       "kind": "ts",
-      "hash": "ecbf5afbdea0",
-      "purpose": "Карта роут→RetailGateKey: SUBS (под-роуты) и ROOTS (корни), используется агрегатором useGate.routes для retail-вертикали",
+      "hash": "f442c7e3b30a",
+      "purpose": "Карта роут→retail-гейт (sub-роуты и корни) для маршрутного гейтинга в общем реестре",
       "symbols": [
         {
           "name": "RETAIL_ROUTE_SUBS",
@@ -669,8 +669,8 @@
     },
     "shared/plan/useGate.retail.ts": {
       "kind": "ts",
-      "hash": "67062b2529b4",
-      "purpose": "Реестр гейтов retail-вертикали: viewMenu/manageMenu/viewOrders/viewKitchen/… через permissionGate/moduleGate из useGate.shared",
+      "hash": "41ded56812d2",
+      "purpose": "Гейты retail-вертикали: модули и permission-гейты (меню, заказы, столы/брони, кухня, акции)",
       "symbols": [
         {
           "name": "RetailGateKey",
@@ -694,8 +694,8 @@
     },
     "shared/plan/useGate.routes.ts": {
       "kind": "ts",
-      "hash": "b5dc192feeb9",
-      "purpose": "Карта роут→GateKey для middleware/gate.global + список REDIRECT_FALLBACKS на случай отказа",
+      "hash": "e52e16b492ea",
+      "purpose": "Карта роут→ключ гейта для middleware прямого доступа по URL + список fallback-редиректов когда страница недоступна",
       "symbols": [
         {
           "name": "isUngatedRoute",
@@ -788,8 +788,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "811ec616ad03",
-      "purpose": "Корневой gate-агрегатор: объединяет retail+services+shared gate registries, для проверки доступа фич по плану/модулям",
+      "hash": "50e02783a588",
+      "purpose": "Агрегатор всех гейтов админки (retail+services): единая точка проверки доступа к фичам с причиной отказа",
       "symbols": [
         {
           "name": "useGate",
@@ -832,8 +832,8 @@
     },
     "shared/plan/useModules.ts": {
       "kind": "ts",
-      "hash": "d967139b3d0f",
-      "purpose": "Состояние модулей тенанта: active/locked/absent/enabled с учётом businessType, menuStyle, плана и тарифа (Proxy + лениво созданные computed)",
+      "hash": "6e571bd3ad43",
+      "purpose": "Реактивное состояние модулей тенанта (active/locked/absent/enabled) из тариф-фич + module_configs + tenant.modules; ленивый Proxy по ключу",
       "symbols": [
         {
           "name": "useModuleConfigs",
@@ -1133,8 +1133,8 @@
     },
     "shared/ui/components/TabsLayout.vue": {
       "kind": "vue",
-      "hash": "1a1f48b50c33",
-      "purpose": "Layout страницы с UiTabs наверху и NuxtPage в main-col + опциональным sidebar-слотом; навигация через router",
+      "hash": "b7fc5867658c",
+      "purpose": "Лейаут страницы с табами поверх вложенных роутов (NuxtPage) + опциональный сайдбар",
       "symbols": [
         {
           "name": "props",
@@ -1376,8 +1376,8 @@
     },
     "shared/utils/moduleToggleChecks.ts": {
       "kind": "ts",
-      "hash": "c74d30088634",
-      "purpose": "Проверяет наличие активных зависимостей модуля (заказы, бронирования, открытые столы и т.п.) перед выключением; знает обе вертикали — by design в allow-list",
+      "hash": "7db51d810af0",
+      "purpose": "Блокеры/предупреждения при выключении модуля тенанта (активные заказы, брони, столы, записи, роли, баннеры)",
       "symbols": [
         {
           "name": "ToggleIssue",

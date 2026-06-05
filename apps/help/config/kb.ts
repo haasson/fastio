@@ -28,6 +28,7 @@ import appearanceTheme from '@fastio/kb/content/09-appearance-theme.md?raw'
 import appearanceSeo from '@fastio/kb/content/09-appearance-seo.md?raw'
 import settingsContacts from '@fastio/kb/content/10-settings-contacts.md?raw'
 import settingsNotifications from '@fastio/kb/content/10-settings-notifications.md?raw'
+import settingsLegal from '@fastio/kb/content/10-settings-legal.md?raw'
 import settingsModules from '@fastio/kb/content/10-settings-modules.md?raw'
 import teamMembers from '@fastio/kb/content/11-team-members.md?raw'
 import teamRoles from '@fastio/kb/content/11-team-roles.md?raw'
@@ -63,6 +64,7 @@ const CONTENT: Record<string, string> = {
   '09-appearance-seo': appearanceSeo,
   '10-settings-contacts': settingsContacts,
   '10-settings-notifications': settingsNotifications,
+  '10-settings-legal': settingsLegal,
   '10-settings-modules': settingsModules,
   '11-team-members': teamMembers,
   '11-team-roles': teamRoles,
