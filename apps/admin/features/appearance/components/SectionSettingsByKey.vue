@@ -42,6 +42,10 @@
   </div>
 
   <div v-else-if="sectionKey === 'menu'" class="fields-wrap">
+    <UiAlert v-if="form.pages?.includes('menu')" type="warning" size="small">
+      Меню также добавлено отдельной страницей — полный каталог продублируется.
+      Чтобы оставить меню только на главной, уберите страницу «Меню» во вкладке «Страницы».
+    </UiAlert>
     <div class="field">
       <label class="field-label">Вид по умолчанию</label>
       <UiSegmentedControl
@@ -82,7 +86,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { UiSegmentedControl, UiInputNumber, UiCheckbox } from '@fastio/ui'
+import { UiSegmentedControl, UiInputNumber, UiCheckbox, UiAlert } from '@fastio/ui'
 import HeroOptions from './HeroOptions.vue'
 import GalleryPicker from './GalleryPicker.vue'
 import type { SiteLayout, SiteContent, SectionKey } from '@fastio/shared'

@@ -1,6 +1,10 @@
 <template>
   <!-- Меню -->
   <div v-if="pageKey === 'menu'" class="fields-wrap">
+    <UiAlert v-if="siteLayoutForm.sections.menu.enabled" type="warning" size="small">
+      Меню уже показывается секцией на главной — отдельная страница продублирует полный каталог.
+      Чтобы оставить меню только страницей, отключите секцию «Меню» во вкладке «Секции».
+    </UiAlert>
     <div class="field">
       <label class="field-label">Вид по умолчанию</label>
       <UiSegmentedControl
@@ -88,7 +92,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { UiSegmentedControl, UiCheckbox } from '@fastio/ui'
+import { UiSegmentedControl, UiCheckbox, UiAlert } from '@fastio/ui'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 
 // RichTextEditor тянет tiptap (~366 kB). Грузим лениво — редактор показывается
