@@ -4,7 +4,7 @@ import { reservationEvents } from './useReservationsChannel'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { RESERVATION_ACTIVE_STATUSES } from '../utils/reservation-constants'
 
-export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | null>) => {
+export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | null>, branchLoading: Ref<boolean>) => {
   const api = useDatabase()
 
   const reservations = ref<Reservation[]>([])
@@ -25,8 +25,13 @@ export const useReservations = (tenantId: Ref<string>, branchId: Ref<string | nu
     }
   }
 
-  watch(branchId, fetch)
-  fetch()
+  // Ждём пока branches загрузятся — только тогда branchId гарантированно
+  // восстановлен из localStorage. Иначе первый fetch идёт с branchId=null
+  // и возвращает брони всех филиалов (race при инициализации).
+  watch([tenantId, branchId, branchLoading], ([tid, , isLoading]) => {
+    if (!tid || isLoading) return
+    void fetch()
+  }, { immediate: true })
 
   const tableNames = computed(() => {
     const names = new Set(reservations.value.map((r) => r.tableName).filter(Boolean) as string[])

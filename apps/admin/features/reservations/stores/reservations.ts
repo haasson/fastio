@@ -8,7 +8,7 @@ export const useReservationsStore = defineStore('reservations', () => {
   const tenantStore = useTenantStore()
   const branchStore = useBranchStore()
   const tenantId = computed(() => tenantStore.currentTenantId ?? '')
-  const { currentBranchId: branchId } = storeToRefs(branchStore)
+  const { currentBranchId: branchId, loading: branchLoading } = storeToRefs(branchStore)
 
-  return useReservations(tenantId, branchId)
+  return useReservations(tenantId, branchId, branchLoading)
 })

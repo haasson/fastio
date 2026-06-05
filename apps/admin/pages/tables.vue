@@ -225,8 +225,8 @@ const load = async (id: string) => {
   }
 }
 
-watch([tenantId, effectiveBranchId], ([id]) => {
-  if (!id) return
+watch([tenantId, effectiveBranchId, () => branchStore.loading], ([id, , isLoading]) => {
+  if (!id || isLoading) return
   void load(id)
 }, { immediate: true })
 
