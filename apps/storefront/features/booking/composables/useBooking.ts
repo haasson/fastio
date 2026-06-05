@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useRequestFetch } from 'nuxt/app'
 import type { ReservationStatus } from '@fastio/shared'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
@@ -38,11 +38,14 @@ export default function useBooking() {
   const result = ref<{ id: string; status: ReservationStatus; linkedToAccount: boolean } | null>(null)
   const wasAuthenticated = ref(false)
   const error = ref<string | null>(null)
-  // Регенерируется на каждый USER-initiated submit (см. submit). Защищает от
-  // двойного тапа / refresh во время submit / медленной сети: сервер вернёт
-  // существующую бронь вместо создания второй. Auto-retry'я нет —
-  // простой реген-на-попытку безопасен.
+  // Генерируется при входе на шаг 3 (watch ниже), стабилен до успешного submit.
+  // Два клика по «Забронировать» отправят два запроса с одним ключом — сервер
+  // вернёт уже созданную бронь вместо второй (UNIQUE per tenant, mig 287).
   const idempotencyKey = ref<string | null>(null)
+
+  watch(step, (val) => {
+    if (val === 3) idempotencyKey.value = crypto.randomUUID()
+  })
 
   const rfetch = useRequestFetch()
   const supabase = useSupabaseClient()
@@ -70,12 +73,6 @@ export default function useBooking() {
   const submit = async () => {
     loading.value = true
     error.value = null
-
-    // НЕ переиспользуем старый ключ — если предыдущая попытка дошла до БД и
-    // создала бронь, сервер вернёт ту же бронь при повторном submit с тем же
-    // ключом (мы хотим именно это для retry'я). Новый ключ = новая попытка
-    // с актуальными данными формы.
-    idempotencyKey.value = crypto.randomUUID()
 
     try {
       const headers: Record<string, string> = {}

@@ -320,7 +320,9 @@
 - ✅ **Экран подтверждения**: «Заявка принята», «Мы свяжемся с вами для подтверждения брони», summary дата/время/гости.
 - ⏳ **[RT] `/reservations/list`** — нужно проверить в реальном браузере.
 - ⏳ **Статус-переходы**: pending→confirmed→seated→completed / cancelled / no_show.
-- ⏳ **EC**: 31 день, 9 гостей, нерабочий день, idempotency, выключение модуля с активными бронями.
+- ✅ **EC**: 31 день (ровно 30 дат, UI отрезает), 9 гостей (stepper disabled при maxGuests=8), closeBuffer (последний слот 21:00), dayOff exceptions (фикс + задеплоен `58369034`), cancelled (cancelled_at в БД).
+- ✅ **NEG**: выключение `reservations` при активной брони → блокер с сообщением + счётчиком. `RESERVATION_ACTIVE_STATUSES = ['pending','confirmed','seated']`.
+- ⏳ **P1: Idempotency** — двойная отправка формы → 1 бронь.
 - 🐛 ~~**EC: `dayOff` exceptions не блокировали слоты**~~ **FIXED**: `slots.get.ts` и `index.post.ts` читали только `schedule.days[isoDay]`, игнорируя `schedule.exceptions[date]`. Добавлена проверка exception перед days-lookup в обоих файлах. Pending deploy.
 - ❓ **seated→completed через 4ч — сломается на длинных ужинах/банкетах** — cron `088` переводит `seated→completed` по `seated_at + 4 hours`. Произвольная константа. Лучшая логика: **B+C** — при нажатии «Посадить» привязывать бронь к столу (`table_id`); закрытие стола → `completed`. Cron с 12ч — только страховка. Сейчас `table_id` в брони есть но при «Посадить» не заполняется. Отдельный план.
 - ❓ **no_show — только автомат, нет ручной кнопки** — cron (`088_reservations_cron.sql`): `pending`/`confirmed` + время брони + 30 мин → `no_show` автоматически. `seated` + 4 ч → `completed`. В UI кнопки «Не пришёл» нет — `drawerActions` не содержит no_show-экшена. Открытый вопрос: нужна ли ручная кнопка для досрочной пометки (официант видит что гость не придёт)? Или 30 мин ок?
