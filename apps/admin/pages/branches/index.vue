@@ -142,10 +142,9 @@ const handleSave = async (data: BranchFormData) => {
 }
 
 const handleArchive = async (branch: Branch) => {
-  // Проверки последовательно: orders → reservations → appointments.
-  // Любая активная сущность блокирует архивацию с понятным сообщением — иначе
-  // запись «исчезает» из админ-фильтров (where archived_at IS NULL), клиент
-  // придёт, его не ждут. См. PREPROD-020.
+  // Собираем все блокеры параллельно и показываем одним сообщением.
+  // Раньше — последовательные if'ы, пользователь видел только первый блокер
+  // и не знал что ещё мешает (PREPROD-020).
   const [hasOrders, hasReservations, hasAppointments, hasTables] = await Promise.all([
     api.branches.hasActiveOrders(branch.id, tenantId.value),
     api.branches.hasActiveReservations(branch.id, tenantId.value),
@@ -153,43 +152,17 @@ const handleArchive = async (branch: Branch) => {
     api.branches.hasTables(branch.id),
   ])
 
-  if (hasOrders) {
+  const blockers: string[] = []
+
+  if (hasOrders) blockers.push('— активные заказы (переведите в «Выполнен» или «Отменён»)')
+  if (hasReservations) blockers.push('— активные брони (отмените или подождите их завершения)')
+  if (hasAppointments) blockers.push('— активные записи на услуги (отмените или подождите)')
+  if (hasTables) blockers.push('— столы (удалите их в /tables/list)')
+
+  if (blockers.length) {
     await confirm({
       title: 'Нельзя архивировать филиал',
-      message: `У филиала «${branch.name}» есть активные заказы. Переведите все заказы в статус «Выполнен» или «Отменён», а затем попробуйте снова.`,
-      confirmText: false,
-      cancelText: 'Понятно',
-    })
-
-    return
-  }
-
-  if (hasReservations) {
-    await confirm({
-      title: 'Нельзя архивировать филиал',
-      message: `У филиала «${branch.name}» есть активные брони стола. Перенесите их в другой филиал или отмените, а затем попробуйте снова.`,
-      confirmText: false,
-      cancelText: 'Понятно',
-    })
-
-    return
-  }
-
-  if (hasAppointments) {
-    await confirm({
-      title: 'Нельзя архивировать филиал',
-      message: `У филиала «${branch.name}» есть активные записи на услуги. Перенесите их в другой филиал или отмените, а затем попробуйте снова.`,
-      confirmText: false,
-      cancelText: 'Понятно',
-    })
-
-    return
-  }
-
-  if (hasTables) {
-    await confirm({
-      title: 'Нельзя архивировать филиал',
-      message: `У филиала «${branch.name}» есть столы. Перенесите или удалите их, а затем попробуйте снова.`,
+      message: `У филиала «${branch.name}» есть:\n${blockers.join('\n')}\n\nУстраните всё перечисленное и попробуйте снова.`,
       confirmText: false,
       cancelText: 'Понятно',
     })
