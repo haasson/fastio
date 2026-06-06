@@ -121,6 +121,43 @@ describe('computeServedCheckItems — комбо (фикс двоения)', () 
     expect(result[0].dishName).toBe('Комбо Завтрак')
   })
 
+  it('два экземпляра комбо: один подан, второй готовится — в чеке остаётся поданный (без двойного учёта)', () => {
+    // Баг (2026-06-06): активный экземпляр прятал из чека уже поданный — весь
+    // confirmed-item с quantity:2 пропадал, хотя 1 экземпляр уже забрали.
+    const result = computeServedCheckItems(
+      [makeItem({ ...comboItem(), quantity: 2 })],
+      [
+        // экземпляр 1 — подан целиком
+        comboKitchen('Сырник', { id: 'k1', orderItemId: 'oi-served', status: 'served' }),
+        comboKitchen('Кофе', { id: 'k2', orderItemId: 'oi-served', status: 'served' }),
+        // экземпляр 2 — ещё готовится
+        comboKitchen('Сырник', { id: 'k3', orderItemId: 'oi-cooking', status: 'queued' }),
+        comboKitchen('Кофе', { id: 'k4', orderItemId: 'oi-cooking', status: 'in_progress' }),
+      ],
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0].dishName).toBe('Комбо Завтрак')
+    expect(result[0].quantity).toBe(1)
+  })
+
+  it('один order_item с quantity > 1 (степпер количества у комбо) — активное кол-во считается верно', () => {
+    // В DishPickerModal у комбо есть UiStepper — можно добавить «2× Комбо Завтрак»
+    // одним order_item. На кухне это 4 строки (2 блюда × 2 экземпляра) с ОДНИМ
+    // orderItemId — деление rows/dishes должно вернуть кол-во экземпляров (2), а не 4.
+    const result = computeServedCheckItems(
+      [makeItem({ ...comboItem(), quantity: 2 })],
+      [
+        comboKitchen('Сырник', { id: 'k1', status: 'queued' }),
+        comboKitchen('Сырник', { id: 'k2', status: 'queued' }),
+        comboKitchen('Кофе', { id: 'k3', status: 'in_progress' }),
+        comboKitchen('Кофе', { id: 'k4', status: 'in_progress' }),
+      ],
+    )
+
+    expect(result).toHaveLength(0)
+  })
+
   it('дети комбо не загрязняют учёт одноимённого отдельного блюда', () => {
     // отдельный Сырник подан (нет своих кухонных строк), но на кухне активен
     // Сырник ИЗ комбо — он не должен прятать отдельный Сырник из чека.
