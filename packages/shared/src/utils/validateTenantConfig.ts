@@ -94,25 +94,18 @@ export const validateTenantConfig = (
   }
 
   // --- Gallery warnings ---
+  // Единый чек: предупреждаем только если галерея включена где-либо (секция или страница),
+  // но ни в одном из мест галереи не выбраны.
 
-  if (layout.sectionsOrder.includes('gallery' as any)) {
-    if (!layout.sections.gallery.galleryIds.length) {
-      issues.push({
-        severity: 'warning',
-        code: 'gallery_section_empty',
-        message: 'Секция «Галерея» включена, но галереи не выбраны',
-      })
-    }
-  }
+  const galleryEnabled = layout.sectionsOrder.includes('gallery' as any) || layout.pages.includes('gallery' as any)
+  const hasGalleries = layout.sections.gallery.galleryIds.length > 0 || layout.pageSettings.gallery.galleryIds.length > 0
 
-  if (layout.pages.includes('gallery' as any)) {
-    if (!layout.pageSettings.gallery.galleryIds.length) {
-      issues.push({
-        severity: 'warning',
-        code: 'gallery_page_empty',
-        message: 'Страница «Галерея» включена, но галереи не выбраны',
-      })
-    }
+  if (galleryEnabled && !hasGalleries) {
+    issues.push({
+      severity: 'warning',
+      code: 'gallery_empty',
+      message: 'Галерея включена, но галереи не выбраны',
+    })
   }
 
   // --- Delivery warning ---
