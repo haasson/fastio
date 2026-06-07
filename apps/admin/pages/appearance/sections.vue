@@ -162,6 +162,9 @@ const toggle = (key: string) => {
   else openKeys.add(key)
 }
 
+// TODO: reviews и delivery как секции скрыты; delivery доступна только как страница
+const HIDDEN_SECTION_KEYS = new Set(['reviews', 'delivery'])
+
 // Структурные секции — фиксированная позиция, не драгаются
 const structuralOrder = computed(() => STRUCTURAL_SECTIONS.filter(
   (k) => isAvailable(k) && siteLayoutForm.sectionsOrder.includes(k as SectionKey),
@@ -170,7 +173,7 @@ const structuralOrder = computed(() => STRUCTURAL_SECTIONS.filter(
 
 const order = computed({
   get: () => siteLayoutForm.sectionsOrder.filter(
-    (k) => isAvailable(k) && !STRUCTURAL_SECTIONS.includes(k as SectionKey),
+    (k) => isAvailable(k) && !STRUCTURAL_SECTIONS.includes(k as SectionKey) && !HIDDEN_SECTION_KEYS.has(k),
   ),
   set: (val: string[]) => {
     // Вставляем недоступные не-структурные ключи на их оригинальные позиции,
@@ -194,7 +197,7 @@ const order = computed({
 
 // setter пустой — VueDraggable вызывает его при drag, но реальное обновление идёт через order
 const disabledKeys = computed({
-  get: () => SECTION_KEYS.filter((k) => isAvailable(k) && !siteLayoutForm.sectionsOrder.includes(k as SectionKey)),
+  get: () => SECTION_KEYS.filter((k) => isAvailable(k) && !siteLayoutForm.sectionsOrder.includes(k as SectionKey) && !HIDDEN_SECTION_KEYS.has(k)),
   set: () => {},
 })
 

@@ -34,10 +34,11 @@
           :galleries="galleries ?? []"
           :gallery-ids="shellLayout.sections.gallery.galleryIds ?? []"
         />
-        <ReviewsSection
+        <!-- TODO: reviews section — скрыто до реализации функционала -->
+        <!-- <ReviewsSection
           v-else-if="key === 'reviews' && shellLayout.sections.reviews.enabled"
           id="reviews"
-        />
+        /> -->
       </template>
     </template>
   </PageShell>
@@ -54,7 +55,7 @@ import BannersSection from '~/shared/ui/sections/BannersSection.vue'
 import MenuSection from '~/features/menu-catalog/components/MenuSection.vue'
 import ServicesSection from '~/features/services-catalog/components/ServicesSection.vue'
 import GallerySection from '~/shared/ui/sections/GallerySection.vue'
-import ReviewsSection from '~/shared/ui/sections/ReviewsSection.vue'
+// import ReviewsSection from '~/shared/ui/sections/ReviewsSection.vue' // TODO: скрыто до реализации
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 

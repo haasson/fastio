@@ -68,7 +68,8 @@ function renderNode(node: NNode): RenderOutput {
   }
 
   if (tag === 'span') {
-    return h('span', {}, kids())
+    const style = el.getAttribute('style')
+    return h('span', style ? { style } : {}, kids())
   }
 
   if (tag === 'strong') return h('strong', {}, kids())

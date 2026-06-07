@@ -31,7 +31,18 @@
           </SfEmptyState>
         </template>
 
-        <!-- auto + текст -->
+        <!-- auto + список зон -->
+        <template v-else-if="activeZones.length">
+          <div class="zone-list">
+            <div v-for="zone in activeZones" :key="zone.id" class="zone-item">
+              <span class="zone-color" :style="{ background: zone.color }" />
+              <span class="zone-name">{{ zone.name }}</span>
+              <FsText variant="body-sm" color="secondary" class="zone-conditions">{{ formatZoneConditions(zone) }}</FsText>
+            </div>
+          </div>
+        </template>
+
+        <!-- auto + текст (нет зон) -->
         <template v-else>
           <FsText variant="body-sm" class="auto-text">{{ autoText }}</FsText>
         </template>
@@ -79,6 +90,8 @@ const showMap = computed(() => layout.value.pageSettings.delivery?.showMap ?? fa
 const isDark = computed(() => isPresetDark(tenant.value?.theme?.preset ?? ''))
 const manualText = computed(() => content.value.delivery?.manualText ?? '')
 
+const activeZones = computed(() => (zones.value ?? []).filter((z) => z.isActive))
+
 const autoText = computed(() =>
   buildDeliveryText(zones.value ?? [], tenant.value!),
 )
@@ -105,5 +118,38 @@ const mapDescription = computed(() => {
 
 .map-description {
   margin-bottom: 16px;
+}
+
+.zone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zone-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-8);
+}
+
+.zone-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.zone-name {
+  font-weight: var(--font-weight-semibold);
+  flex: 1;
+}
+
+.zone-conditions {
+  flex-shrink: 0;
+  text-align: right;
 }
 </style>
