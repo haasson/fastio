@@ -27,6 +27,10 @@ export default defineNuxtConfig({
     telegramProxyUrl: '', // NUXT_TELEGRAM_PROXY_URL — sing-box HTTP proxy для RKN bypass
     adminUrl: '', // NUXT_ADMIN_URL — для inline-кнопок "Позвонить" в notify хендлерах
     relaySecret: '', // NUXT_RELAY_SECRET — для requireRelaySecret() (PREPROD-212 defense-in-depth)
+    smtpHost: 'smtp.timeweb.ru', // NUXT_SMTP_HOST
+    smtpUser: '', // NUXT_SMTP_USER
+    smtpPass: '', // NUXT_SMTP_PASS
+    alertEmail: '', // NUXT_ALERT_EMAIL — адрес для email-фоллбека алёртов
     public: {
       supabaseUrl: '', // NUXT_PUBLIC_SUPABASE_URL — используется в utils/supabase.ts
     },
