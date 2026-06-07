@@ -10,7 +10,7 @@ import {
   validateAndNormalizeRussianPhone,
 } from '@fastio/shared'
 import { getServerSupabase } from '../../utils/supabase'
-import { requireRelaySecret, requireTelegramWebhookSecret } from '../../utils/auth'
+import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { telegramApiUrl, telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '@fastio/shared/observability'
 
@@ -50,7 +50,6 @@ export default defineEventHandler(async (event) => {
   if (!token) return { ok: true }
 
   requireTelegramWebhookSecret(event)
-  requireRelaySecret(event)
 
   const body: TgUpdate = await readBody(event)
 

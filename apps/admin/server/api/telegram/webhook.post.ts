@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 import { getServerSupabase } from '../../utils/supabase'
-import { requireRelaySecret, requireTelegramWebhookSecret } from '../../utils/auth'
+import { requireTelegramWebhookSecret } from '../../utils/auth'
 import { telegramApiUrl, telegramFetch } from '../../utils/telegramFetch'
 import { reportError } from '@fastio/shared/observability'
 
@@ -50,7 +50,6 @@ export default defineEventHandler(async (event) => {
   if (!token) return { ok: true }
 
   requireTelegramWebhookSecret(event)
-  requireRelaySecret(event)
 
   const body = await readBody(event) as { message?: TgMessage }
   const message = body?.message
