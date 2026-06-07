@@ -26,8 +26,8 @@
 
 import type { Tenant } from '@fastio/shared'
 
-const TTL_HIT_MS = 60_000
-const TTL_MISS_MS = 10_000
+const TTL_HIT_MS = 2_000 // TESTING: временно снижен с 60_000 для ускорения тестов — вернуть после сессии
+const TTL_MISS_MS = 2_000
 // Bound на память: 10k × ~5KB на Tenant ≈ 50MB worst-case при
 // атаке на random hostnames.
 const MAX_ENTRIES = 10_000
