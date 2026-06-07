@@ -98,7 +98,7 @@ watch(() => props.modelValue, (id) => {
 
 .scroll-nav-track {
   display: flex;
-  gap: 0;
+  gap: 4px;
   overflow-x: auto;
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
@@ -134,9 +134,6 @@ watch(() => props.modelValue, (id) => {
   cursor: pointer;
   flex-shrink: 0;
 
-  &:first-child { padding-left: 0; }
-  &:last-child { padding-right: 0; }
-
   &.is-active {
     color: var(--primary);
     border-bottom-color: var(--primary);
@@ -150,9 +147,6 @@ watch(() => props.modelValue, (id) => {
 .scroll-nav-sm .scroll-nav-item {
   padding: 8px 10px;
   font-size: 12px;
-
-  &:first-child { padding-left: 0; }
-  &:last-child { padding-right: 0; }
 }
 
 // ─── Count badge ─────────────────────────────────────────────────────────────
