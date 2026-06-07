@@ -14,13 +14,16 @@
           </SfEmptyState>
         </template>
 
-        <!-- auto + карта -->
-        <template v-else-if="showMap">
-          <template v-if="zones?.length">
-            <FsText variant="body-sm" color="secondary" class="map-description">{{ mapDescription }}</FsText>
-            <ClientOnly>
-              <DeliveryMapView :zones="zones" :dark="isDark" />
-            </ClientOnly>
+        <!-- auto + зоны -->
+        <template v-else-if="deliveryMode === 'zones'">
+          <template v-if="activeZones.length">
+            <div class="zone-list">
+              <div v-for="zone in activeZones" :key="zone.id" class="zone-item">
+                <span class="zone-color" :style="{ background: zone.color }" />
+                <span class="zone-name">{{ zone.name }}</span>
+                <FsText variant="body-sm" color="secondary" class="zone-conditions">{{ formatZoneConditions(zone) }}</FsText>
+              </div>
+            </div>
           </template>
           <SfEmptyState
             v-else
@@ -31,18 +34,7 @@
           </SfEmptyState>
         </template>
 
-        <!-- auto + список зон -->
-        <template v-else-if="activeZones.length">
-          <div class="zone-list">
-            <div v-for="zone in activeZones" :key="zone.id" class="zone-item">
-              <span class="zone-color" :style="{ background: zone.color }" />
-              <span class="zone-name">{{ zone.name }}</span>
-              <FsText variant="body-sm" color="secondary" class="zone-conditions">{{ formatZoneConditions(zone) }}</FsText>
-            </div>
-          </div>
-        </template>
-
-        <!-- auto + текст (нет зон) -->
+        <!-- auto + фикс -->
         <template v-else>
           <FsText variant="body-sm" class="auto-text">{{ autoText }}</FsText>
         </template>
@@ -52,18 +44,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { computed } from 'vue'
 import { Truck } from 'lucide-vue-next'
 import { useNuxtData, useAsyncData, useRequestFetch, useRoute } from 'nuxt/app'
 import type { DeliveryZone, Tenant } from '@fastio/shared'
-import { defaultSiteLayout, defaultSiteContent, deepMerge, isPresetDark } from '@fastio/shared'
+import { defaultSiteLayout, defaultSiteContent, deepMerge } from '@fastio/shared'
 import { FsSection, FsText, FsRichContent } from '@fastio/public-ui'
 import PageShell from '~/shared/ui/sections/PageShell.vue'
 import StorePageLayout from '~/shared/ui/layout/StorePageLayout.vue'
 import SfEmptyState from '~/shared/ui/sf/domain/SfEmptyState.vue'
 import { buildDeliveryText, formatZoneConditions } from '~/features/delivery'
-
-const DeliveryMapView = defineAsyncComponent(() => import('~/features/delivery/components/DeliveryMapView.vue'))
 
 const rfetch = useRequestFetch()
 const route = useRoute()
@@ -86,38 +76,15 @@ const content = computed(() =>
 )
 
 const descriptionMode = computed(() => layout.value.pageSettings.delivery?.descriptionMode ?? 'auto')
-const showMap = computed(() => layout.value.pageSettings.delivery?.showMap ?? false)
-const isDark = computed(() => isPresetDark(tenant.value?.theme?.preset ?? ''))
+const deliveryMode = computed(() => tenant.value?.deliveryMode ?? 'fixed')
 const manualText = computed(() => content.value.delivery?.manualText ?? '')
-
 const activeZones = computed(() => (zones.value ?? []).filter((z) => z.isActive))
-
-const autoText = computed(() =>
-  buildDeliveryText(zones.value ?? [], tenant.value!),
-)
-
-const mapDescription = computed(() => {
-  const active = (zones.value ?? []).filter((z) => z.isActive)
-  if (active.length === 0) return ''
-
-  const prefix = 'Мы доставляем в пределах указанных на карте зон.'
-  const allFree = active.every((z) => z.deliveryFee === 0)
-  if (allFree) return `${prefix} Доставка бесплатная.`
-
-  const sameFee = active.every((z) => z.deliveryFee === active[0].deliveryFee && z.freeDeliveryFrom === active[0].freeDeliveryFrom)
-  if (!sameFee) return `${prefix} Стоимость доставки зависит от зоны.`
-
-  return `${prefix} ${formatZoneConditions(active[0])}.`
-})
+const autoText = computed(() => buildDeliveryText(zones.value ?? [], tenant.value!))
 </script>
 
 <style scoped lang="scss">
 .auto-text {
   white-space: pre-line;
-}
-
-.map-description {
-  margin-bottom: 16px;
 }
 
 .zone-list {

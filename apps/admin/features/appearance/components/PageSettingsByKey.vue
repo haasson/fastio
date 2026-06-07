@@ -34,11 +34,6 @@
   <!-- Доставка -->
   <div v-else-if="pageKey === 'delivery'" class="fields-wrap">
     <div class="field">
-      <UiCheckbox v-model:checked="siteLayoutForm.pageSettings.delivery.showMap">
-        Показывать карту с зонами доставки
-      </UiCheckbox>
-    </div>
-    <div class="field">
       <label class="field-label">Описание доставки</label>
       <UiSegmentedControl
         v-model="siteLayoutForm.pageSettings.delivery.descriptionMode"
@@ -53,7 +48,7 @@
       />
     </div>
     <span v-else class="hint">
-      Описание будет сформировано автоматически из настроек доставки
+      Описание формируется автоматически: фиксированная стоимость или список зон
     </span>
   </div>
 
@@ -92,7 +87,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { UiSegmentedControl, UiCheckbox, UiAlert } from '@fastio/ui'
+import { UiSegmentedControl, UiAlert } from '@fastio/ui'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 
 // RichTextEditor тянет tiptap (~366 kB). Грузим лениво — редактор показывается
