@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Reservation, ReservationFormData, ReservationStatus } from '@fastio/shared'
 import { mapReservation } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
 import { query } from '~/shared/utils/query'
 
 const SELECT_FIELDS = `
@@ -48,6 +49,24 @@ export const reservationsApi = {
 
     if (error) {
       console.error('[reservations.getById]', error.message)
+
+      return null
+    }
+
+    return data ? toReservation(data) : null
+  },
+
+  // Бронь, привязанная к заказу (reservations.order_id). Для «Истории стола».
+  async getByOrderId(sb: SupabaseClient, orderId: string): Promise<Reservation | null> {
+    const { data, error } = await sb
+      .from('reservations')
+      .select(SELECT_FIELDS)
+      .eq('order_id', orderId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[reservations.getByOrderId]', error.message)
+      reportError(error, { context: 'reservations.getByOrderId', orderId })
 
       return null
     }

@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Order, OrderItem, OrderDeliveryType, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import { normalizePhone, orderItemKey } from '@fastio/shared'
 import { query } from '~/shared/utils/query'
+import { sanitizeOrSearch } from '~/shared/utils/orFilter'
 import { reportError } from '@fastio/shared/observability'
 import type { OrderRow, OrderItemRow } from '~/shared/data/db-types'
 import { filterDefined } from '~/shared/utils/filterDefined'
@@ -194,6 +195,68 @@ export const DEFAULT_PAGE_SIZE = 10
 
 const SORTABLE_COLUMNS = new Set(['created_at', 'total'])
 
+export type TableSession = {
+  id: string
+  createdAt: string
+  tableId: string | null
+  tableName: string | null
+  customerName: string | null
+  customerPhone: string | null
+  total: number
+  discountAmount: number
+  status: string
+}
+
+export type TableSessionsParams = {
+  branchId: string | null
+  date: string // YYYY-MM-DD — один день
+  // Готовые ISO-границы суток. Если переданы — используются как есть (для
+  // корректного учёта таймзоны тенанта на стороне вызывающего). Иначе границы
+  // считаются из `date` как [date 00:00 UTC, date+1 00:00 UTC).
+  from?: string
+  to?: string
+  tableId?: string
+  search?: string // по customer_name / customer_phone
+  minTotal?: number
+  limit?: number
+  offset?: number
+}
+
+export type TableSessionsResult = {
+  sessions: TableSession[]
+  total: number
+}
+
+const mapTableSession = (raw: Record<string, unknown>): TableSession => {
+  const row = raw as Pick<
+    OrderRow,
+    'id' | 'created_at' | 'table_id' | 'table_name' | 'customer_name' | 'customer_phone' | 'total' | 'discount_amount' | 'status'
+  >
+
+  return {
+    id: row.id,
+    createdAt: row.created_at,
+    tableId: row.table_id,
+    tableName: row.table_name,
+    customerName: row.customer_name,
+    customerPhone: row.customer_phone ?? null,
+    total: row.total,
+    discountAmount: row.discount_amount,
+    status: row.status,
+  }
+}
+
+// Границы суток по дате YYYY-MM-DD: [from, to) полуинтервал.
+// Если from/to не переданы — UTC-границы дня.
+const dayBounds = (date: string, from?: string, to?: string): { from: string; to: string } => {
+  if (from && to) return { from, to }
+
+  const start = new Date(`${date}T00:00:00.000Z`)
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
+
+  return { from: start.toISOString(), to: end.toISOString() }
+}
+
 export type OrderListOptions = {
   branchId?: string | null
   filterBranchIds?: string[]
@@ -254,12 +317,13 @@ export const ordersApi = {
     }
 
     if (search) {
+      const safe = sanitizeOrSearch(search)
       const phoneDigits = normalizePhone(search)
       const phonePart = phoneDigits.length >= 3
         ? `customer_phone.ilike.%${phoneDigits}%`
-        : `customer_phone.ilike.%${search}%`
+        : `customer_phone.ilike.%${safe}%`
 
-      q = q.or(`customer_name.ilike.%${search}%,${phonePart}`)
+      q = q.or(`customer_name.ilike.%${safe}%,${phonePart}`)
     }
 
     if (deliveryTypes.length > 0) {
@@ -281,6 +345,61 @@ export const ordersApi = {
 
     return {
       orders: (data ?? []).map(mapOrder),
+      total: count ?? 0,
+    }
+  },
+
+  // История стола: dine-in чеки (table_id IS NOT NULL) за один день.
+  // Возвращает страницу + общее количество (count: 'exact') для пагинации.
+  async listTableSessions(
+    sb: SupabaseClient,
+    tenantId: string,
+    params: TableSessionsParams,
+  ): Promise<TableSessionsResult> {
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE
+    const offset = params.offset ?? 0
+    const { from: dayFrom, to: dayTo } = dayBounds(params.date, params.from, params.to)
+
+    // Скоуп по филиалу идёт через стол (tables.branch_id), а НЕ через orders.branch_id:
+    // dine-in заказы создаются без branch_id (см. useAddDishToTable), а стол всегда
+    // принадлежит филиалу (tables.branch_id NOT NULL). Поэтому inner-join к tables и
+    // фильтр по его branch_id — иначе вся история была бы пуста на заказах без branch_id.
+    let q = sb
+      .from('orders')
+      .select(
+        'id, created_at, table_id, table_name, customer_name, customer_phone, total, discount_amount, status, tables!inner(branch_id)',
+        { count: 'exact' },
+      )
+      .eq('tenant_id', tenantId)
+      .not('table_id', 'is', null)
+      .gte('created_at', dayFrom)
+      .lt('created_at', dayTo)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    if (params.branchId !== null) q = q.eq('tables.branch_id', params.branchId)
+    if (params.tableId) q = q.eq('table_id', params.tableId)
+    if (params.search) {
+      const safe = sanitizeOrSearch(params.search)
+      const phoneDigits = normalizePhone(params.search)
+      const phonePart = phoneDigits.length >= 3
+        ? `customer_phone.ilike.%${phoneDigits}%`
+        : `customer_phone.ilike.%${safe}%`
+
+      q = q.or(`customer_name.ilike.%${safe}%,${phonePart}`)
+    }
+    if (params.minTotal !== undefined) q = q.gte('total', params.minTotal)
+
+    const { data, error, count } = await q
+
+    if (error) {
+      reportError(error, { context: 'orders-table-sessions' })
+
+      throw new Error('Не удалось загрузить историю стола')
+    }
+
+    return {
+      sessions: (data ?? []).map(mapTableSession),
       total: count ?? 0,
     }
   },

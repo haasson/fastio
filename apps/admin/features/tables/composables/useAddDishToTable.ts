@@ -34,7 +34,10 @@ export function useAddDishToTable(getTenantId: () => string | null) {
 
     await api.orders.create({
       tenantId,
-      branchId: null,
+      // Стол всегда принадлежит филиалу (tables.branch_id NOT NULL) — наследуем его,
+      // иначе dine-in заказ остаётся без филиала (ломает фильтр по филиалу в списке
+      // заказов, аналитике и истории столов).
+      branchId: table.branchId,
       customerName: null,
       customerPhone: '',
       items: [item],

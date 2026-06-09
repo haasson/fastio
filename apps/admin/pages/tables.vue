@@ -82,6 +82,11 @@ const tabs = computed(() => {
     items.push({ value: 'reservations', label: 'Бронирование', count: newReservationCount.value || undefined })
   }
 
+  // История стола — dine-in чеки за день для разбора инцидентов. Право tables.history.
+  if (gate.viewTableHistory.value.enabled) {
+    items.push({ value: 'history', label: 'История' })
+  }
+
   // Настройки (столы + брони) — под settings.edit, как все остальные настройки.
   if (gate.editSettings.value.enabled) items.push({ value: 'settings', label: 'Настройки' })
 

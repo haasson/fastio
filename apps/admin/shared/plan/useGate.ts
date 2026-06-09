@@ -145,6 +145,8 @@ export const useGate = (): GateRegistry => {
 
   const viewTables = permissionGate(dineIn, 'tables.view')
   const manageTables = permissionGate(dineIn, 'tables.manage')
+  // История стола — часть модуля «Столы» (dineIn), отдельное право tables.history.
+  const viewTableHistory = permissionGate(dineIn, 'tables.history')
 
   // Reservations — только для retail (бронирование столиков). Брони — часть модуля
   // «Столы»: отдельных прав нет, просмотр/управление бэкуются tables.view/tables.manage.
@@ -230,7 +232,7 @@ export const useGate = (): GateRegistry => {
     viewServiceMenu, manageServiceMenu,
     viewOrders,
     viewKitchen, viewKitchenQueue, viewKitchenOverview, cookKitchen,
-    viewTables, manageTables,
+    viewTables, manageTables, viewTableHistory,
     viewReservations, manageReservations,
     viewAppointments, manageAppointments, viewAllAppointments,
     viewPromotions, managePromotions,

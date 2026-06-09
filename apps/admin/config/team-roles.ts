@@ -41,6 +41,7 @@ export const getPermissionGroups = ({ auditLogEnabled }: PermissionGroupOptions)
     permissions: [
       { key: 'tables.view', label: 'Просмотр столов, вызовов и броней' },
       { key: 'tables.manage', label: 'Управление столами и бронями' },
+      { key: 'tables.history', label: 'Просмотр истории столов' },
     ],
   },
   {

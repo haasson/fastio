@@ -10,7 +10,7 @@ const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'menu.view', 'menu.edit', 'menu.delete',
   'orders.view', 'orders.create', 'orders.edit', 'orders.status', 'orders.cancel',
   'kitchen.view', 'kitchen.cook', 'kitchen.overview',
-  'tables.view', 'tables.manage',
+  'tables.view', 'tables.manage', 'tables.history',
   'appointments.view', 'appointments.manage',
   'appointments.view_all', 'appointments.view_own',
   'promos.view', 'promos.manage',
