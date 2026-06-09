@@ -135,6 +135,8 @@ async function onRevokeAll() {
 </script>
 
 <style scoped lang="scss">
+@use '~/assets/styles/mixins' as *;
+
 .profile-root {
   max-width: 400px;
   margin: 0 auto;
@@ -156,13 +158,12 @@ async function onRevokeAll() {
 }
 
 .security-title {
-  font-size: 14px;
-  font-weight: 600;
+  @include text-body-sm(600);
   color: var(--color-text);
 }
 
 .security-hint {
-  font-size: 12px;
+  @include text-xs;
   line-height: 1.4;
   color: var(--color-text-secondary);
   margin: 0;

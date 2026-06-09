@@ -176,7 +176,6 @@ function itemsLabel(n: number) {
 .order-number {
   @include text-xs(600);
   color: var(--color-text-secondary);
-  font-family: monospace;
 }
 
 .order-total {

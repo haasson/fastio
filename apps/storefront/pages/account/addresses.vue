@@ -153,7 +153,8 @@ async function onSave(data: Record<string, unknown>) {
 }
 
 .addr-label {
-  font-weight: 600;
+  @include text-body-sm(600);
+  color: var(--color-text);
 }
 
 .addr-text {
