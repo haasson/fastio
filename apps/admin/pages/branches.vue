@@ -35,7 +35,6 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
 import { useBranchLimit } from '~/shared/plan/useBranchLimit'
 import { useGate } from '~/shared/plan/useGate'
-import { isLockedBy } from '~/shared/plan/useGate.helpers'
 import BranchAddressBlock from '~/features/settings/components/BranchAddressBlock.vue'
 import TenantContactsBlock from '~/features/settings/components/TenantContactsBlock.vue'
 import TabsLayout from '~/shared/ui/components/TabsLayout.vue'
@@ -49,7 +48,7 @@ const { branches, loading } = storeToRefs(branchStore)
 const gate = useGate()
 
 const { branchLimitReached, maxBranches, branchLimitLabel } = useBranchLimit()
-const isVenueMode = isLockedBy(gate.branches, 'locked')
+const isVenueMode = computed(() => !gate.branches.value.enabled)
 
 usePageTitle(computed(() => isVenueMode.value ? 'Заведение' : 'Филиалы'))
 
