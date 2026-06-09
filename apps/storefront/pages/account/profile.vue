@@ -13,10 +13,6 @@
               <FsInput v-model="phone" type="tel" placeholder="+7 (999) 123-45-67" mask="+7 (###) ###-##-##" :error="hasError" />
             </FsField>
 
-            <FsField label="Email">
-              <FsInput :model-value="authStore.customerEmail" disabled />
-            </FsField>
-
             <FsAlert v-if="serverError" type="error">{{ serverError }}</FsAlert>
             <FsAlert v-if="saved" type="success">Сохранено</FsAlert>
 
