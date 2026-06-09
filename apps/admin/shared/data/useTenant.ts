@@ -294,6 +294,16 @@ export const useTenant = (userId: Ref<string | null>) => {
     return result
   }
 
+  // Реактивация/выбор тарифа из баланса для заблокированного тенанта.
+  const activatePlan = async (planKey: string): Promise<'activated' | 'already_active'> => {
+    if (!maybeTenant.value) throw new Error('No tenant')
+    const result = await api.tenants.activatePlan(maybeTenant.value.id, planKey)
+
+    await fetchTenant()
+
+    return result
+  }
+
   const dispose = () => {
     maybeTenant.value = null
     memberships.value = []
@@ -330,6 +340,7 @@ export const useTenant = (userId: Ref<string | null>) => {
     switchTenant,
     update,
     changePlan,
+    activatePlan,
     dispose,
   }
 }

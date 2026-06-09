@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-06T07:11:41.762Z",
+  "generated_at": "2026-06-09T03:14:18.327Z",
   "stats": {
     "files": 83,
     "pages": 0,
@@ -270,8 +270,8 @@
     },
     "middleware/auth.global.ts": {
       "kind": "ts",
-      "hash": "fa02da777fe2",
-      "purpose": "Глобальная middleware: ждёт инициализацию auth, обрабатывает invite/recovery, грузит tenant, рулит /login и /suspended",
+      "hash": "f31f90c1551b",
+      "purpose": "Глобальный auth-миддлвар: invite/recovery flow, проверка сессии, tenant.init(), гейт suspended (доступны только /suspended, /account, /help)",
       "symbols": [
         {
           "name": "default",
@@ -916,14 +916,14 @@
     },
     "shared/stores/tenant.ts": {
       "kind": "ts",
-      "hash": "20a3dc3f9127",
-      "purpose": "Pinia store текущего тенанта: tenant/memberships/currentRoleName/currentPermissions/businessType + init/switchTenant/update/changePlan",
+      "hash": "8142d7b1a2b1",
+      "purpose": "Pinia-стор тенанта: tenant/maybeTenant, memberships, права/роль, businessType, init/switchTenant/update/changePlan/activatePlan",
       "symbols": [
         {
           "name": "useTenantStore",
           "kind": "const",
           "hash": "3a1ef8e5",
-          "purpose": "Стор тенанта: tenant/maybeTenant, memberships, currentRoleName, currentPermissions, businessType, init/switchTenant/update/changePlan"
+          "purpose": "Стор тенанта: tenant/maybeTenant, memberships, currentRoleName, currentPermissions, businessType, init/switchTenant/update/changePlan/activatePlan"
         }
       ]
     },

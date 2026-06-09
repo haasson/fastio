@@ -162,6 +162,17 @@ export const tenantsApi = {
     return data as 'upgraded' | 'downgraded'
   },
 
+  // Реактивация/выбор тарифа из баланса заблокированным тенантом (suspended/past_due).
+  // Списывает цену выбранного плана и переводит подписку в active. См. billing_activate_plan
+  // (318_billing_activate_plan.sql) — двойник кронового charge, но с caller-guard.
+  async activatePlan(sb: SupabaseClient, tenantId: string, planKey: string): Promise<'activated' | 'already_active'> {
+    const { data, error } = await sb.rpc('billing_activate_plan', { p_tenant_id: tenantId, p_plan_key: planKey })
+
+    if (error) throw new Error(error.message)
+
+    return data as 'activated' | 'already_active'
+  },
+
   async uploadDocument(sb: SupabaseClient, tenantId: string, file: File, slug: 'privacy' | 'offer'): Promise<string> {
     const path = `${tenantId}/${slug}.pdf`
 

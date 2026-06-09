@@ -33,8 +33,19 @@
           </li>
         </ul>
 
+        <!-- Заблокирован (suspended/past_due): оплата тарифа из баланса -->
         <UiButton
-          v-if="card.isCurrent"
+          v-if="isBlocked"
+          :type="card.isCurrent ? 'success' : 'primary'"
+          :loading="activating === card.key"
+          :disabled="!canAfford(card.price)"
+          class="plan-btn"
+          @click="handleActivate(card.key)"
+        >
+          {{ blockedLabel(card) }}
+        </UiButton>
+        <UiButton
+          v-else-if="card.isCurrent"
           type="default"
           disabled
           class="plan-btn"
@@ -66,6 +77,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useRouter } from '#imports'
 import { storeToRefs } from 'pinia'
 import { UiTitle, UiText, UiIcon, UiButton, UiCard, UiSectionHeader, UiBadge, UiPopover, UiAlert, useMessage } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
@@ -91,9 +103,16 @@ const { tenant, businessType } = storeToRefs(tenantStore)
 const { plans, getPlanSortOrder } = usePlans()
 const { error, success } = useMessage()
 const { confirm } = useConfirm()
+const router = useRouter()
 
 const currentPlanKey = computed(() => tenant.value.subscription?.plan ?? '')
 const isOnTrial = computed(() => tenant.value.subscription?.status === 'trial')
+const isBlocked = computed(() => {
+  const status = tenant.value.subscription?.status
+
+  return status === 'suspended' || status === 'past_due'
+})
+const canAfford = (price: number) => (tenant.value.balance ?? 0) >= price
 const trialEndsFormatted = computed(() => {
   const raw = tenant.value.subscription?.trialEndsAt
 
@@ -122,6 +141,45 @@ const planCards = computed<PlanCard[]>(() => {
 })
 
 const changingPlan = ref<string | null>(null)
+const activating = ref<string | null>(null)
+
+const blockedLabel = (card: PlanCard) => {
+  if (!canAfford(card.price)) return 'Недостаточно средств'
+  const verb = card.isCurrent ? 'Реактивировать' : 'Подключить'
+
+  return card.price > 0 ? `${verb} · ${formatPrice(card.price)}` : verb
+}
+
+const handleActivate = async (planKey: string) => {
+  const card = planCards.value.find((c) => c.key === planKey)
+
+  if (!card) return
+
+  const ok = await confirm({
+    title: card.isCurrent ? `Реактивировать тариф «${card.name}»?` : `Подключить тариф «${card.name}»?`,
+    message: card.price > 0
+      ? `С баланса спишется ${formatPrice(card.price)}. Подписка станет активной на 30 дней.`
+      : 'Подписка станет активной на 30 дней.',
+    confirmText: card.isCurrent ? 'Реактивировать' : 'Подключить',
+    cancelText: 'Отмена',
+  })
+
+  if (!ok) return
+
+  activating.value = planKey
+  try {
+    const result = await tenantStore.activatePlan(planKey)
+
+    success(result === 'already_active' ? 'Подписка уже активна' : 'Тариф активирован')
+    await router.push('/')
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Не удалось активировать тариф'
+
+    error(msg)
+  } finally {
+    activating.value = null
+  }
+}
 
 const handleChangePlan = async (planKey: string) => {
   const card = planCards.value.find((c) => c.key === planKey)
