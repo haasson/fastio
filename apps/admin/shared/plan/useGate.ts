@@ -187,6 +187,9 @@ export const useGate = (): GateRegistry => {
   const editSettings = permissionGate(alwaysOn, 'settings.edit')
   const viewAuditLog = permissionGate(auditLog, 'audit_log.view')
   const viewAnalytics = permissionGate(alwaysOn, 'analytics.view')
+  // ВНИМАНИЕ: глушится по suspended (как все permissionGate). Для доступа к
+  // биллингу — единственной фиче, нужной заблокированному тенанту, — используй
+  // useCanManageBilling (без suspended-подавления), а не этот гейт.
   const manageBilling = permissionGate(alwaysOn, 'billing.manage')
 
   // ───── Special: branch limit ─────

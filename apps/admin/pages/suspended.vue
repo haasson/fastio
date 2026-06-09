@@ -5,10 +5,25 @@
         <UiIcon name="ban" :size="48" class="suspended-icon" />
         <UiTitle size="h2">Подписка приостановлена</UiTitle>
         <UiText size="medium" class="suspended-text">
-          Доступ ограничен из-за неоплаченной подписки. Пополните баланс и активируйте тариф, чтобы продолжить работу.
+          {{ canManageBilling
+            ? 'Доступ ограничен из-за неоплаченной подписки. Пополните баланс и активируйте тариф, чтобы продолжить работу.'
+            : 'Доступ к заведению приостановлен. Обратитесь к владельцу, чтобы продлить подписку.' }}
         </UiText>
-        <UiButton type="primary" size="large" @click="$router.push('/account/billing')">
+        <UiButton
+          v-if="canManageBilling"
+          type="primary"
+          size="large"
+          @click="$router.push('/account/billing')"
+        >
           Перейти к оплате
+        </UiButton>
+        <UiButton
+          v-else
+          type="default"
+          size="large"
+          @click="$router.push('/help/support')"
+        >
+          Связаться с поддержкой
         </UiButton>
       </div>
     </UiCard>
@@ -21,8 +36,13 @@ import { storeToRefs } from 'pinia'
 import { definePageMeta, useRouter } from '#imports'
 import { UiCard, UiTitle, UiText, UiButton, UiIcon } from '@fastio/ui'
 import { useTenantStore } from '~/shared/stores/tenant'
+import { useCanManageBilling } from '~/shared/plan/useCanManageBilling'
 
 definePageMeta({ layout: 'default' })
+
+// Кто может платить (владелец / billing.manage) — видит CTA оплаты; остальные
+// (повар и пр.) — нейтральный текст + ссылку на поддержку, без бьющейся кнопки.
+const canManageBilling = useCanManageBilling()
 
 // Авто-оживление: realtime-подписка на tenants (useTenant.ts) обновляет статус в
 // сторе, когда владелец активирует тариф. Здесь ловим переход из suspended и

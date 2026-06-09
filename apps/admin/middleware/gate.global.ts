@@ -2,6 +2,7 @@ import { defineNuxtRouteMiddleware, navigateTo } from '#imports'
 import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
+import { useCanManageBilling } from '~/shared/plan/useCanManageBilling'
 import { resolveRouteGate, isUngatedRoute, REDIRECT_FALLBACKS } from '~/shared/plan/useGate.routes'
 
 /**
@@ -27,8 +28,16 @@ export default defineNuxtRouteMiddleware((to) => {
   // Без тенанта гейты бессмысленны — auth.global уже выкинет на /no-access или /login.
   if (!tenantStore.maybeTenant) return
 
-  // Suspended-флоу полностью на auth.global: он пускает только /account/* и /suspended.
-  // Гейту тут делать нечего, иначе будет двойной редирект (gate → /help → auth → /suspended).
+  // /account/billing требует право billing.manage — закрываем по прямому URL для
+  // ВСЕХ (в т.ч. suspended, где остальной gate-флоу ниже отключён). /account/* в
+  // UNGATED_PREFIXES, поэтому общий механизм его не ловит. Кто не управляет
+  // биллингом → на дашборд (suspended-слой auth.global дальше уведёт на /suspended).
+  if ((to.path === '/account/billing' || to.path.startsWith('/account/billing/')) && !useCanManageBilling().value) {
+    return navigateTo('/')
+  }
+
+  // Suspended-флоу полностью на auth.global: он пускает только /account/*, /help/*
+  // и /suspended. Гейту тут делать нечего, иначе будет двойной редирект.
   if (tenantStore.maybeTenant.subscription?.status === 'suspended') return
 
   if (isUngatedRoute(to.path)) return

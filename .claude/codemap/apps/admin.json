@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-09T03:25:51.325Z",
+  "generated_at": "2026-06-09T03:49:14.771Z",
   "stats": {
-    "files": 83,
+    "files": 84,
     "pages": 0,
-    "symbols": 144,
+    "symbols": 145,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -283,8 +283,8 @@
     },
     "middleware/gate.global.ts": {
       "kind": "ts",
-      "hash": "7e37f0dc84d1",
-      "purpose": "Глобальная middleware: закрывает прямой URL-доступ к недоступным секциям через resolveRouteGate + useGate, редиректит на первый доступный fallback",
+      "hash": "7bcb84b64616",
+      "purpose": "Глобальный route-гейт: закрывает прямой URL к недоступным секциям (права/модуль/тариф) редиректом на фолбэк; /account/billing гейтится по billing.manage даже на suspended",
       "symbols": [
         {
           "name": "default",
@@ -629,6 +629,19 @@
         }
       ]
     },
+    "shared/plan/useCanManageBilling.ts": {
+      "kind": "ts",
+      "hash": "52734a50ddea",
+      "purpose": "Композабл: может ли юзер управлять биллингом (владелец или billing.manage), БЕЗ suspended-подавления — для вкладок, gate и экрана блокировки",
+      "symbols": [
+        {
+          "name": "useCanManageBilling",
+          "kind": "function",
+          "hash": "3cfe6bde",
+          "purpose": "Признак «может управлять биллингом» (владелец или billing.manage), без suspended-гейта"
+        }
+      ]
+    },
     "shared/plan/useGate.helpers.ts": {
       "kind": "ts",
       "hash": "daab65dd509c",
@@ -788,8 +801,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "a58451d31b27",
-      "purpose": "Центральный реестр гейтов доступа (план + модуль + permission + suspension)",
+      "hash": "f3abdee7f723",
+      "purpose": "Legacy-агрегатор гейтов: собирает реестр всех feature/permission-гейтов (модули, права, тариф, suspended) для AppNav и middleware",
       "symbols": [
         {
           "name": "useGate",
