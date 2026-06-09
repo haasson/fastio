@@ -1,33 +1,47 @@
 # audit-log — заметка для агента
 
-Журнал аудита (shared). Полная мета — `feature.manifest.ts`.
+Generic-журнал изменений: кто что менял в справочниках, настройках, команде, операционных сущностях. Полная мета — `feature.manifest.ts`.
 
-## Что модуль делает
+## Как пишется (ВАЖНО — изменилось)
 
-Append-only лог действий: кто (`actor_id`), на чём (`entity_type`/`entity_id`), какое действие (`action`), когда (`created_at`), детали (`metadata` jsonb). Фича гейтится feature-флагом `AUDIT_LOG_ENABLED` в `shared/utils/featureFlags` (бета-функциональность).
+**Запись в `audit_logs` идёт БД-триггерами, НЕ из фронта.** Миграция `321_audit_logs_triggers.sql`:
+одна generic-функция `fn_audit()` навешена триггером (19 шт.) на каждую чувствительную таблицу
+(dishes, categories, modifier_groups/options, addons, addon_presets, combos/items, dish_tags, branches,
+tenant_roles, tenant_members, tenant_invitations, tables, reservations, services, promo_codes, promotions,
++ настройки `tenants` через `entity_type='settings'`, только UPDATE с WHEN-allow-list по настроечным колонкам).
 
-**Запись в `audit_logs` идёт не отсюда** — каждая фича сама пишет события через свой `*EventLogger` (например, `useOrderEventLogger`) или RPC. Эта фича отвечает только за **чтение** и UI.
+Параметры триггера `fn_audit(entity_type, name_col, parent_spec, actor_fallback_col, tenant_id_col)`:
+`name_col` поддерживает `'-'` (нет имени) и `'user:<col>'` (ФИО из auth.users); `tenant_id_col` дефолт `'tenant_id'`, для самой `tenants` — `'id'`; `actor_fallback_col` — актор из доменной колонки при service-role (invitations.invited_by).
+
+Триггер сам берёт актора (`auth.uid()` → имя из `auth.users`, роль из `tenant_members.role_id`),
+строит дифф по изменившимся колонкам (игнор `sort_order/created_at/updated_at` — reorder не логируем),
+пишет `payload` (дифф `{field:{old,new}}`), `changed_fields` (en-ключи), `search_text` (trgm-поиск),
+`parent_type`/`parent_id` (дочка → родитель, напр. опция → группа модификаторов).
+
+Гарантия: ни одна мутация этих таблиц не пройдёт без записи. Обойти из кода нельзя.
+
+Заказы и записи — НЕ здесь: у них свои `order_events` / `appointment_events` (rich-лента). В `audit_logs` не дублируются.
 
 ## Карта модуля
 
 | Файл | Что внутри |
 |---|---|
-| `api/audit-logs.ts` | `list` с фильтрами + пагинация |
-| `composables/useAuditLog.ts` | Состояние страницы: фильтры, пагинация, refresh |
-| `utils/audit.ts` | Чистые форматтеры: имя действия по `action`+`entity_type`, иконка, цвет |
+| `api/audit-logs.ts` | `list` (фильтры + trgm-поиск), `listForEntity` (история одной сущности, опц. с дочками). Только чтение |
+| `composables/useAuditLog.ts` | `list`, `listForEntity`, `enabled` (фиче-флаг). Только чтение — записи из фронта нет |
+| `utils/audit-labels.ts` | en→ru: `entityTypeLabel`, `actionMeta`, `fieldLabel`, `renderChanges` (дифф для рендера) |
+| `components/AuditTrail.vue` | Встраиваемая панель истории сущности. Props: `entityType`, `entityId`, `includeChildren`, `refreshKey`. Импорт deep-path |
+| `pages/audit-log.vue` (в `apps/admin/pages`) | Глобальная страница: фильтры (тип/действие) + поиск |
 
 ## Типовые задачи
 
-- **Новое отслеживаемое действие:** не в этой фиче. Идёшь в фичу-владелец сущности (например, `features/orders`) и в её `useXxxEventLogger` добавляешь новое событие. Авто-формат подхватится тут, если узнаваемый `action`.
-- **Новая колонка фильтра:** расширь `AuditLogFilters` тип + поле в `api/audit-logs.list()` + UI.
-- **Включить в проде:** AUDIT_LOG_ENABLED управляется через env-флаг — см. `shared/utils/featureFlags.ts`.
+- **Добавить аудит новой сущности:** миграция с `CREATE TRIGGER ... EXECUTE FUNCTION fn_audit('<entity_type>', '<name_col>|-|user:<col>', '<parent_spec>')`. Затем добавь лейблы в `audit-labels.ts` (ENTITY_TYPE_LABELS + поля).
+- **Встроить историю в карточку/дровер:** `<AuditTrail entity-type="dish" :entity-id="id" :refresh-key="key" />`. Для родителя с дочками — `:include-children="true" :show-entity="true"`.
+- **Новый фильтр на странице:** расширь `AuditLogsListParams` + ветку в `api/audit-logs.list()` + UI.
+- **Включён в проде:** флаг `auditLogEnabled` (`shared/utils/featureFlags`). Право чтения — `audit_log.view` (овнер видит всегда; кастомным ролям выдать в правах).
 
-## Антипаттерны (не делай так)
+## Антипаттерны
 
-- ❌ Писать в `audit_logs` из этой фичи — это write-only из других модулей.
-- ❌ UPDATE/DELETE на `audit_logs` — append-only, RLS должна это блокировать.
-- ❌ Полагаться на realtime `audit_logs` — события могут идти лавиной, фронт пагинирует с refresh-кнопкой.
-
-## Куда расти
-
-Экспорт CSV/PDF — добавь `api/audit-logs.export()` + UI кнопку. Не делай это generic'ом через UI таблицы — у audit-log специфичный формат строк (markdown в `metadata`).
+- ❌ Возвращать ручную запись в `audit_logs` из фронта — для триггерных сущностей будет двойная запись. Запись только триггерами.
+- ❌ UPDATE/DELETE на `audit_logs` — append-only.
+- ❌ Логировать reorder/`sort_order` — намеренно игнорируется в триггере.
+- ❌ Тащить заказы/записи в `audit_logs` — у них свои `*_events`.

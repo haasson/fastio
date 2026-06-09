@@ -37,16 +37,23 @@
           placeholder="30"
         />
       </div>
+
+      <UiCollapse v-if="addon?.id" :expanded-names="[]">
+        <UiCollapseItem name="audit" title="История изменений">
+          <AuditTrail entity-type="addon" :entity-id="addon.id" />
+        </UiCollapseItem>
+      </UiCollapse>
     </UiForm>
   </UiModal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiForm, UiInput, UiInputNumber, useMessage } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiCollapse, UiCollapseItem, useMessage } from '@fastio/ui'
 import type { Addon } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '@fastio/shared/observability'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 const props = defineProps<{
   modelValue: boolean

@@ -130,7 +130,7 @@ export default defineNuxtConfig({
       yandexMapsApiKey: '',
       telegramTenantBotUsername: '',
       helpUrl: 'https://help.fastio.ru',
-      auditLogEnabled: false,
+      auditLogEnabled: true,
       // TECHDEBT.sentry-dsn: DSN из env (NUXT_PUBLIC_SENTRY_DSN), а не хардкод.
       // Если пусто — Sentry не инициализируется (отключается локально без секрета).
       sentryDsn: '',

@@ -60,6 +60,12 @@
           Удалить стол
         </UiButton>
       </div>
+
+      <UiCollapse v-if="table?.id" :expanded-names="[]">
+        <UiCollapseItem name="audit" title="История изменений">
+          <AuditTrail entity-type="table" :entity-id="table.id" />
+        </UiCollapseItem>
+      </UiCollapse>
     </div>
   </UiModal>
 </template>
@@ -67,9 +73,10 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import { NSwitch } from 'naive-ui'
-import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiText, UiSegmentedControl } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiText, UiSegmentedControl, UiCollapse, UiCollapseItem } from '@fastio/ui'
 import { useConfirm } from '@fastio/kit'
 import type { Table, TableShape } from '@fastio/shared'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 // Полезная нагрузка формы стола. Модалка — тупая: собирает значения и эмитит
 // их наверх, сама в БД/audit не лезет. Создание/обновление/удаление и тосты —

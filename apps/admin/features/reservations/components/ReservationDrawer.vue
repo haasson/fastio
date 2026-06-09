@@ -134,13 +134,20 @@
           </template>
         </div>
       </template>
+
+      <!-- История изменений -->
+      <UiCollapse v-if="reservation?.id" :expanded-names="[]">
+        <UiCollapseItem name="audit" title="История изменений">
+          <AuditTrail entity-type="reservation" :entity-id="reservation.id" />
+        </UiCollapseItem>
+      </UiCollapse>
     </div>
   </UiDrawer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiButton, UiDivider, UiDrawer, UiForm, UiInput, UiInputNumber, UiSelect, UiTag, UiText, useMessage } from '@fastio/ui'
+import { UiButton, UiCollapse, UiCollapseItem, UiDivider, UiDrawer, UiForm, UiInput, UiInputNumber, UiSelect, UiTag, UiText, useMessage } from '@fastio/ui'
 import type { DrawerAction } from '@fastio/ui'
 import type { Reservation, ReservationSettings, Table } from '@fastio/shared'
 import { validationRules, useConfirm } from '@fastio/kit'
@@ -160,6 +167,7 @@ import {
   RESERVATION_STATUS_TYPES as STATUS_TYPES,
 } from '../utils/reservation-constants'
 import ReservationTablePicker from './ReservationTablePicker.vue'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 const props = defineProps<{
   modelValue: boolean

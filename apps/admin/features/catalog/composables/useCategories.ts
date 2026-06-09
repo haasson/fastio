@@ -4,11 +4,9 @@ import { mapCategory } from '@fastio/shared'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { reportError } from '@fastio/shared/observability'
-import { useAuditLog } from '~/features/audit-log'
 
 export const useCategories = (tenantId: Ref<string>, kind: CategoryKind = 'food') => {
   const api = useDatabase()
-  const { log } = useAuditLog()
 
   const { items: categories, loading, refresh } = useRealtimeList({
     channelKey: computed(() => tenantId.value ? `categories:${tenantId.value}:${kind}` : null),
@@ -37,17 +35,8 @@ export const useCategories = (tenantId: Ref<string>, kind: CategoryKind = 'food'
   }
 
   const remove = async (id: string) => {
-    const category = categories.value.find((c) => c.id === id)
-
     await api.categories.remove(id)
     categories.value = categories.value.filter((c) => c.id !== id)
-    log({
-      action: 'category.delete',
-      entityType: 'category',
-      entityId: id,
-      entityName: category?.name ?? null,
-      payload: { kind: category?.kind ?? kind },
-    })
   }
 
   const reorder = async (reordered: Category[]) => {

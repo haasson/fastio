@@ -87,13 +87,19 @@
         label="Активна"
         @update:model-value="form.active = $event"
       />
+
+      <UiCollapse v-if="category?.id" :expanded-names="[]">
+        <UiCollapseItem name="audit" title="История изменений">
+          <AuditTrail entity-type="category" :entity-id="category.id" />
+        </UiCollapseItem>
+      </UiCollapse>
     </UiForm>
   </UiModal>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiForm, UiInput, UiText, UiSelect, UiSwitch, UiAlert, useMessage } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiText, UiSelect, UiSwitch, UiAlert, UiCollapse, UiCollapseItem, useMessage } from '@fastio/ui'
 import type { Category, CategoryKind, CategoryType, DishTagDefinition } from '@fastio/shared'
 import { slugify, CATEGORY_COLOR_PALETTE, getCategoryColorHex, getNextCategoryColor } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
@@ -102,6 +108,7 @@ import { useTenantStore } from '~/shared/stores/tenant'
 import { reportError } from '@fastio/shared/observability'
 import ImageUploadTrigger from '~/shared/ui/components/ImageUploadTrigger.vue'
 import ColorSwatch, { type ColorOption } from '~/shared/ui/components/ColorSwatch.vue'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 type FormMode = 'regular' | 'virtual' | 'combo'
 

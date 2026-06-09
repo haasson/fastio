@@ -120,6 +120,10 @@
             </div>
           </div>
         </UiCollapseItem>
+
+        <UiCollapseItem v-if="service?.id" name="audit" title="История изменений">
+          <AuditTrail entity-type="service" :entity-id="service.id" />
+        </UiCollapseItem>
       </UiCollapse>
     </UiForm>
   </UiDrawer>
@@ -142,6 +146,7 @@ import { useBranchToggle } from '~/features/branches'
 import { reportError } from '@fastio/shared/observability'
 import { BasicInfoSection } from '~/features/catalog'
 import { TagsSection } from '~/features/catalog'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 const props = defineProps<{
   modelValue: boolean

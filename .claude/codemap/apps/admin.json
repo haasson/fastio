@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-09T07:48:49.211Z",
+  "generated_at": "2026-06-09T12:59:52.223Z",
   "stats": {
-    "files": 84,
+    "files": 85,
     "pages": 0,
-    "symbols": 148,
+    "symbols": 149,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -175,8 +175,8 @@
     },
     "config/team-roles.ts": {
       "kind": "ts",
-      "hash": "1cacadd64b97",
-      "purpose": "Конфиг прав и ролей: группы прав для редактора ролей + job-specific пресеты ролей по вертикали",
+      "hash": "445f5cc5455b",
+      "purpose": "Каталог прав ролей: группы прав (getPermissionGroups) и пресеты ролей для UI настройки команды",
       "symbols": [
         {
           "name": "PermissionGroup",
@@ -819,8 +819,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "5c3f405c482b",
-      "purpose": "Универсальный useGate(): собирает GateRegistry со всеми гейтами (фичи, планы, права) для любой вертикали",
+      "hash": "854ca6c22a0d",
+      "purpose": "Центральный контроль доступа: собирает GateRegistry (план + модуль + права + suspension) для всех разделов",
       "symbols": [
         {
           "name": "useGate",
@@ -832,8 +832,8 @@
     },
     "shared/plan/useGate.types.ts": {
       "kind": "ts",
-      "hash": "ea10246c5f13",
-      "purpose": "Типы системы гейтов: GateReason/GateResult/GateRegistry/GateKey",
+      "hash": "3fd207c113f6",
+      "purpose": "Типы гейтинга: GateReason, GateResult, GateKey (union всех ключей фич/разделов), GateRegistry",
       "symbols": [
         {
           "name": "GateReason",
@@ -1421,6 +1421,19 @@
           "kind": "function",
           "hash": "8546f837",
           "purpose": "Async проверка блокеров и warnings отключения модуля по бизнес-данным"
+        }
+      ]
+    },
+    "shared/utils/orFilter.ts": {
+      "kind": "ts",
+      "hash": "9b2ee4a22447",
+      "purpose": "Хелпер для безопасной подстановки пользовательского поиска в PostgREST .or()-фильтр",
+      "symbols": [
+        {
+          "name": "sanitizeOrSearch",
+          "kind": "function",
+          "hash": "a5db3889",
+          "purpose": "Глушит структурные символы PostgREST (, ( ) \") в строке поиска, чтобы не сломать .or()"
         }
       ]
     },

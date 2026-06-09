@@ -3,12 +3,10 @@ import type { Dish } from '@fastio/shared'
 import { mapDish, type DishFormData } from '../api/dishes'
 import { useRealtimeList } from '~/shared/data/useRealtimeList'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { useAuditLog } from '~/features/audit-log'
 import { reportError } from '@fastio/shared/observability'
 
 export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>) {
   const api = useDatabase()
-  const { log } = useAuditLog()
 
   const { items: dishes, loading } = useRealtimeList({
     channelKey: computed(() => tenantId.value && categoryId.value ? `dishes:${tenantId.value}:${categoryId.value}` : null),
@@ -43,17 +41,8 @@ export function useDishes(tenantId: Ref<string>, categoryId: Ref<string | null>)
   }
 
   const remove = async (id: string) => {
-    const dish = dishes.value.find((d) => d.id === id)
-
     await api.dishes.remove(id)
     dishes.value = dishes.value.filter((d) => d.id !== id)
-    log({
-      action: 'dish.delete',
-      entityType: 'dish',
-      entityId: id,
-      entityName: dish?.name ?? null,
-      payload: { categoryId: dish?.categoryId ?? null, price: dish?.price ?? null },
-    })
   }
 
   const toggleActive = async (id: string, active: boolean) => {

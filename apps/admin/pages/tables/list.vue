@@ -118,7 +118,6 @@ import { useDatabase } from '~/shared/data/useDatabase'
 import { useTablesContext, useAddDishToTable } from '~/features/tables'
 import { useGate } from '~/shared/plan/useGate'
 import { useBranchStore } from '~/shared/stores/branch'
-import { useAuditLog } from '~/features/audit-log'
 import DishPickerModal from '~/features/menu/components/DishPickerModal.vue'
 import TableCard from '~/features/tables/components/TableCard.vue'
 import TableEditModal, { type TableFormPayload } from '~/features/tables/components/TableEditModal.vue'
@@ -130,7 +129,6 @@ const api = useDatabase()
 const gate = useGate()
 const branchStore = useBranchStore()
 const { success, warning } = useMessage()
-const { log } = useAuditLog()
 const canManageTables = computed(() => gate.manageTables.value.enabled)
 
 const now = useNow({ interval: 30_000 })
@@ -305,18 +303,9 @@ const onModalSubmit = async (payload: TableFormPayload) => {
 }
 
 const onModalDelete = async (id: string) => {
-  const table = editModalTable.value
-
   modalSaving.value = true
   try {
     await api.tables.archive(id)
-    log({
-      action: 'table.delete',
-      entityType: 'table',
-      entityId: id,
-      entityName: table?.name ?? '',
-      payload: { capacity: table?.capacity, shape: table?.shape },
-    })
     ctx.onTableDeleted(id)
     success('Стол удалён')
     editModalOpen.value = false

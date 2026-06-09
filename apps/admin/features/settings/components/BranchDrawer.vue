@@ -69,6 +69,12 @@
         <UiText size="small">Филиал активен</UiText>
         <UiSwitch v-model="form.isActive" />
       </div>
+
+      <UiCollapse v-if="branch?.id" :expanded-names="[]">
+        <UiCollapseItem name="audit" title="История изменений">
+          <AuditTrail entity-type="branch" :entity-id="branch.id" />
+        </UiCollapseItem>
+      </UiCollapse>
     </UiForm>
   </UiDrawer>
 </template>
@@ -78,8 +84,10 @@ import { ref, reactive, computed, watch } from 'vue'
 import {
   UiDrawer,
   UiForm, UiInput, UiSwitch, UiText, UiSectionHeader,
+  UiCollapse, UiCollapseItem,
 } from '@fastio/ui'
 import WorkingHoursEditor from './WorkingHoursEditor.vue'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 import type { Branch, BranchFormData } from '@fastio/shared'
 import { DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'

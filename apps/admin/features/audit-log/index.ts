@@ -7,4 +7,4 @@ export * from './api/audit-logs'
 export * from './composables/useAuditLog'
 
 // Utils
-export * from './utils/audit'
+export * from './utils/audit-labels'

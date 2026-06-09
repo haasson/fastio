@@ -86,6 +86,18 @@
           Добавить опцию
         </UiButton>
       </div>
+
+      <UiCollapse v-if="group?.id" :expanded-names="[]">
+        <UiCollapseItem name="audit" title="История изменений">
+          <AuditTrail
+            entity-type="modifier_group"
+            :entity-id="group.id"
+            :refresh-key="refreshKey"
+            include-children
+            show-entity
+          />
+        </UiCollapseItem>
+      </UiCollapse>
     </UiForm>
   </UiModal>
 </template>
@@ -93,8 +105,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiSwitch, UiText, UiIcon, UiAlert, UiSegmentedControl, UiInfoTip } from '@fastio/ui'
+import { UiModal, UiForm, UiInput, UiInputNumber, UiButton, UiSwitch, UiText, UiIcon, UiAlert, UiSegmentedControl, UiInfoTip, UiCollapse, UiCollapseItem } from '@fastio/ui'
 import type { ModifierGroup, ModifierGroupFormData } from '@fastio/shared'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -109,6 +122,9 @@ const emit = defineEmits<{
 const formRef = ref()
 const saving = ref(false)
 const optionsError = ref<string | null>(null)
+// Модалка закрывается на сохранении, поэтому ленту истории обновляем при каждом
+// открытии (не на save — триггер пишет уже после закрытия).
+const refreshKey = ref(0)
 
 const weightModeItems = [
   { label: 'На уровне модификатора', value: 'global' },
@@ -137,6 +153,7 @@ watch(
   (val) => {
     if (!val) return
     optionsError.value = null
+    refreshKey.value++
     if (props.group) {
       form.name = props.group.name
       form.active = props.group.active

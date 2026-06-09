@@ -50,6 +50,16 @@
           @update:active="form.active = $event"
           @update:branch-ids="form.branchIds = $event"
         />
+
+        <UiCollapseItem v-if="combo?.id" name="audit" title="История изменений">
+          <AuditTrail
+            entity-type="combo"
+            :entity-id="combo.id"
+            :refresh-key="refreshKey"
+            include-children
+            show-entity
+          />
+        </UiCollapseItem>
       </UiCollapse>
     </UiForm>
   </UiDrawer>
@@ -57,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { UiDrawer, UiForm, UiCollapse, UiAlert } from '@fastio/ui'
+import { UiDrawer, UiForm, UiCollapse, UiCollapseItem, UiAlert } from '@fastio/ui'
 import type { Combo, Category, ComboItemInput, DishTagDefinition } from '@fastio/shared'
 import type { ComboFormData } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
@@ -67,6 +77,7 @@ import { BasicInfoSection } from '~/features/catalog'
 import ComboCompositionSection from './form/ComboCompositionSection.vue'
 import { TagsSection } from '~/features/catalog'
 import SettingsSection from './form/SettingsSection.vue'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 const props = defineProps<{
   modelValue: boolean

@@ -9,7 +9,6 @@ import { useAuthStore } from '~/shared/stores/auth'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { reportError } from '@fastio/shared/observability'
 import { useKitchenStatusBlock } from '~/features/kitchen'
-import { useAuditLog } from '~/features/audit-log'
 
 export type UseOrdersOptions = {
   branchId?: Ref<string | null>
@@ -33,7 +32,6 @@ export function useOrders(
   const authStore = useAuthStore()
   const tenantStore = useTenantStore()
   const { checkKitchenBlock } = useKitchenStatusBlock()
-  const { log } = useAuditLog()
   const _orders = ref<Order[]>([])
   const loading = ref(false)
   const page = ref(1)
@@ -233,15 +231,8 @@ export function useOrders(
     // единый исход для всех путей (inline-статус, drawer, RPC), поэтому клиентский
     // cancelForOrders убран как избыточный. serveAllForOrders для completed триггера
     // не имеет, поэтому остаётся здесь.
-    if (newStatus?.groupType === 'cancelled') {
-      log({
-        action: 'order.cancel',
-        entityType: 'order',
-        entityId: orderId,
-        entityName: order?.orderNumber ?? null,
-        payload: { fromStatus: oldStatus?.name ?? null, toStatus: newStatus.name },
-      })
-    } else if (newStatus?.groupType === 'completed') {
+    // Отмена заказа фиксируется в order_events (status_changed ниже), не в audit_logs.
+    if (newStatus?.groupType === 'completed') {
       api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id).catch(reportError)
     }
 

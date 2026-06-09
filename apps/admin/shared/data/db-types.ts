@@ -148,7 +148,13 @@ export type OrderNoteRow = Tables<'order_notes'>
 
 export type AuditLogRow = WithOverrides<Tables<'audit_logs'>, {
   payload: Record<string, unknown>
-}>
+}> & {
+  // Миграция 321 — добавлено вручную (db:gen-types недоступен локально, см. MEMORY).
+  changed_fields: string[]
+  search_text: string | null
+  parent_type: string | null
+  parent_id: string | null
+}
 
 export type OrderEventRow = WithOverrides<Tables<'order_events'>, {
   meta: Record<string, unknown>

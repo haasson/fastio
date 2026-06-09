@@ -81,6 +81,10 @@
           @update:requires-kitchen="form.requiresKitchen = $event"
           @update:branch-ids="form.branchIds = $event"
         />
+
+        <UiCollapseItem v-if="dish" name="audit" title="История изменений">
+          <AuditTrail entity-type="dish" :entity-id="dish.id" :refresh-key="refreshKey" />
+        </UiCollapseItem>
       </UiCollapse>
     </UiForm>
   </UiDrawer>
@@ -88,7 +92,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, toRefs, watch } from 'vue'
-import { UiDrawer, UiForm, UiCollapse } from '@fastio/ui'
+import { UiDrawer, UiForm, UiCollapse, UiCollapseItem } from '@fastio/ui'
 import type { Dish, Category, DishTagDefinition, DishIngredient } from '@fastio/shared'
 import type { DishFormData } from '../api/dishes'
 import { useDatabase } from '~/shared/data/useDatabase'
@@ -105,6 +109,7 @@ import AddonsSection from './form/AddonsSection.vue'
 import IngredientsSection from './form/IngredientsSection.vue'
 import NutritionSection from './form/NutritionSection.vue'
 import SettingsSection from './form/SettingsSection.vue'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 import { reportError } from '@fastio/shared/observability'
 
 const props = defineProps<{
@@ -263,7 +268,12 @@ const onConfirm = async () => {
       photos = []
     }
 
-    const kbju = nutritionRef.value?.getKbju() ?? null
+    // NutritionSection живёт внутри свёрнутого UiCollapse (display-directive=if) —
+    // если юзер не раскрывал секцию, nutritionRef === null и редактирования КБЖУ не было.
+    // В этом случае берём исходные значения из props.dish, иначе обнулим КБЖУ при сохранении.
+    const kbju = nutritionRef.value
+      ? nutritionRef.value.getKbju()
+      : (props.dish?.nutrition ?? null)
     const hasNutrition = form.weight != null || kbju != null
     const maxAddons = addonsRef.value?.getMaxAddons()
     const { showLongDescription, ...formData } = form

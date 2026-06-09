@@ -1,3 +1,8 @@
+export type AuditLogFieldDiff = {
+  old: unknown
+  new: unknown
+}
+
 export type AuditLog = {
   id: string
   tenantId: string
@@ -8,8 +13,10 @@ export type AuditLog = {
   entityType: string
   entityId: string | null
   entityName: string | null
+  // Для action='updated' значения — AuditLogFieldDiff ({old,new}); для created/deleted пусто.
   payload: Record<string, unknown>
+  changedFields: string[]
+  parentType: string | null
+  parentId: string | null
   createdAt: string
 }
-
-export type AddAuditLogParams = Omit<AuditLog, 'id' | 'createdAt'>

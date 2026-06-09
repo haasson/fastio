@@ -56,17 +56,24 @@
           </div>
         </div>
       </div>
+
+      <UiCollapse v-if="role?.id" :expanded-names="[]">
+        <UiCollapseItem name="audit" title="История изменений">
+          <AuditTrail entity-type="role" :entity-id="role.id" />
+        </UiCollapseItem>
+      </UiCollapse>
     </div>
   </UiModal>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
-import { UiModal, UiInput, UiCheckbox, UiChip, UiText, useMessage } from '@fastio/ui'
+import { UiModal, UiInput, UiCheckbox, UiChip, UiText, UiCollapse, UiCollapseItem, useMessage } from '@fastio/ui'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { getPermissionGroups, getRolePresets, type PermissionGroup, type RolePreset } from '~/config/team-roles'
 import { isAuditLogEnabled } from '~/shared/utils/featureFlags'
+import AuditTrail from '~/features/audit-log/components/AuditTrail.vue'
 
 const props = defineProps<{
   modelValue: boolean

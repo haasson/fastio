@@ -717,36 +717,66 @@
 
 ### 3.13 Контент (`/content/{banners,gallery,reviews,vacancies}`)
 
-- [ ] Галереи (`/content/gallery`): создай «Интерьер», добавь 4 фото → карусель на `/gallery`
-- [ ] Пустая галерея → секция скрыта
-- [ ] Вакансии (`/content/vacancies`): добавь 2 → видны на `/vacancies` витрины
-- [ ] Отзывы (`/content/reviews`): добавь 3 → секция reviews на главной
-- [ ] [NEG] [P1] Фото >20MB → client-side ошибка до upload (аналогично разделу 3.2.2)
-- [ ] [NEG] [P1] Файл неверного MIME → ошибка валидации
-- [ ] [HP] Фото ≤20MB правильного MIME → загружается успешно
+- [x] Галереи (`/content/gallery`): создай «Интерьер», добавь 4 фото → карусель на `/gallery`
+- [x] Пустая галерея → секция скрыта
+- [~] Вакансии (`/content/vacancies`): добавь 2 → видны на `/vacancies` витрины — SKIP (контент появится позже)
+- [~] Отзывы (`/content/reviews`): добавь 3 → секция reviews на главной — SKIP (контент появится позже)
+- [~] [NEG] [P1] Фото >20MB → client-side ошибка до upload — SKIP
+- [~] [NEG] [P1] Файл неверного MIME → ошибка валидации — SKIP
+- [~] [HP] Фото ≤20MB правильного MIME → загружается успешно — SKIP
 
-### 3.14 Команда и роли (модуль `customRoles`, `/team/{members,roles}`)
+### 3.14 Команда и роли (`/team/{members,roles}`)
+
+#### 3.14.0 Стандартные роли (без `customRoles`, is_default=true)
+
+> Три встроенные роли создаются автоматически. Проверяем **до** включения модуля `customRoles`.
+> **Администратор** — всё кроме billing, включая `kitchen.cook`; **Менеджер** — как Администратор, но без `roles.manage`, `settings.edit` и `kitchen.cook` (видит очередь, не готовит); **Сотрудник** — menu.view, orders.view/create/edit/status, kitchen.view (без cook), tables.view, appointments.view+own.
+
+- [ ] `/team/roles` — убедись что 3 стандартные роли видны в списке
+- [ ] [EC] Попробуй удалить / переименовать стандартную роль → должен быть блокер (is_default=true защищена)
+- [ ] Пригласи `staff+t1@` с ролью **«Сотрудник»** → письмо в Inbucket → прими → участник в команде
+- [ ] [HP] Войди как Сотрудник → в навигации только «Заказы», «Кухня», «Столы». Menu/Team/Settings — нет.
+- [ ] [NEG] Сотрудник: прямой URL `/menu/dishes` → no-access / редирект
+- [ ] [EC] Owner (roleId=null): полный доступ, нельзя удалить себя
+
+#### 3.14.1 Кастомные роли (модуль `customRoles`)
 
 - [ ] Включи `customRoles` в `/settings/modules`
-- [ ] `/team/roles` — 3 кастомные роли (отдельных прав `reservations.*` в каталоге НЕТ — брони под `tables.*`):
-  - **«Менеджер»**: orders.view+edit, kitchen.view, tables.view+manage (= ведёт и столы, и брони), **БЕЗ** settings.edit
-  - **«Бариста»**: orders.view, kitchen.view+edit
-  - **«Хостес»**: tables.view+manage, orders.view (ведёт брони/рассадку; настройки столов НЕ трогает — нет settings.edit)
-- [ ] `/team/members` — пригласить 3 (по email с +): `manager+t1@`, `barista+t1@`, `hostess+t1@`
+
+**Пресеты ролей** (новое в commit `3b127db9`):
+- [ ] [HP] Создай новую роль → в форме видны чипы пресетов: Повар, Сборщик, Курьер, Официант/Хостес, Кассир
+- [ ] Кликни «Повар» → матрица прав заполняется: `menu.view`, `kitchen.view`, `kitchen.cook` ✓; остальные — пусто
+- [ ] Кликни другой пресет → матрица **заменяется** (не добавляется к предыдущему)
+- [ ] Сохрани роль из пресета — права корректно записались
+
+**kitchen.cook — отдельное право готовки** (новое в commit `3b127db9`):
+> `kitchen.view` — видеть очередь (read-only). `kitchen.cook` — брать блюда в работу и отмечать готовым. Без `kitchen.cook` кнопки «Взять» / «Готово» недоступны.
+- [ ] Создай роль **«Повар»** из пресета (view + cook) → пригласи `cook+t1@`
+- [ ] Создай роль **«Наблюдатель»** вручную: только `kitchen.view`, без `kitchen.cook` → пригласи `watcher+t1@`
+- [ ] [HP] Войди как Повар → `/kitchen/queue` → кнопки «Взять» активны → взял блюдо → «Готово» работает
+- [ ] [HP] Войди как Наблюдатель → `/kitchen/queue` видна, но кнопки «Взять» / «Готово» disabled/отсутствуют
+
+**Остальные кастомные роли:**
+- [ ] `/team/roles` — создай роли (отдельных прав `reservations.*` нет — брони под `tables.*`):
+  - **«Менеджер»**: orders.view+edit, kitchen.view, tables.view+manage, **БЕЗ** settings.edit и **БЕЗ** kitchen.cook
+  - **«Хостес»**: tables.view+manage, orders.view
+- [ ] `/team/members` — пригласить: `manager+t1@`, `barista+t1@`, `hostess+t1@`
 - [ ] Приглашения уходят через Edge Function `invite-member`. В Inbucket должно быть письмо со ссылкой
 - [ ] [HP] Перейди по ссылке в incognito #2 → `/invite` страница → принять → участник в команде
-- [ ] [HP] Войди как бариста → в навигации **только** «Кухня». Settings/Menu/Team — нет.
-- [ ] [HP] Менеджер: видит /orders, /kitchen, Столы (+ таб «Бронирование» `/tables/reservations`). Не видит /settings/contacts.
-- [ ] [HP] [P0] **settings.edit vs tables.manage split**: Хостес/Менеджер (`tables.manage` без `settings.edit`) → в разделе «Столы» видит табы «Столы/Схема/Бронирование», но **НЕ** «Настройки»; прямой переход на `/tables/settings` → no-access/редирект. Создание брони в табе «Бронирование» при этом работает.
-- [ ] [NEG] [P0] Бариста через прямой URL `/menu` → редирект / no-access
-- [ ] [NEG] [P0] Через DevTools → fetch admin API без permission → RLS / `has_permission()` блокирует
+- [ ] [HP] Войди как Менеджер: видит /orders, /kitchen (read-only без cook), Столы. Не видит /settings.
+- [ ] [HP] [P0] **settings.edit vs tables.manage split**: Хостес (`tables.manage` без `settings.edit`) → видит табы «Столы/Схема/Бронирование», но **НЕ** «Настройки»; `/tables/settings` → no-access
+- [ ] [NEG] [P0] Через прямой URL на закрытый раздел → редирект / no-access
 - [ ] **Branch-scoped role**: создай роль «Менеджер Парка» с `branchIds = [Парк]`
   - [ ] Пригласи `manager-park+t1@`
   - [ ] Войди — в `/orders` видны только заказы Парка
-- [ ] [EC] [P1] Удалить роль «Бариста» когда у юзера такая роль → что происходит (downgrade / blocker)
-- [ ] [EC] [P1] **Заблокировать участника** (фича `member-block-feature`) — `blockedUntil` = +1 час → попытка входа → запрет
+- [ ] [EC] [P1] Удалить роль у которой есть участники → блокер / downgrade
+- [ ] [EC] [P1] **Заблокировать участника** — `blockedUntil` = +1 час → попытка входа → запрет
 - [ ] [EC] [P1] Сними блок → доступ восстанавливается
-- [ ] [EC] Owner (roleId=null): полный доступ, нельзя удалить себя
+
+**kitchen_served в таймлайне заказа** (новое в commit `3b127db9`):
+> После «Собрано» на экране сборки пишется событие `kitchen_served` с именем сборщика.
+- [ ] Создай заказ → переведи в «Принят» → повар забрал на кухне → отметил готовым → сборщик нажал «Собрано»
+- [ ] Открой заказ в `/orders` → таймлайн → видна строка «[Имя] собрал заказ»
 
 ### 3.15 Настройки (`/settings/{modules,contacts,notifications,legal}`)
 
