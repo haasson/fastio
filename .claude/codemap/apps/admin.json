@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-09T03:14:18.327Z",
+  "generated_at": "2026-06-09T03:25:51.325Z",
   "stats": {
     "files": 83,
     "pages": 0,

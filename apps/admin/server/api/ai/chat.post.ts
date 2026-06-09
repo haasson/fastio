@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody, createError, setHeader } from 'h3'
 import { useRuntimeConfig } from '#imports'
+import { fetch as undiciFetch, ProxyAgent } from 'undici'
 import { createOpenAI } from '@ai-sdk/openai'
 import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from 'ai'
 import { loadKnowledge } from '~/server/ai/loadKnowledge'
@@ -10,6 +11,22 @@ import { getServerSupabase } from '~/server/utils/supabase'
 import { reportError } from '@fastio/shared/observability'
 
 const STREAM_TIMEOUT_MS = 60_000
+
+// VPS в РФ → api.openai.com заблочен. Если задан NUXT_OPENAI_PROXY_URL (или
+// NUXT_TELEGRAM_PROXY_URL как фоллбэк) — все вызовы к OpenAI идут через прокси.
+let _cachedDispatcher: { value: ProxyAgent | undefined } | null = null
+
+function getOpenAiDispatcher(): ProxyAgent | undefined {
+  if (_cachedDispatcher) return _cachedDispatcher.value
+
+  const config = useRuntimeConfig()
+  const proxyUrl = config.telegramProxyUrl?.trim()
+
+  _cachedDispatcher = { value: proxyUrl ? new ProxyAgent(proxyUrl) : undefined }
+
+  return _cachedDispatcher.value
+}
+
 const RL_USER_MAX = 30
 const RL_USER_WINDOW_SECONDS = 60
 const RL_TENANT_DAILY_MAX = 500
@@ -81,7 +98,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 429, statusMessage: 'Too many requests' })
   }
 
-  const openai = createOpenAI({ apiKey })
+  const dispatcher = getOpenAiDispatcher()
+  const openai = createOpenAI({
+    apiKey,
+    ...(dispatcher
+      ? { fetch: ((url: RequestInfo | URL, init?: RequestInit) => undiciFetch(url as string, { ...(init as object), dispatcher } as Parameters<typeof undiciFetch>[1])) as unknown as typeof globalThis.fetch }
+      : {}),
+  })
 
   const knowledge = await loadKnowledge(currentRoute)
   const tenantContext = await fetchTenantContext(tenantId, userId)
