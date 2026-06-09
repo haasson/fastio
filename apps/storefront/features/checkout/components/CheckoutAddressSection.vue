@@ -6,14 +6,14 @@
       <div v-if="addressesLoading" class="addr-skeleton" />
 
       <template v-else-if="savedAddresses.length">
-        <!-- Список сохранённых + кнопка "Другой адрес" -->
-        <div v-if="!useNewAddress" class="addr-list">
+        <!-- Все варианты адреса как радио-список -->
+        <div class="addr-list">
           <label v-for="addr in savedAddresses" :key="addr.id" class="addr-option">
             <input
               type="radio"
               name="checkout-address"
               :value="addr.id"
-              :checked="selectedAddressId === addr.id"
+              :checked="!useNewAddress && selectedAddressId === addr.id"
               @change="selectSavedAddress(addr)"
             >
             <span class="addr-content">
@@ -21,16 +21,23 @@
               <span v-if="addr.label" class="addr-lbl">{{ addr.address }}</span>
             </span>
           </label>
-          <button type="button" class="addr-new-btn" @click="switchToNew">
-            + Другой адрес
-          </button>
+
+          <label class="addr-option">
+            <input
+              type="radio"
+              name="checkout-address"
+              value="new"
+              :checked="useNewAddress"
+              @change="switchToNew"
+            >
+            <span class="addr-content">
+              <span class="addr-main">Другой адрес</span>
+            </span>
+          </label>
         </div>
 
-        <!-- Ручной ввод при "Другой адрес" -->
-        <div v-else class="addr-manual-wrap">
-          <button type="button" class="addr-back-btn" @click="switchToSaved">
-            ← Мои адреса
-          </button>
+        <!-- Ручной ввод — раскрывается снизу при выборе "Другой адрес" -->
+        <div v-if="useNewAddress" class="addr-manual-wrap">
           <AddressManualInput ref="manualInputRef" @verified="onManualVerified" />
         </div>
 
@@ -192,11 +199,6 @@ function switchToNew() {
   branchClosedInfo.value = null
 }
 
-function switchToSaved() {
-  useNewAddress.value = false
-  preselectAddress()
-}
-
 function onManualVerified() {
   addressTouched.value = true
 }
@@ -350,39 +352,9 @@ defineExpose({
   color: var(--color-text-secondary);
 }
 
-.addr-new-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 6px;
-  @include text-xs;
-  color: var(--primary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  border-radius: 6px;
-  width: fit-content;
-
-  &:hover { background: var(--color-surface); }
-}
-
 .addr-manual-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  margin-top: 8px;
   margin-bottom: 10px;
-}
-
-.addr-back-btn {
-  display: inline-flex;
-  align-items: center;
-  @include text-xs;
-  color: var(--color-text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-
-  &:hover { color: var(--color-text); }
 }
 
 .zone-hint {
