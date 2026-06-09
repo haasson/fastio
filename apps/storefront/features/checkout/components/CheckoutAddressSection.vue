@@ -146,10 +146,10 @@ async function fetchAddresses() {
   try {
     const supabase = useSupabaseClient()
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-    savedAddresses.value = await $fetch<CustomerAddress[]>('/api/customer/addresses', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
+    const headers: Record<string, string> = session
+      ? { Authorization: `Bearer ${session.access_token}` }
+      : {}
+    savedAddresses.value = await $fetch<CustomerAddress[]>('/api/customer/addresses', { headers })
     preselectAddress()
   } catch (e) {
     reportError(e, { context: 'CheckoutAddressSection:fetchAddresses' })

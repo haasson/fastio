@@ -655,7 +655,7 @@
 
 ### 3.11 Аккаунт клиента (модуль `customers`, страницы `/account/{index,profile,orders,addresses,appointments}` на витрине)
 
-- [ ] Регистрация на витрине: только через **Telegram Login** (нужен TG аккаунт с привязанным телефоном) — `refactor(storefront-tg-only-auth)` + `refactor(telegram-auth-mandatory-phone)`
+- [x] Регистрация на витрине: только через **Telegram Login** (нужен TG аккаунт с привязанным телефоном) — `refactor(storefront-tg-only-auth)` + `refactor(telegram-auth-mandatory-phone)`
 - [ ] [HP] [P1] `/account/profile`: имя, телефон → сохранено
 - [ ] [HP] `/account/addresses`: добавить адрес → используется при checkout
 - [ ] [HP] Удалить адрес

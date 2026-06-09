@@ -1,6 +1,6 @@
 <template>
   <div class="user-menu-root">
-    <div v-if="isAuthenticated" class="dropdown">
+    <div v-if="isAuthenticated" ref="dropdownRef" class="dropdown">
       <button class="avatar" :aria-label="customerName || customerEmail || 'Аккаунт'" @click="open = !open">
         {{ userInitial }}
       </button>
@@ -28,6 +28,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import { useRoute, navigateTo } from 'nuxt/app'
 import { storeToRefs } from 'pinia'
 import { UserRound } from 'lucide-vue-next'
@@ -41,6 +42,8 @@ const { isAuthenticated, customerName, customerEmail } = storeToRefs(authStore)
 const { confirm } = useConfirm()
 
 const open = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+onClickOutside(dropdownRef, () => { open.value = false })
 
 const userInitial = computed(() => {
   const source = customerName.value || customerEmail.value || ''
