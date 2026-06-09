@@ -15,6 +15,7 @@ export default defineFeature({
 
   permissions: [
     'kitchen.view',
+    'kitchen.cook',
     'kitchen.overview',
   ],
 

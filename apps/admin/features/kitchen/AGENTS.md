@@ -18,6 +18,7 @@ KDS-режим (Kitchen Display System): блюда из активных зак
 ## Типовые задачи
 
 - **Новый статус приготовления:** добавь enum в БД-миграцию + расширь `api/kitchen-queue.transition()` + UI кнопку. **НЕ** добавляй статус в `order_statuses` — это разные домены.
+- **Права кухни:** доступ к очереди — `kitchen.view` (route-гейт). Действия готовки (взять/готово/вернуть/замена) на `/kitchen/queue` гейтятся отдельным `kitchen.cook` → `gate.cookKitchen` (проп `canCook` в `KitchenQueueItem`/`KitchenWorkCard`/`KitchenSubstitutionCard` + гард в хендлерах). Без `kitchen.cook` очередь — read-only просмотр нагрузки. Сборка на `/assembly` — под `kitchen.view`, но «Собрано» логирует событие `kitchen_served` в таймлайн заказа (атрибуция «кто собрал»).
 - **Алерт о просрочке:** логика в `useKitchenProgress` (порог по времени). Звук/toast — `useKitchenStatusBlock`.
 - **Привязка к станциям/категориям:** маршрутизация блюд по станциям делается на БД-триггере (см. миграции `kitchen_queue`). Из фронта только конфиг (`/kitchen/settings`).
 

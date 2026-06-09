@@ -32,6 +32,7 @@ export const getPermissionGroups = ({ auditLogEnabled }: PermissionGroupOptions)
     label: 'Кухня',
     permissions: [
       { key: 'kitchen.view', label: 'Доступ к кухонной очереди' },
+      { key: 'kitchen.cook', label: 'Готовка (брать блюда в работу)' },
       { key: 'kitchen.overview', label: 'Обзор всей кухни (для менеджеров)' },
     ],
   },
@@ -94,3 +95,88 @@ export const getPermissionGroups = ({ auditLogEnabled }: PermissionGroupOptions)
     ],
   },
 ]
+
+// ─────────────────────────────────────
+// Пресеты ролей — заготовки прав «в один клик» при создании кастомной роли.
+// Дополняют дефолтные generic-роли (Администратор/Менеджер/Сотрудник) узкими
+// job-specific шаблонами. Клик по пресету в форме ЗАМЕНЯЕТ матрицу прав.
+// ─────────────────────────────────────
+
+export type RolePreset = {
+  key: string
+  name: string
+  description: string
+  permissions: PermissionKey[]
+}
+
+export type RolePresetOptions = {
+  isServices: boolean
+  isRetail: boolean
+}
+
+// Зоны заказов разделены: зал (dine_in) живёт под tables.*, навынос/доставка — под
+// orders.*. Готовка — отдельное право kitchen.cook (взять блюдо в работу), просмотр
+// очереди — kitchen.view.
+const RETAIL_PRESETS: RolePreset[] = [
+  {
+    key: 'cook',
+    name: 'Повар',
+    description: 'Кухонная очередь и готовка',
+    permissions: ['menu.view', 'kitchen.view', 'kitchen.cook'],
+  },
+  {
+    key: 'assembler',
+    name: 'Сборщик',
+    description: 'Сборка заказов навынос (без готовки)',
+    permissions: ['kitchen.view', 'orders.view', 'orders.status'],
+  },
+  {
+    key: 'courier',
+    name: 'Курьер',
+    description: 'Доставка заказов',
+    permissions: ['orders.view', 'orders.status'],
+  },
+  {
+    key: 'waiter',
+    name: 'Официант / Хостес',
+    description: 'Зал, столы и брони',
+    permissions: ['tables.view', 'tables.manage'],
+  },
+  {
+    key: 'cashier',
+    name: 'Кассир',
+    description: 'Приём заказов навынос и на доставку',
+    permissions: ['menu.view', 'orders.view', 'orders.create', 'orders.edit', 'orders.status'],
+  },
+]
+
+const SERVICES_PRESETS: RolePreset[] = [
+  {
+    key: 'master',
+    name: 'Мастер',
+    description: 'Своё расписание (только просмотр)',
+    permissions: ['appointments.view', 'appointments.view_own'],
+  },
+  {
+    key: 'senior_master',
+    name: 'Старший мастер',
+    description: 'Записи всех исполнителей',
+    permissions: ['appointments.view', 'appointments.view_all', 'appointments.manage'],
+  },
+  {
+    key: 'reception',
+    name: 'Администратор салона',
+    description: 'Запись клиентов, заказы, аналитика',
+    permissions: [
+      'appointments.view', 'appointments.view_all', 'appointments.manage',
+      'orders.view', 'orders.create', 'menu.view', 'analytics.view', 'team.view',
+    ],
+  },
+]
+
+export const getRolePresets = ({ isServices, isRetail }: RolePresetOptions): RolePreset[] => {
+  if (isServices) return SERVICES_PRESETS
+  if (isRetail) return RETAIL_PRESETS
+
+  return []
+}

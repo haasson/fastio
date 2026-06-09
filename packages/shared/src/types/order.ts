@@ -57,7 +57,7 @@ export type OrderNote = {
   createdAt: string
 }
 
-export type OrderEventType = 'order_created' | 'status_changed' | 'items_updated' | 'field_updated' | 'kitchen_claimed' | 'kitchen_completed' | 'kitchen_returned'
+export type OrderEventType = 'order_created' | 'status_changed' | 'items_updated' | 'field_updated' | 'kitchen_claimed' | 'kitchen_completed' | 'kitchen_returned' | 'kitchen_served'
 
 export type OrderEvent = {
   id: string

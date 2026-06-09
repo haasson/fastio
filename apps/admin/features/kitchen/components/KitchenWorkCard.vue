@@ -70,7 +70,7 @@
       </UiTag>
     </div>
 
-    <div class="footer">
+    <div v-if="canCook" class="footer">
       <template v-if="cancelled">
         <UiButton type="error" class="btn-dismiss" @click="$emit('dismiss')">Убрать</UiButton>
       </template>
@@ -96,6 +96,7 @@ const props = defineProps<{
   urgencyLevel: 'normal' | 'warning' | 'critical'
   showDeliveryType?: boolean
   cancelled?: boolean
+  canCook?: boolean
 }>()
 
 defineEmits<{

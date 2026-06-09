@@ -19,14 +19,14 @@
         {{ elapsed }}
       </UiTag>
       <UiButton
-        v-if="cancelled"
+        v-if="cancelled && canCook"
         size="small"
         type="error"
         ghost
         @click="$emit('dismiss')"
       >Убрать</UiButton>
       <UiButton
-        v-else
+        v-else-if="!cancelled && canCook"
         size="small"
         type="primary"
         @click="$emit('claim')"
@@ -45,6 +45,7 @@ const props = defineProps<{
   elapsed: string
   urgencyLevel: 'normal' | 'warning' | 'critical'
   cancelled?: boolean
+  canCook?: boolean
 }>()
 
 defineEmits<{ claim: []; dismiss: [] }>()

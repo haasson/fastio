@@ -19,6 +19,20 @@
         :clearable="false"
       />
 
+      <div v-if="!isEditing && presets.length" class="presets">
+        <UiText size="small" class="presets-label">Начать с пресета</UiText>
+        <div class="presets-chips">
+          <UiChip
+            v-for="preset in presets"
+            :key="preset.key"
+            :sub="preset.description"
+            @click="applyPreset(preset)"
+          >
+            {{ preset.name }}
+          </UiChip>
+        </div>
+      </div>
+
       <div class="permission-groups">
         <div v-for="group in permissionGroups" :key="group.label" class="perm-group">
           <div class="group-header">
@@ -48,10 +62,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
-import { UiModal, UiInput, UiCheckbox, UiText, useMessage } from '@fastio/ui'
+import { UiModal, UiInput, UiCheckbox, UiChip, UiText, useMessage } from '@fastio/ui'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
-import { getPermissionGroups, type PermissionGroup } from '~/config/team-roles'
+import { getPermissionGroups, getRolePresets, type PermissionGroup, type RolePreset } from '~/config/team-roles'
 import { isAuditLogEnabled } from '~/shared/utils/featureFlags'
 
 const props = defineProps<{
@@ -70,6 +84,18 @@ const message = useMessage()
 const permissionGroups = getPermissionGroups({ auditLogEnabled: isAuditLogEnabled() })
 
 const isEditing = computed(() => !!props.role?.id)
+
+// Пресеты — заготовки прав «в один клик» под вертикаль тенанта. Клик ЗАМЕНЯЕТ
+// текущую матрицу прав и подставляет название, если поле ещё пустое.
+const presets = computed<RolePreset[]>(() => getRolePresets({
+  isServices: tenantStore.isServices,
+  isRetail: tenantStore.isRetail,
+}))
+
+const applyPreset = (preset: RolePreset) => {
+  form.permissions = Object.fromEntries(preset.permissions.map((key) => [key, true])) as RolePermissions
+  if (!form.name.trim()) form.name = preset.name
+}
 
 const saving = ref(false)
 const form = reactive({
@@ -133,6 +159,23 @@ const handleSave = async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-16);
+}
+
+.presets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.presets-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.presets-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
 }
 
 .permission-groups {

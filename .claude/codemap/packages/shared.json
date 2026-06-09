@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-06-05T15:28:17.564Z",
+  "generated_at": "2026-06-09T07:48:49.386Z",
   "stats": {
     "files": 52,
     "pages": 0,
@@ -1419,8 +1419,8 @@
     },
     "src/utils/validateTenantConfig.ts": {
       "kind": "ts",
-      "hash": "0097853dc076",
-      "purpose": "Валидация целостности SiteLayout/Modules/Content: висячие nav-ссылки, секции на выключенных модулях, пустые hero/gallery/about/delivery",
+      "hash": "84ba75d711be",
+      "purpose": "Валидатор конфига витрины тенанта: проверяет навигацию/секции/модули, возвращает список ConfigIssue (error/warning)",
       "symbols": [
         {
           "name": "ConfigIssueSeverity",

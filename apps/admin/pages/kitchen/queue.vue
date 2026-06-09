@@ -1,5 +1,9 @@
 <template>
   <div class="queue-root" data-tour="kitchen-queue">
+    <UiAlert v-if="!canCook" type="info" size="small">
+      Режим просмотра нагрузки. Брать блюда в работу может только повар (право «Готовка»).
+    </UiAlert>
+
     <UiAlert v-if="sourceStatusMissing" type="error" size="small">
       Не настроен статус для отправки заказов на кухню — блюда доставки и самовывоза не попадут в очередь.
       <NuxtLink v-if="gate.editSettings.value.enabled" class="alert-link" to="/kitchen/settings">Настроить</NuxtLink>
@@ -42,6 +46,7 @@
                 data-tour="kitchen-queue-item"
                 :elapsed="formatKitchenTime(item.createdAt, now)"
                 :urgency-level="getUrgencyLevel(item.createdAt, now, urgencyMinutes)"
+                :can-cook="canCook"
                 @claim="claimDish(item)"
               />
               <KitchenQueueItem
@@ -51,6 +56,7 @@
                 :elapsed="formatKitchenTime(item.createdAt, now)"
                 :urgency-level="'normal'"
                 :cancelled="true"
+                :can-cook="canCook"
                 @dismiss="dismissCancelled(item)"
               />
             </div>
@@ -72,6 +78,7 @@
                 :cancelled-item="match.cancelledItem"
                 :candidate="match.candidate"
                 :diff="match.diff"
+                :can-cook="canCook"
                 @take="acceptSubstitution(cancelledId)"
                 @skip="skipSubstitution(cancelledId)"
               />
@@ -85,6 +92,7 @@
                 :urgency-level="'normal'"
                 :show-delivery-type="false"
                 :cancelled="true"
+                :can-cook="canCook"
                 @dismiss="dismissCancelled(item)"
               />
               <KitchenWorkCard
@@ -96,11 +104,12 @@
                 :cooking-elapsed="formatKitchenTime(item.assignedAt ?? item.createdAt, now)"
                 :urgency-level="getUrgencyLevel(item.createdAt, now, urgencyMinutes)"
                 :show-delivery-type="hasMultipleDeliveryTypes"
+                :can-cook="canCook"
                 @complete="completeDish(item)"
                 @unclaim="unclaimDish(item)"
               />
             </div>
-            <UiEmpty v-else icon="chefHat" text="Возьмите блюдо из очереди" />
+            <UiEmpty v-else icon="chefHat" :text="canCook ? 'Возьмите блюдо из очереди' : 'Нет блюд в работе'" />
           </div>
         </div>
       </div>
@@ -137,6 +146,10 @@ const tenantStore = useTenantStore()
 const authStore = useAuthStore()
 const gate = useGate()
 const now = useNow({ interval: 30_000 })
+
+// Брать блюда в работу может только повар (kitchen.cook). Без права очередь —
+// режим просмотра нагрузки: карточки видны, кнопки готовки скрыты.
+const canCook = computed(() => gate.cookKitchen.value.enabled)
 
 const loading = ref(false)
 const error = ref(false)
@@ -293,7 +306,7 @@ const logKitchenEvent = async (orderId: string, eventType: string, meta: Record<
 }
 
 const claimDish = async (qItem: KitchenQueueItemType) => {
-  if (!currentUserId.value) return
+  if (!canCook.value || !currentUserId.value) return
   const item = items.value.find((i) => i.id === qItem.id)
 
   if (item) {
@@ -306,12 +319,14 @@ const claimDish = async (qItem: KitchenQueueItemType) => {
 }
 
 const completeDish = async (qItem: KitchenQueueItemType) => {
+  if (!canCook.value) return
   items.value = items.value.filter((i) => i.id !== qItem.id)
   logKitchenEvent(qItem.orderId, 'kitchen_completed', { dishName: qItem.dishName, queueItemId: qItem.id })
   await api.kitchenQueue.complete(qItem.id)
 }
 
 const unclaimDish = async (qItem: KitchenQueueItemType) => {
+  if (!canCook.value) return
   const item = items.value.find((i) => i.id === qItem.id)
 
   if (item) {
@@ -324,6 +339,7 @@ const unclaimDish = async (qItem: KitchenQueueItemType) => {
 }
 
 const dismissCancelled = async (qItem: KitchenQueueItemType) => {
+  if (!canCook.value) return
   items.value = items.value.filter((i) => i.id !== qItem.id)
   await api.kitchenQueue.dismissCancelled(qItem.id)
 }
@@ -331,7 +347,7 @@ const dismissCancelled = async (qItem: KitchenQueueItemType) => {
 // --- Substitution ---
 
 const autoSubstitute = async (cancelled: KitchenQueueItemType, match: SubstituteMatch) => {
-  if (!currentUserId.value) return
+  if (!canCook.value || !currentUserId.value) return
 
   const queueItem = items.value.find((i) => i.id === match.candidate.id)
 
@@ -365,7 +381,7 @@ const autoSubstitute = async (cancelled: KitchenQueueItemType, match: Substitute
 }
 
 const acceptSubstitution = async (cancelledId: string) => {
-  if (!currentUserId.value) return
+  if (!canCook.value || !currentUserId.value) return
 
   const match = pendingSubstitutions.value.get(cancelledId)
 
@@ -396,6 +412,7 @@ const acceptSubstitution = async (cancelledId: string) => {
 }
 
 const skipSubstitution = async (cancelledId: string) => {
+  if (!canCook.value) return
   const match = pendingSubstitutions.value.get(cancelledId)
   const next = new Map(pendingSubstitutions.value)
 
@@ -434,8 +451,9 @@ const offUpdate = kitchenQueueEvents.onUpdate((item) => {
     if (idx !== -1) items.value[idx] = mergeRealtimeItem(item, items.value[idx])
     else items.value.push(item)
 
-    // Когда блюдо текущего повара отменили — ищем замену в очереди
-    if (item.status === 'cancelled' && item.assignedTo === currentUserId.value) {
+    // Когда блюдо текущего повара отменили — ищем замену в очереди.
+    // Только для повара: без kitchen.cook замену предлагать/брать нельзя.
+    if (canCook.value && item.status === 'cancelled' && item.assignedTo === currentUserId.value) {
       const reserved = pendingCandidateIds.value
       const match = findSubstitute(item, items.value.filter((i) => i.status === 'queued' && !reserved.has(i.id)))
 

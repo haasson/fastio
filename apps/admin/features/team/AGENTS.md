@@ -18,8 +18,9 @@ CRUD участников (`tenant_members`), управление ролями 
 
 ## Типовые задачи
 
-- **Новый permission key:** добавь в `permissionGroups` в `apps/admin/config/team-roles.ts` (он один источник правды) + расширь `PermissionKey` тип в `@fastio/shared`. Системные роли подхватят автоматически (по дефолту в БД-миграции/сидере).
+- **Новый permission key:** добавь в `permissionGroups` в `apps/admin/config/team-roles.ts` (он один источник правды) + расширь `PermissionKey` тип в `@fastio/shared` + допиши в `ALL_PERMISSION_KEYS` теста `config/__tests__/team-roles.test.ts`. Дефолтные роли новых тенантов задаются триггером `create_default_roles()` (последняя версия — миграция 320) — обнови его новой миграцией, если право нужно из коробки.
 - **Кастомная роль:** возможно только если в плане `customRoles=true` (проверь через `useGate`). UI — `pages/team/roles.vue`, мутации — `api/roles`.
+- **Пресеты ролей:** статичные job-specific заготовки прав в `getRolePresets()` (`config/team-roles.ts`), под вертикаль (retail/services). Чипы «Начать с пресета» в `RoleEditModal.vue` — клик ЗАМЕНЯЕТ матрицу прав. Дополняют generic дефолт-роли, не дублируют их.
 - **Multi-branch доступ:** `tenant_members.branch_ids` — массив `branch_id`. `null` = доступ ко всем филиалам. Логика выборки — в `useTeam`.
 
 ## Антипаттерны (не делай так)

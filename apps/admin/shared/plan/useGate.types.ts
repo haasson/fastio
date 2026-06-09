@@ -60,7 +60,7 @@ export type GateKey
     | 'viewMenu' | 'manageMenu'
     | 'viewServiceMenu' | 'manageServiceMenu'
     | 'viewOrders'
-    | 'viewKitchen' | 'viewKitchenQueue' | 'viewKitchenOverview'
+    | 'viewKitchen' | 'viewKitchenQueue' | 'viewKitchenOverview' | 'cookKitchen'
     | 'viewTables' | 'manageTables'
     | 'viewReservations' | 'manageReservations'
     | 'viewAppointments' | 'manageAppointments' | 'viewAllAppointments'

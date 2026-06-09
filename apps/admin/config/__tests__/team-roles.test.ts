@@ -9,7 +9,7 @@ const permissionGroups = getPermissionGroups({ auditLogEnabled: AUDIT_LOG_ENABLE
 const ALL_PERMISSION_KEYS: PermissionKey[] = [
   'menu.view', 'menu.edit', 'menu.delete',
   'orders.view', 'orders.create', 'orders.edit', 'orders.status', 'orders.cancel',
-  'kitchen.view', 'kitchen.overview',
+  'kitchen.view', 'kitchen.cook', 'kitchen.overview',
   'tables.view', 'tables.manage',
   'appointments.view', 'appointments.manage',
   'appointments.view_all', 'appointments.view_own',

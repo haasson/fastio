@@ -2,11 +2,11 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-09T03:49:14.771Z",
+  "generated_at": "2026-06-09T07:48:49.211Z",
   "stats": {
     "files": 84,
     "pages": 0,
-    "symbols": 145,
+    "symbols": 148,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -175,8 +175,8 @@
     },
     "config/team-roles.ts": {
       "kind": "ts",
-      "hash": "d4f48e0ef0fc",
-      "purpose": "Каталог прав и групп для редактора кастомных ролей (getPermissionGroups)",
+      "hash": "1cacadd64b97",
+      "purpose": "Конфиг прав и ролей: группы прав для редактора ролей + job-specific пресеты ролей по вертикали",
       "symbols": [
         {
           "name": "PermissionGroup",
@@ -195,6 +195,24 @@
           "kind": "function",
           "hash": "2dcb1e47",
           "purpose": "Строит массив permissionGroups для UI редактора ролей; audit_log.view добавляется условно по auditLogEnabled"
+        },
+        {
+          "name": "RolePreset",
+          "kind": "type",
+          "hash": "d04a2a78",
+          "purpose": "Пресет роли: key, name, description + плоский список включённых PermissionKey"
+        },
+        {
+          "name": "RolePresetOptions",
+          "kind": "type",
+          "hash": "bc1a8221",
+          "purpose": "Опции getRolePresets: isServices/isRetail — выбор набора пресетов под вертикаль"
+        },
+        {
+          "name": "getRolePresets",
+          "kind": "function",
+          "hash": "a2c6d8d7",
+          "purpose": "Возвращает job-specific пресеты ролей под вертикаль (retail/services); пусто для прочих"
         }
       ]
     },
@@ -801,8 +819,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "f3abdee7f723",
-      "purpose": "Legacy-агрегатор гейтов: собирает реестр всех feature/permission-гейтов (модули, права, тариф, suspended) для AppNav и middleware",
+      "hash": "5c3f405c482b",
+      "purpose": "Универсальный useGate(): собирает GateRegistry со всеми гейтами (фичи, планы, права) для любой вертикали",
       "symbols": [
         {
           "name": "useGate",
@@ -814,8 +832,8 @@
     },
     "shared/plan/useGate.types.ts": {
       "kind": "ts",
-      "hash": "fb4a59e6dba0",
-      "purpose": "Контракт useGate: GateReason/GateResult/GateRegistry и полный список GateKey",
+      "hash": "ea10246c5f13",
+      "purpose": "Типы системы гейтов: GateReason/GateResult/GateRegistry/GateKey",
       "symbols": [
         {
           "name": "GateReason",

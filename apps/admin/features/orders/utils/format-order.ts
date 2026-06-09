@@ -13,6 +13,7 @@ const KITCHEN_EVENT_LABELS: Record<string, string> = {
   kitchen_claimed: 'взял в работу',
   kitchen_completed: 'приготовил',
   kitchen_returned: 'вернул в очередь',
+  kitchen_served: 'собрал заказ',
 }
 
 const EVENT_TEXT_FORMATTERS: Partial<Record<OrderEventType, (meta: EventMeta) => string>> = {
@@ -21,6 +22,7 @@ const EVENT_TEXT_FORMATTERS: Partial<Record<OrderEventType, (meta: EventMeta) =>
   kitchen_claimed: (m) => `${KITCHEN_EVENT_LABELS.kitchen_claimed}: ${m.dishName ?? '?'}`,
   kitchen_completed: (m) => `${KITCHEN_EVENT_LABELS.kitchen_completed}: ${m.dishName ?? '?'}`,
   kitchen_returned: (m) => `${KITCHEN_EVENT_LABELS.kitchen_returned}: ${m.dishName ?? '?'}`,
+  kitchen_served: () => KITCHEN_EVENT_LABELS.kitchen_served,
 }
 
 export const formatEventText = (eventType: string, meta: EventMeta): string => EVENT_TEXT_FORMATTERS[eventType as OrderEventType]?.(meta) ?? eventType

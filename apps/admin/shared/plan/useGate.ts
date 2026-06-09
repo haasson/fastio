@@ -138,6 +138,10 @@ export const useGate = (): GateRegistry => {
   // viewKitchen выше — это для AppNav (любая kitchen-вкладка, kitchen.view OR kitchen.overview).
   const viewKitchenQueue = permissionGate(kitchen, 'kitchen.view')
   const viewKitchenOverview = permissionGate(kitchen, 'kitchen.overview')
+  // cookKitchen — действия готовки на /kitchen/queue (взять блюдо в работу, отметить
+  // готовым, вернуть). Доступ к самой странице — viewKitchenQueue; брать блюда —
+  // только с kitchen.cook (повар). Сборщик/менеджер видят очередь, но не готовят.
+  const cookKitchen = permissionGate(kitchen, 'kitchen.cook')
 
   const viewTables = permissionGate(dineIn, 'tables.view')
   const manageTables = permissionGate(dineIn, 'tables.manage')
@@ -225,7 +229,7 @@ export const useGate = (): GateRegistry => {
     viewMenu, manageMenu,
     viewServiceMenu, manageServiceMenu,
     viewOrders,
-    viewKitchen, viewKitchenQueue, viewKitchenOverview,
+    viewKitchen, viewKitchenQueue, viewKitchenOverview, cookKitchen,
     viewTables, manageTables,
     viewReservations, manageReservations,
     viewAppointments, manageAppointments, viewAllAppointments,

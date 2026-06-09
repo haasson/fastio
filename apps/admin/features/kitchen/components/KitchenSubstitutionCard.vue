@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <div class="footer">
+    <div v-if="canCook" class="footer">
       <UiButton type="default" @click="$emit('skip')">Выбросить</UiButton>
       <UiButton type="primary" class="btn-take" @click="$emit('take')">Взять</UiButton>
     </div>
@@ -61,6 +61,7 @@ const props = defineProps<{
   cancelledItem: KitchenQueueItem
   candidate: KitchenQueueItem
   diff: DishDiff
+  canCook?: boolean
 }>()
 
 defineEmits<{ take: []; skip: [] }>()

@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { UiCard, UiSkeleton, UiEmpty, UiTabs } from '@fastio/ui'
-import { type KitchenQueueItem, type OrderPhase, getOrderPhase, getAssemblyColumn } from '@fastio/shared'
+import { type KitchenQueueItem, type OrderEvent, type OrderPhase, getOrderPhase, getAssemblyColumn } from '@fastio/shared'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useAuthStore } from '~/shared/stores/auth'
@@ -204,12 +204,32 @@ const onDismissed = async (orderId: string) => {
   }
 }
 
+// Атрибуция сборки: кто нажал «Собрано». Готовка логируется на /queue
+// (kitchen_claimed/completed), а сборка раньше нет — событие kitchen_served
+// закрывает дыру, чтобы в таймлайне заказа было видно «собрал X».
+const logServed = async (orderId: string, meta: Record<string, unknown>) => {
+  const user = authStore.user
+
+  if (!user) return
+  await api.orderEvents.add({
+    orderId,
+    tenantId: tenantStore.tenant.id,
+    actorId: user.id,
+    actorName: user.user_metadata?.full_name || user.email || null,
+    actorRole: tenantStore.currentRoleName ?? null,
+    eventType: 'kitchen_served' as OrderEvent['eventType'],
+    meta,
+  }).catch(reportError)
+}
+
 const onAssembled = async (orderId: string, deliveryType: string) => {
   const targetStatusId = tenantStore.tenant.kitchenConfig?.completedStatusMap?.[deliveryType as 'delivery' | 'pickup']
+  const group = allOrderGroups.value.find((g) => g.orderId === orderId)
 
   const promises: Promise<unknown>[] = [
     api.kitchenQueue.serveAllForOrders([orderId], authStore.user!.id),
     api.orders.markKitchenCompleted(orderId),
+    logServed(orderId, { orderNumber: group?.orderNumber ?? null, itemCount: group?.items.length ?? null }),
   ]
 
   if (targetStatusId) {
