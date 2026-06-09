@@ -51,6 +51,11 @@ CREATE POLICY "table_settings: settings.edit can update" ON public.table_setting
 -- 4. Дата-миграция ролей: переносим capability reservations.* в tables.*, чтобы
 --    роли (в т.ч. кастомные «Хостес») не потеряли доступ к управлению бронями.
 --    reservations.view → tables.view; reservations.manage → tables.view + tables.manage.
+
+-- Cleanup осиротевших ролей (tenant_id без соответствующего тенанта) — иначе
+-- UPDATE ниже падает с FK-нарушением на продовых данных.
+DELETE FROM tenant_roles WHERE tenant_id NOT IN (SELECT id FROM tenants);
+
 UPDATE tenant_roles
 SET permissions = permissions
   || (CASE WHEN COALESCE((permissions->>'reservations.view')::boolean, false)

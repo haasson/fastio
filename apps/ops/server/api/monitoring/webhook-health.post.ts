@@ -48,7 +48,9 @@ export default defineEventHandler(async (event) => {
 
       if (recentError || pending_update_count > PENDING_THRESHOLD) {
         const lines: string[] = [`🤖 <b>${bot.name}</b>`]
+
         if (recentError) lines.push(`❌ ${last_error_message}`)
+
         if (pending_update_count > PENDING_THRESHOLD) lines.push(`⏳ Очередь: ${pending_update_count} необработанных`)
         issues.push(lines.join('\n'))
       }
@@ -69,6 +71,7 @@ export default defineEventHandler(async (event) => {
 
   if (state?.last_alert_at) {
     const lastAlertMs = new Date(state.last_alert_at).getTime()
+
     if (Date.now() - lastAlertMs < COOLDOWN_MINUTES * 60 * 1000) {
       return { ok: true, status: 'suppressed_by_cooldown' }
     }
@@ -87,6 +90,7 @@ export default defineEventHandler(async (event) => {
   ].join('\n')
 
   const telegramOk = await sendTelegramAlert(config, text)
+
   if (!telegramOk) await sendEmailFallback(config, text)
 
   return { ok: true, status: 'alerted', issueCount: issues.length }
@@ -107,13 +111,16 @@ async function sendTelegramAlert(config: ReturnType<typeof useRuntimeConfig>, te
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
+
       console.error('[webhook-health] Telegram alert failed:', JSON.stringify(err))
+
       return false
     }
 
     return true
   } catch (e) {
     reportError(e, { context: 'webhook-health:telegram' })
+
     return false
   }
 }
@@ -126,6 +133,7 @@ async function sendEmailFallback(config: ReturnType<typeof useRuntimeConfig>, ht
 
   if (!smtpUser || !smtpPass || !alertEmail) {
     console.warn('[webhook-health] Email fallback skipped: SMTP not configured')
+
     return
   }
 
