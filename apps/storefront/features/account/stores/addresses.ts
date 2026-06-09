@@ -3,30 +3,28 @@ import { ref } from 'vue'
 import type { CustomerAddress } from '@fastio/shared'
 import { useSupabaseClient } from '~/shared/composables/useSupabaseClient'
 import { reportError } from '@fastio/shared/observability'
-import { NotAuthenticatedError } from '~/shared/utils/errors'
 
 export const useAddressesStore = defineStore('addresses', () => {
   const addresses = ref<CustomerAddress[]>([])
   const loading = ref(true)
 
-  async function getAuthHeader() {
+  // TG-юзеры авторизованы httpOnly cookie tg_session — браузер шлёт её автоматически.
+  // Bearer нужен только для Supabase-сессии (email/password). Если сессии нет — просто
+  // пустые заголовки: сервер сам разберётся (cookie-first в getAuthenticatedContext).
+  async function authHeaders(): Promise<Record<string, string>> {
     const supabase = useSupabaseClient()
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new NotAuthenticatedError()
-    return { Authorization: `Bearer ${session.access_token}` }
+    return session ? { Authorization: `Bearer ${session.access_token}` } : {}
   }
 
   async function fetch() {
     loading.value = true
     try {
-      const headers = await getAuthHeader()
-      addresses.value = await $fetch<CustomerAddress[]>('/api/customer/addresses', { headers })
+      addresses.value = await $fetch<CustomerAddress[]>('/api/customer/addresses', {
+        headers: await authHeaders(),
+      })
     } catch (e) {
-      // Гость (нет сессии) — by design, не логируем. Sentinel-класс вместо message-
-      // сравнения, чтобы локализация / переименование текста не сломали guard.
-      if (!(e instanceof NotAuthenticatedError)) {
-        reportError(e, { context: 'addresses:fetch' })
-      }
+      reportError(e, { context: 'addresses:fetch' })
       addresses.value = []
     } finally {
       loading.value = false
@@ -34,10 +32,9 @@ export const useAddressesStore = defineStore('addresses', () => {
   }
 
   async function add(address: Omit<CustomerAddress, 'id' | 'customerId' | 'createdAt'>) {
-    const headers = await getAuthHeader()
     const created = await $fetch<CustomerAddress>('/api/customer/addresses', {
       method: 'POST',
-      headers,
+      headers: await authHeaders(),
       body: address,
     })
     addresses.value.push(created)
@@ -45,10 +42,9 @@ export const useAddressesStore = defineStore('addresses', () => {
   }
 
   async function update(id: string, data: Partial<Omit<CustomerAddress, 'id' | 'customerId' | 'createdAt'>>) {
-    const headers = await getAuthHeader()
     const updated = await $fetch<CustomerAddress>(`/api/customer/addresses/${id}`, {
       method: 'PATCH',
-      headers,
+      headers: await authHeaders(),
       body: data,
     })
     const idx = addresses.value.findIndex((a) => a.id === id)
@@ -57,10 +53,9 @@ export const useAddressesStore = defineStore('addresses', () => {
   }
 
   async function remove(id: string) {
-    const headers = await getAuthHeader()
     await $fetch(`/api/customer/addresses/${id}`, {
       method: 'DELETE',
-      headers,
+      headers: await authHeaders(),
     })
     addresses.value = addresses.value.filter((a) => a.id !== id)
   }
