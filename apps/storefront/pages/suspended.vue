@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useHead, useNuxtData } from 'nuxt/app'
+import { useHead, useNuxtData, navigateTo } from 'nuxt/app'
 import { Clock, Phone } from 'lucide-vue-next'
 import { FsText, FsHeading } from '@fastio/public-ui'
 import type { Tenant } from '@fastio/shared'
@@ -53,6 +53,15 @@ definePageMeta({
 // телефон, чтобы экран говорил от лица заведения. Всё опционально — если кэш
 // пуст, показываем нейтральный текст без падений.
 const { data: tenant } = useNuxtData<Tenant>('tenant')
+
+// /suspended в вайтлисте middleware, поэтому сам по себе не редиректит обратно.
+// Если тенант уже НЕ заблокирован (оплатил → status свежий на каждом запросе,
+// см. server/utils/tenantCache) — уводим на главную. Иначе рефреш не помогал бы.
+// На SSR navigateTo в setup = серверный редирект, так что работает и при F5.
+const status = tenant.value?.subscription?.status
+if (status && status !== 'suspended') {
+  await navigateTo('/', { replace: true })
+}
 const venueName = computed(() => tenant.value?.name?.trim() ?? '')
 const phone = computed(() => tenant.value?.contacts?.phone?.trim() ?? '')
 const telHref = computed(() => `tel:${phone.value.replace(/[^+\d]/g, '')}`)
