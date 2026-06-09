@@ -64,10 +64,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
       return navigateTo('/no-access')
     }
 
-    // Suspended: только /account/* и /suspended доступны
+    // Suspended: доступны только /suspended, /account/* (оплата) и /help/* (помощь
+    // и форма поддержки — нужна даже на заблокированном тенанте).
     if (tenantStore.maybeTenant?.subscription?.status === 'suspended') {
       const isAllowed = to.path === '/suspended'
         || to.path.startsWith('/account')
+        || to.path.startsWith('/help')
 
       if (!isAllowed) {
         return navigateTo('/suspended')

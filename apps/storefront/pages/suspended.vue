@@ -2,34 +2,44 @@
   <div class="suspended-root">
     <div class="suspended-card">
       <div class="suspended-icon">
-        <PauseCircle :size="56" />
+        <Clock :size="56" />
       </div>
 
+      <FsText v-if="venueName" as="p" variant="body-sm" color="muted" align="center" class="suspended-kicker">
+        {{ venueName }}
+      </FsText>
+
       <FsHeading as="h1" size="h3" align="center" class="suspended-title">
-        Заведение временно недоступно
+        Временно недоступно
       </FsHeading>
 
       <FsText as="p" variant="body" color="secondary" align="center" class="suspended-desc">
-        Сайт приостановлен владельцем заведения. Скорее всего, это временно — мы вернёмся в строй, как только администрация разберётся с биллингом.
+        Извините, сейчас мы не принимаем онлайн-заказы. Скоро вернёмся — загляните позже{{ phone ? ' или свяжитесь с нами по телефону' : '' }}.
       </FsText>
 
-      <div class="suspended-actions">
-        <FsText as="p" variant="body-sm" color="muted" align="center">
-          Если вы владелец заведения — войдите в админ-панель FastIO и продлите подписку.
+      <a v-if="phone" class="phone-link" :href="telHref">
+        <Phone :size="16" />
+        {{ phone }}
+      </a>
+
+      <div class="owner-note">
+        <FsText as="p" variant="caption" color="muted" align="center">
+          Владельцу заведения: чтобы возобновить работу сайта, напишите в поддержку FastIO —
+          <a href="https://t.me/fastio_ru" target="_blank" rel="noopener noreferrer">@fastio_ru</a>
+          или
+          <a href="mailto:support@fastio.ru">support@fastio.ru</a>
         </FsText>
-        <a class="support-link" href="https://t.me/fastio_ru" target="_blank" rel="noopener noreferrer">
-          <Send :size="16" />
-          Связаться с поддержкой FastIO
-        </a>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useHead } from 'nuxt/app'
-import { PauseCircle, Send } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { useHead, useNuxtData } from 'nuxt/app'
+import { Clock, Phone } from 'lucide-vue-next'
 import { FsText, FsHeading } from '@fastio/public-ui'
+import type { Tenant } from '@fastio/shared'
 
 // Страница доступна всегда, даже когда tenant suspended — она и есть посадочная
 // для редиректа из middleware/suspended.global.ts. Layout отключаем, чтобы не
@@ -39,8 +49,16 @@ definePageMeta({
   layout: false,
 })
 
+// tenant уже в кэше (app.vue фетчит через useAsyncData('tenant')). Берём имя и
+// телефон, чтобы экран говорил от лица заведения. Всё опционально — если кэш
+// пуст, показываем нейтральный текст без падений.
+const { data: tenant } = useNuxtData<Tenant>('tenant')
+const venueName = computed(() => tenant.value?.name?.trim() ?? '')
+const phone = computed(() => tenant.value?.contacts?.phone?.trim() ?? '')
+const telHref = computed(() => `tel:${phone.value.replace(/[^+\d]/g, '')}`)
+
 useHead({
-  title: 'Заведение временно недоступно',
+  title: 'Временно недоступно',
   meta: [
     { name: 'robots', content: 'noindex,nofollow' },
   ],
@@ -75,6 +93,11 @@ useHead({
   opacity: 0.6;
 }
 
+.suspended-kicker {
+  margin: 0 0 -8px;
+  font-weight: 600;
+}
+
 .suspended-title {
   margin: 0;
 }
@@ -84,18 +107,7 @@ useHead({
   margin: 0;
 }
 
-.suspended-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
-  width: 100%;
-}
-
-.support-link {
+.phone-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -103,13 +115,25 @@ useHead({
   border-radius: var(--radius-btn);
   background: var(--primary);
   color: var(--on-primary);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   text-decoration: none;
   transition: opacity 0.2s;
 
   &:hover {
     opacity: 0.9;
+  }
+}
+
+.owner-note {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+  width: 100%;
+
+  a {
+    color: var(--color-text-secondary);
+    text-decoration: underline;
   }
 }
 </style>
