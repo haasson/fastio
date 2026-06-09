@@ -5,6 +5,14 @@
 
 ---
 
+## module_configs.required_plan_key — имя врёт: хранит ТИР, а не ключ плана
+
+`module_configs.required_plan_key` хранит **короткий тир** (`pro`/`start`), а не полный `plans.key` (`retail-pro`/`services-pro`). Так и должно быть: `module_configs` глобальная (12 строк, без `tenant_id`, с колонкой `business_types`) — одна строка модуля обслуживает и retail, и services, поэтому полный ключ плана туда положить нельзя. Но имя колонки `required_plan_key` вводит в заблуждение — выглядит как ключ плана.
+
+Эта ловушка уже стрельнула: в `billing_change_plan` (ветка downgrade) guard модульных конфликтов джойнил `plans rp ON rp.key = mc.required_plan_key` — не матчилось (тир != полный ключ) → `rp.sort_order` NULL → проверка **никогда не срабатывала** (мёртвый guard, спасал только рантайм-`useGate`). Починено в `319_billing_change_plan_fix_module_guard.sql` и `318_billing_activate_plan.sql` через мост `rp.key = v_tenant.business_type || '-' || mc.required_plan_key`. Guard теперь реально блокирует даунгрейд при включённых премиум-модулях (проверено).
+
+Остаточный долг (не критично, rename сознательно отложен): переименовать колонку `required_plan_key` → `required_tier`, чтобы следующий агент не принял её за ключ плана. Это rename + миграция + правка всех ссылок (две billing-функции + любые чтения в коде). Допущения текущего моста: (1) формат `plans.key` остаётся `{business_type}-{tier}`; (2) `tenants.business_type` не NULL — иначе склейка даёт NULL, JOIN не матчится и guard молча пропускает (по доменному инварианту тенант всегда retail XOR services, так что для тенанта с планом business_type заполнен). Если что-то из этого изменится — мост сломается тихо.
+
 ## broadcastToTenantTelegram — rate-limit при >30 подписках
 
 `apps/ops/server/utils/telegramBroadcast.ts` шлёт все сообщения параллельно через `Promise.allSettled`. Telegram global rate-limit — 30 msg/sec на бота. Если у тенанта >30 подписок и несколько событий прилетают одновременно (бронь + запись + вызов), словим 429.
