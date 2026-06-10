@@ -198,13 +198,18 @@ const SORTABLE_COLUMNS = new Set(['created_at', 'total'])
 export type TableSession = {
   id: string
   createdAt: string
+  settledAt: string | null
   tableId: string | null
   tableName: string | null
   customerName: string | null
   customerPhone: string | null
   total: number
+  subtotal: number
   discountAmount: number
-  status: string
+  paymentType: 'cash' | 'card' | 'online' | null
+  settledBy: string | null
+  itemCount: number
+  checkStatus: 'settled' | 'cancelled'
 }
 
 export type TableSessionsParams = {
@@ -228,21 +233,23 @@ export type TableSessionsResult = {
 }
 
 const mapTableSession = (raw: Record<string, unknown>): TableSession => {
-  const row = raw as Pick<
-    OrderRow,
-    'id' | 'created_at' | 'table_id' | 'table_name' | 'customer_name' | 'customer_phone' | 'total' | 'discount_amount' | 'status'
-  >
+  const row = raw as OrderRow & { order_items?: { count: number }[] }
 
   return {
     id: row.id,
     createdAt: row.created_at,
+    settledAt: row.settled_at ?? null,
     tableId: row.table_id,
     tableName: row.table_name,
     customerName: row.customer_name,
     customerPhone: row.customer_phone ?? null,
     total: row.total,
+    subtotal: row.subtotal,
     discountAmount: row.discount_amount,
-    status: row.status,
+    paymentType: row.payment_type ?? null,
+    settledBy: row.settled_by ?? null,
+    itemCount: (row.order_items?.[0]?.count as number) ?? 0,
+    checkStatus: row.check_status as 'settled' | 'cancelled',
   }
 }
 
@@ -349,7 +356,7 @@ export const ordersApi = {
     }
   },
 
-  // История стола: dine-in чеки (table_id IS NOT NULL) за один день.
+  // История стола: рассчитанные dine-in чеки (check_status='settled') за один день.
   // Возвращает страницу + общее количество (count: 'exact') для пагинации.
   async listTableSessions(
     sb: SupabaseClient,
@@ -367,14 +374,15 @@ export const ordersApi = {
     let q = sb
       .from('orders')
       .select(
-        'id, created_at, table_id, table_name, customer_name, customer_phone, total, discount_amount, status, tables!inner(branch_id)',
+        'id, created_at, settled_at, table_id, table_name, customer_name, customer_phone, total, subtotal, discount_amount, payment_type, settled_by, check_status, order_items(count), tables!inner(branch_id)',
         { count: 'exact' },
       )
       .eq('tenant_id', tenantId)
+      .eq('check_status', 'settled')
       .not('table_id', 'is', null)
       .gte('created_at', dayFrom)
       .lt('created_at', dayTo)
-      .order('created_at', { ascending: false })
+      .order('settled_at', { ascending: false, nullsFirst: false })
       .range(offset, offset + limit - 1)
 
     if (params.branchId !== null) q = q.eq('tables.branch_id', params.branchId)
@@ -455,22 +463,13 @@ export const ordersApi = {
     sb: SupabaseClient,
     tableId: string,
     match: { dishName: string; modifiers: OrderItemModifier[]; addons: OrderItemAddon[]; removedIngredients: string[] },
-    excludeStatusIds: string[],
-    openedAt?: string,
   ): Promise<{ id: string; orderId: string } | null> {
-    let q = sb
+    const q = sb
       .from('order_items')
-      .select('id, order_id, modifiers, addons, removed_ingredients, orders!inner(table_id, status, created_at)')
+      .select('id, order_id, modifiers, addons, removed_ingredients, orders!inner(table_id, check_status)')
       .eq('dish_name', match.dishName)
       .eq('orders.table_id', tableId)
-
-    if (openedAt) {
-      q = q.gte('orders.created_at', openedAt)
-    }
-
-    if (excludeStatusIds.length) {
-      q = q.not('orders.status', 'in', `(${excludeStatusIds.join(',')})`)
-    }
+      .eq('orders.check_status', 'open')
 
     const data = await query(q)
 
@@ -590,6 +589,9 @@ export const ordersApi = {
       .eq('tenant_id', tenantId)
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
+      // Считаем только не-dine_in (check_status IS NULL) и РАССЧИТАННЫЕ чеки.
+      // open (не оплачен) и cancelled (пустой, total=0) — не выручка/не заказ.
+      .or('check_status.is.null,check_status.eq.settled')
 
     if (branchId !== null) q = q.eq('branch_id', branchId)
 
@@ -639,24 +641,19 @@ export const ordersApi = {
     return data as string | null
   },
 
-  async confirmAllPendingItems(sb: SupabaseClient, tableId: string, userId: string, cancelledStatusIds: string[]): Promise<void> {
-    let q = sb.from('orders').select('id').eq('table_id', tableId)
+  async confirmAllPendingItems(sb: SupabaseClient, tableId: string, userId: string): Promise<void> {
+    // Один открытый чек на стол — подтверждаем его pending-позиции.
+    const check = await query(
+      sb.from('orders').select('id').eq('table_id', tableId).eq('check_status', 'open').maybeSingle(),
+    )
 
-    if (cancelledStatusIds.length) {
-      q = q.not('status', 'in', `(${cancelledStatusIds.join(',')})`)
-    }
-
-    const orders = await query(q)
-
-    if (!orders?.length) return
-
-    const orderIds = orders.map((o: { id: string }) => o.id)
+    if (!check) return
 
     await query(
       sb.from('order_items')
         .update({ status: 'confirmed', confirmed_by: userId })
         .eq('status', 'pending')
-        .in('order_id', orderIds),
+        .eq('order_id', (check as { id: string }).id),
     )
   },
 }

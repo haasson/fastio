@@ -48,7 +48,7 @@ const makeSessionItem = (overrides: Partial<TableSessionItem> = {}): TableSessio
   ...overrides,
 })
 
-const session = (items: TableSessionItem[]): TableSession => ({ sum: 0, count: 0, items })
+const session = (items: TableSessionItem[]): TableSession => ({ sum: 0, items })
 
 const run = (
   dishes: KitchenQueueItem[],

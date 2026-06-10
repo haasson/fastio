@@ -1,18 +1,15 @@
 import { ref } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useMessage } from '@fastio/ui'
 import type { Table, OrderItem } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useAuthStore } from '~/shared/stores/auth'
-import { useOrderStatusesStore } from '~/features/orders'
 import type { DishPickerResult } from '~/features/menu'
 import type { TableSessionItem } from '../api/tables'
 
-export function useAddDishToTable(getTenantId: () => string | null) {
+export function useAddDishToTable(getTenantId: () => string | null, onChanged?: (tableId: string) => void) {
   const api = useDatabase()
   const authStore = useAuthStore()
-  const orderStatusesStore = useOrderStatusesStore()
-  const { statuses } = storeToRefs(orderStatusesStore)
   const { success, warning } = useMessage()
 
   const dishPickerOpen = ref(false)
@@ -23,37 +20,17 @@ export function useAddDishToTable(getTenantId: () => string | null) {
     dishPickerOpen.value = true
   }
 
-  const createTableOrder = async (item: OrderItem, totalPrice: number, table: Table, tenantId: string) => {
-    const newStatusId = statuses.value.find((s) => s.groupType === 'new')?.id
+  const addOne = async (item: OrderItem, table: Table) => {
+    try {
+      await api.tables.addItems(table.id, [item], authStore.user?.id ?? null)
+    } catch (e) {
+      reportError(e, { context: 'useAddDishToTable.addOne', tableId: table.id })
+      warning('Не удалось добавить блюдо')
 
-    if (!newStatusId) {
-      warning('Статусы заказов не загружены, попробуйте ещё раз')
-
-      return
+      return false
     }
 
-    await api.orders.create({
-      tenantId,
-      // Стол всегда принадлежит филиалу (tables.branch_id NOT NULL) — наследуем его,
-      // иначе dine-in заказ остаётся без филиала (ломает фильтр по филиалу в списке
-      // заказов, аналитике и истории столов).
-      branchId: table.branchId,
-      customerName: null,
-      customerPhone: '',
-      items: [item],
-      deliveryType: 'dine_in',
-      address: null,
-      comment: null,
-      promoCode: null,
-      discountAmount: 0,
-      subtotal: totalPrice,
-      deliveryFee: 0,
-      total: totalPrice,
-      status: newStatusId,
-      paymentType: 'cash',
-      tableId: table.id,
-      tableName: table.name,
-    })
+    return true
   }
 
   const onDishPicked = async (result: DishPickerResult) => {
@@ -67,9 +44,8 @@ export function useAddDishToTable(getTenantId: () => string | null) {
     const modifiersDelta = (result.modifiers ?? []).reduce((sum, m) => sum + (m.priceDelta ?? 0), 0)
     const addonsDelta = (result.addons ?? []).reduce((sum, a) => sum + (a.price ?? 0), 0)
     const unitPrice = result.price + modifiersDelta + addonsDelta
-    const totalPrice = unitPrice * result.quantity
 
-    await createTableOrder({
+    const item: OrderItem = {
       dishId: result.dishId,
       comboId: result.comboId ?? null,
       dishName: result.dishName,
@@ -85,8 +61,14 @@ export function useAddDishToTable(getTenantId: () => string | null) {
       addedBy: authStore.user?.id ?? null,
       confirmedBy: authStore.user?.id ?? null,
       status: 'confirmed' as const,
-    }, totalPrice, table, tenantId)
-    success(`${result.dishName} добавлено`)
+    }
+
+    const ok = await addOne(item, table)
+
+    if (ok) {
+      success(`${result.dishName} добавлено`)
+      onChanged?.(table.id)
+    }
   }
 
   const repeatItem = async (sessionItem: TableSessionItem, table: Table) => {
@@ -100,7 +82,7 @@ export function useAddDishToTable(getTenantId: () => string | null) {
       return
     }
 
-    await createTableOrder({
+    const item: OrderItem = {
       dishId: sessionItem.dishId,
       comboId: null,
       dishName: sessionItem.dishName,
@@ -115,8 +97,14 @@ export function useAddDishToTable(getTenantId: () => string | null) {
       addedBy: authStore.user?.id ?? null,
       confirmedBy: authStore.user?.id ?? null,
       status: 'confirmed' as const,
-    }, sessionItem.price, table, tenantId)
-    success(`+1 ${sessionItem.dishName}`)
+    }
+
+    const ok = await addOne(item, table)
+
+    if (ok) {
+      success(`+1 ${sessionItem.dishName}`)
+      onChanged?.(table.id)
+    }
   }
 
   return { dishPickerOpen, openPicker, onDishPicked, repeatItem }

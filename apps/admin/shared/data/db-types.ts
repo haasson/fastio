@@ -137,6 +137,10 @@ export type OrderRow = WithOverrides<Tables<'orders'>, {
   // Подтягивается join'ом из `branches` (см. `mapOrder` в features/orders).
   branch_address?: string | null
   visited_statuses: string[] | null
+  // Миграция 325 (dine-in чек) — добавлено вручную (db:gen-types недоступен локально, см. MEMORY).
+  check_status: 'open' | 'settled' | 'cancelled' | null
+  settled_at: string | null
+  settled_by: string | null
 }
 
 export type OrderStatusRow = WithOverrides<Tables<'order_statuses'>, {

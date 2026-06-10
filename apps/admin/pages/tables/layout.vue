@@ -88,7 +88,10 @@ const pendingByTable = computed<Record<string, number>>(() => {
 
 const reservationsStore = useReservationsStore()
 
-const { dishPickerOpen, openPicker, onDishPicked, repeatItem } = useAddDishToTable(() => ctx.tenantId)
+const { dishPickerOpen, openPicker, onDishPicked, repeatItem } = useAddDishToTable(() => ctx.tenantId, (tableId) => {
+  ctx.reloadTableSums(tableId)
+  ctx.reloadKitchenDishes()
+})
 const gate = useGate()
 
 // ── Detail drawer ───────────────────────────────────────

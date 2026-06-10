@@ -248,7 +248,7 @@ const reloadTableSums = (tableId: string) => {
   api.tables.loadSums([table], cancelledStatusIds.value).then((partial) => {
     tableSums.value = {
       ...tableSums.value,
-      [tableId]: partial[tableId] ?? { sum: 0, count: 0, items: [] },
+      [tableId]: partial[tableId] ?? { sum: 0, items: [] },
     }
   })
 }
@@ -341,51 +341,58 @@ onUnmounted(() => {
 })
 
 // ── Actions ───────────────────────────────────────────────────
-const toggleOpen = async (table: Table) => {
-  const isClosing = table.isOpen
-  const updated = await api.tables.setOpen(table.id, !table.isOpen)
-
-  if (!updated) return
-
-  const idx = tables.value.findIndex((t) => t.id === table.id)
-
-  if (idx !== -1) tables.value[idx] = updated
-  if (updated.isOpen) {
-    tableSums.value[table.id] = { sum: 0, count: 0, items: [] }
-  } else {
-    delete tableSums.value[table.id]
-    if (isClosing) {
-      const seatedReservation = reservationsStore.reservations.find(
-        (r) => r.status === 'seated' && r.tableId === table.id,
-      )
-
-      if (seatedReservation) await reservationsStore.complete(seatedReservation.id)
-    }
-  }
-}
-
 const checkout = (table: Table) => {
   checkoutTable.value = table
   checkoutModalOpen.value = true
 }
 
-const onCheckoutConfirmed = async (discountAmount: number) => {
+const toggleOpen = async (table: Table) => {
+  if (table.isOpen) {
+    // Открытый стол закрывается только через расчёт (checkout-модалка).
+    checkout(table)
+
+    return
+  }
+
+  try {
+    await api.tables.openCheck(table.id)
+
+    const idx = tables.value.findIndex((t) => t.id === table.id)
+
+    if (idx !== -1) tables.value[idx] = { ...tables.value[idx], isOpen: true, openedAt: new Date().toISOString() }
+    tableSums.value[table.id] = { sum: 0, items: [] }
+  } catch (e) {
+    reportError(e, { context: 'tables:toggleOpen:open', tableId: table.id })
+    warning(e instanceof Error ? e.message : 'Не удалось открыть стол')
+  }
+}
+
+const onCheckoutConfirmed = async (payload: { discountAmount: number; paymentType: 'cash' | 'card' }) => {
   const table = checkoutTable.value
 
   if (!table) return
 
   checkoutLoading.value = true
-
   try {
-    await toggleOpen(table)
+    const checkId = await api.tables.getOpenCheckId(table.id)
+
+    if (!checkId) {
+      warning('Открытый чек не найден')
+
+      return
+    }
+
+    await api.tables.settleCheck(checkId, payload.discountAmount, payload.paymentType)
 
     checkoutModalOpen.value = false
 
-    // Скидка применяется после закрытия стола — если toggleOpen упадёт,
-    // скидка не будет записана, и при повторе не задвоится
-    if (discountAmount > 0 && table.openedAt) {
-      await api.tables.applyDiscount(table.id, table.openedAt, discountAmount, cancelledStatusIds.value)
-    }
+    const idx = tables.value.findIndex((t) => t.id === table.id)
+
+    if (idx !== -1) tables.value[idx] = { ...tables.value[idx], isOpen: false, openedAt: null }
+    delete tableSums.value[table.id]
+  } catch (e) {
+    reportError(e, { context: 'tables:onCheckoutConfirmed', tableId: table.id })
+    warning(e instanceof Error ? e.message : 'Не удалось рассчитать стол')
   } finally {
     checkoutLoading.value = false
   }
@@ -458,7 +465,7 @@ const onServeKitchen = async (ids: string[]) => {
 }
 
 const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
-  const item = await api.orders.findTableItem(table.id, sessionItem, cancelledStatusIds.value, table.openedAt ?? undefined)
+  const item = await api.orders.findTableItem(table.id, sessionItem)
 
   if (!item) {
     warning('Блюдо не найдено')
@@ -488,21 +495,36 @@ const onRemoveDish = async (table: Table, sessionItem: TableSessionItem) => {
 
 const onConfirmItem = async (itemId: string, tableId: string) => {
   if (!userId.value) return
-  await api.orders.confirmItem(itemId, userId.value)
-  reloadTableSums(tableId)
-  reloadKitchenDishes()
+  try {
+    await api.orders.confirmItem(itemId, userId.value)
+    reloadTableSums(tableId)
+    reloadKitchenDishes()
+  } catch (e) {
+    reportError(e, { context: 'tables:onConfirmItem', itemId, tableId })
+    warning('Не удалось подтвердить позицию')
+  }
 }
 
 const onRejectItem = async (itemId: string, tableId: string) => {
-  await api.orders.rejectItem(itemId)
-  reloadTableSums(tableId)
+  try {
+    await api.orders.rejectItem(itemId)
+    reloadTableSums(tableId)
+  } catch (e) {
+    reportError(e, { context: 'tables:onRejectItem', itemId, tableId })
+    warning('Не удалось отклонить позицию')
+  }
 }
 
 const onConfirmAllItems = async (tableId: string) => {
   if (!userId.value) return
-  await api.orders.confirmAllPendingItems(tableId, userId.value, cancelledStatusIds.value)
-  reloadTableSums(tableId)
-  reloadKitchenDishes()
+  try {
+    await api.orders.confirmAllPendingItems(tableId, userId.value)
+    reloadTableSums(tableId)
+    reloadKitchenDishes()
+  } catch (e) {
+    reportError(e, { context: 'tables:onConfirmAllItems', tableId })
+    warning('Не удалось подтвердить позиции')
+  }
 }
 
 const onCallResolved = async (id: string) => {
@@ -581,6 +603,7 @@ provide(TablesContextKey, {
   toggleOpen, checkout, onMarkServedAll, onRemoveDish, onConfirmItem, onRejectItem,
   onConfirmAllItems, onCallResolved, onTableAdded, onTableUpdated, onTableDeleted,
   onPositionUpdated, onCallTypeAdded, onCallTypeRemoved, onGlobalTagsUpdated, onSettingsSaved,
+  reloadTableSums, reloadKitchenDishes,
 })
 </script>
 

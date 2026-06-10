@@ -34,7 +34,7 @@
 
     <UiSkeleton v-if="loading" :repeat="5" />
 
-    <UiEmpty v-else-if="!sessions.length" icon="clock" text="Чеков за выбранный день нет" />
+    <UiEmpty v-else-if="!sessions.length" icon="clock" text="Рассчитанных чеков за день нет" />
 
     <template v-else>
       <UiDataTable
@@ -42,7 +42,7 @@
         :data="sessions"
         :row-key="(row: OrderTableSession) => row.id"
         :bordered="false"
-        :scroll-x="760"
+        :scroll-x="830"
         size="small"
         :row-props="(row: OrderTableSession) => ({ onClick: () => openSession(row), style: 'cursor: pointer' })"
       />
@@ -70,9 +70,7 @@ import {
   todayInTz, addDaysToDateStr, localDateTimeToUtcIso,
 } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
-import { storeToRefs } from 'pinia'
 import type { TableSession as OrderTableSession } from '~/features/orders'
-import { useOrderStatusesStore } from '~/features/orders'
 import { useTablesContext } from '~/features/tables'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -85,11 +83,6 @@ const api = useDatabase()
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
 const ctx = useTablesContext()
-const orderStatusesStore = useOrderStatusesStore()
-const { statuses } = storeToRefs(orderStatusesStore)
-
-// Резолв имени статуса заказа (id → name) через стор статусов.
-const statusName = (statusId: string): string => statuses.value.find((s) => s.id === statusId)?.name ?? '—'
 
 const sessions = ref<OrderTableSession[]>([])
 const total = ref(0)
@@ -188,45 +181,38 @@ const openSession = (row: OrderTableSession) => {
 // ── Колонки ───────────────────────────────────────────────────
 const hintStyle = 'color: var(--color-text-hint)'
 
+const PAYMENT_LABEL: Record<string, string> = { cash: 'Наличные', card: 'Карта', online: 'Онлайн' }
+
 const columns: DataTableColumns<OrderTableSession> = [
   {
-    title: 'Время',
-    key: 'createdAt',
-    width: 150,
-    render: (row) => h(UiText, { size: 'tiny', style: 'white-space: nowrap' }, () => formatDateTime(row.createdAt)),
+    title: 'Время', key: 'settledAt', width: 150,
+    render: (row) => h(UiText, { size: 'tiny', style: 'white-space: nowrap' }, () => formatDateTime(row.settledAt ?? row.createdAt)),
   },
   {
-    title: 'Стол',
-    key: 'tableName',
-    width: 130,
+    title: 'Стол', key: 'tableName', width: 120,
     render: (row) => h(UiText, { size: 'small' }, () => row.tableName ?? '—'),
   },
   {
-    title: 'Гость',
-    key: 'customerName',
+    title: 'Гость', key: 'customerName',
     render: (row) => h('div', { class: 'guest-cell' }, [
       h(UiText, { size: 'small', span: true }, () => row.customerName || '—'),
-      row.customerPhone
-        ? h(UiText, { size: 'tiny', span: true, style: hintStyle }, () => row.customerPhone!)
-        : null,
+      row.customerPhone ? h(UiText, { size: 'tiny', span: true, style: hintStyle }, () => row.customerPhone!) : null,
     ]),
   },
   {
-    title: 'Сумма',
-    key: 'total',
-    width: 170,
+    title: 'Позиций', key: 'itemCount', width: 90,
+    render: (row) => h(UiText, { size: 'small' }, () => String(row.itemCount)),
+  },
+  {
+    title: 'Сумма', key: 'total', width: 160,
     render: (row) => h('div', { class: 'total-cell' }, [
       h(UiText, { size: 'small', span: true, style: 'font-weight: var(--font-weight-medium)' }, () => formatPrice(row.total)),
-      row.discountAmount > 0
-        ? h(UiText, { size: 'tiny', span: true, style: hintStyle }, () => `скидка ${formatPrice(row.discountAmount)}`)
-        : null,
+      row.discountAmount > 0 ? h(UiText, { size: 'tiny', span: true, style: hintStyle }, () => `скидка ${formatPrice(row.discountAmount)}`) : null,
     ]),
   },
   {
-    title: 'Статус',
-    key: 'status',
-    width: 140,
-    render: (row) => h(UiText, { size: 'small', style: hintStyle }, () => statusName(row.status)),
+    title: 'Оплата', key: 'paymentType', width: 110,
+    render: (row) => h(UiText, { size: 'small', style: hintStyle }, () => row.paymentType ? PAYMENT_LABEL[row.paymentType] : '—'),
   },
 ]
 

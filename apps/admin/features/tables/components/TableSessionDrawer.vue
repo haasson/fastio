@@ -8,7 +8,7 @@
     <template #title>
       <div class="session-title">
         <UiTitle size="h4">{{ session?.tableName ?? 'Стол' }}</UiTitle>
-        <UiText v-if="session" size="small" type="secondary">{{ formatDateTime(session.createdAt) }}</UiText>
+        <UiText v-if="session" size="small" type="secondary">{{ formatDateTime(session.settledAt ?? session.createdAt) }}</UiText>
       </div>
     </template>
 
@@ -18,9 +18,8 @@
         <div class="summary">
           <UiKeyValue label="Гость" :value="session.customerName ?? '—'" />
           <UiKeyValue label="Телефон" :value="session.customerPhone ?? '—'" />
-          <UiKeyValue label="Статус">
-            <UiTag size="small" round :type="statusTagType">{{ statusName }}</UiTag>
-          </UiKeyValue>
+          <UiKeyValue label="Оплата" :value="paymentLabel" />
+          <UiKeyValue label="Рассчитал" :value="settledLabel" />
           <UiKeyValue label="Итог">
             <span class="total">
               <span>{{ formatPrice(session.total) }}</span>
@@ -31,6 +30,21 @@
           </UiKeyValue>
         </div>
       </UiCard>
+
+      <!-- Позиции -->
+      <div class="block">
+        <UiSectionHeader title="Позиции" />
+        <UiCard v-if="items.length" size="small">
+          <div class="items">
+            <div v-for="item in items" :key="item.id" class="item-row">
+              <UiText size="small" class="item-name">{{ item.dishName }}</UiText>
+              <UiText size="tiny" class="item-qty">× {{ item.quantity }}</UiText>
+              <UiText size="small" class="item-sum">{{ formatPrice(item.price * item.quantity) }}</UiText>
+            </div>
+          </div>
+        </UiCard>
+        <UiEmpty v-else icon="dishes" text="Позиций нет" />
+      </div>
 
       <!-- Бронь -->
       <div v-if="reservation" class="block">
@@ -63,17 +77,16 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiDrawer, UiCard, UiTitle, UiText, UiTag, UiKeyValue, UiSectionHeader } from '@fastio/ui'
-import type { Reservation } from '@fastio/shared'
+import { UiDrawer, UiCard, UiTitle, UiText, UiKeyValue, UiSectionHeader, UiEmpty } from '@fastio/ui'
+import type { Reservation, OrderItem } from '@fastio/shared'
 import { formatDateTime, formatPrice } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
-import { storeToRefs } from 'pinia'
 import type { TableSession as OrderTableSession } from '~/features/orders'
-import { useOrderStatusesStore } from '~/features/orders'
 import { useTeam } from '~/features/team'
 import { useDatabase } from '~/shared/data/useDatabase'
-import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'
 import OrderEventsSection from '~/features/orders/components/OrderEventsSection.vue'
+
+const PAYMENT_LABEL: Record<string, string> = { cash: 'Наличные', card: 'Карта', online: 'Онлайн' }
 
 const props = defineProps<{
   modelValue: boolean
@@ -83,11 +96,10 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
 const api = useDatabase()
-const orderStatusesStore = useOrderStatusesStore()
-const { statuses } = storeToRefs(orderStatusesStore)
 const { members, load: loadTeam } = useTeam()
 
 const reservation = ref<Reservation | null>(null)
+const items = ref<OrderItem[]>([])
 const refreshKey = ref(0)
 
 // uuid → отображаемое имя сотрудника (для блока брони).
@@ -101,9 +113,17 @@ const memberNames = computed(() => {
   return map
 })
 
-const statusMeta = computed(() => statuses.value.find((s) => s.id === props.session?.status) ?? null)
-const statusName = computed(() => statusMeta.value?.name ?? '—')
-const statusTagType = computed(() => statusMeta.value ? STATUS_GROUP_TAG_TYPES[statusMeta.value.groupType] : 'default')
+const paymentLabel = computed(() => props.session?.paymentType ? PAYMENT_LABEL[props.session.paymentType] : '—')
+
+const settledLabel = computed(() => {
+  const s = props.session
+
+  if (!s?.settledAt) return '—'
+
+  const name = s.settledBy ? memberNames.value.get(s.settledBy) ?? s.settledBy : null
+
+  return name ? `${name} · ${formatDateTime(s.settledAt)}` : formatDateTime(s.settledAt)
+})
 
 const confirmedLabel = computed(() => {
   const r = reservation.value
@@ -124,12 +144,24 @@ const loadReservation = async (orderId: string) => {
   }
 }
 
+const loadCheck = async (orderId: string) => {
+  try {
+    const order = await api.orders.getById(orderId)
+
+    items.value = order?.items ?? []
+  } catch (e) {
+    reportError(e, { context: 'tables:tableSessionDrawer:loadCheck', orderId })
+    items.value = []
+  }
+}
+
 watch(
   () => [props.modelValue, props.session?.id] as const,
   ([open, id]) => {
     if (!open || !id) return
     refreshKey.value++
     void loadReservation(id)
+    void loadCheck(id)
     if (!members.value.length) void loadTeam()
   },
   { immediate: true },
@@ -153,6 +185,32 @@ watch(
 
 .summary {
   @include flex-col(var(--space-8));
+}
+
+.items {
+  @include flex-col(var(--space-8));
+}
+
+.item-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+}
+
+.item-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.item-qty {
+  color: var(--color-text-hint);
+  white-space: nowrap;
+}
+
+.item-sum {
+  flex: 0 0 auto;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
 }
 
 .total {

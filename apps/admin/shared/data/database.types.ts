@@ -2110,6 +2110,7 @@ export type Database = {
           apartment: string | null
           branch_id: string | null
           change_from: number | null
+          check_status: string | null
           comment: string | null
           created_at: string
           customer_email: string | null
@@ -2137,6 +2138,8 @@ export type Database = {
           promo_code: string | null
           promotion_id: string | null
           scheduled_at: string | null
+          settled_at: string | null
+          settled_by: string | null
           status: string
           subtotal: number
           table_id: string | null
@@ -2152,6 +2155,7 @@ export type Database = {
           apartment?: string | null
           branch_id?: string | null
           change_from?: number | null
+          check_status?: string | null
           comment?: string | null
           created_at?: string
           customer_email?: string | null
@@ -2175,10 +2179,12 @@ export type Database = {
           kitchen_queued_at?: string | null
           needs_change?: boolean
           order_number?: string | null
-          payment_type: string
+          payment_type?: string
           promo_code?: string | null
           promotion_id?: string | null
           scheduled_at?: string | null
+          settled_at?: string | null
+          settled_by?: string | null
           status?: string
           subtotal: number
           table_id?: string | null
@@ -2194,6 +2200,7 @@ export type Database = {
           apartment?: string | null
           branch_id?: string | null
           change_from?: number | null
+          check_status?: string | null
           comment?: string | null
           created_at?: string
           customer_email?: string | null
@@ -2221,6 +2228,8 @@ export type Database = {
           promo_code?: string | null
           promotion_id?: string | null
           scheduled_at?: string | null
+          settled_at?: string | null
+          settled_by?: string | null
           status?: string
           subtotal?: number
           table_id?: string | null
@@ -3851,6 +3860,10 @@ export type Database = {
           tenant_id: string
         }[]
       }
+      add_items_to_check: {
+        Args: { p_items_json: Json; p_status?: string; p_table_id: string }
+        Returns: string
+      }
       add_service_to_visit: {
         Args: {
           p_ends_at: string
@@ -3870,15 +3883,6 @@ export type Database = {
           p_cycle_start_date: string
           p_resource_id: string
           p_template_id: string
-        }
-        Returns: undefined
-      }
-      apply_table_discount: {
-        Args: {
-          p_cancelled_status_ids: string[]
-          p_discount_amount: number
-          p_opened_at: string
-          p_table_id: string
         }
         Returns: undefined
       }
@@ -4186,6 +4190,10 @@ export type Database = {
         Args: { p_new_date: string; p_user_id?: string; p_visit_id: string }
         Returns: Json
       }
+      open_table_check: {
+        Args: { p_table_id: string }
+        Returns: string
+      }
       record_visit_event: {
         Args: {
           p_actor_id: string
@@ -4245,6 +4253,14 @@ export type Database = {
         }
       services_set_branch_ids: {
         Args: { p_branch_ids: string[]; p_service_id: string }
+        Returns: undefined
+      }
+      settle_table_check: {
+        Args: {
+          p_check_id: string
+          p_discount_amount: number
+          p_payment_type: string
+        }
         Returns: undefined
       }
       split_visit_to_request: {

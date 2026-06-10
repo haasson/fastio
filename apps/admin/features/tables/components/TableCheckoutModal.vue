@@ -49,6 +49,23 @@
         </div>
       </div>
 
+      <!-- Payment -->
+      <div class="payment-row">
+        <span class="payment-label">Оплата</span>
+        <div class="payment-controls">
+          <UiButton
+            :type="paymentType === 'cash' ? 'primary' : 'default'"
+            size="small"
+            @click="paymentType = 'cash'"
+          >Наличные</UiButton>
+          <UiButton
+            :type="paymentType === 'card' ? 'primary' : 'default'"
+            size="small"
+            @click="paymentType = 'card'"
+          >Карта</UiButton>
+        </div>
+      </div>
+
       <!-- Total -->
       <div class="total-row">
         <template v-if="compensationAmount > 0 || discountAmount > 0">
@@ -59,6 +76,10 @@
         <span class="total-label">Итого</span>
         <span class="total-sum">{{ formatPrice(finalSum) }}</span>
       </div>
+
+      <UiText v-if="hasPending" size="small" class="pending-hint">
+        Подтвердите или отклоните позиции гостя, чтобы рассчитать стол
+      </UiText>
     </div>
 
     <template #footer>
@@ -67,9 +88,9 @@
         <UiButton
           type="warning"
           :loading="loading"
-          :disabled="activeKitchenCount > 0"
+          :disabled="activeKitchenCount > 0 || hasPending"
           @click="onConfirm"
-        >Закрыть стол</UiButton>
+        >{{ (session?.items?.length ?? 0) === 0 ? 'Закрыть стол' : 'Рассчитать' }}</UiButton>
       </div>
     </template>
   </UiModal>
@@ -77,7 +98,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { UiModal, UiButton } from '@fastio/ui'
+import { UiModal, UiButton, UiText } from '@fastio/ui'
 import type { Table, KitchenQueueItem } from '@fastio/shared'
 import { formatPrice } from '@fastio/shared'
 import type { TableSession, TableSessionItem } from '../api/tables'
@@ -96,7 +117,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'confirm': [discountAmount: number]
+  'confirm': [payload: { discountAmount: number; paymentType: 'cash' | 'card' }]
   'remove-dish': [item: TableSessionItem]
   'confirm-item': [itemId: string]
   'reject-item': [itemId: string]
@@ -108,6 +129,9 @@ const emit = defineEmits<{
 const discountType = ref<'percent' | 'rub'>('percent')
 const discountValue = ref<number>(0)
 const compensationAmount = ref(0)
+const paymentType = ref<'cash' | 'card'>('cash')
+
+const hasPending = computed(() => (props.session?.items ?? []).some((i) => i.status === 'pending'))
 
 const activeKitchenCount = computed(() => (props.kitchenDishes ?? []).filter((i) => i.status === 'queued' || i.status === 'in_progress' || i.status === 'done',
 ).length,
@@ -137,7 +161,7 @@ const onCancelKitchen = (ids: string[], amount: number, charged: boolean) => {
 }
 
 const onConfirm = () => {
-  emit('confirm', discountAmount.value + compensationAmount.value)
+  emit('confirm', { discountAmount: discountAmount.value + compensationAmount.value, paymentType: paymentType.value })
 }
 
 watch(() => props.modelValue, (open) => {
@@ -145,6 +169,7 @@ watch(() => props.modelValue, (open) => {
     compensationAmount.value = 0
     discountValue.value = 0
     discountType.value = 'percent'
+    paymentType.value = 'cash'
   }
 })
 </script>
@@ -159,6 +184,10 @@ watch(() => props.modelValue, (open) => {
 .divider {
   height: 1px;
   background: var(--color-border);
+}
+
+.pending-hint {
+  color: var(--color-text-hint);
 }
 
 .discount-row {
@@ -200,6 +229,25 @@ watch(() => props.modelValue, (open) => {
   &::-webkit-outer-spin-button {
     -webkit-appearance: none;
   }
+}
+
+.payment-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.payment-label {
+  font-size: var(--font-size-md);
+  color: var(--color-text-hint);
+  flex-shrink: 0;
+}
+
+.payment-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-left: auto;
 }
 
 .total-row {

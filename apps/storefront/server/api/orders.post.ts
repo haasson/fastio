@@ -89,6 +89,50 @@ export default defineEventHandler(async (event) => {
     { workingHoursSchedule: tenant.workingHoursSchedule, timezone: tenant.timezone },
   )
 
+  // Dine-in: гость ДОПИСЫВАЕТ позиции в открытый чек стола (одна посадка = один
+  // чек). Не создаём новый order, не применяем промокоды (скидку даёт персонал
+  // при расчёте — решение №3). Гард is_open уже отработал в resolveDelivery →
+  // validateTable. Позиции pending — персонал подтверждает.
+  if (deliveryType === 'dine_in') {
+    // IDOR/griefing guard: гость должен иметь cookie fastio_table от GET /api/table/[id]
+    // (QR-скан). Иначе любой, кто знает table_id из QR-URL, дописывал бы pending в чужой
+    // открытый чек. 400 (не 404) — стол уже провалидирован validateTable выше.
+    const sessionTableId = getCookie(event, 'fastio_table')
+    if (sessionTableId !== tableRecord!.id) {
+      throw createError({ statusCode: 400, message: 'Стол сейчас не обслуживается' })
+    }
+
+    const dineInItems = serverItems.map((item) => ({
+      dish_id: item.dishId,
+      combo_id: item.comboId ?? null,
+      combo_items: item.comboId ? (comboItemsMap.get(item.comboId) ?? null) : null,
+      dish_name: item.dishName,
+      category_name: item.categoryName ?? null,
+      price: item.price,
+      quantity: item.quantity,
+      removed_ingredients: item.removedIngredients ?? [],
+      modifiers: item.modifiers ?? [],
+      addons: item.addons ?? [],
+      added_by: authUserId,
+    }))
+
+    const { data: checkId, error: addError } = await supabase.rpc('add_items_to_check', {
+      p_table_id: tableRecord!.id,
+      p_items_json: dineInItems,
+      p_status: 'pending',
+    })
+
+    if (addError) {
+      reportError(addError, { context: 'orders.post:dine-in-add', tenantId, tableId: tableRecord?.id })
+      throw createError({
+        statusCode: addError.code === 'P0001' ? 400 : 500,
+        message: addError.code === 'P0001' ? 'Стол сейчас не обслуживается' : 'Не удалось добавить заказ',
+      })
+    }
+
+    return { id: checkId as string, orderNumber: null, token: null }
+  }
+
   // 5. Валидация scheduledAt (нужна до проверки промо, чтобы передать время доставки)
   let validScheduledAt: string | null = null
   if (typeof body.scheduledAt === 'string' && body.scheduledAt) {
@@ -163,7 +207,9 @@ export default defineEventHandler(async (event) => {
     modifiers: item.modifiers ?? [],
     addons: item.addons ?? [],
     sort_order: i,
-    status: deliveryType === 'dine_in' ? 'pending' : 'confirmed',
+    // dine_in уже вернулся выше (дописывает в открытый чек), сюда доходят только
+    // delivery/pickup — их позиции сразу confirmed.
+    status: 'confirmed',
     added_by: authUserId,
   }))
 

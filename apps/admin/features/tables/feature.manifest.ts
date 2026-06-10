@@ -20,8 +20,8 @@ export default defineFeature({
   ],
 
   db: {
-    tables: ['orders', 'reservation_settings', 'reservations', 'table_call_types', 'table_calls', 'table_settings', 'tables'],
-    rpc: ['apply_table_discount'],
+    tables: ['orders', 'order_items', 'reservation_settings', 'reservations', 'table_call_types', 'table_calls', 'table_settings', 'tables'],
+    rpc: ['open_table_check', 'add_items_to_check', 'settle_table_check'],
   },
 
   realtime: [

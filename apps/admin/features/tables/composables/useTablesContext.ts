@@ -42,6 +42,8 @@ export type TablesContext = {
   onCallTypeRemoved: (id: string) => Promise<void>
   onGlobalTagsUpdated: (tags: string[]) => void
   onSettingsSaved: (settings: TableSettings) => void
+  reloadTableSums: (tableId: string) => void
+  reloadKitchenDishes: () => void
 }
 
 export const TablesContextKey: InjectionKey<TablesContext> = Symbol('tables:context')

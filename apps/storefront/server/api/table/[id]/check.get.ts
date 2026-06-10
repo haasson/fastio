@@ -24,19 +24,20 @@ export default defineEventHandler(async (event) => {
     return { items: [] }
   }
 
-  // Все заказы этого стола после opened_at
-  const { data: orders } = await db
+  // Один открытый чек стола (check_status='open') — одна посадка = один чек.
+  const { data: check } = await db
     .from('orders')
     .select('id')
     .eq('table_id', tableId)
     .eq('delivery_type', 'dine_in')
-    .gte('created_at', table.opened_at)
+    .eq('check_status', 'open')
+    .maybeSingle()
 
-  if (!orders?.length) {
+  if (!check) {
     return { items: [] }
   }
 
-  const orderIds = orders.map(o => o.id as string)
+  const orderIds = [check.id as string]
 
   // Загружаем items и kitchen_queue параллельно
   const [{ data: itemRows }, { data: kitchenRows }] = await Promise.all([

@@ -151,6 +151,7 @@ import { UiButton, UiCollapse, UiCollapseItem, UiDivider, UiDrawer, UiForm, UiIn
 import type { DrawerAction } from '@fastio/ui'
 import type { Reservation, ReservationSettings, Table } from '@fastio/shared'
 import { validationRules, useConfirm } from '@fastio/kit'
+import { reportError } from '@fastio/shared/observability'
 import { useReservationsStore } from '../stores/reservations'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -536,8 +537,31 @@ const onSave = async () => {
 
           return false
         }
-        await api.tables.setOpen(selectedTableId.value, true)
+
+        // Сначала переводим бронь в seated, затем открываем чек: RPC open_table_check
+        // линкует бронь к чеку через UPDATE ... WHERE status='seated' AND order_id IS NULL.
+        // Порядок важен — иначе order_id-связь (блок «Бронь» в истории) не проставится.
         await reservationsStore.seat(r.id)
+
+        try {
+          await api.tables.openCheck(selectedTableId.value)
+        } catch (e) {
+          reportError(e, { context: 'reservations:seat:openCheck', tableId: selectedTableId.value, reservationId: r.id })
+
+          // Стол не открылся, но бронь уже в seated — best-effort откатываем её обратно
+          // в confirmed, чтобы не осталась осиротевшая seated-бронь без открытого стола.
+          // Сбой отката не должен маскировать исходную ошибку — свой try/catch.
+          try {
+            await reservationsStore.confirm(r.id, table.id, table.name, authStore.user?.id ?? '')
+            error('Стол не открылся — бронь возвращена в «подтверждена», повторите открытие')
+          } catch (revertErr) {
+            reportError(revertErr, { context: 'reservations:seat:openCheck:revert', reservationId: r.id })
+            error('Гость отмечен посаженным, но стол не открылся — повторите открытие стола')
+          }
+
+          return false
+        }
+
         success('Гость посажен, стол открыт')
       } else {
         await reservationsStore.complete(r.id, new Date().toISOString())

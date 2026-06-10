@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Table, TableFormData, TableShape, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
+import type { Table, TableFormData, TableShape, OrderItem, OrderItemModifier, OrderItemAddon } from '@fastio/shared'
 import { orderItemKey } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
 import { query } from '~/shared/utils/query'
@@ -22,7 +22,6 @@ export type TableSessionItem = {
 
 export type TableSession = {
   sum: number
-  count: number
   items: TableSessionItem[]
 }
 
@@ -136,34 +135,77 @@ export const tablesApi = {
     await query(sb.from('tables').update({ position_x: x, position_y: y }).eq('id', id))
   },
 
-  async setOpen(sb: SupabaseClient, id: string, isOpen: boolean): Promise<Table | null> {
-    const result = await query(
-      sb.from('tables')
-        .update({ is_open: isOpen, opened_at: isOpen ? new Date().toISOString() : null })
-        .eq('id', id)
-        .select()
-        .single(),
-    )
+  // Открытие стола = создание открытого чека (RPC: атомарно is_open+opened_at+INSERT
+  // чека, партиал-уникальный индекс ловит гонку двойного открытия). Возвращает id чека.
+  async openCheck(sb: SupabaseClient, tableId: string): Promise<string | null> {
+    const { data, error } = await sb.rpc('open_table_check', { p_table_id: tableId })
 
-    return result ? mapTable(result) : null
+    if (error) {
+      reportError(error, { context: 'tablesApi.openCheck', tableId })
+      const msg = error.code === '42501'
+        ? 'Недостаточно прав'
+        : error.code === 'P0001'
+          ? 'Не удалось открыть стол'
+          : 'Ошибка открытия стола'
+
+      throw new Error(msg)
+    }
+
+    return (data as string | null) ?? null
   },
 
-  async loadSums(sb: SupabaseClient, tables: Table[], cancelledStatusIds: string[]): Promise<Record<string, TableSession>> {
-    const openTables = tables.filter((t) => t.isOpen && t.openedAt)
+  // Дописать позиции в открытый чек стола (официант → confirmed, сразу на кухню
+  // через item-триггеры). RPC сам резолвит открытый чек по table_id и пересчитывает
+  // subtotal/total.
+  async addItems(sb: SupabaseClient, tableId: string, items: OrderItem[], userId: string | null): Promise<void> {
+    const itemsJson = items.map((it) => ({
+      dish_id: it.dishId,
+      combo_id: it.comboId ?? null,
+      combo_items: it.comboItems ?? null,
+      dish_name: it.dishName,
+      category_name: it.categoryName ?? null,
+      price: it.price,
+      quantity: it.quantity,
+      removed_ingredients: it.removedIngredients ?? [],
+      modifiers: it.modifiers ?? [],
+      addons: it.addons ?? [],
+      added_by: userId,
+    }))
+
+    const { error } = await sb.rpc('add_items_to_check', {
+      p_table_id: tableId,
+      p_items_json: itemsJson,
+      p_status: 'confirmed',
+    })
+
+    if (error) {
+      reportError(error, { context: 'tablesApi.addItems', tableId })
+      throw new Error(error.code === 'P0001' ? 'Стол не открыт' : 'Не удалось добавить блюдо')
+    }
+  },
+
+  // id открытого чека стола (для расчёта). null если открытого чека нет.
+  async getOpenCheckId(sb: SupabaseClient, tableId: string): Promise<string | null> {
+    const row = await query(
+      sb.from('orders').select('id').eq('table_id', tableId).eq('check_status', 'open').maybeSingle(),
+    )
+
+    return (row as { id: string } | null)?.id ?? null
+  },
+
+  async loadSums(sb: SupabaseClient, tables: Table[], _cancelledStatusIds: string[]): Promise<Record<string, TableSession>> {
+    const openTables = tables.filter((t) => t.isOpen)
 
     if (!openTables.length) return {}
 
     const tableIds = openTables.map((t) => t.id)
-    const earliestOpenedAt = openTables.map((t) => t.openedAt!).sort()[0]
 
-    let q = sb.from('orders')
-      .select('table_id, total, created_at, order_items(id, dish_id, dish_name, category_name, quantity, price, modifiers, addons, removed_ingredients, status, combo_items)')
-      .in('table_id', tableIds)
-      .gte('created_at', earliestOpenedAt)
-
-    if (cancelledStatusIds.length) {
-      q = q.not('status', 'in', `(${cancelledStatusIds.join(',')})`)
-    }
+    const data = await query(
+      sb.from('orders')
+        .select('id, table_id, order_items(id, dish_id, dish_name, category_name, quantity, price, modifiers, addons, removed_ingredients, status, combo_items)')
+        .in('table_id', tableIds)
+        .eq('check_status', 'open'),
+    )
 
     type RawItem = {
       id: string
@@ -178,37 +220,20 @@ export const tablesApi = {
       status: 'pending' | 'confirmed'
       combo_items: { dishName: string }[] | null
     }
+    type OpenCheck = { id: string; table_id: string; order_items: RawItem[] }
 
-    type OrderWithItems = {
-      table_id: string
-      total: number
-      created_at: string
-      order_items: RawItem[]
-    }
-
-    const data = await query(q)
     const result: Record<string, TableSession> = {}
+    const itemKey = (i: RawItem) => `${i.dish_name}::${orderItemKey(i.modifiers ?? [], i.addons ?? [], i.removed_ingredients ?? [])}`
 
-    const itemKey = (item: RawItem) => `${item.dish_name}::${orderItemKey(item.modifiers ?? [], item.addons ?? [], item.removed_ingredients ?? [])}`
+    for (const check of (data ?? []) as OpenCheck[]) {
+      const session: TableSession = { sum: 0, items: [] }
+      const keyMap = new Map<string, TableSessionItem>()
 
-    const itemKeyMaps = new Map<string, Map<string, TableSessionItem>>()
+      for (const item of check.order_items ?? []) {
+        session.sum += item.price * item.quantity
 
-    for (const order of (data ?? []) as OrderWithItems[]) {
-      const table = openTables.find((t) => t.id === order.table_id)
-
-      if (!table?.openedAt || new Date(order.created_at) < new Date(table.openedAt)) continue
-
-      result[order.table_id] ??= { sum: 0, count: 0, items: [] }
-      result[order.table_id].sum += order.total
-      result[order.table_id].count++
-
-      if (!itemKeyMaps.has(order.table_id)) itemKeyMaps.set(order.table_id, new Map())
-      const keyMap = itemKeyMaps.get(order.table_id)!
-
-      for (const item of order.order_items ?? []) {
         if (item.status === 'pending') {
-          // Pending items stay individual so they can be confirmed/rejected
-          const pendingItem: TableSessionItem = {
+          session.items.push({
             id: item.id,
             dishId: item.dish_id ?? null,
             dishName: item.dish_name,
@@ -220,9 +245,7 @@ export const tablesApi = {
             removedIngredients: item.removed_ingredients ?? [],
             status: 'pending',
             comboItems: item.combo_items ?? null,
-          }
-
-          result[order.table_id].items.push(pendingItem)
+          })
         } else {
           const key = itemKey(item)
           const existing = keyMap.get(key)
@@ -245,10 +268,12 @@ export const tablesApi = {
             }
 
             keyMap.set(key, newItem)
-            result[order.table_id].items.push(newItem)
+            session.items.push(newItem)
           }
         }
       }
+
+      result[check.table_id] = session
     }
 
     return result
@@ -263,15 +288,31 @@ export const tablesApi = {
     return [...new Set(all)].sort()
   },
 
-  async applyDiscount(sb: SupabaseClient, tableId: string, openedAt: string, discountAmount: number, cancelledStatusIds: string[]): Promise<void> {
-    if (discountAmount <= 0) return
-
-    await query(sb.rpc('apply_table_discount', {
-      p_table_id: tableId,
-      p_opened_at: openedAt,
+  // Расчёт чека: скидка + способ оплаты (payment_type), фиксация settled_by/at,
+  // закрытие стола, завершение seated-брони — атомарно в RPC. Пустой чек (0 позиций)
+  // RPC сам помечает cancelled.
+  async settleCheck(
+    sb: SupabaseClient,
+    checkId: string,
+    discountAmount: number,
+    paymentType: 'cash' | 'card',
+  ): Promise<void> {
+    const { error } = await sb.rpc('settle_table_check', {
+      p_check_id: checkId,
       p_discount_amount: discountAmount,
-      p_cancelled_status_ids: cancelledStatusIds,
-    }))
+      p_payment_type: paymentType,
+    })
+
+    if (error) {
+      reportError(error, { context: 'tablesApi.settleCheck', checkId })
+      const msg = error.code === '42501'
+        ? 'Недостаточно прав'
+        : error.code === 'P0001'
+          ? 'Не удалось рассчитать стол'
+          : 'Ошибка расчёта'
+
+      throw new Error(msg)
+    }
   },
 
   async archive(sb: SupabaseClient, id: string): Promise<void> {

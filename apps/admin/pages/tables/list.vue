@@ -196,7 +196,10 @@ const scrollToNextReady = () => {
   readyScrollIndex.value = (idx + 1) % list.length
 }
 
-const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId)
+const { dishPickerOpen, openPicker, onDishPicked } = useAddDishToTable(() => ctx.tenantId, (tableId) => {
+  ctx.reloadTableSums(tableId)
+  ctx.reloadKitchenDishes()
+})
 
 const editModalOpen = ref(false)
 const editModalTable = ref<Table | null>(null)
