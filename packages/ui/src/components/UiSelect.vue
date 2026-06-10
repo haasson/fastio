@@ -16,6 +16,7 @@
         :size="computedSize"
         class="select"
         :show-checkmark="false"
+        :consistent-menu-width="false"
         :max-tag-count="isMultiple ? 'responsive' : 1"
         :status="hasError ? 'error' : undefined"
         :options="filteredOptions"

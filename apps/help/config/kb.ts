@@ -34,6 +34,7 @@ import teamMembers from '@fastio/kb/content/11-team-members.md?raw'
 import teamRoles from '@fastio/kb/content/11-team-roles.md?raw'
 import teamBranches from '@fastio/kb/content/11-team-branches.md?raw'
 import account from '@fastio/kb/content/12-account.md?raw'
+import auditJournal from '@fastio/kb/content/15-audit-journal.md?raw'
 
 const CONTENT: Record<string, string> = {
   '01-dashboard': dashboard,
@@ -70,6 +71,7 @@ const CONTENT: Record<string, string> = {
   '11-team-roles': teamRoles,
   '11-team-branches': teamBranches,
   '12-account': account,
+  '15-audit-journal': auditJournal,
 }
 
 export const KB_SECTIONS: KbSection[] = KB_STRUCTURE.map((section) => ({

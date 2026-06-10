@@ -51,6 +51,7 @@ export const KB_ROUTES: KbRoute[] = [
   { route: '/account',   kbSection: 'account',      kbFilePrefix: '12-account',      aiSections: ['account'] },
   { route: '/appointments', kbSection: 'appointments', kbFilePrefix: '13-appointments', aiSections: ['appointments'] },
   { route: '/services',  kbSection: 'services',     kbFilePrefix: '14-services',     aiSections: ['services'] },
+  { route: '/audit-log', kbSection: 'audit',        kbFilePrefix: '15-audit',        aiSections: ['audit'] },
   { route: '/help',      kbSection: null,           kbFilePrefix: null,              aiSections: ['support'] },
 ]
 
@@ -193,6 +194,14 @@ export const KB_STRUCTURE: KbSectionMeta[] = [
       { id: 'services-categories', title: 'Категории услуг', file: '14-services-categories' },
       { id: 'services-tags', title: 'Теги услуг', file: '14-services-tags' },
       { id: 'services-settings', title: 'Настройки услуг', file: '14-services-settings' },
+    ],
+  },
+  {
+    id: 'audit',
+    title: 'Журнал действий',
+    icon: 'list',
+    articles: [
+      { id: 'audit-journal', title: 'Журнал действий', file: '15-audit-journal' },
     ],
   },
 ]

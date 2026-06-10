@@ -2,7 +2,7 @@
   "project": "packages/ui",
   "submap": "main",
   "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-  "generated_at": "2026-06-03T14:30:39.905Z",
+  "generated_at": "2026-06-10T14:09:58.042Z",
   "stats": {
     "files": 64,
     "pages": 0,
@@ -716,8 +716,8 @@
     },
     "src/components/UiSelect.vue": {
       "kind": "vue",
-      "hash": "1b56bed483c9",
-      "purpose": "Выпадающий список (обёртка n-select) внутри FormItem: опции, фильтрация, мультивыбор, help-«?»",
+      "hash": "3b0e9fc1e740",
+      "purpose": "Селект (обёртка n-select) с лейблом, валидацией, мультивыбором и группами опций; ширина меню подстраивается под контент (consistent-menu-width off)",
       "symbols": [
         {
           "name": "props",

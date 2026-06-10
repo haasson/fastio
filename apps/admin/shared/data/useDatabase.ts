@@ -17,6 +17,7 @@ import { resourcesApi } from '~/features/appointments/api/resources'
 import { scheduleTemplatesApi } from '~/features/appointments/api/schedule-templates'
 import { visitsApi } from '~/features/appointments/api/visits'
 import { auditLogsApi } from '~/features/audit-log/api/audit-logs'
+import { journalApi } from '~/features/audit-log/api/journal'
 import { authApi } from '~/features/auth/api/auth'
 import { billingApi } from '~/features/billing/api/billing'
 import { plansApi } from '~/features/billing/api/plans'
@@ -105,6 +106,7 @@ export const useDatabase = () => {
     roles: bindAll(rolesApi, sb),
     support: bindAll(supportApi, sb),
     auditLogs: bindAll(auditLogsApi, sb),
+    journal: bindAll(journalApi, sb),
     appointments: bindAll(appointmentsApi, sb),
     visits: bindAll(visitsApi, sb),
     appointmentSettings: bindAll(appointmentSettingsApi, sb),

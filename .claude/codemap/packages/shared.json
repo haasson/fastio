@@ -2,7 +2,7 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-06-09T12:59:52.395Z",
+  "generated_at": "2026-06-10T14:09:57.977Z",
   "stats": {
     "files": 52,
     "pages": 0,

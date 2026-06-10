@@ -44,6 +44,7 @@ import type {
   ScheduleTemplateType,
   AppointmentEventType,
   CanvasTileSize,
+  JournalSource,
 } from '@fastio/shared'
 
 import type { Tables } from './database.types'
@@ -163,6 +164,23 @@ export type AuditLogRow = WithOverrides<Tables<'audit_logs'>, {
 export type OrderEventRow = WithOverrides<Tables<'order_events'>, {
   meta: Record<string, unknown>
 }>
+
+// Строка возврата RPC `journal_events` (миграция — единый журнал audit + order).
+// Это не таблица, а SETOF из функции — колонки описываем вручную (snake_case).
+export type JournalEventRow = {
+  id: string
+  source: JournalSource
+  event_type: string
+  occurred_at: string
+  branch_id: string | null
+  actor_id: string | null
+  actor_name: string | null
+  entity_type: string
+  entity_id: string
+  entity_name: string | null
+  payload: Record<string, unknown> | null
+  changed_fields: string[] | null
+}
 
 // ─── Tables (zoom / table calls) ──────────────────────────────────────────────
 
