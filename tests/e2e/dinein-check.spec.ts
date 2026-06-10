@@ -234,6 +234,64 @@ test('QR-гость dine_in (HTTP) на закрытом столе → 400', as
   expect(checks).toHaveLength(0)
 })
 
+// ── 4b. QR-гость на ОТКРЫТОМ столе без/с-чужой cookie → 400 (IDOR-гард) ───────
+test('QR-гость dine_in (HTTP) на открытом столе без cookie / с чужой → 400, ничего не дописано', async () => {
+  await seedTable(false)
+  // Стол ОТКРЫТ — чтобы 400 прилетал от IDOR/cookie-гарда, а не от is_open.
+  const { data: checkId } = await owner.rpc('open_table_check', { p_table_id: E2E_TABLE_ID })
+  // Положим одну confirmed-позицию: убедимся, что guard не дал ничего дописать.
+  await owner.rpc('add_items_to_check', {
+    p_table_id: E2E_TABLE_ID,
+    p_items_json: [rpcDish(1)],
+    p_status: 'confirmed',
+  })
+
+  const { count: before } = await svc
+    .from('order_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('order_id', checkId)
+  expect(before).toBe(1)
+
+  // (a) БЕЗ fastio_table-cookie → IDOR-гард требует cookie == tableId → 400.
+  const ctxNoCookie = await pwRequest.newContext({
+    baseURL: STOREFRONT_BASE,
+    extraHTTPHeaders: { 'x-real-ip': '10.7.0.9' }, // свежий бакет rate-limit
+  })
+  const resNoCookie = await ctxNoCookie.post('/api/orders', {
+    data: { deliveryType: 'dine_in', tableId: E2E_TABLE_ID, items: [httpDish(1)] },
+  })
+  expect(resNoCookie.status(), await resNoCookie.text()).toBe(400)
+  await ctxNoCookie.dispose()
+
+  // (b) С ЧУЖОЙ cookie (другой стол) → cookie != tableId → 400.
+  const ctxWrongCookie = await pwRequest.newContext({
+    baseURL: STOREFRONT_BASE,
+    extraHTTPHeaders: {
+      'x-real-ip': '10.7.0.10', // ещё один свежий бакет
+      cookie: 'fastio_table=e2e7ab1e-0000-0000-0000-0000000000ff',
+    },
+  })
+  const resWrongCookie = await ctxWrongCookie.post('/api/orders', {
+    data: { deliveryType: 'dine_in', tableId: E2E_TABLE_ID, items: [httpDish(1)] },
+  })
+  expect(resWrongCookie.status(), await resWrongCookie.text()).toBe(400)
+  await ctxWrongCookie.dispose()
+
+  // Ничего не дописано — в чеке всё та же одна позиция.
+  const { count: after } = await svc
+    .from('order_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('order_id', checkId)
+  expect(after).toBe(1)
+
+  // Чистим как остальные тесты: расчёт чека (стол закрывается).
+  await owner.rpc('settle_table_check', {
+    p_check_id: checkId,
+    p_discount_amount: 0,
+    p_payment_type: 'cash',
+  })
+})
+
 // ── 5. Расчёт: settle со скидкой и оплатой картой ────────────────────────────
 test('settle_table_check: settled, total = subtotal − discount, стол закрыт', async () => {
   await seedTable(false)

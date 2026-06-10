@@ -393,6 +393,120 @@ BEGIN
 END
 $s8$;
 
+-- ── Scenario 9: delete_order_item_atomic для НЕ-dine_in → заказ удаляется ─────
+-- Регрессия sweep-триггера из 326: исходящий (delivery) заказ при удалении
+-- последней позиции по-прежнему должен сноситься целиком (order_deleted=true),
+-- а не «жить пустым» как открытый dine-in чек.
+DO $s9$
+DECLARE
+  r        record;
+  v_order  uuid;
+  v_item   uuid;
+  v_res    jsonb;
+  v_cnt    int;
+  p1 numeric;
+BEGIN
+  SELECT * INTO r FROM _fx;
+  SELECT price INTO p1 FROM dishes WHERE id = r.dish1_id;
+
+  -- delivery-заказ: check_status остаётся NULL (это не чек стола).
+  INSERT INTO orders (tenant_id, delivery_type, subtotal, total, payment_type, status)
+  VALUES (r.tenant_id, 'delivery', p1, p1, 'cash', 'new')
+  RETURNING id INTO v_order;
+
+  INSERT INTO order_items (order_id, tenant_id, dish_id, dish_name, price, quantity, status)
+  VALUES (v_order, r.tenant_id, r.dish1_id, 'OUT', p1, 1, 'confirmed')
+  RETURNING id INTO v_item;
+
+  v_res := delete_order_item_atomic(v_item);
+
+  IF (v_res->>'ok')::boolean IS NOT TRUE THEN RAISE EXCEPTION 'FAIL S9: ok != true: %', v_res; END IF;
+  IF (v_res->>'order_deleted')::boolean IS NOT TRUE THEN RAISE EXCEPTION 'FAIL S9: order_deleted != true: %', v_res; END IF;
+
+  SELECT count(*) INTO v_cnt FROM orders WHERE id = v_order;
+  IF v_cnt <> 0 THEN RAISE EXCEPTION 'FAIL S9: delivery-заказ не удалён, count=%', v_cnt; END IF;
+
+  RAISE NOTICE 'OK S9: не-dine_in delete последней позиции → order_deleted=true, заказ снесён';
+END
+$s9$;
+
+-- ── Scenario 10: open_table_check линкует уже сидящую (seated) бронь ──────────
+-- Критический путь: бронь была seated ДО открытия чека (order_id IS NULL).
+-- open_table_check должен сам прописать ей order_id = новый чек (в отличие от
+-- S5, где линк делается руками). Иначе история стола теряет бронь.
+DO $s10$
+DECLARE
+  r        record;
+  v_check  uuid;
+  v_res_id uuid;
+  v_cnt    int;
+  v_linked uuid;
+BEGIN
+  SELECT * INTO r FROM _fx;
+
+  -- t8 ещё закрыт (S8 открыл t7, а t8 трогал только провалившийся open чужака).
+  INSERT INTO reservations (tenant_id, table_id, guest_name, guest_phone, guest_count,
+                            reserved_date, reserved_time, status, order_id)
+  VALUES (r.tenant_id, r.t8, 'Сидящий', '+70000000001', 3,
+          current_date, '20:00', 'seated', NULL)
+  RETURNING id INTO v_res_id;
+
+  v_check := open_table_check(r.t8);
+  IF v_check IS NULL THEN RAISE EXCEPTION 'FAIL S10: open returned NULL'; END IF;
+
+  -- (a) открытый чек для t8 существует и равен возвращённому.
+  SELECT count(*) INTO v_cnt FROM orders
+    WHERE table_id = r.t8 AND check_status = 'open' AND id = v_check;
+  IF v_cnt <> 1 THEN RAISE EXCEPTION 'FAIL S10: ожидаем 1 open-чек = v_check, got %', v_cnt; END IF;
+
+  -- (b) бронь теперь привязана к этому чеку (линк отработал внутри open).
+  SELECT order_id INTO v_linked FROM reservations WHERE id = v_res_id;
+  IF v_linked IS DISTINCT FROM v_check THEN
+    RAISE EXCEPTION 'FAIL S10: бронь order_id=% expected % (линк не сработал)', v_linked, v_check;
+  END IF;
+
+  RAISE NOTICE 'OK S10: open_table_check сам залинковал seated-бронь к новому чеку';
+END
+$s10$;
+
+-- ── Scenario 11: add_items_to_check confirmed без права → 42501 ───────────────
+-- confirmed-путь гейтится has_permission('tables.manage'). Чужак (НЕ член
+-- тенанта) должен ловить 42501. pending-путь permission-free — его НЕ проверяем.
+DO $s11$
+DECLARE
+  r        record;
+  v_tbl    uuid;
+  v_check  uuid;
+  v_raised boolean := false;
+BEGIN
+  SELECT * INTO r FROM _fx;
+
+  -- открываем чек как owner (t3 уже открыт в S3 — переиспользуем его).
+  SELECT id INTO v_check FROM orders WHERE table_id = r.t3 AND check_status = 'open';
+  IF v_check IS NULL THEN RAISE EXCEPTION 'FIXTURE S11: t3 не имеет открытого чека'; END IF;
+  v_tbl := r.t3;
+
+  -- переключаемся на чужака
+  PERFORM set_config('request.jwt.claims',
+                     '{"sub":"99999999-9999-9999-9999-999999999999"}', true);
+
+  BEGIN
+    PERFORM add_items_to_check(
+      v_tbl,
+      '[{"dish_name":"X","price":100,"quantity":1}]'::jsonb,
+      'confirmed');
+  EXCEPTION WHEN sqlstate '42501' THEN v_raised := true;
+  END;
+  IF NOT v_raised THEN RAISE EXCEPTION 'FAIL S11: confirmed чужаком не дал 42501'; END IF;
+
+  -- вернём owner-claims (дальше только финальный NOTICE + ROLLBACK).
+  PERFORM set_config('request.jwt.claims',
+                     '{"sub":"00000000-0000-0000-0000-000000000001"}', true);
+
+  RAISE NOTICE 'OK S11: add_items_to_check confirmed чужаком → 42501';
+END
+$s11$;
+
 DO $$ BEGIN RAISE NOTICE '── ВСЕ СЦЕНАРИИ ПРОЙДЕНЫ ──'; END $$;
 
 ROLLBACK;
