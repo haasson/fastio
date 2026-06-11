@@ -9,7 +9,7 @@ import type { VNode } from 'vue'
 import { formatDateTime } from '@fastio/shared'
 import { UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
-import { renderChanges } from './audit-labels'
+import { actionMeta, renderChanges } from './audit-labels'
 import type { JournalRow } from './journal-row'
 import AuditChange from '../components/AuditChange.vue'
 import AuditAction from '../components/AuditAction.vue'
@@ -43,9 +43,10 @@ export const auditLogColumns = (opts: AuditColumnsOptions = {}): DataTableColumn
     title: 'Действие',
     key: 'action',
     width: 110,
-    // updated — самый частый и самый «тихий» тип: без точки, серым текстом;
-    // created/deleted/restored — цветная точка + цветной лейбл.
-    render: (row) => h(AuditAction, { action: row.action, dot: row.action !== 'updated' }),
+    // «Изменено» (primary) — самый частый и тихий тип: без точки, серым текстом;
+    // created/deleted/restored — цветная точка + цветной лейбл. Тон, а не сырой код,
+    // чтобы легаси-`*.update`/`*.toggle` тоже были тихими, как нативный `updated`.
+    render: (row) => h(AuditAction, { action: row.action, dot: actionMeta(row.action).tone !== 'primary' }),
   },
   {
     title: 'Объект',

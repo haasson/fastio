@@ -59,6 +59,27 @@ export const ACTION_LABELS: Record<string, { label: string; tone: ActionTone }> 
   restored: { label: 'Восстановлено', tone: 'warning' },
 }
 
+// Легаси-экшены: до БД-триггеров (миграция 321) журнал писался из приложения
+// (useAuditLog) кодами вида `<entity>.<verb>` — `promo_code.create`, `order.cancel`,
+// `member.role_change` и т.п. Эти строки остались в audit_logs. Раскладываем по
+// глаголу-суффиксу: сущность уже показана в колонке «Объект», тут — только действие.
+const LEGACY_VERB_LABELS: Record<string, { label: string; tone: ActionTone }> = {
+  create: { label: 'Создано', tone: 'success' },
+  update: { label: 'Изменено', tone: 'primary' },
+  delete: { label: 'Удалено', tone: 'error' },
+  remove: { label: 'Удалено', tone: 'error' },
+  archive: { label: 'Архивировано', tone: 'error' },
+  restore: { label: 'Восстановлено', tone: 'warning' },
+  toggle: { label: 'Переключено', tone: 'primary' },
+  cancel: { label: 'Отменено', tone: 'error' },
+  block: { label: 'Заблокировано', tone: 'error' },
+  unblock: { label: 'Разблокировано', tone: 'warning' },
+  invite: { label: 'Приглашение', tone: 'success' },
+  invite_cancel: { label: 'Приглашение отменено', tone: 'error' },
+  invite_resend: { label: 'Приглашение повторно', tone: 'primary' },
+  role_change: { label: 'Смена роли', tone: 'primary' },
+}
+
 // ─── Поля (общие + специфичные) ───────────────────────────────────
 const FIELD_LABELS: Record<string, string> = {
   name: 'Название',
@@ -207,7 +228,22 @@ const FIELD_LABELS: Record<string, string> = {
 
 export const entityTypeLabel = (entityType: string): string => ENTITY_TYPE_LABELS[entityType] ?? entityType
 
-export const actionMeta = (action: string): { label: string; tone: ActionTone } => ACTION_LABELS[action] ?? { label: action, tone: 'default' }
+export const actionMeta = (action: string): { label: string; tone: ActionTone } => {
+  const direct = ACTION_LABELS[action]
+
+  if (direct) return direct
+
+  // Легаси-формат `<entity>.<verb>` — мапим по глаголу после точки.
+  const dot = action.indexOf('.')
+
+  if (dot !== -1) {
+    const legacy = LEGACY_VERB_LABELS[action.slice(dot + 1)]
+
+    if (legacy) return legacy
+  }
+
+  return { label: action, tone: 'default' }
+}
 
 export const fieldLabel = (key: string): string => FIELD_LABELS[key] ?? key
 

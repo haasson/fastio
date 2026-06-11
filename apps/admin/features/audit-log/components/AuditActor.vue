@@ -24,6 +24,7 @@
       span
       size="tiny"
       class="email"
+      :title="email"
       data-testid="actor-email"
     >
       {{ email }}
@@ -67,10 +68,15 @@ defineProps<{
 }
 
 // Приглушённый email под именем/ролью: помогает различать тёзок.
-// word-break — длинные адреса переносятся, колонка узкая (170px).
+// Колонка узкая (170px), длинный адрес режем многоточием — полный в нативном
+// тултипе (title на элементе). Перенос делал строку трёх-четырёхэтажной.
 .email {
+  align-self: stretch;
+  max-width: 100%;
+  overflow: hidden;
   font-size: var(--font-size-sm);
   color: var(--color-text-hint);
-  word-break: break-all;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>
