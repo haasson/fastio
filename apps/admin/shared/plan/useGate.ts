@@ -96,7 +96,13 @@ export const useGate = (): GateRegistry => {
 
   // ───── Plan-only feature gates ─────
 
-  const dashboard = planFeatureGate(() => resolved.value.modules.dashboard)
+  // Дашборд требует analytics.view (а не только модуль): этот гейт — и nav-видимость,
+  // и ROOT_GATE для роута `/`. Роль без analytics.view («Сотрудник») дашборд не видит,
+  // middleware уводит её на первую доступную секцию (`/orders`). Спека 2.13: Дашборд = analytics.view.
+  const dashboard = permissionGate(
+    planFeatureGate(() => resolved.value.modules.dashboard),
+    'analytics.view',
+  )
   const team = planFeatureGate(() => resolved.value.modules.team)
   const virtualCategories = planFeatureGate(() => resolved.value.menu.virtualCategories)
   const ingredients = planFeatureGate(() => resolved.value.menu.ingredients && tenantStore.tenant.menuStyle === 'food',

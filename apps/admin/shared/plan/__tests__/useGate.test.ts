@@ -386,6 +386,44 @@ describe('useGate', () => {
     })
   })
 
+  describe('dashboard — требует analytics.view (регрессия)', () => {
+    // Дашборд гейтит и nav-видимость, и ROOT_GATE роута `/`. Роль без analytics.view
+    // («Сотрудник») не должна видеть дашборд — middleware уводит её на /orders. Спека 2.13.
+    it('роль без analytics.view → dashboard forbidden (при включённом модуле)', async () => {
+      const useGate = await importGate()
+
+      resolved.value.modules.dashboard = true
+      tenantStore.currentPermissions = { 'orders.view': true } as RolePermissions
+
+      const gate = useGate()
+
+      expect(gate.dashboard.value.enabled).toBe(false)
+      expect(gate.dashboard.value.reason).toBe('forbidden')
+    })
+
+    it('роль с analytics.view → dashboard enabled', async () => {
+      const useGate = await importGate()
+
+      resolved.value.modules.dashboard = true
+      tenantStore.currentPermissions = { 'analytics.view': true } as RolePermissions
+
+      const gate = useGate()
+
+      expect(gate.dashboard.value).toEqual({ enabled: true, reason: null })
+    })
+
+    it('модуль dashboard выключен → недоступен даже с analytics.view', async () => {
+      const useGate = await importGate()
+
+      resolved.value.modules.dashboard = false
+      tenantStore.currentPermissions = { 'analytics.view': true } as RolePermissions
+
+      const gate = useGate()
+
+      expect(gate.dashboard.value.enabled).toBe(false)
+    })
+  })
+
   describe('addBranch limit', () => {
     it('addBranch ok если модуль branches enabled', async () => {
       const useGate = await importGate()

@@ -281,7 +281,10 @@ Fix: режим выбирается по наличию креденшелов 
 Вылез после фикса #2 (дошли до RPC). Из edge-логов: `code 42883, "operator does not exist: uuid = text"`.
 Root cause: колонка `tenant_invitations.token` имеет тип **uuid**, а параметр RPC `_token` объявлен **text** (миграция 269). `WHERE token = _token` без явного каста → 42883 на первом же SELECT. Через PostgREST `.eq('token', …)` каст шёл автоматом (поэтому get-invite/валидация работали), сырой SQL в RPC — нет. Ломало приём **любого** инвайта (new-user и authenticated).
 Fix: миграция **332** — `CREATE OR REPLACE` с `WHERE token = _token::uuid`. Проверено на проде в ROLLBACK-транзакции: RPC вернул tenant_id=T1 + role_id=Сотрудник, без 42883.
-📌 **Итог: invite-флоу для нового юзера держал ТРИ стэкнутых бага, ни один не был покрыт E2E** (get-invite REST-к-auth → accept-invite режим-по-authHeader → RPC uuid=text). Фиксы: 2 edge-функции + миграция 332.
+📌 **Итог: invite-флоу для нового юзера держал ТРИ стэкнутых бага, ни один не был покрыт E2E** (get-invite REST-к-auth → accept-invite режим-по-authHeader → RPC uuid=text). Фиксы: 2 edge-функции + миграция 332. Участник «Сотрудник» (`db1dc7cc`) создан на проде — пункт 737 PASS.
+
+🔧 **[fix] Дашборд скрыт для роли без `analytics.view` (2026-06-11, пожелание юзера + спека 2.13).**
+Было: `dashboard`-гейт = `planFeatureGate(modules.dashboard)` — только модуль, без права → «Сотрудник» видел Дашборд (и в nav, и роут `/` через ROOT_GATE). Стало: `permissionGate(planFeatureGate(modules.dashboard), 'analytics.view')` (`useGate.ts`). Один гейт закрывает оба входа; middleware `gate.global.ts` при закрытом `/` уводит на первый доступный fallback → `/orders`. +3 регрешн-теста в `useGate.test.ts`. ⚠️ Деплой через Coolify-ребилд админки (не хот-деплой) — на проде видно после редеплоя. Пункт 738 проверить после деплоя.
 
 💡 **Пресеты кастомных ролей** — при создании кастомной роли предлагать готовые пресеты одним кликом: «Повар» (kitchen.view+edit), «Сборщик» (kitchen.view, tables.view), «Курьер» (orders.view+edit, orders.status), «Хостес» (tables.view+manage, orders.view) и т.п. Юзер выбирает пресет → права заполняются автоматически → может подправить. Снижает барьер входа: не надо разбираться какие права что дают.
 
