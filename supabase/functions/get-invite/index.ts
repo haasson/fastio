@@ -93,18 +93,18 @@ Deno.serve(withSentry('get-invite', async (req) => {
 
   const roleData = (invitation as unknown as { tenant_roles?: { name: string } | null }).tenant_roles
 
-  // Targeted lookup in auth.users by email — O(1) via index, не подвержен лимиту в 1000 у listUsers().
+  // Проверка существования юзера через SECURITY DEFINER RPC (миграция 169, get_user_id_by_email).
+  // PostgREST на self-hosted не экспонирует схему `auth` (PGRST_DB_SCHEMAS=public,storage,graphql_public),
+  // поэтому прямой `.schema('auth').from('users')` падал PGRST106 → 500 (user_lookup_failed) и ломал
+  // весь invite-флоу. RPC обходит это, не открывая auth публичному ключу. Case-insensitive по email,
+  // O(1) по индексу, без лимита 1000 у listUsers().
   const [tenantRes, userRes] = await Promise.all([
     adminSupabase
       .from('tenants')
       .select('name')
       .eq('id', invitation.tenant_id)
       .single(),
-    adminSupabase
-      .schema('auth')
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('email', invitation.email),
+    adminSupabase.rpc('get_user_id_by_email', { p_email: invitation.email }),
   ])
 
   if (tenantRes.error) {
@@ -112,11 +112,12 @@ Deno.serve(withSentry('get-invite', async (req) => {
     console.error('tenant lookup error:', tenantRes.error)
   }
   if (userRes.error) {
-    console.error('auth.users count error:', userRes.error)
+    console.error('get_user_id_by_email error:', userRes.error)
+    captureException(userRes.error, { fn: 'get-invite', stage: 'user-lookup' })
     return err(500, 'user_lookup_failed', 'Failed to check user existence')
   }
 
-  const userExists = (userRes.count ?? 0) > 0
+  const userExists = userRes.data != null
 
   return json({
     success: true,
