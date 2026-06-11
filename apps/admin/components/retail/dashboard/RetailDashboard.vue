@@ -77,8 +77,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useLocalStorage } from '@vueuse/core'
 import { UiSegmentedControl, UiSelect } from '@fastio/ui'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useBranchStore } from '~/shared/stores/branch'
@@ -104,7 +105,7 @@ const { branches } = storeToRefs(branchStore)
 
 const gate = useGateRetail()
 
-const period = ref<DashboardPeriod>('today')
+const period = useLocalStorage<DashboardPeriod>('dashboard:period', 'today')
 
 const periodItems = [
   { label: 'Сегодня', value: 'today' },
@@ -112,12 +113,20 @@ const periodItems = [
   { label: 'Месяц', value: 'month' },
 ]
 
-const selectedBranchKey = ref<string>('')
+const selectedBranchKey = useLocalStorage<string>('dashboard:branch', '')
 
 const branchOptions = computed(() => [
   { label: 'Все филиалы', value: '' },
   ...branches.value.map((b) => ({ label: b.name, value: b.id })),
 ])
+
+// Сохранённый филиал может не принадлежать текущему тенанту (после switchTenant)
+// или быть архивирован — сбрасываем на «Все филиалы», чтобы не фильтровать по мёртвому id
+watch(branches, () => {
+  if (selectedBranchKey.value && !branches.value.some((b) => b.id === selectedBranchKey.value)) {
+    selectedBranchKey.value = ''
+  }
+}, { immediate: true })
 
 const selectedBranchId = computed(() => selectedBranchKey.value || null)
 
