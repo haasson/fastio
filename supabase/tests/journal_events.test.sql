@@ -7,7 +7,9 @@
 -- branch-фильтр p_branch_id (S6), event-type (action) фильтр p_event_types (S7),
 -- fn_audit branch_id integration (S8),
 -- hard-DELETE филиала delete-safe (нет FK) + forensic branch_id = id удалённого (S9),
--- LIKE-экранирование p_search (S10).
+-- LIKE-экранирование p_search (S10),
+-- фильтр периода p_from/p_to: внутри/вне, эксклюзивность верхней границы (S11),
+-- actor_email live-join auth.users: email актора виден, NULL без актора (S12).
 --
 -- Запуск:
 --   docker exec -i supabase_db_fastio psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
@@ -202,13 +204,13 @@ BEGIN
     SELECT ord INTO v_order_ord
       FROM journal_events(p_tenant_id := r.tenant_id, p_limit := 500)
              WITH ORDINALITY AS t(id, source, event_type, occurred_at, branch_id,
-                                  actor_id, actor_name, entity_type, entity_id,
+                                  actor_id, actor_name, actor_email, entity_type, entity_id,
                                   entity_name, payload, changed_fields, ord)
       WHERE t.id = v_order.id;
     SELECT ord INTO v_audit_ord
       FROM journal_events(p_tenant_id := r.tenant_id, p_limit := 500)
              WITH ORDINALITY AS t(id, source, event_type, occurred_at, branch_id,
-                                  actor_id, actor_name, entity_type, entity_id,
+                                  actor_id, actor_name, actor_email, entity_type, entity_id,
                                   entity_name, payload, changed_fields, ord)
       WHERE t.id = v_audit.id;
 
@@ -645,6 +647,140 @@ BEGIN
   RAISE NOTICE 'OK S10: p_search экранирует LIKE-спецсимволы (50%% ищется литерально)';
 END
 $s10$;
+
+-- ── Scenario 11: фильтр периода p_from/p_to (миграция 329) ────────────────────
+-- Три записи: до периода, внутри, ровно на границе p_to. Граница p_to ЭКСКЛЮЗИВНА
+-- (occurred_at < p_to): фронт передаёт начало дня ПОСЛЕ выбранного «до», поэтому
+-- запись С occurred_at = p_to попасть НЕ должна, а 23:59 предыдущего дня — должна.
+DO $s11$
+DECLARE
+  r        record;
+  v_from   timestamptz := now() + interval '50 minutes';
+  v_to     timestamptz := now() + interval '60 minutes';
+  v_before int;
+  v_inside int;
+  v_edge   int;
+  v_at_to  int;
+BEGIN
+  SELECT * INTO r FROM _fx;
+
+  -- (a) ДО периода (за минуту до p_from)
+  INSERT INTO audit_logs (tenant_id, actor_id, actor_name, actor_role, action,
+                          entity_type, entity_id, entity_name, payload, changed_fields, created_at)
+  VALUES (r.tenant_id, r.owner_id, 'Тестовый Овнер', 'owner', 'updated',
+          'dish', '__s11_before', '__s11_before_name', '{}'::jsonb, ARRAY[]::text[],
+          v_from - interval '1 minute');
+
+  -- (b) ВНУТРИ периода
+  INSERT INTO audit_logs (tenant_id, actor_id, actor_name, actor_role, action,
+                          entity_type, entity_id, entity_name, payload, changed_fields, created_at)
+  VALUES (r.tenant_id, r.owner_id, 'Тестовый Овнер', 'owner', 'updated',
+          'dish', '__s11_inside', '__s11_inside_name', '{}'::jsonb, ARRAY[]::text[],
+          v_from + interval '1 minute');
+
+  -- (c) у самой верхней границы, но ВНУТРИ (аналог «23:59 последнего дня периода»)
+  INSERT INTO audit_logs (tenant_id, actor_id, actor_name, actor_role, action,
+                          entity_type, entity_id, entity_name, payload, changed_fields, created_at)
+  VALUES (r.tenant_id, r.owner_id, 'Тестовый Овнер', 'owner', 'updated',
+          'dish', '__s11_edge', '__s11_edge_name', '{}'::jsonb, ARRAY[]::text[],
+          v_to - interval '1 second');
+
+  -- (d) РОВНО p_to — эксклюзивная граница, попасть не должна
+  INSERT INTO audit_logs (tenant_id, actor_id, actor_name, actor_role, action,
+                          entity_type, entity_id, entity_name, payload, changed_fields, created_at)
+  VALUES (r.tenant_id, r.owner_id, 'Тестовый Овнер', 'owner', 'updated',
+          'dish', '__s11_at_to', '__s11_at_to_name', '{}'::jsonb, ARRAY[]::text[],
+          v_to);
+
+  SELECT
+    count(*) FILTER (WHERE je.entity_id = '__s11_before'),
+    count(*) FILTER (WHERE je.entity_id = '__s11_inside'),
+    count(*) FILTER (WHERE je.entity_id = '__s11_edge'),
+    count(*) FILTER (WHERE je.entity_id = '__s11_at_to')
+  INTO v_before, v_inside, v_edge, v_at_to
+  FROM journal_events(p_tenant_id := r.tenant_id,
+                      p_from := v_from, p_to := v_to, p_limit := 500) je;
+
+  IF v_before <> 0 THEN
+    RAISE EXCEPTION 'FAIL S11: запись ДО p_from просочилась в период';
+  END IF;
+  IF v_inside <> 1 THEN
+    RAISE EXCEPTION 'FAIL S11: запись внутри периода не вернулась (got %)', v_inside;
+  END IF;
+  IF v_edge <> 1 THEN
+    RAISE EXCEPTION 'FAIL S11: запись у верхней границы (p_to - 1s, «23:59») потерялась — день «до» должен входить целиком';
+  END IF;
+  IF v_at_to <> 0 THEN
+    RAISE EXCEPTION 'FAIL S11: запись с occurred_at = p_to вернулась — верхняя граница должна быть ЭКСКЛЮЗИВНОЙ';
+  END IF;
+
+  -- только p_from (открытый конец) — записи (b)-(d) видны, (a) нет
+  SELECT count(*) FILTER (WHERE je.entity_id = '__s11_before'),
+         count(*) FILTER (WHERE je.entity_id = '__s11_at_to')
+    INTO v_before, v_at_to
+    FROM journal_events(p_tenant_id := r.tenant_id, p_from := v_from, p_limit := 500) je;
+  IF v_before <> 0 OR v_at_to <> 1 THEN
+    RAISE EXCEPTION 'FAIL S11: открытый p_from работает неверно (before=%, at_to=%)', v_before, v_at_to;
+  END IF;
+
+  RAISE NOTICE 'OK S11: p_from включительно / p_to эксклюзивно — период режет выдачу корректно';
+END
+$s11$;
+
+-- ── Scenario 12: actor_email — live-join auth.users (миграция 330) ───────────
+-- Email НЕ снапшотится в audit_logs, а подтягивается join'ом по actor_id.
+-- FK actor_id → auth.users ON DELETE SET NULL: «удалённый юзер» = actor_id NULL,
+-- LEFT JOIN промахивается → actor_email NULL, имя-snapshot в actor_name остаётся.
+DO $s12$
+DECLARE
+  r             record;
+  v_owner_email text;
+  v_email_live  text;
+  v_email_null  text;
+  v_name_null   text;
+BEGIN
+  SELECT * INTO r FROM _fx;
+
+  SELECT u.email::text INTO v_owner_email FROM auth.users u WHERE u.id = r.owner_id;
+  IF v_owner_email IS NULL THEN
+    RAISE EXCEPTION 'FAIL S12: у владельца фикстуры нет email в auth.users — сид сломан?';
+  END IF;
+
+  -- (a) запись С актором → email живого юзера
+  INSERT INTO audit_logs (tenant_id, actor_id, actor_name, actor_role, action,
+                          entity_type, entity_id, entity_name, payload, changed_fields, created_at)
+  VALUES (r.tenant_id, r.owner_id, 'Тестовый Овнер', 'owner', 'updated',
+          'dish', '__s12_live', '__s12_live_name', '{}'::jsonb, ARRAY[]::text[],
+          now() + interval '70 minutes');
+
+  -- (b) запись БЕЗ актора (actor_id NULL — системная или после удаления юзера):
+  --     email NULL, имя-snapshot остаётся
+  INSERT INTO audit_logs (tenant_id, actor_id, actor_name, actor_role, action,
+                          entity_type, entity_id, entity_name, payload, changed_fields, created_at)
+  VALUES (r.tenant_id, NULL, 'Удалённый Юзер', NULL, 'updated',
+          'dish', '__s12_gone', '__s12_gone_name', '{}'::jsonb, ARRAY[]::text[],
+          now() + interval '71 minutes');
+
+  SELECT je.actor_email INTO v_email_live
+    FROM journal_events(p_tenant_id := r.tenant_id, p_limit := 500) je
+    WHERE je.entity_id = '__s12_live';
+  IF v_email_live IS DISTINCT FROM v_owner_email THEN
+    RAISE EXCEPTION 'FAIL S12: actor_email=% ожидали % (live-join auth.users)', v_email_live, v_owner_email;
+  END IF;
+
+  SELECT je.actor_email, je.actor_name INTO v_email_null, v_name_null
+    FROM journal_events(p_tenant_id := r.tenant_id, p_limit := 500) je
+    WHERE je.entity_id = '__s12_gone';
+  IF v_email_null IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL S12: без актора ожидали actor_email NULL, got %', v_email_null;
+  END IF;
+  IF v_name_null <> 'Удалённый Юзер' THEN
+    RAISE EXCEPTION 'FAIL S12: имя-snapshot потерялось: %', v_name_null;
+  END IF;
+
+  RAISE NOTICE 'OK S12: actor_email live-join — email актора виден, NULL без юзера, имя-snapshot живёт';
+END
+$s12$;
 
 DO $$ BEGIN RAISE NOTICE '── ВСЕ СЦЕНАРИИ ПРОЙДЕНЫ ──'; END $$;
 

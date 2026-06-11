@@ -2,11 +2,11 @@
   "project": "packages/shared",
   "submap": "main",
   "purpose": "Общий пакет @fastio/shared: чистые утилиты домена (планы, расписание, цены, телефон, slug, vocabulary) и пара composable'ов для admin/storefront/backoffice",
-  "generated_at": "2026-06-10T14:09:57.977Z",
+  "generated_at": "2026-06-11T05:34:38.346Z",
   "stats": {
     "files": 52,
     "pages": 0,
-    "symbols": 208,
+    "symbols": 210,
     "undescribed_files": 0,
     "undescribed_pages": 0,
     "undescribed_symbols": 0
@@ -376,8 +376,8 @@
     },
     "src/utils/date.ts": {
       "kind": "ts",
-      "hash": "f48305073006",
-      "purpose": "Утилиты форматирования дат и времени для UI: длительность, короткий/полный формат, ISO ↔ локальные строки",
+      "hash": "979ad1b3ffa6",
+      "purpose": "Утилиты дат: конвертации ts/ISO/строк, границы дня (start/end/next) в локальном поясе",
       "symbols": [
         {
           "name": "formatMinutes",
@@ -462,6 +462,18 @@
           "kind": "function",
           "hash": "33b5a7b2",
           "purpose": "ms → ISO 23:59:59 того же дня — для active_to акций, чтобы не помирали в полночь"
+        },
+        {
+          "name": "tsToIsoStartOfDay",
+          "kind": "function",
+          "hash": "61f407bb",
+          "purpose": "ms-таймстемп → ISO локальной полуночи этого дня (null-safe)"
+        },
+        {
+          "name": "tsToIsoStartOfNextDay",
+          "kind": "function",
+          "hash": "6099e163",
+          "purpose": "ms-таймстемп → ISO локальной полуночи следующего дня — эксклюзивная верхняя граница периода (null-safe)"
         },
         {
           "name": "formatRelativeTime",

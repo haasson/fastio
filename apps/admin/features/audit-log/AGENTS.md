@@ -27,11 +27,13 @@ tenant_roles, tenant_members, tenant_invitations, tables, reservations, services
 `SECURITY DEFINER` с гардом `has_permission('audit_log.view')`. UNION `audit_logs` + `order_events⋈orders` в нормализованную форму. Ключевое:
 
 - **Keyset-пагинация composite `(occurred_at, id)`** — bulk-триггер пишет одинаковый `created_at`, курсор только по времени терял строки. `loadMore` шлёт `p_before` + `p_before_id`.
-- **Нормализация order-событий:** `event_type` → `created`/`updated` (для тега «Действие» и фильтра), сырой тип уходит в `payload._order_event` — из него фронт (`journal-row.ts` + `formatEventText` из `features/orders`) строит сводку для колонки «Изменения». Dine-in заказ (`table_id IS NOT NULL`) показывается как объект-СТОЛ, иначе — заказ с номером.
+- **Нормализация order-событий:** `event_type` → `created`/`updated` (для маркера действия и фильтра), сырой тип уходит в `payload._order_event` — из него фронт (`journal-row.ts` + `formatEventText` из `features/orders`) строит сводку для колонки «Изменения». Dine-in заказ (`table_id IS NOT NULL`) показывается как объект-СТОЛ, иначе — заказ с номером.
 - **branch-скоуп:** `p_branch_id` отдаёт филиал + общие (`branch_id IS NULL` = «Всё заведение»). `audit_logs.branch_id` — плоский uuid БЕЗ FK (forensic: переживает hard-DELETE филиала), populate generic-способом в `fn_audit()`.
 - `p_search` экранирует LIKE-спецсимволы; `p_limit` клампится (1..200).
+- **Период (миграция 329):** `p_from` (включительно) / `p_to` (ЭКСКЛЮЗИВНО — фронт шлёт начало дня после выбранного «до», день входит целиком). Оба NULL = весь журнал.
+- **`actor_email` (миграция 330):** LIVE-join `auth.users` по `actor_id`, НЕ snapshot — у удалённого юзера email NULL (FK `ON DELETE SET NULL` обнуляет `actor_id`), имя-snapshot в `actor_name` остаётся; смена почты сразу видна в журнале. Колонка «Сотрудник» показывает email под именем (у «Системы» почты нет).
 
-SQL-тесты: `supabase/tests/journal_events.test.sql` (10 сценариев, гонять через psql в контейнере).
+SQL-тесты: `supabase/tests/journal_events.test.sql` (12 сценариев, гонять через psql в контейнере).
 
 ## Карта модуля
 
@@ -42,10 +44,16 @@ SQL-тесты: `supabase/tests/journal_events.test.sql` (10 сценариев,
 | `composables/useAuditLog.ts` | `list`, `listForEntity`, `enabled` (фиче-флаг). Только чтение — записи из фронта нет |
 | `composables/useJournal.ts` | Состояние ленты: keyset `loadInitial`/`loadMore`, снапшот фильтров активного запроса, защита от stale-batch race (поколения `_gen`) |
 | `utils/audit-labels.ts` | en→ru: `entityTypeLabel`, `actionMeta`, `fieldLabel`, `renderChanges` (дифф), enum-значения (`ENUM_VALUE_LABELS`), группы фильтра (`ENTITY_TYPE_GROUPS`) |
-| `utils/audit-columns.ts` | Фабрика колонок `auditLogColumns()` для UiDataTable (рендер всех ячеек журнала) |
+| `utils/audit-columns.ts` | Фабрика колонок `auditLogColumns()` для UiDataTable: 5 колонок (Дата / Действие / Объект / Изменения / Сотрудник), ячейки рендерятся SFC-примитивами через `h()`. «Действие» приглушённое: цветной маркер с точкой только для created/deleted/restored, «Изменено» — тихий hint-текст без точки |
 | `utils/journal-row.ts` | Адаптер `JournalEvent` → `JournalRow` (форма AuditLog + branchBadge + changeSummary) |
-| `components/AuditTrail.vue` | Встраиваемая панель истории сущности. Props: `entityType`, `entityId`, `includeChildren`, `refreshKey`. Импорт deep-path |
-| `pages/audit-log.vue` (в `apps/admin/pages`) | Единая лента: фильтры (действие/объект, гейтинг по вертикали+модулям), поиск, скоуп по филиалу из сайдбара, infinite-scroll, persistence фильтров в localStorage |
+| `components/AuditChange.vue` | Одна дельта диффа (`RenderedChange`): все ветки kind (phrase/complex/price/text), line-through на old, цвет направления цены на new. Без обрезки — длинные значения переносятся |
+| `components/AuditAction.vue` | Маркер действия: цветная точка (`dot`, default true) + лейбл из `actionMeta`. НЕ тег |
+| `components/AuditEntityRef.vue` | Ячейка «Объект»: имя (прочерк если нет) + тип сущности + опц. чип филиала |
+| `components/AuditActor.vue` | Ячейка «Сотрудник»: имя + роль + email (hint, live-join из RPC, NULL у удалённых); без актора — приглушённое «Система» без email |
+| `components/AuditTrail.vue` | Встраиваемая панель истории сущности (таймлайн в дроверах). Props: `entityType`, `entityId`, `includeChildren`, `refreshKey`. Дельты/действие — через `AuditChange`/`AuditAction`. Импорт deep-path |
+| `pages/audit-log.vue` (в `apps/admin/pages`) | Единая лента: фильтры (действие/объект, гейтинг по вертикали+модулям), поиск, период (daterange → `from`/`to`, БЕЗ персиста — протухший период молча прятал бы свежие записи), скоуп по филиалу из сайдбара, infinite-scroll, persistence остальных фильтров в localStorage |
+
+`AuditChange`/`AuditAction`/`AuditEntityRef`/`AuditActor` — общие примитивы для таблицы журнала И таймлайна `AuditTrail`. Стили живут в самих SFC: scoped CSS страницы не достаёт до `h()`-нод внутри DataTable. Разметку дельт/действия НЕ копипастить — только эти компоненты.
 
 ## Типовые задачи
 

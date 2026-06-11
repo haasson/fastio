@@ -8,6 +8,10 @@
     :model-value="value"
     v-slot="{ hasError }"
   >
+    <!-- ⚠️ v-bind="$attrs" обязан стоять ПОСЛЕДНИМ в списке биндингов: поздний
+         биндинг побеждает, и потребители перебивают дефолты (:actions="null",
+         clearable и т.д.) с места использования — напр. :actions="['clear']"
+         для daterange в журнале аудита. Не переставлять выше. -->
     <n-date-picker
       v-model:value="value"
       :size="(computedSize as any)"
@@ -63,7 +67,9 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'medium',
 })
 
-const value = defineModel<number | null>({ default: null })
+// [number, number] — для type="daterange" (Naive отдаёт пару ms-таймстемпов).
+// Расширение обратносовместимо: одиночные пикеры продолжают жить на number | null.
+const value = defineModel<number | [number, number] | null>({ default: null })
 
 const computedSize = useResponsiveSize({
   size: props.size,

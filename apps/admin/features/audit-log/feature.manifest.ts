@@ -7,7 +7,7 @@ export default defineFeature({
   tenantModule: false,
 
   routes: [
-    { path: '/audit-log', purpose: 'Журнал действий: keyset-лента audit+order событий, фильтры по действию/объекту, скоуп по филиалу, поиск' },
+    { path: '/audit-log', purpose: 'Журнал действий: keyset-лента audit+order событий, фильтры по действию/объекту/периоду, скоуп по филиалу, поиск' },
   ],
 
   permissions: [

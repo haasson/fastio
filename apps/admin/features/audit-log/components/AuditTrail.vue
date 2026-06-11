@@ -10,47 +10,18 @@
       >
         <template #default>
           <div class="head">
-            <UiTag
-              :type="actionMeta(log.action).tone"
-              size="small"
-              round
-              empty
-            >
-              {{ actionMeta(log.action).label }}
-            </UiTag>
+            <!-- dot=false: цветную точку уже рисует маркер UiTimelineItem -->
+            <AuditAction :action="log.action" :dot="false" />
             <UiText v-if="showEntity && log.entityName" size="small" class="entity">
               {{ entityTypeLabel(log.entityType) }}: {{ log.entityName }}
             </UiText>
           </div>
-          <div
-            v-for="change in renderChanges(log)"
-            :key="change.field"
-            class="change"
-          >
-            <template v-if="change.kind === 'complex'">
-              <span class="field-label">{{ change.label }}:</span>
-              <span class="changed-note">изменено</span>
-            </template>
-            <template v-else-if="change.kind === 'price'">
-              <span class="field-label">{{ change.label }}:</span>
-              <span class="field-old">{{ change.oldValue }}</span>
-              <span class="field-arrow">→</span>
-              <span
-                class="field-new"
-                :class="{
-                  'price-up': change.direction === 'up',
-                  'price-down': change.direction === 'down',
-                }"
-              >
-                {{ change.newValue }}
-              </span>
-            </template>
-            <template v-else>
-              <span class="field-label">{{ change.label }}:</span>
-              <span class="field-old">{{ change.oldValue }}</span>
-              <span class="field-arrow">→</span>
-              <span class="field-new">{{ change.newValue }}</span>
-            </template>
+          <div class="changes">
+            <AuditChange
+              v-for="change in renderChanges(log)"
+              :key="change.field"
+              :change="change"
+            />
           </div>
         </template>
         <template #footer>
@@ -72,13 +43,15 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useNow } from '@vueuse/core'
-import { UiTimeline, UiTimelineItem, UiTag, UiText, UiEmpty } from '@fastio/ui'
+import { UiTimeline, UiTimelineItem, UiText, UiEmpty } from '@fastio/ui'
 import { COLORS } from '@fastio/kit'
 import type { AuditLog } from '@fastio/shared'
 import { formatRelativeTime } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
 import { useAuditLog } from '../composables/useAuditLog'
-import { entityTypeLabel, actionMeta, renderChanges } from '../utils/audit-labels'
+import { entityTypeLabel, renderChanges } from '../utils/audit-labels'
+import AuditAction from './AuditAction.vue'
+import AuditChange from './AuditChange.vue'
 
 const props = defineProps<{
   entityType: string
@@ -126,8 +99,6 @@ watch(() => [props.entityId, props.refreshKey], load)
 </script>
 
 <style scoped lang="scss">
-@use '@fastio/styles/mixins/layout' as *;
-
 .audit-trail {
   min-height: 32px;
 }
@@ -148,46 +119,17 @@ watch(() => [props.entityId, props.refreshKey], load)
   color: var(--color-text-secondary);
 }
 
-.change {
+// Layout-обёртка списка дельт: сам AuditChange внешних отступов не задаёт.
+// gap-8 в пару к changesStack таблицы — дельты двухэтажные, нужен зазор больше.
+.changes {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--space-8);
   margin-top: var(--space-4);
-  font-size: var(--font-size-sm);
-}
 
-.field-label {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
-}
-
-.field-old {
-  color: var(--color-text-secondary);
-  text-decoration: line-through;
-}
-
-.field-arrow {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-}
-
-.field-new {
-  color: var(--color-text);
-  font-weight: var(--font-weight-medium);
-}
-
-.price-up {
-  color: var(--red-500);
-}
-
-.price-down {
-  color: var(--green-500);
-  font-weight: var(--font-weight-medium);
-}
-
-.changed-note {
-  color: var(--color-text-secondary);
+  &:empty {
+    display: none;
+  }
 }
 
 .meta {

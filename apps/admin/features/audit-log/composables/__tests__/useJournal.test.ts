@@ -30,6 +30,7 @@ const makeEvent = (id: string, occurredAt: string): JournalEvent => ({
   branchId: null,
   actorId: null,
   actorName: null,
+  actorEmail: null,
   entityType: 'dish',
   entityId: id,
   entityName: null,
@@ -100,6 +101,51 @@ describe('useJournal', () => {
 
     expect(listMock.mock.calls[1][1]).toMatchObject({ branchId: 'b-1' })
     expect(listMock.mock.calls[1][1].search).toBeUndefined()
+  })
+
+  it('loadInitial: форвардит filters.from/to (период) в db.journal.list', async () => {
+    listMock.mockResolvedValue([])
+    const { loadInitial, filters } = useJournal()
+
+    filters.from = '2026-06-01T00:00:00.000Z'
+    filters.to = '2026-06-11T00:00:00.000Z'
+    await loadInitial()
+
+    expect(listMock.mock.calls[0][1]).toMatchObject({
+      from: '2026-06-01T00:00:00.000Z',
+      to: '2026-06-11T00:00:00.000Z',
+    })
+  })
+
+  it('loadInitial: пустой период (null) не попадает в параметры запроса', async () => {
+    listMock.mockResolvedValue([])
+    const { loadInitial } = useJournal()
+
+    await loadInitial()
+
+    expect(listMock.mock.calls[0][1].from).toBeUndefined()
+    expect(listMock.mock.calls[0][1].to).toBeUndefined()
+  })
+
+  it('loadMore: период берётся из снапшота loadInitial, а не из live-мутации filters', async () => {
+    listMock.mockResolvedValueOnce(fullPage(50))
+    const { loadInitial, loadMore, filters } = useJournal()
+
+    filters.from = '2026-06-01T00:00:00.000Z'
+    filters.to = '2026-06-11T00:00:00.000Z'
+    await loadInitial()
+
+    // юзер сменил период в UI до клика «загрузить ещё» — пагинация продолжает старый
+    filters.from = '2026-01-01T00:00:00.000Z'
+    filters.to = null
+
+    listMock.mockResolvedValueOnce([])
+    await loadMore()
+
+    expect(listMock.mock.calls[1][1]).toMatchObject({
+      from: '2026-06-01T00:00:00.000Z',
+      to: '2026-06-11T00:00:00.000Z',
+    })
   })
 
   it('loadInitial: форвардит filters.eventTypes в db.journal.list', async () => {

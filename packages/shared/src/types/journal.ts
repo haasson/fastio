@@ -8,6 +8,8 @@ export type JournalEvent = {
   branchId: string | null    // null = общее (tenant-wide)
   actorId: string | null
   actorName: string | null
+  // live-join auth.users в journal_events(): у удалённого юзера NULL (имя-snapshot остаётся)
+  actorEmail: string | null
   entityType: string
   entityId: string
   entityName: string | null

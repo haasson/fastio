@@ -13,6 +13,9 @@ type JournalFilters = {
   entityTypes: string[]
   eventTypes: string[]
   search: string
+  // Период (ISO): from включительно, to — ЭКСКЛЮЗИВНО (начало дня после «до»). null = без границы.
+  from: string | null
+  to: string | null
 }
 
 // Снапшот фильтров активного запроса — чтобы пагинация (loadMore) была
@@ -36,6 +39,8 @@ export const useJournal = () => {
     entityTypes: [],
     eventTypes: [],
     search: '',
+    from: null,
+    to: null,
   })
 
   const _active = ref<ActiveQuery | null>(null)
@@ -52,6 +57,8 @@ export const useJournal = () => {
     if (q.entityTypes.length) params.entityTypes = q.entityTypes
     if (q.eventTypes.length) params.eventTypes = q.eventTypes
     if (q.search) params.search = q.search
+    if (q.from) params.from = q.from
+    if (q.to) params.to = q.to
 
     return params
   }
@@ -66,6 +73,8 @@ export const useJournal = () => {
       entityTypes: [...filters.entityTypes],
       eventTypes: [...filters.eventTypes],
       search: filters.search,
+      from: filters.from,
+      to: filters.to,
     }
 
     _active.value = query

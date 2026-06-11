@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { JournalEvent } from '@fastio/shared'
 import { reportError } from '@fastio/shared/observability'
-import type { JournalEventRow } from '~/shared/data/db-types'
+import type { JournalEventRow, JournalEventsArgs } from '~/shared/data/db-types'
 
 export type JournalListParams = {
   branchId?: string | null
@@ -12,6 +12,10 @@ export type JournalListParams = {
   eventTypes?: string[]
   search?: string
   limit?: number
+  // Период (ISO): from — включительно, to — ЭКСКЛЮЗИВНАЯ верхняя граница
+  // (страница передаёт начало дня ПОСЛЕ выбранного «до»).
+  from?: string | null
+  to?: string | null
 }
 
 export const mapJournalEvent = (row: JournalEventRow): JournalEvent => ({
@@ -22,6 +26,7 @@ export const mapJournalEvent = (row: JournalEventRow): JournalEvent => ({
   branchId: row.branch_id ?? null,
   actorId: row.actor_id ?? null,
   actorName: row.actor_name ?? null,
+  actorEmail: row.actor_email ?? null,
   entityType: row.entity_type,
   entityId: row.entity_id ?? '',
   entityName: row.entity_name ?? null,
@@ -31,7 +36,7 @@ export const mapJournalEvent = (row: JournalEventRow): JournalEvent => ({
 
 export const journalApi = {
   async list(sb: SupabaseClient, tenantId: string, params: JournalListParams = {}): Promise<JournalEvent[]> {
-    const { data, error } = await sb.rpc('journal_events', {
+    const args: JournalEventsArgs = {
       p_tenant_id: tenantId,
       p_branch_id: params.branchId ?? null,
       p_before: params.before ?? null,
@@ -41,7 +46,11 @@ export const journalApi = {
       p_event_types: params.eventTypes ?? null,
       p_search: params.search ?? null,
       p_limit: params.limit ?? 50,
-    })
+      p_from: params.from ?? null,
+      p_to: params.to ?? null,
+    }
+
+    const { data, error } = await sb.rpc('journal_events', args)
 
     if (error) {
       reportError(error, { context: 'journalApi.list' })

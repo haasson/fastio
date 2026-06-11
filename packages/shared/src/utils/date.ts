@@ -67,6 +67,32 @@ export const tsToIsoEndOfDay = (ts: number | null): string | null => {
 }
 
 /**
+ * timestamp (ms) → ISO string начала дня (00:00:00.000 local time).
+ * Нижняя (включительная) граница периода «от–до» из датапикера.
+ */
+export const tsToIsoStartOfDay = (ts: number | null): string | null => {
+  if (!ts) return null
+  const d = new Date(ts)
+  d.setHours(0, 0, 0, 0)
+
+  return d.toISOString()
+}
+
+/**
+ * timestamp (ms) → ISO string начала СЛЕДУЮЩЕГО дня (00:00 local time).
+ * ЭКСКЛЮЗИВНАЯ верхняя граница периода: запрос `occurred_at < to` захватывает
+ * выбранный день «до» целиком (включая 23:59:59), без сравнения с концом дня.
+ */
+export const tsToIsoStartOfNextDay = (ts: number | null): string | null => {
+  if (!ts) return null
+  const d = new Date(ts)
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + 1)
+
+  return d.toISOString()
+}
+
+/**
  * Относительное время: "только что", "5 мин назад", "2 ч назад",
  * или полная дата для старых событий.
  */

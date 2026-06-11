@@ -165,6 +165,25 @@ export type OrderEventRow = WithOverrides<Tables<'order_events'>, {
   meta: Record<string, unknown>
 }>
 
+// Аргументы RPC `journal_events` (миграции 328/329; 330 аргументы не меняла,
+// только добавила actor_email в выдачу) — ведётся вручную
+// (db:gen-types недоступен локально, см. MEMORY). Все p_* кроме tenant_id —
+// nullable: NULL = фильтр выключен.
+export type JournalEventsArgs = {
+  p_tenant_id: string
+  p_branch_id: string | null
+  p_before: string | null
+  p_before_id: string | null
+  p_sources: string[] | null
+  p_entity_types: string[] | null
+  p_event_types: string[] | null
+  p_search: string | null
+  p_limit: number
+  // Миграция 329 — фильтр периода: p_from включительно, p_to ЭКСКЛЮЗИВНО.
+  p_from: string | null
+  p_to: string | null
+}
+
 // Строка возврата RPC `journal_events` (миграция — единый журнал audit + order).
 // Это не таблица, а SETOF из функции — колонки описываем вручную (snake_case).
 export type JournalEventRow = {
@@ -175,6 +194,8 @@ export type JournalEventRow = {
   branch_id: string | null
   actor_id: string | null
   actor_name: string | null
+  // live-join auth.users по actor_id (миграция 330): NULL для системных записей и удалённых юзеров
+  actor_email: string | null
   entity_type: string
   entity_id: string
   entity_name: string | null

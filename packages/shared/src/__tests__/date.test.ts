@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { dateStrToTs, formatDateStr, isoToTs, tsToIso, tsToIsoEndOfDay, todayStr } from '../utils/date'
+import { dateStrToTs, formatDateStr, isoToTs, tsToIso, tsToIsoEndOfDay, tsToIsoStartOfDay, tsToIsoStartOfNextDay, todayStr } from '../utils/date'
 
 describe('dateStrToTs', () => {
   it('конвертирует YYYY-MM-DD в timestamp полудня', () => {
@@ -71,6 +71,49 @@ describe('tsToIsoEndOfDay', () => {
 
   it('null → null', () => {
     expect(tsToIsoEndOfDay(null)).toBeNull()
+  })
+})
+
+describe('tsToIsoStartOfDay', () => {
+  it('выставляет время 00:00:00.000 local time', () => {
+    const ts = new Date('2026-04-16T15:30:00').getTime()
+    const d = new Date(tsToIsoStartOfDay(ts)!)
+    expect(d.getFullYear()).toBe(2026)
+    expect(d.getMonth()).toBe(3) // апрель = 3
+    expect(d.getDate()).toBe(16)
+    expect(d.getHours()).toBe(0)
+    expect(d.getMinutes()).toBe(0)
+    expect(d.getSeconds()).toBe(0)
+  })
+
+  it('null → null', () => {
+    expect(tsToIsoStartOfDay(null)).toBeNull()
+  })
+})
+
+describe('tsToIsoStartOfNextDay', () => {
+  it('возвращает локальную полночь следующего дня', () => {
+    const ts = new Date('2026-04-16T15:30:00').getTime()
+    const d = new Date(tsToIsoStartOfNextDay(ts)!)
+    expect(d.getDate()).toBe(17)
+    expect(d.getHours()).toBe(0)
+  })
+
+  it('переходит через границу месяца и года', () => {
+    const endOfMonth = new Date('2026-03-31T10:00:00').getTime()
+    const m = new Date(tsToIsoStartOfNextDay(endOfMonth)!)
+    expect(m.getMonth()).toBe(3) // 31 марта → 1 апреля
+    expect(m.getDate()).toBe(1)
+
+    const endOfYear = new Date('2026-12-31T10:00:00').getTime()
+    const y = new Date(tsToIsoStartOfNextDay(endOfYear)!)
+    expect(y.getFullYear()).toBe(2027)
+    expect(y.getMonth()).toBe(0)
+    expect(y.getDate()).toBe(1)
+  })
+
+  it('null → null', () => {
+    expect(tsToIsoStartOfNextDay(null)).toBeNull()
   })
 })
 

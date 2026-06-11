@@ -10,6 +10,7 @@ const makeEvent = (over: Partial<JournalEvent> = {}): JournalEvent => ({
   branchId: null,
   actorId: 'u1',
   actorName: 'Иван',
+  actorEmail: 'ivan@example.com',
   entityType: 'dish',
   entityId: 'd1',
   entityName: 'Борщ',
@@ -48,6 +49,8 @@ describe('toJournalRow', () => {
     expect(row.changedFields).toEqual(['price'])
     expect(row.payload).toEqual({ price: { old: 100, new: 120 } })
     expect(row.actorRole).toBeNull()
+    // email актора прокидывается насквозь — колонка «Сотрудник» показывает его под именем
+    expect(row.actorEmail).toBe('ivan@example.com')
     expect(row.branchBadge).toEqual({ label: 'Центр', shared: false })
     // конфиг-строки не несут changeSummary — колонка «Изменения» рендерит их через renderChanges
     expect(row.changeSummary).toBeUndefined()

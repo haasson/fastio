@@ -1,40 +1,61 @@
 <template>
   <div class="journal-root">
     <div class="toolbar">
-      <UiInput
-        v-model:value="searchInput"
-        placeholder="Поиск"
-        size="small"
-        clearable
-        class="search"
-        @keydown.enter="applySearchIfChanged"
-        @blur="applySearchIfChanged"
-      />
-      <UiSelect
-        v-model:value="actionFilter"
-        :options="actionOptions"
-        size="small"
-        multiple
-        :max-tag-count="2"
-        placeholder="Все действия"
-        class="filter-action"
-      />
-      <UiSelect
-        v-model:value="entityTypeFilter"
-        :options="entityTypeOptions"
-        size="small"
-        multiple
-        filterable
-        :max-tag-count="2"
-        placeholder="Все объекты"
-        class="filter-entity"
-      />
-      <UiButton
-        size="small"
-        :loading="loading"
-        class="refresh"
-        @click="reload"
-      >Обновить</UiButton>
+      <div class="row">
+        <UiInput
+          v-model:value="searchInput"
+          placeholder="Поиск"
+          size="small"
+          clearable
+          class="search"
+          @keydown.enter="applySearchIfChanged"
+          @blur="applySearchIfChanged"
+        />
+        <UiDatepicker
+          v-model="periodFilter"
+          type="daterange"
+          size="small"
+          clearable
+          close-on-select
+          :actions="['clear']"
+          start-placeholder="От"
+          end-placeholder="До"
+          class="filter-period"
+        />
+        <UiButton
+          size="small"
+          :loading="loading"
+          class="refresh"
+          @click="reload"
+        >Обновить</UiButton>
+      </div>
+      <div class="row">
+        <UiSelect
+          v-model:value="actionFilter"
+          :options="actionOptions"
+          size="small"
+          multiple
+          :max-tag-count="2"
+          placeholder="Все действия"
+          class="filter-action"
+        />
+        <UiSelect
+          v-model:value="entityTypeFilter"
+          :options="entityTypeOptions"
+          size="small"
+          multiple
+          filterable
+          :max-tag-count="2"
+          placeholder="Все объекты"
+          class="filter-entity"
+        />
+        <UiButton
+          v-if="hasActiveFilters"
+          size="small"
+          class="reset"
+          @click="resetFilters"
+        >Сбросить фильтры</UiButton>
+      </div>
     </div>
 
     <UiSkeleton v-if="loading && rows.length === 0" text :repeat="6" />
@@ -59,11 +80,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDebounceFn } from '@vueuse/core'
 import { reportError } from '@fastio/shared/observability'
-import { UiButton, UiInput, UiSelect, UiDataTable, UiEmpty, UiSkeleton } from '@fastio/ui'
+import { tsToIsoStartOfDay, tsToIsoStartOfNextDay } from '@fastio/shared'
+import { UiButton, UiInput, UiSelect, UiDatepicker, UiDataTable, UiEmpty, UiSkeleton } from '@fastio/ui'
 import { navigateTo } from '#imports'
 import { useJournal, ENTITY_TYPE_LABELS, ENTITY_TYPE_GROUPS, ACTION_LABELS, auditLogColumns, toJournalRow } from '~/features/audit-log'
 import type { JournalRow } from '~/features/audit-log'
@@ -93,6 +115,9 @@ const actionFilter = ref<string[]>([])
 const entityTypeFilter = ref<string[]>([])
 // локальный буфер инпута; в filters.search кладём по enter/blur (или debounce)
 const searchInput = ref('')
+// период «от–до»: пара ms-таймстемпов из Naive-датапикера (или null = весь журнал).
+// НЕ персистится в localStorage намеренно: протухший период молча прятал бы свежие записи.
+const periodFilter = ref<[number, number] | null>(null)
 
 // Пока гидрируем фильтры из localStorage в onMounted — watchers молчат, иначе
 // присвоение persisted-значений вызовет лишний перезапрос поверх первого loadInitial.
@@ -188,6 +213,10 @@ const syncFiltersToComposable = (): void => {
   filters.eventTypes = [...actionFilter.value]
   filters.entityTypes = [...entityTypeFilter.value]
   filters.search = searchInput.value.trim()
+  // Период: from = начало дня первой даты, to = начало дня ПОСЛЕ второй (эксклюзивно,
+  // чтобы день «до» вошёл целиком). Локальный пояс браузера — как юзер видит даты.
+  filters.from = periodFilter.value ? tsToIsoStartOfDay(periodFilter.value[0]) : null
+  filters.to = periodFilter.value ? tsToIsoStartOfNextDay(periodFilter.value[1]) : null
 }
 
 const reload = (): void => {
@@ -198,6 +227,26 @@ const applyAndReload = (): void => {
   syncFiltersToComposable()
   writePersisted()
   reload()
+}
+
+// Есть ли что сбрасывать — кнопка «Сбросить фильтры» видна только при активных фильтрах.
+const hasActiveFilters = computed(() => actionFilter.value.length > 0
+  || entityTypeFilter.value.length > 0
+  || searchInput.value.trim() !== ''
+  || periodFilter.value !== null)
+
+// Сброс всех фильтров одним кликом (по очереди — мучение). ready=false глушит
+// watchers на время мутаций: иначе каждый ref добавил бы свой debounced-перезапрос
+// поверх нашего. nextTick возвращает реактивность после флаша очереди.
+const resetFilters = async (): Promise<void> => {
+  ready.value = false
+  actionFilter.value = []
+  entityTypeFilter.value = []
+  searchInput.value = ''
+  periodFilter.value = null
+  applyAndReload()
+  await nextTick()
+  ready.value = true
 }
 
 // Применить поиск только если строка реально изменилась относительно
@@ -254,7 +303,9 @@ watch(currentBranchId, () => {
 // отметивший три типа подряд, сделал бы три запроса вместо одного.
 const debouncedApplyFilters = useDebounceFn(applyAndReload, 300)
 
-watch([actionFilter, entityTypeFilter], () => {
+// periodFilter в общем watch: writePersisted внутри applyAndReload период не пишет
+// (PersistedFilters его не знает) — персиста периода нет by design.
+watch([actionFilter, entityTypeFilter, periodFilter], () => {
   if (!ready.value) return
   debouncedApplyFilters()
 })
@@ -306,15 +357,23 @@ onMounted(async () => {
   height: calc(100dvh - var(--topbar-height) - var(--content-padding) * 2);
 }
 
+// Две строки: поиск + период + «Обновить» сверху, селекты + «Сбросить» снизу.
+// flex-shrink:0 обязателен — тулбар закреплён над скроллящейся таблицей.
 .toolbar {
+  @include flex-col(var(--space-8));
+
+  flex-shrink: 0;
+}
+
+.row {
   display: flex;
   align-items: center;
   gap: var(--space-8);
   flex-wrap: wrap;
-  flex-shrink: 0;
 }
 
-.refresh {
+.refresh,
+.reset {
   margin-left: auto;
 }
 
@@ -331,6 +390,13 @@ onMounted(async () => {
   min-width: 180px;
 }
 
+// Daterange с внутренним форматом «dd MMMM YYYY» — двум полным датам нужно место,
+// иначе small-инпут обрезает текст.
+.filter-period {
+  width: 340px;
+  max-width: 100%;
+}
+
 // Таблица заполняет остаток высоты; тело скроллится, шапка зафиксирована (flex-height).
 .journal-table {
   flex: 1;
@@ -342,45 +408,6 @@ onMounted(async () => {
     padding-top: var(--space-4);
     padding-bottom: var(--space-4);
     vertical-align: top;
-  }
-}
-
-.entity-cell {
-  display: flex;
-  flex-direction: column;
-}
-
-.entity-type {
-  color: var(--color-text-hint);
-  font-size: var(--font-size-sm);
-}
-
-.entity-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.actor-cell {
-  display: flex;
-  flex-direction: column;
-}
-
-.changes-cell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  max-width: 360px;
-}
-
-.change-line {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  .old-value {
-    color: var(--color-text-hint);
-    text-decoration: line-through;
   }
 }
 </style>

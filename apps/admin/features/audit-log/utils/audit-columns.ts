@@ -1,43 +1,29 @@
-// Колонки таблицы журнала аудита (/audit-log). Вынесены из страницы: рендер строк
-// (дата/действие/объект/изменения/сотрудник) — чистая фабрика без состояния страницы.
+// Колонки таблицы журнала аудита (/audit-log): дата / действие / объект / изменения / сотрудник.
+// Ячейки рендерятся SFC-примитивами (AuditEntityRef, AuditChange, AuditAction, AuditActor) —
+// scoped CSS страницы не доходит до h()-нод, поэтому стили живут в самих компонентах,
+// а фабрика только собирает дерево. «Действие» — приглушённая колонка: цветная точка
+// для created/deleted/restored, тихий hint-текст без точки для updated.
 
 import { h } from 'vue'
 import type { VNode } from 'vue'
 import { formatDateTime } from '@fastio/shared'
-import { UiTag, UiText } from '@fastio/ui'
+import { UiText } from '@fastio/ui'
 import type { DataTableColumns } from '@fastio/ui'
-import { entityTypeLabel, actionMeta, renderChanges } from './audit-labels'
-import type { RenderedChange } from './audit-labels'
+import { renderChanges } from './audit-labels'
 import type { JournalRow } from './journal-row'
+import AuditChange from '../components/AuditChange.vue'
+import AuditAction from '../components/AuditAction.vue'
+import AuditEntityRef from '../components/AuditEntityRef.vue'
+import AuditActor from '../components/AuditActor.vue'
 
 const hintStyle = 'color: var(--color-text-hint)'
 
-const renderChangeRow = (c: RenderedChange): VNode => {
-  if (c.kind === 'phrase') {
-    return h(UiText, { size: 'tiny', class: 'change-line' }, () => c.label)
-  }
-
-  if (c.kind === 'complex') {
-    return h(UiText, { size: 'tiny', class: 'change-line' }, () => `${c.label}: изменено`)
-  }
-
-  if (c.kind === 'price') {
-    const newColor = c.direction === 'up'
-      ? 'var(--red-500)'
-      : c.direction === 'down'
-        ? 'var(--green-500)'
-        : 'var(--color-text)'
-
-    return h(UiText, { size: 'tiny', class: 'change-line' }, () => [
-      `${c.label}: `,
-      h('span', { class: 'old-value' }, c.oldValue),
-      ' → ',
-      h('span', { style: `color: ${newColor}; font-weight: var(--font-weight-medium)` }, c.newValue),
-    ])
-  }
-
-  return h(UiText, { size: 'tiny', class: 'change-line' }, () => `${c.label}: ${c.oldValue} → ${c.newValue}`)
-}
+// Вертикальный стек строк колонки «Изменения». Инлайн-стиль вместо класса:
+// scoped-селекторы страницы до этой ноды не достают. max-width ограничивает
+// длину строки — контент внутри переносится, не обрезается.
+// gap-8, не gap-4: дельты двухэтажные (лейбл + значения), при меньшем зазоре
+// граница между соседними дельтами визуально терялась бы.
+const changesStack = (children: VNode[]): VNode => h('div', { style: 'display: flex; flex-direction: column; gap: var(--space-8); max-width: 360px' }, children)
 
 export type AuditColumnsOptions = {
   // Лепить в колонку «Объект» компактный чип с именем филиала записи (только для
@@ -56,34 +42,22 @@ export const auditLogColumns = (opts: AuditColumnsOptions = {}): DataTableColumn
   {
     title: 'Действие',
     key: 'action',
-    width: 130,
-    render: (row) => {
-      // Всегда тег действия. Order-строки приходят с нормализованным action
-      // (created/updated из SQL) → тоже корректный Создано/Изменено тег.
-      const meta = actionMeta(row.action)
-
-      return h(UiTag, { type: meta.tone, size: 'small', round: true, empty: true }, () => meta.label)
-    },
+    width: 110,
+    // updated — самый частый и самый «тихий» тип: без точки, серым текстом;
+    // created/deleted/restored — цветная точка + цветной лейбл.
+    render: (row) => h(AuditAction, { action: row.action, dot: row.action !== 'updated' }),
   },
   {
     title: 'Объект',
     key: 'entityName',
-    width: 220,
+    width: 240,
     render: (row) => {
       // Чип филиала под названием — только для филиальных строк журнала
       // (общевендорные branchBadge.shared не показываем).
       const badge = opts.showBranchLabel ? row.branchBadge : undefined
-      const branchChip = badge && !badge.shared
-        ? h(UiTag, { type: 'primary', size: 'small', secondary: true, style: 'margin-top: var(--space-4)' }, () => badge.label)
-        : null
+      const branchLabel = badge && !badge.shared ? badge.label : null
 
-      return h('div', { class: 'entity-cell' }, [
-        h('span', { class: 'entity-type' }, entityTypeLabel(row.entityType)),
-        row.entityName
-          ? h(UiText, { size: 'tiny', span: true, class: 'entity-name' }, () => row.entityName!)
-          : h(UiText, { size: 'tiny', span: true, style: hintStyle }, () => '—'),
-        branchChip,
-      ])
+      return h(AuditEntityRef, { entityType: row.entityType, entityName: row.entityName, branchLabel })
     },
   },
   {
@@ -91,36 +65,32 @@ export const auditLogColumns = (opts: AuditColumnsOptions = {}): DataTableColumn
     key: 'changes',
     render: (row) => {
       // Order-строки несут готовую русскую сводку (status_changed → «Новый → Готов»):
-      // показываем её одной строкой вместо diff'а полей.
-      const changeSummary = row.changeSummary
-
-      if (changeSummary) return h(UiText, { size: 'tiny', class: 'change-line' }, () => changeSummary)
+      // рендерим её фразой через AuditChange — единый вид с дельтами конфиг-строк.
+      if (row.changeSummary) {
+        return changesStack([
+          h(AuditChange, { change: { field: '_summary', label: row.changeSummary, oldValue: '', newValue: '', kind: 'phrase', direction: null } }),
+        ])
+      }
 
       const changes = renderChanges(row)
 
+      // Без читаемого диффа — прочерк: само слово действия живёт в колонке «Действие».
       if (changes.length === 0) return h(UiText, { size: 'tiny', style: hintStyle }, () => '—')
 
       const LIMIT = 6
-      const rows = changes.slice(0, LIMIT).map(renderChangeRow)
+      const rows = changes.slice(0, LIMIT).map((change) => h(AuditChange, { change }))
 
       if (changes.length > LIMIT) {
-        rows.push(h(UiText, { size: 'tiny', class: 'change-line', style: hintStyle }, () => `… ещё ${changes.length - LIMIT}`))
+        rows.push(h(UiText, { size: 'tiny', style: hintStyle }, () => `… ещё ${changes.length - LIMIT}`))
       }
 
-      return h('div', { class: 'changes-cell' }, rows)
+      return changesStack(rows)
     },
   },
   {
     title: 'Сотрудник',
     key: 'actorName',
     width: 170,
-    render: (row) => {
-      if (!row.actorName) return h(UiText, { size: 'tiny', style: hintStyle }, () => 'Система')
-
-      return h('div', { class: 'actor-cell' }, [
-        h(UiText, { size: 'tiny', span: true }, () => row.actorName!),
-        row.actorRole ? h(UiText, { size: 'tiny', span: true, style: hintStyle }, () => row.actorRole!) : null,
-      ])
-    },
+    render: (row) => h(AuditActor, { name: row.actorName, role: row.actorRole, email: row.actorEmail ?? null }),
   },
 ]

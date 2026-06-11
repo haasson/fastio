@@ -15,11 +15,13 @@ export type BranchBadge = {
 // Строка таблицы: форма AuditLog (для auditLogColumns) + предрассчитанный бейдж области.
 // changeSummary — человекочитаемая сводка события заказа (status_changed → «Новый → Готов»)
 // для колонки «Изменения». Заполняется ТОЛЬКО для order-строк; для конфиг-строк undefined
-// (колонка «Изменения» рендерит их через renderChanges как раньше). Колонка «Действие»
-// всегда рендерит action-тег (created/updated/...).
+// (колонка «Изменения» рендерит их через renderChanges как раньше).
 export type JournalRow = AuditLog & {
   branchBadge: BranchBadge
   changeSummary?: string
+  // email актора (live-join auth.users в journal_events): вторая строка колонки «Сотрудник» —
+  // по одному имени людей легко перепутать. NULL для системных записей и удалённых юзеров.
+  actorEmail?: string | null
 }
 
 // Имя филиала из словаря id→name. null → «Всё заведение», неизвестный → «Филиал».
@@ -37,8 +39,9 @@ export const toJournalRow = (ev: JournalEvent, branchNames: Map<string, string>,
   actorName: ev.actorName,
   // У журнала нет роли актора — колонка переживёт null (показывает только имя).
   actorRole: null,
+  actorEmail: ev.actorEmail,
   // eventType: для audit это action ('updated'), для order — нормализованный SQL'ом
-  // action ('created'/'updated'). Колонка «Действие» рендерит его тегом.
+  // action ('created'/'updated'). Колонка «Действие» рендерит его маркером (AuditAction).
   action: ev.eventType,
   entityType: ev.entityType,
   entityId: ev.entityId,

@@ -2,7 +2,7 @@
   "project": "packages/ui",
   "submap": "main",
   "purpose": "UI-библиотека @fastio/ui — обёртки над Naive UI с едиными размерами, отзывчивостью и стилями (UiCard, UiText, UiTitle, UiButton, UiInput, UiModal, UiBottomSheet, UiTable, UiForm и др.)",
-  "generated_at": "2026-06-10T14:09:58.042Z",
+  "generated_at": "2026-06-11T05:34:38.414Z",
   "stats": {
     "files": 64,
     "pages": 0,
@@ -226,8 +226,8 @@
     },
     "src/components/UiDatepicker.vue": {
       "kind": "vue",
-      "hash": "3f1bd6a6b185",
-      "purpose": "Пикер даты (обёртка n-date-picker) внутри FormItem — ru-формат, кастомные иконки календаря/шевронов, year-range до +10 лет",
+      "hash": "bbf90e692308",
+      "purpose": "Обёртка NDatePicker: русский формат, кастомные иконки; v-bind=$attrs последним — потребители перебивают дефолты; model number | [number,number] | null",
       "symbols": [
         {
           "name": "props",
