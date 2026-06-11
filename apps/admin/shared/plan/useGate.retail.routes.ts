@@ -29,7 +29,10 @@ export const RETAIL_ROUTE_SUBS: Array<[string, RetailGateKey]> = [
 ]
 
 export const RETAIL_ROUTE_ROOTS: Array<[string, RetailGateKey]> = [
-  ['/menu', 'viewMenu'],
+  // manageMenu (не viewMenu): nav «Меню» гейтится manageMenu, поэтому роль с menu.view
+  // но без menu.edit («Сотрудник») не должна открывать /menu и /menu/dishes по прямой
+  // ссылке (роут-карта обязана зеркалить nav). Данные защищает RLS, но доступ к странице — нет.
+  ['/menu', 'manageMenu'],
   ['/orders', 'viewOrders'],
   ['/kitchen', 'viewKitchen'],
   ['/tables', 'viewTables'],

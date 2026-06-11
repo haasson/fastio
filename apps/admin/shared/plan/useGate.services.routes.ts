@@ -11,7 +11,9 @@ import type { ServicesGateKey } from './useGate.services'
 export const SERVICES_ROUTE_SUBS: Array<[string, ServicesGateKey]> = [
   // Sub-роуты services
   ['/services/categories', 'manageServiceMenu'],
-  ['/services/items', 'viewServiceMenu'],
+  // manageServiceMenu (не viewServiceMenu): зеркалит nav (он на manageServiceMenu) —
+  // роль с menu.view без menu.edit не открывает каталог по прямой ссылке. См. /menu в retail.
+  ['/services/items', 'manageServiceMenu'],
   ['/services/tags', 'manageServiceMenu'],
 
   // Sub-роуты appointments (кроме settings — shared editSettings)
@@ -27,6 +29,6 @@ export const SERVICES_ROUTE_SUBS: Array<[string, ServicesGateKey]> = [
 ]
 
 export const SERVICES_ROUTE_ROOTS: Array<[string, ServicesGateKey]> = [
-  ['/services', 'viewServiceMenu'],
+  ['/services', 'manageServiceMenu'],
   ['/appointments', 'viewAppointments'],
 ]

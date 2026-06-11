@@ -57,8 +57,8 @@ describe('resolveRouteGate', () => {
 
   describe('корни секций (соответствуют AppNav)', () => {
     it.each([
-      ['/menu', 'viewMenu'],
-      ['/services', 'viewServiceMenu'],
+      ['/menu', 'manageMenu'],
+      ['/services', 'manageServiceMenu'],
       ['/orders', 'viewOrders'],
       ['/kitchen', 'viewKitchen'],
       ['/tables', 'viewTables'],
@@ -92,8 +92,8 @@ describe('resolveRouteGate', () => {
       expect(resolveRouteGate('/orders/abc-123')).toBe('viewOrders')
     })
 
-    it('/menu/dishes → viewMenu (унаследовано от /menu)', () => {
-      expect(resolveRouteGate('/menu/dishes')).toBe('viewMenu')
+    it('/menu/dishes → manageMenu (унаследовано от /menu)', () => {
+      expect(resolveRouteGate('/menu/dishes')).toBe('manageMenu')
     })
 
     it('/settings/contacts → viewSettings', () => {
@@ -162,8 +162,8 @@ describe('resolveRouteGate', () => {
       expect(resolveRouteGate('/menu/tags')).toBe('manageMenu')
     })
 
-    it('/services/items → viewServiceMenu', () => {
-      expect(resolveRouteGate('/services/items')).toBe('viewServiceMenu')
+    it('/services/items → manageServiceMenu', () => {
+      expect(resolveRouteGate('/services/items')).toBe('manageServiceMenu')
     })
 
     it('/services/categories → manageServiceMenu', () => {
@@ -255,19 +255,20 @@ describe('appointments routes (1.7 покрытие)', () => {
 
 describe('services routes (1.7 покрытие)', () => {
   it.each([
-    ['/services', 'viewServiceMenu'],
-    ['/services/items', 'viewServiceMenu'],
+    ['/services', 'manageServiceMenu'],
+    ['/services/items', 'manageServiceMenu'],
     ['/services/categories', 'manageServiceMenu'],
     ['/services/tags', 'manageServiceMenu'],
   ])('%s → %s', (path, expected) => {
     expect(resolveRouteGate(path)).toBe(expected)
   })
 
-  it('/services/settings наследует от корня → viewServiceMenu', () => {
-    // Сейчас в ROUTE_GATES нет специфичного для /services/settings;
-    // тест сторожит, что если кто-то захочет ужесточить (например до editSettings) —
-    // не забыл сначала актуализировать тест и обсудить.
-    expect(resolveRouteGate('/services/settings')).toBe('viewServiceMenu')
+  it('/services/settings наследует от корня → manageServiceMenu', () => {
+    // /services и его суб-роуты ужесточены до manageServiceMenu (зеркалят nav,
+    // см. useGate.services.routes.ts) — роль с menu.view без menu.edit не открывает
+    // каталог/его настройки по прямой ссылке. Спец-гейта для /services/settings нет,
+    // он наследует корень. Если захочется развести на editSettings — обновить тест и обсудить.
+    expect(resolveRouteGate('/services/settings')).toBe('manageServiceMenu')
   })
 
   it.each([
