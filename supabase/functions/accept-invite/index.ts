@@ -35,12 +35,23 @@ Deno.serve(withSentry('accept-invite', async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  const authHeader = req.headers.get('Authorization')
+  const password = body.password
+  const fullName = body.fullName
 
   // ──────────────────────────────────────────────────────────────────────
-  // Authenticated mode — пользователь уже залогинен.
+  // Authenticated mode — реальная сессия (owner принимает invite в чужой tenant),
+  // креды НЕ передаются. Режим выбираем по ОТСУТСТВИЮ password/fullName, а НЕ по
+  // наличию Authorization-хедера: supabase-js `functions.invoke` ВСЕГДА шлёт
+  // `Authorization: Bearer <anon>` при пустой сессии, поэтому authHeader тут не
+  // дискриминатор (иначе new-user уходит сюда → getUser() по anon-ключу → null →
+  // ложный 401, и unauthenticated-режим становится недостижим).
   // ──────────────────────────────────────────────────────────────────────
-  if (authHeader) {
+  if (password === undefined && fullName === undefined) {
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return json({ error: 'Authentication or account credentials required' }, { status: 400 })
+    }
+
     const userSupabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -56,10 +67,9 @@ Deno.serve(withSentry('accept-invite', async (req) => {
   }
 
   // ──────────────────────────────────────────────────────────────────────
-  // Unauthenticated mode — server создаёт user и принимает invite.
+  // New-user mode — клиент прислал креды, server создаёт user через admin API
+  // и принимает invite (client-side signUp удалён, PREPROD-099 follow-up).
   // ──────────────────────────────────────────────────────────────────────
-  const password = body.password
-  const fullName = body.fullName
   if (!password || typeof password !== 'string' || password.length < 6) {
     return json({ error: 'password is required (≥6 chars)' }, { status: 400 })
   }

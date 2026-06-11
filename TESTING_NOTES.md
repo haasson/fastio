@@ -271,6 +271,12 @@ Root cause: `supabase/functions/get-invite/index.ts` проверял сущес
 Fix (локально, ждёт деплоя): заменил REST-запрос на существующий SECURITY DEFINER RPC `public.get_user_id_by_email(p_email)` (миграция 169) → `userExists = data != null`. Без новой миграции. На проде RPC проверен: staff-email→NULL, owner-email→id. Деплой: push в main → `deploy-functions.yml`.
 ⚠️ **Тест инвайта 3.14.0 (737/765/766) заблокирован до деплоя фикса.**
 
+🐛→🔧 **[P0] Второй залатентный баг того же флоу — `accept-invite` отдаёт 401 новому юзеру (2026-06-11).**
+Вылез сразу после фикса get-invite (раньше был замаскирован — new-user инвайты не доходили до accept-invite).
+Симптом: `POST /functions/v1/accept-invite` → 401 Unauthorized на шаге установки пароля.
+Root cause: `accept-invite` выбирал режим по наличию `Authorization`-хедера (`if (authHeader)` → authenticated → `getUser()`). Но supabase-js `functions.invoke` ВСЕГДА шлёт `Authorization: Bearer <anon>` при пустой сессии → функция всегда уходила в authenticated-ветку → `getUser()` по anon-ключу → null → 401. Unauthenticated-режим (server сам `admin.createUser`), на который и рассчитан `set-password.vue:150` (шлёт `{token,password,fullName}`), был **недостижим**.
+Fix: режим выбирается по наличию креденшелов (`password`/`fullName`), а не по authHeader. Нет кредов → authenticated (owner принимает invite); есть креды → new-user createUser. `verify_jwt=false` у функции, гейт не мешает.
+
 💡 **Пресеты кастомных ролей** — при создании кастомной роли предлагать готовые пресеты одним кликом: «Повар» (kitchen.view+edit), «Сборщик» (kitchen.view, tables.view), «Курьер» (orders.view+edit, orders.status), «Хостес» (tables.view+manage, orders.view) и т.п. Юзер выбирает пресет → права заполняются автоматически → может подправить. Снижает барьер входа: не надо разбираться какие права что дают.
 
 ### 3.15.1 Настройки → Контакты / Основное
