@@ -60,7 +60,7 @@ SQL-тесты: `supabase/tests/journal_events.test.sql` (12 сценариев,
 - **Добавить аудит новой сущности:** миграция с `CREATE TRIGGER ... EXECUTE FUNCTION fn_audit('<entity_type>', '<name_col>|-|user:<col>', '<parent_spec>')`. Затем добавь лейблы в `audit-labels.ts` (ENTITY_TYPE_LABELS + ENTITY_TYPE_GROUPS + поля) — тест на 1:1 покрытие групп упадёт, если забыть. Если тип видим не всем — гейтинг в `moduleGateByType`/`RETAIL_ONLY`/`SERVICES_ONLY` на странице.
 - **Встроить историю в карточку/дровер:** `<AuditTrail entity-type="dish" :entity-id="id" :refresh-key="key" />`. Для родителя с дочками — `:include-children="true" :show-entity="true"`.
 - **Новый фильтр на странице:** расширь `AuditLogsListParams` + ветку в `api/audit-logs.list()` + UI.
-- **Включён в проде:** флаг `auditLogEnabled` (`shared/utils/featureFlags`). Право чтения — `audit_log.view` (овнер видит всегда; кастомным ролям выдать в правах).
+- **Гейтинг:** флаг `auditLogEnabled` (`shared/utils/featureFlags`) + тариф **«Старт»+** (showcase исключён, гейт `auditLog` в `useGate.ts` отдаёт `locked`/`requiredPlan: 'start'`) + право `audit_log.view` (овнер видит всегда; кастомным ролям выдать в правах). Изменить минимальный тир — `AUDIT_LOG_MIN_TIER` в `useGate.ts`.
 
 ## Антипаттерны
 

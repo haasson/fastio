@@ -1,7 +1,12 @@
 import { computed, type ComputedRef } from 'vue'
+import { getPlanTierOrder } from '@fastio/shared'
 import { isAuditLogEnabled } from '~/shared/utils/featureFlags'
 import { ok, deny, useGateInfra } from './useGate.shared'
+import { usePlanFeatures } from './usePlanFeatures'
 import type { GateRegistry, GateResult, GateKey } from './useGate.types'
+
+// Журнал действий доступен с тарифа «Старт» и выше — showcase исключён.
+const AUDIT_LOG_MIN_TIER = getPlanTierOrder('start')
 
 /**
  * Единая точка проверки доступа к фичам админки (ALL gates).
@@ -21,7 +26,8 @@ import type { GateRegistry, GateResult, GateKey } from './useGate.types'
  */
 export const useGate = (): GateRegistry => {
   const infra = useGateInfra()
-  const { tenantStore, branchStore, resolved, isSuspended, isOwner, hasPermission, moduleGate, planFeatureGate, flagGate, permissionGate, configGate } = infra
+  const { tenantStore, branchStore, resolved, isSuspended, isOwner, hasPermission, moduleGate, planFeatureGate, permissionGate, configGate } = infra
+  const { plan: planTier } = usePlanFeatures()
 
   // ───── Module-based feature gates ─────
 
@@ -99,7 +105,17 @@ export const useGate = (): GateRegistry => {
 
   // ───── Compile-time flag gates ─────
 
-  const auditLog = flagGate(isAuditLogEnabled())
+  // Журнал действий: compile-флаг + тариф «Старт»+. Showcase исключён —
+  // без заказов и команды лента почти пустая, пункт только путает.
+  const auditLog = computed<GateResult>(() => {
+    if (!isAuditLogEnabled()) return deny('flag')
+    if (isSuspended.value) return deny('suspended')
+    if (getPlanTierOrder(planTier.value) < AUDIT_LOG_MIN_TIER) {
+      return deny('locked', { requiredPlan: 'start' })
+    }
+
+    return ok()
+  })
 
   // ───── Config-driven gates ─────
 

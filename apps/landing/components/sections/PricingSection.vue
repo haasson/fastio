@@ -144,6 +144,9 @@ const featureLabels = (plan: PlanRow): string[] => {
     labels.push(f.resources.max === 0 ? 'Без лимита ресурсов' : `До ${f.resources.max} активных ресурсов`)
   }
 
+  // Журнал действий вводится с тарифа «Старт» (showcase исключён, pro наследует строкой «Всё из тарифа Старт»).
+  if (extractPlanTier(plan.key) === 'start') labels.push('Журнал действий')
+
   return labels
 }
 </script>
