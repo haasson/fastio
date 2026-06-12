@@ -178,28 +178,6 @@ jobs:
       - name: build storefront
         run: pnpm build --filter storefront
 
-      - name: diagnose storefront 503
-        # DIAGNOSTIC — убрать после фикса. Фиксирует auth + /api/tenant до LHCI.
-        continue-on-error: true
-        run: |
-          echo "=== 1. PostgREST auth test (service role) ==="
-          SK="$NUXT_SUPABASE_SERVICE_ROLE_KEY"
-          printf "key prefix (first 10): %.10s...\n" "$SK"
-          curl -si "http://127.0.0.1:54321/rest/v1/tenants?slug=eq.demo&select=slug" \
-            -H "apikey: $SK" -H "Authorization: Bearer $SK"
-          echo ""
-          echo "=== 2. Storefront /api/tenant response ==="
-          PORT=4712 \
-            pnpm --filter storefront exec nuxt preview > /tmp/diag-srv.log 2>&1 &
-          SRV_PID=$!
-          for i in $(seq 1 20); do grep -q "Listening" /tmp/diag-srv.log 2>/dev/null && break; sleep 1; done
-          echo "--- server startup log ---"
-          cat /tmp/diag-srv.log
-          echo "--- /api/tenant response ---"
-          curl -sv "http://demo.localhost:4712/api/tenant" 2>&1 || true
-          kill $SRV_PID 2>/dev/null || true
-          wait $SRV_PID 2>/dev/null || true
-
       - name: run LHCI
         # lighthouserc.json: startServerCommand поднимает nuxt preview собранного
         # storefront на :4711, url = http://demo.localhost:4711/.
