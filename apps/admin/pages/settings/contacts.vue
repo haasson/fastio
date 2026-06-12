@@ -1,5 +1,5 @@
 <template>
-  <UiForm class="form" @submit.prevent="page.submit">
+  <UiForm ref="formRef" class="form" @submit.prevent="page.submit">
     <UiFormSection title="Основное">
       <UiInput
         v-model="form.name"
@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { UiForm, UiFormSection, UiInput, UiSelect, UiAlert } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { TIMEZONE_OPTIONS, DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
@@ -72,8 +72,11 @@ const branchesEnabled = computed(() => gate.branches.value.enabled)
 
 const tenant = computed(() => tenantStore.tenant)
 
+const formRef = ref<{ validate: () => boolean } | null>(null)
+
 const page = useEditableForm({
   source: tenant,
+  validate: () => formRef.value?.validate() ?? true,
   build: (t: Tenant) => ({
     name: t.name ?? '',
     phone: t.contacts?.phone ?? '',

@@ -21,6 +21,10 @@ type Options<S, F extends object> = {
   successMessage?: string
   // Дефолтный error-toast при упавшем save. Передать '' чтобы подавить (если callback сам показывает ошибки).
   errorMessage?: string
+  // Валидация формы перед сохранением. Save-bar зовёт submit() напрямую в обход
+  // <UiForm @submit>, поэтому без этого хука правила полей не проверяются и можно
+  // сохранить невалидные данные. Обычно: () => uiFormRef.value?.validate() ?? true.
+  validate?: () => boolean
 }
 
 // Save-callback может бросить эту ошибку, чтобы откатить submit без error-тоста и без сброса dirty
@@ -42,6 +46,11 @@ export const useEditableForm = <S, F extends object>(opts: Options<S, F>): Edita
 
   const submit = async () => {
     if (saving.value) return
+    if (opts.validate && !opts.validate()) {
+      error('Проверьте правильность заполнения формы')
+
+      return
+    }
     saving.value = true
     try {
       await opts.save(form)

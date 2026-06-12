@@ -1,5 +1,5 @@
 <template>
-  <UiForm class="form" @submit.prevent="page.submit">
+  <UiForm ref="formRef" class="form" @submit.prevent="page.submit">
     <UiAlert v-if="!legalInfoComplete" type="warning">
       Заполните юридические данные — без них приём заказов и бронирование на витрине недоступны
     </UiAlert>
@@ -114,8 +114,11 @@ const { error } = useMessage()
 
 const tenant = computed(() => tenantStore.tenant)
 
+const formRef = ref<{ validate: () => boolean } | null>(null)
+
 const page = useEditableForm({
   source: tenant,
+  validate: () => formRef.value?.validate() ?? true,
   build: (t: Tenant) => ({
     legalName: t.legalInfo?.legalName ?? '',
     inn: t.legalInfo?.inn ?? '',

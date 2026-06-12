@@ -3,7 +3,7 @@
     <UiSectionHeader :title="title" />
     <UiText v-if="subtitle" size="tiny" class="subtitle">{{ subtitle }}</UiText>
 
-    <UiForm class="form" @submit.prevent="page.submit">
+    <UiForm ref="formRef" class="form" @submit.prevent="page.submit">
       <UiInput
         v-model="form.phone"
         name="phone"
@@ -25,7 +25,7 @@
 // Блок не self-contained: своих кнопок и unsaved-guard'а у него нет. Родитель должен
 // забрать `handle` через template ref и зарегистрировать в pageForm — иначе save-bar
 // не появится. Сейчас единственный потребитель — pages/branches.vue.
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { UiCard, UiForm, UiInput, UiText, UiSectionHeader } from '@fastio/ui'
 import type { Tenant } from '@fastio/shared'
 import { DEFAULT_WORKING_HOURS_SCHEDULE } from '@fastio/shared'
@@ -44,8 +44,11 @@ withDefaults(defineProps<{
 const tenantStore = useTenantStore()
 const tenant = computed(() => tenantStore.tenant)
 
+const formRef = ref<{ validate: () => boolean } | null>(null)
+
 const page = useEditableForm({
   source: tenant,
+  validate: () => formRef.value?.validate() ?? true,
   build: (t: Tenant) => ({
     phone: t.contacts?.phone ?? '',
     workingHoursSchedule: t.workingHoursSchedule ?? DEFAULT_WORKING_HOURS_SCHEDULE,
