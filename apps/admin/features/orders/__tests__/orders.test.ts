@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { mapOrder } from '../api/orders'
+import { describe, it, expect, vi } from 'vitest'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { OrderItem } from '@fastio/shared'
+import { mapOrder, ordersApi } from '../api/orders'
 
 const makeOrderRow = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   id: 'order-1',
@@ -126,5 +128,58 @@ describe('mapOrder', () => {
     expect(item.removedIngredients).toEqual(['огурцы'])
     expect(item.modifiers[0].optionName).toBe('Острый')
     expect(item.addons[0].addonName).toBe('Соус')
+  })
+})
+
+const makeItem = (overrides: Partial<OrderItem> = {}): OrderItem => ({
+  dishId: 'dish-1',
+  comboId: null,
+  dishName: 'Бургер',
+  categoryName: 'Бургеры',
+  price: 300,
+  quantity: 2,
+  removedIngredients: ['лук'],
+  modifiers: [{ optionId: 'opt-1', groupName: 'Острота', optionName: 'Острый', priceDelta: 50 }],
+  addons: [{ addonId: 'add-1', addonName: 'Соус', price: 30 }],
+  customizable: undefined,
+  completedAt: null,
+  comboItems: null,
+  addedBy: null,
+  confirmedBy: null,
+  status: 'confirmed',
+  ...overrides,
+})
+
+describe('ordersApi.addItems', () => {
+  it('зовёт rpc add_items_to_order с корректным маппингом полей', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const sb = { rpc } as unknown as SupabaseClient
+
+    await ordersApi.addItems(sb, 'order-1', [makeItem()])
+
+    expect(rpc).toHaveBeenCalledTimes(1)
+    const [fn, args] = rpc.mock.calls[0]
+
+    expect(fn).toBe('add_items_to_order')
+    expect(args.p_order_id).toBe('order-1')
+    expect(args.p_items_json).toEqual([{
+      dish_name: 'Бургер',
+      price: 300,
+      quantity: 2,
+      dish_id: 'dish-1',
+      combo_id: null,
+      combo_items: null,
+      category_name: 'Бургеры',
+      removed_ingredients: ['лук'],
+      modifiers: [{ optionId: 'opt-1', groupName: 'Острота', optionName: 'Острый', priceDelta: 50 }],
+      addons: [{ addonId: 'add-1', addonName: 'Соус', price: 30 }],
+    }])
+  })
+
+  it('пробрасывает ошибку rpc', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: new Error('Permission denied') })
+    const sb = { rpc } as unknown as SupabaseClient
+
+    await expect(ordersApi.addItems(sb, 'order-1', [makeItem()])).rejects.toThrow('Permission denied')
   })
 })

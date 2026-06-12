@@ -165,7 +165,9 @@
       :items="form.items"
       :tenant-id="tenantId"
       :readonly="!perms.editItems"
+      :allow-add="perms.addItems"
       @update:items="form.items = $event"
+      @add-item="emit('addItem', $event)"
     />
     <div v-if="itemsError" class="items-error">{{ itemsError }}</div>
 
@@ -234,7 +236,7 @@
 import { ref, computed, watch } from 'vue'
 import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, UiSlider } from '@fastio/ui'
 import { validationRules } from '@fastio/kit'
-import type { Order, DeliveryZone } from '@fastio/shared'
+import type { Order, DeliveryZone, OrderItem } from '@fastio/shared'
 import type { DeliveryInfo } from '../composables/delivery/useOrderDelivery'
 import { findDeliveryZone, useSchedulingSlots, formatPrice } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -273,6 +275,7 @@ type Permissions = {
   editDeliveryType?: boolean
   editAddress?: boolean
   editItems?: boolean
+  addItems?: boolean
   editDeliveryFee?: boolean
   editPayment?: boolean
   editBranch?: boolean
@@ -315,6 +318,7 @@ const emit = defineEmits<{
   'zone-detected': [zone: DeliveryZone | null, outsideZones: boolean, coords: [number, number] | null]
   'update:branchId': [value: string | null]
   'promo-select': [value: string | null]
+  'addItem': [item: OrderItem]
 }>()
 
 const selectedBranchId = computed({
@@ -377,6 +381,7 @@ const perms = computed(() => ({
   editDeliveryType: props.permissions.editDeliveryType ?? true,
   editAddress: props.permissions.editAddress ?? true,
   editItems: props.permissions.editItems ?? true,
+  addItems: props.permissions.addItems ?? false,
   editDeliveryFee: props.permissions.editDeliveryFee ?? true,
   editPayment: props.permissions.editPayment ?? true,
   editBranch: props.permissions.editBranch ?? true,

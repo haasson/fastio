@@ -43,7 +43,7 @@
       </DishItemRow>
     </ul>
 
-    <div v-if="!readonly" class="add-dish-row">
+    <div v-if="!readonly || allowAdd" class="add-dish-row">
       <UiButton
         type="primary"
         size="small"
@@ -83,10 +83,15 @@ const props = defineProps<{
   items: OrderItem[]
   tenantId: string
   readonly?: boolean
+  // Режим дозаказа: секция остаётся readonly (существующие позиции залочены),
+  // но кнопка «Добавить» доступна и новые позиции уходят наружу через emit('addItem'),
+  // а не мутируют in-memory список (родитель дёргает RPC сразу).
+  allowAdd?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:items': [items: OrderItem[]]
+  'addItem': [item: OrderItem]
 }>()
 
 const { confirm } = useConfirm()
@@ -168,6 +173,15 @@ const onPickerSelect = (result: DishPickerResult) => {
     addedBy: null,
     confirmedBy: null,
     status: 'pending',
+  }
+
+  // Режим дозаказа в принятый заказ: не мутируем залоченный список, а отдаём
+  // позицию родителю — он вызовет RPC add_items_to_order напрямую.
+  if (props.readonly && props.allowAdd) {
+    emit('addItem', item)
+    closeAddDishModal()
+
+    return
   }
 
   if (isEdit) {

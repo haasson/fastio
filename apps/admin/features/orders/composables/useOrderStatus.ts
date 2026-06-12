@@ -48,6 +48,7 @@ export const useOrderStatus = (
       editDeliveryType: g === 'new',
       editAddress: g === 'new',
       editItems: g === 'new',
+      addItems: g === 'in_progress', // append-only дозаказ в принятый заказ
       editDeliveryFee: g === 'new' || g === 'in_progress',
       editPayment: g === 'new' || g === 'in_progress',
       editBranch: g === 'new',

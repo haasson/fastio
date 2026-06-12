@@ -508,6 +508,35 @@ export const ordersApi = {
     }
   },
 
+  // Append-only дозаказ блюд в принятый (in_progress) заказ доставки/самовывоза.
+  // RPC add_items_to_order дописывает позиции + точечно наполняет кухню на новых
+  // строках. Существующие позиции не трогаются (полная замена через update для
+  // не-new намеренно отключена — иначе DELETE+reinsert уничтожил бы kitchen_queue).
+  async addItems(sb: SupabaseClient, orderId: string, items: OrderItem[]): Promise<void> {
+    const payload = items.map((i) => ({
+      dish_name: i.dishName,
+      price: i.price,
+      quantity: i.quantity,
+      dish_id: i.dishId,
+      combo_id: i.comboId,
+      combo_items: i.comboItems,
+      category_name: i.categoryName,
+      removed_ingredients: i.removedIngredients,
+      modifiers: i.modifiers,
+      addons: i.addons,
+    }))
+
+    const { error } = await sb.rpc('add_items_to_order', {
+      p_order_id: orderId,
+      p_items_json: payload,
+    })
+
+    if (error) {
+      reportError(error, { context: 'orders.addItems', orderId })
+      throw error
+    }
+  },
+
   async updateStatus(sb: SupabaseClient, orderId: string, status: string) {
     // PREPROD-144: переход в группу cancelled должен атомарно откатывать
     // used_count промокода — иначе клиент не сможет реюзнуть код после

@@ -42,6 +42,7 @@
             @promo-select="onPromoSelect"
             @update:branch-id="selectedBranchId = $event"
             @zone-detected="onZoneDetected"
+            @add-item="onAddItem"
           />
 
           <div v-if="isEdit && order?.comment" class="comment-block">
@@ -84,8 +85,10 @@ import { ref, reactive, computed, watch } from 'vue'
 import {
   UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
 } from '@fastio/ui'
-import type { Order } from '@fastio/shared'
+import type { Order, OrderItem } from '@fastio/shared'
 import { getItemUnitPrice, formatPhone, normalizePhone, addDaysToDateStr, localDateTimeToUtcIso, utcIsoToLocalDateTime } from '@fastio/shared'
+import { reportError } from '@fastio/shared/observability'
+import { useConfirm } from '@fastio/kit'
 import { storeToRefs } from 'pinia'
 import { useDatabase } from '~/shared/data/useDatabase'
 import { STATUS_GROUP_TAG_TYPES } from '~/config/retail/order-status-groups'
@@ -116,7 +119,8 @@ const emit = defineEmits<{
 }>()
 
 const api = useDatabase()
-const { logSaveEvents } = useOrderEventLogger()
+const { confirm } = useConfirm()
+const { logSaveEvents, logItemsAdded } = useOrderEventLogger()
 const { statuses } = storeToRefs(useOrderStatusesStore())
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
@@ -333,6 +337,46 @@ const save = async (): Promise<boolean | void> => {
   } finally {
     saving.value = false
   }
+}
+
+// ─── Дозаказ блюда в принятый заказ (append-only) ───────────────────────────────
+// Существующие позиции залочены (см. C4 в save). Новая позиция уходит через RPC
+// add_items_to_order: дописывается + получает отдельный кухонный тикет, если заказ
+// уже уходил на кухню. In-memory replace тут не используется намеренно.
+
+const onAddItem = async (item: OrderItem) => {
+  const order = props.order
+
+  if (!order) return
+
+  // Предупреждение: заказ уже на кухне — новая позиция уйдёт повару отдельным тикетом.
+  if (order.kitchenQueuedAt && gate.kitchen.value.enabled) {
+    const ok = await confirm({
+      title: 'Заказ уже на кухне',
+      message: 'Новая позиция уйдёт повару отдельным тикетом. Продолжить?',
+      confirmText: 'Добавить',
+      confirmType: 'warning',
+    })
+
+    if (ok !== true) return
+  }
+
+  try {
+    await api.orders.addItems(order.id, [item])
+  } catch (err) {
+    reportError(err, { context: 'OrderContent.onAddItem', orderId: order.id })
+
+    return
+  }
+
+  logItemsAdded(order, [item])
+
+  // Перезагружаем заказ целиком (пересчитанные суммы + новая позиция с server id).
+  // Паттерн как у save(): emit('saved', updated) → родитель обновит props.order,
+  // watch пересоберёт форму.
+  const updated = await api.orders.getById(order.id)
+
+  if (updated) emit('saved', updated)
 }
 
 defineExpose({ save, saving, isEdit })

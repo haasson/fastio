@@ -76,5 +76,21 @@ export const useOrderEventLogger = () => {
     }
   }
 
-  return { logSaveEvents }
+  // Дозаказ блюд в принятый заказ (append-only): отдельное событие таймлайна,
+  // т.к. items_updated несёт before/after-дифф, а тут добавление без замены.
+  const logItemsAdded = (order: Order, items: Order['items']) => {
+    if (!authStore.user) return
+
+    api.orderEvents.add({
+      orderId: order.id,
+      tenantId: order.tenantId,
+      actorId: authStore.user.id,
+      actorName: authStore.user.user_metadata?.full_name || authStore.user.email || null,
+      actorRole: tenantStore.currentRoleName ?? null,
+      eventType: 'items_added',
+      meta: { items: items.map((i) => ({ name: i.dishName, quantity: i.quantity })) },
+    }).catch(reportError)
+  }
+
+  return { logSaveEvents, logItemsAdded }
 }
