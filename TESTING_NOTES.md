@@ -187,6 +187,10 @@
 
 ### 3.12 Внешний вид
 
+🐛→🔧 **[P1] Дубль карточек на мобилке: «горизонтальные карточки» + «текст на блюде (overlay)» (2026-06-12).** При `mobileDishCard='horizontal'` И `dishDescriptionMode='overlay'` на мобилке каждое блюдо рисовалось ДВАЖДЫ — компактная карточка + вертикальная overlay-карточка рядом.
+**Root cause** (`SfProductCard.vue`): рендерятся две `FsCard` — компактная (`v-if="mobileCompact"`, класс `.mobile-compact`, видна <767px) и вертикальная (всегда, класс `.hide-mobile` когда mobileCompact, прячется <767px). Классы вешаются на корень FsCard, у которого свой `.card-root{display:flex}`. Специфичность РАВНАЯ: `.hide-mobile[data-v-sf]` (0,2,0) vs `.card-root[data-v-fscard]` (0,2,0) — корень FsCard несёт оба scope-атрибута. При равенстве решает порядок чанков; `FsCard.css` грузится позже `MenuSection.css` → `display:flex` перебивал `display:none` → вертикальная карточка протекала на мобилку = дубль. Overlay не корень бага (компактная карточка overlay не рисует — другой layout), но делал дубль визуально очевидным.
+**Fix:** усилил селекторы `.product-card-root.mobile-compact` / `.product-card-root.hide-mobile` (0,3,0) → выше FsCard, порядок чанков больше не решает. Один фикс покрывает блюда, комбо И услуги (всё через `SfProductCard`). Линт+стайллинт чистые. ⚠️ storefront-ребилд. 💡 Гипотеза юзера «игнорить overlay при horizontal» — лечила симптом не там; компактная карточка overlay и так игнорит, проблема была в протечке второй карточки.
+
 - ✅ [HP] SEO meta title/description — **PASS** (2026-06-07)
 - ✅ [HP] favicon + ogImage — **PASS** (2026-06-07)
 - ✅ [HP] robots: noindex → `<meta name="robots" content="noindex">` — **PASS** (2026-06-07)

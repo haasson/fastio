@@ -297,6 +297,7 @@
 - [x] [EC] [P2] Длинное название не ломает сетку (десктоп + mobile)
 - [ ] [HP] В `/appearance/sections` → `pageSettings.menu.dishDescriptionMode = 'overlay'` → описание «Веган» накладывается поверх фото
 - [ ] [HP] `mobileDishCard = 'horizontal'` → mobile preview: карточки в строчку с фото слева
+- [x] 🐛→🔧 [P1] **overlay + horizontal вместе** → на мобилке блюдо рендерилось дважды (компактная + overlay-карточка). Root cause — ничейная специфичность `.hide-mobile` vs FsCard `.card-root`, вертикальная карточка протекала на мобилку. Пофикшено (специфичность), покрывает блюда/комбо/услуги. См. TESTING_NOTES 3.12. Ждёт деплоя.
 - [ ] [NEG] [P1] Фото >20MB → client-side ошибка до upload (ImageUploadModal)
 - [x] [NEG] [P1] Файл неверного MIME (например .txt переименованный в .jpg) → ошибка валидации
 - [x] [HP] Фото ≤20MB правильного MIME → загружается успешно
