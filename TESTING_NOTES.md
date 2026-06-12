@@ -609,6 +609,14 @@ Fix: убрал `/no-access` из раннего return; добавил `if (mem
 - 🔴→🔧 **[P1] BUG: `business_type`/`menu_style` были изменяемы через API (исправлено миграцией 334).** План обещал «нельзя сменить (RLS + триггеры)», но: RLS-политика `tenants: settings.edit can update` — qual `has_permission(id,'settings.edit')`, **`with_check` пустой**; **нет колоночных GRANT** (у authenticated/anon есть UPDATE на оба поля); **нет триггера-гарда**. RLS колонки не ограничивает → любой держатель `settings.edit` (owner/Администратор) мог `supabase.from('tenants').update({business_type:'services'})`. Эмпирически подтверждено (rolled-back): UPDATE retail→services прошёл `UPDATE 1`. Пробивает инвариант «no hybrid tenants», смена даже не аудировалась (`business_type` нет в WHEN `audit_tenants`).
   **Фикс (миграция 334, `prevent_tenant_type_change`):** BEFORE UPDATE триггер блокирует смену `business_type`/`menu_style` если `OLD.onboarding_completed` (онбординг ставит свободно — `menu_style` легитимно меняется food→catalog; завершённый тенант заперт). `service_role` — bypass (backoffice-коррекция), по аналогии с `prevent_billing_self_update`. TDD-проверка на проде (rolled-back), 5 кейсов: business_type-блок ✅, menu_style-блок ✅, name-апдейт не задет ✅, онбординг разрешает ✅, service_role bypass ✅. ⚠️ деплоится на прод через GH Actions при push.
 
+### 3.20 Дашборд — персист (2026-06-12, T1)
+
+- ✅ Период (7→30) переживает F5; филиал Парк переживает F5; switchTenant сбрасывает чужой `dashboard:branch` без ошибок. Guard в коде: `RetailDashboard.vue:125-129` `watch(branches, immediate)` сбрасывает ключ не из активного списка; стор разделяет `branches`/`archivedBranches` → архив тоже сбрасывает. **3.20 PASS, T1 закрыт целиком.**
+
+🐛 **[P2] Flash-of-warning: баннер «Клиенты не могут оформить заказ» мигает на КАЖДОЙ перезагрузке** (2026-06-12). Сверху мелькает красный баннер `OrderBlockersBanner.vue` и сразу исчезает.
+**Root cause:** `useOrderBlockers.ts` вычисляет `blockers` от сторов `tenant`/`zones` **без loading-гарда**. На reload данные грузятся async → до их прихода `zones.value=[]` (при `deliveryMode='zones'` → ложный блокер «Нет активных зон доставки») и/или `tenant.modules` пустой (→ ложный «Не включён ни один способ») → баннер показывается → данные дозагрузились → условие схлопывается → баннер исчезает. Ложноположительные блокеры на незагруженном стейте.
+**Фикс:** добавить ready/loading-гард — `blockers` возвращает `[]` пока tenant и zones не загружены (например, флаг `tenantStore.loaded` + `deliveryZoneStore.loading`), либо не рендерить баннер до готовности init-данных. ⚠️ admin-ребилд.
+
 ## T2 — «Магазин Зерно» (retail / catalog / start)
 
 ---
