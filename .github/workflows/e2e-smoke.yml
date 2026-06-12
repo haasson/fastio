@@ -44,6 +44,12 @@ jobs:
         # seed грузим явно следующим шагом.
         run: supabase start
 
+      - name: wait for PostgREST
+        # supabase start ждёт Postgres, но PostgREST (REST-слой) может подниматься
+        # чуть позже. Storefront ходит в БД через supabase-js → PostgREST, а не psql.
+        # Без ожидания первый запрос tenant middleware ловит network error → 503.
+        run: until curl -s http://127.0.0.1:54321/rest/v1/ -o /dev/null; do sleep 2; done
+
       - name: export local Supabase env for apps
         # apps/*/.env gitignored → в CI их нет. Берём РЕАЛЬНЫЕ ключи поднятого
         # локального supabase и кладём в $GITHUB_ENV → их подхватят build (бейк в
