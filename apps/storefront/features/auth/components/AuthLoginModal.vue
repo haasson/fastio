@@ -12,7 +12,7 @@
       </template>
 
       <template v-else>
-        <FsText color="secondary">
+        <FsText variant="body-sm" color="secondary">
           Для входа в аккаунт используйте Telegram — это безопасно и не требует регистрации.
         </FsText>
 

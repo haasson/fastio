@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <FsIconButton v-else size="small" aria-label="Войти" @click="authStore.showLogin()">
+    <FsIconButton v-else-if="canLogin" size="small" aria-label="Войти" @click="authStore.showLogin()">
       <UserRound :size="18" :stroke-width="1.7" />
     </FsIconButton>
   </div>
@@ -35,11 +35,13 @@ import { UserRound } from 'lucide-vue-next'
 import { FsIconButton } from '@fastio/public-ui'
 import { useAuthStore } from '~/features/auth'
 import { useConfirm } from '~/shared/composables/useConfirm'
+import useCanLogin from '~/shared/composables/useCanLogin'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const { isAuthenticated, customerName, customerEmail } = storeToRefs(authStore)
 const { confirm } = useConfirm()
+const { canLogin } = useCanLogin()
 
 const open = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)

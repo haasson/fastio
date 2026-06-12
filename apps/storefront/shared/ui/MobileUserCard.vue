@@ -1,5 +1,5 @@
 <template>
-  <div class="user-card-root">
+  <div v-if="isAuthenticated || canLogin" class="user-card-root">
     <template v-if="isAuthenticated">
       <div class="head">
         <div class="avatar">{{ userInitial }}</div>
@@ -27,6 +27,7 @@ import { storeToRefs } from 'pinia'
 import { UserRound } from 'lucide-vue-next'
 import { useAuthStore } from '~/features/auth'
 import { useConfirm } from '~/shared/composables/useConfirm'
+import useCanLogin from '~/shared/composables/useCanLogin'
 
 const emit = defineEmits<{ close: [] }>()
 
@@ -34,6 +35,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 const { isAuthenticated, customerName, customerEmail } = storeToRefs(authStore)
 const { confirm } = useConfirm()
+const { canLogin } = useCanLogin()
 
 const userInitial = computed(() => {
   const source = customerName.value || customerEmail.value || ''
