@@ -55,6 +55,9 @@ const categoryTabs = computed(() => props.categories.map((c) => ({
   count: itemCounts.value[c.id] ?? 0,
   attrs: { 'data-tour': 'category-tab', 'data-category-type': isAutoCategory(c) ? 'virtual' : (c.type ?? 'regular') },
   ...((c.type !== 'regular' || isAutoCategory(c)) && { type: 'warning' as const }),
+  // Неактивная категория скрыта с витрины — помечаем иконкой, чтобы оператор
+  // видел это прямо в чипах фильтра, не открывая категорию.
+  ...(!c.active && { icon: 'eyeClose' as const }),
 })))
 </script>
 
