@@ -1,7 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { FunctionsHttpError } from '@supabase/supabase-js'
 
-// Маппинг status → user-facing сообщение синхронизирован с edge function `proxy-image`
+// Маппинг status → user-facing сообщение синхронизирован с edge function `proxy-image`.
+// 500/502/504 — сетевой провал загрузки по ссылке (частая причина: западные CDN
+// типа Unsplash/Pixabay дропают коннект с нашего IP). Чинить гео-блок мы не можем,
+// поэтому подсказываем рабочий путь — скачать и загрузить файлом.
+const LINK_FAILED = 'Не удалось загрузить по ссылке. Скачайте картинку и загрузите файлом с компьютера'
+
 function messageForStatus(status: number | undefined): string {
   if (status === 401) return 'Сессия истекла, войдите снова'
   if (status === 403) return 'Загрузка с этого домена недоступна'
@@ -9,9 +14,9 @@ function messageForStatus(status: number | undefined): string {
   if (status === 422) return 'Ссылка не ведёт на изображение'
   if (status === 429) return 'Слишком много запросов, попробуйте через минуту'
   if (status === 503) return 'Сервис временно недоступен, попробуйте позже'
-  if (status === 504) return 'Удалённый сервер не ответил вовремя'
 
-  return 'Не удалось загрузить'
+  // 500 / 502 / 504 и прочее — сетевой провал загрузки по ссылке
+  return LINK_FAILED
 }
 
 export const proxyImageApi = {
@@ -27,10 +32,10 @@ export const proxyImageApi = {
       if (error instanceof FunctionsHttpError) {
         throw new Error(messageForStatus(error.context.status))
       }
-      throw new Error('Не удалось загрузить')
+      throw new Error(LINK_FAILED)
     }
 
-    if (!(data instanceof Blob)) throw new Error('Не удалось загрузить')
+    if (!(data instanceof Blob)) throw new Error(LINK_FAILED)
 
     return data
   },
