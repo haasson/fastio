@@ -88,13 +88,18 @@ jobs:
         # Local-in-CI: webServer (playwright.config) поднимает nuxt preview, supabase-env
         # приходит из $GITHUB_ENV (шаг export выше). SUPABASE_STAGING_URL не задан →
         # globalSetup идёт локальным путём (setup.mjs). Staging dual-path остаётся спящим.
-        # kitchen-flow — RPC/DB (триггеры lifecycle 304/306); invite-flow — edge+RPC
-        # (get-invite/accept-invite, регресс на 3 P0 invite-флоу). Edge поднимает
-        # supabase start ([edge_runtime] enabled=true), ключи консистентны → admin
-        # createUser работает (в отличие от stale локального edge-runtime).
+        # Здесь только ВРЕМЯ-НЕЗАВИСИМЫЕ P0 (RPC/edge, не HTTP-pickup):
+        #   kitchen-flow   — RPC/DB lifecycle очереди (триггеры 304/306);
+        #   invite-flow    — edge+RPC (get-invite/accept-invite, регресс на 3 P0 invite);
+        #   order-lifecycle — RPC update_order_status (цепочка статусов + отмена).
+        # Edge поднимает supabase start ([edge_runtime] enabled=true), ключи консистентны.
+        # order-pricing / promo НЕ здесь: они идут через HTTP POST /api/orders (pickup),
+        # а demo в сиде открыт 12:00–03:00 Krasnoyarsk → на push в произвольное время
+        # суток словили бы 400 «Филиал закрыт» (та же time-fragility, что у order-flow).
+        # Полный набор, включая их, гоняет e2e-nightly (фиксированное время).
         env:
           CI: 'true'
-        run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts kitchen-flow.spec.ts invite-flow.spec.ts
+        run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts kitchen-flow.spec.ts invite-flow.spec.ts order-lifecycle.spec.ts
 
       - name: upload HTML report on failure
         if: failure()
