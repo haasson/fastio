@@ -580,6 +580,21 @@ Fix: убрал `/no-access` из раннего return; добавил `if (mem
 
 🔧 **[P1] Фича: count-ворнинги при выключении структурных модулей (реализовано 2026-06-12, закоммичено `be164fde`).** Раньше `combos/addons/modifiers/customers` выключались молча — юзер не видел, что у него N сущностей станут недоступны. Добавил проходимые `warning` (severity=warning, показ при count>0) в `checkModuleDisable` (`apps/admin/shared/utils/moduleToggleChecks.ts`): combos (`listAllActive`), addons (`list`), modifiers (`list`), customers (новый `shared/data/api/customers.ts` `count()` + биндинг в `useDatabase`). TDD: `moduleToggleChecks.test.ts` +12 кейсов (red→green, 18/18). Lint+typecheck чисто. Для T1 покажет: комбо 1, добавки 5, модификаторы 3, клиенты 1. ⚠️ admin-ребилд. KB при коммите.
 
+### 3.19 Журнал действий (2026-06-12, T1, агентский бэкбон через RPC `journal_events`)
+
+Проверено вызовом `journal_events()` напрямую под разными JWT (`request.jwt.claims` sub/role). Сигнатура (mig 330): `(p_tenant_id, p_branch_id, p_before, p_before_id, p_sources[], p_entity_types[], p_event_types[], p_search, p_limit, p_from, p_to)`.
+
+- ✅ [P0] **Оба источника единым потоком**: order 137 + audit 63 (T1), sort occurred_at desc.
+- ✅ **actor_email live-join** (mig 330) работает; **системное событие без `auth.uid`** (моё psql-восстановление модулей) → `actor_email=NULL`, строка не падает (EC P1).
+- ✅ **Поиск — экранирование LIKE**: `p_search='%'` → 0 строк (литеральный %), не 200. Спецсимволы не ломают.
+- ✅ **Скоуп по филиалу**: `p_branch_id=Центр` → Центр 111 + общие (`branch_id IS NULL`) 67, события Парка не видны.
+- ✅ [P0] **Период**: `p_from` инклюзив, `p_to` **эксклюзив** — newest на границе `p_to` исключён, на `p_from` остаётся.
+- ✅ [P0] **Гард доступа**: Повар (нет `audit_log.view`) → `Permission denied` (42501). Owner и **Администратор** читают (Администратор: 50 строк — `audit_log.view=true` через backfill mig 322 по критерию `roles.manage`).
+- ✅ [P1] **Cross-tenant**: T1-owner → `journal_events(T2)` → `Permission denied` (не член T2), события чужого тенанта не утекают.
+- 📝 Гоча для будущих проверок: `tenant_roles.permissions` — jsonb-**объект** (`{"audit_log.view":true}`), не массив. Проверять `(permissions->>'audit_log.view')::boolean`, НЕ `@> '[...]'` (даёт ложный негатив).
+
+⏳ **Осталось 👤 (браузер):** визуал 5 колонок, маркер-точки created/deleted vs тихий updated, дельта «было→стало» без обрезки, длинный email одной строкой с тултипом, легаси-экшены читаемой меткой, мультиселект-фильтры по действию/объекту, daterange close-on-select, persist фильтров (F5 + switchTenant), infinite-scroll >50, скрытие пункта навигации у роли без права.
+
 ## T2 — «Магазин Зерно» (retail / catalog / start)
 
 ---
