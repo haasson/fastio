@@ -872,9 +872,9 @@
 
 ### 3.18 Что НЕ должно работать на T1 (sanity)
 
-- [ ] Сменить `businessType` через UI / прямой API patch → запрещено (RLS + триггеры)
-- [ ] Сменить `menuStyle` → запрещено
-- [ ] Через подмену запросов выдать себе `admin` permission на чужом тенанте — невозможно
+- [x] Сменить `businessType` через прямой API patch → 🔴 БЫЛО НЕ запрещено (UPDATE проходил под settings.edit) → 🔧 ФИКС: триггер `prevent_tenant_type_change` (миграция 334). См. TESTING_NOTES 3.18
+- [x] Сменить `menuStyle` → 🔴 то же → 🔧 закрыто той же миграцией 334 (иммутабельно после онбординга)
+- [x] Через подмену запросов выдать себе `admin` на чужом тенанте → ✅ невозможно: INSERT в `tenant_members` чужого тенанта → «violates row-level security policy»
 
 ### 3.19 Журнал действий (`/audit-log`, фича 2026-06)
 
