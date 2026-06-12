@@ -385,14 +385,19 @@ function onStepperUpdate(newVal: number) {
   @include lg { min-height: 44px; }
 }
 
-// Mobile compact
-.mobile-compact {
+// Mobile compact.
+// ВАЖНО: селекторы усилены `.product-card-root&` намеренно. Класс вешается на корень
+// FsCard, у которого свой `.card-root{display:flex}` с равной специфичностью (класс+scope-
+// атрибут). При равенстве побеждал порядок загрузки чанков (FsCard.css грузится позже) →
+// `display:flex` перебивал `display:none`, и вертикальная карточка протекала на мобилку
+// рядом с компактной (дубль). Двойной класс поднимает специфичность выше FsCard.
+.product-card-root.mobile-compact {
   display: none;
   max-width: none;
   @media (max-width: 767px) { display: flex; }
 }
 
-.hide-mobile {
+.product-card-root.hide-mobile {
   @media (max-width: 767px) { display: none; }
 }
 
