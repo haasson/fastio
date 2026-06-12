@@ -6,6 +6,11 @@
         <UiSwitch :model-value="active" @update:model-value="$emit('update:active', $event)" />
       </div>
 
+      <div v-if="entity === 'dish' && kitchenEnabled" class="toggle-row">
+        <span class="label">Готовить на кухне</span>
+        <UiSwitch :model-value="requiresKitchen" @update:model-value="$emit('update:requiresKitchen', $event)" />
+      </div>
+
       <div v-if="active && branchOptions.length > 1" class="branches-block">
         <div class="branches-label">Филиалы</div>
         <div
@@ -20,11 +25,6 @@
             @update:model-value="branchToggle.toggle(b.value, $event)"
           />
         </div>
-      </div>
-
-      <div v-if="entity === 'dish' && kitchenEnabled" class="toggle-row">
-        <span class="label">Готовить на кухне</span>
-        <UiSwitch :model-value="requiresKitchen" @update:model-value="$emit('update:requiresKitchen', $event)" />
       </div>
     </div>
   </UiCollapseItem>
@@ -69,12 +69,15 @@ const branchToggle = useBranchToggle(
 .branches-block {
   display: flex;
   flex-direction: column;
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
 .branches-label {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  padding: var(--space-12) 0 var(--space-4);
+  padding: var(--space-8) 0 var(--space-4);
 }
 
 .branch-toggle-row {
@@ -83,6 +86,10 @@ const branchToggle = useBranchToggle(
   justify-content: space-between;
   padding: var(--space-8) 0;
   border-top: 1px solid var(--color-border);
+
+  &:first-of-type {
+    border-top: none;
+  }
 }
 
 .toggle-row {
