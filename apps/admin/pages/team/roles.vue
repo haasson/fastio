@@ -45,6 +45,7 @@
 <script setup lang="ts">
 import { UiCard, UiText, UiButton, UiSkeleton, UiEmpty, UiPageHeader, useConfirm, useMessage, UiRowActions } from '@fastio/ui'
 import { ref } from 'vue'
+import { pluralize } from '@fastio/shared'
 import type { TenantCustomRole, RolePermissions } from '@fastio/shared'
 import RoleEditModal from '~/features/settings/components/RoleEditModal.vue'
 import { useTenantStore } from '~/shared/stores/tenant'
@@ -86,7 +87,7 @@ const handleDelete = async (role: TenantCustomRole) => {
   const count = await api.roles.countMembers(role.id)
 
   if (count > 0) {
-    message.warning(`Нельзя удалить роль — она назначена ${count} участникам`)
+    message.warning(`Нельзя удалить роль — она назначена ${count} ${pluralize(count, 'участнику', 'участникам', 'участникам')}`)
 
     return
   }

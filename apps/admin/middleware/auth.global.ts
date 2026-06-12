@@ -29,8 +29,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/set-password')
   }
 
-  // Эти страницы обрабатывают авторизацию самостоятельно
-  if (to.path === '/invite' || to.path === '/set-password' || to.path === '/no-access') return
+  // Эти страницы обрабатывают авторизацию самостоятельно.
+  // /no-access сюда НЕ входит намеренно: иначе при восстановлении доступа
+  // (разблокировали участника / вернули в тенант) рефреш /no-access выходил бы
+  // раньше tenantStore.init() и юзер навсегда застревал на странице запрета.
+  if (to.path === '/invite' || to.path === '/set-password') return
 
   // Публичные документы — доступны без авторизации
   if (to.path.startsWith('/legal/')) return
@@ -62,6 +65,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // Юзер без единого тенанта — выкидываем
     if (tenantStore.memberships.length === 0 && to.path !== '/no-access') {
       return navigateTo('/no-access')
+    }
+
+    // Доступ восстановлен (разблокировали участника / вернули в тенант) — уводим
+    // обратно в админку, иначе юзер залипает на /no-access после init.
+    if (tenantStore.memberships.length > 0 && to.path === '/no-access') {
+      return navigateTo('/')
     }
 
     // Suspended: доступны только /suspended, /account/* (оплата) и /help/* (помощь
