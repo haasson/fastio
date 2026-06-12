@@ -10,8 +10,10 @@
       />
       <UiInput
         v-model="form.phone"
+        name="phone"
         label="Телефон"
         placeholder="+7 (900) 000-00-00"
+        :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
       />
       <UiInput v-model="form.email" label="Email" placeholder="info@vasya-pizza.ru" />
       <UiSelect
@@ -38,7 +40,13 @@
       <UiInput v-model="form.instagram" label="Instagram" placeholder="@vasya_pizza" />
       <UiInput v-model="form.vk" label="ВКонтакте" placeholder="vk.com/vasya_pizza" />
       <UiInput v-model="form.telegram" label="Telegram" placeholder="@vasya_pizza" />
-      <UiInput v-model="form.whatsapp" label="WhatsApp" placeholder="+7 (999) 000-00-00" />
+      <UiInput
+        v-model="form.whatsapp"
+        name="whatsapp"
+        label="WhatsApp"
+        placeholder="+7 (999) 000-00-00"
+        :rules="[{ type: 'phone', message: 'Введите корректный телефон' }]"
+      />
       <UiInput v-model="form.max" label="MAX" placeholder="@vasya_pizza" />
     </UiFormSection>
   </UiForm>
