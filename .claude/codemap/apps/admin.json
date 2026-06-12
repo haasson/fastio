@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-11T05:34:38.154Z",
+  "generated_at": "2026-06-12T11:59:19.592Z",
   "stats": {
     "files": 85,
     "pages": 0,
@@ -288,8 +288,8 @@
     },
     "middleware/auth.global.ts": {
       "kind": "ts",
-      "hash": "f31f90c1551b",
-      "purpose": "Глобальный auth-миддлвар: invite/recovery flow, проверка сессии, tenant.init(), гейт suspended (доступны только /suspended, /account, /help)",
+      "hash": "53f419dc91ad",
+      "purpose": "Глобальный route-middleware: ждёт инициализацию авторизации, редиректит неавторизованных на /login",
       "symbols": [
         {
           "name": "default",
@@ -681,8 +681,8 @@
     },
     "shared/plan/useGate.retail.routes.ts": {
       "kind": "ts",
-      "hash": "7303ec3adc36",
-      "purpose": "Карта роутов retail-вертикали → gate-ключи (под-роуты и корни секций)",
+      "hash": "e838c6bc0863",
+      "purpose": "Карта роут→retail-гейт (под-роуты и корни) для реестра useGate.routes",
       "symbols": [
         {
           "name": "RETAIL_ROUTE_SUBS",
@@ -750,8 +750,8 @@
     },
     "shared/plan/useGate.services.routes.ts": {
       "kind": "ts",
-      "hash": "4ca512d605b3",
-      "purpose": "Карта роут→ServicesGateKey: SUBS (под-роуты) и ROOTS (корни), используется агрегатором useGate.routes для services-вертикали",
+      "hash": "93449e38e6c1",
+      "purpose": "Карта роут→services-гейт (под-роуты и корни) для реестра useGate.routes",
       "symbols": [
         {
           "name": "SERVICES_ROUTE_SUBS",
@@ -819,8 +819,8 @@
     },
     "shared/plan/useGate.ts": {
       "kind": "ts",
-      "hash": "854ca6c22a0d",
-      "purpose": "Центральный контроль доступа: собирает GateRegistry (план + модуль + права + suspension) для всех разделов",
+      "hash": "d6b9a1fe4e2f",
+      "purpose": "Единая точка проверки доступа к фичам админки — агрегатор гейтов обеих вертикалей, возвращает GateResult",
       "symbols": [
         {
           "name": "useGate",
@@ -1203,8 +1203,8 @@
     },
     "shared/ui/composables/useEditableForm.ts": {
       "kind": "ts",
-      "hash": "10fc44de9767",
-      "purpose": "Composable для inline-edit форм: source→form mapping, dirty-tracking, submit/reset, success/error-toast; cancelSubmit() для отмены без error-сообщения",
+      "hash": "9f1e1e42aff0",
+      "purpose": "Композабл редактируемой формы: dirty-стейт, submit/reset поверх useFormDirty",
       "symbols": [
         {
           "name": "FormHandle",
@@ -1407,8 +1407,8 @@
     },
     "shared/utils/moduleToggleChecks.ts": {
       "kind": "ts",
-      "hash": "7db51d810af0",
-      "purpose": "Блокеры/предупреждения при выключении модуля тенанта (активные заказы, брони, столы, записи, роли, баннеры)",
+      "hash": "c7100b1cb003",
+      "purpose": "checkModuleDisable: блокеры и ворнинги при выключении модуля по активным данным тенанта",
       "symbols": [
         {
           "name": "ToggleIssue",

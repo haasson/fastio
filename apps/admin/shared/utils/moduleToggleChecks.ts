@@ -163,6 +163,50 @@ export const checkModuleDisable = async (
     }
   }
 
+  if (moduleKey === 'combos') {
+    const count = (await api.combos.listAllActive(tenantId)).length
+
+    if (count > 0) {
+      issues.push({
+        severity: 'warning',
+        message: `Есть активные комбо (${count}). После отключения модуля они пропадут с витрины и станут недоступны для заказа.`,
+      })
+    }
+  }
+
+  if (moduleKey === 'addons') {
+    const count = (await api.addons.list(tenantId)).length
+
+    if (count > 0) {
+      issues.push({
+        severity: 'warning',
+        message: `Есть добавки (${count}). После отключения модуля они пропадут из карточек товаров на витрине.`,
+      })
+    }
+  }
+
+  if (moduleKey === 'modifiers') {
+    const count = (await api.modifiers.list(tenantId)).length
+
+    if (count > 0) {
+      issues.push({
+        severity: 'warning',
+        message: `Есть группы модификаторов (${count}). После отключения модуля они пропадут из карточек товаров на витрине.`,
+      })
+    }
+  }
+
+  if (moduleKey === 'customers') {
+    const count = await api.customers.count(tenantId)
+
+    if (count > 0) {
+      issues.push({
+        severity: 'warning',
+        message: `Зарегистрировано клиентов (${count}). После отключения модуля они потеряют доступ к личному кабинету на витрине.`,
+      })
+    }
+  }
+
   // Site layout warnings for any module
   const siteUsage = findDependentFeatures(moduleKey, layout)
 

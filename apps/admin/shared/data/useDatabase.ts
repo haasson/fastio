@@ -6,6 +6,7 @@ import { useNuxtApp } from '#imports'
 // useDatabase.ts — в AGGREGATOR_FILES (см. eslint.config.mjs), поэтому
 // no-restricted-imports на deep-path сюда не применяется.
 import { tenantsApi } from '~/shared/data/api/tenants'
+import { customersApi } from '~/shared/data/api/customers'
 import { functionsApi } from '~/shared/data/api/functions'
 import { proxyImageApi } from '~/shared/data/api/proxy-image'
 import { realtimeApi } from '~/shared/data/api/realtime'
@@ -115,5 +116,6 @@ export const useDatabase = () => {
     resources: bindAll(resourcesApi, sb),
     resourceUnavailability: bindAll(resourceUnavailabilityApi, sb),
     scheduleTemplates: bindAll(scheduleTemplatesApi, sb),
+    customers: bindAll(customersApi, sb),
   }
 }
