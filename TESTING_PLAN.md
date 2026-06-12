@@ -742,7 +742,7 @@
 
 #### 3.14.1 Кастомные роли (модуль `customRoles`)
 
-- [ ] Включи `customRoles` в `/settings/modules`
+- [x] Включи `customRoles` в `/settings/modules` (прод ✓, flag=true)
 
 **Пресеты ролей** (новое в commit `3b127db9`):
 - [x] [HP] Создай новую роль → в форме видны чипы пресетов: Повар, Сборщик, Курьер, Официант/Хостес, Кассир (прод ✓)
@@ -758,34 +758,34 @@
 - [x] [HP] Войди как Наблюдатель → `/kitchen/queue` видна, но кнопки «Взять» / «Готово» disabled/отсутствуют (прод ✓: кнопок нет)
 
 **Остальные кастомные роли:**
-- [ ] `/team/roles` — создай роли (отдельных прав `reservations.*` нет — брони под `tables.*`):
+- [~] `/team/roles` — создай роли (отдельных прав `reservations.*` нет — брони под `tables.*`): _covered: механика создания ролей проверена (Повар/Наблюдатель/Хостес/Менеджер-Парка) + переподтверждается в 5.14 (T3)_
   - **«Менеджер»**: orders.view+edit, kitchen.view, tables.view+manage, **БЕЗ** settings.edit и **БЕЗ** kitchen.cook
   - **«Хостес»**: tables.view+manage, orders.view
-- [ ] `/team/members` — пригласить: `manager+t1@`, `barista+t1@`, `hostess+t1@`
-- [ ] Приглашения уходят через Edge Function `invite-member`. В Inbucket должно быть письмо со ссылкой
-- [ ] [HP] Перейди по ссылке в incognito #2 → `/invite` страница → принять → участник в команде
-- [ ] [HP] Войди как Менеджер: видит /orders, /kitchen (read-only без cook), Столы. Не видит /settings.
+- [~] `/team/members` — пригласить: `manager+t1@`, `barista+t1@`, `hostess+t1@` _covered: инвайт/accept проверены (5 аккаунтов засижено через invite-member+accept-invite)_
+- [x] Приглашения уходят через Edge Function `invite-member`. В Inbucket должно быть письмо со ссылкой (прод ✓: реальный инвайт Сотрудника — письмо пришло)
+- [x] [HP] Перейди по ссылке в incognito #2 → `/invite` страница → принять → участник в команде (прод ✓: 737 после фикса 3 багов)
+- [~] [HP] Войди как Менеджер: видит /orders, /kitchen (read-only без cook), Столы. Не видит /settings. _covered: nav-гейтинг по правам доказан 5× (Сотрудник/Хостес/Наблюдатель/Менеджер-Парка) + 5.14 на T3_
 - [x] [HP] [P0] **settings.edit vs tables.manage split**: Хостес (`tables.manage` без `settings.edit`) → видит табы «Столы/Схема/Бронирование», но **НЕ** «Настройки»; `/tables/settings` → no-access (прод ✓)
-- [ ] [NEG] [P0] Через прямой URL на закрытый раздел → редирект / no-access
-- [ ] **Branch-scoped role**: создай роль «Менеджер Парка» с `branchIds = [Парк]`
-  - [ ] Пригласи `manager-park+t1@`
-  - [ ] Войди — в `/orders` видны только заказы Парка
+- [x] [NEG] [P0] Через прямой URL на закрытый раздел → редирект / no-access (прод ✓: 739 Сотрудник /menu·/team·/settings + 768 Хостес /tables/settings)
+- [x] **Branch-scoped role**: создай роль «Менеджер Парка» с `branchIds = [Парк]` (прод ✓, branch_ids на membership)
+  - [x] Пригласи `manager-park+t1@` (засижен)
+  - [x] Войди — в `/orders` видны только заказы Парка (прод ✓: 4 заказа Парка, селектора филиала нет, Центр не протекает)
 - [x] [EC] [P1] Удалить роль у которой есть участники → блокер / downgrade (прод ✓: блокер на «Повар» с участником)
 - [x] [EC] [P1] **Заблокировать участника** — `blockedUntil` = +1 час → попытка входа → запрет (прод ✓; ⚠️ плюралайз в уведомлении сломан — см. TESTING_NOTES)
 - [x] [EC] [P1] Сними блок → доступ восстанавливается (прод ✓)
 
 **kitchen_served в таймлайне заказа** (новое в commit `3b127db9`):
 > После «Собрано» на экране сборки пишется событие `kitchen_served` с именем сборщика.
-- [ ] Создай заказ → переведи в «Принят» → повар забрал на кухне → отметил готовым → сборщик нажал «Собрано»
-- [ ] Открой заказ в `/orders` → таймлайн → видна строка «[Имя] собрал заказ»
+- [ ] [⚠ ВЫНЕСЕНО — это кухонная фича, не RBAC; проверить при ретесте кухни] Создай заказ → переведи в «Принят» → повар забрал на кухне → отметил готовым → сборщик нажал «Собрано»
+- [ ] [⚠ ВЫНЕСЕНО — кухонная фича, не RBAC] Открой заказ в `/orders` → таймлайн → видна строка «[Имя] собрал заказ»
 
 ### 3.15 Настройки (`/settings/{modules,contacts,notifications,legal}`)
 
 #### 3.15.1 Контакты (`/settings/contacts`)
 
-- [ ] Смени телефон/email/адрес → отображается на витрине
-- [ ] Загрузи логотип → виден в хедере витрины
-- [ ] Настрой `workingHoursSchedule` → влияет на storefront «открыто/закрыто», бронирование slots
+- [~] Смени телефон/email/адрес → отображается на витрине — **адрес N/A** (уехал в филиалы при `branches=on`); 🐛→🔧 маска телефона/WhatsApp была сломана (фикс применён, ждёт деплоя+ретеста); email/телефон на витрине — проверить после деплоя
+- [ ] Загрузи логотип → виден в хедере витрины *(лого = `contacts.logo`, на этой странице инпута нет — загрузка в `/appearance`, проверить там)*
+- [ ] Настрой `workingHoursSchedule` → влияет на storefront «открыто/закрыто», бронирование slots *(⚠️ при `branches=on` тенант-часы перекрываются филиальными — см. техдолг «разорванная архитектура часов»)*
 
 #### 3.15.2 Уведомления (`/settings/notifications`)
 
@@ -813,19 +813,21 @@
 
 #### 3.15.3 Юридические (`/settings/legal`)
 
-- [ ] Заполни `legalInfo`: `legalName`, `inn`, `ogrn`, `legalAddress`, `privacyEmail`
-- [ ] [HP] `isLegalInfoComplete` → true (нужно для прохождения определённых onboarding-checks)
+- [x] Заполни `legalInfo`: `legalName`, `inn`, `ogrn`, `legalAddress`, `privacyEmail` — боевые данные записаны на проде (`ООО «Кафе Луна»`, ИНН 7701234567 и т.д.)
+- [x] [HP] `isLegalInfoComplete` → true
 
 #### Legal compliance gate (feat(storefront-auth-compliance))
 
-- [ ] [HP] [P1] Заполни все поля legalInfo → `isLegalInfoComplete = true` → TG Login на витрине доступен
-- [ ] [NEG] [P1] Очисти `legalName` / `inn` → `isLegalInfoComplete = false` → TG Login заблокирован, показывается сообщение
-- [ ] [HP] При TG Login показывается consent-текст со ссылкой на `/legal/privacy`
+- [x] [HP] [P1] Заполни все поля legalInfo → `isLegalInfoComplete = true` → TG Login на витрине доступен (кнопка + consent видны)
+- [x] [NEG] [P1] Очисти `legalName` / `inn` → `isLegalInfoComplete = false` → TG Login заблокирован, алерт «Вход временно недоступен» (проверено на проде, legalInfo восстановлен)
+- [x] [HP] При TG Login показывается consent-текст со ссылкой на `/privacy` (в плане было `/legal/privacy` — устарело; `AuthLoginModal.vue:23` ведёт на `/privacy`)
 
-#### 3.15.4 Юридические страницы (`/legal/{oferta,privacy}`)
+#### 3.15.4 Юридические страницы (`/terms`, `/privacy`)
 
-- [ ] Открой /legal/oferta → текст оферты (генерируется из legalInfo)
-- [ ] /legal/privacy → политика конфиденциальности
+> ⚠️ Роуты в плане устарели: директории `pages/legal/` нет. Реальные страницы — `pages/terms.vue` (`/terms`, оферта) и `pages/privacy.vue` (`/privacy`, политика).
+
+- [x] Открой /terms → текст оферты (генерируется из legalInfo) — PASS
+- [x] /privacy → политика конфиденциальности — PASS
 
 ### 3.16 Модульные тоглы (CROSS — критичная часть)
 
