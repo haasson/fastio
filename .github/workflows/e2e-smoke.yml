@@ -1,8 +1,10 @@
 name: E2E (smoke)
 
-# Smoke-уровень: только проверка что storefront и admin вообще поднимаются и
-# отдают / без ошибок. Полный suite — в e2e-nightly.yml. Не блокирует merge
-# (требуется явный required-check в branch protection если нужно).
+# На каждый push/PR в main: smoke (поднимаются ли storefront+admin) + критические
+# регресс-флоу, которые дёшевы и стрелять не должны НИКОГДА — кухонный lifecycle
+# и приём invite (RPC+edge уровень, ~5с на оба, без UI). Полный suite — ночью в
+# e2e-nightly.yml. Не блокирует merge (нужен явный required-check в branch
+# protection если потребуется), но даёт раннюю красную лампу прямо на PR.
 on:
   pull_request:
     branches: [main]
@@ -82,13 +84,17 @@ jobs:
         # demo.localhost:4711 висит до таймаута. Прописываем явно.
         run: echo "127.0.0.1 demo.localhost services-start.localhost" | sudo tee -a /etc/hosts
 
-      - name: run smoke tests
+      - name: run smoke + critical regression tests
         # Local-in-CI: webServer (playwright.config) поднимает nuxt preview, supabase-env
         # приходит из $GITHUB_ENV (шаг export выше). SUPABASE_STAGING_URL не задан →
         # globalSetup идёт локальным путём (setup.mjs). Staging dual-path остаётся спящим.
+        # kitchen-flow — RPC/DB (триггеры lifecycle 304/306); invite-flow — edge+RPC
+        # (get-invite/accept-invite, регресс на 3 P0 invite-флоу). Edge поднимает
+        # supabase start ([edge_runtime] enabled=true), ключи консистентны → admin
+        # createUser работает (в отличие от stale локального edge-runtime).
         env:
           CI: 'true'
-        run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts
+        run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts kitchen-flow.spec.ts invite-flow.spec.ts
 
       - name: upload HTML report on failure
         if: failure()
