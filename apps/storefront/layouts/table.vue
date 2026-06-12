@@ -76,8 +76,10 @@ const stickyTotalHeight = computed(() => headerHeight.value + categoryBarHeight.
 }
 
 .logo {
-  height: 32px;
+  // Зеркалим SiteHeader: лого на высоту хедера минус воздух, вписываем целиком, не обрезаем.
+  height: calc(var(--header-height) - 16px);
   width: auto;
+  max-width: 200px;
   flex-shrink: 0;
   object-fit: contain;
 }

@@ -234,15 +234,20 @@ const handleNavClick = async (link: NavLink) => {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  height: 36px;
+  // Тянем лого на всю высоту хедера минус отступ для воздуха — чтобы квадратный
+  // логотип не выглядел мелким. Высоту хедера не раздуваем (фикс 56/64px).
+  height: 100%;
+  padding-block: 8px;
   min-width: 80px;
   text-decoration: none;
 }
 
 .logo {
-  height: 36px;
+  height: 100%;
   width: auto;
-  max-width: 160px;
+  // Ограничиваем ширину, чтобы широкий лого не съедал место под меню.
+  // object-fit: contain — всегда вписываем целиком, никогда не обрезаем.
+  max-width: 200px;
   object-fit: contain;
 }
 
