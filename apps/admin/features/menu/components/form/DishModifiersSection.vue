@@ -52,7 +52,7 @@
                     :min="0"
                     placeholder="0"
                     class="price-input"
-                    @update:model-value="getAttachedOption(gi, sourceOpt.id)!.priceDelta = $event ?? 0"
+                    @update:model-value="getAttachedOption(gi, sourceOpt.id)!.priceDelta = Math.max(0, $event ?? 0)"
                   >
                     <template #suffix>+₽</template>
                   </UiInputNumber>

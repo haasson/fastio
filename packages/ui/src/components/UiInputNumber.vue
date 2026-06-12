@@ -98,7 +98,9 @@ function filterKey(e: KeyboardEvent) {
   if (allowed.includes(e.key)) return
   if (/^\d$/.test(e.key)) return
   if (e.key === '.' || e.key === ',') return
-  if (e.key === '-') return
+  // Минус разрешён только если инпут вообще допускает отрицательные значения.
+  // При min >= 0 (цены, вес, количество) '-' блокируется на вводе.
+  if (e.key === '-' && (props.min === undefined || props.min < 0)) return
   e.preventDefault()
 }
 
