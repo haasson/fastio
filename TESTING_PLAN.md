@@ -909,7 +909,7 @@
 
 #### 3.19.3 Доступ (NEG)
 
-- [ ] [NEG] [P0] Роль без `audit_log.view` (Менеджер / Сотрудник) → пункта «Журнал действий» в навигации нет; прямой переход на `/audit-log` → no-access / редирект
+- [x] [NEG] [P0] Роль без `audit_log.view` (Менеджер) → пункта «Журнал действий» в навигации нет; прямой `/audit-log` → редирект ✅ (browser, 2026-06-12)
 - [x] [NEG] [P0] 🤖 RPC `journal_events()` под jwt роли без права (Повар) → `Permission denied` (42501), данные не утекают ✅
 - [x] [NEG] [P1] 🤖 Cross-tenant: `journal_events(T2)` под jwt T1-owner → `Permission denied` (не член T2) ✅
 
