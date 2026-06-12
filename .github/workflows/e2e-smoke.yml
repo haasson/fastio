@@ -90,14 +90,42 @@ jobs:
         # demo.localhost:4711 висит до таймаута. Прописываем явно.
         run: echo "127.0.0.1 demo.localhost services-start.localhost" | sudo tee -a /etc/hosts
 
+      - name: diagnose storefront 503
+        # DIAGNOSTIC — убрать после фикса. Запускает nuxt preview на порту 4712
+        # (не 4711 — не конфликтует с Playwright webServer) и фиксирует:
+        # 1) работает ли service-role ключ против PostgREST
+        # 2) что именно возвращает storefront на /api/tenant
+        continue-on-error: true
+        run: |
+          echo "=== 1. PostgREST auth test (service role) ==="
+          SK="$NUXT_SUPABASE_SERVICE_ROLE_KEY"
+          printf "key prefix (first 10): %.10s...\n" "$SK"
+          curl -si "http://127.0.0.1:54321/rest/v1/tenants?slug=eq.demo&select=slug" \
+            -H "apikey: $SK" -H "Authorization: Bearer $SK"
+          echo ""
+          echo "=== 2. Storefront /api/tenant response ==="
+          PORT=4712 TRUST_PROXY=1 TRUSTED_IP_HEADER=x-real-ip \
+            pnpm --filter storefront exec nuxt preview > /tmp/diag-srv.log 2>&1 &
+          SRV_PID=$!
+          for i in $(seq 1 20); do grep -q "Listening" /tmp/diag-srv.log 2>/dev/null && break; sleep 1; done
+          echo "--- server startup log ---"
+          cat /tmp/diag-srv.log
+          echo "--- /api/tenant response ---"
+          curl -sv "http://demo.localhost:4712/api/tenant" 2>&1 || true
+          kill $SRV_PID 2>/dev/null || true
+          wait $SRV_PID 2>/dev/null || true
+
       - name: run smoke + critical regression tests
         # Local-in-CI: webServer (playwright.config) поднимает nuxt preview, supabase-env
         # приходит из $GITHUB_ENV (шаг export выше). SUPABASE_STAGING_URL не задан →
         # globalSetup идёт локальным путём (setup.mjs). Staging dual-path остаётся спящим.
-        # Здесь только ВРЕМЯ-НЕЗАВИСИМЫЕ P0 (RPC/edge, не HTTP-pickup):
-        #   kitchen-flow   — RPC/DB lifecycle очереди (триггеры 304/306);
-        #   invite-flow    — edge+RPC (get-invite/accept-invite, регресс на 3 P0 invite);
-        #   order-lifecycle — RPC update_order_status (цепочка статусов + отмена).
+        # Здесь только ВРЕМЯ-НЕЗАВИСИМЫЕ P0/P1 (RPC/edge/admin-переходы, не HTTP-pickup):
+        #   kitchen-flow         — RPC/DB lifecycle очереди (триггеры 304/306);
+        #   invite-flow          — edge+RPC (get-invite/accept-invite, регресс на 3 P0 invite);
+        #   order-lifecycle      — RPC update_order_status (цепочка статусов + отмена);
+        #   reservation-lifecycle — admin-переходы брони (INSERT+UPDATE) + booking-gate;
+        #   appointment-lifecycle — create_appointments_bulk + конфликт слотов + admin-переходы;
+        #   waiter-call          — POST /api/table/[id]/call (гарды IDOR/cooldown, не смотрит часы).
         # Edge поднимает supabase start ([edge_runtime] enabled=true), ключи консистентны.
         # order-pricing / promo НЕ здесь: они идут через HTTP POST /api/orders (pickup),
         # а demo в сиде открыт 12:00–03:00 Krasnoyarsk → на push в произвольное время
@@ -105,7 +133,7 @@ jobs:
         # Полный набор, включая их, гоняет e2e-nightly (фиксированное время).
         env:
           CI: 'true'
-        run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts kitchen-flow.spec.ts invite-flow.spec.ts order-lifecycle.spec.ts
+        run: pnpm exec playwright test smoke-storefront.spec.ts smoke-admin.spec.ts kitchen-flow.spec.ts invite-flow.spec.ts order-lifecycle.spec.ts reservation-lifecycle.spec.ts appointment-lifecycle.spec.ts waiter-call.spec.ts
 
       - name: upload HTML report on failure
         if: failure()
