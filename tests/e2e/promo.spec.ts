@@ -28,9 +28,9 @@ const SERVICE_KEY = process.env.NUXT_SUPABASE_SERVICE_ROLE_KEY ?? ''
 
 const DEMO_TENANT_ID = '00000000-0000-0000-0000-000000000002'
 const DEMO_BRANCH_ID = 'ca634a0d-3848-4c10-800c-28f9fde25160'
-// Маргарита: база 650 (сервер берёт из БД, клиентскую цену игнорит).
+// Маргарита: база 590 из e2e-ci.sql (сервер берёт из БД, клиентскую цену игнорит).
 const MARGARITA_ID = '00000000-0000-0000-0005-000000000001'
-const MARGARITA_PRICE = 650
+const MARGARITA_PRICE = 590
 
 // Маркеры для идемпотентного cleanup (переживаем крэш посреди прогона).
 const ORDER_MARKER = 'E2E_PROMO'
@@ -258,7 +258,7 @@ test('POST /api/orders с promoCode: скидка пишется в заказ, 
   expect(payload.id).toBeTruthy()
   await ctx.dispose()
 
-  // Сервер пересчитал: subtotal 650, скидка 10% = 65, total 585. promo_code годен
+  // Сервер пересчитал: subtotal 590, скидка 10% = 59, total 531. promo_code годен
   // и побеждает кампанию (тоже 10% → ничья, при ничьей выигрывает код, см.
   // calcPromoDiscount: promotionDiscount > promoCodeDiscount строгое).
   const { data: order } = await svc
@@ -268,8 +268,8 @@ test('POST /api/orders с promoCode: скидка пишется в заказ, 
     .single()
   expect(order!.promo_code).toBe('E2EVALID')
   expect(Number(order!.subtotal)).toBe(MARGARITA_PRICE)
-  expect(Number(order!.discount_amount)).toBe(65)
-  expect(Number(order!.total)).toBe(585)
+  expect(Number(order!.discount_amount)).toBe(59)
+  expect(Number(order!.total)).toBe(531)
 
   // used_count инкрементнулся внутри create_order_with_items_atomic (PREPROD-114).
   const { data: codeAfter } = await svc
