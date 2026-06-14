@@ -105,6 +105,7 @@ import ApptReminderOffer from '~/features/appointments/components/ApptReminderOf
 import { useCartStore } from '~/features/cart'
 import { useSelectedBranchStore } from '~/features/branch'
 import { useToast } from '~/shared/composables/useToast'
+import { useScrollTopOnChange } from '~/shared/composables/useScrollTopOnChange'
 import { reportError } from '@fastio/shared/observability'
 import { useResourceLabel } from '~/features/services-catalog'
 
@@ -123,6 +124,9 @@ const { success: showSuccess, error: showError } = useToast()
 const timezone = computed(() => tenant.value?.timezone ?? DEFAULT_TIMEZONE)
 
 const step = ref<Step>('date')
+
+// Скролл наверх при смене шага (роут не меняется)
+useScrollTopOnChange(step)
 const groupDate = ref<string | null>(null)
 const groupSlotsResult = ref<GroupSlotsResult | null>(null)
 const selectedEntry = ref<GroupSlotEntry | null>(null)

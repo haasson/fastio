@@ -90,12 +90,16 @@ import BookingSuccess from '~/features/booking/components/BookingSuccess.vue'
 
 import { useBooking } from '~/features/booking'
 import useLegalCompliance from '~/shared/composables/useLegalCompliance'
+import { useScrollTopOnChange } from '~/shared/composables/useScrollTopOnChange'
 import { reportError } from '@fastio/shared/observability'
 
 type BookingBranch = BranchPublic
 
 const rfetch = useRequestFetch()
 const { step, form, slots, loading, result, wasAuthenticated, error, fetchSlots, submit } = useBooking()
+
+// Скролл наверх при смене шага и при показе экрана успеха (роут не меняется)
+useScrollTopOnChange(() => [step.value, Boolean(result.value)])
 
 const { data: tenant } = useNuxtData<Tenant>('tenant')
 

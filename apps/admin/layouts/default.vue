@@ -78,7 +78,7 @@
         />
       </header>
 
-      <main class="content" :class="{ 'has-action-bar': isPageFormDirty }">
+      <main ref="contentRef" class="content" :class="{ 'has-action-bar': isPageFormDirty }">
         <slot />
       </main>
     </div>
@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, type Ref } from 'vue'
+import { ref, computed, inject, watch, type Ref } from 'vue'
 import { useRoute, useRuntimeConfig } from '#imports'
 import { KB_ROUTES } from '@fastio/kb'
 import { requestNotificationPermission } from '~/shared/utils/alerts'
@@ -161,6 +161,17 @@ const isPageFormDirty = computed(() => pageForm.value?.isDirty.value === true)
 const pageTitle = usePageTitle()
 
 const route = useRoute()
+
+// Скролл к началу при каждой смене роута: admin — SPA, позиция скролла залипает.
+// Сбрасываем и контейнер контента, и window — какой бы из них ни был скролл-контейнером.
+const contentRef = ref<HTMLElement | null>(null)
+
+watch(() => route.path, () => {
+  if (route.hash) return
+  contentRef.value?.scrollTo({ top: 0 })
+  window.scrollTo({ top: 0 })
+})
+
 const helpBaseUrl = useRuntimeConfig().public.helpUrl
 
 const kbUrl = computed(() => {

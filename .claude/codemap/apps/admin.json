@@ -2,7 +2,7 @@
   "project": "apps/admin",
   "submap": "main",
   "purpose": "Карта admin-приложения: shared-инфра (composables/utils/stores), config, columns, components/{layout,ui}, middleware, plugins, layouts. Feature-папки картируются отдельно.",
-  "generated_at": "2026-06-12T11:59:19.592Z",
+  "generated_at": "2026-06-14T08:41:50.763Z",
   "stats": {
     "files": 85,
     "pages": 0,
@@ -366,8 +366,8 @@
     },
     "layouts/default.vue": {
       "kind": "vue",
-      "hash": "eaaf31e34855",
-      "purpose": "Главный лейаут админки: sidebar, topbar, баннеры (billing/blockers), realtime-каналы, онбординг",
+      "hash": "c5ba905f0cc0",
+      "purpose": "Основной layout админки: сайдбар, топбар, баннеры, скролл к началу при смене роута",
       "symbols": [
         {
           "name": "component",
