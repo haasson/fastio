@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getAllowedStatuses } from '../order-status-helpers'
+import { getAllowedStatuses, isScheduledOverdue } from '../order-status-helpers'
 import type { OrderStatus } from '../types/order'
 
 const makeStatus = (id: string, groupType: 'new' | 'in_progress' | 'completed' | 'cancelled'): OrderStatus => ({
@@ -41,5 +41,31 @@ describe('getAllowedStatuses', () => {
 
   it('from cancelled — empty (terminal)', () => {
     expect(getAllowedStatuses('cancelled', statuses)).toEqual([])
+  })
+})
+
+describe('isScheduledOverdue', () => {
+  const now = Date.parse('2026-06-14T12:00:00Z')
+
+  it('false, если scheduledAt не задан', () => {
+    expect(isScheduledOverdue(null, now)).toBe(false)
+    expect(isScheduledOverdue(undefined, now)).toBe(false)
+    expect(isScheduledOverdue('', now)).toBe(false)
+  })
+
+  it('true, если время уже в прошлом', () => {
+    expect(isScheduledOverdue('2026-06-14T11:59:00Z', now)).toBe(true)
+  })
+
+  it('false, если время в будущем', () => {
+    expect(isScheduledOverdue('2026-06-14T12:01:00Z', now)).toBe(false)
+  })
+
+  it('false ровно на границе now', () => {
+    expect(isScheduledOverdue('2026-06-14T12:00:00Z', now)).toBe(false)
+  })
+
+  it('false на невалидной дате', () => {
+    expect(isScheduledOverdue('не-дата', now)).toBe(false)
   })
 })

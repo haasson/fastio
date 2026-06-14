@@ -1,7 +1,7 @@
 import { computed, type Ref, type ComputedRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import type { Order } from '@fastio/shared'
-import { getAllowedStatuses, getKitchenAutoStatuses } from '@fastio/shared'
+import { getAllowedStatuses, getKitchenAutoStatuses, isScheduledOverdue } from '@fastio/shared'
 import { useOrderStatusesStore } from '../stores/order-statuses'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useStatusColor } from './useStatusColor'
@@ -35,6 +35,9 @@ export const useOrderStatus = (
     if (!isEdit.value || !scheduledAt.value) return false
     if (statusGroup.value !== 'new') return false
     if (!holdingStatusId.value) return false
+    // Просроченный предзаказ ждать незачем — не загоняем его в холдинг,
+    // принимаем как обычный заказ (иначе он бы залип в «Запланировано»).
+    if (isScheduledOverdue(scheduledAt.value)) return false
 
     return order.value?.status !== holdingStatusId.value
   })

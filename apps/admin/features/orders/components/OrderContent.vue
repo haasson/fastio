@@ -39,6 +39,7 @@
             :selected-promo-value="selectedPromoValue"
             :promo-error="promoError"
             :best-promo-hint="bestPromoHint"
+            :scheduled-at="scheduledAt"
             @promo-select="onPromoSelect"
             @update:branch-id="selectedBranchId = $event"
             @zone-detected="onZoneDetected"

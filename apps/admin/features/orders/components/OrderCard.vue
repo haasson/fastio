@@ -23,11 +23,11 @@
         <UiTag
           v-if="order.scheduledAt"
           size="small"
-          type="warning"
+          :type="isOverdue ? 'error' : 'warning'"
           empty
           round
           icon="clock"
-        >{{ scheduledLabel }}</UiTag>
+        >{{ isOverdue ? `Просрочен · ${scheduledLabel}` : scheduledLabel }}</UiTag>
         <UiTag
           v-if="showDeliveryType"
           size="small"
@@ -130,7 +130,7 @@
 import { computed, toRef } from 'vue'
 import { UiButton, UiCard, UiIcon, UiTag } from '@fastio/ui'
 import type { Order } from '@fastio/shared'
-import { getItemUnitPrice, formatPhone, utcIsoToLocalDateTime, todayInTz, addDaysToDateStr, formatPrice } from '@fastio/shared'
+import { getItemUnitPrice, formatPhone, utcIsoToLocalDateTime, todayInTz, addDaysToDateStr, formatPrice, isScheduledOverdue } from '@fastio/shared'
 import { STATUS_GROUP_TAG_TYPES, STATUS_GROUP_COLORS } from '~/config/retail/order-status-groups'
 import type { IconName } from '@fastio/icons'
 import { DELIVERY_TYPE_LABELS, DELIVERY_TYPE_ICONS, PAYMENT_TYPE_LABELS, PAYMENT_ICON_MAP } from '~/config/retail/order-options'
@@ -157,6 +157,10 @@ const gate = useGate()
 const showDeliveryType = computed(() => gate.delivery.value.enabled && gate.pickup.value.enabled)
 
 const paymentIcon = computed(() => PAYMENT_ICON_MAP[props.order.paymentType] ?? 'banknote')
+
+// Подсвечиваем как «просрочен» только пока заказ ждёт приёма (группа new) —
+// в работе/завершённым отметка уже не нужна.
+const isOverdue = computed(() => currentStatus.value?.groupType === 'new' && isScheduledOverdue(props.order.scheduledAt))
 
 const MAX_ITEMS = 3
 const visibleItems = computed(() => props.order.items.slice(0, MAX_ITEMS))

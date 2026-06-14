@@ -156,6 +156,13 @@
       :disabled="!perms.editScheduling"
       @update:model-value="form.kitchenLeadMinutes = $event"
     />
+    <UiAlert
+      v-if="form.schedulingMode === 'scheduled' && isOverdue"
+      type="warning"
+      size="small"
+    >
+      Указанное время уже прошло — заказ примется как обычный, сразу в работу
+    </UiAlert>
   </div>
 
   <!-- Состав заказа -->
@@ -238,7 +245,7 @@ import { UiInput, UiInputNumber, UiSelect, UiSegmentedControl, UiAlert, UiSlider
 import { validationRules } from '@fastio/kit'
 import type { Order, DeliveryZone, OrderItem } from '@fastio/shared'
 import type { DeliveryInfo } from '../composables/delivery/useOrderDelivery'
-import { findDeliveryZone, useSchedulingSlots, formatPrice } from '@fastio/shared'
+import { findDeliveryZone, useSchedulingSlots, formatPrice, isScheduledOverdue } from '@fastio/shared'
 import { useTenantStore } from '~/shared/stores/tenant'
 import { useGate } from '~/shared/plan/useGate'
 import { useDadataSuggestions, type DadataSuggestion } from '~/shared/composables/delivery/useDadataSuggestions'
@@ -300,6 +307,7 @@ const props = withDefaults(defineProps<{
   selectedPromoValue?: string | null
   promoError?: string | null
   bestPromoHint?: { text: string; value: string } | null
+  scheduledAt?: string | null
 }>(), {
   permissions: () => ({}),
   itemsError: '',
@@ -312,6 +320,7 @@ const props = withDefaults(defineProps<{
   selectedPromoValue: null,
   promoError: null,
   bestPromoHint: null,
+  scheduledAt: null,
 })
 
 const emit = defineEmits<{
@@ -425,6 +434,8 @@ const showDeliveryBlock = computed(() => deliveryEnabled.value || isDeliveryOrde
 
 const deliveryItems = DELIVERY_OPTIONS
 const paymentOptions = PAYMENT_OPTIONS
+
+const isOverdue = computed(() => isScheduledOverdue(props.scheduledAt))
 </script>
 
 <style scoped lang="scss">
