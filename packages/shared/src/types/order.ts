@@ -42,6 +42,8 @@ export type OrderItem = {
   addedBy: string | null
   confirmedBy: string | null
   status: OrderItemStatus
+  /** Кухня вкл И ≥1 тикет позиции уже не 'queued' → строка залочена для правки/удаления. */
+  kitchenLocked?: boolean
 }
 
 export type { OrderItemModifier } from './modifier'
@@ -57,7 +59,7 @@ export type OrderNote = {
   createdAt: string
 }
 
-export type OrderEventType = 'order_created' | 'status_changed' | 'items_updated' | 'items_added' | 'field_updated' | 'kitchen_claimed' | 'kitchen_completed' | 'kitchen_returned' | 'kitchen_served'
+export type OrderEventType = 'order_created' | 'status_changed' | 'items_updated' | 'items_added' | 'items_removed' | 'items_edited' | 'scheduled_changed' | 'field_updated' | 'kitchen_claimed' | 'kitchen_completed' | 'kitchen_returned' | 'kitchen_served'
 
 export type OrderEvent = {
   id: string

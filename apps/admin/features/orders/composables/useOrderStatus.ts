@@ -52,10 +52,11 @@ export const useOrderStatus = (
       editAddress: g === 'new',
       editItems: g === 'new',
       addItems: g === 'in_progress', // append-only дозаказ в принятый заказ
+      editAcceptedItems: g === 'in_progress', // срез 3: правка/удаление существующих позиций
       editDeliveryFee: g === 'new' || g === 'in_progress',
       editPayment: g === 'new' || g === 'in_progress',
       editBranch: g === 'new',
-      editScheduling: g === 'new',
+      editScheduling: g === 'new' || g === 'in_progress', // срез 3: смена предзаказ-времени принятого
     }
   })
 

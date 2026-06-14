@@ -176,10 +176,105 @@ describe('ordersApi.addItems', () => {
     }])
   })
 
-  it('пробрасывает ошибку rpc', async () => {
-    const rpc = vi.fn().mockResolvedValue({ error: new Error('Permission denied') })
+  it('локализует ошибку rpc (42501 → Недостаточно прав)', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: { code: '42501', message: 'Permission denied' } })
     const sb = { rpc } as unknown as SupabaseClient
 
-    await expect(ordersApi.addItems(sb, 'order-1', [makeItem()])).rejects.toThrow('Permission denied')
+    await expect(ordersApi.addItems(sb, 'order-1', [makeItem()])).rejects.toThrow('Недостаточно прав')
+  })
+})
+
+const makeItemRow = (kitchenQueue?: { status: string }[]): Record<string, unknown> => ({
+  id: 'item-1',
+  order_id: 'order-1',
+  dish_id: 'dish-1',
+  combo_id: null,
+  dish_name: 'Бургер',
+  category_name: 'Бургеры',
+  price: 300,
+  quantity: 1,
+  removed_ingredients: [],
+  modifiers: [],
+  addons: [],
+  customizable: null,
+  sort_order: 0,
+  completed_at: null,
+  combo_items: null,
+  added_by: null,
+  confirmed_by: null,
+  status: 'confirmed',
+  ...(kitchenQueue ? { kitchen_queue: kitchenQueue } : {}),
+})
+
+describe('mapOrder kitchenLocked', () => {
+  it('false, если все тикеты queued', () => {
+    const row = makeOrderRow({ order_items: [makeItemRow([{ status: 'queued' }, { status: 'queued' }])] })
+
+    expect(mapOrder(row).items[0].kitchenLocked).toBe(false)
+  })
+
+  it('true, если хоть один тикет не queued', () => {
+    const row = makeOrderRow({ order_items: [makeItemRow([{ status: 'queued' }, { status: 'in_progress' }])] })
+
+    expect(mapOrder(row).items[0].kitchenLocked).toBe(true)
+  })
+
+  it('false, если kitchen_queue отсутствует (списочный запрос без join)', () => {
+    const row = makeOrderRow({ order_items: [makeItemRow()] })
+
+    expect(mapOrder(row).items[0].kitchenLocked).toBe(false)
+  })
+
+  it('false для cancelled-тикетов (после отмены+реактивации не блокируют)', () => {
+    const row = makeOrderRow({ order_items: [makeItemRow([{ status: 'cancelled' }, { status: 'queued' }])] })
+
+    expect(mapOrder(row).items[0].kitchenLocked).toBe(false)
+  })
+
+  it('true для done/served', () => {
+    const done = makeOrderRow({ order_items: [makeItemRow([{ status: 'done' }])] })
+    const served = makeOrderRow({ order_items: [makeItemRow([{ status: 'served' }])] })
+
+    expect(mapOrder(done).items[0].kitchenLocked).toBe(true)
+    expect(mapOrder(served).items[0].kitchenLocked).toBe(true)
+  })
+})
+
+describe('ordersApi.removeOrderItem / updateItem', () => {
+  it('removeOrderItem зовёт rpc remove_order_item', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const sb = { rpc } as unknown as SupabaseClient
+
+    await ordersApi.removeOrderItem(sb, 'item-1')
+
+    expect(rpc).toHaveBeenCalledWith('remove_order_item', { p_order_item_id: 'item-1' })
+  })
+
+  it('updateItem зовёт rpc update_order_item с маппингом полей', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const sb = { rpc } as unknown as SupabaseClient
+
+    await ordersApi.updateItem(sb, 'item-1', makeItem({ quantity: 5 }))
+
+    const [fn, args] = rpc.mock.calls[0]
+
+    expect(fn).toBe('update_order_item')
+    expect(args.p_order_item_id).toBe('item-1')
+    expect(args.p_item_json.quantity).toBe(5)
+    expect(args.p_item_json.dish_name).toBe('Бургер')
+  })
+
+  it('локализует ошибку «already being cooked»', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: { code: 'P0001', message: 'Item already being cooked' } })
+    const sb = { rpc } as unknown as SupabaseClient
+
+    await expect(ordersApi.removeOrderItem(sb, 'item-1')).rejects.toThrow('готов')
+  })
+
+  it('локализует 42501 как «Недостаточно прав»', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: { code: '42501', message: 'Permission denied' } })
+    const sb = { rpc } as unknown as SupabaseClient
+
+    await expect(ordersApi.removeOrderItem(sb, 'item-1')).rejects.toThrow('Недостаточно прав')
   })
 })

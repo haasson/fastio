@@ -76,21 +76,59 @@ export const useOrderEventLogger = () => {
     }
   }
 
+  // actor-болванка для точечных событий правки принятого заказа.
+  const actorOf = (order: Order) => ({
+    orderId: order.id,
+    tenantId: order.tenantId,
+    actorId: authStore.user!.id,
+    actorName: authStore.user!.user_metadata?.full_name || authStore.user!.email || null,
+    actorRole: tenantStore.currentRoleName ?? null,
+  })
+
   // Дозаказ блюд в принятый заказ (append-only): отдельное событие таймлайна,
   // т.к. items_updated несёт before/after-дифф, а тут добавление без замены.
   const logItemsAdded = (order: Order, items: Order['items']) => {
     if (!authStore.user) return
 
     api.orderEvents.add({
-      orderId: order.id,
-      tenantId: order.tenantId,
-      actorId: authStore.user.id,
-      actorName: authStore.user.user_metadata?.full_name || authStore.user.email || null,
-      actorRole: tenantStore.currentRoleName ?? null,
+      ...actorOf(order),
       eventType: 'items_added',
       meta: { items: items.map((i) => ({ name: i.dishName, quantity: i.quantity })) },
     }).catch(reportError)
   }
 
-  return { logSaveEvents, logItemsAdded }
+  // Срез 3: удаление позиции принятого заказа.
+  const logItemRemoved = (order: Order, item: Order['items'][number]) => {
+    if (!authStore.user) return
+
+    api.orderEvents.add({
+      ...actorOf(order),
+      eventType: 'items_removed',
+      meta: { item: { name: item.dishName, quantity: item.quantity } },
+    }).catch(reportError)
+  }
+
+  // Срез 3: правка позиции (кол-во/состав) принятого заказа.
+  const logItemEdited = (order: Order, item: Order['items'][number]) => {
+    if (!authStore.user) return
+
+    api.orderEvents.add({
+      ...actorOf(order),
+      eventType: 'items_edited',
+      meta: { item: { name: item.dishName, quantity: item.quantity } },
+    }).catch(reportError)
+  }
+
+  // Срез 3: смена предзаказ-времени принятого заказа.
+  const logScheduledChanged = (order: Order, from: string | null, to: string | null) => {
+    if (!authStore.user) return
+
+    api.orderEvents.add({
+      ...actorOf(order),
+      eventType: 'scheduled_changed',
+      meta: { from, to },
+    }).catch(reportError)
+  }
+
+  return { logSaveEvents, logItemsAdded, logItemRemoved, logItemEdited, logScheduledChanged }
 }

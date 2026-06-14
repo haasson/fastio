@@ -12,6 +12,9 @@ type RemoveItemEnvelope
     | { ok: false; reason: 'not_found' | 'forbidden' }
 
 const ORDER_SELECT = '*, order_items(*)' as const
+// Детальная загрузка одного заказа: тащим статусы тикетов для флага kitchenLocked.
+// В списки не добавляем — лишний join на каждую строку пагинации не нужен.
+const ORDER_DETAIL_SELECT = '*, order_items(*, kitchen_queue(status))' as const
 
 export type OrderUpdateData = {
   customerName?: string
@@ -91,6 +94,14 @@ const mapOrderItem = (row: OrderItemRow): OrderItem => ({
   addedBy: row.added_by ?? null,
   confirmedBy: row.confirmed_by ?? null,
   status: row.status ?? 'confirmed',
+  // Только в детальной загрузке (ORDER_DETAIL_SELECT) есть вложенный kitchen_queue;
+  // в списках поле отсутствует → false. Залочена, если хоть один тикет НАЧАТ —
+  // allowlist в точности как серверный _order_item_kitchen_locked (миграция 338):
+  // queued/cancelled НЕ блокируют (cancelled — после отмены+реактивации заказа).
+  kitchenLocked: Array.isArray((row as { kitchen_queue?: { status: string }[] }).kitchen_queue)
+    ? (row as { kitchen_queue?: { status: string }[] }).kitchen_queue!
+        .some((t) => t.status === 'in_progress' || t.status === 'done' || t.status === 'served')
+    : false,
 })
 
 export const mapOrder = (raw: Record<string, unknown>): Order => {
@@ -278,6 +289,21 @@ export type OrderListOptions = {
   sortDir?: 'asc' | 'desc'
 }
 
+// Локализация ошибок RPC правки позиций (add_items_to_order / remove_order_item /
+// update_order_item). 42501 — нет права; P0001 — бизнес-гарды (текст из RAISE EXCEPTION).
+const mapEditItemError = (error: { code?: string; message?: string }): string => {
+  if (error.code === '42501') return 'Недостаточно прав'
+
+  const msg = error.message ?? ''
+
+  if (msg.includes('already being cooked')) return 'Позицию уже готовят — её нельзя изменить'
+  if (msg.includes('last item')) return 'Нельзя удалить последнюю позицию — отмените заказ'
+  if (msg.includes('not editable')) return 'Заказ нельзя редактировать в текущем статусе'
+  if (msg.includes('not found')) return 'Позиция не найдена'
+
+  return 'Не удалось изменить заказ'
+}
+
 export const ordersApi = {
   async list(
     sb: SupabaseClient,
@@ -422,8 +448,10 @@ export const ordersApi = {
       p_items_json: itemsJson,
     }))
 
+    // Detail-select: сохранить актуальный kitchenLocked на открытом дровере
+    // принятого заказа после обычного save (напр. смены времени).
     const result = await query(
-      sb.from('orders').select(ORDER_SELECT).eq('id', orderId).single(),
+      sb.from('orders').select(ORDER_DETAIL_SELECT).eq('id', orderId).single(),
     )
 
     return result ? mapOrder(result) : null
@@ -508,6 +536,42 @@ export const ordersApi = {
     }
   },
 
+  // ── Срез 3: правка существующих позиций принятого (in_progress) заказа ──
+  // Отдельно от removeItem (выше, dine-in путь через delete_order_item_atomic):
+  // эти RPC отвергают dine_in, лочат позиции с начатой готовкой и не дают удалить
+  // последнюю позицию (заказ не должен молча исчезнуть мимо статусной модели).
+
+  // Удаление позиции: queued-тикеты уходят каскадом, суммы пересчитываются в RPC.
+  async removeOrderItem(sb: SupabaseClient, orderItemId: string): Promise<void> {
+    const { error } = await sb.rpc('remove_order_item', { p_order_item_id: orderItemId })
+
+    if (error) {
+      reportError(error, { context: 'orders.removeOrderItem', orderItemId })
+      throw new Error(mapEditItemError(error))
+    }
+  },
+
+  // Правка позиции (кол-во/состав): кухня пересоздаёт тикеты под новый состав.
+  async updateItem(sb: SupabaseClient, orderItemId: string, item: OrderItem): Promise<void> {
+    const { error } = await sb.rpc('update_order_item', {
+      p_order_item_id: orderItemId,
+      p_item_json: {
+        dish_name: item.dishName,
+        category_name: item.categoryName,
+        price: item.price,
+        quantity: item.quantity,
+        removed_ingredients: item.removedIngredients,
+        modifiers: item.modifiers,
+        addons: item.addons,
+      },
+    })
+
+    if (error) {
+      reportError(error, { context: 'orders.updateItem', orderItemId })
+      throw new Error(mapEditItemError(error))
+    }
+  },
+
   // Append-only дозаказ блюд в принятый (in_progress) заказ доставки/самовывоза.
   // RPC add_items_to_order дописывает позиции + точечно наполняет кухню на новых
   // строках. Существующие позиции не трогаются (полная замена через update для
@@ -533,7 +597,7 @@ export const ordersApi = {
 
     if (error) {
       reportError(error, { context: 'orders.addItems', orderId })
-      throw error
+      throw new Error(mapEditItemError(error))
     }
   },
 
@@ -599,7 +663,7 @@ export const ordersApi = {
 
   async getById(sb: SupabaseClient, orderId: string): Promise<Order | null> {
     const result = await query(
-      sb.from('orders').select(ORDER_SELECT).eq('id', orderId).single(),
+      sb.from('orders').select(ORDER_DETAIL_SELECT).eq('id', orderId).single(),
     )
 
     return result ? mapOrder(result) : null

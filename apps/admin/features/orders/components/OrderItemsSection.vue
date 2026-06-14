@@ -1,9 +1,10 @@
 <template>
-  <section class="section">
+  <section class="section" data-testid="order-items-section">
     <ul class="items-list">
       <DishItemRow
         v-for="(item, idx) in items"
         :key="`${item.dishId}-${idx}`"
+        data-testid="order-item-row"
         :name="item.dishName"
         :category-name="item.comboId ? 'Комбо' : item.categoryName"
         :modifiers="item.modifiers.map((m) => ({ name: m.optionName, priceDelta: m.priceDelta }))"
@@ -11,12 +12,13 @@
         :addons="item.addons?.map((a) => ({ name: a.addonName, price: a.price }))"
         :price="item.price"
       >
-        <template v-if="!readonly">
+        <template v-if="showItemActions">
           <div class="qty-controls">
             <UiButton
               type="text"
               size="small"
               icon="minusRound"
+              :disabled="isLocked(item) || ctrlBusy"
               @click="changeQty(idx, -1)"
             />
             <span class="qty-value">{{ item.quantity }}</span>
@@ -24,6 +26,7 @@
               type="text"
               size="small"
               icon="plusRound"
+              :disabled="isLocked(item) || ctrlBusy"
               @click="changeQty(idx, 1)"
             />
           </div>
@@ -34,11 +37,14 @@
         <span class="item-price">{{ formatPrice(getItemUnitPrice(item) * item.quantity) }}</span>
 
         <UiRowActions
-          v-if="!readonly"
+          v-if="showItemActions"
           size="small"
-          :disable-edit="!isItemEditable(item)"
+          :disable-edit="isLocked(item) || !isItemEditable(item) || ctrlBusy || (allowEdit && !!item.comboId)"
+          :disable-delete="isLocked(item) || isLastItem || ctrlBusy"
+          :edit-title="isLocked(item) ? 'Уже готовится' : (allowEdit && item.comboId) ? 'Правка комбо в принятом заказе недоступна' : undefined"
+          :delete-title="isLocked(item) ? 'Уже готовится' : isLastItem ? 'Нельзя удалить последнюю позицию' : undefined"
           @edit="openEditItem(idx)"
-          @delete="removeItem(idx)"
+          @delete="onDeleteClick(idx)"
         />
       </DishItemRow>
     </ul>
@@ -87,12 +93,28 @@ const props = defineProps<{
   // но кнопка «Добавить» доступна и новые позиции уходят наружу через emit('addItem'),
   // а не мутируют in-memory список (родитель дёргает RPC сразу).
   allowAdd?: boolean
+  // Срез 3: правка/удаление существующих позиций принятого заказа. Тоже через
+  // emit→RPC (removeItem/editItem), не in-memory. Гейтится по item.kitchenLocked
+  // и last-item. Отдельно от allowAdd, т.к. это операции над существующими строками.
+  allowEdit?: boolean
+  // Инфлайт RPC-операции родителя — дизейблим контролы (защита от дабл-клика).
+  busy?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:items': [items: OrderItem[]]
   'addItem': [item: OrderItem]
+  'removeItem': [item: OrderItem]
+  'editItem': [item: OrderItem]
 }>()
+
+// Показывать ли контролы кол-ва/правки/удаления на позиции:
+// группа new (не readonly) — старый in-memory путь; принятый заказ — allowEdit.
+const showItemActions = computed(() => !props.readonly || props.allowEdit)
+const isLocked = (it: OrderItem) => it.kitchenLocked === true
+const isLastItem = computed(() => props.items.length <= 1)
+// Инфлайт RPC-операции родителя (только в режиме правки принятого заказа).
+const ctrlBusy = computed(() => props.allowEdit === true && props.busy === true)
 
 const { confirm } = useConfirm()
 const { item } = useTerms()
@@ -122,7 +144,23 @@ const mutate = (fn: (items: OrderItem[]) => void) => {
 }
 
 const changeQty = async (idx: number, delta: number) => {
-  const next = props.items[idx].quantity + delta
+  const current = props.items[idx]
+  const next = current.quantity + delta
+
+  // Принятый заказ: правка кол-ва/удаление через RPC (родитель), не in-memory.
+  if (props.allowEdit) {
+    if (isLocked(current)) return
+    if (next <= 0) {
+      if (isLastItem.value) return
+      const ok = await confirm({ title: `Удалить ${item.acc}?`, confirmText: 'Удалить', confirmType: 'error' })
+
+      if (ok) emit('removeItem', current)
+    } else {
+      emit('editItem', { ...current, quantity: next })
+    }
+
+    return
+  }
 
   if (next <= 0) {
     const ok = await confirm({ title: `Удалить ${item.acc}?`, confirmText: 'Удалить', confirmType: 'error' })
@@ -135,10 +173,15 @@ const changeQty = async (idx: number, delta: number) => {
   }
 }
 
-const removeItem = async (idx: number) => {
+const onDeleteClick = async (idx: number) => {
+  const current = props.items[idx]
   const ok = await confirm({ title: `Удалить ${item.acc}?`, confirmText: 'Удалить', confirmType: 'error' })
 
-  if (ok) mutate((items) => items.splice(idx, 1))
+  if (!ok) return
+
+  // Принятый заказ — удаление через RPC; группа new — in-memory splice.
+  if (props.allowEdit) emit('removeItem', current)
+  else mutate((items) => items.splice(idx, 1))
 }
 
 const openEditItem = (idx: number) => openAddDishModal(idx)
@@ -175,10 +218,19 @@ const onPickerSelect = (result: DishPickerResult) => {
     status: 'pending',
   }
 
-  // Режим дозаказа в принятый заказ: не мутируем залоченный список, а отдаём
-  // позицию родителю — он вызовет RPC add_items_to_order напрямую.
-  if (props.readonly && props.allowAdd) {
+  // Дозаказ новой позиции в принятый заказ: не мутируем залоченный список, а
+  // отдаём позицию родителю — он вызовет RPC add_items_to_order напрямую.
+  if (props.allowAdd && !isEdit) {
     emit('addItem', item)
+    closeAddDishModal()
+
+    return
+  }
+
+  // Правка существующей позиции принятого заказа → RPC update_order_item.
+  // Сохраняем DB id правимой строки, чтобы родитель адресовал RPC.
+  if (props.allowEdit && isEdit) {
+    emit('editItem', { ...item, id: props.items[editingItemIndex.value!].id })
     closeAddDishModal()
 
     return

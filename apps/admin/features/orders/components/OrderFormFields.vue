@@ -173,8 +173,12 @@
       :tenant-id="tenantId"
       :readonly="!perms.editItems"
       :allow-add="perms.addItems"
+      :allow-edit="perms.editAcceptedItems"
+      :busy="itemBusy"
       @update:items="form.items = $event"
       @add-item="emit('addItem', $event)"
+      @remove-item="emit('removeItem', $event)"
+      @edit-item="emit('editItem', $event)"
     />
     <div v-if="itemsError" class="items-error">{{ itemsError }}</div>
 
@@ -283,6 +287,7 @@ type Permissions = {
   editAddress?: boolean
   editItems?: boolean
   addItems?: boolean
+  editAcceptedItems?: boolean
   editDeliveryFee?: boolean
   editPayment?: boolean
   editBranch?: boolean
@@ -307,6 +312,7 @@ const props = withDefaults(defineProps<{
   selectedPromoValue?: string | null
   promoError?: string | null
   bestPromoHint?: { text: string; value: string } | null
+  itemBusy?: boolean
   scheduledAt?: string | null
 }>(), {
   permissions: () => ({}),
@@ -320,6 +326,7 @@ const props = withDefaults(defineProps<{
   selectedPromoValue: null,
   promoError: null,
   bestPromoHint: null,
+  itemBusy: false,
   scheduledAt: null,
 })
 
@@ -328,6 +335,8 @@ const emit = defineEmits<{
   'update:branchId': [value: string | null]
   'promo-select': [value: string | null]
   'addItem': [item: OrderItem]
+  'removeItem': [item: OrderItem]
+  'editItem': [item: OrderItem]
 }>()
 
 const selectedBranchId = computed({
@@ -391,6 +400,7 @@ const perms = computed(() => ({
   editAddress: props.permissions.editAddress ?? true,
   editItems: props.permissions.editItems ?? true,
   addItems: props.permissions.addItems ?? false,
+  editAcceptedItems: props.permissions.editAcceptedItems ?? false,
   editDeliveryFee: props.permissions.editDeliveryFee ?? true,
   editPayment: props.permissions.editPayment ?? true,
   editBranch: props.permissions.editBranch ?? true,

@@ -123,6 +123,7 @@ import { formatPhone, getAllowedStatuses, getKitchenAutoStatuses, TILE_SIZE_MIN 
 import OrderCard from './OrderCard.vue'
 import OrderDrawer from './OrderDrawer.vue'
 import { useOrders } from '../composables/useOrders'
+import { useDatabase } from '~/shared/data/useDatabase'
 import { DEFAULT_PAGE_SIZE } from '../api/orders'
 import { storeToRefs } from 'pinia'
 import { useBranchStore } from '~/shared/stores/branch'
@@ -143,6 +144,8 @@ const emit = defineEmits<{
 }>()
 
 const { tenantId: tenantIdRef, statusId: statusIdRef, branchId: branchIdRef } = toRefs(props)
+
+const api = useDatabase()
 
 const branchStore = useBranchStore()
 const tenantStore = useTenantStore()
@@ -238,9 +241,32 @@ const getRowProps = (row: Order) => ({
 })
 
 const { isOpen: modalOpen, data: modalOrder, open: openModal } = useDrawer<Order>()
-const openEditModal = (order: Order) => openModal(order)
+
+// Открываем мгновенно с list-строкой, затем догружаем детали: list() грузит
+// ORDER_SELECT без join'а kitchen_queue, поэтому у позиций нет kitchenLocked —
+// без детальной загрузки по-позиционная блокировка кухни в дровере не работает.
+const openEditModal = async (order: Order) => {
+  openModal(order)
+  // getById может бросить (query() кидает, в т.ч. PGRST116 если заказ удалён между
+  // загрузкой списка и кликом). Дровер остаётся на list-строке — серверный гард
+  // всё равно отобьёт правку готовящейся позиции. reportError уже внутри query().
+  try {
+    const full = await api.orders.getById(order.id)
+
+    if (full && modalOpen.value && modalOrder.value?.id === order.id) modalOrder.value = full
+  } catch {
+    // проглочено осознанно: list-строка как fallback, ошибка уже в Sentry
+  }
+}
 const openCreateModal = () => openModal()
-const handleOrderSaved = () => emit('ordersChanged')
+
+// Точечная RPC-операция (дозаказ/удаление/правка) возвращает свежий заказ —
+// обновляем им открытый дровер (состав/суммы/kitchenLocked), параллельно
+// перезагружаем список. Без этого дровер показывал бы устаревшие данные.
+const handleOrderSaved = (order: Order) => {
+  if (order && modalOrder.value?.id === order.id) modalOrder.value = order
+  emit('ordersChanged')
+}
 
 // Выбор строк
 const checkedRowKeys = ref<string[]>([])

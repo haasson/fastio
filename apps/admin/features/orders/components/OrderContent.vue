@@ -39,11 +39,14 @@
             :selected-promo-value="selectedPromoValue"
             :promo-error="promoError"
             :best-promo-hint="bestPromoHint"
+            :item-busy="itemBusy"
             :scheduled-at="scheduledAt"
             @promo-select="onPromoSelect"
             @update:branch-id="selectedBranchId = $event"
             @zone-detected="onZoneDetected"
             @add-item="onAddItem"
+            @remove-item="onRemoveItem"
+            @edit-item="onEditItem"
           />
 
           <div v-if="isEdit && order?.comment" class="comment-block">
@@ -84,7 +87,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag,
+  UiCollapse, UiCollapseItem, UiForm, UiMenuDropdown, UiButton, UiAlert, UiTag, useMessage,
 } from '@fastio/ui'
 import type { Order, OrderItem } from '@fastio/shared'
 import { getItemUnitPrice, formatPhone, normalizePhone, addDaysToDateStr, localDateTimeToUtcIso, utcIsoToLocalDateTime } from '@fastio/shared'
@@ -107,6 +110,14 @@ import OrderNotesSection from './OrderNotesSection.vue'
 import OrderEventsSection from './OrderEventsSection.vue'
 import OrderCustomerHistory from './OrderCustomerHistory.vue'
 
+// Равенство двух моментов времени (ISO-строк) с учётом null и разного формата.
+const sameInstant = (a: string | null, b: string | null): boolean => {
+  if (!a && !b) return true
+  if (!a || !b) return false
+
+  return new Date(a).getTime() === new Date(b).getTime()
+}
+
 const props = defineProps<{
   tenantId: string
   order: Order | null
@@ -121,7 +132,12 @@ const emit = defineEmits<{
 
 const api = useDatabase()
 const { confirm } = useConfirm()
-const { logSaveEvents, logItemsAdded } = useOrderEventLogger()
+const { error: showError } = useMessage()
+const { logSaveEvents, logItemsAdded, logItemRemoved, logItemEdited, logScheduledChanged } = useOrderEventLogger()
+
+// Инфлайт точечной операции над позициями принятого заказа (add/remove/edit) —
+// блокирует дабл-клик и даёт визуальный дизейбл контролов.
+const itemBusy = ref(false)
 const { statuses } = storeToRefs(useOrderStatusesStore())
 const tenantStore = useTenantStore()
 const branchStore = useBranchStore()
@@ -206,10 +222,17 @@ const form = reactive(buildCreateForm())
 
 watch(
   () => props.order,
-  (order) => {
+  (order, prev) => {
     if (order) {
-      Object.assign(form, buildEditForm(order))
-      selectedBranchId.value = order.branchId
+      // Refresh ТОГО ЖЕ заказа (после точечной item-RPC: дозаказ/удаление/правка)
+      // обновляет только состав — не пересобираем всю форму, иначе затрём
+      // несохранённые правки скалярных полей оператора (телефон/оплата/время).
+      if (prev && order.id === prev.id) {
+        form.items = order.items.map((i) => ({ ...i }))
+      } else {
+        Object.assign(form, buildEditForm(order))
+        selectedBranchId.value = order.branchId
+      }
       notesRefreshKey.value++
     } else {
       Object.assign(form, buildCreateForm())
@@ -314,10 +337,19 @@ const save = async (): Promise<boolean | void> => {
       const payload = can.value.editItems
         ? formPayload.value
         : { ...formPayload.value, items: undefined }
+      // scheduled_at едет в payload штатно; отдельным событием логируем смену
+      // предзаказ-времени (срез 3 — разлочено для in_progress).
+      const prevScheduledAt = props.order.scheduledAt ?? null
+      const nextScheduledAt = scheduledAt.value ?? null
       const updated = await api.orders.update(props.order.id, payload)
 
       if (updated) {
         logSaveEvents(form, props.order, statuses.value)
+        // Сравниваем по моменту времени, а не строкам: prev — серверный ISO,
+        // next — собранный localDateTimeToUtcIso (разный формат/точность).
+        if (!sameInstant(prevScheduledAt, nextScheduledAt)) {
+          logScheduledChanged(props.order, prevScheduledAt, nextScheduledAt)
+        }
         emit('saved', updated)
       }
     } else {
@@ -362,22 +394,72 @@ const onAddItem = async (item: OrderItem) => {
     if (ok !== true) return
   }
 
+  if (itemBusy.value) return
+  itemBusy.value = true
   try {
     await api.orders.addItems(order.id, [item])
+    logItemsAdded(order, [item])
+
+    // Перезагружаем заказ целиком (пересчитанные суммы + новая позиция с server id).
+    // Паттерн как у save(): emit('saved', updated) → родитель обновит props.order,
+    // watch пересоберёт форму.
+    const updated = await api.orders.getById(order.id)
+
+    if (updated) emit('saved', updated)
   } catch (err) {
     reportError(err, { context: 'OrderContent.onAddItem', orderId: order.id })
-
-    return
+    showError(err instanceof Error ? err.message : 'Не удалось добавить позицию')
+  } finally {
+    itemBusy.value = false
   }
+}
 
-  logItemsAdded(order, [item])
+// ─── Удаление/правка существующей позиции принятого заказа (срез 3) ──────────────
+// Тот же паттерн, что onAddItem: RPC напрямую → лог события → перезагрузка заказа.
+// Состав — источник правды на сервере (кухня), in-memory не используем.
+// itemBusy-guard защищает от дабл-клика по ±/удалению (иначе гонка потерянных
+// апдейтов: вторая операция считала бы quantity со старого props до перезагрузки).
 
-  // Перезагружаем заказ целиком (пересчитанные суммы + новая позиция с server id).
-  // Паттерн как у save(): emit('saved', updated) → родитель обновит props.order,
-  // watch пересоберёт форму.
-  const updated = await api.orders.getById(order.id)
+const onRemoveItem = async (item: OrderItem) => {
+  const order = props.order
 
-  if (updated) emit('saved', updated)
+  if (!order || !item.id || itemBusy.value) return
+
+  itemBusy.value = true
+  try {
+    await api.orders.removeOrderItem(item.id)
+    logItemRemoved(order, item)
+
+    const updated = await api.orders.getById(order.id)
+
+    if (updated) emit('saved', updated)
+  } catch (err) {
+    reportError(err, { context: 'OrderContent.onRemoveItem', orderId: order.id })
+    showError(err instanceof Error ? err.message : 'Не удалось удалить позицию')
+  } finally {
+    itemBusy.value = false
+  }
+}
+
+const onEditItem = async (item: OrderItem) => {
+  const order = props.order
+
+  if (!order || !item.id || itemBusy.value) return
+
+  itemBusy.value = true
+  try {
+    await api.orders.updateItem(item.id, item)
+    logItemEdited(order, item)
+
+    const updated = await api.orders.getById(order.id)
+
+    if (updated) emit('saved', updated)
+  } catch (err) {
+    reportError(err, { context: 'OrderContent.onEditItem', orderId: order.id })
+    showError(err instanceof Error ? err.message : 'Не удалось изменить позицию')
+  } finally {
+    itemBusy.value = false
+  }
 }
 
 defineExpose({ save, saving, isEdit })

@@ -8,7 +8,7 @@
       icon="pencil"
       :icon-bg="disableEdit ? 'color-text-secondary' : 'color-primary'"
       :disabled="disableEdit"
-      title="Редактировать"
+      :title="editTitle ?? 'Редактировать'"
       @click="$emit('edit')"
     />
     <UiButton
@@ -26,8 +26,9 @@
       type="text"
       :size="size"
       icon="trash"
-      icon-bg="color-error"
-      title="Удалить"
+      :icon-bg="disableDelete ? 'color-text-secondary' : 'color-error'"
+      :disabled="disableDelete"
+      :title="deleteTitle ?? 'Удалить'"
       @click="$emit('delete')"
     />
     <slot name="append" />
@@ -43,6 +44,10 @@ type Props = {
   disableEdit?: boolean
   showCopy?: boolean
   showDelete?: boolean
+  disableDelete?: boolean
+  // Кастомные тултипы (напр. причина блокировки: «Уже готовится»).
+  editTitle?: string
+  deleteTitle?: string
 }
 
 withDefaults(defineProps<Props>(), {
@@ -51,6 +56,7 @@ withDefaults(defineProps<Props>(), {
   disableEdit: false,
   showCopy: false,
   showDelete: true,
+  disableDelete: false,
 })
 
 defineEmits<{
